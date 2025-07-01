@@ -130,14 +130,22 @@ class GridManager {
         // Determinar tipo baseado em elevação e ruído
         const terrainValue = elevation + combinedNoise * 0.3;
 
+        // Gerar ruído específico para colinas (menos frequente)
+        const hillNoise = this.simpleNoise(x * 0.02, z * 0.02, seed + 3000);
+
         // Criar lagos maiores com ruído de baixa frequência
         if (lakeNoise > 0.7 && terrainValue < 0.4) return 'water'; // Lagos grandes
         if (terrainValue < 0.2) return 'water';      // Corpos d'água menores
-        if (terrainValue < 0.35) return 'grassland'; // Pastagem (ideal para construção)
-        if (terrainValue < 0.5) return 'lowland';    // Planície baixa
-        if (terrainValue < 0.65) return 'hill';      // Colinas
+        if (terrainValue < 0.4) return 'grassland';  // Pastagem (ideal para construção)
+        if (terrainValue < 0.6) return 'lowland';    // Planície baixa
+
+        // Colinas mais raras - apenas 15-20% do terreno
+        if (hillNoise > 0.6 && terrainValue > 0.5) return 'hill'; // Colinas elevadas (mais raras)
         if (terrainValue < 0.8) return 'grassland';  // Mais pastagem
-        return 'hill';                                // Colinas altas
+
+        // Colinas muito altas apenas em terreno muito elevado
+        if (terrainValue > 0.85 && hillNoise > 0.4) return 'hill';
+        return 'grassland';                           // Padrão para pastagem
     }
 
     // Função para gerar seed baseado na posição
@@ -415,8 +423,18 @@ class GridManager {
         const worldPos = this.gridToWorld(gridX, gridZ);
         const elevation = this.elevationGrid[gridX][gridZ];
 
-        // Criar bloco de terreno
-        const blockHeight = Math.max(0.1, elevation * 0.5 + 0.1);
+        // Criar bloco de terreno com altura baseada no tipo
+        let blockHeight;
+        if (terrainType === 'hill') {
+            // Colinas são significativamente mais altas
+            blockHeight = Math.max(0.8, elevation * 1.5 + 0.5);
+        } else if (terrainType === 'lowland') {
+            // Planícies baixas são mais baixas
+            blockHeight = Math.max(0.05, elevation * 0.3 + 0.05);
+        } else {
+            // Pastagem e outros terrenos têm altura padrão
+            blockHeight = Math.max(0.1, elevation * 0.5 + 0.1);
+        }
 
         const terrainBlock = BABYLON.MeshBuilder.CreateBox(`terrain_${gridX}_${gridZ}`, {
             width: this.cellSize * 0.98,

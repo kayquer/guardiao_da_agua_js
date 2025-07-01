@@ -88,6 +88,14 @@
             🏗️ Teste de Colocação
         </button>
 
+        <button class="test-button" onclick="testElectricitySystem()">
+            ⚡ Teste de Eletricidade
+        </button>
+
+        <button class="test-button" onclick="testCooldownSystem()">
+            ⏱️ Teste de Cooldown
+        </button>
+
         <button class="test-button danger" onclick="clearAllBuildings()">
             🗑️ Limpar Todos os Edifícios
         </button>
@@ -106,6 +114,11 @@
     <div class="test-container">
         <h2>✅ Verificações Implementadas</h2>
         <ul>
+            <li>✅ <strong>CRÍTICO - Sistema de Eletricidade:</strong> Corrigido erro "Cannot read properties of undefined" em addElectricityConsumption</li>
+            <li>✅ <strong>Sistema de Cooldown:</strong> Implementado delay de 500ms entre construções para prevenir memory leaks</li>
+            <li>✅ <strong>Terreno Elevado:</strong> Colinas agora são visualmente mais altas e menos frequentes (15-20%)</li>
+            <li>✅ <strong>Feedback de Construção:</strong> Mensagens user-friendly em português substituem logs de console</li>
+            <li>✅ <strong>Painel de Requisitos:</strong> Sidebar mostra requisitos de terreno com ícones e cores</li>
             <li>✅ <strong>Correção de Tipos de Terreno:</strong> Terrenos agora retornam 'grassland', 'lowland', 'hill' compatíveis com requisitos de edifícios</li>
             <li>✅ <strong>Sistema de Fila de Disposal:</strong> Previne race conditions durante colocação rápida de edifícios</li>
             <li>✅ <strong>Rastreamento de Texturas Dinâmicas:</strong> Texturas são reutilizadas e dispostas corretamente</li>
@@ -117,7 +130,6 @@
             <li>✅ <strong>Sistema de Decoração:</strong> Vegetação procedural que não interfere com construção</li>
             <li>✅ <strong>Monitoramento de Memória:</strong> Detecção automática de vazamentos</li>
             <li>✅ <strong>Integração ResourceManager:</strong> Recursos são atualizados corretamente quando edifícios são construídos/removidos</li>
-            <li>✅ <strong>Debug Detalhado:</strong> Logs detalhados para identificar problemas de colocação</li>
         </ul>
     </div>
 
@@ -203,6 +215,82 @@
             } else {
                 console.error('❌ Função testBuildingPlacement não disponível. Carregue o jogo primeiro.');
             }
+        }
+
+        function testElectricitySystem() {
+            console.log('⚡ Testando sistema de eletricidade...');
+
+            if (typeof gameManager === 'undefined' || !gameManager.buildingSystem) {
+                console.error('❌ GameManager não disponível');
+                return;
+            }
+
+            // Testar edifícios que consomem/produzem energia
+            const electricityBuildings = [
+                { type: 'water_pump', name: 'Bomba de Água', expectConsumption: true },
+                { type: 'treatment_plant', name: 'Estação de Tratamento', expectConsumption: true }
+            ];
+
+            electricityBuildings.forEach((building, index) => {
+                console.log(`\n⚡ Teste ${index + 1}: ${building.name}`);
+
+                try {
+                    const x = 25 + index * 2;
+                    const z = 25;
+
+                    const placedBuilding = gameManager.buildingSystem.placeBuilding(x, z, building.type);
+                    if (placedBuilding) {
+                        console.log(`   ✅ ${building.name} construído sem erro de eletricidade`);
+
+                        // Remover após teste
+                        setTimeout(() => {
+                            gameManager.buildingSystem.removeBuilding(placedBuilding.id);
+                            console.log(`   🗑️ ${building.name} removido`);
+                        }, 1000);
+                    } else {
+                        console.error(`   ❌ Falha ao construir ${building.name}`);
+                    }
+                } catch (error) {
+                    console.error(`   🚨 ERRO: ${error.message}`);
+                }
+            });
+
+            console.log('\n⚡ Teste de eletricidade concluído');
+        }
+
+        function testCooldownSystem() {
+            console.log('⏱️ Testando sistema de cooldown...');
+
+            if (typeof gameManager === 'undefined' || !gameManager.buildingSystem) {
+                console.error('❌ GameManager não disponível');
+                return;
+            }
+
+            // Tentar construir rapidamente para testar cooldown
+            let buildingCount = 0;
+            const maxBuildings = 3;
+
+            const rapidBuild = setInterval(() => {
+                if (buildingCount >= maxBuildings) {
+                    clearInterval(rapidBuild);
+                    console.log('⏱️ Teste de cooldown concluído');
+                    return;
+                }
+
+                const x = 20 + buildingCount;
+                const z = 20;
+
+                console.log(`⏱️ Tentativa ${buildingCount + 1}: Construindo casa em (${x}, ${z})`);
+
+                const building = gameManager.buildingSystem.placeBuilding(x, z, 'house');
+                if (building) {
+                    console.log(`   ✅ Casa ${buildingCount + 1} construída`);
+                } else {
+                    console.log(`   ⏱️ Construção bloqueada por cooldown (esperado)`);
+                }
+
+                buildingCount++;
+            }, 200); // Tentar construir a cada 200ms (mais rápido que o cooldown de 500ms)
         }
         
         function runBuildingCycleTest() {

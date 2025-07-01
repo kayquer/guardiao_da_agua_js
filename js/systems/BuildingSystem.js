@@ -40,6 +40,14 @@ class BuildingSystem {
         this.isProcessingDisposal = false;
         this.disposalBatchSize = 5; // Processar até 5 disposals por frame
 
+        // Sistema de cooldown para construção
+        this.buildingCooldown = {
+            active: false,
+            duration: 500, // 500ms de cooldown
+            lastBuildTime: 0,
+            remainingTime: 0
+        };
+
         this.initializeBuildingTypes();
         this.createMaterials();
         
@@ -655,20 +663,41 @@ class BuildingSystem {
 
             if (buildingType.requirements.terrain &&
                 !buildingType.requirements.terrain.includes(terrainType)) {
+                const terrainNames = {
+                    'water': 'água',
+                    'grassland': 'campo',
+                    'lowland': 'planície',
+                    'hill': 'colina'
+                };
+                const currentTerrainName = terrainNames[terrainType] || terrainType;
+                const requiredTerrainNames = buildingType.requirements.terrain.map(t => terrainNames[t] || t).join(', ');
+
                 console.warn(`❌ Terreno inadequado: '${terrainType}' não está em ${JSON.stringify(buildingType.requirements.terrain)}`);
-                return { canPlace: false, reason: `Terreno inadequado: '${terrainType}' (requer: ${buildingType.requirements.terrain.join(', ')})` };
+                return {
+                    canPlace: false,
+                    reason: `Você não pode construir ${buildingType.name} em ${currentTerrainName}. Requer: ${requiredTerrainNames}`,
+                    userFriendly: true
+                };
             }
 
             if (buildingType.requirements.nearWater) {
                 if (!this.isNearWater(gridX, gridZ, buildingType.size)) {
                     console.warn(`❌ Deve estar próximo à água em (${gridX}, ${gridZ})`);
-                    return { canPlace: false, reason: 'Deve estar próximo à água' };
+                    return {
+                        canPlace: false,
+                        reason: `${buildingType.name} deve estar próximo à água`,
+                        userFriendly: true
+                    };
                 }
             }
         }
 
         console.log(`✅ Pode construir ${buildingType.name} em (${gridX}, ${gridZ})`);
-        return { canPlace: true };
+        return {
+            canPlace: true,
+            reason: `Você pode construir ${buildingType.name} aqui`,
+            userFriendly: true
+        };
     }
     
     placeBuildingAt(worldPosition, buildingTypeId) {
@@ -677,15 +706,24 @@ class BuildingSystem {
     }
     
     placeBuilding(gridX, gridZ, buildingTypeId) {
+        // Verificar cooldown de construção
+        if (this.isBuildingOnCooldown()) {
+            const remainingSeconds = Math.ceil(this.buildingCooldown.remainingTime / 1000);
+            this.showNotification(`Aguarde ${remainingSeconds} segundos antes de construir novamente...`, 'warning');
+            console.warn(`⚠️ Construção em cooldown: ${remainingSeconds}s restantes`);
+            return null;
+        }
+
         const buildingType = this.buildingTypes.get(buildingTypeId);
         if (!buildingType) {
             console.error(`❌ Tipo de edifício não encontrado: ${buildingTypeId}`);
             return null;
         }
-        
+
         // Verificar se pode construir
         const canPlace = this.canPlaceBuilding(gridX, gridZ, buildingTypeId);
         if (!canPlace.canPlace) {
+            this.showNotification(canPlace.reason, 'error');
             console.warn(`⚠️ Não é possível construir: ${canPlace.reason}`);
             return null;
         }
@@ -740,6 +778,12 @@ class BuildingSystem {
         if (buildingType.id === 'road' && window.gameManager && window.gameManager.cityLifeSystem) {
             window.gameManager.cityLifeSystem.onRoadBuilt();
         }
+
+        // Ativar cooldown de construção
+        this.activateBuildingCooldown();
+
+        // Mostrar notificação de sucesso
+        this.showNotification(`${buildingType.name} construído com sucesso!`, 'success');
 
         console.log(`🏗️ Edifício construído: ${buildingType.name} em (${gridX}, ${gridZ})`);
         return buildingData;
@@ -1776,18 +1820,18 @@ class BuildingSystem {
             // Geração de energia
             if (config.powerGeneration) {
                 if (add) {
-                    this.resourceManager.addElectricityGeneration(config.powerGeneration);
+                    resourceManager.addElectricityGeneration(config.powerGeneration);
                 } else {
-                    this.resourceManager.removeElectricityGeneration(config.powerGeneration);
+                    resourceManager.removeElectricityGeneration(config.powerGeneration);
                 }
             }
 
             // Consumo de energia
             if (config.powerConsumption) {
                 if (add) {
-                    this.resourceManager.addElectricityConsumption(config.powerConsumption);
+                    resourceManager.addElectricityConsumption(config.powerConsumption);
                 } else {
-                    this.resourceManager.removeElectricityConsumption(config.powerConsumption);
+                    resourceManager.removeElectricityConsumption(config.powerConsumption);
                 }
             }
         }
@@ -1881,6 +1925,55 @@ class BuildingSystem {
         // Processar fila de disposal se necessário
         if (this.disposalQueue.length > 0 && !this.isProcessingDisposal) {
             this.processDisposalQueue();
+        }
+
+        // Atualizar cooldown de construção
+        this.updateBuildingCooldown(deltaTime);
+    }
+
+    // ===== SISTEMA DE COOLDOWN =====
+    isBuildingOnCooldown() {
+        return this.buildingCooldown.active;
+    }
+
+    activateBuildingCooldown() {
+        this.buildingCooldown.active = true;
+        this.buildingCooldown.lastBuildTime = Date.now();
+        this.buildingCooldown.remainingTime = this.buildingCooldown.duration;
+
+        console.log(`⏱️ Cooldown de construção ativado: ${this.buildingCooldown.duration}ms`);
+    }
+
+    updateBuildingCooldown(deltaTime) {
+        if (!this.buildingCooldown.active) return;
+
+        this.buildingCooldown.remainingTime -= deltaTime;
+
+        if (this.buildingCooldown.remainingTime <= 0) {
+            this.buildingCooldown.active = false;
+            this.buildingCooldown.remainingTime = 0;
+            console.log(`✅ Cooldown de construção finalizado`);
+        }
+    }
+
+    getBuildingCooldownProgress() {
+        if (!this.buildingCooldown.active) return 0;
+
+        const elapsed = this.buildingCooldown.duration - this.buildingCooldown.remainingTime;
+        return Math.min(1, elapsed / this.buildingCooldown.duration);
+    }
+
+    // ===== SISTEMA DE NOTIFICAÇÕES =====
+    showNotification(message, type = 'info') {
+        // Tentar usar o sistema de notificações do jogo se disponível
+        if (window.gameManager && window.gameManager.uiManager && window.gameManager.uiManager.showNotification) {
+            window.gameManager.uiManager.showNotification(message, type);
+        } else if (window.gameManager && window.gameManager.uiManager && window.gameManager.uiManager.showAlert) {
+            window.gameManager.uiManager.showAlert(message, type);
+        } else {
+            // Fallback para console se UI não estiver disponível
+            const prefix = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️';
+            console.log(`${prefix} ${message}`);
         }
     }
     

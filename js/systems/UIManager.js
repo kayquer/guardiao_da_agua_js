@@ -337,8 +337,11 @@ class UIManager {
         // Entrar em modo de construção
         this.gameManager.enterBuildMode(buildingTypeId);
         
-        // Mostrar informações do edifício
-        this.showBuildingTypeDetails(buildingTypeId);
+        // Mostrar requisitos do edifício
+        const buildingType = this.gameManager.buildingSystem.buildingTypes.get(buildingTypeId);
+        if (buildingType) {
+            this.showBuildingRequirements(buildingType);
+        }
         
         AudioManager.playSound('sfx_click');
     }
@@ -494,7 +497,105 @@ class UIManager {
             AudioManager.playSound('sfx_click');
         }
     }
-    
+
+    // ===== REQUISITOS DE CONSTRUÇÃO =====
+    showBuildingRequirements(buildingType) {
+        if (!this.elements.detailsContent) return;
+
+        this.selectedBuildingType = buildingType;
+
+        const terrainIcons = {
+            'grassland': '🌱',
+            'lowland': '🏞️',
+            'hill': '🏔️',
+            'water': '💧'
+        };
+
+        const terrainNames = {
+            'grassland': 'Campo',
+            'lowland': 'Planície',
+            'hill': 'Colina',
+            'water': 'Água'
+        };
+
+        let requirementsHTML = `
+            <div class="building-requirements">
+                <h4>${buildingType.name}</h4>
+                <p class="building-description">${buildingType.description || 'Edifício para gestão de recursos hídricos.'}</p>
+
+                <div class="requirements-section">
+                    <h5>📍 Requisitos de Terreno</h5>
+        `;
+
+        if (buildingType.requirements && buildingType.requirements.terrain) {
+            requirementsHTML += '<div class="terrain-requirements">';
+
+            // Terrenos compatíveis
+            requirementsHTML += '<div class="compatible-terrain"><h6>✅ Pode construir em:</h6><ul>';
+            buildingType.requirements.terrain.forEach(terrain => {
+                const icon = terrainIcons[terrain] || '🟫';
+                const name = terrainNames[terrain] || terrain;
+                requirementsHTML += `<li>${icon} ${name}</li>`;
+            });
+            requirementsHTML += '</ul></div>';
+
+            // Terrenos incompatíveis
+            const allTerrains = ['grassland', 'lowland', 'hill', 'water'];
+            const incompatibleTerrains = allTerrains.filter(t => !buildingType.requirements.terrain.includes(t));
+
+            if (incompatibleTerrains.length > 0) {
+                requirementsHTML += '<div class="incompatible-terrain"><h6>❌ Não pode construir em:</h6><ul>';
+                incompatibleTerrains.forEach(terrain => {
+                    const icon = terrainIcons[terrain] || '🟫';
+                    const name = terrainNames[terrain] || terrain;
+                    requirementsHTML += `<li>${icon} ${name}</li>`;
+                });
+                requirementsHTML += '</ul></div>';
+            }
+
+            requirementsHTML += '</div>';
+        } else {
+            requirementsHTML += '<p>✅ Pode ser construído em qualquer terreno</p>';
+        }
+
+        // Requisitos adicionais
+        if (buildingType.requirements) {
+            if (buildingType.requirements.nearWater) {
+                requirementsHTML += '<div class="additional-requirements"><h6>🌊 Requisitos Especiais</h6><ul><li>💧 Deve estar próximo à água</li></ul></div>';
+            }
+        }
+
+        // Efeitos do edifício
+        requirementsHTML += '<div class="building-effects"><h5>📊 Efeitos</h5><ul>';
+
+        if (buildingType.waterProduction) {
+            requirementsHTML += `<li>💧 +${buildingType.waterProduction} produção de água</li>`;
+        }
+        if (buildingType.pollutionReduction) {
+            requirementsHTML += `<li>🌿 -${buildingType.pollutionReduction} poluição</li>`;
+        }
+        if (buildingType.powerGeneration) {
+            requirementsHTML += `<li>⚡ +${buildingType.powerGeneration} energia</li>`;
+        }
+        if (buildingType.powerConsumption) {
+            requirementsHTML += `<li>🔌 -${buildingType.powerConsumption} energia</li>`;
+        }
+        if (buildingType.cost) {
+            requirementsHTML += `<li>💰 Custo: $${buildingType.cost}</li>`;
+        }
+
+        requirementsHTML += '</ul></div></div>';
+
+        this.elements.detailsContent.innerHTML = requirementsHTML;
+    }
+
+    clearBuildingRequirements() {
+        if (!this.elements.detailsContent) return;
+
+        this.selectedBuildingType = null;
+        this.elements.detailsContent.innerHTML = '<p>Selecione um edifício para ver os requisitos</p>';
+    }
+
     // ===== NOTIFICAÇÕES =====
     showNotification(message, type = 'info', duration = 5000) {
         const notification = document.createElement('div');

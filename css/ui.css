@@ -1108,3 +1108,131 @@
 .save-confirmation {
     animation: slideIn 0.3s ease-out;
 }
+
+/* ===== BUILDING REQUIREMENTS PANEL ===== */
+.building-requirements {
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.building-requirements h4 {
+    color: #2c5aa0;
+    margin: 0 0 10px 0;
+    font-size: 1.2em;
+    border-bottom: 2px solid #4a90e2;
+    padding-bottom: 5px;
+}
+
+.building-description {
+    color: #666;
+    font-style: italic;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.requirements-section h5 {
+    color: #2c5aa0;
+    margin: 15px 0 8px 0;
+    font-size: 1em;
+}
+
+.terrain-requirements {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.compatible-terrain h6,
+.incompatible-terrain h6 {
+    margin: 0 0 5px 0;
+    font-size: 0.9em;
+}
+
+.compatible-terrain h6 {
+    color: #28a745;
+}
+
+.incompatible-terrain h6 {
+    color: #dc3545;
+}
+
+.terrain-requirements ul {
+    list-style: none;
+    padding: 0;
+    margin: 5px 0;
+}
+
+.terrain-requirements li {
+    padding: 3px 0;
+    font-size: 0.9em;
+}
+
+.additional-requirements {
+    background: #e3f2fd;
+    padding: 8px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.additional-requirements h6 {
+    color: #1976d2;
+    margin: 0 0 5px 0;
+    font-size: 0.9em;
+}
+
+.building-effects {
+    background: #f1f8e9;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+.building-effects h5 {
+    color: #388e3c;
+    margin: 0 0 8px 0;
+    font-size: 1em;
+}
+
+.building-effects ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.building-effects li {
+    padding: 2px 0;
+    font-size: 0.9em;
+    color: #2e7d32;
+}
+
+/* Building cooldown indicator */
+.building-cooldown {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    z-index: 1000;
+}
+
+.cooldown-progress {
+    width: 200px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    margin: 10px 0;
+    overflow: hidden;
+}
+
+.cooldown-progress-fill {
+    height: 100%;
+    background: #4a90e2;
+    transition: width 0.1s ease;
+}
