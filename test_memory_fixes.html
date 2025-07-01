@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Correções de Memória - Guardião da Água</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .test-button.danger {
+            background: #f44336;
+        }
+        .test-button.danger:hover {
+            background: #da190b;
+        }
+        .memory-info {
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .log-output {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Correções de Memória - Guardião da Água</h1>
+    
+    <div class="test-container">
+        <h2>📊 Informações de Memória</h2>
+        <div id="memoryInfo" class="memory-info">
+            Carregando informações de memória...
+        </div>
+        <button class="test-button" onclick="updateMemoryInfo()">🔄 Atualizar</button>
+    </div>
+    
+    <div class="test-container">
+        <h2>🧪 Testes de Stress</h2>
+        <p>Execute estes testes para verificar se os vazamentos de memória foram corrigidos:</p>
+        
+        <button class="test-button" onclick="runMemoryStressTest()">
+            🏗️ Teste de Stress (20 Edifícios)
+        </button>
+        
+        <button class="test-button" onclick="runBuildingCycleTest()">
+            🔄 Teste de Ciclo (Construir/Demolir)
+        </button>
+
+        <button class="test-button" onclick="runRapidPlacementTest()">
+            ⚡ Teste de Colocação Rápida
+        </button>
+
+        <button class="test-button" onclick="testResourceUpdates()">
+            💧 Teste de Recursos
+        </button>
+
+        <button class="test-button" onclick="testBuildingPlacement()">
+            🏗️ Teste de Colocação
+        </button>
+
+        <button class="test-button danger" onclick="clearAllBuildings()">
+            🗑️ Limpar Todos os Edifícios
+        </button>
+
+        <button class="test-button" onclick="forceGarbageCollection()">
+            🧹 Forçar Garbage Collection
+        </button>
+    </div>
+    
+    <div class="test-container">
+        <h2>📝 Log de Testes</h2>
+        <div id="logOutput" class="log-output"></div>
+        <button class="test-button" onclick="clearLog()">🧹 Limpar Log</button>
+    </div>
+    
+    <div class="test-container">
+        <h2>✅ Verificações Implementadas</h2>
+        <ul>
+            <li>✅ <strong>Correção de Tipos de Terreno:</strong> Terrenos agora retornam 'grassland', 'lowland', 'hill' compatíveis com requisitos de edifícios</li>
+            <li>✅ <strong>Sistema de Fila de Disposal:</strong> Previne race conditions durante colocação rápida de edifícios</li>
+            <li>✅ <strong>Rastreamento de Texturas Dinâmicas:</strong> Texturas são reutilizadas e dispostas corretamente</li>
+            <li>✅ <strong>Limpeza de Sombras:</strong> Meshes de sombra são rastreados e dispostos</li>
+            <li>✅ <strong>Limpeza de Conexões:</strong> Conexões de terreno são rastreadas e dispostas</li>
+            <li>✅ <strong>Remoção Segura de Edifícios:</strong> Todos os recursos associados são limpos</li>
+            <li>✅ <strong>Posicionamento Corrigido:</strong> Edifícios agora se alinham corretamente ao terreno</li>
+            <li>✅ <strong>Água Melhorada:</strong> Efeitos de profundidade e lagos maiores</li>
+            <li>✅ <strong>Sistema de Decoração:</strong> Vegetação procedural que não interfere com construção</li>
+            <li>✅ <strong>Monitoramento de Memória:</strong> Detecção automática de vazamentos</li>
+            <li>✅ <strong>Integração ResourceManager:</strong> Recursos são atualizados corretamente quando edifícios são construídos/removidos</li>
+            <li>✅ <strong>Debug Detalhado:</strong> Logs detalhados para identificar problemas de colocação</li>
+        </ul>
+    </div>
+
+    <script>
+        // Interceptar console.log para mostrar no log
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        
+        function addToLog(message, type = 'log') {
+            const logOutput = document.getElementById('logOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'red' : type === 'warn' ? 'orange' : 'black';
+            logOutput.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addToLog(args.join(' '), 'log');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addToLog(args.join(' '), 'warn');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addToLog(args.join(' '), 'error');
+        };
+        
+        function updateMemoryInfo() {
+            if (typeof getMemoryInfo === 'function') {
+                const info = getMemoryInfo();
+                const heapMB = (info.heapUsed / 1024 / 1024).toFixed(2);
+                const totalMB = (info.heapTotal / 1024 / 1024).toFixed(2);
+                
+                document.getElementById('memoryInfo').innerHTML = `
+                    <strong>Heap Usado:</strong> ${heapMB} MB<br>
+                    <strong>Heap Total:</strong> ${totalMB} MB<br>
+                    <strong>Edifícios:</strong> ${info.buildingCount}<br>
+                    <strong>Meshes:</strong> ${info.meshCount}<br>
+                    <strong>Texturas:</strong> ${info.textureCount}<br>
+                    <strong>Materiais:</strong> ${info.materialCount}
+                `;
+            } else {
+                document.getElementById('memoryInfo').innerHTML = 'Jogo não carregado ainda. Aguarde...';
+            }
+        }
+        
+        function runMemoryStressTest() {
+            if (typeof runMemoryTest === 'function') {
+                console.log('🧪 Iniciando teste de stress de memória...');
+                runMemoryTest();
+            } else {
+                console.error('❌ Função runMemoryTest não disponível. Carregue o jogo primeiro.');
+            }
+        }
+
+        function runRapidPlacementTest() {
+            if (typeof runRapidPlacementTest === 'function') {
+                console.log('⚡ Iniciando teste de colocação rápida...');
+                runRapidPlacementTest();
+            } else {
+                console.error('❌ Função runRapidPlacementTest não disponível. Carregue o jogo primeiro.');
+            }
+        }
+
+        function testResourceUpdates() {
+            if (typeof testResourceUpdates === 'function') {
+                console.log('💧 Testando atualizações de recursos...');
+                testResourceUpdates();
+            } else {
+                console.error('❌ Função testResourceUpdates não disponível. Carregue o jogo primeiro.');
+            }
+        }
+
+        function testBuildingPlacement() {
+            if (typeof testBuildingPlacement === 'function') {
+                console.log('🏗️ Testando colocação de edifícios...');
+                testBuildingPlacement();
+            } else {
+                console.error('❌ Função testBuildingPlacement não disponível. Carregue o jogo primeiro.');
+            }
+        }
+        
+        function runBuildingCycleTest() {
+            console.log('🔄 Iniciando teste de ciclo construir/demolir...');
+            // Implementar teste de ciclo aqui
+            if (typeof gameManager !== 'undefined' && gameManager.buildingSystem) {
+                const buildingTypes = ['water_pump', 'house', 'treatment_plant'];
+                let cycleCount = 0;
+                
+                function cycle() {
+                    if (cycleCount >= 10) {
+                        console.log('✅ Teste de ciclo concluído');
+                        return;
+                    }
+                    
+                    // Construir edifício
+                    const x = Math.floor(Math.random() * 10) + 20;
+                    const z = Math.floor(Math.random() * 10) + 20;
+                    const type = buildingTypes[Math.floor(Math.random() * buildingTypes.length)];
+                    
+                    const building = gameManager.buildingSystem.placeBuilding(x, z, type);
+                    if (building) {
+                        console.log(`🏗️ Ciclo ${cycleCount + 1}: Construído ${type}`);
+                        
+                        // Demolir após 1 segundo
+                        setTimeout(() => {
+                            gameManager.buildingSystem.removeBuilding(building.id);
+                            console.log(`🗑️ Ciclo ${cycleCount + 1}: Demolido ${type}`);
+                            cycleCount++;
+                            
+                            // Próximo ciclo
+                            setTimeout(cycle, 500);
+                        }, 1000);
+                    } else {
+                        console.warn(`⚠️ Não foi possível construir no ciclo ${cycleCount + 1}`);
+                        cycleCount++;
+                        setTimeout(cycle, 500);
+                    }
+                }
+                
+                cycle();
+            } else {
+                console.error('❌ BuildingSystem não disponível');
+            }
+        }
+        
+        function clearAllBuildings() {
+            if (typeof gameManager !== 'undefined' && gameManager.buildingSystem) {
+                const buildingIds = Array.from(gameManager.buildingSystem.buildings.keys());
+                buildingIds.forEach(id => {
+                    gameManager.buildingSystem.removeBuilding(id);
+                });
+                console.log(`🗑️ ${buildingIds.length} edifícios removidos`);
+            } else {
+                console.error('❌ BuildingSystem não disponível');
+            }
+        }
+        
+        function forceGarbageCollection() {
+            if (window.gc) {
+                window.gc();
+                console.log('🧹 Garbage collection forçado');
+            } else {
+                console.warn('⚠️ Garbage collection não disponível (execute com --expose-gc)');
+            }
+            updateMemoryInfo();
+        }
+        
+        function clearLog() {
+            document.getElementById('logOutput').innerHTML = '';
+        }
+        
+        // Atualizar informações de memória a cada 5 segundos
+        setInterval(updateMemoryInfo, 5000);
+        updateMemoryInfo();
+        
+        console.log('🧪 Página de teste carregada. Execute os testes para verificar as correções.');
+    </script>
+</body>
+</html>

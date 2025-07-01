@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardião da Água - Jogo Educacional</title>
+    <meta name="description" content="Jogo educacional de simulação e gerenciamento de recursos hídricos">
+    <meta name="keywords" content="água, educação, sustentabilidade, jogo, simulação">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/ui.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    
+    <!-- Babylon.js CDN -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+    
+    <!-- Preload de recursos críticos -->
+    <link rel="preload" href="Sprites/SUNNYSIDE_WORLD_BUILDINGS_V0.01.png" as="image">
+    <link rel="preload" href="Sounds/BGM/" as="audio">
+</head>
+<body>
+    <!-- Tela de Loading -->
+    <div id="loading-screen" class="screen active">
+        <div class="loading-container">
+            <div class="logo">
+                <h1>💧 Guardião da Água</h1>
+                <p>Carregando recursos...</p>
+            </div>
+            <div class="loading-bar">
+                <div class="loading-progress" id="loading-progress"></div>
+            </div>
+            <div class="loading-tips">
+                <p id="loading-tip">Dica: A água é um recurso finito e precioso!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Principal -->
+    <div id="main-menu" class="screen">
+        <div class="menu-container">
+            <div class="menu-header">
+                <h1>💧 Guardião da Água</h1>
+                <p class="subtitle">Gerencie os recursos hídricos da sua cidade</p>
+            </div>
+            
+            <div class="menu-buttons">
+                <button id="btn-new-game" class="menu-btn primary">
+                    <span class="btn-icon">🎮</span>
+                    Novo Jogo
+                </button>
+                <button id="btn-continue" class="menu-btn secondary" disabled>
+                    <span class="btn-icon">📁</span>
+                    Continuar
+                </button>
+                <button id="btn-tutorial" class="menu-btn secondary">
+                    <span class="btn-icon">📚</span>
+                    Tutorial
+                </button>
+                <button id="btn-settings" class="menu-btn secondary">
+                    <span class="btn-icon">⚙️</span>
+                    Configurações
+                </button>
+                <button id="btn-about" class="menu-btn secondary">
+                    <span class="btn-icon">ℹ️</span>
+                    Sobre
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela do Jogo -->
+    <div id="game-screen" class="screen">
+        <!-- Canvas 3D do Babylon.js -->
+        <canvas id="game-canvas"></canvas>
+        
+        <!-- HUD - Interface do Jogo -->
+        <div id="game-hud" class="hud">
+            <!-- Painel Superior - Recursos -->
+            <div class="hud-top">
+                <div class="resource-panel">
+                    <div class="resource-item">
+                        <span class="resource-icon">💧</span>
+                        <span class="resource-label">Água</span>
+                        <span class="resource-value" id="water-amount">1000L</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-icon">🏭</span>
+                        <span class="resource-label">Poluição</span>
+                        <span class="resource-value" id="pollution-level">15%</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-icon">👥</span>
+                        <span class="resource-label">População</span>
+                        <span class="resource-value" id="population-count">500</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-icon">😊</span>
+                        <span class="resource-label">Satisfação</span>
+                        <span class="resource-value" id="satisfaction-level">85%</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-icon">💰</span>
+                        <span class="resource-label">Orçamento</span>
+                        <span class="resource-value" id="budget-amount">R$ 50.000</span>
+                    </div>
+
+                    <div class="resource-item">
+                        <span class="resource-icon">⚡</span>
+                        <span class="resource-label">Energia</span>
+                        <span class="resource-value" id="electricity-amount">0 MW</span>
+                    </div>
+
+                    <div class="resource-item">
+                        <span class="resource-icon">🕐</span>
+                        <span class="resource-label">Data/Hora</span>
+                        <span class="resource-value" id="game-clock">00/00/0000 00:00</span>
+                    </div>
+                </div>
+                
+                <!-- Botões de Controle -->
+                <div class="control-buttons">
+                    <button id="btn-pause" class="control-btn">⏸️</button>
+                    <button id="btn-speed-1x" class="control-btn active">1x</button>
+                    <button id="btn-speed-2x" class="control-btn">2x</button>
+                    <button id="btn-speed-3x" class="control-btn">3x</button>
+                    <button id="btn-help" class="control-btn help-btn" title="Controles">❓</button>
+                </div>
+            </div>
+
+            <!-- Painel Lateral - Construção -->
+            <div class="hud-left">
+                <div class="building-panel" id="building-panel">
+                    <h3>Construções</h3>
+                    <div class="building-categories">
+                        <button class="category-btn active" data-category="water">💧 Água</button>
+                        <button class="category-btn" data-category="treatment">🏭 Tratamento</button>
+                        <button class="category-btn" data-category="storage">🏗️ Armazenamento</button>
+                        <button class="category-btn" data-category="power">⚡ Energia</button>
+                        <button class="category-btn" data-category="infrastructure">🛣️ Infraestrutura</button>
+                        <button class="category-btn" data-category="zoning">🏘️ Zoneamento</button>
+                    </div>
+                    <div class="building-items" id="building-items">
+                        <!-- Itens de construção serão inseridos dinamicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel Inferior - Informações e Missões -->
+            <div class="hud-bottom">
+                <div class="info-panel">
+                    <div class="mission-info">
+                        <h4>Missão Atual</h4>
+                        <p id="current-mission">Construa sua primeira estação de tratamento de água</p>
+                        <div class="mission-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="mission-progress" style="width: 25%"></div>
+                            </div>
+                            <span class="progress-text">1/4</span>
+                        </div>
+                    </div>
+                    
+                    <div class="notifications" id="notifications">
+                        <!-- Notificações aparecerão aqui -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel Direito - Detalhes -->
+            <div class="hud-right">
+                <div class="details-panel" id="details-panel">
+                    <h3>Informações</h3>
+                    <div class="details-content" id="details-content">
+                        <p>Selecione um item para ver detalhes</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overlay de Pausa -->
+        <div id="pause-overlay" class="overlay hidden">
+            <div class="overlay-content">
+                <h2>Jogo Pausado</h2>
+                <div class="overlay-buttons">
+                    <button id="btn-resume" class="overlay-btn primary">Continuar</button>
+                    <button id="btn-save-game" class="overlay-btn secondary">Salvar Jogo</button>
+                    <button id="btn-main-menu" class="overlay-btn secondary">Menu Principal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela de Tutorial -->
+    <div id="tutorial-screen" class="screen">
+        <div class="tutorial-container">
+            <div class="tutorial-header">
+                <h2>Tutorial - Guardião da Água</h2>
+                <button id="btn-close-tutorial" class="close-btn">✕</button>
+            </div>
+            <div class="tutorial-content" id="tutorial-content">
+                <!-- Conteúdo do tutorial será inserido dinamicamente -->
+            </div>
+            <div class="tutorial-navigation">
+                <button id="btn-tutorial-prev" class="tutorial-btn" disabled>← Anterior</button>
+                <span class="tutorial-page" id="tutorial-page">1 / 5</span>
+                <button id="btn-tutorial-next" class="tutorial-btn">Próximo →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela de Configurações -->
+    <div id="settings-screen" class="screen">
+        <div class="settings-container">
+            <div class="settings-header">
+                <h2>⚙️ Configurações</h2>
+                <button id="btn-close-settings" class="close-btn">✕</button>
+            </div>
+            <div class="settings-content">
+                <!-- Seção de Áudio -->
+                <div class="settings-section">
+                    <h3>🔊 Áudio</h3>
+                    <div class="setting-item">
+                        <label for="master-volume">Volume Geral</label>
+                        <div class="volume-control">
+                            <input type="range" id="master-volume" min="0" max="100" value="80">
+                            <span id="master-volume-value">80%</span>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label for="music-volume">Volume da Música</label>
+                        <div class="volume-control">
+                            <input type="range" id="music-volume" min="0" max="100" value="70">
+                            <span id="music-volume-value">70%</span>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label for="sfx-volume">Volume dos Efeitos</label>
+                        <div class="volume-control">
+                            <input type="range" id="sfx-volume" min="0" max="100" value="90">
+                            <span id="sfx-volume-value">90%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Gráficos -->
+                <div class="settings-section">
+                    <h3>🎨 Gráficos</h3>
+                    <div class="setting-item">
+                        <label for="graphics-quality">Qualidade Gráfica</label>
+                        <select id="graphics-quality">
+                            <option value="low">Baixa</option>
+                            <option value="medium" selected>Média</option>
+                            <option value="high">Alta</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="antialiasing">Anti-aliasing</label>
+                        <input type="checkbox" id="antialiasing" checked>
+                    </div>
+                    <div class="setting-item">
+                        <label for="shadows">Sombras</label>
+                        <input type="checkbox" id="shadows" checked>
+                    </div>
+                </div>
+
+                <!-- Seção de Gameplay -->
+                <div class="settings-section">
+                    <h3>🎮 Gameplay</h3>
+                    <div class="setting-item">
+                        <label for="difficulty">Dificuldade</label>
+                        <select id="difficulty">
+                            <option value="easy">Fácil</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="hard">Difícil</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="auto-save">Salvamento Automático</label>
+                        <input type="checkbox" id="auto-save" checked>
+                    </div>
+                    <div class="setting-item">
+                        <label for="tutorial-hints">Dicas do Tutorial</label>
+                        <input type="checkbox" id="tutorial-hints" checked>
+                    </div>
+                </div>
+
+                <!-- Seção de Controles -->
+                <div class="settings-section">
+                    <h3>🎮 Controles</h3>
+                    <div class="setting-item">
+                        <label for="camera-sensitivity">Sensibilidade da Câmera</label>
+                        <div class="volume-control">
+                            <input type="range" id="camera-sensitivity" min="0.1" max="2.0" step="0.1" value="1.0">
+                            <span id="camera-sensitivity-value">1.0x</span>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label for="zoom-speed">Velocidade do Zoom</label>
+                        <div class="volume-control">
+                            <input type="range" id="zoom-speed" min="0.5" max="3.0" step="0.1" value="1.0">
+                            <span id="zoom-speed-value">1.0x</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="settings-footer">
+                <button id="btn-reset-settings" class="settings-btn secondary">🔄 Restaurar Padrões</button>
+                <button id="btn-save-settings" class="settings-btn primary">💾 Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Controles -->
+    <div id="controls-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎮 Controles do Jogo</h2>
+                <button id="close-controls-modal" class="close-btn">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="controls-section">
+                    <h3>🖱️ Controles da Câmera</h3>
+                    <ul>
+                        <li><strong>Rotacionar:</strong> Clique e arraste com o mouse</li>
+                        <li><strong>Zoom:</strong> Roda do mouse para aproximar/afastar</li>
+                        <li><strong>Mover:</strong> Clique do meio + arrastar (ou Shift + clique)</li>
+                    </ul>
+                </div>
+
+                <div class="controls-section">
+                    <h3>🏗️ Construção</h3>
+                    <ul>
+                        <li><strong>Selecionar edifício:</strong> Clique na categoria e tipo desejado</li>
+                        <li><strong>Visualizar posição:</strong> Mova o mouse sobre o terreno</li>
+                        <li><strong>Construir:</strong> Clique esquerdo na posição desejada</li>
+                        <li><strong>Cancelar:</strong> Pressione ESC ou clique fora da área</li>
+                    </ul>
+                </div>
+
+                <div class="controls-section">
+                    <h3>⏱️ Controles de Tempo</h3>
+                    <ul>
+                        <li><strong>Pausar/Continuar:</strong> Botão ⏸️</li>
+                        <li><strong>Velocidade:</strong> Botões 1x, 2x, 3x</li>
+                        <li><strong>Relógio:</strong> Mostra data e hora do jogo</li>
+                    </ul>
+                </div>
+
+                <div class="controls-section">
+                    <h3>ℹ️ Informações</h3>
+                    <ul>
+                        <li><strong>Hover:</strong> Passe o mouse sobre edifícios para ver detalhes</li>
+                        <li><strong>Recursos:</strong> Monitore água, população, orçamento e poluição</li>
+                        <li><strong>Missões:</strong> Acompanhe objetivos na parte inferior</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts do Jogo - Ordem correta de dependências -->
+    <!-- Utilitários primeiro -->
+    <script src="js/utils/AssetLoader.js"></script>
+    <script src="js/utils/AudioManager.js"></script>
+
+    <!-- Core systems - ordem de dependência -->
+    <script src="js/core/GridManager.js"></script>
+    <script src="js/core/ResourceManager.js"></script>
+    <script src="js/core/GameManager.js"></script>
+
+    <!-- Game systems -->
+    <script src="js/systems/BuildingSystem.js"></script>
+    <script src="js/systems/CityLifeSystem.js"></script>
+    <script src="js/systems/UIManager.js"></script>
+    <script src="js/systems/QuestSystem.js"></script>
+    <script src="js/systems/EventSystem.js"></script>
+    <script src="js/systems/SaveSystem.js"></script>
+    <script src="js/systems/TutorialManager.js"></script>
+    <script src="js/systems/SettingsManager.js"></script>
+
+    <!-- Main initialization -->
+    <script src="js/main.js"></script>
+</body>
+</html>
