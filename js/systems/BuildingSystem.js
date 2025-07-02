@@ -48,6 +48,10 @@ class BuildingSystem {
             remainingTime: 0
         };
 
+        // Sistema de construção com timer
+        this.constructionQueue = new Map(); // buildingId -> construction data
+        this.constructionInProgress = false;
+
         this.initializeBuildingTypes();
         this.createMaterials();
         
@@ -714,6 +718,13 @@ class BuildingSystem {
             return null;
         }
 
+        // Verificar se há construção em andamento
+        if (this.constructionInProgress) {
+            this.showNotification('Aguarde a construção atual terminar antes de iniciar outra...', 'warning');
+            console.warn('⚠️ Construção já em andamento');
+            return null;
+        }
+
         const buildingType = this.buildingTypes.get(buildingTypeId);
         if (!buildingType) {
             console.error(`❌ Tipo de edifício não encontrado: ${buildingTypeId}`);
@@ -728,16 +739,22 @@ class BuildingSystem {
             return null;
         }
         
-        // Verificar orçamento (será implementado com ResourceManager)
-        // if (!resourceManager.canAfford(buildingType.cost)) {
-        //     console.warn('⚠️ Orçamento insuficiente');
-        //     return null;
-        // }
+        // Verificar orçamento
+        if (window.gameManager && gameManager.resourceManager) {
+            if (!gameManager.resourceManager.canAfford(buildingType.cost)) {
+                this.showNotification(`Orçamento insuficiente! Custo: R$ ${buildingType.cost.toLocaleString()}`, 'error');
+                console.warn(`⚠️ Orçamento insuficiente: R$ ${buildingType.cost} (disponível: R$ ${gameManager.resourceManager.resources.budget.current})`);
+                return null;
+            }
+        }
         
-        // Criar edifício
+        // Calcular tempo de construção baseado no custo
+        const constructionTime = this.calculateConstructionTime(buildingType.cost);
+
+        // Criar edifício em estado de construção
         const building = this.createBuildingMesh(gridX, gridZ, buildingType);
         if (!building) return null;
-        
+
         // Registrar no sistema
         const buildingId = `building_${this.buildingCounter++}`;
         const buildingData = {
@@ -748,12 +765,18 @@ class BuildingSystem {
             mesh: building,
             config: buildingType,
             constructionTime: Date.now(),
-            active: true,
-            efficiency: 1.0,
-            connections: new Set() // Para infraestrutura conectável
+            active: false, // Inativo durante construção
+            efficiency: 0.0, // Sem eficiência durante construção
+            connections: new Set(), // Para infraestrutura conectável
+            underConstruction: true,
+            constructionDuration: constructionTime,
+            constructionStartTime: Date.now()
         };
 
         this.buildings.set(buildingId, buildingData);
+
+        // Iniciar processo de construção
+        this.startConstruction(buildingData);
 
         // Ocupar área no grid
         this.gridManager.occupyArea(gridX, gridZ, buildingType.size);
@@ -770,6 +793,16 @@ class BuildingSystem {
 
         // Aplicar efeitos nos recursos
         this.applyBuildingEffects(buildingData, true);
+
+        // Deduzir custo do orçamento
+        if (window.gameManager && gameManager.resourceManager) {
+            const success = gameManager.resourceManager.spendBudget(buildingType.cost);
+            if (success) {
+                console.log(`💰 Custo deduzido: R$ ${buildingType.cost.toLocaleString()}`);
+            } else {
+                console.error(`❌ Falha ao deduzir custo: R$ ${buildingType.cost.toLocaleString()}`);
+            }
+        }
 
         // Tocar som de construção
         AudioManager.playSound('sfx_build');
@@ -1834,6 +1867,15 @@ class BuildingSystem {
                     resourceManager.removeElectricityConsumption(config.powerConsumption);
                 }
             }
+
+            // Armazenamento de água
+            if (config.waterStorage) {
+                if (add) {
+                    resourceManager.addWaterStorage(config.waterStorage);
+                } else {
+                    resourceManager.removeWaterStorage(config.waterStorage);
+                }
+            }
         }
     }
 
@@ -1929,6 +1971,76 @@ class BuildingSystem {
 
         // Atualizar cooldown de construção
         this.updateBuildingCooldown(deltaTime);
+
+        // Atualizar construções em andamento
+        this.updateConstructions(deltaTime);
+    }
+
+    // ===== SISTEMA DE CONSTRUÇÃO =====
+    calculateConstructionTime(cost) {
+        // Tempo base: 2 segundos + 1 segundo por R$ 1000
+        const baseTime = 2000; // 2 segundos
+        const costFactor = Math.floor(cost / 1000) * 1000; // 1 segundo por R$ 1000
+        return Math.min(baseTime + costFactor, 15000); // Máximo 15 segundos
+    }
+
+    startConstruction(buildingData) {
+        this.constructionInProgress = true;
+        this.constructionQueue.set(buildingData.id, buildingData);
+
+        // Criar indicador de progresso 3D
+        this.createConstructionIndicator(buildingData);
+
+        // Aplicar efeito visual de construção
+        this.applyConstructionVisuals(buildingData);
+
+        console.log(`🚧 Iniciando construção de ${buildingData.config.name} (${buildingData.constructionDuration / 1000}s)`);
+    }
+
+    updateConstructions(deltaTime) {
+        if (this.constructionQueue.size === 0) {
+            this.constructionInProgress = false;
+            return;
+        }
+
+        this.constructionQueue.forEach((buildingData, buildingId) => {
+            const elapsed = Date.now() - buildingData.constructionStartTime;
+            const progress = Math.min(1, elapsed / buildingData.constructionDuration);
+
+            // Atualizar indicador de progresso
+            this.updateConstructionIndicator(buildingData, progress);
+
+            // Verificar se construção terminou
+            if (progress >= 1) {
+                this.completeConstruction(buildingData);
+            }
+        });
+    }
+
+    completeConstruction(buildingData) {
+        console.log(`✅ Construção concluída: ${buildingData.config.name}`);
+
+        // Remover da fila de construção
+        this.constructionQueue.delete(buildingData.id);
+
+        // Ativar edifício
+        buildingData.active = true;
+        buildingData.efficiency = 1.0;
+        buildingData.underConstruction = false;
+
+        // Remover visuais de construção
+        this.removeConstructionVisuals(buildingData);
+
+        // Aplicar efeitos nos recursos (agora que está ativo)
+        this.applyBuildingEffects(buildingData, true);
+
+        // Mostrar indicador de conclusão
+        this.showCompletionIndicator(buildingData);
+
+        // Verificar se há mais construções na fila
+        if (this.constructionQueue.size === 0) {
+            this.constructionInProgress = false;
+        }
     }
 
     // ===== SISTEMA DE COOLDOWN =====
@@ -1975,6 +2087,151 @@ class BuildingSystem {
             const prefix = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️';
             console.log(`${prefix} ${message}`);
         }
+    }
+
+    // ===== INDICADORES VISUAIS DE CONSTRUÇÃO =====
+    createConstructionIndicator(buildingData) {
+        const worldPos = this.gridManager.gridToWorld(buildingData.gridX, buildingData.gridZ);
+
+        // Criar barra de progresso 3D
+        const progressBar = BABYLON.MeshBuilder.CreateBox(`progress_${buildingData.id}`, {
+            width: 2,
+            height: 0.2,
+            depth: 0.4
+        }, this.scene);
+
+        progressBar.position.x = worldPos.x;
+        progressBar.position.z = worldPos.z;
+        progressBar.position.y = 3; // Acima do edifício
+
+        // Material da barra de progresso
+        const progressMaterial = new BABYLON.StandardMaterial(`progressMat_${buildingData.id}`, this.scene);
+        progressMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.8, 0.2); // Verde
+        progressMaterial.emissiveColor = new BABYLON.Color3(0.1, 0.4, 0.1);
+        progressBar.material = progressMaterial;
+
+        // Criar fundo da barra
+        const progressBg = BABYLON.MeshBuilder.CreateBox(`progressBg_${buildingData.id}`, {
+            width: 2.1,
+            height: 0.25,
+            depth: 0.45
+        }, this.scene);
+
+        progressBg.position.x = worldPos.x;
+        progressBg.position.z = worldPos.z;
+        progressBg.position.y = 2.98;
+
+        const bgMaterial = new BABYLON.StandardMaterial(`progressBgMat_${buildingData.id}`, this.scene);
+        bgMaterial.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3);
+        progressBg.material = bgMaterial;
+
+        // Criar texto de porcentagem
+        const textPlane = BABYLON.MeshBuilder.CreatePlane(`progressText_${buildingData.id}`, {
+            width: 1.5,
+            height: 0.5
+        }, this.scene);
+
+        textPlane.position.x = worldPos.x;
+        textPlane.position.z = worldPos.z;
+        textPlane.position.y = 3.8;
+        textPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+
+        // Material do texto
+        const textMaterial = new BABYLON.StandardMaterial(`textMat_${buildingData.id}`, this.scene);
+        textMaterial.diffuseColor = new BABYLON.Color3(1, 1, 1);
+        textMaterial.emissiveColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+        textPlane.material = textMaterial;
+
+        // Armazenar referências
+        buildingData.constructionIndicators = {
+            progressBar: progressBar,
+            progressBg: progressBg,
+            textPlane: textPlane
+        };
+    }
+
+    updateConstructionIndicator(buildingData, progress) {
+        if (!buildingData.constructionIndicators) return;
+
+        const { progressBar, textPlane } = buildingData.constructionIndicators;
+
+        // Atualizar largura da barra de progresso
+        progressBar.scaling.x = progress;
+
+        // Atualizar cor baseada no progresso
+        const material = progressBar.material;
+        if (material) {
+            const red = 1 - progress;
+            const green = progress;
+            material.diffuseColor = new BABYLON.Color3(red, green, 0.2);
+            material.emissiveColor = new BABYLON.Color3(red * 0.5, green * 0.5, 0.1);
+        }
+
+        // Atualizar texto de porcentagem (simulado com cor)
+        const percentage = Math.floor(progress * 100);
+        if (textPlane.material) {
+            // Simular texto mudando a cor baseada na porcentagem
+            const intensity = 0.5 + (progress * 0.5);
+            textPlane.material.emissiveColor = new BABYLON.Color3(intensity, intensity, intensity);
+        }
+    }
+
+    removeConstructionVisuals(buildingData) {
+        if (buildingData.constructionIndicators) {
+            const { progressBar, progressBg, textPlane } = buildingData.constructionIndicators;
+
+            if (progressBar && !progressBar.isDisposed()) progressBar.dispose();
+            if (progressBg && !progressBg.isDisposed()) progressBg.dispose();
+            if (textPlane && !textPlane.isDisposed()) textPlane.dispose();
+
+            delete buildingData.constructionIndicators;
+        }
+    }
+
+    applyConstructionVisuals(buildingData) {
+        if (buildingData.mesh) {
+            // Aplicar efeito de construção (escala reduzida e rotação)
+            buildingData.mesh.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
+            buildingData.originalRotation = buildingData.mesh.rotation.clone();
+
+            // Armazenar estado original para restaurar depois
+            buildingData.originalScaling = new BABYLON.Vector3(1, 1, 1);
+        }
+    }
+
+    showCompletionIndicator(buildingData) {
+        const worldPos = this.gridManager.gridToWorld(buildingData.gridX, buildingData.gridZ);
+
+        // Criar texto "Concluído" temporário
+        const completionText = BABYLON.MeshBuilder.CreatePlane(`completion_${buildingData.id}`, {
+            width: 2,
+            height: 0.8
+        }, this.scene);
+
+        completionText.position.x = worldPos.x;
+        completionText.position.z = worldPos.z;
+        completionText.position.y = 4;
+        completionText.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+
+        const textMaterial = new BABYLON.StandardMaterial(`completionMat_${buildingData.id}`, this.scene);
+        textMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);
+        textMaterial.emissiveColor = new BABYLON.Color3(0, 0.8, 0);
+        completionText.material = textMaterial;
+
+        // Restaurar escala do edifício
+        if (buildingData.mesh) {
+            buildingData.mesh.scaling = buildingData.originalScaling || new BABYLON.Vector3(1, 1, 1);
+        }
+
+        // Remover texto após 2 segundos
+        setTimeout(() => {
+            if (completionText && !completionText.isDisposed()) {
+                completionText.dispose();
+            }
+        }, 2000);
+
+        // Mostrar notificação
+        this.showNotification(`${buildingData.config.name} concluído!`, 'success');
     }
     
     updateBuildingEfficiency(building) {
@@ -2287,6 +2544,19 @@ class BuildingSystem {
         this.connectionMeshes.clear();
 
         console.log('✅ BuildingSystem disposed - Memória limpa');
+    }
+
+    // ===== MÉTODOS AUXILIARES =====
+    getAllBuildings() {
+        return Array.from(this.buildings.values());
+    }
+
+    getBuildingsByType(type) {
+        return this.getAllBuildings().filter(building => building.type === type);
+    }
+
+    getActiveBuildingsCount() {
+        return this.getAllBuildings().filter(building => building.active).length;
     }
 
     // ===== CONECTIVIDADE DE INFRAESTRUTURA =====

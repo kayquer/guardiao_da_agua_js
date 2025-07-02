@@ -1236,3 +1236,139 @@
     background: #4a90e2;
     transition: width 0.1s ease;
 }
+
+/* ===== RESOURCE DETAILS PANELS ===== */
+.resource-details-panel {
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.resource-details-panel h4 {
+    color: #2c5aa0;
+    margin: 0 0 15px 0;
+    font-size: 1.2em;
+    border-bottom: 2px solid #4a90e2;
+    padding-bottom: 5px;
+}
+
+.resource-summary {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.resource-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.resource-stat:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-weight: 500;
+    color: #555;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #2c5aa0;
+}
+
+.stat-value.positive {
+    color: #28a745;
+}
+
+.stat-value.negative {
+    color: #dc3545;
+}
+
+.resource-sources h5 {
+    color: #2c5aa0;
+    margin: 15px 0 8px 0;
+    font-size: 1em;
+}
+
+.resource-sources ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 15px 0;
+    background: #f1f8e9;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+.resource-sources li {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.resource-sources li:last-child {
+    border-bottom: none;
+}
+
+.building-icon {
+    margin-right: 8px;
+    font-size: 1.1em;
+}
+
+.building-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.building-production,
+.building-consumption,
+.building-storage,
+.building-cost,
+.building-bonus {
+    font-weight: bold;
+    margin-left: 8px;
+}
+
+.building-production {
+    color: #28a745;
+}
+
+.building-consumption,
+.building-cost {
+    color: #dc3545;
+}
+
+.building-storage,
+.building-bonus {
+    color: #007bff;
+}
+
+.renewable-indicator {
+    font-size: 0.8em;
+    color: #666;
+    margin-left: 5px;
+}
+
+.no-sources {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 10px;
+}
+
+/* Cursor pointer para contadores clicáveis */
+.resource-counter {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.resource-counter:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}

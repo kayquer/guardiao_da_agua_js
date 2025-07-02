@@ -11,7 +11,8 @@ class ResourceManager {
         this.resources = {
             water: {
                 current: GAME_CONFIG.resources.initialWater,
-                max: GAME_CONFIG.resources.initialWater * 2,
+                max: GAME_CONFIG.resources.initialWater, // Capacidade inicial limitada
+                storage: GAME_CONFIG.resources.initialWater, // Capacidade de armazenamento
                 production: 0,
                 consumption: 0,
                 waste: 0
@@ -108,11 +109,14 @@ class ResourceManager {
     
     updateWater() {
         const water = this.resources.water;
-        
+
         // Produção - Consumo - Desperdício
         const netChange = water.production - water.consumption - water.waste;
-        water.current = Math.max(0, Math.min(water.max, water.current + netChange));
-        
+
+        // Limitar pela capacidade de armazenamento
+        water.current = Math.max(0, Math.min(water.storage, water.current + netChange));
+        water.max = water.storage; // Atualizar max para refletir capacidade atual
+
         // Atualizar consumo baseado na população
         this.updateConsumption();
     }
@@ -229,6 +233,23 @@ class ResourceManager {
     addExpense(amount) {
         this.resources.budget.expenses += amount;
         this.notifyChange('budget', 'expenses', amount);
+    }
+
+    // ===== GESTÃO DE ARMAZENAMENTO DE ÁGUA =====
+    addWaterStorage(amount) {
+        this.resources.water.storage += amount;
+        this.notifyChange('water', 'storage', amount);
+        console.log(`💧 Capacidade de armazenamento aumentada: +${amount}L (total: ${this.resources.water.storage}L)`);
+    }
+
+    removeWaterStorage(amount) {
+        this.resources.water.storage = Math.max(0, this.resources.water.storage - amount);
+        // Se a água atual exceder a nova capacidade, ajustar
+        if (this.resources.water.current > this.resources.water.storage) {
+            this.resources.water.current = this.resources.water.storage;
+        }
+        this.notifyChange('water', 'storage', -amount);
+        console.log(`💧 Capacidade de armazenamento reduzida: -${amount}L (total: ${this.resources.water.storage}L)`);
     }
     
     // ===== VERIFICAÇÕES =====

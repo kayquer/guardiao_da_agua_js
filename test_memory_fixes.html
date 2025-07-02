@@ -96,6 +96,22 @@
             ⏱️ Teste de Cooldown
         </button>
 
+        <button class="test-button" onclick="testBudgetSystem()">
+            💰 Teste de Orçamento
+        </button>
+
+        <button class="test-button" onclick="testConstructionTimer()">
+            🚧 Teste de Construção
+        </button>
+
+        <button class="test-button" onclick="testWaterStorage()">
+            💧 Teste de Armazenamento
+        </button>
+
+        <button class="test-button" onclick="testResourcePanels()">
+            📊 Teste de Painéis
+        </button>
+
         <button class="test-button danger" onclick="clearAllBuildings()">
             🗑️ Limpar Todos os Edifícios
         </button>
@@ -115,6 +131,10 @@
         <h2>✅ Verificações Implementadas</h2>
         <ul>
             <li>✅ <strong>CRÍTICO - Sistema de Eletricidade:</strong> Corrigido erro "Cannot read properties of undefined" em addElectricityConsumption</li>
+            <li>✅ <strong>CRÍTICO - Sistema de Orçamento:</strong> Implementada dedução automática de custos quando edifícios são construídos</li>
+            <li>✅ <strong>Sistema de Construção com Timer:</strong> Edifícios agora têm tempo de construção baseado no custo com indicadores visuais 3D</li>
+            <li>✅ <strong>Gestão de Armazenamento de Água:</strong> Sistema de capacidade limitada com formato "usado/máximo" (ex: 150/300L)</li>
+            <li>✅ <strong>Painéis Detalhados de Recursos:</strong> Clique nos contadores para ver detalhes completos de água, orçamento, energia e satisfação</li>
             <li>✅ <strong>Sistema de Cooldown:</strong> Implementado delay de 500ms entre construções para prevenir memory leaks</li>
             <li>✅ <strong>Terreno Elevado:</strong> Colinas agora são visualmente mais altas e menos frequentes (15-20%)</li>
             <li>✅ <strong>Feedback de Construção:</strong> Mensagens user-friendly em português substituem logs de console</li>
@@ -228,7 +248,9 @@
             // Testar edifícios que consomem/produzem energia
             const electricityBuildings = [
                 { type: 'water_pump', name: 'Bomba de Água', expectConsumption: true },
-                { type: 'treatment_plant', name: 'Estação de Tratamento', expectConsumption: true }
+                { type: 'treatment_plant', name: 'Estação de Tratamento', expectConsumption: true },
+                { type: 'hydroelectric_plant', name: 'Hidrelétrica', expectGeneration: true },
+                { type: 'power_pole', name: 'Poste de Energia', expectTransmission: true }
             ];
 
             electricityBuildings.forEach((building, index) => {
@@ -362,11 +384,150 @@
         function clearLog() {
             document.getElementById('logOutput').innerHTML = '';
         }
-        
+
+        function testBudgetSystem() {
+            console.log('💰 Testando sistema de orçamento...');
+
+            if (typeof gameManager === 'undefined' || !gameManager.buildingSystem || !gameManager.resourceManager) {
+                console.error('❌ Sistemas não disponíveis');
+                return;
+            }
+
+            // Verificar orçamento inicial
+            const initialBudget = gameManager.resourceManager.resources.budget.current;
+            console.log(`💰 Orçamento inicial: R$ ${initialBudget.toLocaleString()}`);
+
+            // Tentar construir edifício caro
+            const expensiveBuilding = gameManager.buildingSystem.placeBuilding(25, 25, 'treatment_plant');
+            if (expensiveBuilding) {
+                setTimeout(() => {
+                    const newBudget = gameManager.resourceManager.resources.budget.current;
+                    const cost = expensiveBuilding.config.cost;
+                    const expectedBudget = initialBudget - cost;
+
+                    console.log(`💰 Orçamento após construção: R$ ${newBudget.toLocaleString()}`);
+                    console.log(`💰 Custo esperado: R$ ${cost.toLocaleString()}`);
+
+                    if (Math.abs(newBudget - expectedBudget) < 1) {
+                        console.log('✅ Sistema de orçamento funcionando corretamente');
+                    } else {
+                        console.error('❌ Sistema de orçamento com problemas');
+                    }
+
+                    // Limpar teste
+                    gameManager.buildingSystem.removeBuilding(expensiveBuilding.id);
+                }, 1000);
+            } else {
+                console.log('⚠️ Não foi possível construir (pode ser falta de orçamento)');
+            }
+        }
+
+        function testConstructionTimer() {
+            console.log('🚧 Testando sistema de construção...');
+
+            if (typeof gameManager === 'undefined' || !gameManager.buildingSystem) {
+                console.error('❌ BuildingSystem não disponível');
+                return;
+            }
+
+            console.log('🚧 Iniciando construção de casa...');
+            const building = gameManager.buildingSystem.placeBuilding(20, 20, 'house');
+
+            if (building) {
+                console.log('🚧 Construção iniciada - verificando progresso...');
+
+                // Verificar progresso a cada segundo
+                const progressCheck = setInterval(() => {
+                    if (!building.underConstruction) {
+                        console.log('✅ Construção concluída!');
+                        clearInterval(progressCheck);
+
+                        // Limpar teste
+                        setTimeout(() => {
+                            gameManager.buildingSystem.removeBuilding(building.id);
+                        }, 2000);
+                    } else {
+                        const elapsed = Date.now() - building.constructionStartTime;
+                        const progress = Math.min(100, (elapsed / building.constructionDuration) * 100);
+                        console.log(`🚧 Progresso: ${Math.floor(progress)}%`);
+                    }
+                }, 1000);
+
+                // Timeout de segurança
+                setTimeout(() => {
+                    clearInterval(progressCheck);
+                    console.log('🚧 Teste de construção finalizado');
+                }, 20000);
+            } else {
+                console.error('❌ Falha ao iniciar construção');
+            }
+        }
+
+        function testWaterStorage() {
+            console.log('💧 Testando sistema de armazenamento de água...');
+
+            if (typeof gameManager === 'undefined' || !gameManager.resourceManager) {
+                console.error('❌ ResourceManager não disponível');
+                return;
+            }
+
+            const initialWater = gameManager.resourceManager.resources.water;
+            console.log(`💧 Estado inicial - Atual: ${initialWater.current}L, Capacidade: ${initialWater.storage}L`);
+
+            // Construir reservatório (se existir)
+            const reservoir = gameManager.buildingSystem.placeBuilding(22, 22, 'water_tank');
+            if (reservoir) {
+                setTimeout(() => {
+                    const newWater = gameManager.resourceManager.resources.water;
+                    console.log(`💧 Após reservatório - Atual: ${newWater.current}L, Capacidade: ${newWater.storage}L`);
+
+                    if (newWater.storage > initialWater.storage) {
+                        console.log('✅ Sistema de armazenamento funcionando');
+                    } else {
+                        console.warn('⚠️ Capacidade não aumentou (verifique se water_tank tem waterStorage)');
+                    }
+
+                    // Limpar teste
+                    gameManager.buildingSystem.removeBuilding(reservoir.id);
+                }, 1000);
+            } else {
+                console.warn('⚠️ Não foi possível construir reservatório');
+            }
+        }
+
+        function testResourcePanels() {
+            console.log('📊 Testando painéis de recursos...');
+
+            if (typeof gameManager === 'undefined' || !gameManager.uiManager) {
+                console.error('❌ UIManager não disponível');
+                return;
+            }
+
+            console.log('📊 Testando painel de água...');
+            gameManager.uiManager.showWaterDetailsPanel();
+
+            setTimeout(() => {
+                console.log('📊 Testando painel de orçamento...');
+                gameManager.uiManager.showBudgetDetailsPanel();
+
+                setTimeout(() => {
+                    console.log('📊 Testando painel de energia...');
+                    gameManager.uiManager.showEnergyDetailsPanel();
+
+                    setTimeout(() => {
+                        console.log('📊 Testando painel de satisfação...');
+                        gameManager.uiManager.showSatisfactionDetailsPanel();
+
+                        console.log('✅ Todos os painéis testados');
+                    }, 1000);
+                }, 1000);
+            }, 1000);
+        }
+
         // Atualizar informações de memória a cada 5 segundos
         setInterval(updateMemoryInfo, 5000);
         updateMemoryInfo();
-        
+
         console.log('🧪 Página de teste carregada. Execute os testes para verificar as correções.');
     </script>
 </body>

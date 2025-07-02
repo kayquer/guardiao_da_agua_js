@@ -128,6 +128,12 @@ class UIManager {
                 this.removeNotification(e.target.parentElement);
             }
         });
+
+        // Cliques nos contadores de recursos para mostrar detalhes
+        this.elements.waterAmount?.addEventListener('click', () => this.showWaterDetailsPanel());
+        this.elements.budgetAmount?.addEventListener('click', () => this.showBudgetDetailsPanel());
+        this.elements.electricityAmount?.addEventListener('click', () => this.showEnergyDetailsPanel());
+        this.elements.satisfactionLevel?.addEventListener('click', () => this.showSatisfactionDetailsPanel());
     }
     
     createBuildingCategories() {
@@ -177,10 +183,12 @@ class UIManager {
         const resources = this.gameManager.resourceManager.getAllResources();
         if (!resources) return;
 
-        // Água
+        // Água (formato: usado/capacidade)
         if (this.elements.waterAmount && resources.water) {
-            this.elements.waterAmount.textContent = `${Math.round(resources.water.current || 0)}L`;
-            this.updateResourceStatus(this.elements.waterAmount, resources.water.current || 0, resources.water.max || 1);
+            const current = Math.round(resources.water.current || 0);
+            const storage = Math.round(resources.water.storage || resources.water.max || 1);
+            this.elements.waterAmount.textContent = `${current}/${storage}L`;
+            this.updateResourceStatus(this.elements.waterAmount, resources.water.current || 0, storage);
         }
 
         // Poluição
@@ -594,6 +602,281 @@ class UIManager {
 
         this.selectedBuildingType = null;
         this.elements.detailsContent.innerHTML = '<p>Selecione um edifício para ver os requisitos</p>';
+    }
+
+    // ===== PAINÉIS DE DETALHES DE RECURSOS =====
+    showWaterDetailsPanel() {
+        if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
+
+        const water = this.gameManager.resourceManager.resources.water;
+        const buildings = this.gameManager.buildingSystem.getAllBuildings();
+
+        // Filtrar edifícios que produzem água
+        const waterProducers = buildings.filter(b => b.config.waterProduction && b.active);
+
+        let detailsHTML = `
+            <div class="resource-details-panel">
+                <h4>💧 Gestão de Água</h4>
+
+                <div class="resource-summary">
+                    <div class="resource-stat">
+                        <span class="stat-label">Água Atual:</span>
+                        <span class="stat-value">${Math.floor(water.current)}L</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Capacidade:</span>
+                        <span class="stat-value">${water.storage}L</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Produção:</span>
+                        <span class="stat-value">+${water.production}L/min</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Consumo:</span>
+                        <span class="stat-value">-${water.consumption}L/min</span>
+                    </div>
+                </div>
+
+                <div class="resource-sources">
+                    <h5>🏭 Fontes de Produção</h5>
+        `;
+
+        if (waterProducers.length > 0) {
+            detailsHTML += '<ul>';
+            waterProducers.forEach(building => {
+                const production = building.config.waterProduction * building.efficiency;
+                detailsHTML += `
+                    <li>
+                        <span class="building-icon">${building.config.icon}</span>
+                        <span class="building-name">${building.config.name}</span>
+                        <span class="building-production">+${production}L/min</span>
+                    </li>
+                `;
+            });
+            detailsHTML += '</ul>';
+        } else {
+            detailsHTML += '<p class="no-sources">Nenhuma fonte de água ativa</p>';
+        }
+
+        // Edifícios de armazenamento
+        const storageBuildings = buildings.filter(b => b.config.waterStorage && b.active);
+        if (storageBuildings.length > 0) {
+            detailsHTML += '<h5>🛢️ Armazenamento</h5><ul>';
+            storageBuildings.forEach(building => {
+                detailsHTML += `
+                    <li>
+                        <span class="building-icon">${building.config.icon}</span>
+                        <span class="building-name">${building.config.name}</span>
+                        <span class="building-storage">+${building.config.waterStorage}L</span>
+                    </li>
+                `;
+            });
+            detailsHTML += '</ul>';
+        }
+
+        detailsHTML += '</div></div>';
+
+        this.elements.detailsContent.innerHTML = detailsHTML;
+    }
+
+    showBudgetDetailsPanel() {
+        if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
+
+        const budget = this.gameManager.resourceManager.resources.budget;
+        const buildings = this.gameManager.buildingSystem.getAllBuildings();
+
+        let detailsHTML = `
+            <div class="resource-details-panel">
+                <h4>💰 Gestão Financeira</h4>
+
+                <div class="resource-summary">
+                    <div class="resource-stat">
+                        <span class="stat-label">Orçamento Atual:</span>
+                        <span class="stat-value">R$ ${Math.floor(budget.current).toLocaleString()}</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Receita:</span>
+                        <span class="stat-value">+R$ ${budget.income.toLocaleString()}/min</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Despesas:</span>
+                        <span class="stat-value">-R$ ${budget.expenses.toLocaleString()}/min</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Saldo Líquido:</span>
+                        <span class="stat-value ${budget.income - budget.expenses >= 0 ? 'positive' : 'negative'}">
+                            ${budget.income - budget.expenses >= 0 ? '+' : ''}R$ ${(budget.income - budget.expenses).toLocaleString()}/min
+                        </span>
+                    </div>
+                </div>
+
+                <div class="resource-sources">
+                    <h5>💸 Fontes de Despesa</h5>
+        `;
+
+        const expenseBuildings = buildings.filter(b => b.config.maintenanceCost && b.active);
+        if (expenseBuildings.length > 0) {
+            detailsHTML += '<ul>';
+            expenseBuildings.forEach(building => {
+                detailsHTML += `
+                    <li>
+                        <span class="building-icon">${building.config.icon}</span>
+                        <span class="building-name">${building.config.name}</span>
+                        <span class="building-cost">-R$ ${building.config.maintenanceCost}/min</span>
+                    </li>
+                `;
+            });
+            detailsHTML += '</ul>';
+        } else {
+            detailsHTML += '<p class="no-sources">Nenhuma despesa de manutenção</p>';
+        }
+
+        detailsHTML += '</div></div>';
+
+        this.elements.detailsContent.innerHTML = detailsHTML;
+    }
+
+    showEnergyDetailsPanel() {
+        if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
+
+        const electricity = this.gameManager.resourceManager.resources.electricity;
+        const buildings = this.gameManager.buildingSystem.getAllBuildings();
+
+        // Filtrar edifícios que geram energia
+        const powerGenerators = buildings.filter(b => b.config.powerGeneration && b.active);
+        const powerConsumers = buildings.filter(b => b.config.powerConsumption && b.active);
+
+        let detailsHTML = `
+            <div class="resource-details-panel">
+                <h4>⚡ Gestão de Energia</h4>
+
+                <div class="resource-summary">
+                    <div class="resource-stat">
+                        <span class="stat-label">Geração:</span>
+                        <span class="stat-value">+${electricity.generation}kW</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Consumo:</span>
+                        <span class="stat-value">-${electricity.consumption}kW</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Saldo:</span>
+                        <span class="stat-value ${electricity.generation - electricity.consumption >= 0 ? 'positive' : 'negative'}">
+                            ${electricity.generation - electricity.consumption >= 0 ? '+' : ''}${electricity.generation - electricity.consumption}kW
+                        </span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Eficiência:</span>
+                        <span class="stat-value">${Math.floor(electricity.efficiency * 100)}%</span>
+                    </div>
+                </div>
+
+                <div class="resource-sources">
+                    <h5>🔋 Fontes de Energia</h5>
+        `;
+
+        if (powerGenerators.length > 0) {
+            detailsHTML += '<ul>';
+            powerGenerators.forEach(building => {
+                const isRenewable = ['hydroelectric_plant', 'solar_panel', 'wind_turbine'].includes(building.type);
+                const renewableIcon = isRenewable ? '🌱' : '🏭';
+                const renewableText = isRenewable ? ' (Renovável)' : ' (Não-renovável)';
+
+                detailsHTML += `
+                    <li>
+                        <span class="building-icon">${building.config.icon}</span>
+                        <span class="building-name">${building.config.name}</span>
+                        <span class="building-production">+${building.config.powerGeneration}kW</span>
+                        <span class="renewable-indicator">${renewableIcon}${renewableText}</span>
+                    </li>
+                `;
+            });
+            detailsHTML += '</ul>';
+        } else {
+            detailsHTML += '<p class="no-sources">Nenhuma fonte de energia ativa</p>';
+        }
+
+        if (powerConsumers.length > 0) {
+            detailsHTML += '<h5>🔌 Consumidores de Energia</h5><ul>';
+            powerConsumers.forEach(building => {
+                detailsHTML += `
+                    <li>
+                        <span class="building-icon">${building.config.icon}</span>
+                        <span class="building-name">${building.config.name}</span>
+                        <span class="building-consumption">-${building.config.powerConsumption}kW</span>
+                    </li>
+                `;
+            });
+            detailsHTML += '</ul>';
+        }
+
+        detailsHTML += '</div></div>';
+
+        this.elements.detailsContent.innerHTML = detailsHTML;
+    }
+
+    showSatisfactionDetailsPanel() {
+        if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
+
+        const population = this.gameManager.resourceManager.resources.population;
+        const buildings = this.gameManager.buildingSystem.getAllBuildings();
+
+        let detailsHTML = `
+            <div class="resource-details-panel">
+                <h4>😊 Satisfação da População</h4>
+
+                <div class="resource-summary">
+                    <div class="resource-stat">
+                        <span class="stat-label">Satisfação Atual:</span>
+                        <span class="stat-value">${Math.floor(population.satisfaction)}%</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">População:</span>
+                        <span class="stat-value">${population.current.toLocaleString()}</span>
+                    </div>
+                </div>
+
+                <div class="resource-sources">
+                    <h5>✅ Fatores Positivos</h5>
+                    <ul>
+                        <li>💧 Abastecimento de água adequado</li>
+                        <li>🌿 Baixos níveis de poluição</li>
+                        <li>🏥 Infraestrutura de saúde</li>
+                        <li>🎓 Infraestrutura educacional</li>
+                        <li>🌳 Áreas verdes e recreação</li>
+                    </ul>
+
+                    <h5>❌ Fatores Negativos</h5>
+                    <ul>
+                        <li>🚱 Escassez de água</li>
+                        <li>🏭 Alta poluição</li>
+                        <li>⚡ Falta de energia</li>
+                        <li>🚧 Infraestrutura inadequada</li>
+                    </ul>
+
+                    <h5>🏢 Edifícios que Melhoram Satisfação</h5>
+        `;
+
+        const satisfactionBuildings = buildings.filter(b => b.config.satisfactionBonus && b.active);
+        if (satisfactionBuildings.length > 0) {
+            detailsHTML += '<ul>';
+            satisfactionBuildings.forEach(building => {
+                detailsHTML += `
+                    <li>
+                        <span class="building-icon">${building.config.icon}</span>
+                        <span class="building-name">${building.config.name}</span>
+                        <span class="building-bonus">+${building.config.satisfactionBonus}%</span>
+                    </li>
+                `;
+            });
+            detailsHTML += '</ul>';
+        } else {
+            detailsHTML += '<p class="no-sources">Nenhum edifício de satisfação construído</p>';
+        }
+
+        detailsHTML += '</div></div>';
+
+        this.elements.detailsContent.innerHTML = detailsHTML;
     }
 
     // ===== NOTIFICAÇÕES =====
