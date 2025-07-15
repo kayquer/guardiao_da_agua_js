@@ -594,6 +594,93 @@ class BuildingSystem {
             }
         });
 
+        // CATEGORIA: PÚBLICO/ADMINISTRATIVO
+        this.addBuildingType('city_hall', {
+            name: 'Prefeitura Municipal',
+            description: 'Centro administrativo da cidade - simboliza o desenvolvimento urbano',
+            category: 'public',
+            cost: 25000,
+            size: 2,
+            populationCapacity: 0,
+            satisfactionBonus: 20,
+            administrativeBonus: true,
+            maintenanceCost: 500,
+            icon: '🏛️',
+            color: '#FFD700',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
+        this.addBuildingType('school', {
+            name: 'Escola',
+            description: 'Instituição de ensino que aumenta a satisfação da população',
+            category: 'public',
+            cost: 15000,
+            size: 2,
+            satisfactionBonus: 15,
+            educationBonus: true,
+            maintenanceCost: 300,
+            icon: '🏫',
+            color: '#4CAF50',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
+        this.addBuildingType('hospital', {
+            name: 'Hospital',
+            description: 'Centro médico que melhora a saúde e satisfação dos cidadãos',
+            category: 'public',
+            cost: 20000,
+            size: 2,
+            satisfactionBonus: 18,
+            healthBonus: true,
+            maintenanceCost: 400,
+            icon: '🏥',
+            color: '#F44336',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
+        this.addBuildingType('fire_station', {
+            name: 'Corpo de Bombeiros',
+            description: 'Estação de bombeiros que protege a cidade',
+            category: 'public',
+            cost: 12000,
+            size: 1,
+            satisfactionBonus: 12,
+            safetyBonus: true,
+            maintenanceCost: 250,
+            icon: '🚒',
+            color: '#FF5722',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
+        this.addBuildingType('police_station', {
+            name: 'Delegacia de Polícia',
+            description: 'Estação policial que mantém a segurança urbana',
+            category: 'public',
+            cost: 10000,
+            size: 1,
+            satisfactionBonus: 10,
+            securityBonus: true,
+            maintenanceCost: 200,
+            icon: '🚔',
+            color: '#3F51B5',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
         console.log(`✅ ${this.buildingTypes.size} tipos de edifícios definidos`);
     }
     
@@ -910,7 +997,12 @@ class BuildingSystem {
             'apartment': 4.0,
             'power_plant': 3.5,
             'road': 0.1,
-            'pipe': 0.2
+            'pipe': 0.2,
+            'city_hall': 3.5,
+            'school': 2.8,
+            'hospital': 3.0,
+            'fire_station': 2.5,
+            'police_station': 2.3
         };
 
         return heights[buildingType.id] || 2.0;

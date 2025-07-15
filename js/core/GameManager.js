@@ -828,33 +828,28 @@ class GameManager {
         }
 
         try {
-            // Posições estratégicas para a cidade inicial
-            const starterBuildings = [
-                // Infraestrutura de água
-                { type: 'water_pump', x: 8, z: 8 },
-                { type: 'treatment_plant', x: 12, z: 8 },
-                { type: 'water_tank', x: 10, z: 6 },
+            // Apenas construir a Prefeitura Municipal (City Hall) como edifício inicial
+            const cityHall = { type: 'city_hall', x: 10, z: 10 };
 
-                // Residências iniciais
-                { type: 'house', x: 6, z: 12 },
-                { type: 'house', x: 8, z: 12 },
-                { type: 'house', x: 10, z: 12 },
-                { type: 'apartment', x: 14, z: 12 }
-            ];
+            // Temporariamente desabilitar cooldown para construção inicial
+            const originalCooldownActive = this.buildingSystem.buildingCooldown.active;
+            this.buildingSystem.buildingCooldown.active = false;
 
-            let successCount = 0;
+            console.log('🏛️ Construindo Prefeitura Municipal (centro da cidade)...');
+            const success = this.buildingSystem.placeBuilding(cityHall.x, cityHall.z, cityHall.type);
 
-            starterBuildings.forEach(building => {
-                const success = this.buildingSystem.placeBuilding(building.x, building.z, building.type);
-                if (success) {
-                    successCount++;
-                    console.log(`✅ ${building.type} construído em (${building.x}, ${building.z})`);
-                } else {
-                    console.warn(`⚠️ Falha ao construir ${building.type} em (${building.x}, ${building.z})`);
-                }
-            });
+            if (success) {
+                console.log(`✅ ${cityHall.type} construído em (${cityHall.x}, ${cityHall.z})`);
+                console.log('🏙️ Cidade inicial criada: 1/1 edifícios (apenas Prefeitura Municipal)');
 
-            console.log(`🏙️ Cidade inicial criada: ${successCount}/${starterBuildings.length} edifícios`);
+                // Adicionar efeitos de iluminação ao redor da Prefeitura
+                this.addCityHallLightingEffects(success);
+            } else {
+                console.warn(`⚠️ Falha ao construir ${cityHall.type} em (${cityHall.x}, ${cityHall.z})`);
+            }
+
+            // Restaurar estado original do cooldown
+            this.buildingSystem.buildingCooldown.active = originalCooldownActive;
 
             // Ajustar recursos iniciais para cidade funcional
             if (this.resourceManager) {
@@ -864,6 +859,63 @@ class GameManager {
 
         } catch (error) {
             console.error('❌ Erro ao criar cidade inicial:', error);
+        }
+    }
+
+    addCityHallLightingEffects(cityHallBuilding) {
+        if (!cityHallBuilding || !cityHallBuilding.mesh || !this.scene) {
+            return;
+        }
+
+        try {
+            console.log('💡 Adicionando efeitos de iluminação à Prefeitura Municipal...');
+
+            // Criar luz pontual dourada ao redor da Prefeitura
+            const light = new BABYLON.PointLight("cityHallLight",
+                new BABYLON.Vector3(cityHallBuilding.mesh.position.x,
+                                  cityHallBuilding.mesh.position.y + 3,
+                                  cityHallBuilding.mesh.position.z), this.scene);
+
+            light.diffuse = new BABYLON.Color3(1, 0.8, 0.4); // Cor dourada
+            light.specular = new BABYLON.Color3(1, 1, 0.6);
+            light.intensity = 0.8;
+            light.range = 10;
+
+            // Criar partículas de energia ao redor da Prefeitura
+            const particleSystem = new BABYLON.ParticleSystem("cityHallParticles", 50, this.scene);
+            particleSystem.particleTexture = new BABYLON.Texture("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", this.scene);
+
+            particleSystem.emitter = cityHallBuilding.mesh;
+            particleSystem.minEmitBox = new BABYLON.Vector3(-1, 0, -1);
+            particleSystem.maxEmitBox = new BABYLON.Vector3(1, 2, 1);
+
+            particleSystem.color1 = new BABYLON.Color4(1, 0.8, 0.4, 1.0);
+            particleSystem.color2 = new BABYLON.Color4(1, 1, 0.6, 1.0);
+            particleSystem.colorDead = new BABYLON.Color4(0, 0, 0, 0.0);
+
+            particleSystem.minSize = 0.1;
+            particleSystem.maxSize = 0.3;
+            particleSystem.minLifeTime = 1;
+            particleSystem.maxLifeTime = 3;
+            particleSystem.emitRate = 10;
+
+            particleSystem.direction1 = new BABYLON.Vector3(-0.5, 1, -0.5);
+            particleSystem.direction2 = new BABYLON.Vector3(0.5, 2, 0.5);
+            particleSystem.minEmitPower = 1;
+            particleSystem.maxEmitPower = 3;
+
+            particleSystem.start();
+
+            // Armazenar referências para limpeza posterior
+            cityHallBuilding.lightingEffects = {
+                light: light,
+                particles: particleSystem
+            };
+
+            console.log('✅ Efeitos de iluminação da Prefeitura Municipal criados');
+
+        } catch (error) {
+            console.error('❌ Erro ao criar efeitos de iluminação:', error);
         }
     }
 
