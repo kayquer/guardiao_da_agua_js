@@ -52,8 +52,15 @@
             font-size: 12px;
         }
     </style>
+
+    <!-- Babylon.js CDN -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
 </head>
 <body>
+    <!-- Canvas oculto para o jogo -->
+    <canvas id="test-canvas" style="display: none; width: 800px; height: 600px;"></canvas>
     <h1>🧪 Teste de Correções de Memória - Guardião da Água</h1>
     
     <div class="test-container">
@@ -530,5 +537,28 @@
 
         console.log('🧪 Página de teste carregada. Execute os testes para verificar as correções.');
     </script>
+
+    <!-- Scripts do Jogo - Ordem correta de dependências -->
+    <!-- Utilitários primeiro -->
+    <script src="js/utils/AssetLoader.js"></script>
+    <script src="js/utils/AudioManager.js"></script>
+
+    <!-- Core systems - ordem de dependência -->
+    <script src="js/core/GridManager.js"></script>
+    <script src="js/core/ResourceManager.js"></script>
+    <script src="js/core/GameManager.js"></script>
+
+    <!-- Game systems -->
+    <script src="js/systems/BuildingSystem.js"></script>
+    <script src="js/systems/CityLifeSystem.js"></script>
+    <script src="js/systems/UIManager.js"></script>
+    <script src="js/systems/QuestSystem.js"></script>
+    <script src="js/systems/EventSystem.js"></script>
+    <script src="js/systems/SaveSystem.js"></script>
+    <script src="js/systems/TutorialManager.js"></script>
+    <script src="js/systems/SettingsManager.js"></script>
+
+    <!-- Main initialization -->
+    <script src="js/main.js"></script>
 </body>
 </html>
