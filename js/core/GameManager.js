@@ -35,6 +35,18 @@ class GameManager {
         this.buildMode = false;
         this.currentBuildingType = null;
 
+        // Controles de câmera WASD
+        this.cameraControls = {
+            keys: {
+                W: false,
+                A: false,
+                S: false,
+                D: false
+            },
+            speed: 0.5,
+            enabled: true
+        };
+
         // Performance
         this.frameCount = 0;
         this.lastFPSUpdate = 0;
@@ -314,9 +326,12 @@ class GameManager {
             const currentTime = performance.now();
             const deltaTime = currentTime - this.lastUpdateTime;
             
+            // Atualizar controles de câmera WASD (sempre ativo)
+            this.updateCameraControls(deltaTime);
+
             // Atualizar jogo
             this.update(deltaTime);
-            
+
             // Renderizar cena
             this.scene.render();
             
@@ -844,6 +859,9 @@ class GameManager {
 
                 // Adicionar efeitos de iluminação ao redor da Prefeitura
                 this.addCityHallLightingEffects(success);
+
+                // Centralizar câmera na Prefeitura Municipal
+                this.centerCameraOnCityHall(cityHall.x, cityHall.z);
             } else {
                 console.warn(`⚠️ Falha ao construir ${cityHall.type} em (${cityHall.x}, ${cityHall.z})`);
             }
@@ -916,6 +934,129 @@ class GameManager {
 
         } catch (error) {
             console.error('❌ Erro ao criar efeitos de iluminação:', error);
+        }
+    }
+
+    centerCameraOnCityHall(gridX, gridZ) {
+        if (!this.camera || !this.gridManager) {
+            console.warn('⚠️ Câmera ou GridManager não disponível para centralização');
+            return;
+        }
+
+        try {
+            // Converter posição do grid para coordenadas do mundo
+            const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
+
+            console.log(`📷 Centralizando câmera na Prefeitura Municipal em (${gridX}, ${gridZ}) -> mundo (${worldPos.x}, ${worldPos.z})`);
+
+            // Criar posição alvo para a câmera
+            const targetPosition = new BABYLON.Vector3(worldPos.x, 0, worldPos.z);
+
+            // Animar transição suave da câmera para a nova posição
+            const animationTarget = BABYLON.Animation.CreateAndStartAnimation(
+                "cameraTargetAnimation",
+                this.camera,
+                "target",
+                60, // 60 FPS
+                120, // 2 segundos de duração
+                this.camera.getTarget(),
+                targetPosition,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
+                new BABYLON.CubicEase(),
+                () => {
+                    console.log('✅ Câmera centralizada na Prefeitura Municipal');
+                }
+            );
+
+            // Ajustar zoom para uma visão adequada da cidade
+            const animationRadius = BABYLON.Animation.CreateAndStartAnimation(
+                "cameraRadiusAnimation",
+                this.camera,
+                "radius",
+                60, // 60 FPS
+                120, // 2 segundos de duração
+                this.camera.radius,
+                25, // Zoom adequado para ver a Prefeitura e arredores
+                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
+                new BABYLON.CubicEase()
+            );
+
+            // Ajustar ângulo para uma visão isométrica ideal
+            const animationAlpha = BABYLON.Animation.CreateAndStartAnimation(
+                "cameraAlphaAnimation",
+                this.camera,
+                "alpha",
+                60, // 60 FPS
+                120, // 2 segundos de duração
+                this.camera.alpha,
+                -Math.PI / 4, // 45 graus
+                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
+                new BABYLON.CubicEase()
+            );
+
+            const animationBeta = BABYLON.Animation.CreateAndStartAnimation(
+                "cameraBetaAnimation",
+                this.camera,
+                "beta",
+                60, // 60 FPS
+                120, // 2 segundos de duração
+                this.camera.beta,
+                Math.PI / 3, // 60 graus
+                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
+                new BABYLON.CubicEase()
+            );
+
+        } catch (error) {
+            console.error('❌ Erro ao centralizar câmera na Prefeitura Municipal:', error);
+        }
+    }
+
+    // ===== CONTROLES DE CÂMERA WASD =====
+    updateCameraControls(deltaTime) {
+        if (!this.camera || !this.cameraControls.enabled) return;
+
+        const keys = this.cameraControls.keys;
+        const speed = this.cameraControls.speed * (deltaTime / 16.67); // Normalizar para 60 FPS
+
+        // Verificar se alguma tecla está pressionada
+        const isMoving = keys.W || keys.A || keys.S || keys.D;
+        if (!isMoving) return;
+
+        try {
+            // Obter direções da câmera baseadas na rotação atual
+            const forward = this.camera.getForwardRay().direction;
+            const right = BABYLON.Vector3.Cross(forward, BABYLON.Vector3.Up());
+
+            // Normalizar vetores
+            forward.normalize();
+            right.normalize();
+
+            // Calcular movimento baseado nas teclas pressionadas
+            let movement = BABYLON.Vector3.Zero();
+
+            if (keys.W) { // Frente
+                movement = movement.add(forward.scale(speed));
+            }
+            if (keys.S) { // Trás
+                movement = movement.add(forward.scale(-speed));
+            }
+            if (keys.A) { // Esquerda
+                movement = movement.add(right.scale(-speed));
+            }
+            if (keys.D) { // Direita
+                movement = movement.add(right.scale(speed));
+            }
+
+            // Aplicar movimento apenas nos eixos X e Z (manter altura)
+            movement.y = 0;
+
+            // Mover o alvo da câmera
+            const currentTarget = this.camera.getTarget();
+            const newTarget = currentTarget.add(movement);
+            this.camera.setTarget(newTarget);
+
+        } catch (error) {
+            console.error('❌ Erro nos controles de câmera WASD:', error);
         }
     }
 
@@ -1551,7 +1692,29 @@ class GameManager {
     }
     
     handleKeyboardEvent(kbInfo) {
-        if (kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN) {
+        const isKeyDown = kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN;
+        const isKeyUp = kbInfo.type === BABYLON.KeyboardEventTypes.KEYUP;
+
+        // Controles WASD para movimento da câmera
+        if (this.cameraControls.enabled) {
+            switch (kbInfo.event.code) {
+                case 'KeyW':
+                    this.cameraControls.keys.W = isKeyDown;
+                    break;
+                case 'KeyA':
+                    this.cameraControls.keys.A = isKeyDown;
+                    break;
+                case 'KeyS':
+                    this.cameraControls.keys.S = isKeyDown;
+                    break;
+                case 'KeyD':
+                    this.cameraControls.keys.D = isKeyDown;
+                    break;
+            }
+        }
+
+        // Outros controles apenas no keydown
+        if (isKeyDown) {
             switch (kbInfo.event.code) {
                 case 'Space':
                     if (this.gameState === 'playing') {
