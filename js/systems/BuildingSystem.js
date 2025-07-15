@@ -892,7 +892,9 @@ class BuildingSystem {
         }
 
         // Tocar som de construção
-        AudioManager.playSound('sfx_build');
+        if (typeof AudioManager !== 'undefined') {
+            AudioManager.playSound('sfx_build');
+        }
 
         // Notificar sistema de vida urbana se for uma estrada
         if (buildingType.id === 'road' && window.gameManager && window.gameManager.cityLifeSystem) {

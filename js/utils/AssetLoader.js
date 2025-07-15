@@ -33,10 +33,13 @@ class AssetLoader {
                 { type: 'audio', key: 'bgm_caketown', path: 'Sounds/BGM/Caketown 1.mp3', optional: true },
                 { type: 'audio', key: 'bgm_waves', path: 'Sounds/BGM/Waves of Destiny ext v2.mp3', optional: true },
                 { type: 'audio', key: 'bgm_whispers', path: 'Sounds/BGM/Whispers of the Deep ext v1.mp3', optional: true },
-                // SFX procedurais (criados em código se não existirem)
-                { type: 'audio', key: 'sfx_click', path: 'Sounds/SFX/click.wav', optional: true },
-                { type: 'audio', key: 'sfx_build', path: 'Sounds/SFX/build.wav', optional: true },
-                { type: 'audio', key: 'sfx_water', path: 'Sounds/SFX/water.wav', optional: true },
+                // SFX usando arquivos existentes
+                { type: 'audio', key: 'sfx_pickup', path: 'Sounds/SFX/Environment/pickup.wav', optional: true },
+                { type: 'audio', key: 'sfx_item', path: 'Sounds/SFX/Environment/item_sound.wav', optional: true },
+                { type: 'audio', key: 'sfx_walk', path: 'Sounds/SFX/Environment/walk.wav', optional: true },
+                { type: 'audio', key: 'sfx_watering', path: 'Sounds/SFX/Player/watering.wav', optional: true },
+                { type: 'audio', key: 'sfx_dig', path: 'Sounds/SFX/Player/dig.ogg', optional: true },
+                { type: 'audio', key: 'sfx_axe', path: 'Sounds/SFX/Player/axe.wav', optional: true },
                 
                 // Texturas procedurais (criadas em código)
                 { type: 'procedural', key: 'water_texture' },

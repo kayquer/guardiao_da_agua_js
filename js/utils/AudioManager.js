@@ -59,8 +59,11 @@ class AudioManager {
             return;
         }
 
-        // Lista de sons para carregar
-        const soundKeys = ['bgm_main', 'sfx_click', 'sfx_build', 'sfx_water'];
+        // Lista de sons para carregar (usando arquivos existentes)
+        const soundKeys = [
+            'bgm_main', 'bgm_caketown', 'bgm_waves', 'bgm_whispers',
+            'sfx_pickup', 'sfx_item', 'sfx_walk', 'sfx_watering', 'sfx_dig', 'sfx_axe'
+        ];
 
         soundKeys.forEach(key => {
             const asset = AssetLoader.getAsset(key);
@@ -137,15 +140,36 @@ class AudioManager {
     // ===== SONS PROCEDURAIS =====
     createProceduralSounds() {
         console.log('🎵 Criando sons procedurais...');
-        
-        // Sons básicos usando Web Audio API
+
+        // Sons básicos usando Web Audio API (fallbacks para sons não encontrados)
         this.createBeepSound('sfx_click', 800, 0.1);
         this.createBeepSound('sfx_build', 600, 0.2);
         this.createBeepSound('sfx_error', 300, 0.3);
         this.createBeepSound('sfx_success', 1000, 0.2);
-        
+
         // Som de água (ruído branco filtrado)
         this.createWaterSound('sfx_water');
+
+        // Criar mapeamentos para compatibilidade com código existente
+        this.createSoundMappings();
+    }
+
+    createSoundMappings() {
+        // Mapear sons antigos para novos arquivos existentes
+        const soundMappings = {
+            'sfx_click': 'sfx_pickup',    // Usar pickup como click
+            'sfx_build': 'sfx_axe',       // Usar axe como build
+            'sfx_water': 'sfx_watering'   // Usar watering como water
+        };
+
+        // Criar aliases para manter compatibilidade
+        Object.entries(soundMappings).forEach(([oldKey, newKey]) => {
+            const newSound = this.sounds.get(newKey);
+            if (newSound && !this.sounds.has(oldKey)) {
+                this.sounds.set(oldKey, newSound);
+                console.log(`🔗 Mapeamento criado: ${oldKey} -> ${newKey}`);
+            }
+        });
     }
     
     createBeepSound(key, frequency, duration) {
@@ -229,24 +253,25 @@ class AudioManager {
     // ===== REPRODUÇÃO DE SONS =====
     playSound(key, volume = 1.0) {
         if (!this.enabled) return;
-        
+
         // Tentar usar pool primeiro
         if (this.soundPools.has(key)) {
             return this.playSoundFromPool(key, volume);
         }
-        
+
         // Usar som direto
         const sound = this.sounds.get(key);
         if (sound) {
             try {
                 sound.setVolume(this.sfxVolume * this.masterVolume * volume);
                 sound.play();
-                
+
             } catch (error) {
                 console.warn(`⚠️ Erro ao reproduzir som ${key}:`, error);
             }
         } else {
-            console.warn(`⚠️ Som não encontrado: ${key}`);
+            // Som não encontrado - tentar fallback silencioso
+            console.log(`🔇 Som ${key} não disponível (usando fallback silencioso)`);
         }
     }
     
