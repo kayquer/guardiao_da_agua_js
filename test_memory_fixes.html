@@ -560,5 +560,43 @@
 
     <!-- Main initialization -->
     <script src="js/main.js"></script>
+
+    <!-- Test page initialization -->
+    <script>
+        // Aguardar carregamento completo e inicializar jogo para testes
+        window.addEventListener('load', async function() {
+            try {
+                console.log('🎮 Inicializando jogo para testes...');
+
+                // Aguardar um pouco mais para garantir que todos os scripts carregaram
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Verificar se todas as classes estão disponíveis
+                if (typeof GameManager === 'undefined') {
+                    throw new Error('GameManager não carregado');
+                }
+
+                if (typeof GAME_CONFIG === 'undefined') {
+                    throw new Error('GAME_CONFIG não carregado');
+                }
+
+                // Criar instância do GameManager
+                window.gameManager = new GameManager();
+
+                // Inicializar sistemas
+                await gameManager.initializeSystems();
+
+                console.log('✅ Jogo inicializado para testes');
+                updateMemoryInfo(); // Atualizar informações imediatamente
+
+            } catch (error) {
+                console.error('❌ Erro ao inicializar jogo para testes:', error);
+                document.getElementById('memoryInfo').innerHTML = `
+                    <span style="color: red;">Erro na inicialização: ${error.message}</span><br>
+                    Verifique o console para mais detalhes.
+                `;
+            }
+        });
+    </script>
 </body>
 </html>
