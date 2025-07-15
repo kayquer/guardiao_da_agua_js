@@ -141,6 +141,7 @@ class UIManager {
             { id: 'water', name: '💧 Água', icon: '💧' },
             { id: 'treatment', name: '🏭 Tratamento', icon: '🏭' },
             { id: 'storage', name: '🏗️ Armazenamento', icon: '🏗️' },
+            { id: 'public', name: '🏛️ Prédios Públicos', icon: '🏛️' },
             { id: 'power', name: '⚡ Energia', icon: '⚡' },
             { id: 'infrastructure', name: '🛣️ Infraestrutura', icon: '🛣️' },
             { id: 'zoning', name: '🏘️ Zoneamento', icon: '🏘️' }
