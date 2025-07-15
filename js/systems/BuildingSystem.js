@@ -955,6 +955,9 @@ class BuildingSystem {
             gridZ
         };
 
+        // Criar label de nome do edifício
+        this.createBuildingNameLabel(mesh, buildingType, worldPos);
+
         return mesh;
     }
 
@@ -1801,6 +1804,11 @@ class BuildingSystem {
         // Remover do sistema imediatamente
         this.buildings.delete(buildingId);
 
+        // Remover label do edifício
+        if (building.mesh) {
+            this.removeBuildingNameLabel(building.mesh);
+        }
+
         // Adicionar à fila de disposal para processamento assíncrono
         if (building.mesh) {
             this.queueForDisposal(building.mesh);
@@ -2300,7 +2308,7 @@ class BuildingSystem {
         bgMaterial.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3);
         progressBg.material = bgMaterial;
 
-        // Criar texto de porcentagem
+        // Criar texto de porcentagem com textura dinâmica
         const textPlane = BABYLON.MeshBuilder.CreatePlane(`progressText_${buildingData.id}`, {
             width: 1.5,
             height: 0.5
@@ -2311,11 +2319,21 @@ class BuildingSystem {
         textPlane.position.y = 3.8;
         textPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
-        // Material do texto
+        // Criar textura dinâmica para o texto de progresso
+        const progressTexture = new BABYLON.DynamicTexture(`progressTexture_${buildingData.id}`,
+            { width: 256, height: 64 }, this.scene);
+
+        // Material do texto com textura dinâmica
         const textMaterial = new BABYLON.StandardMaterial(`textMat_${buildingData.id}`, this.scene);
-        textMaterial.diffuseColor = new BABYLON.Color3(1, 1, 1);
+        textMaterial.diffuseTexture = progressTexture;
+        textMaterial.emissiveTexture = progressTexture;
         textMaterial.emissiveColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+        textMaterial.backFaceCulling = false;
+        textMaterial.hasAlpha = true;
         textPlane.material = textMaterial;
+
+        // Desenhar texto inicial (0%)
+        progressTexture.drawText("0%", null, null, "bold 32px Arial", "#FFFFFF", "#000000AA", true);
 
         // Armazenar referências
         buildingData.constructionIndicators = {
@@ -2342,12 +2360,16 @@ class BuildingSystem {
             material.emissiveColor = new BABYLON.Color3(red * 0.5, green * 0.5, 0.1);
         }
 
-        // Atualizar texto de porcentagem (simulado com cor)
+        // Atualizar texto de porcentagem real
         const percentage = Math.floor(progress * 100);
-        if (textPlane.material) {
-            // Simular texto mudando a cor baseada na porcentagem
-            const intensity = 0.5 + (progress * 0.5);
-            textPlane.material.emissiveColor = new BABYLON.Color3(intensity, intensity, intensity);
+        if (textPlane.material && textPlane.material.diffuseTexture) {
+            try {
+                // Atualizar o texto na textura dinâmica
+                textPlane.material.diffuseTexture.drawText(`${percentage}%`, null, null,
+                    "bold 32px Arial", "#FFFFFF", "#000000AA", true);
+            } catch (error) {
+                console.warn('⚠️ Erro ao atualizar texto de progresso:', error);
+            }
         }
     }
 
@@ -2377,7 +2399,7 @@ class BuildingSystem {
     showCompletionIndicator(buildingData) {
         const worldPos = this.gridManager.gridToWorld(buildingData.gridX, buildingData.gridZ);
 
-        // Criar texto "Concluído" temporário
+        // Criar texto "Concluído" temporário com textura dinâmica
         const completionText = BABYLON.MeshBuilder.CreatePlane(`completion_${buildingData.id}`, {
             width: 2,
             height: 0.8
@@ -2388,9 +2410,18 @@ class BuildingSystem {
         completionText.position.y = 4;
         completionText.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
+        // Criar textura dinâmica para "Concluído"
+        const completionTexture = new BABYLON.DynamicTexture(`completionTexture_${buildingData.id}`,
+            { width: 256, height: 64 }, this.scene);
+
+        completionTexture.drawText("Concluído!", null, null, "bold 32px Arial", "#00FF00", "#000000AA", true);
+
         const textMaterial = new BABYLON.StandardMaterial(`completionMat_${buildingData.id}`, this.scene);
-        textMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);
+        textMaterial.diffuseTexture = completionTexture;
+        textMaterial.emissiveTexture = completionTexture;
         textMaterial.emissiveColor = new BABYLON.Color3(0, 0.8, 0);
+        textMaterial.backFaceCulling = false;
+        textMaterial.hasAlpha = true;
         completionText.material = textMaterial;
 
         // Restaurar escala do edifício
@@ -2401,6 +2432,16 @@ class BuildingSystem {
         // Remover texto após 2 segundos
         setTimeout(() => {
             if (completionText && !completionText.isDisposed()) {
+                // Limpar material e textura
+                if (completionText.material) {
+                    if (completionText.material.diffuseTexture) {
+                        completionText.material.diffuseTexture.dispose();
+                    }
+                    if (completionText.material.emissiveTexture) {
+                        completionText.material.emissiveTexture.dispose();
+                    }
+                    completionText.material.dispose();
+                }
                 completionText.dispose();
             }
         }, 2000);
@@ -2408,7 +2449,77 @@ class BuildingSystem {
         // Mostrar notificação
         this.showNotification(`${buildingData.config.name} concluído!`, 'success');
     }
-    
+
+    // ===== LABELS DE NOME DOS EDIFÍCIOS =====
+    createBuildingNameLabel(buildingMesh, buildingType, worldPos) {
+        try {
+            // Criar plano para o texto
+            const labelPlane = BABYLON.MeshBuilder.CreatePlane(`label_${buildingMesh.name}`, {
+                width: 3,
+                height: 0.8
+            }, this.scene);
+
+            // Posicionar acima do edifício
+            labelPlane.position.x = worldPos.x;
+            labelPlane.position.z = worldPos.z;
+            labelPlane.position.y = this.getBuildingHeight(buildingType) + 1.5;
+            labelPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+
+            // Criar textura dinâmica com texto
+            const dynamicTexture = new BABYLON.DynamicTexture(`labelTexture_${buildingMesh.name}`,
+                { width: 512, height: 128 }, this.scene);
+
+            // Configurar fonte e texto
+            const font = "bold 48px Arial";
+            const text = buildingType.name || buildingType.id;
+
+            // Limpar textura e desenhar texto
+            dynamicTexture.drawText(text, null, null, font, "#FFFFFF", "#000000AA", true);
+
+            // Criar material para o label
+            const labelMaterial = new BABYLON.StandardMaterial(`labelMat_${buildingMesh.name}`, this.scene);
+            labelMaterial.diffuseTexture = dynamicTexture;
+            labelMaterial.emissiveTexture = dynamicTexture;
+            labelMaterial.emissiveColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+            labelMaterial.backFaceCulling = false;
+            labelMaterial.hasAlpha = true;
+
+            labelPlane.material = labelMaterial;
+
+            // Armazenar referência no mesh do edifício
+            buildingMesh.nameLabel = labelPlane;
+
+            console.log(`✅ Label criado para ${buildingType.name}: "${text}"`);
+
+        } catch (error) {
+            console.error(`❌ Erro ao criar label para ${buildingType.name}:`, error);
+        }
+    }
+
+    removeBuildingNameLabel(buildingMesh) {
+        if (buildingMesh.nameLabel) {
+            try {
+                if (!buildingMesh.nameLabel.isDisposed()) {
+                    // Limpar material e textura
+                    if (buildingMesh.nameLabel.material) {
+                        if (buildingMesh.nameLabel.material.diffuseTexture) {
+                            buildingMesh.nameLabel.material.diffuseTexture.dispose();
+                        }
+                        if (buildingMesh.nameLabel.material.emissiveTexture) {
+                            buildingMesh.nameLabel.material.emissiveTexture.dispose();
+                        }
+                        buildingMesh.nameLabel.material.dispose();
+                    }
+                    buildingMesh.nameLabel.dispose();
+                }
+                buildingMesh.nameLabel = null;
+            } catch (error) {
+                console.error('❌ Erro ao remover label do edifício:', error);
+            }
+        }
+    }
+
+    // ===== EFICIÊNCIA DOS EDIFÍCIOS =====
     updateBuildingEfficiency(building) {
         // Só atualizar eficiência para edifícios ativos
         if (!building.active || building.underConstruction) {
