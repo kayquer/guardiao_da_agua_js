@@ -52,6 +52,9 @@ class BuildingSystem {
         this.constructionQueue = new Map(); // buildingId -> construction data
         this.constructionInProgress = false;
 
+        // Throttling para atualizações de eficiência
+        this.lastEfficiencyUpdate = 0;
+
         this.initializeBuildingTypes();
         this.createMaterials();
         
@@ -1829,13 +1832,35 @@ class BuildingSystem {
 
         this.isProcessingDisposal = true;
 
+        // Verificar se a fila não está crescendo indefinidamente
+        if (this.disposalQueue.length > 100) {
+            console.warn(`⚠️ Fila de disposal muito grande (${this.disposalQueue.length} itens), limpando...`);
+            // Processar todos os itens imediatamente para evitar memory leak
+            while (this.disposalQueue.length > 0) {
+                const item = this.disposalQueue.shift();
+                if (item) {
+                    try {
+                        this.performDisposal(item);
+                    } catch (error) {
+                        console.error('❌ Erro durante limpeza forçada:', error);
+                    }
+                }
+            }
+            this.isProcessingDisposal = false;
+            return;
+        }
+
         // Processar até disposalBatchSize itens por frame
         const batchSize = Math.min(this.disposalBatchSize, this.disposalQueue.length);
 
         for (let i = 0; i < batchSize; i++) {
             const item = this.disposalQueue.shift();
             if (item) {
-                this.performDisposal(item);
+                try {
+                    this.performDisposal(item);
+                } catch (error) {
+                    console.error(`❌ Erro ao processar disposal de ${item.meshName}:`, error);
+                }
             }
         }
 
@@ -2053,21 +2078,50 @@ class BuildingSystem {
     
     // ===== ATUALIZAÇÃO =====
     update(deltaTime) {
-        // Atualizar eficiência dos edifícios baseado em condições
-        this.buildings.forEach(building => {
-            this.updateBuildingEfficiency(building);
-        });
+        try {
+            // Atualizar eficiência dos edifícios baseado em condições (com throttling)
+            if (!this.lastEfficiencyUpdate || Date.now() - this.lastEfficiencyUpdate > 5000) {
+                this.buildings.forEach(building => {
+                    try {
+                        this.updateBuildingEfficiency(building);
+                    } catch (error) {
+                        console.error(`❌ Erro ao atualizar eficiência do edifício ${building.id}:`, error);
+                    }
+                });
+                this.lastEfficiencyUpdate = Date.now();
+            }
 
-        // Processar fila de disposal se necessário
-        if (this.disposalQueue.length > 0 && !this.isProcessingDisposal) {
-            this.processDisposalQueue();
+            // Processar fila de disposal se necessário
+            if (this.disposalQueue.length > 0 && !this.isProcessingDisposal) {
+                try {
+                    this.processDisposalQueue();
+                } catch (error) {
+                    console.error('❌ Erro ao processar fila de disposal:', error);
+                    // Reset da fila em caso de erro crítico
+                    this.isProcessingDisposal = false;
+                }
+            }
+
+            // Atualizar cooldown de construção
+            try {
+                this.updateBuildingCooldown(deltaTime);
+            } catch (error) {
+                console.error('❌ Erro ao atualizar cooldown:', error);
+            }
+
+            // Atualizar construções em andamento
+            try {
+                this.updateConstructions(deltaTime);
+            } catch (error) {
+                console.error('❌ Erro ao atualizar construções:', error);
+                // Reset do sistema de construção em caso de erro crítico
+                this.constructionInProgress = false;
+                this.constructionQueue.clear();
+            }
+
+        } catch (error) {
+            console.error('❌ Erro crítico no update do BuildingSystem:', error);
         }
-
-        // Atualizar cooldown de construção
-        this.updateBuildingCooldown(deltaTime);
-
-        // Atualizar construções em andamento
-        this.updateConstructions(deltaTime);
     }
 
     // ===== SISTEMA DE CONSTRUÇÃO =====
@@ -2097,18 +2151,45 @@ class BuildingSystem {
             return;
         }
 
-        this.constructionQueue.forEach((buildingData, buildingId) => {
-            const elapsed = Date.now() - buildingData.constructionStartTime;
-            const progress = Math.min(1, elapsed / buildingData.constructionDuration);
+        // Usar Array.from para evitar problemas com modificação durante iteração
+        const constructionsToUpdate = Array.from(this.constructionQueue.entries());
+        const completedConstructions = [];
 
-            // Atualizar indicador de progresso
-            this.updateConstructionIndicator(buildingData, progress);
+        for (const [buildingId, buildingData] of constructionsToUpdate) {
+            try {
+                const elapsed = Date.now() - buildingData.constructionStartTime;
+                const progress = Math.min(1, elapsed / buildingData.constructionDuration);
 
-            // Verificar se construção terminou
-            if (progress >= 1) {
+                // Atualizar indicador de progresso
+                this.updateConstructionIndicator(buildingData, progress);
+
+                // Verificar se construção terminou
+                if (progress >= 1) {
+                    completedConstructions.push(buildingData);
+                }
+            } catch (error) {
+                console.error(`❌ Erro ao atualizar construção ${buildingId}:`, error);
+                // Remover construção problemática da fila
+                this.constructionQueue.delete(buildingId);
+            }
+        }
+
+        // Completar construções fora do loop principal
+        completedConstructions.forEach(buildingData => {
+            try {
                 this.completeConstruction(buildingData);
+            } catch (error) {
+                console.error(`❌ Erro ao completar construção ${buildingData.id}:`, error);
+                // Remover da fila mesmo com erro
+                this.constructionQueue.delete(buildingData.id);
             }
         });
+
+        // Verificar se ainda há construções em andamento
+        if (this.constructionQueue.size === 0) {
+            this.constructionInProgress = false;
+            console.log('✅ Todas as construções concluídas');
+        }
     }
 
     completeConstruction(buildingData) {
@@ -2329,19 +2410,35 @@ class BuildingSystem {
     }
     
     updateBuildingEfficiency(building) {
+        // Só atualizar eficiência para edifícios ativos
+        if (!building.active || building.underConstruction) {
+            return;
+        }
+
         let efficiency = 1.0;
-        
+
         // Reduzir eficiência baseado na poluição local
         // TODO: Implementar cálculo de poluição local
-        
+
         // Reduzir eficiência se falta manutenção
         // TODO: Implementar sistema de manutenção
-        
-        if (building.efficiency !== efficiency) {
+
+        // Só reaplicar efeitos se a eficiência realmente mudou
+        if (Math.abs(building.efficiency - efficiency) > 0.01) {
+            const oldEfficiency = building.efficiency;
             building.efficiency = efficiency;
-            // Reaplicar efeitos com nova eficiência
-            this.applyBuildingEffects(building, false);
-            this.applyBuildingEffects(building, true);
+
+            // Reaplicar efeitos com nova eficiência de forma otimizada
+            try {
+                this.applyBuildingEffects(building, false); // Remover efeitos antigos
+                this.applyBuildingEffects(building, true);  // Aplicar novos efeitos
+
+                console.log(`🔧 Eficiência atualizada para ${building.config.name}: ${oldEfficiency.toFixed(2)} -> ${efficiency.toFixed(2)}`);
+            } catch (error) {
+                console.error(`❌ Erro ao atualizar eficiência do edifício ${building.id}:`, error);
+                // Restaurar eficiência anterior em caso de erro
+                building.efficiency = oldEfficiency;
+            }
         }
     }
     
