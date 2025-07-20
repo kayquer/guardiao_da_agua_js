@@ -1435,3 +1435,24 @@
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
 }
+
+/* ===== EFEITOS DE ESCASSEZ DE ENERGIA ===== */
+.building-status.power-shortage {
+    color: #ff4444 !important;
+    font-weight: bold;
+    animation: powerShortageFlash 2s infinite;
+}
+
+.power-shortage-warning {
+    color: #ff4444 !important;
+    font-weight: bold;
+    background: rgba(255, 68, 68, 0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 68, 68, 0.3);
+}
+
+@keyframes powerShortageFlash {
+    0%, 50% { opacity: 1; }
+    25%, 75% { opacity: 0.6; }
+}

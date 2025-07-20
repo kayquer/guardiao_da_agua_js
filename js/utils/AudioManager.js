@@ -150,6 +150,9 @@ class AudioManager {
         // Som de água (ruído branco filtrado)
         this.createWaterSound('sfx_water');
 
+        // Sons ambientes para ciclo dia/noite
+        this.createAmbientSounds();
+
         // Criar mapeamentos para compatibilidade com código existente
         this.createSoundMappings();
     }
@@ -249,7 +252,172 @@ class AudioManager {
             audio: null
         });
     }
-    
+
+    // ===== SONS AMBIENTES =====
+    createAmbientSounds() {
+        console.log('🌅 Criando sons ambientes para ciclo dia/noite...');
+
+        // Tentar carregar sons de arquivo primeiro
+        this.loadEnvironmentSounds();
+
+        // Criar sons procedurais como fallback
+        this.createProceduralAmbientSounds();
+    }
+
+    loadEnvironmentSounds() {
+        // Verificar se os arquivos de som existem
+        const environmentSounds = [
+            'morning-sound',
+            'night-sound'
+        ];
+
+        environmentSounds.forEach(soundName => {
+            // Tentar carregar do AssetLoader se disponível
+            if (typeof AssetLoader !== 'undefined' && AssetLoader.instance) {
+                const asset = AssetLoader.getAsset(`sfx_${soundName}`);
+                if (asset && asset.audio) {
+                    this.sounds.set(`sfx_${soundName}`, asset);
+                    console.log(`🌅 Som ambiente carregado: ${soundName}`);
+                    return;
+                }
+            }
+
+            // Tentar carregar diretamente
+            this.loadEnvironmentSoundFile(soundName);
+        });
+    }
+
+    loadEnvironmentSoundFile(soundName) {
+        try {
+            const audio = new Audio(`Sounds/SFX/Environment/${soundName}.mp3`);
+            audio.preload = 'auto';
+
+            audio.addEventListener('canplaythrough', () => {
+                this.sounds.set(`sfx_${soundName}`, {
+                    play: () => {
+                        audio.currentTime = 0;
+                        audio.volume = this.sfxVolume * this.masterVolume;
+                        audio.play().catch(error => {
+                            console.warn(`⚠️ Erro ao reproduzir ${soundName}:`, error);
+                        });
+                    },
+                    setVolume: (volume) => {
+                        audio.volume = volume * this.sfxVolume * this.masterVolume;
+                    },
+                    pause: () => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    },
+                    audio: audio
+                });
+                console.log(`🌅 Som ambiente carregado: ${soundName}`);
+            });
+
+            audio.addEventListener('error', () => {
+                console.log(`⚠️ Arquivo ${soundName}.mp3 não encontrado, usando som procedural`);
+            });
+
+        } catch (error) {
+            console.log(`⚠️ Erro ao carregar ${soundName}, usando som procedural:`, error);
+        }
+    }
+
+    createProceduralAmbientSounds() {
+        // Criar som de manhã (pássaros cantando)
+        this.createMorningSoundProcedural();
+
+        // Criar som de noite (grilos e vento)
+        this.createNightSoundProcedural();
+    }
+
+    createMorningSoundProcedural() {
+        if (!window.AudioContext && !window.webkitAudioContext) return;
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        const playMorningSound = () => {
+            // Simular pássaros com tons aleatórios
+            const duration = 3.0;
+            const birdFrequencies = [800, 1200, 1600, 2000];
+
+            birdFrequencies.forEach((freq, index) => {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                    oscillator.type = 'sine';
+
+                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(this.sfxVolume * this.masterVolume * 0.1, audioContext.currentTime + 0.1);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                }, index * 200);
+            });
+        };
+
+        this.sounds.set('sfx_morning-sound', {
+            play: playMorningSound,
+            setVolume: () => {},
+            pause: () => {},
+            audio: null
+        });
+
+        console.log('🌅 Som procedural de manhã criado');
+    }
+
+    createNightSoundProcedural() {
+        if (!window.AudioContext && !window.webkitAudioContext) return;
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        const playNightSound = () => {
+            // Simular grilos com ruído filtrado
+            const duration = 2.0;
+
+            // Criar ruído branco para simular grilos
+            const bufferSize = audioContext.sampleRate * duration;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * 0.1;
+            }
+
+            const source = audioContext.createBufferSource();
+            const filter = audioContext.createBiquadFilter();
+            const gainNode = audioContext.createGain();
+
+            source.buffer = buffer;
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(3000, audioContext.currentTime);
+            filter.Q.setValueAtTime(10, audioContext.currentTime);
+
+            source.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            gainNode.gain.setValueAtTime(this.sfxVolume * this.masterVolume * 0.05, audioContext.currentTime);
+
+            source.start(audioContext.currentTime);
+            source.stop(audioContext.currentTime + duration);
+        };
+
+        this.sounds.set('sfx_night-sound', {
+            play: playNightSound,
+            setVolume: () => {},
+            pause: () => {},
+            audio: null
+        });
+
+        console.log('🌙 Som procedural de noite criado');
+    }
+
     // ===== REPRODUÇÃO DE SONS =====
     playSound(key, volume = 1.0) {
         if (!this.enabled) return;
@@ -501,8 +669,62 @@ class AudioManager {
         this.sounds.clear();
         this.music.clear();
         this.soundPools.clear();
-        
+
         console.log('🗑️ AudioManager disposed');
+    }
+
+    // ===== SONS DE TRANSIÇÃO DIA/NOITE =====
+    playDayNightTransition(transitionType) {
+        if (!this.enabled) return;
+
+        let soundKey;
+        if (transitionType === 'morning' || transitionType === 'dawn') {
+            soundKey = 'sfx_morning-sound';
+        } else if (transitionType === 'night' || transitionType === 'dusk') {
+            soundKey = 'sfx_night-sound';
+        } else {
+            console.warn(`⚠️ Tipo de transição desconhecido: ${transitionType}`);
+            return;
+        }
+
+        // Reproduzir som com fade-in suave
+        this.playAmbientSoundWithFade(soundKey, 0.3);
+
+        console.log(`🌅 Som de transição reproduzido: ${transitionType}`);
+    }
+
+    playAmbientSoundWithFade(soundKey, targetVolume = 0.5) {
+        const sound = this.sounds.get(soundKey);
+        if (!sound) {
+            console.warn(`⚠️ Som ambiente não encontrado: ${soundKey}`);
+            return;
+        }
+
+        try {
+            // Configurar volume inicial baixo
+            sound.setVolume(0.01);
+            sound.play();
+
+            // Fade-in gradual
+            const fadeSteps = 20;
+            const fadeTime = 1500; // 1.5 segundos
+            const stepTime = fadeTime / fadeSteps;
+            const volumeStep = (targetVolume * this.sfxVolume * this.masterVolume) / fadeSteps;
+
+            let currentStep = 0;
+            const fadeInterval = setInterval(() => {
+                currentStep++;
+                const newVolume = volumeStep * currentStep;
+                sound.setVolume(newVolume / (this.sfxVolume * this.masterVolume));
+
+                if (currentStep >= fadeSteps) {
+                    clearInterval(fadeInterval);
+                }
+            }, stepTime);
+
+        } catch (error) {
+            console.error(`❌ Erro ao reproduzir som ambiente ${soundKey}:`, error);
+        }
     }
 }
 
@@ -523,6 +745,10 @@ AudioManager.playSound = function(key, volume) {
 
 AudioManager.playMusic = function(key, fadeIn) {
     AudioManager.getInstance().playMusic(key, fadeIn);
+};
+
+AudioManager.playDayNightTransition = function(transitionType) {
+    AudioManager.getInstance().playDayNightTransition(transitionType);
 };
 
 console.log('🔊 AudioManager carregado');

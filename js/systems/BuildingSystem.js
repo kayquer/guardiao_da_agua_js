@@ -1833,6 +1833,11 @@ class BuildingSystem {
         // Remover do sistema imediatamente
         this.buildings.delete(buildingId);
 
+        // Remover conexões de infraestrutura
+        if (this.isInfrastructureBuilding(building.config)) {
+            this.removeInfrastructureConnections(building);
+        }
+
         // Remover label do edifício
         if (building.mesh) {
             this.removeBuildingNameLabel(building.mesh);
@@ -2138,6 +2143,12 @@ class BuildingSystem {
     // ===== ATUALIZAÇÃO =====
     update(deltaTime) {
         try {
+            // Atualizar animações dos labels de edifícios
+            this.updateBuildingLabels(deltaTime);
+
+            // Atualizar efeitos de escassez de energia
+            this.updatePowerShortageEffects(deltaTime);
+
             // Atualizar eficiência dos edifícios baseado em condições (com throttling)
             if (!this.lastEfficiencyUpdate || Date.now() - this.lastEfficiencyUpdate > 5000) {
                 this.buildings.forEach(building => {
@@ -2573,10 +2584,18 @@ class BuildingSystem {
 
             labelPlane.material = labelMaterial;
 
+            // Inicialmente oculto - só aparece no hover ou seleção
+            labelPlane.visibility = 0;
+            labelPlane.isVisible = false;
+
             // Armazenar referência no mesh do edifício
             buildingMesh.nameLabel = labelPlane;
 
-            console.log(`✅ Label criado para ${buildingType.name}: "${text}"`);
+            // Adicionar propriedades para animação
+            labelPlane.targetVisibility = 0;
+            labelPlane.fadeSpeed = 5; // Velocidade da transição (5 = 200ms)
+
+            console.log(`✅ Label criado para ${buildingType.name}: "${text}" (inicialmente oculto)`);
 
         } catch (error) {
             console.error(`❌ Erro ao criar label para ${buildingType.name}:`, error);
@@ -2606,6 +2625,85 @@ class BuildingSystem {
         }
     }
 
+    // ===== CONTROLE DE VISIBILIDADE DOS LABELS =====
+    showBuildingLabel(buildingMesh, immediate = false) {
+        if (!buildingMesh || !buildingMesh.nameLabel) return;
+
+        const label = buildingMesh.nameLabel;
+        label.isVisible = true;
+        label.targetVisibility = 1;
+
+        if (immediate) {
+            label.visibility = 1;
+        }
+    }
+
+    hideBuildingLabel(buildingMesh, immediate = false) {
+        if (!buildingMesh || !buildingMesh.nameLabel) return;
+
+        const label = buildingMesh.nameLabel;
+        label.targetVisibility = 0;
+
+        if (immediate) {
+            label.visibility = 0;
+            label.isVisible = false;
+        }
+    }
+
+    // Atualizar animações dos labels (chamado no update loop)
+    updateBuildingLabels(deltaTime) {
+        this.buildings.forEach(building => {
+            if (building.mesh && building.mesh.nameLabel) {
+                const label = building.mesh.nameLabel;
+
+                // Animar transição suave
+                if (Math.abs(label.visibility - label.targetVisibility) > 0.01) {
+                    const direction = label.targetVisibility > label.visibility ? 1 : -1;
+                    label.visibility += direction * label.fadeSpeed * deltaTime;
+
+                    // Clamp entre 0 e 1
+                    label.visibility = Math.max(0, Math.min(1, label.visibility));
+
+                    // Ocultar completamente quando invisível
+                    if (label.visibility <= 0.01) {
+                        label.visibility = 0;
+                        label.isVisible = false;
+                    }
+                }
+            }
+        });
+    }
+
+    // Atualizar efeitos de escassez de energia (chamado no update loop)
+    updatePowerShortageEffects(deltaTime) {
+        this.buildings.forEach(building => {
+            if (building.mesh && building.mesh.powerShortageFlicker) {
+                const flicker = building.mesh.powerShortageFlicker;
+                flicker.time += deltaTime;
+
+                // Verificar se é hora de piscar
+                if (flicker.time >= flicker.interval) {
+                    flicker.time = 0;
+
+                    // Aplicar efeito de piscada
+                    if (building.mesh.material) {
+                        const originalAlpha = building.mesh.material.alpha || 1;
+
+                        // Piscar reduzindo a opacidade
+                        building.mesh.material.alpha = 0.3;
+
+                        // Restaurar opacidade após a duração do piscar
+                        setTimeout(() => {
+                            if (building.mesh && building.mesh.material) {
+                                building.mesh.material.alpha = originalAlpha;
+                            }
+                        }, flicker.duration * 1000);
+                    }
+                }
+            }
+        });
+    }
+
     // ===== EFICIÊNCIA DOS EDIFÍCIOS =====
     updateBuildingEfficiency(building) {
         // Só atualizar eficiência para edifícios ativos
@@ -2614,6 +2712,27 @@ class BuildingSystem {
         }
 
         let efficiency = 1.0;
+        let hasPowerShortage = false;
+
+        // Verificar se o edifício consome energia
+        if (building.config.powerConsumption && window.gameManager && window.gameManager.resourceManager) {
+            const electricityData = window.gameManager.resourceManager.getElectricity();
+
+            // Se a eficiência elétrica está baixa, há escassez de energia
+            if (electricityData.efficiency < 1.0) {
+                hasPowerShortage = true;
+                efficiency *= electricityData.efficiency; // Reduzir eficiência baseado na disponibilidade de energia
+            }
+        }
+
+        // Atualizar status de escassez de energia
+        const hadPowerShortage = building.hasPowerShortage || false;
+        building.hasPowerShortage = hasPowerShortage;
+
+        // Aplicar efeitos visuais de escassez de energia
+        if (hasPowerShortage !== hadPowerShortage) {
+            this.updatePowerShortageVisuals(building, hasPowerShortage);
+        }
 
         // Reduzir eficiência baseado na poluição local
         // TODO: Implementar cálculo de poluição local
@@ -2639,7 +2758,145 @@ class BuildingSystem {
             }
         }
     }
-    
+
+    // ===== EFEITOS VISUAIS DE ESCASSEZ DE ENERGIA =====
+    updatePowerShortageVisuals(building, hasPowerShortage) {
+        if (!building.mesh) return;
+
+        try {
+            if (hasPowerShortage) {
+                this.addPowerShortageEffects(building);
+            } else {
+                this.removePowerShortageEffects(building);
+            }
+        } catch (error) {
+            console.error(`❌ Erro ao atualizar efeitos visuais de energia para ${building.id}:`, error);
+        }
+    }
+
+    addPowerShortageEffects(building) {
+        const mesh = building.mesh;
+
+        // Criar ícone de escassez de energia se não existir
+        if (!mesh.powerShortageIcon) {
+            this.createPowerShortageIcon(building);
+        }
+
+        // Aplicar efeito de escurecimento no material
+        if (mesh.material && !mesh.originalEmissiveColor) {
+            // Salvar cor original
+            mesh.originalEmissiveColor = mesh.material.emissiveColor ? mesh.material.emissiveColor.clone() : new BABYLON.Color3(0, 0, 0);
+            mesh.originalDiffuseColor = mesh.material.diffuseColor ? mesh.material.diffuseColor.clone() : new BABYLON.Color3(1, 1, 1);
+
+            // Aplicar escurecimento
+            mesh.material.emissiveColor = mesh.originalEmissiveColor.scale(0.3);
+            mesh.material.diffuseColor = mesh.originalDiffuseColor.scale(0.6);
+        }
+
+        // Iniciar efeito de piscada
+        if (!mesh.powerShortageFlicker) {
+            mesh.powerShortageFlicker = {
+                time: 0,
+                interval: 2.0, // Piscar a cada 2 segundos
+                duration: 0.3   // Duração do piscar
+            };
+        }
+
+        console.log(`⚡❌ Efeitos de escassez de energia aplicados a ${building.config.name}`);
+    }
+
+    removePowerShortageEffects(building) {
+        const mesh = building.mesh;
+
+        // Remover ícone de escassez de energia
+        if (mesh.powerShortageIcon) {
+            this.removePowerShortageIcon(building);
+        }
+
+        // Restaurar cores originais
+        if (mesh.material && mesh.originalEmissiveColor) {
+            mesh.material.emissiveColor = mesh.originalEmissiveColor;
+            mesh.material.diffuseColor = mesh.originalDiffuseColor;
+            mesh.originalEmissiveColor = null;
+            mesh.originalDiffuseColor = null;
+        }
+
+        // Remover efeito de piscada
+        mesh.powerShortageFlicker = null;
+
+        console.log(`⚡✅ Efeitos de escassez de energia removidos de ${building.config.name}`);
+    }
+
+    createPowerShortageIcon(building) {
+        try {
+            const mesh = building.mesh;
+            const worldPos = mesh.position;
+
+            // Criar plano para o ícone
+            const iconPlane = BABYLON.MeshBuilder.CreatePlane(`powerIcon_${mesh.name}`, {
+                width: 1.5,
+                height: 1.5
+            }, this.scene);
+
+            // Posicionar acima do edifício
+            iconPlane.position.x = worldPos.x + 1;
+            iconPlane.position.z = worldPos.z + 1;
+            iconPlane.position.y = this.getBuildingHeight(building.config) + 2;
+            iconPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+
+            // Criar textura dinâmica com ícone
+            const dynamicTexture = new BABYLON.DynamicTexture(`powerIconTexture_${mesh.name}`,
+                { width: 256, height: 256 }, this.scene);
+
+            // Desenhar ícone de escassez de energia
+            const font = "bold 120px Arial";
+            const icon = "⚡❌";
+            dynamicTexture.drawText(icon, null, null, font, "#FF4444", "transparent", true);
+
+            // Criar material para o ícone
+            const iconMaterial = new BABYLON.StandardMaterial(`powerIconMat_${mesh.name}`, this.scene);
+            iconMaterial.diffuseTexture = dynamicTexture;
+            iconMaterial.emissiveTexture = dynamicTexture;
+            iconMaterial.emissiveColor = new BABYLON.Color3(1, 0.2, 0.2);
+            iconMaterial.backFaceCulling = false;
+            iconMaterial.hasAlpha = true;
+
+            iconPlane.material = iconMaterial;
+
+            // Armazenar referência
+            mesh.powerShortageIcon = iconPlane;
+
+            console.log(`⚡ Ícone de escassez de energia criado para ${building.config.name}`);
+
+        } catch (error) {
+            console.error(`❌ Erro ao criar ícone de escassez de energia:`, error);
+        }
+    }
+
+    removePowerShortageIcon(building) {
+        const mesh = building.mesh;
+        if (mesh.powerShortageIcon) {
+            try {
+                if (!mesh.powerShortageIcon.isDisposed()) {
+                    // Limpar material e textura
+                    if (mesh.powerShortageIcon.material) {
+                        if (mesh.powerShortageIcon.material.diffuseTexture) {
+                            mesh.powerShortageIcon.material.diffuseTexture.dispose();
+                        }
+                        if (mesh.powerShortageIcon.material.emissiveTexture) {
+                            mesh.powerShortageIcon.material.emissiveTexture.dispose();
+                        }
+                        mesh.powerShortageIcon.material.dispose();
+                    }
+                    mesh.powerShortageIcon.dispose();
+                }
+                mesh.powerShortageIcon = null;
+            } catch (error) {
+                console.error('❌ Erro ao remover ícone de escassez de energia:', error);
+            }
+        }
+    }
+
     // ===== GETTERS =====
     getBuildingTypes() { return Array.from(this.buildingTypes.values()); }
     getBuildingTypesByCategory(category) {
@@ -2783,6 +3040,10 @@ class BuildingSystem {
     updatePreview(gridX, gridZ) {
         if (!this.previewMode || !this.selectedBuildingType) return;
 
+        // Forçar alinhamento ao grid - garantir que as coordenadas sejam inteiras
+        gridX = Math.floor(gridX);
+        gridZ = Math.floor(gridZ);
+
         // Verificar se mudou de posição
         if (gridX === this.lastPreviewPosition.x && gridZ === this.lastPreviewPosition.z) {
             return;
@@ -2790,8 +3051,14 @@ class BuildingSystem {
 
         this.lastPreviewPosition = { x: gridX, z: gridZ };
 
+        const buildingType = this.buildingTypes.get(this.selectedBuildingType);
+        if (!buildingType) return;
+
         // Verificar se a posição é válida usando o método correto
         const canPlaceResult = this.canPlaceBuilding(gridX, gridZ, this.selectedBuildingType);
+
+        // Verificar se todas as células necessárias estão dentro dos limites do grid
+        const isWithinBounds = this.isPlacementWithinBounds(gridX, gridZ, buildingType.size);
 
         // Atualizar posição dos meshes
         if (this.previewMesh) {
@@ -2808,7 +3075,7 @@ class BuildingSystem {
 
             // Mudar cor baseado na validade
             const material = this.previewMarker.material;
-            if (canPlaceResult.canPlace) {
+            if (canPlaceResult.canPlace && isWithinBounds) {
                 material.diffuseColor = new BABYLON.Color3(0, 1, 0); // Verde
                 material.emissiveColor = new BABYLON.Color3(0, 0.3, 0);
             } else {
@@ -2818,6 +3085,9 @@ class BuildingSystem {
 
             this.previewMarker.setEnabled(true);
         }
+
+        // Mostrar indicadores de células ocupadas para edifícios multi-célula
+        this.updateMultiCellPreview(gridX, gridZ, buildingType.size, canPlaceResult.canPlace && isWithinBounds);
     }
 
     clearPreview() {
@@ -2831,14 +3101,120 @@ class BuildingSystem {
             this.previewMarker = null;
         }
 
+        // Limpar indicadores de células múltiplas
+        this.clearMultiCellPreview();
+
         this.lastPreviewPosition = { x: -1, z: -1 };
+    }
+
+    // ===== VALIDAÇÃO DE ALINHAMENTO AO GRID =====
+    isPlacementWithinBounds(gridX, gridZ, buildingSize) {
+        // Verificar se todas as células necessárias estão dentro dos limites do grid
+        for (let x = gridX; x < gridX + buildingSize; x++) {
+            for (let z = gridZ; z < gridZ + buildingSize; z++) {
+                if (x < 0 || x >= this.gridManager.gridSize ||
+                    z < 0 || z >= this.gridManager.gridSize) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    // ===== PREVIEW MULTI-CÉLULA =====
+    updateMultiCellPreview(gridX, gridZ, buildingSize, isValid) {
+        // Limpar preview anterior
+        this.clearMultiCellPreview();
+
+        // Se for edifício de uma célula, não precisa de indicadores extras
+        if (buildingSize <= 1) return;
+
+        // Criar indicadores para cada célula que o edifício ocupará
+        this.multiCellIndicators = [];
+
+        for (let x = gridX; x < gridX + buildingSize; x++) {
+            for (let z = gridZ; z < gridZ + buildingSize; z++) {
+                // Pular a célula central (já tem o marcador principal)
+                if (x === gridX && z === gridZ) continue;
+
+                const indicator = this.createCellIndicator(x, z, isValid);
+                if (indicator) {
+                    this.multiCellIndicators.push(indicator);
+                }
+            }
+        }
+    }
+
+    createCellIndicator(gridX, gridZ, isValid) {
+        try {
+            // Verificar se está dentro dos limites
+            if (gridX < 0 || gridX >= this.gridManager.gridSize ||
+                gridZ < 0 || gridZ >= this.gridManager.gridSize) {
+                return null;
+            }
+
+            const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
+
+            // Criar indicador pequeno
+            const indicator = BABYLON.MeshBuilder.CreateGround(`cell_indicator_${gridX}_${gridZ}`, {
+                width: 1.5,
+                height: 1.5
+            }, this.scene);
+
+            indicator.position.x = worldPos.x;
+            indicator.position.z = worldPos.z;
+            indicator.position.y = 0.02; // Ligeiramente acima do terreno
+
+            // Material baseado na validade
+            const material = new BABYLON.StandardMaterial(`cell_indicator_mat_${gridX}_${gridZ}`, this.scene);
+            if (isValid) {
+                material.diffuseColor = new BABYLON.Color3(0, 0.8, 0); // Verde
+                material.emissiveColor = new BABYLON.Color3(0, 0.2, 0);
+            } else {
+                material.diffuseColor = new BABYLON.Color3(0.8, 0, 0); // Vermelho
+                material.emissiveColor = new BABYLON.Color3(0.2, 0, 0);
+            }
+            material.alpha = 0.4;
+
+            indicator.material = material;
+
+            return indicator;
+
+        } catch (error) {
+            console.error('❌ Erro ao criar indicador de célula:', error);
+            return null;
+        }
+    }
+
+    clearMultiCellPreview() {
+        if (this.multiCellIndicators) {
+            this.multiCellIndicators.forEach(indicator => {
+                if (indicator && !indicator.isDisposed()) {
+                    if (indicator.material) {
+                        indicator.material.dispose();
+                    }
+                    indicator.dispose();
+                }
+            });
+            this.multiCellIndicators = [];
+        }
     }
 
     confirmPlacement(gridX, gridZ) {
         if (!this.previewMode || !this.selectedBuildingType) return false;
 
+        // Forçar alinhamento ao grid - garantir que as coordenadas sejam inteiras
+        gridX = Math.floor(gridX);
+        gridZ = Math.floor(gridZ);
+
         const buildingType = this.buildingTypes.get(this.selectedBuildingType);
         if (!buildingType) return false;
+
+        // Verificar se está dentro dos limites do grid
+        if (!this.isPlacementWithinBounds(gridX, gridZ, buildingType.size)) {
+            console.warn(`⚠️ Construção fora dos limites do grid: (${gridX}, ${gridZ}) com tamanho ${buildingType.size}`);
+            return false;
+        }
 
         // Verificar se pode construir usando o método correto
         const canPlaceResult = this.canPlaceBuilding(gridX, gridZ, this.selectedBuildingType);
@@ -2851,7 +3227,7 @@ class BuildingSystem {
         const building = this.placeBuilding(gridX, gridZ, this.selectedBuildingType);
 
         if (building) {
-            console.log(`✅ Edifício ${buildingType.name} construído em (${gridX}, ${gridZ})`);
+            console.log(`✅ Edifício ${buildingType.name} construído em (${gridX}, ${gridZ}) com alinhamento perfeito ao grid`);
             return true;
         } else {
             console.error('❌ Falha ao construir edifício');
@@ -2981,6 +3357,46 @@ class BuildingSystem {
                 console.log(`🔗 Conectado: ${building.config.name} ↔ ${adjacentBuilding.config.name}`);
             }
         });
+
+        // Atualizar conexões de todos os edifícios adjacentes para garantir seamless connections
+        this.refreshAdjacentConnections(building);
+    }
+
+    refreshAdjacentConnections(centerBuilding) {
+        const { gridX, gridZ } = centerBuilding;
+        const adjacentPositions = [
+            { x: gridX - 1, z: gridZ },
+            { x: gridX + 1, z: gridZ },
+            { x: gridX, z: gridZ - 1 },
+            { x: gridX, z: gridZ + 1 }
+        ];
+
+        // Para cada posição adjacente, verificar se há outros edifícios adjacentes que precisam de conexões
+        adjacentPositions.forEach(pos => {
+            const building = this.getBuildingAt(pos.x, pos.z);
+            if (building && this.isInfrastructureBuilding(building.config)) {
+                // Verificar conexões deste edifício com seus adjacentes
+                const subAdjacentPositions = [
+                    { x: pos.x - 1, z: pos.z },
+                    { x: pos.x + 1, z: pos.z },
+                    { x: pos.x, z: pos.z - 1 },
+                    { x: pos.x, z: pos.z + 1 }
+                ];
+
+                subAdjacentPositions.forEach(subPos => {
+                    const subBuilding = this.getBuildingAt(subPos.x, subPos.z);
+                    if (subBuilding && this.canConnect(building, subBuilding)) {
+                        // Verificar se já existe conexão visual
+                        const connectionId1 = `connection_${building.id}_${subBuilding.id}`;
+                        const connectionId2 = `connection_${subBuilding.id}_${building.id}`;
+
+                        if (!this.connectionMeshes.has(connectionId1) && !this.connectionMeshes.has(connectionId2)) {
+                            this.updateConnectionVisual(building, subBuilding);
+                        }
+                    }
+                });
+            }
+        });
     }
 
     canConnect(building1, building2) {
@@ -3019,6 +3435,9 @@ class BuildingSystem {
     }
 
     updateConnectionVisual(building1, building2) {
+        // Criar conexão visual seamless entre infraestruturas adjacentes
+        this.createSeamlessConnection(building1, building2);
+
         // Atualizar material para mostrar conexão
         if (building1.mesh && building1.mesh.material) {
             const material = building1.mesh.material;
@@ -3034,6 +3453,177 @@ class BuildingSystem {
                 material.emissiveColor = new BABYLON.Color3(0.1, 0.1, 0.1);
             }
         }
+    }
+
+    // ===== CONEXÕES SEAMLESS =====
+    createSeamlessConnection(building1, building2) {
+        try {
+            // Verificar se ambos são do mesmo tipo de infraestrutura
+            if (!this.canCreateSeamlessConnection(building1, building2)) return;
+
+            const connectionId = `connection_${building1.id}_${building2.id}`;
+
+            // Evitar criar conexões duplicadas
+            if (this.connectionMeshes.has(connectionId)) return;
+
+            // Calcular posição da conexão (ponto médio entre os dois edifícios)
+            const pos1 = this.gridManager.gridToWorld(building1.gridX, building1.gridZ);
+            const pos2 = this.gridManager.gridToWorld(building2.gridX, building2.gridZ);
+
+            const connectionPos = {
+                x: (pos1.x + pos2.x) / 2,
+                y: Math.max(pos1.y, pos2.y),
+                z: (pos1.z + pos2.z) / 2
+            };
+
+            // Determinar orientação da conexão
+            const isHorizontal = Math.abs(building1.gridX - building2.gridX) > 0;
+
+            // Criar mesh de conexão
+            const connectionMesh = this.createConnectionMesh(building1, building2, connectionPos, isHorizontal);
+
+            if (connectionMesh) {
+                this.connectionMeshes.set(connectionId, connectionMesh);
+                console.log(`🔗 Conexão seamless criada entre ${building1.config.name} e ${building2.config.name}`);
+            }
+
+        } catch (error) {
+            console.error('❌ Erro ao criar conexão seamless:', error);
+        }
+    }
+
+    canCreateSeamlessConnection(building1, building2) {
+        // Verificar se são do mesmo tipo de infraestrutura
+        const type1 = building1.config.roadType || building1.config.category;
+        const type2 = building2.config.roadType || building2.config.category;
+
+        // Só criar conexões seamless para tipos compatíveis
+        if (type1 !== type2) return false;
+
+        // Verificar se são adjacentes (distância de 1 célula)
+        const distance = Math.abs(building1.gridX - building2.gridX) + Math.abs(building1.gridZ - building2.gridZ);
+        return distance === 1;
+    }
+
+    createConnectionMesh(building1, building2, position, isHorizontal) {
+        try {
+            const config1 = building1.config;
+
+            // Determinar dimensões da conexão baseado no tipo
+            let width, height, depth;
+
+            if (config1.roadType) {
+                // Conexão de estrada
+                width = isHorizontal ? 1.8 : 0.3;
+                height = 0.08;
+                depth = isHorizontal ? 0.3 : 1.8;
+            } else if (config1.id === 'sidewalk') {
+                // Conexão de calçada
+                width = isHorizontal ? 1.6 : 0.2;
+                height = 0.03;
+                depth = isHorizontal ? 0.2 : 1.6;
+            } else {
+                // Conexão genérica de infraestrutura
+                width = isHorizontal ? 1.5 : 0.25;
+                height = 0.05;
+                depth = isHorizontal ? 0.25 : 1.5;
+            }
+
+            // Criar mesh da conexão
+            const connectionMesh = BABYLON.MeshBuilder.CreateBox(`seamless_connection`, {
+                width: width,
+                height: height,
+                depth: depth
+            }, this.scene);
+
+            connectionMesh.position.x = position.x;
+            connectionMesh.position.y = position.y + height / 2;
+            connectionMesh.position.z = position.z;
+
+            // Aplicar material similar ao dos edifícios conectados
+            const material = this.createConnectionMaterial(config1);
+            connectionMesh.material = material;
+
+            // Metadados
+            connectionMesh.metadata = {
+                isConnection: true,
+                building1Id: building1.id,
+                building2Id: building2.id
+            };
+
+            return connectionMesh;
+
+        } catch (error) {
+            console.error('❌ Erro ao criar mesh de conexão:', error);
+            return null;
+        }
+    }
+
+    createConnectionMaterial(buildingConfig) {
+        const materialName = `connectionMat_${buildingConfig.id}`;
+
+        // Reutilizar material se já existir
+        if (this.materials.has(materialName)) {
+            return this.materials.get(materialName);
+        }
+
+        const material = new BABYLON.StandardMaterial(materialName, this.scene);
+
+        // Cor baseada no tipo de infraestrutura
+        if (buildingConfig.roadType === 'paved') {
+            material.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3); // Cinza escuro
+        } else if (buildingConfig.roadType === 'dirt') {
+            material.diffuseColor = new BABYLON.Color3(0.6, 0.4, 0.2); // Marrom terra
+        } else if (buildingConfig.id === 'sidewalk') {
+            material.diffuseColor = new BABYLON.Color3(0.7, 0.7, 0.7); // Cinza claro
+        } else {
+            material.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5); // Cinza médio
+        }
+
+        material.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+        material.roughness = 0.8;
+
+        this.materials.set(materialName, material);
+        return material;
+    }
+
+    // ===== REMOÇÃO DE CONEXÕES =====
+    removeInfrastructureConnections(building) {
+        if (!building.connections) return;
+
+        // Remover conexões visuais relacionadas a este edifício
+        const connectionsToRemove = [];
+
+        this.connectionMeshes.forEach((mesh, connectionId) => {
+            if (connectionId.includes(building.id)) {
+                connectionsToRemove.push(connectionId);
+
+                // Dispor o mesh de conexão
+                if (mesh && !mesh.isDisposed()) {
+                    if (mesh.material) {
+                        mesh.material.dispose();
+                    }
+                    mesh.dispose();
+                }
+            }
+        });
+
+        // Remover das estruturas de dados
+        connectionsToRemove.forEach(connectionId => {
+            this.connectionMeshes.delete(connectionId);
+        });
+
+        // Remover referências bidirecionais
+        building.connections.forEach(connectedId => {
+            const connectedBuilding = this.buildings.get(connectedId);
+            if (connectedBuilding && connectedBuilding.connections) {
+                connectedBuilding.connections.delete(building.id);
+            }
+        });
+
+        building.connections.clear();
+
+        console.log(`🔗 Conexões de infraestrutura removidas para ${building.config.name}`);
     }
 
     getConnectedBuildings(buildingId) {

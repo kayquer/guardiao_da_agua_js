@@ -71,6 +71,7 @@ class GameManager {
         this.gameStartTime = null;
         this.gameClockTime = null;
         this.dayNightCycle = 0; // 0-1 (0 = meia-noite, 0.5 = meio-dia)
+        this.lastDayNightState = null; // Para detectar transições
 
         // Sistema de hover/tooltip
         this.hoverInfo = null;
@@ -1078,8 +1079,29 @@ class GameManager {
     updateGameClock(deltaTime) {
         if (this.gameState !== 'playing') return;
 
-        // Avançar tempo do jogo (1 segundo real = 1 minuto no jogo por padrão)
-        const gameTimeAdvance = deltaTime * this.timeScale * 60; // 60x mais rápido
+        // Calcular multiplicador de tempo baseado na velocidade
+        let timeMultiplier;
+        switch (this.timeScale) {
+            case 1:
+                // 1x Speed: 1 segundo real = 1 minuto no jogo (60:1 ratio)
+                timeMultiplier = 60;
+                break;
+            case 2:
+                // 2x Speed: 10 game minutes = 1 real second (600:1 ratio)
+                timeMultiplier = 600;
+                break;
+            case 3:
+                // 3x Speed: 1 game hour = 1 real second (3600:1 ratio)
+                timeMultiplier = 3600;
+                break;
+            default:
+                // Fallback para velocidades customizadas
+                timeMultiplier = 60 * this.timeScale;
+                break;
+        }
+
+        // Avançar tempo do jogo com o multiplicador correto
+        const gameTimeAdvance = deltaTime * timeMultiplier;
         this.gameClockTime.setTime(this.gameClockTime.getTime() + gameTimeAdvance);
 
         // Atualizar ciclo dia/noite
@@ -1107,6 +1129,16 @@ class GameManager {
 
     updateDayNightLighting() {
         if (!this.scene) return;
+
+        // Determinar estado atual do dia/noite
+        const currentState = this.getDayNightState();
+
+        // Verificar se houve transição
+        if (this.lastDayNightState && this.lastDayNightState !== currentState) {
+            this.handleDayNightTransition(this.lastDayNightState, currentState);
+        }
+
+        this.lastDayNightState = currentState;
 
         // Encontrar luz ambiente
         const ambientLight = this.scene.getLightByName('ambientLight');
@@ -1146,6 +1178,40 @@ class GameManager {
         }
     }
 
+    getDayNightState() {
+        const hours = this.gameClockTime.getHours();
+
+        if (hours >= 6 && hours < 18) {
+            return 'day';
+        } else {
+            return 'night';
+        }
+    }
+
+    handleDayNightTransition(fromState, toState) {
+        console.log(`🌅 Transição dia/noite: ${fromState} -> ${toState}`);
+
+        // Reproduzir som de transição apropriado
+        if (typeof AudioManager !== 'undefined') {
+            if (toState === 'day') {
+                // Transição para o dia (manhã)
+                AudioManager.playDayNightTransition('morning');
+            } else if (toState === 'night') {
+                // Transição para a noite
+                AudioManager.playDayNightTransition('night');
+            }
+        }
+
+        // Mostrar notificação da transição
+        if (this.uiManager) {
+            const transitionMessage = toState === 'day' ?
+                '🌅 Amanheceu! Um novo dia começou.' :
+                '🌙 Anoiteceu! A cidade se prepara para descansar.';
+
+            this.uiManager.showNotification(transitionMessage, 'info');
+        }
+    }
+
     // ===== SISTEMA DE HOVER/TOOLTIP =====
     setupHoverSystem() {
         if (!this.scene || !this.canvas) return;
@@ -1158,6 +1224,7 @@ class GameManager {
         // Adicionar listener para sair da tela
         this.canvas.addEventListener('mouseleave', () => {
             this.hideHoverInfo();
+            this.hideAllBuildingLabels();
         });
 
         // Adicionar listener de clique para construção
@@ -1186,8 +1253,12 @@ class GameManager {
             const pickInfo = this.scene.pick(x, y);
 
             if (pickInfo.hit && pickInfo.pickedPoint) {
-                // Converter posição do mundo para grid
+                // Converter posição do mundo para grid com snap perfeito
                 const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
+
+                // Forçar alinhamento ao grid - garantir coordenadas inteiras
+                gridPos.x = Math.floor(gridPos.x);
+                gridPos.z = Math.floor(gridPos.z);
 
                 // Atualizar preview se estiver ativo
                 if (this.buildingSystem && this.buildingSystem.previewMode) {
@@ -1217,6 +1288,8 @@ class GameManager {
             gridZ < 0 || gridZ >= this.gridManager.gridSize) {
             this.hideHoverInfo();
             this.hideTerrainInfo();
+            // Ocultar todos os labels quando sair do grid
+            this.hideAllBuildingLabels();
             return;
         }
 
@@ -1224,6 +1297,9 @@ class GameManager {
         const building = this.buildingSystem.getBuildingAt(gridX, gridZ);
         const terrainType = this.gridManager.getTerrainType(gridX, gridZ);
         const isOccupied = this.gridManager.isOccupied(gridX, gridZ);
+
+        // Gerenciar visibilidade dos labels
+        this.updateBuildingLabelVisibility(gridX, gridZ, building);
 
         // Criar informações do hover
         let hoverData = {
@@ -1234,16 +1310,25 @@ class GameManager {
         };
 
         if (building) {
+            // Determinar status do edifício
+            let status = building.active ? 'Ativo' : 'Inativo';
+            if (building.hasPowerShortage) {
+                status = 'Escassez de Energia';
+            }
+
             // Informações do edifício
             hoverData.building = {
                 name: building.config.name,
                 type: building.config.category,
-                status: building.active ? 'Ativo' : 'Inativo',
+                status: status,
                 efficiency: Math.round(building.efficiency * 100) + '%',
                 waterProduction: building.config.waterProduction || 0,
                 waterConsumption: building.config.waterConsumption || 0,
+                powerConsumption: building.config.powerConsumption || 0,
+                powerGeneration: building.config.powerGeneration || 0,
                 pollutionGeneration: building.config.pollutionGeneration || 0,
-                maintenanceCost: building.config.maintenanceCost || 0
+                maintenanceCost: building.config.maintenanceCost || 0,
+                hasPowerShortage: building.hasPowerShortage || false
             };
             this.hideTerrainInfo(); // Esconder info do terreno quando há edifício
         } else {
@@ -1310,10 +1395,11 @@ class GameManager {
 
         if (this.hoverInfo.building) {
             const b = this.hoverInfo.building;
+            const statusClass = b.hasPowerShortage ? 'power-shortage' : '';
             content += `
                 <div class="tooltip-building">
                     <div class="building-name">${b.name}</div>
-                    <div class="building-status">Status: ${b.status}</div>
+                    <div class="building-status ${statusClass}">Status: ${b.status}</div>
                     <div class="building-efficiency">Eficiência: ${b.efficiency}</div>
             `;
 
@@ -1323,11 +1409,20 @@ class GameManager {
             if (b.waterConsumption > 0) {
                 content += `<div class="building-stat">🚰 Consumo: ${b.waterConsumption}L/s</div>`;
             }
+            if (b.powerGeneration > 0) {
+                content += `<div class="building-stat">⚡ Geração: ${b.powerGeneration} MW</div>`;
+            }
+            if (b.powerConsumption > 0) {
+                content += `<div class="building-stat">🔌 Consumo: ${b.powerConsumption} MW</div>`;
+            }
             if (b.pollutionGeneration > 0) {
                 content += `<div class="building-stat">🏭 Poluição: +${b.pollutionGeneration}/s</div>`;
             }
             if (b.maintenanceCost > 0) {
                 content += `<div class="building-stat">💰 Manutenção: R$ ${b.maintenanceCost}/min</div>`;
+            }
+            if (b.hasPowerShortage) {
+                content += `<div class="building-stat power-shortage-warning">⚡❌ Energia Insuficiente</div>`;
             }
 
             content += `</div>`;
@@ -1358,6 +1453,34 @@ class GameManager {
         if (tooltip) {
             tooltip.style.display = 'none';
         }
+    }
+
+    // ===== GERENCIAMENTO DE LABELS DE EDIFÍCIOS =====
+    updateBuildingLabelVisibility(gridX, gridZ, hoveredBuilding) {
+        if (!this.buildingSystem) return;
+
+        // Ocultar todos os labels primeiro
+        this.hideAllBuildingLabels();
+
+        // Mostrar label do edifício sob o mouse (se houver)
+        if (hoveredBuilding && hoveredBuilding.mesh) {
+            this.buildingSystem.showBuildingLabel(hoveredBuilding.mesh);
+        }
+
+        // Mostrar label do edifício selecionado (se diferente do hover)
+        if (this.selectedBuilding && this.selectedBuilding !== hoveredBuilding && this.selectedBuilding.mesh) {
+            this.buildingSystem.showBuildingLabel(this.selectedBuilding.mesh);
+        }
+    }
+
+    hideAllBuildingLabels() {
+        if (!this.buildingSystem) return;
+
+        this.buildingSystem.buildings.forEach(building => {
+            if (building.mesh) {
+                this.buildingSystem.hideBuildingLabel(building.mesh);
+            }
+        });
     }
 
     showTerrainInfo(terrainType, gridX, gridZ) {
@@ -1505,8 +1628,12 @@ class GameManager {
             const pickInfo = this.scene.pick(x, y);
 
             if (pickInfo.hit && pickInfo.pickedPoint) {
-                // Converter posição do mundo para grid
+                // Converter posição do mundo para grid com snap perfeito
                 const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
+
+                // Forçar alinhamento ao grid - garantir coordenadas inteiras
+                gridPos.x = Math.floor(gridPos.x);
+                gridPos.z = Math.floor(gridPos.z);
 
                 // Se estiver em modo preview, tentar construir
                 if (this.buildingSystem.previewMode) {
@@ -1628,8 +1755,35 @@ class GameManager {
     
     setTimeScale(scale) {
         this.timeScale = Math.max(0, Math.min(3, scale));
-        this.uiManager.updateTimeScaleUI(this.timeScale);
-        console.log(`⏱️ Velocidade do jogo: ${this.timeScale}x`);
+
+        // Atualizar UI
+        if (this.uiManager) {
+            this.uiManager.updateTimeScaleUI(this.timeScale);
+        }
+
+        // Mostrar informações detalhadas sobre a nova velocidade
+        let speedInfo;
+        switch (this.timeScale) {
+            case 1:
+                speedInfo = '1x (1 min real = 1 hora jogo)';
+                break;
+            case 2:
+                speedInfo = '2x (1 seg real = 10 min jogo)';
+                break;
+            case 3:
+                speedInfo = '3x (1 seg real = 1 hora jogo)';
+                break;
+            default:
+                speedInfo = `${this.timeScale}x (velocidade customizada)`;
+                break;
+        }
+
+        console.log(`⏱️ Velocidade do jogo alterada: ${speedInfo}`);
+
+        // Mostrar notificação na UI
+        if (this.uiManager) {
+            this.uiManager.showNotification(`Velocidade: ${speedInfo}`, 'info');
+        }
     }
     
     // ===== EVENTOS =====
