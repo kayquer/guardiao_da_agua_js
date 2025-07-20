@@ -197,9 +197,11 @@ class SettingsManager {
                 const value = parseFloat(e.target.value);
                 cameraSensitivityValue.textContent = `${value.toFixed(1)}x`;
                 this.settings.controls.cameraSensitivity = value;
+                console.log('🎮 Sensibilidade da câmera alterada para:', value);
+                this.applyControlsSettings();
             });
         }
-        
+
         // Velocidade do zoom
         const zoomSpeed = document.getElementById('zoom-speed');
         const zoomSpeedValue = document.getElementById('zoom-speed-value');
@@ -208,6 +210,8 @@ class SettingsManager {
                 const value = parseFloat(e.target.value);
                 zoomSpeedValue.textContent = `${value.toFixed(1)}x`;
                 this.settings.controls.zoomSpeed = value;
+                console.log('🔍 Velocidade do zoom alterada para:', value);
+                this.applyControlsSettings();
             });
         }
     }
@@ -485,10 +489,45 @@ class SettingsManager {
     }
     
     applyControlsSettings() {
-        // Aplicar configurações de controles
-        if (window.gameManager && window.gameManager.camera) {
-            // Sensibilidade da câmera será aplicada nos controles de câmera
-            console.log('⚙️ Configurações de controle aplicadas');
+        console.log('🎮 Aplicando configurações de controles...', this.settings.controls);
+
+        try {
+            if (window.gameManager && window.gameManager.camera) {
+                const camera = window.gameManager.camera;
+
+                // Aplicar sensibilidade da câmera
+                // Valores menores = mais sensível, valores maiores = menos sensível
+                const baseSensitivity = 1000;
+                const sensitivityMultiplier = 1 / this.settings.controls.cameraSensitivity;
+
+                camera.angularSensibilityX = baseSensitivity * sensitivityMultiplier;
+                camera.angularSensibilityY = baseSensitivity * sensitivityMultiplier;
+
+                console.log(`🎮 Sensibilidade da câmera aplicada: ${this.settings.controls.cameraSensitivity}x (${camera.angularSensibilityX})`);
+
+                // Aplicar velocidade do zoom
+                // Valores menores = zoom mais rápido, valores maiores = zoom mais lento
+                const baseZoomSpeed = 50;
+                const zoomMultiplier = 1 / this.settings.controls.zoomSpeed;
+
+                camera.wheelPrecision = baseZoomSpeed * zoomMultiplier;
+
+                console.log(`🔍 Velocidade do zoom aplicada: ${this.settings.controls.zoomSpeed}x (${camera.wheelPrecision})`);
+
+                // Aplicar velocidade de movimento WASD
+                if (window.gameManager.cameraControls) {
+                    const baseMovementSpeed = 0.5;
+                    window.gameManager.cameraControls.speed = baseMovementSpeed * this.settings.controls.cameraSensitivity;
+
+                    console.log(`🚶 Velocidade de movimento WASD aplicada: ${window.gameManager.cameraControls.speed}`);
+                }
+
+                console.log('✅ Configurações de controles aplicadas');
+            } else {
+                console.warn('⚠️ GameManager ou câmera não encontrados');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao aplicar configurações de controles:', error);
         }
     }
     
