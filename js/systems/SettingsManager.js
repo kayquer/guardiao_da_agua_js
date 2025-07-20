@@ -92,10 +92,11 @@ class SettingsManager {
                 const value = parseInt(e.target.value);
                 masterVolumeValue.textContent = `${value}%`;
                 this.settings.audio.masterVolume = value;
+                console.log('🔊 Volume geral alterado para:', value);
                 this.applyAudioSettings();
             });
         }
-        
+
         // Volume da música
         const musicVolume = document.getElementById('music-volume');
         const musicVolumeValue = document.getElementById('music-volume-value');
@@ -104,10 +105,11 @@ class SettingsManager {
                 const value = parseInt(e.target.value);
                 musicVolumeValue.textContent = `${value}%`;
                 this.settings.audio.musicVolume = value;
+                console.log('🎵 Volume da música alterado para:', value);
                 this.applyAudioSettings();
             });
         }
-        
+
         // Volume dos efeitos
         const sfxVolume = document.getElementById('sfx-volume');
         const sfxVolumeValue = document.getElementById('sfx-volume-value');
@@ -116,6 +118,7 @@ class SettingsManager {
                 const value = parseInt(e.target.value);
                 sfxVolumeValue.textContent = `${value}%`;
                 this.settings.audio.sfxVolume = value;
+                console.log('🔊 Volume dos efeitos alterado para:', value);
                 this.applyAudioSettings();
             });
         }
@@ -249,11 +252,11 @@ class SettingsManager {
     updateUI() {
         // Atualizar controles de áudio
         this.updateElement('master-volume', this.settings.audio.masterVolume);
-        this.updateElement('master-volume-value', `${this.settings.audio.masterVolume}%`);
+        this.updateElement('master-volume-value', `${this.settings.audio.masterVolume}%`, 'textContent');
         this.updateElement('music-volume', this.settings.audio.musicVolume);
-        this.updateElement('music-volume-value', `${this.settings.audio.musicVolume}%`);
+        this.updateElement('music-volume-value', `${this.settings.audio.musicVolume}%`, 'textContent');
         this.updateElement('sfx-volume', this.settings.audio.sfxVolume);
-        this.updateElement('sfx-volume-value', `${this.settings.audio.sfxVolume}%`);
+        this.updateElement('sfx-volume-value', `${this.settings.audio.sfxVolume}%`, 'textContent');
         
         // Atualizar controles de gráficos
         this.updateElement('graphics-quality', this.settings.graphics.quality);
@@ -287,11 +290,28 @@ class SettingsManager {
     
     // ===== APLICAÇÃO DE CONFIGURAÇÕES =====
     applyAudioSettings() {
-        if (window.AudioManager) {
-            const audioManager = AudioManager.getInstance();
-            audioManager.setMasterVolume(this.settings.audio.masterVolume / 100);
-            audioManager.setMusicVolume(this.settings.audio.musicVolume / 100);
-            audioManager.setSfxVolume(this.settings.audio.sfxVolume / 100);
+        console.log('🔊 Aplicando configurações de áudio...', this.settings.audio);
+
+        if (typeof AudioManager !== 'undefined') {
+            try {
+                const audioManager = AudioManager.getInstance();
+                console.log('🔊 AudioManager encontrado, aplicando volumes...');
+
+                // Aplicar volumes (converter de 0-100 para 0-1)
+                audioManager.setMasterVolume(this.settings.audio.masterVolume / 100);
+                audioManager.setMusicVolume(this.settings.audio.musicVolume / 100);
+                audioManager.setSfxVolume(this.settings.audio.sfxVolume / 100);
+
+                console.log('✅ Configurações de áudio aplicadas:', {
+                    master: audioManager.masterVolume,
+                    music: audioManager.musicVolume,
+                    sfx: audioManager.sfxVolume
+                });
+            } catch (error) {
+                console.error('❌ Erro ao aplicar configurações de áudio:', error);
+            }
+        } else {
+            console.warn('⚠️ AudioManager não encontrado');
         }
     }
     
@@ -355,13 +375,24 @@ class SettingsManager {
             if (saved) {
                 const loadedSettings = JSON.parse(saved);
                 this.settings = this.mergeSettings(this.defaultSettings, loadedSettings);
-                console.log('✅ Configurações carregadas');
-                
-                // Aplicar configurações carregadas
-                this.applyAudioSettings();
-                this.applyGraphicsSettings();
-                this.applyGameplaySettings();
-                this.applyControlsSettings();
+                console.log('✅ Configurações carregadas:', this.settings);
+
+                // Aplicar configurações carregadas com delay para garantir que os sistemas estejam prontos
+                setTimeout(() => {
+                    this.applyAudioSettings();
+                    this.applyGraphicsSettings();
+                    this.applyGameplaySettings();
+                    this.applyControlsSettings();
+                }, 100);
+            } else {
+                console.log('📝 Nenhuma configuração salva encontrada, usando padrões');
+                // Aplicar configurações padrão
+                setTimeout(() => {
+                    this.applyAudioSettings();
+                    this.applyGraphicsSettings();
+                    this.applyGameplaySettings();
+                    this.applyControlsSettings();
+                }, 100);
             }
         } catch (error) {
             console.warn('⚠️ Erro ao carregar configurações, usando padrões:', error);
