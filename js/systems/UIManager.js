@@ -186,10 +186,16 @@ class UIManager {
 
         // Água (formato: usado/capacidade)
         if (this.elements.waterAmount && resources.water) {
-            const current = Math.round(resources.water.current || 0);
-            const storage = Math.round(resources.water.storage || resources.water.max || 1);
+            // Garantir valores válidos para exibição
+            let current = resources.water.current;
+            if (current === null || current === undefined || isNaN(current)) {
+                current = 0;
+            }
+            current = Math.round(current);
+
+            const storage = Math.round(resources.water.storage || resources.water.max || 1000);
             this.elements.waterAmount.textContent = `${current}/${storage}L`;
-            this.updateResourceStatus(this.elements.waterAmount, resources.water.current || 0, storage);
+            this.updateResourceStatus(this.elements.waterAmount, current, storage);
         }
 
         // Poluição
@@ -216,9 +222,19 @@ class UIManager {
 
         // Energia
         if (this.elements.electricityAmount && resources.electricity) {
-            const current = Math.round(resources.electricity.current || 0);
             const generation = Math.round(resources.electricity.generation || 0);
-            this.elements.electricityAmount.textContent = `${current}/${generation} MW`;
+            const consumption = Math.round(resources.electricity.consumption || 0);
+            const balance = generation - consumption;
+
+            // Mostrar geração/consumo ao invés de current/generation
+            if (consumption > 0) {
+                this.elements.electricityAmount.textContent = `${generation}/${consumption} MW`;
+                // Adicionar classe de status baseada no balanço
+                this.elements.electricityAmount.className = balance >= 0 ? 'energy-sufficient' : 'energy-deficit';
+            } else {
+                this.elements.electricityAmount.textContent = `${generation}/0 MW`;
+                this.elements.electricityAmount.className = 'energy-sufficient';
+            }
         }
 
         // Relógio do jogo
@@ -902,23 +918,50 @@ class UIManager {
         this.limitNotifications();
     }
     
-    removeNotification(notification) {
-        if (notification && notification.parentElement) {
-            notification.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => {
-                if (notification.parentElement) {
-                    notification.parentElement.removeChild(notification);
-                }
-            }, 300);
+    removeNotification(notification, immediate = false) {
+        if (!notification || !notification.parentElement) return;
+
+        if (immediate) {
+            // Immediate removal without animation (used for cleanup)
+            notification.parentElement.removeChild(notification);
+            return;
         }
+
+        // Animated removal (used for user interactions)
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+            if (notification && notification.parentElement) {
+                notification.parentElement.removeChild(notification);
+            }
+        }, 300);
     }
     
     limitNotifications() {
         if (!this.elements.notifications) return;
-        
+
         const notifications = this.elements.notifications.children;
-        while (notifications.length > this.maxNotifications) {
-            this.removeNotification(notifications[0]);
+
+        // Prevent infinite loops by using a counter and immediate removal for excess notifications
+        let removalCount = 0;
+        const maxRemovals = 10; // Safety limit to prevent infinite loops
+
+        while (notifications.length > this.maxNotifications && removalCount < maxRemovals) {
+            const notificationToRemove = notifications[0];
+
+            // Immediately remove excess notifications without animation to prevent infinite loop
+            if (notificationToRemove && notificationToRemove.parentElement) {
+                notificationToRemove.parentElement.removeChild(notificationToRemove);
+                removalCount++;
+                console.log(`🗑️ Removed excess notification (${removalCount}/${notifications.length + removalCount})`);
+            } else {
+                // Safety break if we can't remove the element
+                console.warn('⚠️ Could not remove notification, breaking loop to prevent freeze');
+                break;
+            }
+        }
+
+        if (removalCount >= maxRemovals) {
+            console.warn('⚠️ Hit maximum removal limit in limitNotifications() - potential infinite loop prevented');
         }
     }
     
