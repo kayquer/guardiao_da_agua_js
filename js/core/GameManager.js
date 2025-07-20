@@ -141,7 +141,7 @@ class GameManager {
             this.gridManager = new GridManager(this.scene);
 
             console.log('🔧 Inicializando ResourceManager...');
-            this.resourceManager = new ResourceManager();
+            this.resourceManager = new ResourceManager(this);
 
             console.log('🔧 Inicializando BuildingSystem...');
             this.buildingSystem = new BuildingSystem(this.scene, this.gridManager);
@@ -1364,6 +1364,12 @@ class GameManager {
         const detailsPanel = document.getElementById('details-content');
         if (!detailsPanel) return;
 
+        // Verificar se há um painel de recurso aberto no UIManager
+        if (this.uiManager && this.uiManager.currentOpenPanel) {
+            // Não sobrescrever painéis de recursos ativos
+            return;
+        }
+
         const terrainName = this.getTerrainDisplayName(terrainType);
         const terrainDescription = this.getTerrainDescription(terrainType);
         const elevation = this.gridManager.elevationGrid[gridX][gridZ];
@@ -1415,6 +1421,11 @@ class GameManager {
     hideTerrainInfo() {
         const detailsPanel = document.getElementById('details-content');
         if (detailsPanel) {
+            // Verificar se há um painel de recurso aberto no UIManager
+            if (this.uiManager && this.uiManager.currentOpenPanel) {
+                // Não limpar painéis de recursos ativos
+                return;
+            }
             detailsPanel.innerHTML = '<p>Selecione um item para ver detalhes</p>';
         }
     }
