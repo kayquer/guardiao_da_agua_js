@@ -110,15 +110,38 @@ class ResourceManager {
     updateWater() {
         const water = this.resources.water;
 
-        // Produção - Consumo - Desperdício
-        const netChange = water.production - water.consumption - water.waste;
+        // Garantir que water.current não seja null ou undefined
+        if (water.current === null || water.current === undefined || isNaN(water.current)) {
+            water.current = GAME_CONFIG.resources.initialWater;
+            console.warn('⚠️ water.current era null/undefined, resetando para valor inicial:', water.current);
+        }
 
-        // Limitar pela capacidade de armazenamento
-        water.current = Math.max(0, Math.min(water.storage, water.current + netChange));
+        // Garantir que storage está definido
+        if (!water.storage || water.storage <= 0) {
+            water.storage = GAME_CONFIG.resources.initialWater;
+            water.max = water.storage;
+        }
+
+        // Atualizar consumo baseado na população ANTES de calcular mudanças
+        this.updateConsumption();
+
+        // Produção - Consumo - Desperdício
+        const production = water.production || 0;
+        const consumption = water.consumption || 0;
+        const waste = water.waste || 0;
+        const netChange = production - consumption - waste;
+
+        // Limitar pela capacidade de armazenamento (mudança gradual por segundo)
+        const changePerSecond = netChange / 60;
+        const newCurrent = water.current + changePerSecond;
+        water.current = Math.max(0, Math.min(water.storage, newCurrent));
         water.max = water.storage; // Atualizar max para refletir capacidade atual
 
-        // Atualizar consumo baseado na população
-        this.updateConsumption();
+        // Verificar se o resultado é válido
+        if (isNaN(water.current)) {
+            console.error('❌ water.current resultou em NaN, resetando para valor inicial');
+            water.current = GAME_CONFIG.resources.initialWater;
+        }
     }
     
     updateBudget() {
@@ -167,9 +190,9 @@ class ResourceManager {
     
     updatePollution() {
         const pollution = this.resources.pollution;
-        
-        // Poluição = Fontes - Redução
-        const netPollution = pollution.sources - pollution.reduction;
+
+        // Poluição = Fontes - Redução (dividido por 60 para mudança gradual por segundo)
+        const netPollution = (pollution.sources - pollution.reduction) / 60;
         pollution.current = Math.max(0, Math.min(pollution.max, pollution.current + netPollution));
     }
     
