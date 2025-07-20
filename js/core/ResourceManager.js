@@ -4,8 +4,10 @@
  */
 
 class ResourceManager {
-    constructor() {
+    constructor(gameManager = null) {
         console.log('💧 Inicializando ResourceManager...');
+
+        this.gameManager = gameManager;
         
         // Recursos principais
         this.resources = {
@@ -156,38 +158,96 @@ class ResourceManager {
         const population = this.resources.population;
         const water = this.resources.water;
         const pollution = this.resources.pollution;
-        
+
+        // Atualizar capacidade máxima baseada em edifícios de zoneamento
+        this.updatePopulationCapacity();
+
         // Calcular satisfação baseada em recursos
         let satisfaction = 50; // Base
-        
+
         // Água disponível
         const waterRatio = water.current / (population.current * 2); // 2L por pessoa
         if (waterRatio >= 1) satisfaction += 20;
         else if (waterRatio >= 0.5) satisfaction += 10;
         else satisfaction -= 20;
-        
+
         // Poluição
         if (pollution.current < 20) satisfaction += 15;
         else if (pollution.current < 50) satisfaction += 5;
         else satisfaction -= 15;
-        
+
         // Atualizar satisfação
         population.satisfaction = Math.max(0, Math.min(100, satisfaction));
-        
-        // Crescimento populacional baseado na satisfação
-        if (population.satisfaction > 70) {
+
+        // Crescimento populacional baseado na satisfação e recursos disponíveis
+        const attractionFactor = this.calculatePopulationAttraction();
+
+        if (population.satisfaction > 70 && attractionFactor > 0.8) {
             population.growth = 0.1; // 0.1% por segundo
-        } else if (population.satisfaction > 50) {
+        } else if (population.satisfaction > 50 && attractionFactor > 0.6) {
             population.growth = 0.05;
+        } else if (attractionFactor < 0.3) {
+            population.growth = -0.05; // Declínio mais rápido se recursos críticos
         } else {
-            population.growth = -0.02; // Declínio
+            population.growth = -0.02; // Declínio padrão
         }
-        
-        // Aplicar crescimento
+
+        // Aplicar crescimento limitado pela capacidade
         const newPopulation = population.current * (1 + population.growth / 100);
         population.current = Math.max(100, Math.min(population.max, newPopulation));
     }
-    
+
+    updatePopulationCapacity() {
+        // Calcular capacidade baseada em edifícios de zoneamento
+        if (!this.gameManager || !this.gameManager.buildingSystem) {
+            return;
+        }
+
+        const buildings = this.gameManager.buildingSystem.getAllBuildings();
+        let totalCapacity = 500; // Capacidade base
+
+        // Somar capacidade de edifícios residenciais e zonas
+        buildings.forEach(building => {
+            if (building.active) {
+                if (building.config.populationCapacity) {
+                    totalCapacity += building.config.populationCapacity;
+                } else if (building.config.population) {
+                    totalCapacity += building.config.population;
+                }
+            }
+        });
+
+        this.resources.population.max = totalCapacity;
+        console.log(`👥 Capacidade populacional atualizada: ${totalCapacity}`);
+    }
+
+    calculatePopulationAttraction() {
+        const water = this.resources.water;
+        const electricity = this.resources.electricity;
+        const pollution = this.resources.pollution;
+        const population = this.resources.population;
+
+        let attractionFactor = 1.0;
+
+        // Fator água (crítico)
+        const waterRatio = water.current / (population.current * 2);
+        if (waterRatio < 0.3) attractionFactor *= 0.2; // Muito crítico
+        else if (waterRatio < 0.7) attractionFactor *= 0.6;
+        else if (waterRatio >= 1.0) attractionFactor *= 1.2; // Abundante
+
+        // Fator energia
+        const energyEfficiency = electricity.efficiency || 0;
+        if (energyEfficiency < 0.5) attractionFactor *= 0.7;
+        else if (energyEfficiency >= 1.0) attractionFactor *= 1.1;
+
+        // Fator poluição
+        if (pollution.current > 70) attractionFactor *= 0.5; // Muito poluído
+        else if (pollution.current > 40) attractionFactor *= 0.8;
+        else if (pollution.current < 20) attractionFactor *= 1.1; // Limpo
+
+        return Math.max(0, Math.min(2.0, attractionFactor));
+    }
+
     updatePollution() {
         const pollution = this.resources.pollution;
 
