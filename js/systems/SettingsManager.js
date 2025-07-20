@@ -130,22 +130,28 @@ class SettingsManager {
         if (graphicsQuality) {
             graphicsQuality.addEventListener('change', (e) => {
                 this.settings.graphics.quality = e.target.value;
+                console.log('🎨 Qualidade gráfica alterada para:', e.target.value);
+                this.applyGraphicsSettings();
             });
         }
-        
+
         // Anti-aliasing
         const antialiasing = document.getElementById('antialiasing');
         if (antialiasing) {
             antialiasing.addEventListener('change', (e) => {
                 this.settings.graphics.antialiasing = e.target.checked;
+                console.log('🎨 Anti-aliasing alterado para:', e.target.checked);
+                this.applyGraphicsSettings();
             });
         }
-        
+
         // Sombras
         const shadows = document.getElementById('shadows');
         if (shadows) {
             shadows.addEventListener('change', (e) => {
                 this.settings.graphics.shadows = e.target.checked;
+                console.log('🌑 Sombras alteradas para:', e.target.checked);
+                this.applyGraphicsSettings();
             });
         }
     }
@@ -316,13 +322,113 @@ class SettingsManager {
     }
     
     applyGraphicsSettings() {
-        // Aplicar configurações gráficas ao engine Babylon.js
-        if (window.gameManager && window.gameManager.engine) {
+        console.log('🎨 Aplicando configurações gráficas...', this.settings.graphics);
+
+        if (window.gameManager && window.gameManager.scene && window.gameManager.engine) {
+            const scene = window.gameManager.scene;
             const engine = window.gameManager.engine;
-            
-            // Anti-aliasing
-            if (this.settings.graphics.antialiasing !== engine.getCreationOptions().antialias) {
-                console.log('⚙️ Configuração de anti-aliasing alterada - reinicie o jogo para aplicar');
+
+            try {
+                // Aplicar qualidade gráfica
+                this.applyQualitySettings(scene, engine);
+
+                // Aplicar configurações de sombras
+                this.applyShadowSettings(scene);
+
+                // Anti-aliasing (requer reinicialização do engine)
+                const currentAntialias = engine.getCreationOptions().antialias;
+                if (this.settings.graphics.antialiasing !== currentAntialias) {
+                    console.log('⚙️ Anti-aliasing alterado - será aplicado na próxima inicialização');
+                    // Salvar configuração para próxima inicialização
+                    if (typeof GAME_CONFIG !== 'undefined') {
+                        GAME_CONFIG.canvas.antialias = this.settings.graphics.antialiasing;
+                    }
+                }
+
+                console.log('✅ Configurações gráficas aplicadas');
+            } catch (error) {
+                console.error('❌ Erro ao aplicar configurações gráficas:', error);
+            }
+        } else {
+            console.warn('⚠️ GameManager, scene ou engine não encontrados');
+        }
+    }
+
+    applyQualitySettings(scene, engine) {
+        const quality = this.settings.graphics.quality;
+        console.log('🎨 Aplicando qualidade gráfica:', quality);
+
+        // Configurações baseadas na qualidade
+        let renderTargetSize, shadowMapSize, particleCount, lightIntensity;
+
+        switch (quality) {
+            case 'low':
+                renderTargetSize = 512;
+                shadowMapSize = 512;
+                particleCount = 0.5;
+                lightIntensity = 0.8;
+                break;
+            case 'medium':
+                renderTargetSize = 1024;
+                shadowMapSize = 1024;
+                particleCount = 1.0;
+                lightIntensity = 1.0;
+                break;
+            case 'high':
+                renderTargetSize = 2048;
+                shadowMapSize = 2048;
+                particleCount = 1.5;
+                lightIntensity = 1.2;
+                break;
+            default:
+                renderTargetSize = 1024;
+                shadowMapSize = 1024;
+                particleCount = 1.0;
+                lightIntensity = 1.0;
+        }
+
+        // Aplicar configurações de sombra baseadas na qualidade
+        if (window.gameManager.shadowGenerator) {
+            window.gameManager.shadowGenerator.mapSize = shadowMapSize;
+            console.log('🎨 Tamanho do mapa de sombras definido para:', shadowMapSize);
+        }
+
+        // Ajustar intensidade das luzes
+        const lights = scene.lights;
+        lights.forEach(light => {
+            if (light.name !== 'cityHallLight') { // Não alterar luzes especiais
+                const originalIntensity = light._originalIntensity || light.intensity;
+                light._originalIntensity = originalIntensity;
+                light.intensity = originalIntensity * lightIntensity;
+            }
+        });
+
+        console.log('🎨 Qualidade aplicada - Sombras:', shadowMapSize, 'Luzes:', lightIntensity);
+    }
+
+    applyShadowSettings(scene) {
+        const shadowsEnabled = this.settings.graphics.shadows;
+        console.log('🌑 Aplicando configurações de sombras:', shadowsEnabled);
+
+        if (window.gameManager.shadowGenerator) {
+            const shadowGenerator = window.gameManager.shadowGenerator;
+
+            if (shadowsEnabled) {
+                // Ativar sombras
+                shadowGenerator.getShadowMap().renderList = shadowGenerator.getShadowMap().renderList || [];
+
+                // Encontrar todos os meshes que devem projetar sombras
+                scene.meshes.forEach(mesh => {
+                    if (mesh.name.includes('building_') || mesh.name.includes('structure_')) {
+                        shadowGenerator.addShadowCaster(mesh);
+                    }
+                });
+
+                console.log('✅ Sombras ativadas');
+            } else {
+                // Desativar sombras
+                shadowGenerator.getShadowMap().renderList = [];
+                console.log('❌ Sombras desativadas');
             }
         }
     }
