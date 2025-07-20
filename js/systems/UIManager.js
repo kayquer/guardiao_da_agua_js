@@ -133,12 +133,22 @@ class UIManager {
         });
 
         // Cliques nos contadores de recursos para mostrar detalhes
-        this.elements.waterAmount?.addEventListener('click', () => this.showResourcePanel('water'));
-        this.elements.budgetAmount?.addEventListener('click', () => this.showResourcePanel('budget'));
-        this.elements.electricityAmount?.addEventListener('click', () => this.showResourcePanel('electricity'));
-        this.elements.satisfactionLevel?.addEventListener('click', () => this.showResourcePanel('satisfaction'));
-        this.elements.populationCount?.addEventListener('click', () => this.showResourcePanel('population'));
-        this.elements.pollutionLevel?.addEventListener('click', () => this.showResourcePanel('pollution'));
+        // Anexar eventos aos containers inteiros (.resource-item) para melhor usabilidade
+        const resourceItems = document.querySelectorAll('.resource-item');
+        resourceItems.forEach((item, index) => {
+            // Mapear índices para tipos de recursos baseado na ordem no HTML
+            const resourceTypes = ['water', 'pollution', 'population', 'satisfaction', 'budget', 'electricity'];
+            const resourceType = resourceTypes[index];
+
+            if (resourceType && resourceType !== 'clock') { // Excluir o relógio
+                item.style.cursor = 'pointer';
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.showResourcePanel(resourceType);
+                });
+            }
+        });
 
         // ESC key para fechar painéis
         document.addEventListener('keydown', (event) => {
@@ -216,9 +226,12 @@ class UIManager {
             this.updatePollutionStatus(this.elements.pollutionLevel, resources.pollution.current || 0);
         }
 
-        // População
+        // População (formato: atual/capacidade máxima)
         if (this.elements.populationCount && resources.population) {
-            this.elements.populationCount.textContent = Math.round(resources.population.current || 0);
+            const current = Math.round(resources.population.current || 0);
+            const maxCapacity = Math.round(resources.population.max || 1000);
+            this.elements.populationCount.textContent = `${current}/${maxCapacity}`;
+            this.updateResourceStatus(this.elements.populationCount, current, maxCapacity);
         }
 
         // Satisfação
@@ -232,20 +245,20 @@ class UIManager {
             this.elements.budgetAmount.textContent = `R$ ${Math.round(resources.budget.current || 0).toLocaleString()}`;
         }
 
-        // Energia
+        // Energia (formato: atual/máximo disponível)
         if (this.elements.electricityAmount && resources.electricity) {
-            const generation = Math.round(resources.electricity.generation || 0);
-            const consumption = Math.round(resources.electricity.consumption || 0);
-            const balance = generation - consumption;
+            const current = Math.round(resources.electricity.current || 0);
+            const maxAvailable = Math.round(resources.electricity.generation || 0);
 
-            // Mostrar geração/consumo ao invés de current/generation
-            if (consumption > 0) {
-                this.elements.electricityAmount.textContent = `${generation}/${consumption} MW`;
-                // Adicionar classe de status baseada no balanço
-                this.elements.electricityAmount.className = balance >= 0 ? 'energy-sufficient' : 'energy-deficit';
+            this.elements.electricityAmount.textContent = `${current}/${maxAvailable} MW`;
+
+            // Adicionar classe de status baseada na eficiência
+            const efficiency = resources.electricity.efficiency || 0;
+            this.elements.electricityAmount.classList.remove('energy-sufficient', 'energy-deficit');
+            if (efficiency >= 1.0) {
+                this.elements.electricityAmount.classList.add('energy-sufficient');
             } else {
-                this.elements.electricityAmount.textContent = `${generation}/0 MW`;
-                this.elements.electricityAmount.className = 'energy-sufficient';
+                this.elements.electricityAmount.classList.add('energy-deficit');
             }
         }
 
