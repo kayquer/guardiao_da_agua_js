@@ -162,22 +162,28 @@ class SettingsManager {
         if (difficulty) {
             difficulty.addEventListener('change', (e) => {
                 this.settings.gameplay.difficulty = e.target.value;
+                console.log('🎮 Dificuldade alterada para:', e.target.value);
+                this.applyGameplaySettings();
             });
         }
-        
+
         // Auto-save
         const autoSave = document.getElementById('auto-save');
         if (autoSave) {
             autoSave.addEventListener('change', (e) => {
                 this.settings.gameplay.autoSave = e.target.checked;
+                console.log('💾 Auto-save alterado para:', e.target.checked);
+                this.applyGameplaySettings();
             });
         }
-        
+
         // Dicas do tutorial
         const tutorialHints = document.getElementById('tutorial-hints');
         if (tutorialHints) {
             tutorialHints.addEventListener('change', (e) => {
                 this.settings.gameplay.tutorialHints = e.target.checked;
+                console.log('💡 Dicas do tutorial alteradas para:', e.target.checked);
+                this.applyGameplaySettings();
             });
         }
     }
@@ -434,14 +440,47 @@ class SettingsManager {
     }
     
     applyGameplaySettings() {
-        // Aplicar configurações de gameplay
-        if (window.gameManager) {
+        console.log('🎮 Aplicando configurações de gameplay...', this.settings.gameplay);
+
+        try {
             // Auto-save
-            if (this.settings.gameplay.autoSave) {
-                window.gameManager.enableAutoSave();
-            } else {
-                window.gameManager.disableAutoSave();
+            if (typeof GAME_CONFIG !== 'undefined') {
+                if (this.settings.gameplay.autoSave) {
+                    GAME_CONFIG.gameplay.autoSaveInterval = 30000; // 30 segundos
+                    console.log('✅ Auto-save ativado (30s)');
+                } else {
+                    GAME_CONFIG.gameplay.autoSaveInterval = Number.MAX_SAFE_INTEGER; // Desativar
+                    console.log('❌ Auto-save desativado');
+                }
             }
+
+            // Dificuldade
+            if (window.gameManager && window.gameManager.eventSystem) {
+                let difficultyMultiplier = 1.0;
+                switch (this.settings.gameplay.difficulty) {
+                    case 'easy':
+                        difficultyMultiplier = 0.7;
+                        break;
+                    case 'normal':
+                        difficultyMultiplier = 1.0;
+                        break;
+                    case 'hard':
+                        difficultyMultiplier = 1.5;
+                        break;
+                }
+                window.gameManager.eventSystem.setDifficulty(difficultyMultiplier);
+                console.log(`🎮 Dificuldade definida: ${this.settings.gameplay.difficulty} (${difficultyMultiplier}x)`);
+            }
+
+            // Dicas do tutorial
+            if (window.gameManager && window.gameManager.tutorialManager) {
+                window.gameManager.tutorialManager.showHints = this.settings.gameplay.tutorialHints;
+                console.log(`💡 Dicas do tutorial: ${this.settings.gameplay.tutorialHints ? 'ativadas' : 'desativadas'}`);
+            }
+
+            console.log('✅ Configurações de gameplay aplicadas');
+        } catch (error) {
+            console.error('❌ Erro ao aplicar configurações de gameplay:', error);
         }
     }
     
