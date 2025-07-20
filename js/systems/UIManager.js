@@ -1662,6 +1662,38 @@ class UIManager {
         if (score >= 550) return 'fair';
         return 'poor';
     }
+
+    // ===== SISTEMA UNIFICADO DE TOOLTIPS =====
+    showBuildingHoverTooltip(building, mouseX, mouseY) {
+        // Mostrar tooltip de hover (diferente do painel lateral de seleção)
+        // Este método pode reutilizar a lógica existente de hover
+        if (this.gameManager && this.gameManager.updateHoverInfo) {
+            // Usar o sistema de hover existente, mas apenas para tooltips
+            const gridPos = this.gameManager.gridManager.worldToGrid({x: mouseX, z: mouseY});
+            this.gameManager.updateHoverInfo(gridPos.x, gridPos.z, mouseX, mouseY);
+        }
+    }
+
+    showTerrainInfo(terrainType, gridX, gridZ, mouseX, mouseY) {
+        // Mostrar informações de terreno
+        if (this.gameManager && this.gameManager.updateHoverInfo) {
+            this.gameManager.updateHoverInfo(gridX, gridZ, mouseX, mouseY);
+        }
+    }
+
+    // Método para garantir que apenas um tipo de informação seja exibido por vez
+    clearAllInfoDisplays() {
+        // Limpar tooltips de hover
+        if (this.gameManager) {
+            this.gameManager.hideHoverInfo();
+            this.gameManager.hideTerrainInfo();
+        }
+
+        // Limpar painel de seleção se não há seleção ativa
+        if (!this.gameManager || !this.gameManager.selectedBuilding) {
+            this.clearBuildingSelectionInfo();
+        }
+    }
 }
 
 // Exportar para escopo global

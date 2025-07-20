@@ -2061,10 +2061,17 @@ class BuildingSystem {
             this.removeInfrastructureConnections(building);
         }
 
-        // Remover label do edifício
+        // Remover label do edifício e outros elementos visuais
         if (building.mesh) {
             this.removeBuildingNameLabel(building.mesh);
             this.removeRentalIcon(building);
+            this.removePowerShortageIcon(building);
+
+            // Remover indicador de seleção se existir
+            if (window.gameManager && window.gameManager.selectedBuilding === building) {
+                window.gameManager.removeSelectionIndicator(building);
+                window.gameManager.selectedBuilding = null;
+            }
         }
 
         // Adicionar à fila de disposal para processamento assíncrono

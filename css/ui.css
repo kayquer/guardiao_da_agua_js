@@ -45,8 +45,13 @@
     border-radius: 25px;
     border: 1px solid rgba(255,255,255,0.2);
     backdrop-filter: blur(5px);
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
     cursor: pointer;
+    /* Fixed dimensions to prevent layout shifts */
+    min-width: 140px;
+    max-width: 180px;
+    width: auto;
+    box-sizing: border-box;
 }
 
 .resource-item:hover {
@@ -58,18 +63,41 @@
 
 .resource-icon {
     font-size: 1.2rem;
+    /* Fixed icon dimensions */
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .resource-label {
     font-size: 0.9rem;
     opacity: 0.8;
     font-weight: 500;
+    /* Stable label dimensions */
+    min-width: 45px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .resource-value {
     font-size: 1rem;
     font-weight: bold;
     color: #00ff88;
+    /* Stable text metrics to prevent flickering */
+    font-family: 'Courier New', monospace; /* Monospace for consistent character width */
+    min-width: 60px;
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Prevent font smoothing changes that cause flickering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeSpeed;
 }
 
 .control-buttons {

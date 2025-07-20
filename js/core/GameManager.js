@@ -1286,11 +1286,9 @@ class GameManager {
                 if (gridPos.x !== this.lastHoverPosition.x || gridPos.z !== this.lastHoverPosition.z) {
                     this.lastHoverPosition = gridPos;
 
-                    // Só mostrar hover info se não estiver em modo preview e não houver seleção ativa
+                    // Usar sistema unificado de informações
                     if (!this.buildingSystem || !this.buildingSystem.previewMode) {
-                        if (!this.selectedBuilding) {
-                            this.updateHoverInfo(gridPos.x, gridPos.z, event.clientX, event.clientY);
-                        }
+                        this.updateInfoPanel(gridPos.x, gridPos.z, event.clientX, event.clientY);
                     }
                 }
             }
@@ -1996,8 +1994,8 @@ class GameManager {
         // Adicionar indicador visual de seleção
         this.addSelectionIndicator(building);
 
-        // Atualizar painel de informações
-        this.updateSelectionInfo(building);
+        // Atualizar painel de informações usando sistema unificado
+        this.refreshInfoPanel();
 
         console.log(`🏢 Edifício selecionado: ${building.config.name}`);
     }
@@ -2010,8 +2008,8 @@ class GameManager {
         // Limpar seleção
         this.clearBuildingSelection();
 
-        // Limpar painel de informações
-        this.clearSelectionInfo();
+        // Atualizar painel usando sistema unificado
+        this.refreshInfoPanel();
     }
 
     clearBuildingSelection() {
@@ -2019,6 +2017,25 @@ class GameManager {
             // Remover indicador visual
             this.removeSelectionIndicator(this.selectedBuilding);
             this.selectedBuilding = null;
+        }
+    }
+
+    // Método para limpar todas as seleções (usado em reset/dispose)
+    clearAllSelections() {
+        // Limpar seleção atual
+        this.clearBuildingSelection();
+
+        // Limpar qualquer indicador órfão que possa ter ficado
+        if (this.scene && this.buildingSystem) {
+            this.buildingSystem.buildings.forEach(building => {
+                if (building.mesh && building.mesh.selectionIndicator) {
+                    try {
+                        this.removeSelectionIndicator(building);
+                    } catch (error) {
+                        console.warn('⚠️ Erro ao limpar indicador órfão:', error);
+                    }
+                }
+            });
         }
     }
 
@@ -2061,15 +2078,44 @@ class GameManager {
     removeSelectionIndicator(building) {
         if (building.mesh && building.mesh.selectionIndicator) {
             try {
-                if (!building.mesh.selectionIndicator.isDisposed()) {
-                    if (building.mesh.selectionIndicator.material) {
-                        building.mesh.selectionIndicator.material.dispose();
-                    }
-                    building.mesh.selectionIndicator.dispose();
+                const indicator = building.mesh.selectionIndicator;
+
+                // Parar todas as animações do indicador
+                if (this.scene) {
+                    this.scene.stopAnimation(indicator);
                 }
+
+                // Limpar animações do mesh
+                if (indicator.animations && indicator.animations.length > 0) {
+                    indicator.animations = [];
+                }
+
+                // Verificar se o mesh ainda existe e não foi disposto
+                if (!indicator.isDisposed()) {
+                    // Limpar material primeiro
+                    if (indicator.material) {
+                        indicator.material.dispose();
+                        indicator.material = null;
+                    }
+
+                    // Remover do scene graph
+                    if (indicator.parent) {
+                        indicator.parent = null;
+                    }
+
+                    // Dispor o mesh
+                    indicator.dispose();
+                }
+
+                // Limpar referência
                 building.mesh.selectionIndicator = null;
+
+                console.log(`🗑️ Indicador de seleção removido para ${building.config.name}`);
+
             } catch (error) {
                 console.error('❌ Erro ao remover indicador de seleção:', error);
+                // Forçar limpeza da referência mesmo em caso de erro
+                building.mesh.selectionIndicator = null;
             }
         }
     }
@@ -2115,6 +2161,59 @@ class GameManager {
         // Limpar painel lateral
         if (this.uiManager) {
             this.uiManager.clearBuildingSelectionInfo();
+        }
+    }
+
+    // ===== SISTEMA UNIFICADO DE INFORMAÇÕES =====
+    updateInfoPanel(gridX, gridZ, mouseX, mouseY, forceUpdate = false) {
+        // Sistema de prioridades para exibição de informações:
+        // 1. Edifício selecionado (mais alta prioridade)
+        // 2. Hover sobre edifício (média prioridade)
+        // 3. Informações de terreno (baixa prioridade)
+
+        // Se há um edifício selecionado, manter suas informações
+        if (this.selectedBuilding && !forceUpdate) {
+            return; // Não atualizar se há seleção ativa
+        }
+
+        // Verificar se há edifício na posição do hover
+        const hoveredBuilding = this.buildingSystem.getBuildingAt(gridX, gridZ);
+
+        if (hoveredBuilding) {
+            // Mostrar informações do edifício em hover (apenas se não há seleção)
+            if (!this.selectedBuilding) {
+                this.showHoverBuildingInfo(hoveredBuilding, mouseX, mouseY);
+            }
+        } else {
+            // Mostrar informações de terreno (apenas se não há seleção)
+            if (!this.selectedBuilding) {
+                this.showTerrainInfo(gridX, gridZ, mouseX, mouseY);
+            }
+        }
+    }
+
+    showHoverBuildingInfo(building, mouseX, mouseY) {
+        // Mostrar tooltip de hover para edifício (não painel lateral)
+        if (this.uiManager) {
+            this.uiManager.showBuildingHoverTooltip(building, mouseX, mouseY);
+        }
+    }
+
+    showTerrainInfo(gridX, gridZ, mouseX, mouseY) {
+        // Mostrar informações de terreno
+        const terrainType = this.gridManager.getTerrainType(gridX, gridZ);
+        if (this.uiManager) {
+            this.uiManager.showTerrainInfo(terrainType, gridX, gridZ, mouseX, mouseY);
+        }
+    }
+
+    // Método para forçar atualização das informações (usado quando seleção muda)
+    refreshInfoPanel() {
+        if (this.selectedBuilding) {
+            this.updateSelectionInfo(this.selectedBuilding);
+        } else {
+            // Se não há seleção, limpar painel
+            this.clearSelectionInfo();
         }
     }
     
