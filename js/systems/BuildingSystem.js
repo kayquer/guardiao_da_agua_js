@@ -51,14 +51,25 @@ class BuildingSystem {
         // Sistema de construção com timer
         this.constructionQueue = new Map(); // buildingId -> construction data
         this.constructionInProgress = false;
+        this.constructionTimeout = 30000; // 30 segundos timeout para construções
+        this.lastConstructionCheck = 0;
 
         // Throttling para atualizações de eficiência
         this.lastEfficiencyUpdate = 0;
 
         this.initializeBuildingTypes();
         this.createMaterials();
-        
+
+        // Expor métodos de debug globalmente
+        window.resetConstructionState = () => this.forceResetConstructionState();
+        window.getConstructionInfo = () => ({
+            inProgress: this.constructionInProgress,
+            queueSize: this.constructionQueue.size,
+            queue: Array.from(this.constructionQueue.keys())
+        });
+
         console.log('✅ BuildingSystem inicializado');
+        console.log('🧪 Debug: resetConstructionState() e getConstructionInfo() disponíveis globalmente');
     }
     
     // ===== INICIALIZAÇÃO =====
@@ -810,9 +821,14 @@ class BuildingSystem {
 
         // Verificar se há construção em andamento
         if (this.constructionInProgress) {
-            this.showNotification('Aguarde a construção atual terminar antes de iniciar outra...', 'warning');
-            console.warn('⚠️ Construção já em andamento');
-            return null;
+            // Verificar se a construção não está travada
+            this.validateConstructionState();
+
+            if (this.constructionInProgress) {
+                this.showNotification('⚠️ Construção já em andamento', 'warning');
+                console.warn('⚠️ Construção já em andamento - aguarde a conclusão');
+                return null;
+            }
         }
 
         const buildingType = this.buildingTypes.get(buildingTypeId);
@@ -2123,12 +2139,20 @@ class BuildingSystem {
             } catch (error) {
                 console.error('❌ Erro ao atualizar construções:', error);
                 // Reset do sistema de construção em caso de erro crítico
-                this.constructionInProgress = false;
-                this.constructionQueue.clear();
+                this.forceResetConstructionState();
+            }
+
+            // Validação periódica do estado de construção (a cada 5 segundos)
+            this.lastConstructionCheck += deltaTime;
+            if (this.lastConstructionCheck >= 5000) {
+                this.validateConstructionState();
+                this.lastConstructionCheck = 0;
             }
 
         } catch (error) {
             console.error('❌ Erro crítico no update do BuildingSystem:', error);
+            // Em caso de erro crítico, tentar recuperar o sistema
+            this.forceResetConstructionState();
         }
     }
 
@@ -2224,6 +2248,34 @@ class BuildingSystem {
         if (this.constructionQueue.size === 0) {
             this.constructionInProgress = false;
         }
+    }
+
+    // ===== VALIDAÇÃO E RECUPERAÇÃO =====
+    validateConstructionState() {
+        const currentTime = Date.now();
+
+        // Verificar se há construções travadas (timeout)
+        if (this.constructionInProgress && this.constructionQueue.size === 0) {
+            console.warn('⚠️ Estado de construção inconsistente detectado - resetando');
+            this.forceResetConstructionState();
+            return;
+        }
+
+        // Verificar timeout de construções
+        for (const [buildingId, buildingData] of this.constructionQueue) {
+            const constructionAge = currentTime - buildingData.constructionStartTime;
+            if (constructionAge > this.constructionTimeout) {
+                console.warn(`⚠️ Construção ${buildingId} excedeu timeout (${constructionAge}ms) - forçando conclusão`);
+                this.completeConstruction(buildingData);
+            }
+        }
+    }
+
+    forceResetConstructionState() {
+        console.log('🔄 Forçando reset do estado de construção...');
+        this.constructionInProgress = false;
+        this.constructionQueue.clear();
+        this.showNotification('Sistema de construção reiniciado', 'info');
     }
 
     // ===== SISTEMA DE COOLDOWN =====
