@@ -265,22 +265,6 @@ class BuildingSystem {
             }
         });
 
-        this.addBuildingType('bridge', {
-            name: 'Ponte',
-            description: 'Permite atravessar áreas de água',
-            category: 'infrastructure',
-            cost: 5000,
-            size: 1,
-            bridgeType: true,
-            maintenanceCost: 100,
-            icon: '🌉',
-            color: '#795548',
-            requirements: {
-                terrain: ['water'],
-                nearWater: true
-            }
-        });
-
         // CATEGORIA: RESIDENCIAL
         this.addBuildingType('house', {
             name: 'Casa',
@@ -756,9 +740,20 @@ class BuildingSystem {
         }
 
         // Verificar se há espaço no grid
-        if (!this.gridManager.canPlaceBuilding(gridX, gridZ, buildingType.size)) {
-            console.warn(`❌ Área ocupada ou fora dos limites em (${gridX}, ${gridZ})`);
-            return { canPlace: false, reason: 'Área ocupada ou fora dos limites' };
+        // Para edifícios que requerem água, usar validação especial
+        if (buildingType.requirements && buildingType.requirements.terrain &&
+            buildingType.requirements.terrain.includes('water')) {
+            // Validação especial para edifícios que podem ser construídos na água
+            if (!this.canPlaceBuildingOnWater(gridX, gridZ, buildingType.size)) {
+                console.warn(`❌ Área ocupada ou fora dos limites em (${gridX}, ${gridZ})`);
+                return { canPlace: false, reason: 'Área ocupada ou fora dos limites' };
+            }
+        } else {
+            // Validação normal para outros edifícios
+            if (!this.gridManager.canPlaceBuilding(gridX, gridZ, buildingType.size)) {
+                console.warn(`❌ Área ocupada ou fora dos limites em (${gridX}, ${gridZ})`);
+                return { canPlace: false, reason: 'Área ocupada ou fora dos limites' };
+            }
         }
 
         // Verificar requisitos de terreno
@@ -1552,7 +1547,19 @@ class BuildingSystem {
         return null;
     }
 
-    createInfrastructureMesh(type, size) {
+    createInfrastructureMesh(typeOrBuildingType, size) {
+        // Determinar se o primeiro parâmetro é um objeto buildingType ou uma string type
+        let type, actualSize;
+        if (typeof typeOrBuildingType === 'object' && typeOrBuildingType.id) {
+            // Chamado com buildingType object
+            type = typeOrBuildingType.id;
+            actualSize = typeOrBuildingType.size || 1;
+        } else {
+            // Chamado com type string e size
+            type = typeOrBuildingType;
+            actualSize = size || 1;
+        }
+
         if (type.includes('road')) {
             // Estrada - plano baixo
             return BABYLON.MeshBuilder.CreateBox("road", {
@@ -1578,14 +1585,20 @@ class BuildingSystem {
 
             return BABYLON.Mesh.MergeMeshes([base, tree]);
 
-        } else if (type === 'bridge') {
-            // Ponte - plano elevado
-            return BABYLON.MeshBuilder.CreateBox("bridge", {
-                width: 1.8, height: 0.2, depth: 1.8
-            }, this.scene);
         }
 
-        return null;
+        // Infraestrutura genérica - usar fallback
+        if (typeof typeOrBuildingType === 'object') {
+            return this.createBasicVoxelMesh(typeOrBuildingType);
+        } else {
+            // Criar um objeto buildingType básico para o fallback
+            const basicBuildingType = {
+                id: type,
+                size: actualSize,
+                category: 'infrastructure'
+            };
+            return this.createBasicVoxelMesh(basicBuildingType);
+        }
     }
 
     createZoneMesh(type, size) {
@@ -2033,6 +2046,28 @@ class BuildingSystem {
     }
 
     // ===== UTILITÁRIOS =====
+    canPlaceBuildingOnWater(gridX, gridZ, buildingSize = 1) {
+        // Verificar se todas as células necessárias estão livres (permitindo água)
+        for (let x = gridX; x < gridX + buildingSize; x++) {
+            for (let z = gridZ; z < gridZ + buildingSize; z++) {
+                // Verificar limites do grid
+                if (x < 0 || x >= this.gridManager.gridSize ||
+                    z < 0 || z >= this.gridManager.gridSize) {
+                    return false;
+                }
+
+                // Verificar se a célula está ocupada por outro edifício
+                if (this.gridManager.isCellOccupied(x, z)) {
+                    return false;
+                }
+
+                // Para edifícios que requerem água, permitir construção na água
+                // Não verificar tipo de terreno aqui, será verificado nos requirements
+            }
+        }
+        return true;
+    }
+
     isNearWater(gridX, gridZ, size) {
         // Verificar células adjacentes
         for (let x = gridX - 1; x <= gridX + size; x++) {
