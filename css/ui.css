@@ -1292,6 +1292,62 @@
 
 .resource-sources h5 {
     color: #2c5aa0;
+    margin: 15px 0 10px 0;
+    font-size: 1.1em;
+}
+
+.resource-sources ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.resource-sources li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    border-left: 3px solid #4a90e2;
+}
+
+.building-icon {
+    font-size: 1.2em;
+    margin-right: 10px;
+}
+
+.building-name {
+    flex: 1;
+    font-weight: 500;
+    color: #333;
+}
+
+.building-production,
+.building-consumption,
+.building-cost {
+    font-weight: bold;
+    color: #2c5aa0;
+}
+
+.building-production {
+    color: #28a745;
+}
+
+.building-consumption,
+.building-cost {
+    color: #dc3545;
+}
+
+.no-sources {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+}
     margin: 15px 0 8px 0;
     font-size: 1em;
 }

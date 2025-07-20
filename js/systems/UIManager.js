@@ -6,8 +6,11 @@
 class UIManager {
     constructor(gameManager) {
         console.log('🖥️ Inicializando UIManager...');
-        
+
         this.gameManager = gameManager;
+
+        // Estado dos painéis de informação
+        this.currentOpenPanel = null;
         
         // Elementos da UI
         this.elements = {
@@ -130,10 +133,19 @@ class UIManager {
         });
 
         // Cliques nos contadores de recursos para mostrar detalhes
-        this.elements.waterAmount?.addEventListener('click', () => this.showWaterDetailsPanel());
-        this.elements.budgetAmount?.addEventListener('click', () => this.showBudgetDetailsPanel());
-        this.elements.electricityAmount?.addEventListener('click', () => this.showEnergyDetailsPanel());
-        this.elements.satisfactionLevel?.addEventListener('click', () => this.showSatisfactionDetailsPanel());
+        this.elements.waterAmount?.addEventListener('click', () => this.showResourcePanel('water'));
+        this.elements.budgetAmount?.addEventListener('click', () => this.showResourcePanel('budget'));
+        this.elements.electricityAmount?.addEventListener('click', () => this.showResourcePanel('electricity'));
+        this.elements.satisfactionLevel?.addEventListener('click', () => this.showResourcePanel('satisfaction'));
+        this.elements.populationCount?.addEventListener('click', () => this.showResourcePanel('population'));
+        this.elements.pollutionLevel?.addEventListener('click', () => this.showResourcePanel('pollution'));
+
+        // ESC key para fechar painéis
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && this.currentOpenPanel) {
+                this.closeResourcePanel();
+            }
+        });
     }
     
     createBuildingCategories() {
@@ -622,6 +634,47 @@ class UIManager {
     }
 
     // ===== PAINÉIS DE DETALHES DE RECURSOS =====
+    showResourcePanel(panelType) {
+        // Se o mesmo painel já está aberto, não fazer nada
+        if (this.currentOpenPanel === panelType) {
+            return;
+        }
+
+        // Marcar o painel atual como aberto
+        this.currentOpenPanel = panelType;
+
+        // Chamar o método específico do painel
+        switch(panelType) {
+            case 'water':
+                this.showWaterDetailsPanel();
+                break;
+            case 'budget':
+                this.showBudgetDetailsPanel();
+                break;
+            case 'electricity':
+                this.showEnergyDetailsPanel();
+                break;
+            case 'satisfaction':
+                this.showSatisfactionDetailsPanel();
+                break;
+            case 'population':
+                this.showPopulationDetailsPanel();
+                break;
+            case 'pollution':
+                this.showPollutionDetailsPanel();
+                break;
+            default:
+                console.warn(`⚠️ Tipo de painel desconhecido: ${panelType}`);
+        }
+    }
+
+    closeResourcePanel() {
+        this.currentOpenPanel = null;
+        if (this.elements.detailsContent) {
+            this.elements.detailsContent.innerHTML = '<p>Clique em um recurso para ver detalhes</p>';
+        }
+    }
+
     showWaterDetailsPanel() {
         if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
 
@@ -638,19 +691,19 @@ class UIManager {
                 <div class="resource-summary">
                     <div class="resource-stat">
                         <span class="stat-label">Água Atual:</span>
-                        <span class="stat-value">${Math.floor(water.current)}L</span>
+                        <span class="stat-value">${Math.floor(water.current).toLocaleString()}L</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Capacidade:</span>
-                        <span class="stat-value">${water.storage}L</span>
+                        <span class="stat-value">${Math.floor(water.storage).toLocaleString()}L</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Produção:</span>
-                        <span class="stat-value">+${water.production}L/min</span>
+                        <span class="stat-value">+${this.formatNumber(water.production, 1)}L/min</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Consumo:</span>
-                        <span class="stat-value">-${water.consumption}L/min</span>
+                        <span class="stat-value">-${this.formatNumber(water.consumption, 1)}L/min</span>
                     </div>
                 </div>
 
@@ -666,7 +719,7 @@ class UIManager {
                     <li>
                         <span class="building-icon">${building.config.icon}</span>
                         <span class="building-name">${building.config.name}</span>
-                        <span class="building-production">+${production}L/min</span>
+                        <span class="building-production">+${this.formatNumber(production, 1)}L/min</span>
                     </li>
                 `;
             });
@@ -713,16 +766,16 @@ class UIManager {
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Receita:</span>
-                        <span class="stat-value">+R$ ${budget.income.toLocaleString()}/min</span>
+                        <span class="stat-value">+R$ ${this.formatNumber(budget.income, 0)}/min</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Despesas:</span>
-                        <span class="stat-value">-R$ ${budget.expenses.toLocaleString()}/min</span>
+                        <span class="stat-value">-R$ ${this.formatNumber(budget.expenses, 0)}/min</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Saldo Líquido:</span>
                         <span class="stat-value ${budget.income - budget.expenses >= 0 ? 'positive' : 'negative'}">
-                            ${budget.income - budget.expenses >= 0 ? '+' : ''}R$ ${(budget.income - budget.expenses).toLocaleString()}/min
+                            ${budget.income - budget.expenses >= 0 ? '+' : ''}R$ ${this.formatNumber(budget.income - budget.expenses, 0)}/min
                         </span>
                     </div>
                 </div>
@@ -770,16 +823,16 @@ class UIManager {
                 <div class="resource-summary">
                     <div class="resource-stat">
                         <span class="stat-label">Geração:</span>
-                        <span class="stat-value">+${electricity.generation}kW</span>
+                        <span class="stat-value">+${this.formatNumber(electricity.generation, 1)}kW</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Consumo:</span>
-                        <span class="stat-value">-${electricity.consumption}kW</span>
+                        <span class="stat-value">-${this.formatNumber(electricity.consumption, 1)}kW</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Saldo:</span>
                         <span class="stat-value ${electricity.generation - electricity.consumption >= 0 ? 'positive' : 'negative'}">
-                            ${electricity.generation - electricity.consumption >= 0 ? '+' : ''}${electricity.generation - electricity.consumption}kW
+                            ${electricity.generation - electricity.consumption >= 0 ? '+' : ''}${this.formatNumber(electricity.generation - electricity.consumption, 1)}kW
                         </span>
                     </div>
                     <div class="resource-stat">
@@ -1055,6 +1108,195 @@ class UIManager {
             modal.style.display = 'none';
             console.log('📖 Modal de controles fechado');
         }
+    }
+
+    showPopulationDetailsPanel() {
+        if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
+
+        const population = this.gameManager.resourceManager.resources.population;
+        const buildings = this.gameManager.buildingSystem.getAllBuildings();
+
+        // Filtrar edifícios que afetam população
+        const residentialBuildings = buildings.filter(b => b.config.populationCapacity && b.active);
+        const serviceBuildings = buildings.filter(b => b.config.satisfactionBonus && b.active);
+
+        let detailsHTML = `
+            <div class="resource-details-panel">
+                <h4>👥 Gestão da População</h4>
+
+                <div class="resource-summary">
+                    <div class="resource-stat">
+                        <span class="stat-label">População Atual:</span>
+                        <span class="stat-value">${Math.floor(population.current).toLocaleString()}</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Capacidade Máxima:</span>
+                        <span class="stat-value">${Math.floor(population.max).toLocaleString()}</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Crescimento:</span>
+                        <span class="stat-value">${this.formatNumber(population.growth, 1)}/min</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Satisfação:</span>
+                        <span class="stat-value">${Math.floor(population.satisfaction)}%</span>
+                    </div>
+                </div>
+
+                <div class="resource-sources">
+                    <h5>🏠 Edifícios Residenciais</h5>
+        `;
+
+        if (residentialBuildings.length > 0) {
+            detailsHTML += '<ul>';
+            residentialBuildings.forEach(building => {
+                detailsHTML += `
+                    <li>
+                        <span class="building-icon">${building.config.icon}</span>
+                        <span class="building-name">${building.config.name}</span>
+                        <span class="building-production">+${building.config.populationCapacity} hab</span>
+                    </li>
+                `;
+            });
+            detailsHTML += '</ul>';
+        } else {
+            detailsHTML += '<p class="no-sources">Nenhum edifício residencial construído</p>';
+        }
+
+        if (serviceBuildings.length > 0) {
+            detailsHTML += '<h5>🏢 Serviços e Infraestrutura</h5><ul>';
+            serviceBuildings.forEach(building => {
+                detailsHTML += `
+                    <li>
+                        <span class="building-icon">${building.config.icon}</span>
+                        <span class="building-name">${building.config.name}</span>
+                        <span class="building-production">+${building.config.satisfactionBonus}% satisfação</span>
+                    </li>
+                `;
+            });
+            detailsHTML += '</ul>';
+        }
+
+        detailsHTML += `
+                    <h5>📊 Fatores de Crescimento</h5>
+                    <ul>
+                        <li>💧 Disponibilidade de água</li>
+                        <li>🏠 Capacidade habitacional</li>
+                        <li>😊 Nível de satisfação</li>
+                        <li>🏭 Baixa poluição</li>
+                        <li>⚡ Fornecimento de energia</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+
+        this.elements.detailsContent.innerHTML = detailsHTML;
+    }
+
+    showPollutionDetailsPanel() {
+        if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
+
+        const pollution = this.gameManager.resourceManager.resources.pollution;
+        const buildings = this.gameManager.buildingSystem.getAllBuildings();
+
+        // Filtrar edifícios que afetam poluição
+        const pollutionSources = buildings.filter(b => b.config.pollutionGeneration && b.active);
+        const cleanupBuildings = buildings.filter(b => b.config.pollutionReduction && b.active);
+
+        let detailsHTML = `
+            <div class="resource-details-panel">
+                <h4>🏭 Gestão da Poluição</h4>
+
+                <div class="resource-summary">
+                    <div class="resource-stat">
+                        <span class="stat-label">Poluição Atual:</span>
+                        <span class="stat-value">${Math.floor(pollution.current)}%</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Fontes Ativas:</span>
+                        <span class="stat-value">${this.formatNumber(pollution.sources, 1)}/min</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Redução:</span>
+                        <span class="stat-value">-${this.formatNumber(pollution.reduction, 1)}/min</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Balanço:</span>
+                        <span class="stat-value ${(pollution.sources - pollution.reduction) <= 0 ? 'positive' : 'negative'}">
+                            ${pollution.sources - pollution.reduction >= 0 ? '+' : ''}${this.formatNumber(pollution.sources - pollution.reduction, 1)}/min
+                        </span>
+                    </div>
+                </div>
+
+                <div class="resource-sources">
+        `;
+
+        if (pollutionSources.length > 0) {
+            detailsHTML += '<h5>🏭 Fontes de Poluição</h5><ul>';
+            pollutionSources.forEach(building => {
+                detailsHTML += `
+                    <li>
+                        <span class="building-icon">${building.config.icon}</span>
+                        <span class="building-name">${building.config.name}</span>
+                        <span class="building-consumption">+${building.config.pollutionGeneration}%/min</span>
+                    </li>
+                `;
+            });
+            detailsHTML += '</ul>';
+        }
+
+        if (cleanupBuildings.length > 0) {
+            detailsHTML += '<h5>🌱 Sistemas de Limpeza</h5><ul>';
+            cleanupBuildings.forEach(building => {
+                detailsHTML += `
+                    <li>
+                        <span class="building-icon">${building.config.icon}</span>
+                        <span class="building-name">${building.config.name}</span>
+                        <span class="building-production">-${building.config.pollutionReduction}%/min</span>
+                    </li>
+                `;
+            });
+            detailsHTML += '</ul>';
+        }
+
+        detailsHTML += `
+                    <h5>🌍 Impactos da Poluição</h5>
+                    <ul>
+                        <li>😷 Reduz satisfação da população</li>
+                        <li>🏥 Aumenta custos de saúde pública</li>
+                        <li>🐟 Contamina recursos hídricos</li>
+                        <li>🌡️ Contribui para mudanças climáticas</li>
+                        <li>🌱 Degrada ecossistemas locais</li>
+                    </ul>
+
+                    <h5>✅ Estratégias de Redução</h5>
+                    <ul>
+                        <li>🌳 Construir áreas verdes e parques</li>
+                        <li>♻️ Implementar sistemas de reciclagem</li>
+                        <li>🔋 Usar fontes de energia limpa</li>
+                        <li>🚌 Promover transporte público</li>
+                        <li>🏭 Modernizar indústrias</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+
+        this.elements.detailsContent.innerHTML = detailsHTML;
+    }
+
+    // ===== UTILITY METHODS =====
+    formatNumber(value, decimals = 1) {
+        if (value === null || value === undefined || isNaN(value)) {
+            return '0';
+        }
+
+        // Para números grandes, usar formatação com vírgulas
+        if (Math.abs(value) >= 1000) {
+            return Math.round(value).toLocaleString();
+        }
+
+        // Para números menores, usar decimais limitados
+        return parseFloat(value.toFixed(decimals)).toLocaleString();
     }
 
     // ===== CLEANUP =====
