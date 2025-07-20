@@ -18,6 +18,7 @@ class GameManager {
         this.resourceManager = null;
         this.buildingSystem = null;
         this.uiManager = null;
+        this.loanManager = null;
         this.questSystem = null;
         this.eventSystem = null;
         this.saveSystem = null;
@@ -152,6 +153,9 @@ class GameManager {
 
             console.log('🔧 Inicializando UIManager...');
             this.uiManager = new UIManager(this);
+
+            console.log('🔧 Inicializando LoanManager...');
+            this.loanManager = new LoanManager(this);
 
             console.log('🔧 Inicializando QuestSystem...');
             this.questSystem = new QuestSystem(this);
@@ -382,7 +386,16 @@ class GameManager {
         if (this.eventSystem) {
             this.eventSystem.update(deltaTime * this.timeScale);
         }
-        
+
+        // Processar pagamentos de empréstimos (uma vez por mês de jogo)
+        if (this.loanManager) {
+            // Verificar se passou um mês de jogo (simplificado)
+            const gameHours = this.gameTime / 3600000; // Converter para horas de jogo
+            if (Math.floor(gameHours / (24 * 30)) > Math.floor((gameHours - deltaTime * this.timeScale) / (24 * 30))) {
+                this.loanManager.processMonthlyPayments();
+            }
+        }
+
         if (this.uiManager) {
             this.uiManager.update(deltaTime);
         }
@@ -1232,10 +1245,14 @@ class GameManager {
             this.handleMouseClick(event);
         });
 
-        // Adicionar listener de ESC para cancelar preview
+        // Adicionar listener de ESC para cancelar preview e limpar seleção
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
-                this.cancelBuildingPreview();
+                if (this.buildingSystem && this.buildingSystem.previewMode) {
+                    this.cancelBuildingPreview();
+                } else if (this.selectedBuilding) {
+                    this.deselectBuilding();
+                }
             }
         });
     }
@@ -1269,9 +1286,11 @@ class GameManager {
                 if (gridPos.x !== this.lastHoverPosition.x || gridPos.z !== this.lastHoverPosition.z) {
                     this.lastHoverPosition = gridPos;
 
-                    // Só mostrar hover info se não estiver em modo preview
+                    // Só mostrar hover info se não estiver em modo preview e não houver seleção ativa
                     if (!this.buildingSystem || !this.buildingSystem.previewMode) {
-                        this.updateHoverInfo(gridPos.x, gridPos.z, event.clientX, event.clientY);
+                        if (!this.selectedBuilding) {
+                            this.updateHoverInfo(gridPos.x, gridPos.z, event.clientX, event.clientY);
+                        }
                     }
                 }
             }
@@ -1328,6 +1347,8 @@ class GameManager {
                 powerGeneration: building.config.powerGeneration || 0,
                 pollutionGeneration: building.config.pollutionGeneration || 0,
                 maintenanceCost: building.config.maintenanceCost || 0,
+                incomeGeneration: building.config.incomeGeneration || 0,
+                isRented: building.isRented || false,
                 hasPowerShortage: building.hasPowerShortage || false
             };
             this.hideTerrainInfo(); // Esconder info do terreno quando há edifício
@@ -1420,6 +1441,19 @@ class GameManager {
             }
             if (b.maintenanceCost > 0) {
                 content += `<div class="building-stat">💰 Manutenção: R$ ${b.maintenanceCost}/min</div>`;
+            }
+            if (b.incomeGeneration > 0) {
+                if (b.isRented) {
+                    content += `<div class="building-stat rental-income">🏙️ Alugado: R$ ${b.incomeGeneration}/min</div>`;
+                } else {
+                    content += `<div class="building-stat income-generation">💵 Receita: R$ ${b.incomeGeneration}/min</div>`;
+                }
+            }
+
+            // Mostrar status de aluguel para edifícios de infraestrutura
+            if ((b.waterProduction > 0 || b.powerGeneration > 0) && b.isRented) {
+                const rentalIncome = (b.waterProduction * 2) + (b.powerGeneration * 50);
+                content += `<div class="building-stat rental-income">🏙️ Aluguel: R$ ${rentalIncome}/min</div>`;
             }
             if (b.hasPowerShortage) {
                 content += `<div class="building-stat power-shortage-warning">⚡❌ Energia Insuficiente</div>`;
@@ -1653,6 +1687,9 @@ class GameManager {
                             this.uiManager.showNotification('Não é possível construir nesta posição!', 'error');
                         }
                     }
+                } else {
+                    // Modo normal - selecionar edifício se houver
+                    this.handleBuildingSelection(gridPos.x, gridPos.z);
                 }
             }
         } catch (error) {
@@ -1934,6 +1971,152 @@ class GameManager {
             this.uiManager.clearBuildingDetails();
         }
     }
+
+    // ===== SELEÇÃO DE EDIFÍCIOS =====
+    handleBuildingSelection(gridX, gridZ) {
+        // Verificar se há um edifício na posição clicada
+        const building = this.buildingSystem.getBuildingAt(gridX, gridZ);
+
+        if (building) {
+            // Selecionar o edifício
+            this.selectBuilding(building);
+        } else {
+            // Clicou em área vazia - desselecionar
+            this.deselectBuilding();
+        }
+    }
+
+    selectBuilding(building) {
+        // Limpar seleção anterior
+        this.clearBuildingSelection();
+
+        // Definir nova seleção
+        this.selectedBuilding = building;
+
+        // Adicionar indicador visual de seleção
+        this.addSelectionIndicator(building);
+
+        // Atualizar painel de informações
+        this.updateSelectionInfo(building);
+
+        console.log(`🏢 Edifício selecionado: ${building.config.name}`);
+    }
+
+    deselectBuilding() {
+        if (this.selectedBuilding) {
+            console.log(`🏢 Edifício desselecionado: ${this.selectedBuilding.config.name}`);
+        }
+
+        // Limpar seleção
+        this.clearBuildingSelection();
+
+        // Limpar painel de informações
+        this.clearSelectionInfo();
+    }
+
+    clearBuildingSelection() {
+        if (this.selectedBuilding) {
+            // Remover indicador visual
+            this.removeSelectionIndicator(this.selectedBuilding);
+            this.selectedBuilding = null;
+        }
+    }
+
+    addSelectionIndicator(building) {
+        if (!building.mesh) return;
+
+        try {
+            // Criar indicador de seleção (anel ao redor do edifício)
+            const selectionRing = BABYLON.MeshBuilder.CreateTorus(`selection_${building.id}`, {
+                diameter: building.config.size * 2.5,
+                thickness: 0.2,
+                tessellation: 16
+            }, this.scene);
+
+            // Posicionar no chão ao redor do edifício
+            const worldPos = this.gridManager.gridToWorld(building.gridX, building.gridZ);
+            selectionRing.position.x = worldPos.x;
+            selectionRing.position.z = worldPos.z;
+            selectionRing.position.y = 0.1;
+
+            // Material do indicador
+            const selectionMaterial = new BABYLON.StandardMaterial(`selectionMat_${building.id}`, this.scene);
+            selectionMaterial.diffuseColor = new BABYLON.Color3(1, 1, 0); // Amarelo
+            selectionMaterial.emissiveColor = new BABYLON.Color3(0.3, 0.3, 0);
+            selectionMaterial.alpha = 0.8;
+
+            selectionRing.material = selectionMaterial;
+
+            // Armazenar referência
+            building.mesh.selectionIndicator = selectionRing;
+
+            // Animação de pulsação
+            this.animateSelectionIndicator(selectionRing);
+
+        } catch (error) {
+            console.error('❌ Erro ao criar indicador de seleção:', error);
+        }
+    }
+
+    removeSelectionIndicator(building) {
+        if (building.mesh && building.mesh.selectionIndicator) {
+            try {
+                if (!building.mesh.selectionIndicator.isDisposed()) {
+                    if (building.mesh.selectionIndicator.material) {
+                        building.mesh.selectionIndicator.material.dispose();
+                    }
+                    building.mesh.selectionIndicator.dispose();
+                }
+                building.mesh.selectionIndicator = null;
+            } catch (error) {
+                console.error('❌ Erro ao remover indicador de seleção:', error);
+            }
+        }
+    }
+
+    animateSelectionIndicator(indicator) {
+        // Animação de pulsação suave
+        const animationKeys = [];
+        animationKeys.push({
+            frame: 0,
+            value: 0.8
+        });
+        animationKeys.push({
+            frame: 30,
+            value: 1.0
+        });
+        animationKeys.push({
+            frame: 60,
+            value: 0.8
+        });
+
+        const alphaAnimation = new BABYLON.Animation(
+            "selectionPulse",
+            "material.alpha",
+            30,
+            BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+        );
+
+        alphaAnimation.setKeys(animationKeys);
+        indicator.animations.push(alphaAnimation);
+
+        this.scene.beginAnimation(indicator, 0, 60, true);
+    }
+
+    updateSelectionInfo(building) {
+        // Atualizar painel lateral com informações do edifício selecionado
+        if (this.uiManager) {
+            this.uiManager.showBuildingSelectionInfo(building);
+        }
+    }
+
+    clearSelectionInfo() {
+        // Limpar painel lateral
+        if (this.uiManager) {
+            this.uiManager.clearBuildingSelectionInfo();
+        }
+    }
     
     // ===== SAVE/LOAD =====
     autoSave() {
@@ -1981,6 +2164,44 @@ class GameManager {
             this.engine.dispose();
         }
         console.log('🗑️ GameManager disposed');
+    }
+
+    // ===== SISTEMA DE RECICLAGEM =====
+    recycleBuildingWithConfirmation(buildingId) {
+        const building = this.buildingSystem.buildings.get(buildingId);
+        if (!building) {
+            console.warn(`⚠️ Edifício não encontrado: ${buildingId}`);
+            return;
+        }
+
+        const recoveredAmount = this.buildingSystem.getRecyclingValue(buildingId);
+
+        // Mostrar diálogo de confirmação
+        const confirmed = confirm(
+            `♻️ Reciclar ${building.config.name}?\n\n` +
+            `Recursos que serão recuperados: R$ ${recoveredAmount}\n` +
+            `(70% do custo original: R$ ${building.config.cost})\n\n` +
+            `Esta ação não pode ser desfeita. Continuar?`
+        );
+
+        if (confirmed) {
+            const result = this.buildingSystem.recycleBuilding(buildingId);
+
+            if (result.success) {
+                // Limpar seleção se o edifício reciclado estava selecionado
+                if (this.selectedBuilding && this.selectedBuilding.id === buildingId) {
+                    this.deselectBuilding();
+                }
+
+                console.log(`♻️ Reciclagem confirmada: R$ ${result.recoveredAmount} recuperados`);
+            } else {
+                if (this.uiManager) {
+                    this.uiManager.showNotification('❌ Erro ao reciclar edifício', 'error');
+                }
+            }
+        } else {
+            console.log('♻️ Reciclagem cancelada pelo usuário');
+        }
     }
 }
 

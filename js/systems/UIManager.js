@@ -1318,6 +1318,350 @@ class UIManager {
         document.querySelectorAll('.mobile-toggle').forEach(btn => btn.remove());
         console.log('🗑️ UIManager disposed');
     }
+
+    // ===== INFORMAÇÕES DE SELEÇÃO DE EDIFÍCIOS =====
+    showBuildingSelectionInfo(building) {
+        if (!building) return;
+
+        // Usar o painel de detalhes existente para mostrar informações de seleção
+        const detailsPanel = this.elements.detailsPanel;
+        const detailsContent = this.elements.detailsContent;
+
+        if (!detailsPanel || !detailsContent) return;
+
+        // Gerar conteúdo das informações do edifício selecionado
+        let content = `
+            <div class="building-selection-info">
+                <div class="selection-header">
+                    <h3>🏢 ${building.config.name}</h3>
+                    <button class="deselect-btn" onclick="window.gameManager.deselectBuilding()">✖️ Desselecionar</button>
+                </div>
+
+                <div class="building-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Categoria:</span>
+                        <span class="detail-value">${this.getCategoryDisplayName(building.config.category)}</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value ${building.active ? 'status-active' : 'status-inactive'}">
+                            ${building.active ? 'Ativo' : 'Inativo'}
+                        </span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Eficiência:</span>
+                        <span class="detail-value">${Math.round(building.efficiency * 100)}%</span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Posição:</span>
+                        <span class="detail-value">(${building.gridX}, ${building.gridZ})</span>
+                    </div>
+                </div>
+
+                <div class="building-stats">
+                    ${this.generateBuildingStats(building)}
+                </div>
+
+                <div class="building-actions">
+                    ${this.generateBuildingActions(building)}
+                </div>
+            </div>
+        `;
+
+        detailsContent.innerHTML = content;
+        detailsPanel.style.display = 'block';
+        this.currentOpenPanel = 'selection';
+
+        console.log(`📋 Informações de seleção exibidas para ${building.config.name}`);
+    }
+
+    clearBuildingSelectionInfo() {
+        const detailsPanel = this.elements.detailsPanel;
+
+        if (detailsPanel && this.currentOpenPanel === 'selection') {
+            detailsPanel.style.display = 'none';
+            this.currentOpenPanel = null;
+        }
+    }
+
+    generateBuildingStats(building) {
+        let stats = '';
+        const config = building.config;
+
+        if (config.waterProduction > 0) {
+            const status = building.isRented ? ' (Alugado)' : '';
+            stats += `<div class="stat-item">💧 Produção de Água: ${config.waterProduction}L/s${status}</div>`;
+        }
+
+        if (config.waterConsumption > 0) {
+            stats += `<div class="stat-item">🚰 Consumo de Água: ${config.waterConsumption}L/s</div>`;
+        }
+
+        if (config.powerGeneration > 0) {
+            const status = building.isRented ? ' (Alugado)' : '';
+            stats += `<div class="stat-item">⚡ Geração de Energia: ${config.powerGeneration} MW${status}</div>`;
+        }
+
+        if (config.powerConsumption > 0) {
+            stats += `<div class="stat-item">🔌 Consumo de Energia: ${config.powerConsumption} MW</div>`;
+        }
+
+        if (config.incomeGeneration > 0) {
+            const status = building.isRented ? ' (Alugado)' : '';
+            stats += `<div class="stat-item">💵 Receita: R$ ${config.incomeGeneration}/min${status}</div>`;
+        }
+
+        if (config.maintenanceCost > 0) {
+            stats += `<div class="stat-item">💰 Manutenção: R$ ${config.maintenanceCost}/min</div>`;
+        }
+
+        if (config.pollutionGeneration > 0) {
+            stats += `<div class="stat-item">🏭 Poluição: +${config.pollutionGeneration}/s</div>`;
+        }
+
+        return stats;
+    }
+
+    generateBuildingActions(building) {
+        let actions = '';
+        const config = building.config;
+
+        // Botão de aluguel para edifícios de infraestrutura
+        if (config.waterProduction > 0 || config.powerGeneration > 0) {
+            const rentalText = building.isRented ? 'Cancelar Aluguel' : 'Alugar para Outras Cidades';
+            const rentalIcon = building.isRented ? '🏠' : '🏙️';
+            actions += `
+                <button class="action-btn rental-btn" onclick="window.gameManager.buildingSystem.toggleBuildingRental('${building.id}'); window.gameManager.updateSelectionInfo(window.gameManager.selectedBuilding);">
+                    ${rentalIcon} ${rentalText}
+                </button>
+            `;
+        }
+
+        // Botão de reciclagem
+        actions += `
+            <button class="action-btn recycle-btn" onclick="window.gameManager.recycleBuildingWithConfirmation('${building.id}')">
+                ♻️ Reciclar Edifício
+            </button>
+        `;
+
+        return actions;
+    }
+
+    getCategoryDisplayName(category) {
+        const categoryNames = {
+            'water': 'Água',
+            'treatment': 'Tratamento',
+            'storage': 'Armazenamento',
+            'residential': 'Residencial',
+            'power': 'Energia',
+            'infrastructure': 'Infraestrutura',
+            'zoning': 'Zoneamento',
+            'commercial': 'Comercial',
+            'tourism': 'Turismo',
+            'industrial': 'Industrial',
+            'public': 'Público'
+        };
+        return categoryNames[category] || category;
+    }
+
+    // ===== SISTEMA DE EMPRÉSTIMOS =====
+    showLoanInterface() {
+        if (!this.gameManager.loanManager) {
+            console.warn('⚠️ LoanManager não disponível');
+            return;
+        }
+
+        const loanManager = this.gameManager.loanManager;
+        const monthlyIncome = loanManager.getMonthlyIncome();
+        const maxLoanAmount = loanManager.getMaxLoanAmount();
+        const creditScore = loanManager.getCreditScore();
+        const currentDebt = loanManager.getTotalDebt();
+        const monthlyPayments = loanManager.getMonthlyPayments();
+
+        // Usar o painel de detalhes para mostrar a interface de empréstimos
+        const detailsPanel = this.elements.detailsPanel;
+        const detailsContent = this.elements.detailsContent;
+
+        if (!detailsPanel || !detailsContent) return;
+
+        const content = `
+            <div class="loan-interface">
+                <div class="loan-header">
+                    <h3>🏦 Sistema de Empréstimos</h3>
+                    <button class="close-btn" onclick="window.gameManager.uiManager.closeLoanInterface()">✖️</button>
+                </div>
+
+                <div class="financial-status">
+                    <h4>📊 Status Financeiro da Cidade</h4>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span class="status-label">Receita Mensal:</span>
+                            <span class="status-value">R$ ${monthlyIncome.toFixed(2)}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Score de Crédito:</span>
+                            <span class="status-value credit-score-${this.getCreditScoreClass(creditScore)}">${creditScore}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Dívida Total:</span>
+                            <span class="status-value">R$ ${currentDebt.toFixed(2)}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Pagamentos Mensais:</span>
+                            <span class="status-value">R$ ${monthlyPayments.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="loan-application">
+                    <h4>💰 Solicitar Empréstimo</h4>
+                    <div class="loan-form">
+                        <div class="form-group">
+                            <label for="loan-amount">Valor do Empréstimo (máx. R$ ${maxLoanAmount.toFixed(2)}):</label>
+                            <input type="number" id="loan-amount" min="1000" max="${maxLoanAmount}" step="1000" value="10000">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loan-term">Prazo de Pagamento:</label>
+                            <select id="loan-term">
+                                <option value="6">6 meses</option>
+                                <option value="12" selected>12 meses</option>
+                                <option value="24">24 meses</option>
+                                <option value="36">36 meses</option>
+                            </select>
+                        </div>
+
+                        <div class="loan-preview" id="loan-preview">
+                            <div class="preview-item">
+                                <span>Taxa de Juros Estimada:</span>
+                                <span id="estimated-rate">-</span>
+                            </div>
+                            <div class="preview-item">
+                                <span>Pagamento Mensal:</span>
+                                <span id="monthly-payment">-</span>
+                            </div>
+                            <div class="preview-item">
+                                <span>Total a Pagar:</span>
+                                <span id="total-payment">-</span>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button class="loan-btn calculate-btn" onclick="window.gameManager.uiManager.calculateLoanPreview()">
+                                📊 Calcular
+                            </button>
+                            <button class="loan-btn apply-btn" onclick="window.gameManager.uiManager.applyForLoan()">
+                                💰 Solicitar Empréstimo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="active-loans">
+                    <h4>📋 Empréstimos Ativos</h4>
+                    <div id="active-loans-list">
+                        ${this.generateActiveLoansHTML(loanManager.getActiveLoans())}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        detailsContent.innerHTML = content;
+        detailsPanel.style.display = 'block';
+        this.currentOpenPanel = 'loans';
+
+        // Calcular preview inicial
+        this.calculateLoanPreview();
+
+        console.log('🏦 Interface de empréstimos aberta');
+    }
+
+    closeLoanInterface() {
+        const detailsPanel = this.elements.detailsPanel;
+
+        if (detailsPanel && this.currentOpenPanel === 'loans') {
+            detailsPanel.style.display = 'none';
+            this.currentOpenPanel = null;
+        }
+    }
+
+    calculateLoanPreview() {
+        const amountInput = document.getElementById('loan-amount');
+        const termSelect = document.getElementById('loan-term');
+
+        if (!amountInput || !termSelect) return;
+
+        const amount = parseFloat(amountInput.value) || 0;
+        const termMonths = parseInt(termSelect.value) || 12;
+
+        if (amount <= 0) return;
+
+        const loanManager = this.gameManager.loanManager;
+        const interestRate = loanManager.calculateInterestRate();
+        const monthlyPayment = loanManager.calculateMonthlyPayment(amount, termMonths, interestRate);
+        const totalPayment = monthlyPayment * termMonths;
+
+        // Atualizar preview
+        document.getElementById('estimated-rate').textContent = `${(interestRate * 100).toFixed(2)}% ao ano`;
+        document.getElementById('monthly-payment').textContent = `R$ ${monthlyPayment.toFixed(2)}`;
+        document.getElementById('total-payment').textContent = `R$ ${totalPayment.toFixed(2)}`;
+    }
+
+    applyForLoan() {
+        const amountInput = document.getElementById('loan-amount');
+        const termSelect = document.getElementById('loan-term');
+
+        if (!amountInput || !termSelect) return;
+
+        const amount = parseFloat(amountInput.value) || 0;
+        const termMonths = parseInt(termSelect.value) || 12;
+
+        if (amount <= 0) {
+            this.showNotification('❌ Valor do empréstimo inválido', 'error');
+            return;
+        }
+
+        const result = this.gameManager.loanManager.requestLoan(amount, termMonths);
+
+        if (result.approved) {
+            this.showNotification(
+                `✅ Empréstimo aprovado! R$ ${amount} a ${(result.interestRate * 100).toFixed(2)}% ao ano`,
+                'success'
+            );
+
+            // Atualizar interface
+            this.showLoanInterface();
+        } else {
+            this.showNotification(`❌ Empréstimo rejeitado: ${result.reason}`, 'error');
+        }
+    }
+
+    generateActiveLoansHTML(loans) {
+        if (loans.length === 0) {
+            return '<p class="no-loans">Nenhum empréstimo ativo</p>';
+        }
+
+        return loans.map(loan => `
+            <div class="loan-item">
+                <div class="loan-info">
+                    <span class="loan-id">${loan.id}</span>
+                    <span class="loan-balance">Saldo: R$ ${loan.remainingBalance.toFixed(2)}</span>
+                    <span class="loan-payment">Pagamento: R$ ${loan.monthlyPayment.toFixed(2)}/mês</span>
+                    <span class="loan-remaining">${loan.remainingMonths} meses restantes</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    getCreditScoreClass(score) {
+        if (score >= 750) return 'excellent';
+        if (score >= 650) return 'good';
+        if (score >= 550) return 'fair';
+        return 'poor';
+    }
 }
 
 // Exportar para escopo global

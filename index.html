@@ -126,6 +126,7 @@
                     <button id="btn-speed-1x" class="control-btn active">1x</button>
                     <button id="btn-speed-2x" class="control-btn">2x</button>
                     <button id="btn-speed-3x" class="control-btn">3x</button>
+                    <button id="btn-loans" class="control-btn loans-btn" title="Empréstimos" onclick="window.gameManager.uiManager.showLoanInterface()">🏦</button>
                     <button id="btn-help" class="control-btn help-btn" title="Controles">❓</button>
                 </div>
             </div>
@@ -142,6 +143,9 @@
                         <button class="category-btn" data-category="power">⚡ Energia</button>
                         <button class="category-btn" data-category="infrastructure">🛣️ Infraestrutura</button>
                         <button class="category-btn" data-category="zoning">🏘️ Zoneamento</button>
+                        <button class="category-btn" data-category="commercial">🏬 Comercial</button>
+                        <button class="category-btn" data-category="tourism">🎡 Turismo</button>
+                        <button class="category-btn" data-category="industrial">🏭 Industrial</button>
                     </div>
                     <div class="building-items" id="building-items">
                         <!-- Itens de construção serão inseridos dinamicamente -->
@@ -375,6 +379,7 @@
     <script src="js/systems/BuildingSystem.js"></script>
     <script src="js/systems/CityLifeSystem.js"></script>
     <script src="js/systems/UIManager.js"></script>
+    <script src="js/systems/LoanManager.js"></script>
     <script src="js/systems/QuestSystem.js"></script>
     <script src="js/systems/EventSystem.js"></script>
     <script src="js/systems/SaveSystem.js"></script>

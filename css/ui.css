@@ -1456,3 +1456,370 @@
     0%, 50% { opacity: 1; }
     25%, 75% { opacity: 0.6; }
 }
+
+/* ===== SISTEMA DE ALUGUEL ===== */
+.rental-income {
+    color: #4CAF50 !important;
+    font-weight: bold;
+    background: rgba(76, 175, 80, 0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.income-generation {
+    color: #2196F3 !important;
+    font-weight: bold;
+    background: rgba(33, 150, 243, 0.1);
+    padding: 2px 4px;
+    border-radius: 3px;
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+/* ===== SELEÇÃO DE EDIFÍCIOS ===== */
+.building-selection-info {
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    color: white;
+}
+
+.selection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.selection-header h3 {
+    margin: 0;
+    color: #FFD700;
+    font-size: 18px;
+}
+
+.deselect-btn {
+    background: rgba(255, 0, 0, 0.2);
+    border: 1px solid rgba(255, 0, 0, 0.5);
+    color: #ff6b6b;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.deselect-btn:hover {
+    background: rgba(255, 0, 0, 0.4);
+    border-color: #ff6b6b;
+}
+
+.building-details {
+    margin-bottom: 15px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding: 5px 0;
+}
+
+.detail-label {
+    font-weight: bold;
+    color: #ccc;
+}
+
+.detail-value {
+    color: white;
+}
+
+.status-active {
+    color: #4CAF50 !important;
+}
+
+.status-inactive {
+    color: #ff6b6b !important;
+}
+
+.building-stats {
+    margin-bottom: 15px;
+}
+
+.stat-item {
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+}
+
+.building-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.action-btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.rental-btn {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.rental-btn:hover {
+    background: linear-gradient(45deg, #45a049, #3d8b40);
+    transform: translateY(-2px);
+}
+
+.recycle-btn {
+    background: linear-gradient(45deg, #FF9800, #f57c00);
+    color: white;
+}
+
+.recycle-btn:hover {
+    background: linear-gradient(45deg, #f57c00, #ef6c00);
+    transform: translateY(-2px);
+}
+
+/* ===== SISTEMA DE EMPRÉSTIMOS ===== */
+.loan-interface {
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 10px;
+    color: white;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.loan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #FFD700;
+}
+
+.loan-header h3 {
+    margin: 0;
+    color: #FFD700;
+    font-size: 20px;
+}
+
+.close-btn {
+    background: rgba(255, 0, 0, 0.2);
+    border: 1px solid rgba(255, 0, 0, 0.5);
+    color: #ff6b6b;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.close-btn:hover {
+    background: rgba(255, 0, 0, 0.4);
+}
+
+.financial-status {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.financial-status h4 {
+    margin: 0 0 15px 0;
+    color: #4CAF50;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-label {
+    color: #ccc;
+    font-weight: bold;
+}
+
+.status-value {
+    color: white;
+}
+
+.credit-score-excellent { color: #4CAF50 !important; }
+.credit-score-good { color: #8BC34A !important; }
+.credit-score-fair { color: #FF9800 !important; }
+.credit-score-poor { color: #f44336 !important; }
+
+.loan-application {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.loan-application h4 {
+    margin: 0 0 15px 0;
+    color: #2196F3;
+}
+
+.loan-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label {
+    color: #ccc;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #2196F3;
+    box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+}
+
+.loan-preview {
+    padding: 15px;
+    background: rgba(33, 150, 243, 0.1);
+    border-radius: 5px;
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.preview-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.preview-item:last-child {
+    margin-bottom: 0;
+    font-weight: bold;
+    color: #FFD700;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.loan-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.calculate-btn {
+    background: linear-gradient(45deg, #FF9800, #f57c00);
+    color: white;
+}
+
+.calculate-btn:hover {
+    background: linear-gradient(45deg, #f57c00, #ef6c00);
+    transform: translateY(-2px);
+}
+
+.apply-btn {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+}
+
+.apply-btn:hover {
+    background: linear-gradient(45deg, #45a049, #3d8b40);
+    transform: translateY(-2px);
+}
+
+.active-loans {
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.active-loans h4 {
+    margin: 0 0 15px 0;
+    color: #FF9800;
+}
+
+.no-loans {
+    text-align: center;
+    color: #ccc;
+    font-style: italic;
+    margin: 0;
+}
+
+.loan-item {
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    margin-bottom: 10px;
+    border-left: 4px solid #FF9800;
+}
+
+.loan-item:last-child {
+    margin-bottom: 0;
+}
+
+.loan-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.loan-id {
+    font-weight: bold;
+    color: #FFD700;
+}
+
+.loan-balance {
+    color: #f44336;
+}
+
+.loan-payment {
+    color: #FF9800;
+}
+
+.loan-remaining {
+    color: #4CAF50;
+}

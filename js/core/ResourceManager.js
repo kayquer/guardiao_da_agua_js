@@ -312,7 +312,18 @@ class ResourceManager {
         this.resources.budget.income += amount;
         this.notifyChange('budget', 'income', amount);
     }
-    
+
+    removeIncome(amount) {
+        this.resources.budget.income = Math.max(0, this.resources.budget.income - amount);
+        this.notifyChange('budget', 'income', -amount);
+    }
+
+    addBudget(amount) {
+        this.resources.budget.current += amount;
+        this.notifyChange('budget', 'current', amount);
+        console.log(`💰 Orçamento aumentado: +R$ ${amount} (total: R$ ${this.resources.budget.current})`);
+    }
+
     addExpense(amount) {
         this.resources.budget.expenses += amount;
         this.notifyChange('budget', 'expenses', amount);

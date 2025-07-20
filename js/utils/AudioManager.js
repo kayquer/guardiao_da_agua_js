@@ -352,7 +352,7 @@ class AudioManager {
                     oscillator.type = 'sine';
 
                     gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                    gainNode.gain.linearRampToValueAtTime(this.sfxVolume * this.masterVolume * 0.1, audioContext.currentTime + 0.1);
+                    gainNode.gain.linearRampToValueAtTime(this.sfxVolume * this.masterVolume * 0.05, audioContext.currentTime + 0.1);
                     gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
 
                     oscillator.start(audioContext.currentTime);
@@ -402,7 +402,7 @@ class AudioManager {
             filter.connect(gainNode);
             gainNode.connect(audioContext.destination);
 
-            gainNode.gain.setValueAtTime(this.sfxVolume * this.masterVolume * 0.05, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(this.sfxVolume * this.masterVolume * 0.025, audioContext.currentTime);
 
             source.start(audioContext.currentTime);
             source.stop(audioContext.currentTime + duration);
@@ -687,13 +687,13 @@ class AudioManager {
             return;
         }
 
-        // Reproduzir som com fade-in suave
-        this.playAmbientSoundWithFade(soundKey, 0.3);
+        // Reproduzir som com fade-in suave (volume reduzido para 50%)
+        this.playAmbientSoundWithFade(soundKey, 0.15);
 
         console.log(`🌅 Som de transição reproduzido: ${transitionType}`);
     }
 
-    playAmbientSoundWithFade(soundKey, targetVolume = 0.5) {
+    playAmbientSoundWithFade(soundKey, targetVolume = 0.15) {
         const sound = this.sounds.get(soundKey);
         if (!sound) {
             console.warn(`⚠️ Som ambiente não encontrado: ${soundKey}`);

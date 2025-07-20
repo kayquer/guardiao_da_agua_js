@@ -679,6 +679,225 @@ class BuildingSystem {
             }
         });
 
+        // CATEGORIA: COMERCIAL (Revenue-Generating)
+        this.addBuildingType('shopping_center', {
+            name: 'Centro Comercial',
+            description: 'Grande centro comercial que gera receita através de aluguéis',
+            category: 'commercial',
+            cost: 50000,
+            size: 3,
+            incomeGeneration: 2000, // R$ por minuto
+            powerConsumption: 80,
+            waterConsumption: 30,
+            maintenanceCost: 800,
+            populationRequirement: 200,
+            icon: '🏬',
+            color: '#4CAF50',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
+        this.addBuildingType('office_building', {
+            name: 'Edifício de Escritórios',
+            description: 'Complexo de escritórios que gera receita através de aluguéis comerciais',
+            category: 'commercial',
+            cost: 35000,
+            size: 2,
+            incomeGeneration: 1500, // R$ por minuto
+            powerConsumption: 60,
+            waterConsumption: 20,
+            maintenanceCost: 600,
+            populationRequirement: 150,
+            icon: '🏢',
+            color: '#2196F3',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
+        this.addBuildingType('bank', {
+            name: 'Banco',
+            description: 'Instituição financeira que gera receita através de serviços bancários',
+            category: 'commercial',
+            cost: 40000,
+            size: 2,
+            incomeGeneration: 1800, // R$ por minuto
+            powerConsumption: 50,
+            waterConsumption: 15,
+            maintenanceCost: 700,
+            populationRequirement: 100,
+            icon: '🏦',
+            color: '#FF9800',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
+        this.addBuildingType('restaurant', {
+            name: 'Restaurante',
+            description: 'Estabelecimento gastronômico que atrai turistas e gera receita',
+            category: 'commercial',
+            cost: 20000,
+            size: 1,
+            incomeGeneration: 800, // R$ por minuto
+            powerConsumption: 30,
+            waterConsumption: 25,
+            maintenanceCost: 300,
+            populationRequirement: 50,
+            icon: '🍽️',
+            color: '#E91E63',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
+        // CATEGORIA: TURISMO (Revenue-Generating)
+        this.addBuildingType('museum', {
+            name: 'Museu',
+            description: 'Museu que atrai turistas e gera receita através de ingressos',
+            category: 'tourism',
+            cost: 60000,
+            size: 3,
+            incomeGeneration: 1200, // R$ por minuto
+            powerConsumption: 40,
+            waterConsumption: 10,
+            maintenanceCost: 500,
+            satisfactionBonus: 25,
+            attractivenessBonus: 30,
+            icon: '🏛️',
+            color: '#9C27B0',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
+        this.addBuildingType('park', {
+            name: 'Parque Turístico',
+            description: 'Parque temático que atrai visitantes e gera receita',
+            category: 'tourism',
+            cost: 80000,
+            size: 4,
+            incomeGeneration: 2500, // R$ por minuto
+            powerConsumption: 100,
+            waterConsumption: 50,
+            maintenanceCost: 1000,
+            satisfactionBonus: 35,
+            attractivenessBonus: 50,
+            icon: '🎡',
+            color: '#4CAF50',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
+        this.addBuildingType('monument', {
+            name: 'Monumento Histórico',
+            description: 'Marco histórico que atrai turistas e aumenta o prestígio da cidade',
+            category: 'tourism',
+            cost: 45000,
+            size: 2,
+            incomeGeneration: 900, // R$ por minuto
+            powerConsumption: 20,
+            waterConsumption: 5,
+            maintenanceCost: 200,
+            satisfactionBonus: 20,
+            attractivenessBonus: 40,
+            icon: '🗿',
+            color: '#795548',
+            requirements: {
+                terrain: ['grassland', 'lowland', 'hill'],
+                nearWater: false
+            }
+        });
+
+        this.addBuildingType('hotel', {
+            name: 'Hotel',
+            description: 'Hotel que hospeda turistas e gera receita através de hospedagem',
+            category: 'tourism',
+            cost: 55000,
+            size: 3,
+            incomeGeneration: 1800, // R$ por minuto
+            powerConsumption: 80,
+            waterConsumption: 60,
+            maintenanceCost: 800,
+            attractivenessBonus: 25,
+            icon: '🏨',
+            color: '#FF5722',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
+        // CATEGORIA: INDUSTRIAL (Revenue-Generating)
+        this.addBuildingType('factory', {
+            name: 'Fábrica de Exportação',
+            description: 'Fábrica que produz bens para exportação e gera receita',
+            category: 'industrial',
+            cost: 70000,
+            size: 4,
+            incomeGeneration: 3000, // R$ por minuto
+            powerConsumption: 150,
+            waterConsumption: 40,
+            pollutionGeneration: 30,
+            maintenanceCost: 1200,
+            populationRequirement: 300,
+            icon: '🏭',
+            color: '#607D8B',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
+        this.addBuildingType('tech_center', {
+            name: 'Centro Tecnológico',
+            description: 'Centro de desenvolvimento tecnológico que gera receita através de inovação',
+            category: 'industrial',
+            cost: 90000,
+            size: 3,
+            incomeGeneration: 2800, // R$ por minuto
+            powerConsumption: 120,
+            waterConsumption: 20,
+            pollutionGeneration: 5,
+            maintenanceCost: 1000,
+            populationRequirement: 250,
+            satisfactionBonus: 15,
+            icon: '🔬',
+            color: '#3F51B5',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false
+            }
+        });
+
+        this.addBuildingType('port', {
+            name: 'Porto Comercial',
+            description: 'Porto para exportação de mercadorias que gera alta receita',
+            category: 'industrial',
+            cost: 120000,
+            size: 5,
+            incomeGeneration: 4000, // R$ por minuto
+            powerConsumption: 200,
+            waterConsumption: 30,
+            pollutionGeneration: 25,
+            maintenanceCost: 1500,
+            populationRequirement: 400,
+            icon: '⚓',
+            color: '#00BCD4',
+            requirements: {
+                terrain: ['water'],
+                nearWater: true
+            }
+        });
+
         console.log(`✅ ${this.buildingTypes.size} tipos de edifícios definidos`);
     }
     
@@ -708,7 +927,11 @@ class BuildingSystem {
             residential: new BABYLON.Color3(0.55, 0.35, 0.20), // Marrom madeira
             power: new BABYLON.Color3(1.0, 1.0, 0.0),         // Amarelo energia
             infrastructure: new BABYLON.Color3(0.5, 0.5, 0.5), // Cinza concreto
-            zoning: new BABYLON.Color3(0.8, 0.8, 0.8)         // Cinza claro
+            zoning: new BABYLON.Color3(0.8, 0.8, 0.8),        // Cinza claro
+            commercial: new BABYLON.Color3(0.2, 0.8, 0.2),    // Verde comercial
+            tourism: new BABYLON.Color3(0.8, 0.2, 0.8),       // Magenta turismo
+            industrial: new BABYLON.Color3(0.6, 0.6, 0.6),    // Cinza industrial
+            public: new BABYLON.Color3(0.9, 0.9, 0.1)         // Amarelo público
         };
         
         Object.entries(categories).forEach(([category, color]) => {
@@ -1841,6 +2064,7 @@ class BuildingSystem {
         // Remover label do edifício
         if (building.mesh) {
             this.removeBuildingNameLabel(building.mesh);
+            this.removeRentalIcon(building);
         }
 
         // Adicionar à fila de disposal para processamento assíncrono
@@ -1949,7 +2173,110 @@ class BuildingSystem {
             console.warn(`⚠️ Erro durante disposal de ${item.meshName}:`, error);
         }
     }
-    
+
+    // ===== SISTEMA DE RECICLAGEM =====
+    recycleBuilding(buildingId) {
+        const building = this.buildings.get(buildingId);
+        if (!building) {
+            console.warn(`⚠️ Edifício não encontrado para reciclagem: ${buildingId}`);
+            return false;
+        }
+
+        // Calcular recursos recuperados (70% do custo original)
+        const recoveredAmount = Math.floor(building.config.cost * 0.7);
+
+        // Mostrar animação de reciclagem
+        this.showRecyclingAnimation(building);
+
+        // Remover o edifício
+        const removed = this.removeBuilding(buildingId);
+
+        if (removed) {
+            // Adicionar recursos recuperados ao orçamento
+            if (window.gameManager && window.gameManager.resourceManager) {
+                window.gameManager.resourceManager.addBudget(recoveredAmount);
+
+                // Mostrar notificação de reciclagem
+                if (window.gameManager.uiManager) {
+                    window.gameManager.uiManager.showNotification(
+                        `♻️ ${building.config.name} reciclado! Recursos recuperados: R$ ${recoveredAmount}`,
+                        'success'
+                    );
+                }
+            }
+
+            console.log(`♻️ Edifício ${building.config.name} reciclado. Recursos recuperados: R$ ${recoveredAmount}`);
+            return { success: true, recoveredAmount };
+        }
+
+        return { success: false, recoveredAmount: 0 };
+    }
+
+    showRecyclingAnimation(building) {
+        if (!building.mesh) return;
+
+        try {
+            // Criar efeito de partículas de reciclagem
+            const particleSystem = new BABYLON.ParticleSystem("recycling", 50, this.scene);
+
+            // Textura das partículas (usar uma textura simples)
+            particleSystem.particleTexture = new BABYLON.Texture("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", this.scene);
+
+            // Posição do emissor
+            particleSystem.emitter = building.mesh;
+            particleSystem.minEmitBox = new BABYLON.Vector3(-1, 0, -1);
+            particleSystem.maxEmitBox = new BABYLON.Vector3(1, 0, 1);
+
+            // Cores das partículas (verde para reciclagem)
+            particleSystem.color1 = new BABYLON.Color4(0, 1, 0, 1.0);
+            particleSystem.color2 = new BABYLON.Color4(0.5, 1, 0.5, 1.0);
+            particleSystem.colorDead = new BABYLON.Color4(0, 0.5, 0, 0.0);
+
+            // Tamanho das partículas
+            particleSystem.minSize = 0.1;
+            particleSystem.maxSize = 0.3;
+
+            // Tempo de vida
+            particleSystem.minLifeTime = 0.5;
+            particleSystem.maxLifeTime = 1.5;
+
+            // Taxa de emissão
+            particleSystem.emitRate = 100;
+
+            // Direção das partículas
+            particleSystem.direction1 = new BABYLON.Vector3(-1, 2, -1);
+            particleSystem.direction2 = new BABYLON.Vector3(1, 4, 1);
+
+            // Velocidade
+            particleSystem.minEmitPower = 2;
+            particleSystem.maxEmitPower = 4;
+
+            // Gravidade
+            particleSystem.gravity = new BABYLON.Vector3(0, -9.81, 0);
+
+            // Iniciar sistema de partículas
+            particleSystem.start();
+
+            // Parar após 2 segundos e limpar
+            setTimeout(() => {
+                particleSystem.stop();
+                setTimeout(() => {
+                    particleSystem.dispose();
+                }, 2000);
+            }, 2000);
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao criar animação de reciclagem:', error);
+        }
+    }
+
+    getRecyclingValue(buildingId) {
+        const building = this.buildings.get(buildingId);
+        if (!building) return 0;
+
+        return Math.floor(building.config.cost * 0.7);
+    }
+
     // ===== EFEITOS NOS RECURSOS =====
     applyBuildingEffects(building, add = true) {
         const config = building.config;
@@ -1959,12 +2286,15 @@ class BuildingSystem {
         if (window.gameManager && gameManager.resourceManager) {
             const resourceManager = gameManager.resourceManager;
             
-            // Produção de água
+            // Produção de água (só se não estiver alugado)
             if (config.waterProduction) {
-                if (add) {
-                    resourceManager.addWaterProduction(config.waterProduction * building.efficiency);
-                } else {
-                    resourceManager.removeWaterProduction(config.waterProduction * building.efficiency);
+                const isRented = building.isRented || false;
+                if (!isRented) {
+                    if (add) {
+                        resourceManager.addWaterProduction(config.waterProduction * building.efficiency);
+                    } else {
+                        resourceManager.removeWaterProduction(config.waterProduction * building.efficiency);
+                    }
                 }
             }
             
@@ -2011,12 +2341,15 @@ class BuildingSystem {
                 }
             }
 
-            // Geração de energia
+            // Geração de energia (só se não estiver alugado)
             if (config.powerGeneration) {
-                if (add) {
-                    resourceManager.addElectricityGeneration(config.powerGeneration);
-                } else {
-                    resourceManager.removeElectricityGeneration(config.powerGeneration);
+                const isRented = building.isRented || false;
+                if (!isRented) {
+                    if (add) {
+                        resourceManager.addElectricityGeneration(config.powerGeneration);
+                    } else {
+                        resourceManager.removeElectricityGeneration(config.powerGeneration);
+                    }
                 }
             }
 
@@ -2035,6 +2368,55 @@ class BuildingSystem {
                     resourceManager.addWaterStorage(config.waterStorage);
                 } else {
                     resourceManager.removeWaterStorage(config.waterStorage);
+                }
+            }
+
+            // Geração de receita (para edifícios comerciais, turísticos e industriais)
+            if (config.incomeGeneration) {
+                // Verificar se o edifício está alugado (se aplicável)
+                const isRented = building.isRented || false;
+
+                if (!isRented) {
+                    // Só gera receita se não estiver alugado
+                    const incomeAmount = config.incomeGeneration * building.efficiency;
+                    if (add) {
+                        resourceManager.addIncome(incomeAmount);
+                        console.log(`💰 Receita adicionada: +R$ ${incomeAmount}/min de ${config.name}`);
+                    } else {
+                        resourceManager.removeIncome(incomeAmount);
+                        console.log(`💰 Receita removida: -R$ ${incomeAmount}/min de ${config.name}`);
+                    }
+                }
+            }
+
+            // Sistema de aluguel para infraestrutura (água e energia)
+            if (building.isRented && (config.waterProduction || config.powerGeneration)) {
+                // Calcular receita de aluguel baseada na capacidade do edifício
+                let rentalIncome = 0;
+                if (config.waterProduction) {
+                    rentalIncome = config.waterProduction * 2; // R$ 2 por L/s de capacidade
+                }
+                if (config.powerGeneration) {
+                    rentalIncome += config.powerGeneration * 50; // R$ 50 por MW de capacidade
+                }
+
+                if (rentalIncome > 0) {
+                    if (add) {
+                        resourceManager.addIncome(rentalIncome);
+                        console.log(`🏙️ Receita de aluguel adicionada: +R$ ${rentalIncome}/min de ${config.name}`);
+                    } else {
+                        resourceManager.removeIncome(rentalIncome);
+                        console.log(`🏙️ Receita de aluguel removida: -R$ ${rentalIncome}/min de ${config.name}`);
+                    }
+                }
+            }
+
+            // Consumo de água
+            if (config.waterConsumption) {
+                if (add) {
+                    resourceManager.addWaterConsumption(config.waterConsumption);
+                } else {
+                    resourceManager.removeWaterConsumption(config.waterConsumption);
                 }
             }
         }
@@ -3661,6 +4043,146 @@ class BuildingSystem {
         }
 
         return false;
+    }
+
+    // ===== SISTEMA DE ALUGUEL =====
+    toggleBuildingRental(buildingId) {
+        const building = this.buildings.get(buildingId);
+        if (!building) {
+            console.warn(`⚠️ Edifício não encontrado: ${buildingId}`);
+            return false;
+        }
+
+        // Verificar se o edifício pode ser alugado (água ou energia)
+        if (!building.config.waterProduction && !building.config.powerGeneration) {
+            console.warn(`⚠️ Edifício ${building.config.name} não pode ser alugado`);
+            return false;
+        }
+
+        // Alternar status de aluguel
+        building.isRented = !building.isRented;
+
+        // Reaplicar efeitos com novo status
+        this.applyBuildingEffects(building, false); // Remover efeitos antigos
+        this.applyBuildingEffects(building, true);  // Aplicar novos efeitos
+
+        // Atualizar ícone de aluguel
+        this.updateRentalIcon(building);
+
+        const status = building.isRented ? 'alugado' : 'não alugado';
+        console.log(`🏙️ ${building.config.name} agora está ${status}`);
+
+        return true;
+    }
+
+    updateRentalIcon(building) {
+        if (!building.mesh) return;
+
+        try {
+            // Remover ícone anterior se existir
+            if (building.mesh.rentalIcon) {
+                this.removeRentalIcon(building);
+            }
+
+            // Criar novo ícone se estiver alugado
+            if (building.isRented) {
+                this.createRentalIcon(building);
+            }
+        } catch (error) {
+            console.error(`❌ Erro ao atualizar ícone de aluguel:`, error);
+        }
+    }
+
+    createRentalIcon(building) {
+        try {
+            const mesh = building.mesh;
+            const worldPos = mesh.position;
+
+            // Criar plano para o ícone
+            const iconPlane = BABYLON.MeshBuilder.CreatePlane(`rentalIcon_${mesh.name}`, {
+                width: 1.2,
+                height: 1.2
+            }, this.scene);
+
+            // Posicionar acima do edifício (lado oposto ao ícone de energia)
+            iconPlane.position.x = worldPos.x - 1;
+            iconPlane.position.z = worldPos.z - 1;
+            iconPlane.position.y = this.getBuildingHeight(building.config) + 2;
+            iconPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+
+            // Criar textura dinâmica com ícone
+            const dynamicTexture = new BABYLON.DynamicTexture(`rentalIconTexture_${mesh.name}`,
+                { width: 256, height: 256 }, this.scene);
+
+            // Desenhar ícone de aluguel
+            const font = "bold 100px Arial";
+            const icon = "🏙️💰";
+            dynamicTexture.drawText(icon, null, null, font, "#00AA00", "transparent", true);
+
+            // Criar material para o ícone
+            const iconMaterial = new BABYLON.StandardMaterial(`rentalIconMat_${mesh.name}`, this.scene);
+            iconMaterial.diffuseTexture = dynamicTexture;
+            iconMaterial.emissiveTexture = dynamicTexture;
+            iconMaterial.emissiveColor = new BABYLON.Color3(0, 0.8, 0);
+            iconMaterial.backFaceCulling = false;
+            iconMaterial.hasAlpha = true;
+
+            iconPlane.material = iconMaterial;
+
+            // Armazenar referência
+            mesh.rentalIcon = iconPlane;
+
+            console.log(`🏙️ Ícone de aluguel criado para ${building.config.name}`);
+
+        } catch (error) {
+            console.error(`❌ Erro ao criar ícone de aluguel:`, error);
+        }
+    }
+
+    removeRentalIcon(building) {
+        const mesh = building.mesh;
+        if (mesh.rentalIcon) {
+            try {
+                if (!mesh.rentalIcon.isDisposed()) {
+                    // Limpar material e textura
+                    if (mesh.rentalIcon.material) {
+                        if (mesh.rentalIcon.material.diffuseTexture) {
+                            mesh.rentalIcon.material.diffuseTexture.dispose();
+                        }
+                        if (mesh.rentalIcon.material.emissiveTexture) {
+                            mesh.rentalIcon.material.emissiveTexture.dispose();
+                        }
+                        mesh.rentalIcon.material.dispose();
+                    }
+                    mesh.rentalIcon.dispose();
+                }
+                mesh.rentalIcon = null;
+            } catch (error) {
+                console.error('❌ Erro ao remover ícone de aluguel:', error);
+            }
+        }
+    }
+
+    canBuildingBeRented(buildingId) {
+        const building = this.buildings.get(buildingId);
+        if (!building) return false;
+
+        return !!(building.config.waterProduction || building.config.powerGeneration);
+    }
+
+    getRentalIncome(buildingId) {
+        const building = this.buildings.get(buildingId);
+        if (!building || !building.isRented) return 0;
+
+        let rentalIncome = 0;
+        if (building.config.waterProduction) {
+            rentalIncome += building.config.waterProduction * 2; // R$ 2 por L/s
+        }
+        if (building.config.powerGeneration) {
+            rentalIncome += building.config.powerGeneration * 50; // R$ 50 por MW
+        }
+
+        return rentalIncome;
     }
 }
 
