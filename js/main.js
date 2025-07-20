@@ -33,10 +33,10 @@ const GAME_CONFIG = {
     // Configurações de Recursos
     resources: {
         initialWater: 1000,
-        initialBudget: 50000,
-        initialPopulation: 500,
-        initialSatisfaction: 85,
-        initialPollution: 15
+        initialBudget: 30000,        // Reduzido de 50000 para 30000 para maior desafio
+        initialPopulation: 75,       // Reduzido de 500 para 75 para progressão mais realista
+        initialSatisfaction: 50,     // Reduzido de 85 para 50 para estado neutro inicial
+        initialPollution: 15         // Mantido em 15% (já está na faixa ideal 10-20%)
     },
     
     // Configurações de Gameplay
