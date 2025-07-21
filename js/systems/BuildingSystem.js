@@ -43,7 +43,7 @@ class BuildingSystem {
         // Sistema de cooldown para construção
         this.buildingCooldown = {
             active: false,
-            duration: 500, // 500ms de cooldown
+            duration: 1000, // 1000ms de cooldown (1 segundo)
             lastBuildTime: 0,
             remainingTime: 0
         };
@@ -1034,6 +1034,15 @@ class BuildingSystem {
             const remainingSeconds = Math.ceil(this.buildingCooldown.remainingTime / 1000);
             this.showNotification(`Aguarde ${remainingSeconds} segundos antes de construir novamente...`, 'warning');
             console.warn(`⚠️ Construção em cooldown: ${remainingSeconds}s restantes`);
+
+            // Mostrar indicador visual de cooldown
+            if (this.gameManager && this.gameManager.uiManager) {
+                this.gameManager.uiManager.showBuildingCooldown(
+                    this.buildingCooldown.remainingTime,
+                    this.buildingCooldown.duration
+                );
+            }
+
             return null;
         }
 
@@ -2783,6 +2792,14 @@ class BuildingSystem {
         this.buildingCooldown.remainingTime = this.buildingCooldown.duration;
 
         console.log(`⏱️ Cooldown de construção ativado: ${this.buildingCooldown.duration}ms`);
+
+        // Mostrar indicador visual de cooldown
+        if (this.gameManager && this.gameManager.uiManager) {
+            this.gameManager.uiManager.showBuildingCooldown(
+                this.buildingCooldown.remainingTime,
+                this.buildingCooldown.duration
+            );
+        }
     }
 
     updateBuildingCooldown(deltaTime) {
@@ -2794,6 +2811,11 @@ class BuildingSystem {
             this.buildingCooldown.active = false;
             this.buildingCooldown.remainingTime = 0;
             console.log(`✅ Cooldown de construção finalizado`);
+
+            // Esconder indicador visual de cooldown
+            if (this.gameManager && this.gameManager.uiManager) {
+                this.gameManager.uiManager.hideBuildingCooldown();
+            }
         }
     }
 
