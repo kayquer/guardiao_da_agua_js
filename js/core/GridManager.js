@@ -421,7 +421,14 @@ class GridManager {
 
     createTerrainBlock(gridX, gridZ, terrainType) {
         const worldPos = this.gridToWorld(gridX, gridZ);
-        const elevation = this.elevationGrid[gridX][gridZ];
+
+        // Obter elevação com verificação de bounds
+        let elevation = 0;
+        if (gridX >= 0 && gridX < this.gridSize && gridZ >= 0 && gridZ < this.gridSize) {
+            if (this.elevationGrid[gridX] && this.elevationGrid[gridX][gridZ] !== undefined) {
+                elevation = this.elevationGrid[gridX][gridZ];
+            }
+        }
 
         // Criar bloco de terreno com altura baseada no tipo
         let blockHeight;
@@ -748,7 +755,13 @@ class GridManager {
         if (gridX < 0 || gridX >= this.gridSize || gridZ < 0 || gridZ >= this.gridSize) {
             return true; // Fora dos limites = ocupado
         }
-        return this.occupationGrid[gridX][gridZ];
+
+        // Verificar se o array existe antes de acessar
+        if (this.occupationGrid[gridX] && this.occupationGrid[gridX][gridZ] !== undefined) {
+            return this.occupationGrid[gridX][gridZ];
+        }
+
+        return false; // Célula não ocupada se não existe no grid
     }
     
     setCellOccupied(gridX, gridZ, occupied = true) {
@@ -801,7 +814,9 @@ class GridManager {
     
     getElevation(gridX, gridZ) {
         if (gridX >= 0 && gridX < this.gridSize && gridZ >= 0 && gridZ < this.gridSize) {
-            return this.elevationGrid[gridX][gridZ];
+            if (this.elevationGrid[gridX] && this.elevationGrid[gridX][gridZ] !== undefined) {
+                return this.elevationGrid[gridX][gridZ];
+            }
         }
         return 0;
     }
@@ -821,12 +836,92 @@ class GridManager {
         }
     }
     
-    highlightCell(gridX, gridZ, color = new BABYLON.Color3(1, 1, 0)) {
-        // TODO: Implementar highlight de célula
+    highlightCell(gridX, gridZ, color = new BABYLON.Color3(1, 1, 0), type = 'hover') {
+        // Limpar highlight anterior se existir
+        this.clearHighlights();
+
+        if (gridX < 0 || gridX >= this.gridSize || gridZ < 0 || gridZ >= this.gridSize) {
+            return;
+        }
+
+        try {
+            // Criar highlight visual para a célula
+            const worldPos = this.gridToWorld(gridX, gridZ);
+
+            const highlight = BABYLON.MeshBuilder.CreateBox(`cellHighlight_${type}`, {
+                width: this.cellSize * 0.95,
+                height: 0.05,
+                depth: this.cellSize * 0.95
+            }, this.scene);
+
+            highlight.position.x = worldPos.x;
+            highlight.position.z = worldPos.z;
+            highlight.position.y = worldPos.y + 0.02;
+
+            // Material do highlight
+            const material = new BABYLON.StandardMaterial(`highlightMat_${type}`, this.scene);
+            material.diffuseColor = color;
+            material.emissiveColor = new BABYLON.Color3(color.r * 0.3, color.g * 0.3, color.b * 0.3);
+            material.alpha = type === 'hover' ? 0.3 : 0.5;
+
+            highlight.material = material;
+
+            // Armazenar referência para limpeza
+            this.currentHighlight = highlight;
+
+            // Animação de pulsação para hover
+            if (type === 'hover') {
+                this.animateHighlight(highlight);
+            }
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao criar highlight de célula:', error);
+        }
     }
-    
+
     clearHighlights() {
-        // TODO: Implementar limpeza de highlights
+        if (this.currentHighlight) {
+            try {
+                if (!this.currentHighlight.isDisposed()) {
+                    this.currentHighlight.dispose();
+                }
+            } catch (error) {
+                console.warn('⚠️ Erro ao limpar highlight:', error);
+            }
+            this.currentHighlight = null;
+        }
+    }
+
+    animateHighlight(highlight) {
+        if (!highlight || highlight.isDisposed()) return;
+
+        // Animação de pulsação suave
+        const animationKeys = [];
+        animationKeys.push({
+            frame: 0,
+            value: 0.2
+        });
+        animationKeys.push({
+            frame: 30,
+            value: 0.4
+        });
+        animationKeys.push({
+            frame: 60,
+            value: 0.2
+        });
+
+        const alphaAnimation = new BABYLON.Animation(
+            "highlightPulse",
+            "material.alpha",
+            30,
+            BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+        );
+
+        alphaAnimation.setKeys(animationKeys);
+        highlight.animations.push(alphaAnimation);
+
+        this.scene.beginAnimation(highlight, 0, 60, true);
     }
     
     // ===== UTILITÁRIOS =====
@@ -970,7 +1065,9 @@ class GridManager {
         const gridZ = Math.floor((bz / blocksPerSide) * this.gridSize);
 
         if (gridX >= 0 && gridX < this.gridSize && gridZ >= 0 && gridZ < this.gridSize) {
-            return this.terrainGrid[gridX][gridZ];
+            if (this.terrainGrid[gridX] && this.terrainGrid[gridX][gridZ] !== undefined) {
+                return this.terrainGrid[gridX][gridZ];
+            }
         }
         return 'dirt';
     }

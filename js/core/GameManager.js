@@ -1318,6 +1318,9 @@ class GameManager {
         // Gerenciar visibilidade dos labels
         this.updateBuildingLabelVisibility(gridX, gridZ, building);
 
+        // Aplicar efeitos visuais de hover
+        this.applyHoverEffects(gridX, gridZ, building);
+
         // Criar informações do hover
         let hoverData = {
             position: { x: gridX, z: gridZ },
@@ -1485,6 +1488,115 @@ class GameManager {
         if (tooltip) {
             tooltip.style.display = 'none';
         }
+
+        // Limpar efeitos visuais de hover
+        this.clearHoverEffects();
+    }
+
+    // ===== SISTEMA DE EFEITOS VISUAIS =====
+    applyHoverEffects(gridX, gridZ, building) {
+        // Limpar efeitos anteriores
+        this.clearHoverEffects();
+
+        if (building) {
+            // Efeito de hover para edifício
+            this.addBuildingHoverEffect(building);
+        } else {
+            // Efeito de hover para terreno
+            this.addTerrainHoverEffect(gridX, gridZ);
+        }
+    }
+
+    addBuildingHoverEffect(building) {
+        if (!building.mesh || building === this.selectedBuilding) return;
+
+        try {
+            // Criar outline/glow effect para o edifício
+            const hoverEffect = BABYLON.MeshBuilder.CreateBox(`hoverEffect_${building.id}`, {
+                width: building.config.size * this.gridManager.cellSize + 0.2,
+                height: 0.1,
+                depth: building.config.size * this.gridManager.cellSize + 0.2
+            }, this.scene);
+
+            const worldPos = this.gridManager.gridToWorld(building.gridX, building.gridZ);
+            hoverEffect.position.x = worldPos.x;
+            hoverEffect.position.z = worldPos.z;
+            hoverEffect.position.y = worldPos.y + 0.01;
+
+            // Material com glow azul
+            const material = new BABYLON.StandardMaterial(`hoverEffectMat_${building.id}`, this.scene);
+            material.diffuseColor = new BABYLON.Color3(0.2, 0.6, 1.0); // Azul
+            material.emissiveColor = new BABYLON.Color3(0.1, 0.3, 0.5);
+            material.alpha = 0.4;
+
+            hoverEffect.material = material;
+
+            // Armazenar referência
+            this.currentHoverEffect = hoverEffect;
+
+            // Animação de pulsação
+            this.animateHoverEffect(hoverEffect);
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao criar efeito de hover para edifício:', error);
+        }
+    }
+
+    addTerrainHoverEffect(gridX, gridZ) {
+        // Usar o sistema de highlight do GridManager
+        const color = new BABYLON.Color3(0.8, 0.8, 1.0); // Azul claro
+        this.gridManager.highlightCell(gridX, gridZ, color, 'hover');
+    }
+
+    clearHoverEffects() {
+        // Limpar efeito de hover de edifício
+        if (this.currentHoverEffect) {
+            try {
+                if (!this.currentHoverEffect.isDisposed()) {
+                    this.currentHoverEffect.dispose();
+                }
+            } catch (error) {
+                console.warn('⚠️ Erro ao limpar efeito de hover:', error);
+            }
+            this.currentHoverEffect = null;
+        }
+
+        // Limpar highlight de terreno
+        if (this.gridManager) {
+            this.gridManager.clearHighlights();
+        }
+    }
+
+    animateHoverEffect(effect) {
+        if (!effect || effect.isDisposed()) return;
+
+        // Animação de pulsação suave
+        const animationKeys = [];
+        animationKeys.push({
+            frame: 0,
+            value: 0.3
+        });
+        animationKeys.push({
+            frame: 20,
+            value: 0.5
+        });
+        animationKeys.push({
+            frame: 40,
+            value: 0.3
+        });
+
+        const alphaAnimation = new BABYLON.Animation(
+            "hoverPulse",
+            "material.alpha",
+            30,
+            BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+        );
+
+        alphaAnimation.setKeys(animationKeys);
+        effect.animations.push(alphaAnimation);
+
+        this.scene.beginAnimation(effect, 0, 40, true);
     }
 
     // ===== GERENCIAMENTO DE LABELS DE EDIFÍCIOS =====
@@ -2071,8 +2183,11 @@ class GameManager {
             console.log(`🏢 Edifício desselecionado: ${this.selectedBuilding.config.name}`);
         }
 
-        // Limpar seleção
+        // Limpar seleção de edifício
         this.clearBuildingSelection();
+
+        // Limpar seleção de terreno
+        this.clearTerrainSelection();
 
         // Atualizar painel usando sistema unificado
         this.refreshInfoPanel();
@@ -2082,10 +2197,94 @@ class GameManager {
         // Garantir que não há edifício selecionado
         this.deselectBuilding();
 
+        // Adicionar indicador visual de seleção de terreno
+        this.addTerrainSelectionIndicator(gridX, gridZ);
+
         // Mostrar informações detalhadas do terreno no painel lateral
         this.showDetailedTerrainInfo(gridX, gridZ);
 
         console.log(`🌍 Terreno selecionado: (${gridX}, ${gridZ})`);
+    }
+
+    addTerrainSelectionIndicator(gridX, gridZ) {
+        // Limpar indicador anterior
+        this.clearTerrainSelection();
+
+        try {
+            // Criar indicador de seleção para terreno
+            const selectionIndicator = BABYLON.MeshBuilder.CreateBox(`terrainSelection`, {
+                width: this.gridManager.cellSize * 0.9,
+                height: 0.08,
+                depth: this.gridManager.cellSize * 0.9
+            }, this.scene);
+
+            const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
+            selectionIndicator.position.x = worldPos.x;
+            selectionIndicator.position.z = worldPos.z;
+            selectionIndicator.position.y = worldPos.y + 0.03;
+
+            // Material do indicador de terreno
+            const material = new BABYLON.StandardMaterial(`terrainSelectionMat`, this.scene);
+            material.diffuseColor = new BABYLON.Color3(0, 1, 0.5); // Verde-azulado
+            material.emissiveColor = new BABYLON.Color3(0, 0.3, 0.15);
+            material.alpha = 0.6;
+
+            selectionIndicator.material = material;
+
+            // Armazenar referência
+            this.currentTerrainSelection = selectionIndicator;
+
+            // Animação de pulsação
+            this.animateTerrainSelection(selectionIndicator);
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao criar indicador de seleção de terreno:', error);
+        }
+    }
+
+    clearTerrainSelection() {
+        if (this.currentTerrainSelection) {
+            try {
+                if (!this.currentTerrainSelection.isDisposed()) {
+                    this.currentTerrainSelection.dispose();
+                }
+            } catch (error) {
+                console.warn('⚠️ Erro ao limpar seleção de terreno:', error);
+            }
+            this.currentTerrainSelection = null;
+        }
+    }
+
+    animateTerrainSelection(indicator) {
+        if (!indicator || indicator.isDisposed()) return;
+
+        // Animação de pulsação suave
+        const animationKeys = [];
+        animationKeys.push({
+            frame: 0,
+            value: 0.4
+        });
+        animationKeys.push({
+            frame: 40,
+            value: 0.8
+        });
+        animationKeys.push({
+            frame: 80,
+            value: 0.4
+        });
+
+        const alphaAnimation = new BABYLON.Animation(
+            "terrainSelectionPulse",
+            "material.alpha",
+            30,
+            BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+        );
+
+        alphaAnimation.setKeys(animationKeys);
+        indicator.animations.push(alphaAnimation);
+
+        this.scene.beginAnimation(indicator, 0, 80, true);
     }
 
     showDetailedTerrainInfo(gridX, gridZ) {
@@ -2220,9 +2419,9 @@ class GameManager {
 
             // Material do indicador
             const selectionMaterial = new BABYLON.StandardMaterial(`selectionMat_${building.id}`, this.scene);
-            selectionMaterial.diffuseColor = new BABYLON.Color3(1, 1, 0); // Amarelo
-            selectionMaterial.emissiveColor = new BABYLON.Color3(0.3, 0.3, 0);
-            selectionMaterial.alpha = 0.8;
+            selectionMaterial.diffuseColor = new BABYLON.Color3(1, 0.8, 0); // Amarelo-laranja
+            selectionMaterial.emissiveColor = new BABYLON.Color3(0.4, 0.3, 0);
+            selectionMaterial.alpha = 0.9;
 
             selectionRing.material = selectionMaterial;
 
