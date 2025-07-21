@@ -141,15 +141,41 @@ class UIManager {
         const resourceItems = document.querySelectorAll('.resource-item');
         resourceItems.forEach((item, index) => {
             // Mapear índices para tipos de recursos baseado na ordem no HTML
-            const resourceTypes = ['water', 'pollution', 'population', 'satisfaction', 'budget', 'electricity'];
+            const resourceTypes = ['water', 'pollution', 'population', 'satisfaction', 'budget', 'electricity', 'clock'];
             const resourceType = resourceTypes[index];
 
-            if (resourceType && resourceType !== 'clock') { // Excluir o relógio
+            // Mapear nomes dos recursos para tooltips
+            const resourceNames = {
+                'water': 'Água',
+                'pollution': 'Poluição',
+                'population': 'População',
+                'satisfaction': 'Satisfação',
+                'budget': 'Orçamento',
+                'electricity': 'Energia',
+                'clock': 'Data/Hora'
+            };
+
+            if (resourceType && resourceType !== 'clock') { // Excluir o relógio dos cliques
                 item.style.cursor = 'pointer';
                 item.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     this.showResourcePanel(resourceType);
+                });
+            }
+
+            // ===== RESOURCE UI REDESIGN: Adicionar tooltips para mostrar nomes dos recursos =====
+            if (resourceType && resourceNames[resourceType]) {
+                // Adicionar tooltip com nome do recurso
+                item.title = resourceNames[resourceType];
+
+                // Adicionar eventos de hover para tooltip customizado
+                item.addEventListener('mouseenter', (e) => {
+                    this.showResourceTooltip(e, resourceNames[resourceType], resourceType);
+                });
+
+                item.addEventListener('mouseleave', () => {
+                    this.hideResourceTooltip();
                 });
             }
         });
@@ -1790,6 +1816,52 @@ class UIManager {
         // Mostrar informações de terreno
         if (this.gameManager && this.gameManager.updateHoverInfo) {
             this.gameManager.updateHoverInfo(gridX, gridZ, mouseX, mouseY);
+        }
+    }
+
+    // ===== RESOURCE UI REDESIGN: Sistema de tooltips para recursos =====
+    showResourceTooltip(event, resourceName, resourceType) {
+        // Criar ou obter tooltip
+        let tooltip = document.getElementById('resource-tooltip');
+        if (!tooltip) {
+            tooltip = document.createElement('div');
+            tooltip.id = 'resource-tooltip';
+            tooltip.className = 'hover-tooltip resource-tooltip';
+            document.body.appendChild(tooltip);
+        }
+
+        // Definir conteúdo do tooltip
+        let content = `<div class="tooltip-header">${resourceName}</div>`;
+
+        // Adicionar informações específicas do recurso
+        const descriptions = {
+            'water': 'Recurso essencial para a população. Monitore o consumo e a capacidade de armazenamento.',
+            'pollution': 'Nível de poluição da cidade. Mantenha baixo para a saúde dos cidadãos.',
+            'population': 'Número de habitantes. Construa residências para aumentar.',
+            'satisfaction': 'Felicidade dos cidadãos. Afeta o crescimento populacional.',
+            'budget': 'Recursos financeiros disponíveis para construção e manutenção.',
+            'electricity': 'Energia elétrica disponível. Necessária para muitos edifícios.',
+            'clock': 'Data e hora atual do jogo.'
+        };
+
+        if (descriptions[resourceType]) {
+            content += `<div class="tooltip-description">${descriptions[resourceType]}</div>`;
+        }
+
+        tooltip.innerHTML = content;
+
+        // Posicionar tooltip
+        const rect = event.target.getBoundingClientRect();
+        tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+        tooltip.style.top = (rect.top - 10) + 'px';
+        tooltip.style.transform = 'translateX(-50%) translateY(-100%)';
+        tooltip.style.display = 'block';
+    }
+
+    hideResourceTooltip() {
+        const tooltip = document.getElementById('resource-tooltip');
+        if (tooltip) {
+            tooltip.style.display = 'none';
         }
     }
 

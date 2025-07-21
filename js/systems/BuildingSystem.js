@@ -1106,6 +1106,16 @@ class BuildingSystem {
             constructionStartTime: Date.now()
         };
 
+        // ===== PHANTOM BUILDING BUG FIX: Debug building creation =====
+        console.log(`🏗️ BUILDING CREATED: ${buildingId} (${buildingTypeId}) at (${gridX}, ${gridZ})`);
+        console.log(`   📊 Total buildings now: ${this.buildings.size + 1}`);
+
+        // Log stack trace to see where this is being called from
+        if (this.buildings.size === 0) {
+            console.log('🔍 First building creation - Stack trace:');
+            console.trace();
+        }
+
         this.buildings.set(buildingId, buildingData);
 
         // Iniciar processo de construção
@@ -1227,38 +1237,85 @@ class BuildingSystem {
     }
 
     createBasicVoxelMesh(buildingType) {
-        // Mesh básico estilo Minecraft
+        // ===== BUILDING SIZE AND PROPORTION CORRECTIONS: Mesh básico com dimensões corrigidas =====
         const size = buildingType.size || 1;
         const height = this.getBuildingHeight(buildingType);
 
+        // ===== FIX: Garantir que edifícios se ajustem perfeitamente às células do grid =====
+        const cellSize = this.gridManager.cellSize;
+        const buildingWidth = size * cellSize * 0.85; // Reduzido de 0.9 para 0.85 para melhor ajuste
+        const buildingDepth = size * cellSize * 0.85;
+
         const mesh = BABYLON.MeshBuilder.CreateBox(`building_${buildingType.id}`, {
-            width: size * this.gridManager.cellSize * 0.9,
+            width: buildingWidth,
             height: height,
-            depth: size * this.gridManager.cellSize * 0.9
+            depth: buildingDepth
         }, this.scene);
+
+        // ===== FIX: Ajustar posição para centralizar no grid =====
+        // Para edifícios multi-célula, ajustar o centro
+        if (size > 1) {
+            const offset = (size - 1) * cellSize * 0.5;
+            mesh.position.x += offset;
+            mesh.position.z += offset;
+        }
 
         return mesh;
     }
 
     getBuildingHeight(buildingType) {
-        // Alturas baseadas no tipo de edifício
-        const heights = {
-            'water_pump': 1.5,
-            'treatment_plant': 2.5,
-            'water_tank': 3.0,
-            'house': 2.0,
-            'apartment': 4.0,
-            'power_plant': 3.5,
+        // ===== BUILDING SIZE AND PROPORTION CORRECTIONS: Alturas corrigidas e consistentes =====
+        const size = buildingType.size || 1;
+
+        // Alturas baseadas no tipo de edifício com escala consistente
+        const baseHeights = {
+            // Infraestrutura de água
+            'water_pump': 1.8,
+            'treatment_plant': 2.2,
+            'water_tank': 3.5,
+            'water_tower': 4.5,
+
+            // Residencial - altura proporcional ao tamanho
+            'house': 2.2,
+            'apartment': 3.8,
+
+            // Energia
+            'power_plant': 3.2,
+            'solar_panel': 0.3,
+            'wind_farm': 4.0,
+
+            // Infraestrutura
             'road': 0.1,
             'pipe': 0.2,
-            'city_hall': 3.5,
-            'school': 2.8,
-            'hospital': 3.0,
-            'fire_station': 2.5,
-            'police_station': 2.3
+
+            // Público - altura proporcional ao tamanho e importância
+            'city_hall': 4.2,
+            'school': 3.0,
+            'hospital': 3.5, // ===== FIX: Hospital altura corrigida =====
+            'fire_station': 2.8,
+            'police_station': 2.6,
+
+            // Industrial
+            'factory': 3.0,
+            'warehouse': 2.5,
+            'port': 2.8,
+
+            // Zonas
+            'zone_residential_light': 0.5,
+            'zone_residential_dense': 0.5,
+            'zone_commercial': 0.5,
+            'zone_industrial': 0.5
         };
 
-        return heights[buildingType.id] || 2.0;
+        const baseHeight = baseHeights[buildingType.id] || 2.0;
+
+        // ===== FIX: Ajustar altura baseada no tamanho para edifícios multi-célula =====
+        if (size > 1) {
+            // Edifícios maiores são ligeiramente mais altos, mas não linearmente
+            return baseHeight * (1 + (size - 1) * 0.15);
+        }
+
+        return baseHeight;
     }
 
     createWaterFacilityMesh(buildingType) {
@@ -1408,44 +1465,56 @@ class BuildingSystem {
     }
 
     createPublicBuildingMesh(buildingType) {
-        const size = this.gridManager.cellSize * 0.9;
+        // ===== BUILDING SIZE AND PROPORTION CORRECTIONS: Edifícios públicos com dimensões corrigidas =====
+        const cellSize = this.gridManager.cellSize;
+        const buildingScale = 0.85;
+        const buildingSize = buildingType.size || 1;
+        const actualSize = buildingSize * cellSize * buildingScale;
 
         if (buildingType.id === 'city_hall') {
-            // Prefeitura Municipal - edifício imponente com colunas
+            // ===== FIX: Prefeitura Municipal com dimensões corrigidas para size=2 =====
             const base = BABYLON.MeshBuilder.CreateBox("cityHallBase", {
-                width: size * 2,
-                height: 2.5,
-                depth: size * 2
+                width: actualSize,
+                height: 3.0,
+                depth: actualSize
             }, this.scene);
 
-            // Colunas frontais
+            // Colunas frontais proporcionais ao tamanho real
+            const columnDiameter = actualSize * 0.15;
             const column1 = BABYLON.MeshBuilder.CreateCylinder("cityHallColumn1", {
-                height: 3.0,
-                diameter: size * 0.3,
+                height: 3.5,
+                diameter: columnDiameter,
                 tessellation: 8
             }, this.scene);
-            column1.position.x = size * 0.6;
-            column1.position.z = size * 0.8;
-            column1.position.y = 1.5;
+            column1.position.x = actualSize * 0.3;
+            column1.position.z = actualSize * 0.4;
+            column1.position.y = 1.75;
 
             const column2 = column1.clone("cityHallColumn2");
-            column2.position.x = -size * 0.6;
+            column2.position.x = -actualSize * 0.3;
 
             const column3 = column1.clone("cityHallColumn3");
             column3.position.x = 0;
 
-            // Telhado triangular
+            // Telhado triangular proporcional
             const roof = BABYLON.MeshBuilder.CreateCylinder("cityHallRoof", {
-                height: 1.0,
+                height: 1.2,
                 diameterTop: 0,
-                diameterBottom: size * 2.2,
+                diameterBottom: actualSize * 1.1,
                 tessellation: 4
             }, this.scene);
-            roof.position.y = 3.5;
+            roof.position.y = 4.0;
             roof.rotation.y = Math.PI / 4;
 
             const merged = BABYLON.Mesh.MergeMeshes([base, column1, column2, column3, roof]);
             merged.name = `cityHall_${buildingType.id}`;
+
+            // ===== FIX: Ajustar posição para edifícios multi-célula =====
+            if (buildingSize > 1) {
+                const offset = (buildingSize - 1) * cellSize * 0.5;
+                merged.position.x += offset;
+                merged.position.z += offset;
+            }
 
             return merged;
         }
@@ -1466,16 +1535,25 @@ class BuildingSystem {
     }
 
     createBuildingShadow(buildingMesh, worldPos, terrainHeight) {
-        // Criar sombra projetada simples no chão
+        // ===== BUILDING SIZE AND PROPORTION CORRECTIONS: Sombra alinhada com footprint =====
         const boundingBox = buildingMesh.getBoundingInfo().boundingBox;
-        const shadowSize = Math.max(boundingBox.extendSize.x, boundingBox.extendSize.z) * 2;
+
+        // ===== FIX: Calcular tamanho da sombra baseado no footprint real do edifício =====
+        const buildingWidth = Math.abs(boundingBox.maximum.x - boundingBox.minimum.x);
+        const buildingDepth = Math.abs(boundingBox.maximum.z - boundingBox.minimum.z);
+
+        // Sombra ligeiramente maior que o edifício para efeito realista
+        const shadowWidth = buildingWidth * 1.1;
+        const shadowDepth = buildingDepth * 1.1;
 
         const shadow = BABYLON.MeshBuilder.CreateGround(`shadow_${buildingMesh.name}`, {
-            width: shadowSize * 1.3,
-            height: shadowSize * 1.3
+            width: shadowWidth,
+            height: shadowDepth
         }, this.scene);
 
-        shadow.position = worldPos.clone();
+        // ===== FIX: Posicionar sombra exatamente sob o centro do edifício =====
+        shadow.position.x = buildingMesh.position.x;
+        shadow.position.z = buildingMesh.position.z;
         shadow.position.y = terrainHeight + 0.005; // Muito próximo ao terreno
 
         // Material de sombra com gradiente
@@ -1804,14 +1882,25 @@ class BuildingSystem {
     }
 
     createResidentialMesh(type, size) {
+        // ===== BUILDING SIZE AND PROPORTION CORRECTIONS: Residencial com dimensões corrigidas =====
+        const cellSize = this.gridManager.cellSize;
+        const buildingScale = 0.85; // Consistente com createBasicVoxelMesh
+
         if (type === 'house') {
-            // Casa - caixa com telhado
+            // ===== FIX: Casa com dimensões proporcionais ao grid =====
+            const houseSize = cellSize * buildingScale;
+
             const base = BABYLON.MeshBuilder.CreateBox("house_base", {
-                width: 1.2, height: 1.5, depth: 1.2
+                width: houseSize,
+                height: 1.8,
+                depth: houseSize
             }, this.scene);
 
             const roof = BABYLON.MeshBuilder.CreateCylinder("house_roof", {
-                height: 0.8, diameterTop: 0, diameterBottom: 1.6, tessellation: 4
+                height: 0.6,
+                diameterTop: 0,
+                diameterBottom: houseSize * 1.2,
+                tessellation: 4
             }, this.scene);
             roof.position.y = 1.5;
             roof.rotation.y = Math.PI / 4;
@@ -1819,10 +1908,23 @@ class BuildingSystem {
             return BABYLON.Mesh.MergeMeshes([base, roof]);
 
         } else if (type === 'apartment') {
-            // Prédio - caixa alta
-            return BABYLON.MeshBuilder.CreateBox("apartment", {
-                width: 2.5, height: 3, depth: 2.5
+            // ===== FIX: Prédio com dimensões baseadas no tamanho real (size=2) =====
+            const apartmentSize = size * cellSize * buildingScale;
+
+            const apartment = BABYLON.MeshBuilder.CreateBox("apartment", {
+                width: apartmentSize,
+                height: 3.8,
+                depth: apartmentSize
             }, this.scene);
+
+            // ===== FIX: Ajustar posição para edifícios multi-célula =====
+            if (size > 1) {
+                const offset = (size - 1) * cellSize * 0.5;
+                apartment.position.x += offset;
+                apartment.position.z += offset;
+            }
+
+            return apartment;
         }
 
         return null;
@@ -2051,18 +2153,29 @@ class BuildingSystem {
     }
 
     createBasicMesh(buildingType) {
-        // Mesh básico como fallback
-        const size = buildingType.size;
+        // ===== BUILDING SIZE AND PROPORTION CORRECTIONS: Mesh básico com dimensões consistentes =====
+        const size = buildingType.size || 1;
+        const cellSize = this.gridManager.cellSize;
+        const buildingScale = 0.85;
+        const height = this.getBuildingHeight(buildingType);
 
-        if (size === 1) {
-            return BABYLON.MeshBuilder.CreateBox(`building_${buildingType.id}`, {
-                width: 1.5, height: 2, depth: 1.5
-            }, this.scene);
-        } else {
-            return BABYLON.MeshBuilder.CreateBox(`building_${buildingType.id}`, {
-                width: size * 1.5, height: 2.5, depth: size * 1.5
-            }, this.scene);
+        // Usar dimensões consistentes com outros métodos
+        const buildingSize = size * cellSize * buildingScale;
+
+        const mesh = BABYLON.MeshBuilder.CreateBox(`building_${buildingType.id}`, {
+            width: buildingSize,
+            height: height,
+            depth: buildingSize
+        }, this.scene);
+
+        // ===== FIX: Ajustar posição para edifícios multi-célula =====
+        if (size > 1) {
+            const offset = (size - 1) * cellSize * 0.5;
+            mesh.position.x += offset;
+            mesh.position.z += offset;
         }
+
+        return mesh;
     }
 
     createBuildingMaterial(buildingType) {
@@ -2887,6 +3000,10 @@ class BuildingSystem {
         textPlane.position.y = 3.8;
         textPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
+        // ===== Z-INDEX FIX: Configurar rendering group para indicadores de construção =====
+        textPlane.renderingGroupId = 2; // Mesmo grupo dos labels
+        textPlane.alphaIndex = 999; // Índice alto para garantir ordem de renderização
+
         // Criar textura dinâmica para o texto de progresso
         const progressTexture = new BABYLON.DynamicTexture(`progressTexture_${buildingData.id}`,
             { width: 256, height: 64 }, this.scene);
@@ -2898,6 +3015,12 @@ class BuildingSystem {
         textMaterial.emissiveColor = new BABYLON.Color3(0.8, 0.8, 0.8);
         textMaterial.backFaceCulling = false;
         textMaterial.hasAlpha = true;
+
+        // ===== Z-INDEX FIX: Configurações de material para renderização por cima =====
+        textMaterial.disableDepthWrite = true;
+        textMaterial.needDepthPrePass = false;
+        textMaterial.separateCullingPass = false;
+
         textPlane.material = textMaterial;
 
         // Desenhar texto inicial (0%)
@@ -2978,6 +3101,10 @@ class BuildingSystem {
         completionText.position.y = 4;
         completionText.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
+        // ===== Z-INDEX FIX: Configurar rendering group para indicador de conclusão =====
+        completionText.renderingGroupId = 2; // Mesmo grupo dos labels
+        completionText.alphaIndex = 1001; // Índice mais alto que outros textos
+
         // Criar textura dinâmica para "Concluído"
         const completionTexture = new BABYLON.DynamicTexture(`completionTexture_${buildingData.id}`,
             { width: 256, height: 64 }, this.scene);
@@ -2990,6 +3117,12 @@ class BuildingSystem {
         textMaterial.emissiveColor = new BABYLON.Color3(0, 0.8, 0);
         textMaterial.backFaceCulling = false;
         textMaterial.hasAlpha = true;
+
+        // ===== Z-INDEX FIX: Configurações de material para renderização por cima =====
+        textMaterial.disableDepthWrite = true;
+        textMaterial.needDepthPrePass = false;
+        textMaterial.separateCullingPass = false;
+
         completionText.material = textMaterial;
 
         // Restaurar escala do edifício
@@ -3033,6 +3166,13 @@ class BuildingSystem {
             labelPlane.position.y = this.getBuildingHeight(buildingType) + 1.5;
             labelPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
 
+            // ===== Z-INDEX FIX: Configurar rendering group para aparecer acima de outros elementos =====
+            labelPlane.renderingGroupId = 2; // Grupo de renderização alto para aparecer por cima
+            labelPlane.alphaIndex = 1000; // Índice alto para garantir ordem de renderização
+
+            // Desabilitar depth testing para garantir que sempre apareça por cima
+            labelPlane.material = null; // Temporário para configurar depois
+
             // Criar textura dinâmica com texto
             const dynamicTexture = new BABYLON.DynamicTexture(`labelTexture_${buildingMesh.name}`,
                 { width: 512, height: 128 }, this.scene);
@@ -3044,13 +3184,18 @@ class BuildingSystem {
             // Limpar textura e desenhar texto
             dynamicTexture.drawText(text, null, null, font, "#FFFFFF", "#000000AA", true);
 
-            // Criar material para o label
+            // Criar material para o label com configurações otimizadas para z-index
             const labelMaterial = new BABYLON.StandardMaterial(`labelMat_${buildingMesh.name}`, this.scene);
             labelMaterial.diffuseTexture = dynamicTexture;
             labelMaterial.emissiveTexture = dynamicTexture;
             labelMaterial.emissiveColor = new BABYLON.Color3(0.8, 0.8, 0.8);
             labelMaterial.backFaceCulling = false;
             labelMaterial.hasAlpha = true;
+
+            // ===== Z-INDEX FIX: Configurações de material para renderização por cima =====
+            labelMaterial.disableDepthWrite = true; // Não escrever no depth buffer
+            labelMaterial.needDepthPrePass = false; // Não precisa de depth pre-pass
+            labelMaterial.separateCullingPass = false; // Renderizar em uma única passada
 
             labelPlane.material = labelMaterial;
 
@@ -3065,7 +3210,7 @@ class BuildingSystem {
             labelPlane.targetVisibility = 0;
             labelPlane.fadeSpeed = 5; // Velocidade da transição (5 = 200ms)
 
-            console.log(`✅ Label criado para ${buildingType.name}: "${text}" (inicialmente oculto)`);
+            console.log(`✅ Label criado para ${buildingType.name}: "${text}" (inicialmente oculto) - Z-index configurado`);
 
         } catch (error) {
             console.error(`❌ Erro ao criar label para ${buildingType.name}:`, error);

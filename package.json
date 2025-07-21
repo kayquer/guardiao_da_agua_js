@@ -1,0 +1,30 @@
+{
+  "name": "guardiao-da-agua-js",
+  "version": "1.0.0",
+  "description": "Guardião da Água - Educational Water Management Game",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 3000",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "install-playwright": "playwright install"
+  },
+  "keywords": [
+    "game",
+    "education",
+    "water-management",
+    "babylonjs",
+    "javascript"
+  ],
+  "author": "Kayquer",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

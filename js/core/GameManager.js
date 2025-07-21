@@ -841,8 +841,29 @@ class GameManager {
         // Redimensionar canvas
         this.handleResize();
 
+        // ===== PHANTOM BUILDING BUG FIX: Debug building creation =====
+        console.log('🔍 Verificando edifícios antes de criar cidade inicial...');
+        if (this.buildingSystem) {
+            console.log(`📊 Edifícios existentes: ${this.buildingSystem.buildings.size}`);
+            if (this.buildingSystem.buildings.size > 0) {
+                console.warn('⚠️ PHANTOM BUILDING DETECTADO! Edifícios já existem antes de createStarterCity:');
+                this.buildingSystem.buildings.forEach((building, id) => {
+                    console.warn(`   - ${id}: ${building.type} em (${building.gridX}, ${building.gridZ})`);
+                });
+            }
+        }
+
         // Criar cidade inicial
         this.createStarterCity();
+
+        // ===== PHANTOM BUILDING BUG FIX: Debug após criação =====
+        console.log('🔍 Verificando edifícios após criar cidade inicial...');
+        if (this.buildingSystem) {
+            console.log(`📊 Edifícios após createStarterCity: ${this.buildingSystem.buildings.size}`);
+            this.buildingSystem.buildings.forEach((building, id) => {
+                console.log(`   - ${id}: ${building.type} em (${building.gridX}, ${building.gridZ})`);
+            });
+        }
 
         console.log('✅ Novo jogo iniciado');
         return true;
@@ -1229,15 +1250,27 @@ class GameManager {
     setupHoverSystem() {
         if (!this.scene || !this.canvas) return;
 
-        // Adicionar listener de movimento do mouse
+        // ===== MOUSE PERFORMANCE FIX: Implementar throttling para melhorar performance =====
+        this.mouseHoverThrottle = {
+            lastCall: 0,
+            delay: 16, // ~60 FPS (16ms entre chamadas)
+            timeoutId: null
+        };
+
+        // Adicionar listener de movimento do mouse com throttling
         this.canvas.addEventListener('mousemove', (event) => {
-            this.handleMouseHover(event);
+            this.handleMouseHoverThrottled(event);
         });
 
         // Adicionar listener para sair da tela
         this.canvas.addEventListener('mouseleave', () => {
             this.hideHoverInfo();
             this.hideAllBuildingLabels();
+            // Limpar throttle timeout se existir
+            if (this.mouseHoverThrottle.timeoutId) {
+                clearTimeout(this.mouseHoverThrottle.timeoutId);
+                this.mouseHoverThrottle.timeoutId = null;
+            }
         });
 
         // Adicionar listener de clique para construção
@@ -1257,36 +1290,78 @@ class GameManager {
         });
     }
 
+    // ===== MOUSE PERFORMANCE FIX: Método throttled para hover =====
+    handleMouseHoverThrottled(event) {
+        const now = Date.now();
+        const timeSinceLastCall = now - this.mouseHoverThrottle.lastCall;
+
+        if (timeSinceLastCall >= this.mouseHoverThrottle.delay) {
+            // Executar imediatamente se passou tempo suficiente
+            this.mouseHoverThrottle.lastCall = now;
+            this.handleMouseHover(event);
+        } else {
+            // Agendar execução para o futuro se ainda não agendado
+            if (!this.mouseHoverThrottle.timeoutId) {
+                const remainingTime = this.mouseHoverThrottle.delay - timeSinceLastCall;
+                this.mouseHoverThrottle.timeoutId = setTimeout(() => {
+                    this.mouseHoverThrottle.lastCall = Date.now();
+                    this.mouseHoverThrottle.timeoutId = null;
+                    this.handleMouseHover(event);
+                }, remainingTime);
+            }
+        }
+    }
+
     handleMouseHover(event) {
         if (!this.gridManager || !this.scene) return;
 
         try {
+            // ===== MOUSE PERFORMANCE FIX: Otimizar operações custosas =====
+
             // Obter posição do mouse no canvas
             const rect = this.canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
 
-            // Criar ray para detectar posição no mundo 3D
-            const pickInfo = this.scene.pick(x, y);
+            // ===== PERFORMANCE OPTIMIZATION: Usar pick mais eficiente =====
+            // Usar pickWithRay apenas quando necessário, senão usar aproximação matemática
+            let gridPos = null;
 
-            if (pickInfo.hit && pickInfo.pickedPoint) {
-                // Converter posição do mundo para grid com snap perfeito
-                const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
+            if (this.buildingSystem && this.buildingSystem.previewMode) {
+                // Durante preview, usar pick completo para precisão
+                const pickInfo = this.scene.pick(x, y);
+                if (pickInfo.hit && pickInfo.pickedPoint) {
+                    gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
+                }
+            } else {
+                // Para hover normal, usar aproximação mais rápida baseada na câmera
+                gridPos = this.approximateGridPosition(x, y);
+            }
 
+            if (gridPos) {
                 // Forçar alinhamento ao grid - garantir coordenadas inteiras
                 gridPos.x = Math.floor(gridPos.x);
                 gridPos.z = Math.floor(gridPos.z);
+
+                // Verificar se está dentro dos limites do grid
+                if (gridPos.x < 0 || gridPos.x >= this.gridManager.gridSize ||
+                    gridPos.z < 0 || gridPos.z >= this.gridManager.gridSize) {
+                    return; // Sair se fora dos limites
+                }
 
                 // Atualizar preview se estiver ativo
                 if (this.buildingSystem && this.buildingSystem.previewMode) {
                     this.buildingSystem.updatePreview(gridPos.x, gridPos.z);
                 }
 
-                // Verificar se mudou de posição para hover info
-                if (gridPos.x !== this.lastHoverPosition.x || gridPos.z !== this.lastHoverPosition.z) {
+                // ===== PERFORMANCE OPTIMIZATION: Só atualizar se posição mudou =====
+                if (!this.lastHoverPosition ||
+                    gridPos.x !== this.lastHoverPosition.x ||
+                    gridPos.z !== this.lastHoverPosition.z) {
+
                     this.lastHoverPosition = gridPos;
 
-                    // Usar sistema unificado de informações
+                    // Usar sistema unificado de informações apenas se não estiver em preview
                     if (!this.buildingSystem || !this.buildingSystem.previewMode) {
                         this.updateHoverInfo(gridPos.x, gridPos.z, event.clientX, event.clientY);
                     }
@@ -1294,6 +1369,35 @@ class GameManager {
             }
         } catch (error) {
             console.warn('⚠️ Erro no sistema de hover:', error);
+        }
+    }
+
+    // ===== MOUSE PERFORMANCE FIX: Método de aproximação rápida para posição do grid =====
+    approximateGridPosition(screenX, screenY) {
+        if (!this.camera || !this.scene) return null;
+
+        try {
+            // Usar ray picking mais eficiente apenas no plano do terreno
+            const ray = this.scene.createPickingRay(screenX, screenY, BABYLON.Matrix.Identity(), this.camera);
+
+            // Intersecção com plano Y=0 (terreno)
+            const planeY = 0;
+            if (Math.abs(ray.direction.y) < 0.001) return null; // Ray paralelo ao plano
+
+            const t = (planeY - ray.origin.y) / ray.direction.y;
+            if (t < 0) return null; // Intersecção atrás da câmera
+
+            const worldX = ray.origin.x + t * ray.direction.x;
+            const worldZ = ray.origin.z + t * ray.direction.z;
+
+            return this.gridManager.worldToGrid({ x: worldX, z: worldZ });
+        } catch (error) {
+            // Fallback para pick completo se aproximação falhar
+            const pickInfo = this.scene.pick(screenX, screenY);
+            if (pickInfo.hit && pickInfo.pickedPoint) {
+                return this.gridManager.worldToGrid(pickInfo.pickedPoint);
+            }
+            return null;
         }
     }
 
@@ -1310,16 +1414,31 @@ class GameManager {
             return;
         }
 
-        // Obter informações da célula
+        // ===== MOUSE PERFORMANCE FIX: Cache e otimização de operações =====
+
+        // Cache para evitar múltiplas consultas
         const building = this.buildingSystem.getBuildingAt(gridX, gridZ);
         const terrainType = this.gridManager.getTerrainType(gridX, gridZ);
         const isOccupied = this.gridManager.isOccupied(gridX, gridZ);
 
-        // Gerenciar visibilidade dos labels
-        this.updateBuildingLabelVisibility(gridX, gridZ, building);
+        // ===== PERFORMANCE OPTIMIZATION: Reduzir operações visuais custosas =====
+        // Só atualizar labels e efeitos se realmente necessário
+        if (building) {
+            // Gerenciar visibilidade dos labels apenas para edifícios
+            this.updateBuildingLabelVisibility(gridX, gridZ, building);
 
-        // Aplicar efeitos visuais de hover
-        this.applyHoverEffects(gridX, gridZ, building);
+            // Aplicar efeitos visuais de hover apenas se mudou de edifício
+            if (!this.lastHoveredBuilding || this.lastHoveredBuilding.id !== building.id) {
+                this.applyHoverEffects(gridX, gridZ, building);
+                this.lastHoveredBuilding = building;
+            }
+        } else {
+            // Limpar cache de edifício anterior
+            if (this.lastHoveredBuilding) {
+                this.lastHoveredBuilding = null;
+                this.applyHoverEffects(gridX, gridZ, null);
+            }
+        }
 
         // Criar informações do hover
         let hoverData = {
@@ -1502,8 +1621,19 @@ class GameManager {
             // Efeito de hover para edifício
             this.addBuildingHoverEffect(building);
         } else {
-            // Efeito de hover para terreno
-            this.addTerrainHoverEffect(gridX, gridZ);
+            // ===== HOVER MARKERS FOR ALL INTERACTIVE OBJECTS: Detectar tipo de objeto =====
+            const terrainType = this.gridManager.getTerrainType(gridX, gridZ);
+
+            if (terrainType === 'water') {
+                // Efeito especial para água
+                this.addWaterHoverEffect(gridX, gridZ);
+            } else {
+                // Efeito padrão para terreno
+                this.addTerrainHoverEffect(gridX, gridZ);
+            }
+
+            // Verificar se há decorações ou outros objetos interativos
+            this.addDecorationHoverEffect(gridX, gridZ);
         }
     }
 
@@ -1548,8 +1678,101 @@ class GameManager {
         this.gridManager.highlightCell(gridX, gridZ, color, 'hover');
     }
 
+    // ===== HOVER MARKERS FOR ALL INTERACTIVE OBJECTS: Novos métodos de hover =====
+    addWaterHoverEffect(gridX, gridZ) {
+        try {
+            // Criar efeito especial para água com ondulação
+            const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
+
+            const waterHoverEffect = BABYLON.MeshBuilder.CreateGround(`waterHover_${gridX}_${gridZ}`, {
+                width: this.gridManager.cellSize * 0.9,
+                height: this.gridManager.cellSize * 0.9
+            }, this.scene);
+
+            waterHoverEffect.position.x = worldPos.x;
+            waterHoverEffect.position.z = worldPos.z;
+            waterHoverEffect.position.y = 0.02; // Ligeiramente acima da água
+
+            // Material com efeito aquático
+            const material = new BABYLON.StandardMaterial(`waterHoverMat_${gridX}_${gridZ}`, this.scene);
+            material.diffuseColor = new BABYLON.Color3(0.2, 0.8, 1.0); // Azul água
+            material.emissiveColor = new BABYLON.Color3(0.1, 0.4, 0.6);
+            material.alpha = 0.6;
+            material.hasAlpha = true;
+
+            waterHoverEffect.material = material;
+
+            // Armazenar referência
+            this.currentHoverEffect = waterHoverEffect;
+
+            // Animação de ondulação
+            this.animateWaterHoverEffect(waterHoverEffect);
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao criar efeito de hover para água:', error);
+            // Fallback para highlight normal
+            this.gridManager.highlightCell(gridX, gridZ, new BABYLON.Color3(0.2, 0.8, 1.0), 'water_hover');
+        }
+    }
+
+    addDecorationHoverEffect(gridX, gridZ) {
+        // Verificar se há decorações nesta célula
+        if (!this.gridManager.decorationMeshes) return;
+
+        const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
+        const tolerance = this.gridManager.cellSize * 0.5;
+
+        // Encontrar decorações próximas
+        const nearbyDecorations = this.gridManager.decorationMeshes.filter(decoration => {
+            if (!decoration || decoration.isDisposed()) return false;
+
+            const distance = BABYLON.Vector3.Distance(decoration.position, worldPos);
+            return distance < tolerance;
+        });
+
+        if (nearbyDecorations.length > 0) {
+            // Adicionar efeito sutil para decorações
+            nearbyDecorations.forEach(decoration => {
+                this.addDecorationGlow(decoration);
+            });
+        }
+    }
+
+    addDecorationGlow(decoration) {
+        try {
+            // Criar glow sutil ao redor da decoração
+            const glowEffect = BABYLON.MeshBuilder.CreateSphere(`decorationGlow_${decoration.name}`, {
+                diameter: 0.8
+            }, this.scene);
+
+            glowEffect.position = decoration.position.clone();
+            glowEffect.position.y += 0.2;
+
+            // Material com glow verde suave
+            const material = new BABYLON.StandardMaterial(`decorationGlowMat_${decoration.name}`, this.scene);
+            material.diffuseColor = new BABYLON.Color3(0.4, 1.0, 0.4); // Verde suave
+            material.emissiveColor = new BABYLON.Color3(0.2, 0.5, 0.2);
+            material.alpha = 0.3;
+            material.hasAlpha = true;
+
+            glowEffect.material = material;
+
+            // Armazenar na lista de efeitos para limpeza
+            if (!this.decorationHoverEffects) {
+                this.decorationHoverEffects = [];
+            }
+            this.decorationHoverEffects.push(glowEffect);
+
+            // Animação de pulsação suave
+            this.animateDecorationGlow(glowEffect);
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao criar glow para decoração:', error);
+        }
+    }
+
     clearHoverEffects() {
-        // Limpar efeito de hover de edifício
+        // Limpar efeito de hover de edifício/água/terreno
         if (this.currentHoverEffect) {
             try {
                 if (!this.currentHoverEffect.isDisposed()) {
@@ -1559,6 +1782,20 @@ class GameManager {
                 console.warn('⚠️ Erro ao limpar efeito de hover:', error);
             }
             this.currentHoverEffect = null;
+        }
+
+        // ===== HOVER MARKERS FOR ALL INTERACTIVE OBJECTS: Limpar efeitos de decoração =====
+        if (this.decorationHoverEffects) {
+            this.decorationHoverEffects.forEach(effect => {
+                try {
+                    if (effect && !effect.isDisposed()) {
+                        effect.dispose();
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Erro ao limpar efeito de decoração:', error);
+                }
+            });
+            this.decorationHoverEffects = [];
         }
 
         // Limpar highlight de terreno
@@ -1597,6 +1834,97 @@ class GameManager {
         effect.animations.push(alphaAnimation);
 
         this.scene.beginAnimation(effect, 0, 40, true);
+    }
+
+    // ===== HOVER MARKERS FOR ALL INTERACTIVE OBJECTS: Animações específicas =====
+    animateWaterHoverEffect(effect) {
+        if (!effect || effect.isDisposed()) return;
+
+        // Animação de ondulação para água
+        const scaleKeys = [];
+        scaleKeys.push({
+            frame: 0,
+            value: new BABYLON.Vector3(1, 1, 1)
+        });
+        scaleKeys.push({
+            frame: 30,
+            value: new BABYLON.Vector3(1.1, 1, 1.1)
+        });
+        scaleKeys.push({
+            frame: 60,
+            value: new BABYLON.Vector3(1, 1, 1)
+        });
+
+        const scaleAnimation = new BABYLON.Animation(
+            "waterRipple",
+            "scaling",
+            30,
+            BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+        );
+
+        scaleAnimation.setKeys(scaleKeys);
+        effect.animations.push(scaleAnimation);
+
+        // Animação de alpha também
+        const alphaKeys = [];
+        alphaKeys.push({
+            frame: 0,
+            value: 0.4
+        });
+        alphaKeys.push({
+            frame: 30,
+            value: 0.7
+        });
+        alphaKeys.push({
+            frame: 60,
+            value: 0.4
+        });
+
+        const alphaAnimation = new BABYLON.Animation(
+            "waterAlpha",
+            "material.alpha",
+            30,
+            BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+        );
+
+        alphaAnimation.setKeys(alphaKeys);
+        effect.animations.push(alphaAnimation);
+
+        this.scene.beginAnimation(effect, 0, 60, true);
+    }
+
+    animateDecorationGlow(effect) {
+        if (!effect || effect.isDisposed()) return;
+
+        // Animação de glow suave para decorações
+        const alphaKeys = [];
+        alphaKeys.push({
+            frame: 0,
+            value: 0.2
+        });
+        alphaKeys.push({
+            frame: 25,
+            value: 0.4
+        });
+        alphaKeys.push({
+            frame: 50,
+            value: 0.2
+        });
+
+        const alphaAnimation = new BABYLON.Animation(
+            "decorationGlow",
+            "material.alpha",
+            20,
+            BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+        );
+
+        alphaAnimation.setKeys(alphaKeys);
+        effect.animations.push(alphaAnimation);
+
+        this.scene.beginAnimation(effect, 0, 50, true);
     }
 
     // ===== GERENCIAMENTO DE LABELS DE EDIFÍCIOS =====
