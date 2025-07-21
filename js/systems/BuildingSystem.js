@@ -2215,8 +2215,18 @@ class BuildingSystem {
             // Remover texturas dinâmicas associadas
             const shadowTexKey = `shadowTex_${meshName}`;
             const shadowTexture = this.dynamicTextures.get(shadowTexKey);
-            if (shadowTexture && !shadowTexture.isDisposed()) {
-                shadowTexture.dispose();
+            if (shadowTexture) {
+                try {
+                    // Verificar se a textura tem o método isDisposed antes de chamar
+                    if (typeof shadowTexture.isDisposed === 'function' && !shadowTexture.isDisposed()) {
+                        shadowTexture.dispose();
+                    } else if (typeof shadowTexture.dispose === 'function') {
+                        // Se não tem isDisposed mas tem dispose, chamar dispose diretamente
+                        shadowTexture.dispose();
+                    }
+                } catch (error) {
+                    console.warn(`⚠️ Erro ao remover textura ${shadowTexKey}:`, error);
+                }
                 this.dynamicTextures.delete(shadowTexKey);
             }
 
