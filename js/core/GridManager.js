@@ -731,8 +731,15 @@ class GridManager {
         const halfSize = (this.gridSize * this.cellSize) / 2;
         const x = (gridX * this.cellSize) - halfSize + (this.cellSize / 2);
         const z = (gridZ * this.cellSize) - halfSize + (this.cellSize / 2);
-        const y = this.elevationGrid[gridX][gridZ];
-        
+
+        // Verificar bounds e obter elevação com segurança
+        let y = 0;
+        if (gridX >= 0 && gridX < this.gridSize && gridZ >= 0 && gridZ < this.gridSize) {
+            if (this.elevationGrid[gridX] && this.elevationGrid[gridX][gridZ] !== undefined) {
+                y = this.elevationGrid[gridX][gridZ];
+            }
+        }
+
         return new BABYLON.Vector3(x, y, z);
     }
     
@@ -868,7 +875,12 @@ class GridManager {
             return 'unknown';
         }
 
-        return this.terrainGrid[gridX][gridZ] || 'grassland';
+        // Verificar se o array existe antes de acessar
+        if (this.terrainGrid[gridX] && this.terrainGrid[gridX][gridZ] !== undefined) {
+            return this.terrainGrid[gridX][gridZ];
+        }
+
+        return 'grassland';
     }
 
     // ===== CLEANUP =====

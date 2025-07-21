@@ -1288,7 +1288,7 @@ class GameManager {
 
                     // Usar sistema unificado de informações
                     if (!this.buildingSystem || !this.buildingSystem.previewMode) {
-                        this.updateInfoPanel(gridPos.x, gridPos.z, event.clientX, event.clientY);
+                        this.updateHoverInfo(gridPos.x, gridPos.z, event.clientX, event.clientY);
                     }
                 }
             }
