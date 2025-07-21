@@ -1210,6 +1210,8 @@ class BuildingSystem {
                 return this.createPowerPlantMesh(buildingType);
             case 'infrastructure':
                 return this.createInfrastructureMesh(buildingType);
+            case 'public':
+                return this.createPublicBuildingMesh(buildingType);
             default:
                 return null;
         }
@@ -1393,6 +1395,53 @@ class BuildingSystem {
         }
 
         // Infraestrutura genérica
+        return this.createBasicVoxelMesh(buildingType);
+    }
+
+    createPublicBuildingMesh(buildingType) {
+        const size = this.gridManager.cellSize * 0.9;
+
+        if (buildingType.id === 'city_hall') {
+            // Prefeitura Municipal - edifício imponente com colunas
+            const base = BABYLON.MeshBuilder.CreateBox("cityHallBase", {
+                width: size * 2,
+                height: 2.5,
+                depth: size * 2
+            }, this.scene);
+
+            // Colunas frontais
+            const column1 = BABYLON.MeshBuilder.CreateCylinder("cityHallColumn1", {
+                height: 3.0,
+                diameter: size * 0.3,
+                tessellation: 8
+            }, this.scene);
+            column1.position.x = size * 0.6;
+            column1.position.z = size * 0.8;
+            column1.position.y = 1.5;
+
+            const column2 = column1.clone("cityHallColumn2");
+            column2.position.x = -size * 0.6;
+
+            const column3 = column1.clone("cityHallColumn3");
+            column3.position.x = 0;
+
+            // Telhado triangular
+            const roof = BABYLON.MeshBuilder.CreateCylinder("cityHallRoof", {
+                height: 1.0,
+                diameterTop: 0,
+                diameterBottom: size * 2.2,
+                tessellation: 4
+            }, this.scene);
+            roof.position.y = 3.5;
+            roof.rotation.y = Math.PI / 4;
+
+            const merged = BABYLON.Mesh.MergeMeshes([base, column1, column2, column3, roof]);
+            merged.name = `cityHall_${buildingType.id}`;
+
+            return merged;
+        }
+
+        // Outros edifícios públicos genéricos
         return this.createBasicVoxelMesh(buildingType);
     }
 
