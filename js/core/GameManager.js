@@ -257,6 +257,8 @@ class GameManager {
     }
 
     setupCamera() {
+        // ===== CAMERA CONTROL SYSTEM REDESIGN: New camera control scheme =====
+
         // Câmera isométrica/ortográfica
         this.camera = new BABYLON.ArcRotateCamera(
             "camera",
@@ -266,25 +268,41 @@ class GameManager {
             BABYLON.Vector3.Zero(),
             this.scene
         );
-        
-        // Configurações da câmera
-        this.camera.setTarget(BABYLON.Vector3.Zero());
-        this.camera.attachControl(this.canvas, true);
-        
-        // Limites de movimento
+
+        // ===== NEW CONTROL SCHEME: Disable default controls to implement custom ones =====
+        this.camera.attachControl(this.canvas, false); // Disable default controls
+
+        // Camera limits to prevent problematic angles
         this.camera.lowerRadiusLimit = 15;
         this.camera.upperRadiusLimit = 50;
-        this.camera.lowerBetaLimit = 0.1;
-        this.camera.upperBetaLimit = Math.PI / 2.2;
-        
-        // Velocidade de movimento
-        this.camera.panningSensibility = 100;
-        this.camera.wheelPrecision = 50;
-        
+        this.camera.lowerBetaLimit = 0.2; // Prevent going underground
+        this.camera.upperBetaLimit = Math.PI / 2.1; // Prevent going too high
+
+        // Camera movement boundaries (keep camera focused on playable area)
+        this.cameraLimits = {
+            minX: -20,
+            maxX: 60,
+            minZ: -20,
+            maxZ: 60
+        };
+
+        // ===== NEW CONTROL SCHEME: Custom control state =====
+        this.cameraControlState = {
+            leftMouseDown: false,
+            rightMouseDown: false,
+            lastMouseX: 0,
+            lastMouseY: 0,
+            isOrbiting: false,
+            isPanning: false
+        };
+
         // Suavização
         this.camera.inertia = 0.8;
         this.camera.angularSensibilityX = 1000;
         this.camera.angularSensibilityY = 1000;
+
+        // Setup custom camera controls
+        this.setupCustomCameraControls();
     }
     
     setupLighting() {
@@ -319,11 +337,146 @@ class GameManager {
         this.scene.onPointerObservable.add((pointerInfo) => {
             this.handlePointerEvent(pointerInfo);
         });
-        
+
         // Configurar teclado
         this.scene.onKeyboardObservable.add((kbInfo) => {
             this.handleKeyboardEvent(kbInfo);
         });
+    }
+
+    // ===== CAMERA CONTROL SYSTEM REDESIGN: Custom camera controls =====
+    setupCustomCameraControls() {
+        // Mouse down events
+        this.canvas.addEventListener('mousedown', (event) => {
+            this.handleCameraMouseDown(event);
+        });
+
+        // Mouse up events
+        this.canvas.addEventListener('mouseup', (event) => {
+            this.handleCameraMouseUp(event);
+        });
+
+        // Mouse move events
+        this.canvas.addEventListener('mousemove', (event) => {
+            this.handleCameraMouseMove(event);
+        });
+
+        // Wheel events for zoom
+        this.canvas.addEventListener('wheel', (event) => {
+            this.handleCameraWheel(event);
+        });
+
+        // Context menu prevention for right-click
+        this.canvas.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
+
+        console.log('🎮 Custom camera controls initialized');
+    }
+
+    handleCameraMouseDown(event) {
+        if (event.button === 0) { // Left mouse button
+            this.cameraControlState.leftMouseDown = true;
+            this.cameraControlState.isPanning = true;
+        } else if (event.button === 2) { // Right mouse button
+            this.cameraControlState.rightMouseDown = true;
+            this.cameraControlState.isOrbiting = true;
+        }
+
+        this.cameraControlState.lastMouseX = event.clientX;
+        this.cameraControlState.lastMouseY = event.clientY;
+
+        // Prevent default behavior
+        event.preventDefault();
+    }
+
+    handleCameraMouseUp(event) {
+        if (event.button === 0) { // Left mouse button
+            this.cameraControlState.leftMouseDown = false;
+            this.cameraControlState.isPanning = false;
+        } else if (event.button === 2) { // Right mouse button
+            this.cameraControlState.rightMouseDown = false;
+            this.cameraControlState.isOrbiting = false;
+        }
+    }
+
+    handleCameraMouseMove(event) {
+        if (!this.camera) return;
+
+        const deltaX = event.clientX - this.cameraControlState.lastMouseX;
+        const deltaY = event.clientY - this.cameraControlState.lastMouseY;
+
+        if (this.cameraControlState.isPanning && this.cameraControlState.leftMouseDown) {
+            // ===== LEFT MOUSE: Bird's eye view camera movement (pan/fly over terrain) =====
+            this.panCamera(deltaX, deltaY);
+        } else if (this.cameraControlState.isOrbiting && this.cameraControlState.rightMouseDown) {
+            // ===== RIGHT MOUSE: Orbital rotation around a center point =====
+            this.orbitCamera(deltaX, deltaY);
+        }
+
+        this.cameraControlState.lastMouseX = event.clientX;
+        this.cameraControlState.lastMouseY = event.clientY;
+    }
+
+    panCamera(deltaX, deltaY) {
+        try {
+            // Calculate movement based on camera orientation
+            const sensitivity = 0.01;
+            const forward = this.camera.getForwardRay().direction;
+            const right = BABYLON.Vector3.Cross(forward, BABYLON.Vector3.Up());
+
+            // Normalize vectors
+            forward.normalize();
+            right.normalize();
+
+            // Calculate movement (inverted for natural feel)
+            const movement = right.scale(-deltaX * sensitivity).add(forward.scale(deltaY * sensitivity));
+            movement.y = 0; // Keep movement on horizontal plane
+
+            // Get current target and calculate new target
+            const currentTarget = this.camera.getTarget();
+            const newTarget = currentTarget.add(movement);
+
+            // ===== CAMERA LIMITS: Ensure camera stays within playable area =====
+            newTarget.x = Math.max(this.cameraLimits.minX, Math.min(this.cameraLimits.maxX, newTarget.x));
+            newTarget.z = Math.max(this.cameraLimits.minZ, Math.min(this.cameraLimits.maxZ, newTarget.z));
+
+            // Apply smooth movement
+            this.camera.setTarget(newTarget);
+
+        } catch (error) {
+            console.warn('⚠️ Error in camera panning:', error);
+        }
+    }
+
+    orbitCamera(deltaX, deltaY) {
+        try {
+            // ===== RIGHT MOUSE: Orbital rotation with limits =====
+            const sensitivity = 0.005;
+
+            // Update alpha (horizontal rotation)
+            this.camera.alpha += deltaX * sensitivity;
+
+            // Update beta (vertical rotation) with limits
+            const newBeta = this.camera.beta - deltaY * sensitivity;
+            this.camera.beta = Math.max(this.camera.lowerBetaLimit, Math.min(this.camera.upperBetaLimit, newBeta));
+
+        } catch (error) {
+            console.warn('⚠️ Error in camera orbiting:', error);
+        }
+    }
+
+    handleCameraWheel(event) {
+        if (!this.camera) return;
+
+        // Zoom in/out
+        const zoomSensitivity = 2;
+        const deltaRadius = event.deltaY > 0 ? zoomSensitivity : -zoomSensitivity;
+
+        const newRadius = this.camera.radius + deltaRadius;
+        this.camera.radius = Math.max(this.camera.lowerRadiusLimit, Math.min(this.camera.upperRadiusLimit, newRadius));
+
+        event.preventDefault();
     }
     
     startRenderLoop() {
@@ -841,29 +994,8 @@ class GameManager {
         // Redimensionar canvas
         this.handleResize();
 
-        // ===== PHANTOM BUILDING BUG FIX: Debug building creation =====
-        console.log('🔍 Verificando edifícios antes de criar cidade inicial...');
-        if (this.buildingSystem) {
-            console.log(`📊 Edifícios existentes: ${this.buildingSystem.buildings.size}`);
-            if (this.buildingSystem.buildings.size > 0) {
-                console.warn('⚠️ PHANTOM BUILDING DETECTADO! Edifícios já existem antes de createStarterCity:');
-                this.buildingSystem.buildings.forEach((building, id) => {
-                    console.warn(`   - ${id}: ${building.type} em (${building.gridX}, ${building.gridZ})`);
-                });
-            }
-        }
-
         // Criar cidade inicial
         this.createStarterCity();
-
-        // ===== PHANTOM BUILDING BUG FIX: Debug após criação =====
-        console.log('🔍 Verificando edifícios após criar cidade inicial...');
-        if (this.buildingSystem) {
-            console.log(`📊 Edifícios após createStarterCity: ${this.buildingSystem.buildings.size}`);
-            this.buildingSystem.buildings.forEach((building, id) => {
-                console.log(`   - ${id}: ${building.type} em (${building.gridX}, ${building.gridZ})`);
-            });
-        }
 
         console.log('✅ Novo jogo iniciado');
         return true;
@@ -1046,7 +1178,7 @@ class GameManager {
         }
     }
 
-    // ===== CONTROLES DE CÂMERA WASD =====
+    // ===== CAMERA CONTROL SYSTEM REDESIGN: WASD alternative bird's eye view movement =====
     updateCameraControls(deltaTime) {
         if (!this.camera || !this.cameraControls.enabled) return;
 
@@ -1058,6 +1190,7 @@ class GameManager {
         if (!isMoving) return;
 
         try {
+            // ===== WASD: Alternative bird's eye view movement (same as left mouse) =====
             // Obter direções da câmera baseadas na rotação atual
             const forward = this.camera.getForwardRay().direction;
             const right = BABYLON.Vector3.Cross(forward, BABYLON.Vector3.Up());
@@ -1085,9 +1218,14 @@ class GameManager {
             // Aplicar movimento apenas nos eixos X e Z (manter altura)
             movement.y = 0;
 
-            // Mover o alvo da câmera
+            // Mover o alvo da câmera com limites
             const currentTarget = this.camera.getTarget();
             const newTarget = currentTarget.add(movement);
+
+            // ===== CAMERA LIMITS: Apply same limits as mouse panning =====
+            newTarget.x = Math.max(this.cameraLimits.minX, Math.min(this.cameraLimits.maxX, newTarget.x));
+            newTarget.z = Math.max(this.cameraLimits.minZ, Math.min(this.cameraLimits.maxZ, newTarget.z));
+
             this.camera.setTarget(newTarget);
 
         } catch (error) {

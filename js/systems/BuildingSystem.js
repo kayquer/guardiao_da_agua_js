@@ -679,6 +679,56 @@ class BuildingSystem {
             }
         });
 
+        // ===== RESEARCH CENTERS AND UNIVERSITIES IMPLEMENTATION =====
+        this.addBuildingType('research_center', {
+            name: 'Centro de Pesquisa',
+            description: 'Centro de pesquisa que reduz custos de construção em 10-15% e melhora eficiência de edifícios próximos',
+            category: 'public',
+            cost: 35000,
+            size: 2,
+            satisfactionBonus: 12,
+            researchBonus: true,
+            maintenanceCost: 500,
+            powerConsumption: 80,
+            waterConsumption: 25,
+            // ===== EFFICIENCY BONUSES =====
+            constructionCostReduction: 0.125, // 12.5% average (10-15% range)
+            nearbyEfficiencyBonus: 0.125, // 12.5% average (10-15% range)
+            effectRadius: 3, // Affects buildings within 3 grid cells
+            icon: '🔬',
+            color: '#9C27B0',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false,
+                populationRequirement: 200
+            }
+        });
+
+        this.addBuildingType('university', {
+            name: 'Universidade',
+            description: 'Universidade que reduz custos de construção em 15-25% e melhora significativamente a eficiência de edifícios próximos',
+            category: 'public',
+            cost: 60000,
+            size: 3,
+            satisfactionBonus: 25,
+            educationBonus: true,
+            researchBonus: true,
+            maintenanceCost: 800,
+            powerConsumption: 120,
+            waterConsumption: 40,
+            // ===== EFFICIENCY BONUSES =====
+            constructionCostReduction: 0.20, // 20% average (15-25% range)
+            nearbyEfficiencyBonus: 0.20, // 20% average (15-25% range)
+            effectRadius: 5, // Affects buildings within 5 grid cells
+            icon: '🎓',
+            color: '#673AB7',
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: false,
+                populationRequirement: 500
+            }
+        });
+
         // CATEGORIA: COMERCIAL (Revenue-Generating)
         this.addBuildingType('shopping_center', {
             name: 'Centro Comercial',
@@ -900,13 +950,102 @@ class BuildingSystem {
 
         console.log(`✅ ${this.buildingTypes.size} tipos de edifícios definidos`);
     }
-    
+
     addBuildingType(id, config) {
         this.buildingTypes.set(id, {
             id,
             ...config,
             unlocked: true // Por enquanto todos desbloqueados
         });
+    }
+
+    // ===== RESEARCH CENTERS AND UNIVERSITIES: Efficiency bonus system =====
+    calculateConstructionCostWithBonuses(buildingTypeId, gridX, gridZ) {
+        const buildingType = this.buildingTypes.get(buildingTypeId);
+        if (!buildingType) return 0;
+
+        let baseCost = buildingType.cost;
+        let totalReduction = 0;
+
+        // Find nearby research buildings that provide cost reduction
+        const nearbyResearchBuildings = this.findNearbyResearchBuildings(gridX, gridZ);
+
+        for (const researchBuilding of nearbyResearchBuildings) {
+            const config = researchBuilding.config;
+            if (config.constructionCostReduction) {
+                // Add some randomness within the specified range
+                const baseReduction = config.constructionCostReduction;
+                const randomVariation = (Math.random() - 0.5) * 0.1; // ±5% variation
+                const actualReduction = Math.max(0, baseReduction + randomVariation);
+                totalReduction += actualReduction;
+            }
+        }
+
+        // Cap total reduction at 40% to prevent abuse
+        totalReduction = Math.min(totalReduction, 0.4);
+
+        const finalCost = Math.round(baseCost * (1 - totalReduction));
+
+        if (totalReduction > 0) {
+            console.log(`🔬 Construction cost reduction: ${(totalReduction * 100).toFixed(1)}% (${baseCost} → ${finalCost})`);
+        }
+
+        return finalCost;
+    }
+
+    findNearbyResearchBuildings(gridX, gridZ) {
+        const nearbyBuildings = [];
+
+        for (const [buildingId, building] of this.buildings) {
+            const config = building.config;
+
+            // Check if building provides research bonuses
+            if (config.constructionCostReduction || config.nearbyEfficiencyBonus) {
+                const distance = Math.sqrt(
+                    Math.pow(building.gridX - gridX, 2) +
+                    Math.pow(building.gridZ - gridZ, 2)
+                );
+
+                // Check if within effect radius
+                if (distance <= config.effectRadius) {
+                    nearbyBuildings.push(building);
+                }
+            }
+        }
+
+        return nearbyBuildings;
+    }
+
+    calculateBuildingEfficiency(building) {
+        if (!building || !building.config) return 1.0;
+
+        let baseEfficiency = building.efficiency || 1.0;
+        let bonusEfficiency = 0;
+
+        // Find nearby research buildings that provide efficiency bonuses
+        const nearbyResearchBuildings = this.findNearbyResearchBuildings(building.gridX, building.gridZ);
+
+        for (const researchBuilding of nearbyResearchBuildings) {
+            const config = researchBuilding.config;
+            if (config.nearbyEfficiencyBonus) {
+                // Add some randomness within the specified range
+                const baseBonus = config.nearbyEfficiencyBonus;
+                const randomVariation = (Math.random() - 0.5) * 0.1; // ±5% variation
+                const actualBonus = Math.max(0, baseBonus + randomVariation);
+                bonusEfficiency += actualBonus;
+            }
+        }
+
+        // Cap total efficiency bonus at 50% to prevent abuse
+        bonusEfficiency = Math.min(bonusEfficiency, 0.5);
+
+        const finalEfficiency = baseEfficiency + bonusEfficiency;
+
+        if (bonusEfficiency > 0) {
+            console.log(`🎓 Building efficiency bonus: +${(bonusEfficiency * 100).toFixed(1)}% for ${building.config.name}`);
+        }
+
+        return Math.min(finalEfficiency, 2.0); // Cap at 200% efficiency
     }
     
     createMaterials() {
@@ -1072,11 +1211,14 @@ class BuildingSystem {
             return null;
         }
         
-        // Verificar orçamento
+        // ===== RESEARCH CENTERS AND UNIVERSITIES: Apply cost reduction =====
+        const actualCost = this.calculateConstructionCostWithBonuses(buildingTypeId, gridX, gridZ);
+
+        // Verificar orçamento (usando custo com desconto)
         if (window.gameManager && gameManager.resourceManager) {
-            if (!gameManager.resourceManager.canAfford(buildingType.cost)) {
-                this.showNotification(`Orçamento insuficiente! Custo: R$ ${buildingType.cost.toLocaleString()}`, 'error');
-                console.warn(`⚠️ Orçamento insuficiente: R$ ${buildingType.cost} (disponível: R$ ${gameManager.resourceManager.resources.budget.current})`);
+            if (!gameManager.resourceManager.canAfford(actualCost)) {
+                this.showNotification(`Orçamento insuficiente! Custo: R$ ${actualCost.toLocaleString()}`, 'error');
+                console.warn(`⚠️ Orçamento insuficiente: R$ ${actualCost} (original: R$ ${buildingType.cost}, disponível: R$ ${gameManager.resourceManager.resources.budget.current})`);
                 return null;
             }
         }
@@ -1106,15 +1248,9 @@ class BuildingSystem {
             constructionStartTime: Date.now()
         };
 
-        // ===== PHANTOM BUILDING BUG FIX: Debug building creation =====
-        console.log(`🏗️ BUILDING CREATED: ${buildingId} (${buildingTypeId}) at (${gridX}, ${gridZ})`);
-        console.log(`   📊 Total buildings now: ${this.buildings.size + 1}`);
-
-        // Log stack trace to see where this is being called from
-        if (this.buildings.size === 0) {
-            console.log('🔍 First building creation - Stack trace:');
-            console.trace();
-        }
+        // ===== BUILDING CREATION LOG =====
+        console.log(`🏗️ Building created: ${buildingId} (${buildingTypeId}) at (${gridX}, ${gridZ})`);
+        console.log(`   📊 Total buildings: ${this.buildings.size + 1}`);
 
         this.buildings.set(buildingId, buildingData);
 
@@ -1137,13 +1273,18 @@ class BuildingSystem {
         // Aplicar efeitos nos recursos
         this.applyBuildingEffects(buildingData, true);
 
-        // Deduzir custo do orçamento
+        // ===== RESEARCH CENTERS AND UNIVERSITIES: Deduct actual cost with bonuses =====
         if (window.gameManager && gameManager.resourceManager) {
-            const success = gameManager.resourceManager.spendBudget(buildingType.cost);
+            const success = gameManager.resourceManager.spendBudget(actualCost);
             if (success) {
-                console.log(`💰 Custo deduzido: R$ ${buildingType.cost.toLocaleString()}`);
+                const savings = buildingType.cost - actualCost;
+                if (savings > 0) {
+                    console.log(`💰 Custo deduzido: R$ ${actualCost.toLocaleString()} (economia de R$ ${savings.toLocaleString()} graças à pesquisa!)`);
+                } else {
+                    console.log(`💰 Custo deduzido: R$ ${actualCost.toLocaleString()}`);
+                }
             } else {
-                console.error(`❌ Falha ao deduzir custo: R$ ${buildingType.cost.toLocaleString()}`);
+                console.error(`❌ Falha ao deduzir custo: R$ ${actualCost.toLocaleString()}`);
             }
         }
 
@@ -3339,6 +3480,9 @@ class BuildingSystem {
                 efficiency *= electricityData.efficiency; // Reduzir eficiência baseado na disponibilidade de energia
             }
         }
+
+        // ===== RESEARCH CENTERS AND UNIVERSITIES: Apply efficiency bonuses =====
+        efficiency = this.calculateBuildingEfficiency(building);
 
         // Atualizar status de escassez de energia
         const hadPowerShortage = building.hasPowerShortage || false;

@@ -121,13 +121,8 @@ class UIManager {
         this.elements.saveGameBtn?.addEventListener('click', () => this.saveGame());
         this.elements.mainMenuBtn?.addEventListener('click', () => this.returnToMainMenu());
         
-        // Categorias de construção
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const category = e.target.dataset.category;
-                this.selectCategory(category);
-            });
-        });
+        // ===== LATERAL MENU STABILITY FIX: Improved category button handling =====
+        this.setupCategoryButtons();
         
         // Fechar notificações
         document.addEventListener('click', (e) => {
@@ -187,7 +182,100 @@ class UIManager {
             }
         });
     }
-    
+
+    // ===== LATERAL MENU STABILITY FIX: Event listener management =====
+    cleanupEventListeners() {
+        // Remove existing category button listeners
+        if (this.categoryButtonListeners) {
+            this.categoryButtonListeners.forEach(({ element, listener }) => {
+                element.removeEventListener('click', listener);
+            });
+        }
+        this.categoryButtonListeners = [];
+
+        // Remove existing building item listeners
+        if (this.buildingItemListeners) {
+            this.buildingItemListeners.forEach(({ element, listener }) => {
+                element.removeEventListener('click', listener);
+            });
+        }
+        this.buildingItemListeners = [];
+    }
+
+    setupCategoryButtons() {
+        // Clean up existing listeners first
+        this.cleanupCategoryButtons();
+
+        // Add new listeners with proper tracking
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            const listener = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // ===== STABILITY FIX: Prevent multiple rapid clicks =====
+                if (this.categoryClickCooldown) return;
+                this.categoryClickCooldown = true;
+                setTimeout(() => this.categoryClickCooldown = false, 200);
+
+                const category = e.target.dataset.category;
+                if (category) {
+                    this.selectCategory(category);
+                }
+            };
+
+            btn.addEventListener('click', listener);
+            this.categoryButtonListeners.push({ element: btn, listener });
+        });
+    }
+
+    cleanupCategoryButtons() {
+        if (this.categoryButtonListeners) {
+            this.categoryButtonListeners.forEach(({ element, listener }) => {
+                element.removeEventListener('click', listener);
+            });
+        }
+        this.categoryButtonListeners = [];
+    }
+
+    // ===== STABILITY FIX: Improved building item event handling =====
+    setupBuildingItemListeners() {
+        // Clean up existing listeners
+        this.cleanupBuildingItemListeners();
+
+        // Add new listeners for building items
+        document.querySelectorAll('.building-item').forEach(item => {
+            const listener = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                // ===== STABILITY FIX: Prevent clicks on disabled items =====
+                if (item.classList.contains('disabled')) return;
+
+                // ===== STABILITY FIX: Prevent multiple rapid clicks =====
+                if (this.buildingClickCooldown) return;
+                this.buildingClickCooldown = true;
+                setTimeout(() => this.buildingClickCooldown = false, 300);
+
+                const buildingType = item.dataset.buildingType;
+                if (buildingType) {
+                    this.selectBuildingType(buildingType);
+                }
+            };
+
+            item.addEventListener('click', listener);
+            this.buildingItemListeners.push({ element: item, listener });
+        });
+    }
+
+    cleanupBuildingItemListeners() {
+        if (this.buildingItemListeners) {
+            this.buildingItemListeners.forEach(({ element, listener }) => {
+                element.removeEventListener('click', listener);
+            });
+        }
+        this.buildingItemListeners = [];
+    }
+
     createBuildingCategories() {
         const categories = [
             { id: 'water', name: '💧 Água', icon: '💧' },
@@ -344,8 +432,14 @@ class UIManager {
     
     // ===== CONSTRUÇÃO =====
     selectCategory(category) {
+        // ===== LATERAL MENU STABILITY FIX: Prevent invalid category selection =====
+        if (!category || this.currentCategory === category) return;
+
         this.currentCategory = category;
-        
+
+        // ===== STABILITY FIX: Clean up before state change =====
+        this.cleanupBuildingItemListeners();
+
         // Atualizar botões de categoria
         document.querySelectorAll('.category-btn').forEach(btn => {
             btn.classList.remove('active');
@@ -353,22 +447,27 @@ class UIManager {
                 btn.classList.add('active');
             }
         });
-        
+
         // Carregar itens da categoria
         this.loadBuildingItems();
+
+        console.log(`🏗️ Categoria selecionada: ${category}`);
     }
     
     loadBuildingItems() {
         if (!this.elements.buildingItems || !this.gameManager.buildingSystem) return;
-        
+
         const buildingTypes = this.gameManager.buildingSystem.getBuildingTypesByCategory(this.currentCategory);
-        
+
         this.elements.buildingItems.innerHTML = '';
-        
+
         buildingTypes.forEach(buildingType => {
             const item = this.createBuildingItem(buildingType);
             this.elements.buildingItems.appendChild(item);
         });
+
+        // ===== LATERAL MENU STABILITY FIX: Setup event listeners after creating items =====
+        this.setupBuildingItemListeners();
     }
     
     createBuildingItem(buildingType) {
@@ -392,13 +491,10 @@ class UIManager {
                 <div class="building-description">${buildingType.description}</div>
             </div>
         `;
-        
-        item.addEventListener('click', () => {
-            if (!item.classList.contains('disabled')) {
-                this.selectBuildingType(buildingType.id);
-            }
-        });
-        
+
+        // ===== LATERAL MENU STABILITY FIX: Event listeners now handled centrally =====
+        // Event listener will be added by setupBuildingItemListeners()
+
         return item;
     }
     
@@ -1879,12 +1975,37 @@ class UIManager {
 
         tooltip.innerHTML = content;
 
-        // Posicionar tooltip
+        // ===== RESOURCE TOOLTIP POSITIONING FIX: Position below element to prevent off-screen display =====
         const rect = event.target.getBoundingClientRect();
+
+        // Position tooltip below the resource button
         tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-        tooltip.style.top = (rect.top - 10) + 'px';
-        tooltip.style.transform = 'translateX(-50%) translateY(-100%)';
+        tooltip.style.top = (rect.bottom + 10) + 'px'; // Changed from rect.top - 10 to rect.bottom + 10
+        tooltip.style.transform = 'translateX(-50%)'; // Removed translateY(-100%) to position below
         tooltip.style.display = 'block';
+
+        // ===== ADDITIONAL FIX: Ensure tooltip stays within viewport bounds =====
+        // Check if tooltip would go off-screen and adjust if necessary
+        setTimeout(() => {
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            // Adjust horizontal position if off-screen
+            if (tooltipRect.right > viewportWidth) {
+                tooltip.style.left = (viewportWidth - tooltipRect.width - 10) + 'px';
+                tooltip.style.transform = 'none';
+            } else if (tooltipRect.left < 0) {
+                tooltip.style.left = '10px';
+                tooltip.style.transform = 'none';
+            }
+
+            // If tooltip would go below viewport, position above instead
+            if (tooltipRect.bottom > viewportHeight) {
+                tooltip.style.top = (rect.top - 10) + 'px';
+                tooltip.style.transform = tooltip.style.transform + ' translateY(-100%)';
+            }
+        }, 0);
     }
 
     hideResourceTooltip() {
