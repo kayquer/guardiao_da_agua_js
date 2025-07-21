@@ -1647,6 +1647,71 @@ class GameManager {
         return false;
     }
 
+    getPollutionLevel(gridX, gridZ) {
+        // Calcular nível de poluição baseado em edifícios próximos
+        let pollutionScore = 0;
+        const radius = 3;
+
+        for (let x = gridX - radius; x <= gridX + radius; x++) {
+            for (let z = gridZ - radius; z <= gridZ + radius; z++) {
+                if (x >= 0 && x < this.gridManager.gridSize &&
+                    z >= 0 && z < this.gridManager.gridSize) {
+                    const building = this.buildingSystem.getBuildingAt(x, z);
+                    if (building) {
+                        // Edifícios industriais aumentam poluição
+                        if (building.config.category === 'power' || building.config.category === 'treatment') {
+                            const distance = Math.abs(x - gridX) + Math.abs(z - gridZ);
+                            pollutionScore += Math.max(0, 3 - distance);
+                        }
+                        // Edifícios de tratamento reduzem poluição
+                        if (building.config.id === 'water_treatment' || building.config.id === 'sewage_treatment') {
+                            const distance = Math.abs(x - gridX) + Math.abs(z - gridZ);
+                            pollutionScore -= Math.max(0, 2 - distance);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Determinar nível e ícone
+        if (pollutionScore <= 0) {
+            return { level: 'clean', icon: '🌱', text: 'Limpo' };
+        } else if (pollutionScore <= 2) {
+            return { level: 'low', icon: '🟡', text: 'Baixa' };
+        } else if (pollutionScore <= 5) {
+            return { level: 'medium', icon: '🟠', text: 'Média' };
+        } else {
+            return { level: 'high', icon: '🔴', text: 'Alta' };
+        }
+    }
+
+    getNearbyResources(gridX, gridZ) {
+        const resources = [];
+        const radius = 2;
+
+        for (let x = gridX - radius; x <= gridX + radius; x++) {
+            for (let z = gridZ - radius; z <= gridZ + radius; z++) {
+                if (x >= 0 && x < this.gridManager.gridSize &&
+                    z >= 0 && z < this.gridManager.gridSize) {
+                    const building = this.buildingSystem.getBuildingAt(x, z);
+                    if (building) {
+                        if (building.config.category === 'power') {
+                            if (!resources.includes('Energia')) resources.push('Energia');
+                        }
+                        if (building.config.category === 'water') {
+                            if (!resources.includes('Água')) resources.push('Água');
+                        }
+                        if (building.config.category === 'infrastructure') {
+                            if (!resources.includes('Infraestrutura')) resources.push('Infraestrutura');
+                        }
+                    }
+                }
+            }
+        }
+
+        return resources;
+    }
+
     handleMouseClick(event) {
         if (!this.gridManager || !this.scene || !this.buildingSystem) return;
 
@@ -1979,8 +2044,9 @@ class GameManager {
             // Selecionar o edifício
             this.selectBuilding(building);
         } else {
-            // Clicou em área vazia - desselecionar
+            // Clicou em área vazia - desselecionar edifício e mostrar info do terreno
             this.deselectBuilding();
+            this.selectTerrain(gridX, gridZ);
         }
     }
 
@@ -2010,6 +2076,102 @@ class GameManager {
 
         // Atualizar painel usando sistema unificado
         this.refreshInfoPanel();
+    }
+
+    selectTerrain(gridX, gridZ) {
+        // Garantir que não há edifício selecionado
+        this.deselectBuilding();
+
+        // Mostrar informações detalhadas do terreno no painel lateral
+        this.showDetailedTerrainInfo(gridX, gridZ);
+
+        console.log(`🌍 Terreno selecionado: (${gridX}, ${gridZ})`);
+    }
+
+    showDetailedTerrainInfo(gridX, gridZ) {
+        const detailsPanel = document.getElementById('details-content');
+        if (!detailsPanel) return;
+
+        const terrainType = this.gridManager.getTerrainType(gridX, gridZ);
+        const terrainName = this.getTerrainDisplayName(terrainType);
+        const terrainDescription = this.getTerrainDescription(terrainType);
+        const elevation = this.gridManager.elevationGrid[gridX] && this.gridManager.elevationGrid[gridX][gridZ] ?
+                         this.gridManager.elevationGrid[gridX][gridZ] : 0;
+
+        // Obter informações adicionais do terreno
+        const buildable = this.gridManager.canPlaceBuilding(gridX, gridZ, 1);
+        const waterNearby = this.isNearWater(gridX, gridZ);
+        const pollutionLevel = this.getPollutionLevel(gridX, gridZ);
+        const resourcesNearby = this.getNearbyResources(gridX, gridZ);
+
+        detailsPanel.innerHTML = `
+            <div class="terrain-selection-info">
+                <h3>🌍 Informações do Terreno</h3>
+
+                <div class="terrain-header">
+                    <div class="terrain-type-display">
+                        <span class="terrain-icon-large">${this.getTerrainIcon(terrainType)}</span>
+                        <div class="terrain-name-large">${terrainName}</div>
+                    </div>
+                </div>
+
+                <div class="terrain-details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">📍 Posição:</span>
+                        <span class="detail-value">(${gridX}, ${gridZ})</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">📏 Elevação:</span>
+                        <span class="detail-value">${(elevation * 100).toFixed(1)}%</span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">🏗️ Construível:</span>
+                        <span class="detail-value ${buildable ? 'buildable-yes' : 'buildable-no'}">
+                            ${buildable ? '✅ Sim' : '❌ Não'}
+                        </span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">🏭 Poluição:</span>
+                        <span class="detail-value pollution-level-${pollutionLevel.level}">
+                            ${pollutionLevel.icon} ${pollutionLevel.text}
+                        </span>
+                    </div>
+
+                    ${waterNearby ? `
+                    <div class="detail-item">
+                        <span class="detail-label">💧 Água:</span>
+                        <span class="detail-value">Próximo à fonte de água</span>
+                    </div>
+                    ` : ''}
+
+                    ${resourcesNearby.length > 0 ? `
+                    <div class="detail-item">
+                        <span class="detail-label">⚡ Recursos:</span>
+                        <span class="detail-value">${resourcesNearby.join(', ')}</span>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <div class="terrain-description-section">
+                    <h4>📖 Descrição</h4>
+                    <p>${terrainDescription}</p>
+                </div>
+
+                <div class="terrain-tips-section">
+                    <h4>💡 Dicas de Construção</h4>
+                    ${this.getTerrainTips(terrainType)}
+                </div>
+
+                <div class="terrain-actions">
+                    <button class="terrain-action-btn" onclick="gameManager.showBuildingOptions('${terrainType}', ${gridX}, ${gridZ})">
+                        🏗️ Ver Construções Recomendadas
+                    </button>
+                </div>
+            </div>
+        `;
     }
 
     clearBuildingSelection() {
