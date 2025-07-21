@@ -1813,9 +1813,38 @@ class UIManager {
     }
 
     showTerrainInfo(terrainType, gridX, gridZ, mouseX, mouseY) {
-        // Mostrar informações de terreno
-        if (this.gameManager && this.gameManager.updateHoverInfo) {
-            this.gameManager.updateHoverInfo(gridX, gridZ, mouseX, mouseY);
+        // ===== ZERO-ERROR POLICY FIX: Evitar chamada circular que causa stack overflow =====
+        // Não chamar updateHoverInfo aqui pois já estamos sendo chamados por ele
+        // Em vez disso, mostrar informações diretamente
+
+        try {
+            // Mostrar informações de terreno diretamente sem recursão
+            const hoverInfo = document.getElementById('hover-tooltip');
+            if (hoverInfo) {
+                let content = `<div class="tooltip-header">Terreno: ${terrainType}</div>`;
+                content += `<div class="tooltip-coords">Posição: (${gridX}, ${gridZ})</div>`;
+
+                // Adicionar informações específicas do terreno
+                const terrainDescriptions = {
+                    'grassland': 'Terra fértil ideal para construção',
+                    'lowland': 'Terreno baixo adequado para edifícios',
+                    'water': 'Corpo d\'água - não construível',
+                    'highland': 'Terreno elevado com boa vista',
+                    'mountain': 'Montanha - não construível'
+                };
+
+                if (terrainDescriptions[terrainType]) {
+                    content += `<div class="tooltip-description">${terrainDescriptions[terrainType]}</div>`;
+                }
+
+                hoverInfo.innerHTML = content;
+                hoverInfo.style.left = mouseX + 'px';
+                hoverInfo.style.top = (mouseY - 10) + 'px';
+                hoverInfo.style.transform = 'translateX(-50%) translateY(-100%)';
+                hoverInfo.style.display = 'block';
+            }
+        } catch (error) {
+            console.warn('⚠️ Erro ao mostrar informações de terreno:', error);
         }
     }
 

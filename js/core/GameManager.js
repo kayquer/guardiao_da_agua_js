@@ -1479,9 +1479,13 @@ class GameManager {
                 terrainName: this.getTerrainDisplayName(terrainType)
             };
 
+            // ===== ZERO-ERROR POLICY FIX: Evitar chamada circular =====
             // Mostrar informações do terreno no painel direito se não estiver em modo construção
             if (!this.buildingSystem.previewMode) {
-                this.showTerrainInfo(terrainType, gridX, gridZ);
+                // Chamar diretamente o UIManager sem recursão
+                if (this.uiManager && this.uiManager.showTerrainInfo) {
+                    this.uiManager.showTerrainInfo(terrainType, gridX, gridZ, mouseX, mouseY);
+                }
             } else {
                 this.hideTerrainInfo();
             }
@@ -2888,13 +2892,7 @@ class GameManager {
         }
     }
 
-    showTerrainInfo(gridX, gridZ, mouseX, mouseY) {
-        // Mostrar informações de terreno
-        const terrainType = this.gridManager.getTerrainType(gridX, gridZ);
-        if (this.uiManager) {
-            this.uiManager.showTerrainInfo(terrainType, gridX, gridZ, mouseX, mouseY);
-        }
-    }
+
 
     // Método para forçar atualização das informações (usado quando seleção muda)
     refreshInfoPanel() {
