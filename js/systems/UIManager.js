@@ -51,12 +51,23 @@ class UIManager {
             mainMenuBtn: document.getElementById('btn-main-menu')
         };
         
-        // Estado da UI
-        this.currentCategory = 'water';
-        this.selectedBuilding = null;
+        // ===== ENHANCED UI STATE MANAGEMENT =====
+        this.uiState = {
+            currentCategory: 'water',
+            selectedBuilding: null,
+            currentOpenPanel: null,
+            isTransitioning: false,
+            lastInteraction: 0,
+            interactionCooldown: 150 // Prevent rapid state changes
+        };
+
+        // Legacy compatibility
+        this.currentCategory = this.uiState.currentCategory;
+        this.selectedBuilding = this.uiState.selectedBuilding;
+
         this.notifications = [];
         this.maxNotifications = 5;
-        
+
         // Timers
         this.updateTimer = 0;
         this.updateInterval = 100; // 100ms
@@ -65,11 +76,28 @@ class UIManager {
         this.cooldownIndicator = null;
         this.cooldownUpdateInterval = null;
 
-        // Mobile
+        // ===== ENHANCED MOBILE SUPPORT =====
         this.isMobile = window.innerWidth <= 768;
         this.mobilePanelsVisible = {
             left: false,
             right: false
+        };
+
+        // ===== UI CONFLICT RESOLUTION =====
+        this.panelPriority = {
+            'resource': 1,
+            'building': 2,
+            'terrain': 3,
+            'selection': 4,
+            'construction': 5
+        };
+
+        // ===== EVENT LISTENER TRACKING =====
+        this.eventListeners = {
+            resource: [],
+            category: [],
+            building: [],
+            global: []
         };
         
         this.setupEventListeners();
@@ -131,49 +159,8 @@ class UIManager {
             }
         });
 
-        // Cliques nos contadores de recursos para mostrar detalhes
-        // Anexar eventos aos containers inteiros (.resource-item) para melhor usabilidade
-        const resourceItems = document.querySelectorAll('.resource-item');
-        resourceItems.forEach((item, index) => {
-            // Mapear índices para tipos de recursos baseado na ordem no HTML
-            const resourceTypes = ['water', 'pollution', 'population', 'satisfaction', 'budget', 'electricity', 'clock'];
-            const resourceType = resourceTypes[index];
-
-            // Mapear nomes dos recursos para tooltips
-            const resourceNames = {
-                'water': 'Água',
-                'pollution': 'Poluição',
-                'population': 'População',
-                'satisfaction': 'Satisfação',
-                'budget': 'Orçamento',
-                'electricity': 'Energia',
-                'clock': 'Data/Hora'
-            };
-
-            if (resourceType && resourceType !== 'clock') { // Excluir o relógio dos cliques
-                item.style.cursor = 'pointer';
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.showResourcePanel(resourceType);
-                });
-            }
-
-            // ===== RESOURCE UI REDESIGN: Adicionar tooltips para mostrar nomes dos recursos =====
-            if (resourceType && resourceNames[resourceType]) {
-                // Adicionar tooltip com nome do recurso
-                item.title = resourceNames[resourceType];
-
-                // Adicionar eventos de hover para tooltip customizado
-                item.addEventListener('mouseenter', (e) => {
-                    this.showResourceTooltip(e, resourceNames[resourceType], resourceType);
-                });
-
-                item.addEventListener('mouseleave', () => {
-                    this.hideResourceTooltip();
-                });
-            }
-        });
+        // ===== ENHANCED RESOURCE PANEL INTERACTION SYSTEM =====
+        this.setupEnhancedResourcePanelInteractions();
 
         // ESC key para fechar painéis
         document.addEventListener('keydown', (event) => {
@@ -274,6 +261,183 @@ class UIManager {
             });
         }
         this.buildingItemListeners = [];
+    }
+
+    // ===== ENHANCED RESOURCE PANEL INTERACTION SYSTEM =====
+
+    /**
+     * Sets up enhanced resource panel interactions with improved reliability
+     */
+    setupEnhancedResourcePanelInteractions() {
+        // Clear existing resource event listeners
+        this.cleanupResourceEventListeners();
+
+        // Resource type mapping with improved detection
+        const resourceMapping = this.getResourceMapping();
+
+        // Setup resource panel interactions with enhanced error handling
+        const resourceItems = document.querySelectorAll('.resource-item');
+
+        resourceItems.forEach((item, index) => {
+            const resourceData = resourceMapping[index];
+            if (!resourceData) return;
+
+            const { type, name, clickable } = resourceData;
+
+            // Enhanced click handling for resource panels
+            if (clickable) {
+                this.setupResourceItemClick(item, type, name);
+            }
+
+            // Enhanced tooltip system
+            this.setupResourceItemTooltip(item, type, name);
+        });
+
+        console.log('✅ Enhanced resource panel interactions initialized');
+    }
+
+    /**
+     * Gets the resource mapping configuration
+     * @returns {Array} Resource mapping array
+     */
+    getResourceMapping() {
+        return [
+            { type: 'water', name: 'Água', clickable: true },
+            { type: 'pollution', name: 'Poluição', clickable: true },
+            { type: 'population', name: 'População', clickable: true },
+            { type: 'satisfaction', name: 'Satisfação', clickable: true },
+            { type: 'budget', name: 'Orçamento', clickable: true },
+            { type: 'electricity', name: 'Energia', clickable: true },
+            { type: 'clock', name: 'Data/Hora', clickable: false }
+        ];
+    }
+
+    /**
+     * Sets up click handling for a resource item
+     * @param {HTMLElement} item - The resource item element
+     * @param {string} type - Resource type
+     * @param {string} name - Resource display name
+     */
+    setupResourceItemClick(item, type, name) {
+        item.style.cursor = 'pointer';
+
+        const clickHandler = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // ===== INTERACTION COOLDOWN: Prevent rapid clicks =====
+            const now = Date.now();
+            if (now - this.uiState.lastInteraction < this.uiState.interactionCooldown) {
+                return;
+            }
+            this.uiState.lastInteraction = now;
+
+            // ===== STATE MANAGEMENT: Handle panel transitions =====
+            this.handleResourcePanelTransition(type);
+        };
+
+        item.addEventListener('click', clickHandler);
+        this.eventListeners.resource.push({ element: item, event: 'click', handler: clickHandler });
+    }
+
+    /**
+     * Sets up tooltip handling for a resource item
+     * @param {HTMLElement} item - The resource item element
+     * @param {string} type - Resource type
+     * @param {string} name - Resource display name
+     */
+    setupResourceItemTooltip(item, type, name) {
+        item.title = name;
+
+        const mouseEnterHandler = (e) => {
+            this.showResourceTooltip(e, name, type);
+        };
+
+        const mouseLeaveHandler = () => {
+            this.hideResourceTooltip();
+        };
+
+        item.addEventListener('mouseenter', mouseEnterHandler);
+        item.addEventListener('mouseleave', mouseLeaveHandler);
+
+        this.eventListeners.resource.push(
+            { element: item, event: 'mouseenter', handler: mouseEnterHandler },
+            { element: item, event: 'mouseleave', handler: mouseLeaveHandler }
+        );
+    }
+
+    /**
+     * Handles resource panel transitions with proper state management
+     * @param {string} resourceType - The resource type to show
+     */
+    handleResourcePanelTransition(resourceType) {
+        try {
+            // ===== STATE TRANSITION MANAGEMENT =====
+            if (this.uiState.isTransitioning) {
+                console.log('⚠️ UI transition in progress, ignoring resource panel request');
+                return;
+            }
+
+            this.uiState.isTransitioning = true;
+
+            // ===== PANEL PRIORITY SYSTEM =====
+            const currentPriority = this.panelPriority[this.uiState.currentOpenPanel] || 0;
+            const newPriority = this.panelPriority['resource'];
+
+            // Allow resource panels to override lower priority panels
+            if (currentPriority > newPriority && this.uiState.currentOpenPanel !== resourceType) {
+                console.log(`⚠️ Higher priority panel (${this.uiState.currentOpenPanel}) is open, resource panel blocked`);
+                this.uiState.isTransitioning = false;
+                return;
+            }
+
+            // ===== CLEAN TRANSITION =====
+            this.closeCurrentPanel();
+
+            // Small delay to ensure clean transition
+            setTimeout(() => {
+                this.showResourcePanel(resourceType);
+                this.uiState.isTransitioning = false;
+            }, 50);
+
+        } catch (error) {
+            console.error('❌ Error in resource panel transition:', error);
+            this.uiState.isTransitioning = false;
+        }
+    }
+
+    /**
+     * Cleans up resource event listeners
+     */
+    cleanupResourceEventListeners() {
+        this.eventListeners.resource.forEach(({ element, event, handler }) => {
+            element.removeEventListener(event, handler);
+        });
+        this.eventListeners.resource = [];
+    }
+
+    /**
+     * Closes the current panel if any is open
+     */
+    closeCurrentPanel() {
+        if (this.uiState.currentOpenPanel) {
+            switch (this.uiState.currentOpenPanel) {
+                case 'water':
+                case 'pollution':
+                case 'population':
+                case 'satisfaction':
+                case 'budget':
+                case 'electricity':
+                    this.closeResourcePanel();
+                    break;
+                case 'selection':
+                    this.clearBuildingSelectionInfo();
+                    break;
+                case 'terrain':
+                    this.hideTerrainInfo();
+                    break;
+            }
+        }
     }
 
     createBuildingCategories() {
@@ -432,26 +596,99 @@ class UIManager {
     
     // ===== CONSTRUÇÃO =====
     selectCategory(category) {
-        // ===== LATERAL MENU STABILITY FIX: Prevent invalid category selection =====
-        if (!category || this.currentCategory === category) return;
+        // ===== ENHANCED CATEGORY SELECTION WITH STATE MANAGEMENT =====
+        if (!category || this.uiState.currentCategory === category) return;
 
-        this.currentCategory = category;
+        // ===== STATE TRANSITION MANAGEMENT =====
+        if (this.uiState.isTransitioning) {
+            console.log('⚠️ UI transition in progress, ignoring category selection');
+            return;
+        }
 
-        // ===== STABILITY FIX: Clean up before state change =====
-        this.cleanupBuildingItemListeners();
+        this.uiState.isTransitioning = true;
 
-        // Atualizar botões de categoria
+        try {
+            // ===== CLEAN STATE TRANSITION =====
+            this.cleanupBuildingItemListeners();
+
+            // Exit any active construction mode
+            if (this.gameManager && this.gameManager.buildingSystem.previewMode) {
+                this.gameManager.exitBuildMode();
+            }
+
+            // Update state
+            this.uiState.currentCategory = category;
+            this.currentCategory = category; // Legacy compatibility
+
+            // ===== ENHANCED CATEGORY BUTTON MANAGEMENT =====
+            this.updateCategoryButtonStates(category);
+
+            // ===== ENHANCED BUILDING ITEMS LOADING =====
+            this.loadBuildingItemsWithStateManagement();
+
+            // ===== PANEL STATE MANAGEMENT =====
+            if (this.uiState.currentOpenPanel === 'construction') {
+                this.uiState.currentOpenPanel = 'building';
+            }
+
+            console.log(`🏗️ Categoria selecionada: ${category}`);
+
+        } catch (error) {
+            console.error('❌ Error in category selection:', error);
+        } finally {
+            this.uiState.isTransitioning = false;
+        }
+    }
+
+    /**
+     * Updates category button states with enhanced visual feedback
+     * @param {string} activeCategory - The active category
+     */
+    updateCategoryButtonStates(activeCategory) {
         document.querySelectorAll('.category-btn').forEach(btn => {
             btn.classList.remove('active');
-            if (btn.dataset.category === category) {
+            if (btn.dataset.category === activeCategory) {
                 btn.classList.add('active');
+                // Enhanced visual feedback
+                btn.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    btn.style.transform = '';
+                }, 200);
             }
         });
+    }
 
-        // Carregar itens da categoria
-        this.loadBuildingItems();
+    /**
+     * Loads building items with enhanced state management
+     */
+    loadBuildingItemsWithStateManagement() {
+        if (!this.elements.buildingItems || !this.gameManager.buildingSystem) return;
 
-        console.log(`🏗️ Categoria selecionada: ${category}`);
+        try {
+            const buildingTypes = this.gameManager.buildingSystem.getBuildingTypesByCategory(this.uiState.currentCategory);
+
+            // Clear existing items
+            this.elements.buildingItems.innerHTML = '';
+
+            // Create building items with enhanced error handling
+            buildingTypes.forEach(buildingType => {
+                try {
+                    const item = this.createBuildingItem(buildingType);
+                    this.elements.buildingItems.appendChild(item);
+                } catch (error) {
+                    console.warn(`⚠️ Error creating building item for ${buildingType.id}:`, error);
+                }
+            });
+
+            // Setup event listeners after creating items
+            this.setupBuildingItemListeners();
+
+            // Update panel state
+            this.uiState.currentOpenPanel = 'building';
+
+        } catch (error) {
+            console.error('❌ Error loading building items:', error);
+        }
     }
     
     loadBuildingItems() {
@@ -499,27 +736,104 @@ class UIManager {
     }
     
     selectBuildingType(buildingTypeId) {
-        // Limpar seleção anterior
+        // ===== ENHANCED BUILDING SELECTION WITH STATE MANAGEMENT =====
+        if (!buildingTypeId) return;
+
+        // ===== STATE TRANSITION MANAGEMENT =====
+        if (this.uiState.isTransitioning) {
+            console.log('⚠️ UI transition in progress, ignoring building selection');
+            return;
+        }
+
+        this.uiState.isTransitioning = true;
+
+        try {
+            // ===== CLEAN PREVIOUS SELECTION =====
+            this.clearBuildingSelections();
+
+            // ===== ENHANCED BUILDING ITEM SELECTION =====
+            const selectedItem = document.querySelector(`[data-building-type="${buildingTypeId}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('selected');
+                // Enhanced visual feedback
+                selectedItem.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    selectedItem.style.transform = '';
+                }, 300);
+            }
+
+            // ===== CONSTRUCTION MODE MANAGEMENT =====
+            const buildingType = this.gameManager.buildingSystem.buildingTypes.get(buildingTypeId);
+            if (!buildingType) {
+                console.error(`❌ Building type not found: ${buildingTypeId}`);
+                return;
+            }
+
+            // ===== PANEL STATE MANAGEMENT =====
+            this.closeCurrentPanel(); // Close any open resource panels
+
+            // Enter construction mode
+            this.gameManager.enterBuildMode(buildingTypeId);
+
+            // Show building requirements with enhanced display
+            this.showEnhancedBuildingRequirements(buildingType);
+
+            // Update UI state
+            this.uiState.currentOpenPanel = 'construction';
+            this.uiState.selectedBuilding = buildingTypeId;
+
+            // Audio feedback
+            AudioManager.playSound('sfx_click');
+
+            console.log(`🏗️ Building type selected: ${buildingTypeId}`);
+
+        } catch (error) {
+            console.error('❌ Error in building selection:', error);
+        } finally {
+            this.uiState.isTransitioning = false;
+        }
+    }
+
+    /**
+     * Clears all building selections with enhanced cleanup
+     */
+    clearBuildingSelections() {
         document.querySelectorAll('.building-item').forEach(item => {
             item.classList.remove('selected');
+            item.style.transform = ''; // Clear any transform effects
         });
-        
-        // Selecionar novo item
-        const selectedItem = document.querySelector(`[data-building-type="${buildingTypeId}"]`);
-        if (selectedItem) {
-            selectedItem.classList.add('selected');
-        }
-        
-        // Entrar em modo de construção
-        this.gameManager.enterBuildMode(buildingTypeId);
-        
-        // Mostrar requisitos do edifício
-        const buildingType = this.gameManager.buildingSystem.buildingTypes.get(buildingTypeId);
-        if (buildingType) {
+    }
+
+    /**
+     * Shows enhanced building requirements with better formatting
+     * @param {Object} buildingType - The building type object
+     */
+    showEnhancedBuildingRequirements(buildingType) {
+        try {
+            // Use existing method but with enhanced error handling
             this.showBuildingRequirements(buildingType);
+        } catch (error) {
+            console.warn('⚠️ Error showing building requirements:', error);
+            // Fallback to basic display
+            this.showBasicBuildingInfo(buildingType);
         }
-        
-        AudioManager.playSound('sfx_click');
+    }
+
+    /**
+     * Shows basic building information as fallback
+     * @param {Object} buildingType - The building type object
+     */
+    showBasicBuildingInfo(buildingType) {
+        const detailsContent = this.elements.detailsContent;
+        if (detailsContent) {
+            detailsContent.innerHTML = `
+                <div class="building-info">
+                    <h3>${buildingType.name}</h3>
+                    <p>${buildingType.description || 'Edifício selecionado para construção'}</p>
+                    <p><strong>Custo:</strong> $${buildingType.cost || 0}</p>
+                </div>
+            `;
+        }
     }
     
     clearBuildingSelection() {
@@ -774,43 +1088,85 @@ class UIManager {
 
     // ===== PAINÉIS DE DETALHES DE RECURSOS =====
     showResourcePanel(panelType) {
-        // Se o mesmo painel já está aberto, não fazer nada
-        if (this.currentOpenPanel === panelType) {
+        // ===== ENHANCED RESOURCE PANEL DISPLAY SYSTEM =====
+
+        // ===== VALIDATION =====
+        if (!panelType) {
+            console.warn('⚠️ No panel type specified');
             return;
         }
 
-        // Marcar o painel atual como aberto
-        this.currentOpenPanel = panelType;
+        // ===== STATE MANAGEMENT: Prevent showing same panel =====
+        if (this.uiState.currentOpenPanel === panelType) {
+            console.log(`📊 Panel ${panelType} already open`);
+            return;
+        }
 
-        // Chamar o método específico do painel
-        switch(panelType) {
-            case 'water':
-                this.showWaterDetailsPanel();
-                break;
-            case 'budget':
-                this.showBudgetDetailsPanel();
-                break;
-            case 'electricity':
-                this.showEnergyDetailsPanel();
-                break;
-            case 'satisfaction':
-                this.showSatisfactionDetailsPanel();
-                break;
-            case 'population':
-                this.showPopulationDetailsPanel();
-                break;
-            case 'pollution':
-                this.showPollutionDetailsPanel();
-                break;
-            default:
-                console.warn(`⚠️ Tipo de painel desconhecido: ${panelType}`);
+        // ===== TRANSITION MANAGEMENT =====
+        if (this.uiState.isTransitioning) {
+            console.log('⚠️ UI transition in progress, queuing resource panel request');
+            setTimeout(() => this.showResourcePanel(panelType), 100);
+            return;
+        }
+
+        this.uiState.isTransitioning = true;
+
+        try {
+            // ===== CLEAN PREVIOUS PANEL =====
+            this.closeCurrentPanel();
+
+            // ===== UPDATE STATE =====
+            this.uiState.currentOpenPanel = panelType;
+            this.currentOpenPanel = panelType; // Legacy compatibility
+
+            // ===== ENHANCED PANEL ROUTING =====
+            const panelMethods = {
+                'water': () => this.showWaterDetailsPanel(),
+                'budget': () => this.showBudgetDetailsPanel(),
+                'electricity': () => this.showEnergyDetailsPanel(),
+                'satisfaction': () => this.showSatisfactionDetailsPanel(),
+                'population': () => this.showPopulationDetailsPanel(),
+                'pollution': () => this.showPollutionDetailsPanel()
+            };
+
+            const panelMethod = panelMethods[panelType];
+            if (panelMethod) {
+                panelMethod();
+                console.log(`📊 Resource panel opened: ${panelType}`);
+            } else {
+                console.warn(`⚠️ Unknown panel type: ${panelType}`);
+                this.uiState.currentOpenPanel = null;
+            }
+
+        } catch (error) {
+            console.error('❌ Error showing resource panel:', error);
+            this.uiState.currentOpenPanel = null;
+        } finally {
+            this.uiState.isTransitioning = false;
         }
     }
 
     closeResourcePanel() {
-        this.currentOpenPanel = null;
-        if (this.elements.detailsContent) {
-            this.elements.detailsContent.innerHTML = '<p>Clique em um recurso para ver detalhes</p>';
+        try {
+            // ===== ENHANCED RESOURCE PANEL CLOSING =====
+
+            // ===== STATE CLEANUP =====
+            this.uiState.currentOpenPanel = null;
+            this.currentOpenPanel = null; // Legacy compatibility
+
+            // ===== PANEL CLEANUP =====
+            if (this.elements.detailsContent) {
+                this.elements.detailsContent.innerHTML = '<p>Clique em um recurso para ver detalhes</p>';
+            }
+
+            if (this.elements.detailsPanel) {
+                this.elements.detailsPanel.style.display = 'none';
+            }
+
+            console.log('📊 Resource panel closed');
+
+        } catch (error) {
+            console.error('❌ Error closing resource panel:', error);
         }
     }
 
@@ -1933,9 +2289,18 @@ class UIManager {
     }
 
     showTerrainInfo(terrainType, gridX, gridZ, mouseX, mouseY) {
-        // ===== ZERO-ERROR POLICY FIX: Evitar chamada circular que causa stack overflow =====
-        // Não chamar updateHoverInfo aqui pois já estamos sendo chamados por ele
-        // Em vez disso, mostrar informações diretamente
+        // ===== ENHANCED TERRAIN INFORMATION DISPLAY SYSTEM =====
+
+        // ===== STATE MANAGEMENT: Check if terrain info should be displayed =====
+        if (this.uiState.isTransitioning) return;
+
+        // ===== PANEL PRIORITY: Don't override higher priority panels =====
+        const currentPriority = this.panelPriority[this.uiState.currentOpenPanel] || 0;
+        const terrainPriority = this.panelPriority['terrain'];
+
+        if (currentPriority > terrainPriority) {
+            return; // Don't show terrain info if higher priority panel is open
+        }
 
         try {
             // Mostrar informações de terreno diretamente sem recursão
