@@ -1460,20 +1460,24 @@ class BuildingSystem {
     }
 
     createWaterFacilityMesh(buildingType) {
-        const size = this.gridManager.cellSize * 0.9;
+        // ===== BUILDING SIZE AND GRID ALIGNMENT FIX: Respect building's actual size =====
+        const buildingSize = buildingType.size || 1;
+        const cellSize = this.gridManager.cellSize;
+        const buildingScale = 0.85; // Consistent with other methods
+        const actualSize = buildingSize * cellSize * buildingScale;
 
         // Base da bomba
         const base = BABYLON.MeshBuilder.CreateBox("waterBase", {
-            width: size,
+            width: actualSize,
             height: 0.5,
-            depth: size
+            depth: actualSize
         }, this.scene);
 
-        // Torre da bomba
+        // Torre da bomba - scale with building size
         const tower = BABYLON.MeshBuilder.CreateBox("waterTower", {
-            width: size * 0.6,
+            width: actualSize * 0.6,
             height: 1.0,
-            depth: size * 0.6
+            depth: actualSize * 0.6
         }, this.scene);
         tower.position.y = 0.75;
 
@@ -1481,64 +1485,98 @@ class BuildingSystem {
         const merged = BABYLON.Mesh.MergeMeshes([base, tower]);
         merged.name = `waterFacility_${buildingType.id}`;
 
+        // ===== FIX: Adjust position for multi-cell buildings =====
+        if (buildingSize > 1) {
+            const offset = (buildingSize - 1) * cellSize * 0.5;
+            merged.position.x += offset;
+            merged.position.z += offset;
+        }
+
         return merged;
     }
 
     createTreatmentPlantMesh(buildingType) {
-        const size = this.gridManager.cellSize * 0.9;
+        // ===== BUILDING SIZE AND GRID ALIGNMENT FIX: Respect building's actual size =====
+        const buildingSize = buildingType.size || 1;
+        const cellSize = this.gridManager.cellSize;
+        const buildingScale = 0.85; // Consistent with other methods
+        const actualSize = buildingSize * cellSize * buildingScale;
 
         // Edifício principal
         const main = BABYLON.MeshBuilder.CreateBox("treatmentMain", {
-            width: size,
+            width: actualSize,
             height: 1.5,
-            depth: size
+            depth: actualSize
         }, this.scene);
 
-        // Chaminé
+        // Chaminé - scale with building size
         const chimney = BABYLON.MeshBuilder.CreateBox("treatmentChimney", {
-            width: size * 0.3,
+            width: actualSize * 0.3,
             height: 1.0,
-            depth: size * 0.3
+            depth: actualSize * 0.3
         }, this.scene);
         chimney.position.y = 2.0;
-        chimney.position.x = size * 0.3;
+        chimney.position.x = actualSize * 0.3;
 
         const merged = BABYLON.Mesh.MergeMeshes([main, chimney]);
         merged.name = `treatmentPlant_${buildingType.id}`;
+
+        // ===== FIX: Adjust position for multi-cell buildings =====
+        if (buildingSize > 1) {
+            const offset = (buildingSize - 1) * cellSize * 0.5;
+            merged.position.x += offset;
+            merged.position.z += offset;
+        }
 
         return merged;
     }
 
     createStorageMesh(buildingType) {
-        const size = this.gridManager.cellSize * 0.9;
+        // ===== BUILDING SIZE AND GRID ALIGNMENT FIX: Respect building's actual size =====
+        const buildingSize = buildingType.size || 1;
+        const cellSize = this.gridManager.cellSize;
+        const buildingScale = 0.85; // Consistent with other methods
+        const actualSize = buildingSize * cellSize * buildingScale;
 
         // Tanque cilíndrico estilo voxel (usando cilindro com poucos lados)
         const tank = BABYLON.MeshBuilder.CreateCylinder("storageTank", {
             height: 2.5,
-            diameterTop: size * 0.8,
-            diameterBottom: size * 0.8,
+            diameterTop: actualSize * 0.8,
+            diameterBottom: actualSize * 0.8,
             tessellation: 8 // Poucos lados para estilo voxel
         }, this.scene);
 
         tank.name = `storage_${buildingType.id}`;
+
+        // ===== FIX: Adjust position for multi-cell buildings =====
+        if (buildingSize > 1) {
+            const offset = (buildingSize - 1) * cellSize * 0.5;
+            tank.position.x += offset;
+            tank.position.z += offset;
+        }
+
         return tank;
     }
 
     createHouseMesh(buildingType) {
-        const size = this.gridManager.cellSize * 0.9;
+        // ===== BUILDING SIZE AND GRID ALIGNMENT FIX: Respect building's actual size =====
+        const buildingSize = buildingType.size || 1;
+        const cellSize = this.gridManager.cellSize;
+        const buildingScale = 0.85; // Consistent with other methods
+        const actualSize = buildingSize * cellSize * buildingScale;
 
         // Base da casa
         const base = BABYLON.MeshBuilder.CreateBox("houseBase", {
-            width: size,
+            width: actualSize,
             height: 1.5,
-            depth: size
+            depth: actualSize
         }, this.scene);
 
-        // Telhado (pirâmide)
+        // Telhado (pirâmide) - scale with building size
         const roof = BABYLON.MeshBuilder.CreateBox("houseRoof", {
-            width: size * 1.1,
+            width: actualSize * 1.1,
             height: 0.8,
-            depth: size * 1.1
+            depth: actualSize * 1.1
         }, this.scene);
         roof.position.y = 1.9;
         roof.scaling.y = 0.5; // Achatar para parecer telhado
@@ -1546,63 +1584,94 @@ class BuildingSystem {
         const merged = BABYLON.Mesh.MergeMeshes([base, roof]);
         merged.name = `house_${buildingType.id}`;
 
+        // ===== FIX: Adjust position for multi-cell buildings =====
+        if (buildingSize > 1) {
+            const offset = (buildingSize - 1) * cellSize * 0.5;
+            merged.position.x += offset;
+            merged.position.z += offset;
+        }
+
         return merged;
     }
 
     createPowerPlantMesh(buildingType) {
-        const size = this.gridManager.cellSize * 0.9;
+        // ===== BUILDING SIZE AND GRID ALIGNMENT FIX: Respect building's actual size =====
+        const buildingSize = buildingType.size || 1;
+        const cellSize = this.gridManager.cellSize;
+        const buildingScale = 0.85; // Consistent with other methods
+        const actualSize = buildingSize * cellSize * buildingScale;
 
         // Edifício principal
         const main = BABYLON.MeshBuilder.CreateBox("powerMain", {
-            width: size,
+            width: actualSize,
             height: 2.0,
-            depth: size
+            depth: actualSize
         }, this.scene);
 
-        // Torres de resfriamento (cilindros)
+        // Torres de resfriamento (cilindros) - scale with building size
         const tower1 = BABYLON.MeshBuilder.CreateCylinder("powerTower1", {
             height: 1.5,
-            diameterTop: size * 0.4,
-            diameterBottom: size * 0.4,
+            diameterTop: actualSize * 0.4,
+            diameterBottom: actualSize * 0.4,
             tessellation: 6
         }, this.scene);
         tower1.position.y = 2.75;
-        tower1.position.x = size * 0.3;
+        tower1.position.x = actualSize * 0.3;
 
         const tower2 = tower1.clone("powerTower2");
-        tower2.position.x = -size * 0.3;
+        tower2.position.x = -actualSize * 0.3;
 
         const merged = BABYLON.Mesh.MergeMeshes([main, tower1, tower2]);
         merged.name = `powerPlant_${buildingType.id}`;
+
+        // ===== FIX: Adjust position for multi-cell buildings =====
+        if (buildingSize > 1) {
+            const offset = (buildingSize - 1) * cellSize * 0.5;
+            merged.position.x += offset;
+            merged.position.z += offset;
+        }
 
         return merged;
     }
 
     createInfrastructureMesh(buildingType) {
-        const size = this.gridManager.cellSize * 0.9;
+        // ===== BUILDING SIZE AND GRID ALIGNMENT FIX: Respect building's actual size =====
+        const buildingSize = buildingType.size || 1;
+        const cellSize = this.gridManager.cellSize;
+        const buildingScale = 0.85; // Consistent with other methods
+        const actualSize = buildingSize * cellSize * buildingScale;
+
+        let mesh;
 
         if (buildingType.id === 'road') {
             // Estrada baixa
-            const road = BABYLON.MeshBuilder.CreateBox("road", {
-                width: size,
+            mesh = BABYLON.MeshBuilder.CreateBox("road", {
+                width: actualSize,
                 height: 0.1,
-                depth: size
+                depth: actualSize
             }, this.scene);
-            return road;
         } else if (buildingType.id === 'pipe') {
             // Cano
-            const pipe = BABYLON.MeshBuilder.CreateCylinder("pipe", {
-                height: size,
-                diameterTop: size * 0.2,
-                diameterBottom: size * 0.2,
+            mesh = BABYLON.MeshBuilder.CreateCylinder("pipe", {
+                height: actualSize,
+                diameterTop: actualSize * 0.2,
+                diameterBottom: actualSize * 0.2,
                 tessellation: 8
             }, this.scene);
-            pipe.rotation.z = Math.PI / 2; // Horizontal
-            return pipe;
+            mesh.rotation.z = Math.PI / 2; // Horizontal
+        } else {
+            // Infraestrutura genérica
+            return this.createBasicVoxelMesh(buildingType);
         }
 
-        // Infraestrutura genérica
-        return this.createBasicVoxelMesh(buildingType);
+        // ===== FIX: Adjust position for multi-cell buildings =====
+        if (buildingSize > 1 && mesh) {
+            const offset = (buildingSize - 1) * cellSize * 0.5;
+            mesh.position.x += offset;
+            mesh.position.z += offset;
+        }
+
+        return mesh;
     }
 
     createPublicBuildingMesh(buildingType) {
