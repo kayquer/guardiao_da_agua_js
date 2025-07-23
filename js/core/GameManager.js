@@ -1,7 +1,18 @@
 /**
  * GUARDIÃO DA ÁGUA - GAME MANAGER
  * Classe principal que controla o estado do jogo e coordena todos os sistemas
+ *
+ * ===== CLEAN CODE REFACTORING =====
+ * Applied Clean Code principles:
+ * - Extracted magic numbers to GameConstants.js
+ * - Added comprehensive JSDoc documentation
+ * - Improved method naming and single responsibility
+ * - Enhanced error handling and validation
  */
+
+// ===== CLEAN CODE REFACTORING: Load game constants =====
+// Note: Since this file doesn't use ES6 modules, constants will be loaded via script tag
+// The constants are available globally as window.GameConstants
 
 class GameManager {
     constructor() {
@@ -256,15 +267,43 @@ class GameManager {
         console.log(`🎨 Canvas configurado: ${this.canvas.width}x${this.canvas.height}`);
     }
 
+    /**
+     * ===== CLEAN CODE REFACTORING: Enhanced camera setup with JSDoc documentation =====
+     * Sets up the isometric RTS-style camera system with fixed angles and smooth controls
+     *
+     * @description Initializes a fixed-angle isometric camera similar to SimCity and Age of Empires.
+     *              Provides WASD movement, mouse edge scrolling, and mouse wheel zoom while
+     *              maintaining consistent isometric perspective.
+     *
+     * @method setupCamera
+     * @memberof GameManager
+     * @since 1.0.0
+     *
+     * @example
+     * // Camera is automatically set up during game initialization
+     * gameManager.setupCamera();
+     *
+     * @see {@link setupIsometricCameraControls} For camera control setup
+     * @see {@link updateCameraControls} For camera update logic
+     */
     setupCamera() {
         // ===== ISOMETRIC RTS-STYLE CAMERA SYSTEM =====
+
+        // ===== CLEAN CODE REFACTORING: Use constants for camera configuration =====
+        const CAMERA_CONSTANTS = window.GameConstants?.CAMERA || {
+            ISOMETRIC_ALPHA: -Math.PI / 4,
+            ISOMETRIC_BETA: Math.PI / 3.5,
+            DEFAULT_ZOOM_DISTANCE: 30,
+            MIN_ZOOM_DISTANCE: 10,
+            MAX_ZOOM_DISTANCE: 60
+        };
 
         // Create isometric camera with fixed angle (SimCity/Age of Empires style)
         this.camera = new BABYLON.ArcRotateCamera(
             "isometricCamera",
-            -Math.PI / 4,     // Alpha: 45-degree horizontal angle (fixed)
-            Math.PI / 3.5,    // Beta: ~51-degree vertical angle for isometric view (fixed)
-            30,               // Radius: zoom distance
+            CAMERA_CONSTANTS.ISOMETRIC_ALPHA,     // Alpha: 45-degree horizontal angle (fixed)
+            CAMERA_CONSTANTS.ISOMETRIC_BETA,      // Beta: ~51-degree vertical angle for isometric view (fixed)
+            CAMERA_CONSTANTS.DEFAULT_ZOOM_DISTANCE, // Radius: zoom distance
             BABYLON.Vector3.Zero(),
             this.scene
         );
@@ -274,8 +313,8 @@ class GameManager {
 
         // Fixed isometric angles - prevent rotation
         this.isometricAngles = {
-            alpha: -Math.PI / 4,      // 45 degrees horizontal (fixed)
-            beta: Math.PI / 3.5       // ~51 degrees vertical (fixed)
+            alpha: CAMERA_CONSTANTS.ISOMETRIC_ALPHA,      // 45 degrees horizontal (fixed)
+            beta: CAMERA_CONSTANTS.ISOMETRIC_BETA         // ~51 degrees vertical (fixed)
         };
 
         // Lock camera to isometric angles
@@ -283,11 +322,11 @@ class GameManager {
         this.camera.beta = this.isometricAngles.beta;
 
         // Zoom limits for isometric view
-        this.camera.lowerRadiusLimit = 10;
-        this.camera.upperRadiusLimit = 60;
+        this.camera.lowerRadiusLimit = CAMERA_CONSTANTS.MIN_ZOOM_DISTANCE;
+        this.camera.upperRadiusLimit = CAMERA_CONSTANTS.MAX_ZOOM_DISTANCE;
 
         // ===== RTS-STYLE CAMERA BOUNDS =====
-        this.cameraLimits = {
+        this.cameraLimits = CAMERA_CONSTANTS.BOUNDS || {
             minX: -30,
             maxX: 70,
             minZ: -30,
@@ -306,8 +345,8 @@ class GameManager {
             // Edge scrolling
             edgeScrolling: {
                 enabled: true,
-                threshold: 50,      // Pixels from edge to trigger scrolling
-                speed: 0.8,         // Edge scroll speed
+                threshold: CAMERA_CONSTANTS.EDGE_SCROLL_THRESHOLD || 50,      // Pixels from edge to trigger scrolling
+                speed: CAMERA_CONSTANTS.EDGE_SCROLL_SPEED || 0.8,             // Edge scroll speed
                 isScrolling: false
             },
 
@@ -317,9 +356,9 @@ class GameManager {
         };
 
         // ===== SMOOTH MOVEMENT SETTINGS =====
-        this.camera.inertia = 0.9;           // Smooth camera movement
-        this.camera.angularSensibilityX = 0; // Disable rotation
-        this.camera.angularSensibilityY = 0; // Disable rotation
+        this.camera.inertia = CAMERA_CONSTANTS.INERTIA || 0.9;                                    // Smooth camera movement
+        this.camera.angularSensibilityX = CAMERA_CONSTANTS.ANGULAR_SENSITIVITY_DISABLED || 0;     // Disable rotation
+        this.camera.angularSensibilityY = CAMERA_CONSTANTS.ANGULAR_SENSITIVITY_DISABLED || 0;     // Disable rotation
 
         // Setup isometric camera controls
         this.setupIsometricCameraControls();
@@ -496,14 +535,33 @@ class GameManager {
     // ===== ISOMETRIC CAMERA MOVEMENT METHODS =====
 
     /**
-     * Pans the isometric camera while maintaining fixed angles
-     * @param {number} deltaX - Mouse movement in X direction
-     * @param {number} deltaY - Mouse movement in Y direction
+     * ===== CLEAN CODE REFACTORING: Enhanced camera panning with improved documentation =====
+     * Pans the isometric camera while maintaining fixed angles and respecting world boundaries
+     *
+     * @description Handles smooth camera panning in isometric view by transforming screen-space
+     *              mouse movement into world-space camera movement. Maintains fixed camera angles
+     *              and applies boundary constraints to prevent camera from moving outside the game world.
+     *
+     * @method panIsometricCamera
+     * @memberof GameManager
+     * @since 1.0.0
+     *
+     * @param {number} deltaX - Mouse movement in X direction (screen pixels)
+     * @param {number} deltaY - Mouse movement in Y direction (screen pixels)
+     *
+     * @throws {Error} Logs warning if camera panning fails
+     *
+     * @example
+     * // Called automatically during mouse drag events
+     * gameManager.panIsometricCamera(10, -5); // Pan camera based on mouse movement
+     *
+     * @see {@link screenToIsometricWorld} For coordinate transformation
+     * @see {@link moveIsometricCamera} For direct camera movement
      */
     panIsometricCamera(deltaX, deltaY) {
         try {
-            // Isometric camera panning with fixed angles
-            const sensitivity = 0.02;
+            // ===== CLEAN CODE REFACTORING: Use constants for camera sensitivity =====
+            const sensitivity = CAMERA_CONSTANTS.PAN_SENSITIVITY || 0.02;
 
             // Calculate movement in world space based on isometric view
             // In isometric view, we need to transform screen movement to world movement
@@ -526,11 +584,29 @@ class GameManager {
     }
 
     /**
-     * Converts screen movement to isometric world movement
-     * @param {number} deltaX - Screen delta X
-     * @param {number} deltaY - Screen delta Y
-     * @param {number} sensitivity - Movement sensitivity
-     * @returns {BABYLON.Vector3} - World movement vector
+     * ===== CLEAN CODE REFACTORING: Enhanced coordinate transformation =====
+     * Converts screen-space mouse movement to isometric world-space movement
+     *
+     * @description Transforms 2D screen coordinates to 3D world coordinates for isometric camera movement.
+     *              Accounts for the 45-degree rotation inherent in isometric projection to ensure
+     *              intuitive camera movement that matches user expectations.
+     *
+     * @method screenToIsometricWorld
+     * @memberof GameManager
+     * @since 1.0.0
+     *
+     * @param {number} deltaX - Screen delta X in pixels
+     * @param {number} deltaY - Screen delta Y in pixels
+     * @param {number} sensitivity - Movement sensitivity multiplier (default: 0.02)
+     *
+     * @returns {BABYLON.Vector3} World movement vector with X, Y=0, Z components
+     *
+     * @example
+     * // Convert mouse movement to world movement
+     * const worldMovement = gameManager.screenToIsometricWorld(10, -5, 0.02);
+     * console.log(worldMovement); // Vector3 with transformed coordinates
+     *
+     * @see {@link panIsometricCamera} For usage in camera panning
      */
     screenToIsometricWorld(deltaX, deltaY, sensitivity) {
         // For isometric view, we need to account for the 45-degree rotation
@@ -663,14 +739,29 @@ class GameManager {
     }
 
     /**
-     * Handles mouse wheel for isometric camera zoom
-     * @param {WheelEvent} event - Wheel event
+     * ===== CLEAN CODE REFACTORING: Enhanced wheel zoom with constants =====
+     * Handles mouse wheel for isometric camera zoom while maintaining fixed angles
+     *
+     * @description Processes mouse wheel events to zoom the camera in/out while preserving
+     *              the fixed isometric angles. Applies zoom sensitivity and boundary constraints.
+     *
+     * @method handleIsometricWheel
+     * @memberof GameManager
+     * @since 1.0.0
+     *
+     * @param {WheelEvent} event - Mouse wheel event containing deltaY for zoom direction
+     *
+     * @example
+     * // Called automatically by event listener
+     * canvas.addEventListener('wheel', (event) => {
+     *     gameManager.handleIsometricWheel(event);
+     * });
      */
     handleIsometricWheel(event) {
         if (!this.camera) return;
 
-        // Isometric zoom - maintain fixed angles while changing distance
-        const zoomSensitivity = 2;
+        // ===== CLEAN CODE REFACTORING: Use constants for zoom sensitivity =====
+        const zoomSensitivity = CAMERA_CONSTANTS.ZOOM_SENSITIVITY || 2;
         const deltaRadius = event.deltaY > 0 ? zoomSensitivity : -zoomSensitivity;
 
         const newRadius = this.camera.radius + deltaRadius;

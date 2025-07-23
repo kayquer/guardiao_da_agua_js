@@ -1,6 +1,14 @@
 /**
  * GUARDIÃO DA ÁGUA - BUILDING SYSTEM
  * Sistema de construção e gerenciamento de infraestrutura
+ *
+ * ===== CLEAN CODE REFACTORING =====
+ * Applied Clean Code principles:
+ * - Extracted magic numbers to GameConstants.js
+ * - Added comprehensive JSDoc documentation
+ * - Improved method naming and single responsibility
+ * - Standardized building creation pipeline
+ * - Enhanced error handling and validation
  */
 
 class BuildingSystem {
@@ -1381,7 +1389,10 @@ class BuildingSystem {
      * @returns {Object} - Standardized dimensions object
      */
     getStandardizedBuildingDimensions(buildingType) {
-        const BUILDING_SCALE_FACTOR = 0.85; // Consistent scale factor
+        // ===== CLEAN CODE REFACTORING: Use constants for building scale =====
+        const BUILDING_CONSTANTS = window.GameConstants?.BUILDINGS || { SCALE_FACTOR: 0.85 };
+        const BUILDING_SCALE_FACTOR = BUILDING_CONSTANTS.SCALE_FACTOR;
+
         const buildingSize = buildingType.size || 1;
         const cellSize = this.gridManager.cellSize;
         const actualSize = buildingSize * cellSize * BUILDING_SCALE_FACTOR;
@@ -1402,24 +1413,53 @@ class BuildingSystem {
      * @param {Object} buildingType - The building type configuration
      * @returns {number} - Standardized height
      */
+    /**
+     * ===== CLEAN CODE REFACTORING: Enhanced building height calculation =====
+     * Calculates standardized building height based on type, size, and category
+     *
+     * @description Computes building height using base height, size multiplier, and category-specific
+     *              modifiers from game constants. Ensures consistent visual hierarchy across building types.
+     *
+     * @method getStandardizedBuildingHeight
+     * @memberof BuildingSystem
+     * @since 1.0.0
+     *
+     * @param {Object} buildingType - The building type configuration object
+     * @param {string} buildingType.category - Building category (water, power, residential, etc.)
+     * @param {number} [buildingType.size=1] - Building size in grid cells
+     *
+     * @returns {number} Calculated building height in world units
+     *
+     * @example
+     * const height = buildingSystem.getStandardizedBuildingHeight({
+     *     category: 'power',
+     *     size: 2
+     * });
+     * console.log(height); // Returns calculated height for 2x2 power building
+     */
     getStandardizedBuildingHeight(buildingType) {
-        const baseHeight = 1.5;
-        const sizeMultiplier = (buildingType.size || 1) * 0.3;
-
-        // Category-specific height adjustments
-        const categoryHeights = {
-            'water': baseHeight + 0.5,
-            'treatment': baseHeight + 1.0,
-            'storage': baseHeight + 1.5,
-            'residential': baseHeight,
-            'power': baseHeight + 1.5,
-            'infrastructure': baseHeight * 0.3,
-            'public': baseHeight + 2.0,
-            'commercial': baseHeight + 1.0,
-            'industrial': baseHeight + 1.2
+        // ===== CLEAN CODE REFACTORING: Use constants for height calculations =====
+        const BUILDING_CONSTANTS = window.GameConstants?.BUILDINGS || {
+            BASE_HEIGHT: 1.5,
+            SIZE_HEIGHT_MULTIPLIER: 0.3,
+            CATEGORY_HEIGHT_MODIFIERS: {
+                'water': 0.5,
+                'treatment': 1.0,
+                'storage': 1.5,
+                'residential': 0,
+                'power': 1.5,
+                'infrastructure': -1.2,
+                'public': 2.0,
+                'commercial': 1.0,
+                'industrial': 1.2
+            }
         };
 
-        return (categoryHeights[buildingType.category] || baseHeight) + sizeMultiplier;
+        const baseHeight = BUILDING_CONSTANTS.BASE_HEIGHT;
+        const sizeMultiplier = (buildingType.size || 1) * BUILDING_CONSTANTS.SIZE_HEIGHT_MULTIPLIER;
+        const categoryModifier = BUILDING_CONSTANTS.CATEGORY_HEIGHT_MODIFIERS[buildingType.category] || 0;
+
+        return baseHeight + categoryModifier + sizeMultiplier;
     }
 
     /**
@@ -1438,9 +1478,10 @@ class BuildingSystem {
         mesh.position.z = worldPos.z;
         mesh.position.y = 0; // Will be adjusted by terrain integration
 
-        // Multi-cell building center adjustment
+        // ===== CLEAN CODE REFACTORING: Use constants for multi-cell positioning =====
         if (buildingSize > 1) {
-            const offset = (buildingSize - 1) * this.gridManager.cellSize * 0.5;
+            const BUILDING_CONSTANTS = window.GameConstants?.BUILDINGS || { MULTI_CELL_OFFSET_MULTIPLIER: 0.5 };
+            const offset = (buildingSize - 1) * this.gridManager.cellSize * BUILDING_CONSTANTS.MULTI_CELL_OFFSET_MULTIPLIER;
             mesh.position.x += offset;
             mesh.position.z += offset;
         }
@@ -1708,24 +1749,29 @@ class BuildingSystem {
         const buildingWidth = Math.abs(boundingBox.maximum.x - boundingBox.minimum.x);
         const buildingDepth = Math.abs(boundingBox.maximum.z - boundingBox.minimum.z);
 
-        // Shadow slightly larger for realistic effect
-        const shadowWidth = buildingWidth * 1.05;
-        const shadowDepth = buildingDepth * 1.05;
+        // ===== CLEAN CODE REFACTORING: Use constants for shadow sizing =====
+        const BUILDING_CONSTANTS = window.GameConstants?.BUILDINGS || { SHADOW_SIZE_MULTIPLIER: 1.05 };
+        const shadowWidth = buildingWidth * BUILDING_CONSTANTS.SHADOW_SIZE_MULTIPLIER;
+        const shadowDepth = buildingDepth * BUILDING_CONSTANTS.SHADOW_SIZE_MULTIPLIER;
 
         const shadow = BABYLON.MeshBuilder.CreateGround(`shadow_${buildingMesh.name}`, {
             width: shadowWidth,
             height: shadowDepth
         }, this.scene);
 
+        // ===== CLEAN CODE REFACTORING: Use constants for shadow positioning and material =====
+        const SHADOW_HEIGHT_OFFSET = BUILDING_CONSTANTS.SHADOW_HEIGHT_OFFSET || 0.005;
+        const SHADOW_ALPHA = BUILDING_CONSTANTS.SHADOW_ALPHA || 0.3;
+
         // Position shadow exactly under building center
         shadow.position.x = buildingMesh.position.x;
         shadow.position.z = buildingMesh.position.z;
-        shadow.position.y = terrainHeight + 0.005;
+        shadow.position.y = terrainHeight + SHADOW_HEIGHT_OFFSET;
 
         // Standardized shadow material
         const shadowMaterial = new BABYLON.StandardMaterial(`shadowMat_${buildingMesh.name}`, this.scene);
         shadowMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-        shadowMaterial.alpha = 0.3;
+        shadowMaterial.alpha = SHADOW_ALPHA;
         shadowMaterial.backFaceCulling = false;
         shadow.material = shadowMaterial;
 

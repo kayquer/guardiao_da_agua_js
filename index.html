@@ -359,7 +359,12 @@
     </div>
 
     <!-- Scripts do Jogo - Ordem correta de dependências -->
+
+    <!-- Clean Code Refactoring: Game Constants (loaded first) -->
+    <script src="js/config/GameConstants.js"></script>
+
     <!-- Utilitários primeiro -->
+    <script src="js/utils/GameUtils.js"></script>
     <script src="js/utils/AssetLoader.js"></script>
     <script src="js/utils/AudioManager.js"></script>
 
