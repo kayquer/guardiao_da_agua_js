@@ -257,52 +257,72 @@ class GameManager {
     }
 
     setupCamera() {
-        // ===== CAMERA CONTROL SYSTEM REDESIGN: New camera control scheme =====
+        // ===== ISOMETRIC RTS-STYLE CAMERA SYSTEM =====
 
-        // Câmera isométrica/ortográfica
+        // Create isometric camera with fixed angle (SimCity/Age of Empires style)
         this.camera = new BABYLON.ArcRotateCamera(
-            "camera",
-            -Math.PI / 4, // Alpha (rotação horizontal)
-            Math.PI / 3,  // Beta (rotação vertical)
-            30,           // Raio
+            "isometricCamera",
+            -Math.PI / 4,     // Alpha: 45-degree horizontal angle (fixed)
+            Math.PI / 3.5,    // Beta: ~51-degree vertical angle for isometric view (fixed)
+            30,               // Radius: zoom distance
             BABYLON.Vector3.Zero(),
             this.scene
         );
 
-        // ===== NEW CONTROL SCHEME: Disable default controls to implement custom ones =====
-        this.camera.attachControl(this.canvas, false); // Disable default controls
+        // ===== ISOMETRIC CONSTRAINTS: Lock camera angles for true isometric view =====
+        this.camera.attachControl(this.canvas, false); // Disable default controls completely
 
-        // Camera limits to prevent problematic angles
-        this.camera.lowerRadiusLimit = 15;
-        this.camera.upperRadiusLimit = 50;
-        this.camera.lowerBetaLimit = 0.2; // Prevent going underground
-        this.camera.upperBetaLimit = Math.PI / 2.1; // Prevent going too high
-
-        // Camera movement boundaries (keep camera focused on playable area)
-        this.cameraLimits = {
-            minX: -20,
-            maxX: 60,
-            minZ: -20,
-            maxZ: 60
+        // Fixed isometric angles - prevent rotation
+        this.isometricAngles = {
+            alpha: -Math.PI / 4,      // 45 degrees horizontal (fixed)
+            beta: Math.PI / 3.5       // ~51 degrees vertical (fixed)
         };
 
-        // ===== NEW CONTROL SCHEME: Custom control state =====
-        this.cameraControlState = {
+        // Lock camera to isometric angles
+        this.camera.alpha = this.isometricAngles.alpha;
+        this.camera.beta = this.isometricAngles.beta;
+
+        // Zoom limits for isometric view
+        this.camera.lowerRadiusLimit = 10;
+        this.camera.upperRadiusLimit = 60;
+
+        // ===== RTS-STYLE CAMERA BOUNDS =====
+        this.cameraLimits = {
+            minX: -30,
+            maxX: 70,
+            minZ: -30,
+            maxZ: 70
+        };
+
+        // ===== ISOMETRIC CAMERA STATE =====
+        this.isometricCameraState = {
+            // Mouse controls
             leftMouseDown: false,
             rightMouseDown: false,
             lastMouseX: 0,
             lastMouseY: 0,
-            isOrbiting: false,
-            isPanning: false
+            isPanning: false,
+
+            // Edge scrolling
+            edgeScrolling: {
+                enabled: true,
+                threshold: 50,      // Pixels from edge to trigger scrolling
+                speed: 0.8,         // Edge scroll speed
+                isScrolling: false
+            },
+
+            // Movement
+            isMoving: false,
+            targetPosition: BABYLON.Vector3.Zero()
         };
 
-        // Suavização
-        this.camera.inertia = 0.8;
-        this.camera.angularSensibilityX = 1000;
-        this.camera.angularSensibilityY = 1000;
+        // ===== SMOOTH MOVEMENT SETTINGS =====
+        this.camera.inertia = 0.9;           // Smooth camera movement
+        this.camera.angularSensibilityX = 0; // Disable rotation
+        this.camera.angularSensibilityY = 0; // Disable rotation
 
-        // Setup custom camera controls
-        this.setupCustomCameraControls();
+        // Setup isometric camera controls
+        this.setupIsometricCameraControls();
     }
     
     setupLighting() {
@@ -344,78 +364,254 @@ class GameManager {
         });
     }
 
-    // ===== CAMERA CONTROL SYSTEM REDESIGN: Custom camera controls =====
-    setupCustomCameraControls() {
-        // Mouse down events
+    // ===== ISOMETRIC RTS-STYLE CAMERA CONTROLS =====
+    setupIsometricCameraControls() {
+        // Mouse events for panning
         this.canvas.addEventListener('mousedown', (event) => {
-            this.handleCameraMouseDown(event);
+            this.handleIsometricMouseDown(event);
         });
 
-        // Mouse up events
         this.canvas.addEventListener('mouseup', (event) => {
-            this.handleCameraMouseUp(event);
+            this.handleIsometricMouseUp(event);
         });
 
-        // Mouse move events
         this.canvas.addEventListener('mousemove', (event) => {
-            this.handleCameraMouseMove(event);
+            this.handleIsometricMouseMove(event);
         });
 
-        // Wheel events for zoom
+        // Mouse wheel for zoom
         this.canvas.addEventListener('wheel', (event) => {
-            this.handleCameraWheel(event);
+            this.handleIsometricWheel(event);
         });
 
-        // Context menu prevention for right-click
+        // Edge scrolling detection
+        this.canvas.addEventListener('mousemove', (event) => {
+            this.handleEdgeScrolling(event);
+        });
+
+        this.canvas.addEventListener('mouseleave', () => {
+            this.isometricCameraState.edgeScrolling.isScrolling = false;
+        });
+
+        // Arrow keys support (in addition to WASD)
+        document.addEventListener('keydown', (event) => {
+            this.handleIsometricKeyDown(event);
+        });
+
+        document.addEventListener('keyup', (event) => {
+            this.handleIsometricKeyUp(event);
+        });
+
+        // Prevent context menu
         this.canvas.addEventListener('contextmenu', (event) => {
             event.preventDefault();
         });
 
-        console.log('🎮 Custom camera controls initialized');
+        console.log('🎮 Isometric RTS-style camera controls initialized');
     }
 
-    handleCameraMouseDown(event) {
-        if (event.button === 0) { // Left mouse button
-            this.cameraControlState.leftMouseDown = true;
-            this.cameraControlState.isPanning = true;
-        } else if (event.button === 2) { // Right mouse button
-            this.cameraControlState.rightMouseDown = true;
-            this.cameraControlState.isOrbiting = true;
+    // ===== ISOMETRIC CAMERA EVENT HANDLERS =====
+
+    handleIsometricMouseDown(event) {
+        if (!this.camera) return;
+
+        this.isometricCameraState.lastMouseX = event.clientX;
+        this.isometricCameraState.lastMouseY = event.clientY;
+
+        if (event.button === 0) { // Left mouse button for panning
+            this.isometricCameraState.leftMouseDown = true;
+            this.isometricCameraState.isPanning = true;
         }
+        // Note: Right mouse button disabled for isometric view (no rotation allowed)
 
-        this.cameraControlState.lastMouseX = event.clientX;
-        this.cameraControlState.lastMouseY = event.clientY;
-
-        // Prevent default behavior
         event.preventDefault();
     }
 
-    handleCameraMouseUp(event) {
+    handleIsometricMouseUp(event) {
         if (event.button === 0) { // Left mouse button
-            this.cameraControlState.leftMouseDown = false;
-            this.cameraControlState.isPanning = false;
-        } else if (event.button === 2) { // Right mouse button
-            this.cameraControlState.rightMouseDown = false;
-            this.cameraControlState.isOrbiting = false;
+            this.isometricCameraState.leftMouseDown = false;
+            this.isometricCameraState.isPanning = false;
         }
     }
 
-    handleCameraMouseMove(event) {
+    handleIsometricMouseMove(event) {
         if (!this.camera) return;
 
-        const deltaX = event.clientX - this.cameraControlState.lastMouseX;
-        const deltaY = event.clientY - this.cameraControlState.lastMouseY;
+        const deltaX = event.clientX - this.isometricCameraState.lastMouseX;
+        const deltaY = event.clientY - this.isometricCameraState.lastMouseY;
 
-        if (this.cameraControlState.isPanning && this.cameraControlState.leftMouseDown) {
-            // ===== LEFT MOUSE: Bird's eye view camera movement (pan/fly over terrain) =====
-            this.panCamera(deltaX, deltaY);
-        } else if (this.cameraControlState.isOrbiting && this.cameraControlState.rightMouseDown) {
-            // ===== RIGHT MOUSE: Orbital rotation around a center point =====
-            this.orbitCamera(deltaX, deltaY);
+        // Only allow panning with left mouse button (no rotation in isometric view)
+        if (this.isometricCameraState.isPanning && this.isometricCameraState.leftMouseDown) {
+            this.panIsometricCamera(deltaX, deltaY);
         }
 
-        this.cameraControlState.lastMouseX = event.clientX;
-        this.cameraControlState.lastMouseY = event.clientY;
+        this.isometricCameraState.lastMouseX = event.clientX;
+        this.isometricCameraState.lastMouseY = event.clientY;
+    }
+
+    handleIsometricKeyDown(event) {
+        // Arrow keys support for camera movement
+        switch (event.code) {
+            case 'ArrowUp':
+                this.cameraControls.keys.W = true;
+                event.preventDefault();
+                break;
+            case 'ArrowDown':
+                this.cameraControls.keys.S = true;
+                event.preventDefault();
+                break;
+            case 'ArrowLeft':
+                this.cameraControls.keys.A = true;
+                event.preventDefault();
+                break;
+            case 'ArrowRight':
+                this.cameraControls.keys.D = true;
+                event.preventDefault();
+                break;
+        }
+    }
+
+    handleIsometricKeyUp(event) {
+        // Arrow keys support for camera movement
+        switch (event.code) {
+            case 'ArrowUp':
+                this.cameraControls.keys.W = false;
+                event.preventDefault();
+                break;
+            case 'ArrowDown':
+                this.cameraControls.keys.S = false;
+                event.preventDefault();
+                break;
+            case 'ArrowLeft':
+                this.cameraControls.keys.A = false;
+                event.preventDefault();
+                break;
+            case 'ArrowRight':
+                this.cameraControls.keys.D = false;
+                event.preventDefault();
+                break;
+        }
+    }
+
+    // ===== ISOMETRIC CAMERA MOVEMENT METHODS =====
+
+    /**
+     * Pans the isometric camera while maintaining fixed angles
+     * @param {number} deltaX - Mouse movement in X direction
+     * @param {number} deltaY - Mouse movement in Y direction
+     */
+    panIsometricCamera(deltaX, deltaY) {
+        try {
+            // Isometric camera panning with fixed angles
+            const sensitivity = 0.02;
+
+            // Calculate movement in world space based on isometric view
+            // In isometric view, we need to transform screen movement to world movement
+            const worldMovement = this.screenToIsometricWorld(deltaX, deltaY, sensitivity);
+
+            // Get current target and calculate new target
+            const currentTarget = this.camera.getTarget();
+            const newTarget = currentTarget.add(worldMovement);
+
+            // Apply camera bounds
+            newTarget.x = Math.max(this.cameraLimits.minX, Math.min(this.cameraLimits.maxX, newTarget.x));
+            newTarget.z = Math.max(this.cameraLimits.minZ, Math.min(this.cameraLimits.maxZ, newTarget.z));
+
+            // Apply smooth movement
+            this.camera.setTarget(newTarget);
+
+        } catch (error) {
+            console.warn('⚠️ Error in isometric camera panning:', error);
+        }
+    }
+
+    /**
+     * Converts screen movement to isometric world movement
+     * @param {number} deltaX - Screen delta X
+     * @param {number} deltaY - Screen delta Y
+     * @param {number} sensitivity - Movement sensitivity
+     * @returns {BABYLON.Vector3} - World movement vector
+     */
+    screenToIsometricWorld(deltaX, deltaY, sensitivity) {
+        // For isometric view, we need to account for the 45-degree rotation
+        // Screen X movement affects both world X and Z
+        // Screen Y movement affects world Z primarily
+
+        const cos45 = Math.cos(Math.PI / 4); // 0.707
+        const sin45 = Math.sin(Math.PI / 4); // 0.707
+
+        // Transform screen movement to world movement for isometric view
+        const worldX = (-deltaX * cos45 + deltaY * sin45) * sensitivity;
+        const worldZ = (-deltaX * sin45 - deltaY * cos45) * sensitivity;
+
+        return new BABYLON.Vector3(worldX, 0, worldZ);
+    }
+
+    /**
+     * Handles edge scrolling for RTS-style camera movement
+     * @param {MouseEvent} event - Mouse move event
+     */
+    handleEdgeScrolling(event) {
+        if (!this.isometricCameraState.edgeScrolling.enabled) return;
+
+        const rect = this.canvas.getBoundingClientRect();
+        const threshold = this.isometricCameraState.edgeScrolling.threshold;
+        const speed = this.isometricCameraState.edgeScrolling.speed;
+
+        // Calculate distances from edges
+        const leftDistance = event.clientX - rect.left;
+        const rightDistance = rect.right - event.clientX;
+        const topDistance = event.clientY - rect.top;
+        const bottomDistance = rect.bottom - event.clientY;
+
+        // Determine edge scrolling direction
+        let scrollX = 0;
+        let scrollZ = 0;
+
+        if (leftDistance < threshold) {
+            scrollX = -speed;
+        } else if (rightDistance < threshold) {
+            scrollX = speed;
+        }
+
+        if (topDistance < threshold) {
+            scrollZ = -speed;
+        } else if (bottomDistance < threshold) {
+            scrollZ = speed;
+        }
+
+        // Apply edge scrolling if any direction is active
+        if (scrollX !== 0 || scrollZ !== 0) {
+            this.isometricCameraState.edgeScrolling.isScrolling = true;
+            this.moveIsometricCamera(scrollX, scrollZ);
+        } else {
+            this.isometricCameraState.edgeScrolling.isScrolling = false;
+        }
+    }
+
+    /**
+     * Moves the isometric camera by specified amounts
+     * @param {number} deltaX - Movement in X direction
+     * @param {number} deltaZ - Movement in Z direction
+     */
+    moveIsometricCamera(deltaX, deltaZ) {
+        try {
+            const currentTarget = this.camera.getTarget();
+            const newTarget = new BABYLON.Vector3(
+                currentTarget.x + deltaX,
+                currentTarget.y,
+                currentTarget.z + deltaZ
+            );
+
+            // Apply camera bounds
+            newTarget.x = Math.max(this.cameraLimits.minX, Math.min(this.cameraLimits.maxX, newTarget.x));
+            newTarget.z = Math.max(this.cameraLimits.minZ, Math.min(this.cameraLimits.maxZ, newTarget.z));
+
+            this.camera.setTarget(newTarget);
+
+        } catch (error) {
+            console.warn('⚠️ Error in isometric camera movement:', error);
+        }
     }
 
     panCamera(deltaX, deltaY) {
@@ -466,17 +662,30 @@ class GameManager {
         }
     }
 
-    handleCameraWheel(event) {
+    /**
+     * Handles mouse wheel for isometric camera zoom
+     * @param {WheelEvent} event - Wheel event
+     */
+    handleIsometricWheel(event) {
         if (!this.camera) return;
 
-        // Zoom in/out
+        // Isometric zoom - maintain fixed angles while changing distance
         const zoomSensitivity = 2;
         const deltaRadius = event.deltaY > 0 ? zoomSensitivity : -zoomSensitivity;
 
         const newRadius = this.camera.radius + deltaRadius;
         this.camera.radius = Math.max(this.camera.lowerRadiusLimit, Math.min(this.camera.upperRadiusLimit, newRadius));
 
+        // Ensure angles remain fixed for isometric view
+        this.camera.alpha = this.isometricAngles.alpha;
+        this.camera.beta = this.isometricAngles.beta;
+
         event.preventDefault();
+    }
+
+    // Legacy method for compatibility
+    handleCameraWheel(event) {
+        this.handleIsometricWheel(event);
     }
     
     startRenderLoop() {
@@ -1148,7 +1357,7 @@ class GameManager {
                 new BABYLON.CubicEase()
             );
 
-            // Ajustar ângulo para uma visão isométrica ideal
+            // Ensure isometric angles are maintained during animation
             const animationAlpha = BABYLON.Animation.CreateAndStartAnimation(
                 "cameraAlphaAnimation",
                 this.camera,
@@ -1156,7 +1365,7 @@ class GameManager {
                 60, // 60 FPS
                 120, // 2 segundos de duração
                 this.camera.alpha,
-                -Math.PI / 4, // 45 graus
+                this.isometricAngles.alpha, // Use fixed isometric angle
                 BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
                 new BABYLON.CubicEase()
             );
@@ -1168,7 +1377,7 @@ class GameManager {
                 60, // 60 FPS
                 120, // 2 segundos de duração
                 this.camera.beta,
-                Math.PI / 3, // 60 graus
+                this.isometricAngles.beta, // Use fixed isometric angle
                 BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
                 new BABYLON.CubicEase()
             );
@@ -1178,59 +1387,83 @@ class GameManager {
         }
     }
 
-    // ===== CAMERA CONTROL SYSTEM REDESIGN: WASD alternative bird's eye view movement =====
+    // ===== ISOMETRIC RTS-STYLE CAMERA CONTROLS UPDATE =====
     updateCameraControls(deltaTime) {
         if (!this.camera || !this.cameraControls.enabled) return;
 
-        const keys = this.cameraControls.keys;
-        const speed = this.cameraControls.speed * (deltaTime / 16.67); // Normalizar para 60 FPS
+        // Ensure camera maintains isometric angles
+        this.enforceIsometricAngles();
 
-        // Verificar se alguma tecla está pressionada
+        // Handle WASD/Arrow key movement
+        this.updateIsometricKeyboardMovement(deltaTime);
+
+        // Handle edge scrolling
+        this.updateEdgeScrolling(deltaTime);
+    }
+
+    /**
+     * Enforces fixed isometric camera angles
+     */
+    enforceIsometricAngles() {
+        // Continuously enforce isometric angles to prevent drift
+        if (Math.abs(this.camera.alpha - this.isometricAngles.alpha) > 0.01 ||
+            Math.abs(this.camera.beta - this.isometricAngles.beta) > 0.01) {
+            this.camera.alpha = this.isometricAngles.alpha;
+            this.camera.beta = this.isometricAngles.beta;
+        }
+    }
+
+    /**
+     * Updates camera movement based on WASD/Arrow keys for isometric view
+     * @param {number} deltaTime - Frame delta time
+     */
+    updateIsometricKeyboardMovement(deltaTime) {
+        const keys = this.cameraControls.keys;
+        const speed = this.cameraControls.speed * (deltaTime / 16.67); // Normalize to 60 FPS
+
+        // Check if any movement key is pressed
         const isMoving = keys.W || keys.A || keys.S || keys.D;
-        if (!isMoving) return;
+        if (!isMoving && !this.isometricCameraState.edgeScrolling.isScrolling) return;
 
         try {
-            // ===== WASD: Alternative bird's eye view movement (same as left mouse) =====
-            // Obter direções da câmera baseadas na rotação atual
-            const forward = this.camera.getForwardRay().direction;
-            const right = BABYLON.Vector3.Cross(forward, BABYLON.Vector3.Up());
+            let deltaX = 0;
+            let deltaZ = 0;
 
-            // Normalizar vetores
-            forward.normalize();
-            right.normalize();
-
-            // Calcular movimento baseado nas teclas pressionadas
-            let movement = BABYLON.Vector3.Zero();
-
-            if (keys.W) { // Frente
-                movement = movement.add(forward.scale(speed));
+            // Calculate movement in isometric space
+            if (keys.W) { // Forward (North-West in isometric)
+                deltaX -= speed * 0.707; // cos(45°)
+                deltaZ -= speed * 0.707; // sin(45°)
             }
-            if (keys.S) { // Trás
-                movement = movement.add(forward.scale(-speed));
+            if (keys.S) { // Backward (South-East in isometric)
+                deltaX += speed * 0.707;
+                deltaZ += speed * 0.707;
             }
-            if (keys.A) { // Esquerda
-                movement = movement.add(right.scale(-speed));
+            if (keys.A) { // Left (South-West in isometric)
+                deltaX -= speed * 0.707;
+                deltaZ += speed * 0.707;
             }
-            if (keys.D) { // Direita
-                movement = movement.add(right.scale(speed));
+            if (keys.D) { // Right (North-East in isometric)
+                deltaX += speed * 0.707;
+                deltaZ -= speed * 0.707;
             }
 
-            // Aplicar movimento apenas nos eixos X e Z (manter altura)
-            movement.y = 0;
-
-            // Mover o alvo da câmera com limites
-            const currentTarget = this.camera.getTarget();
-            const newTarget = currentTarget.add(movement);
-
-            // ===== CAMERA LIMITS: Apply same limits as mouse panning =====
-            newTarget.x = Math.max(this.cameraLimits.minX, Math.min(this.cameraLimits.maxX, newTarget.x));
-            newTarget.z = Math.max(this.cameraLimits.minZ, Math.min(this.cameraLimits.maxZ, newTarget.z));
-
-            this.camera.setTarget(newTarget);
+            // Apply movement if any
+            if (deltaX !== 0 || deltaZ !== 0) {
+                this.moveIsometricCamera(deltaX, deltaZ);
+            }
 
         } catch (error) {
-            console.error('❌ Erro nos controles de câmera WASD:', error);
+            console.error('❌ Error in isometric keyboard movement:', error);
         }
+    }
+
+    /**
+     * Updates edge scrolling movement
+     * @param {number} deltaTime - Frame delta time
+     */
+    updateEdgeScrolling(deltaTime) {
+        // Edge scrolling is handled in real-time by handleEdgeScrolling
+        // This method can be used for additional edge scrolling logic if needed
     }
 
     // ===== SISTEMA DE RELÓGIO =====
