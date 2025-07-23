@@ -2633,6 +2633,17 @@ class GameManager {
     }
 
     selectBuilding(building) {
+        // ===== ZERO-ERROR POLICY FIX: Validar building e config antes de usar =====
+        if (!building) {
+            console.warn('⚠️ Tentativa de selecionar edifício nulo/indefinido');
+            return;
+        }
+
+        if (!building.config) {
+            console.warn('⚠️ Edifício sem configuração válida:', building);
+            return;
+        }
+
         // Limpar seleção anterior
         this.clearBuildingSelection();
 
@@ -2650,7 +2661,11 @@ class GameManager {
 
     deselectBuilding() {
         if (this.selectedBuilding) {
-            console.log(`🏢 Edifício desselecionado: ${this.selectedBuilding.config.name}`);
+            // ===== ZERO-ERROR POLICY FIX: Validar config antes de acessar propriedades =====
+            const buildingName = (this.selectedBuilding.config && this.selectedBuilding.config.name)
+                ? this.selectedBuilding.config.name
+                : 'Edifício Desconhecido';
+            console.log(`🏢 Edifício desselecionado: ${buildingName}`);
         }
 
         // Limpar seleção de edifício
@@ -2873,10 +2888,17 @@ class GameManager {
     addSelectionIndicator(building) {
         if (!building.mesh) return;
 
+        // ===== ZERO-ERROR POLICY FIX: Validar building e config antes de usar =====
+        if (!building.config) {
+            console.warn('⚠️ Tentativa de adicionar indicador para edifício sem configuração:', building);
+            return;
+        }
+
         try {
             // Criar indicador de seleção (anel ao redor do edifício)
+            const buildingSize = building.config.size || 1; // Fallback para size=1
             const selectionRing = BABYLON.MeshBuilder.CreateTorus(`selection_${building.id}`, {
-                diameter: building.config.size * 2.5,
+                diameter: buildingSize * 2.5,
                 thickness: 0.2,
                 tessellation: 16
             }, this.scene);
@@ -2941,7 +2963,11 @@ class GameManager {
                 // Limpar referência
                 building.mesh.selectionIndicator = null;
 
-                console.log(`🗑️ Indicador de seleção removido para ${building.config.name}`);
+                // ===== ZERO-ERROR POLICY FIX: Validar config antes de acessar propriedades =====
+                const buildingName = (building.config && building.config.name)
+                    ? building.config.name
+                    : 'Edifício Desconhecido';
+                console.log(`🗑️ Indicador de seleção removido para ${buildingName}`);
 
             } catch (error) {
                 console.error('❌ Erro ao remover indicador de seleção:', error);

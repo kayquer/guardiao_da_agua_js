@@ -987,6 +987,12 @@ class UIManager {
         if (powerGenerators.length > 0) {
             detailsHTML += '<ul>';
             powerGenerators.forEach(building => {
+                // ===== ZERO-ERROR POLICY FIX: Validar config antes de usar =====
+                if (!building.config) {
+                    console.warn('⚠️ Edifício sem configuração encontrado na lista de geradores:', building);
+                    return;
+                }
+
                 const isRenewable = ['hydroelectric_plant', 'solar_panel', 'wind_turbine'].includes(building.type);
                 const renewableIcon = isRenewable ? '🌱' : '🏭';
                 const renewableText = isRenewable ? ' (Renovável)' : ' (Não-renovável)';
@@ -1066,10 +1072,16 @@ class UIManager {
                     <h5>🏢 Edifícios que Melhoram Satisfação</h5>
         `;
 
-        const satisfactionBuildings = buildings.filter(b => b.config.satisfactionBonus && b.active);
+        const satisfactionBuildings = buildings.filter(b => b.config && b.config.satisfactionBonus && b.active);
         if (satisfactionBuildings.length > 0) {
             detailsHTML += '<ul>';
             satisfactionBuildings.forEach(building => {
+                // ===== ZERO-ERROR POLICY FIX: Validar config antes de usar =====
+                if (!building.config) {
+                    console.warn('⚠️ Edifício sem configuração encontrado na lista de satisfação:', building);
+                    return;
+                }
+
                 detailsHTML += `
                     <li>
                         <span class="building-icon">${building.config.icon}</span>
@@ -1305,6 +1317,12 @@ class UIManager {
         if (serviceBuildings.length > 0) {
             detailsHTML += '<h5>🏢 Serviços e Infraestrutura</h5><ul>';
             serviceBuildings.forEach(building => {
+                // ===== ZERO-ERROR POLICY FIX: Validar config antes de usar =====
+                if (!building.config) {
+                    console.warn('⚠️ Edifício sem configuração encontrado na lista de serviços:', building);
+                    return;
+                }
+
                 detailsHTML += `
                     <li>
                         <span class="building-icon">${building.config.icon}</span>
@@ -1448,6 +1466,12 @@ class UIManager {
     // ===== INFORMAÇÕES DE SELEÇÃO DE EDIFÍCIOS =====
     showBuildingSelectionInfo(building) {
         if (!building) return;
+
+        // ===== ZERO-ERROR POLICY FIX: Validar config antes de usar =====
+        if (!building.config) {
+            console.warn('⚠️ Tentativa de mostrar informações para edifício sem configuração:', building);
+            return;
+        }
 
         // Usar o painel de detalhes existente para mostrar informações de seleção
         const detailsPanel = this.elements.detailsPanel;

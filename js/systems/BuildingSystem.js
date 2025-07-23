@@ -2391,7 +2391,11 @@ class BuildingSystem {
             this.queueForDisposal(building.mesh);
         }
 
-        console.log(`🗑️ Edifício removido: ${building.config.name}`);
+        // ===== ZERO-ERROR POLICY FIX: Validar config antes de acessar propriedades =====
+        const buildingName = (building.config && building.config.name)
+            ? building.config.name
+            : 'Edifício Desconhecido';
+        console.log(`🗑️ Edifício removido: ${buildingName}`);
         return true;
     }
 
@@ -4447,7 +4451,11 @@ class BuildingSystem {
         this.updateRentalIcon(building);
 
         const status = building.isRented ? 'alugado' : 'não alugado';
-        console.log(`🏙️ ${building.config.name} agora está ${status}`);
+        // ===== ZERO-ERROR POLICY FIX: Validar config antes de acessar propriedades =====
+        const buildingName = (building.config && building.config.name)
+            ? building.config.name
+            : 'Edifício Desconhecido';
+        console.log(`🏙️ ${buildingName} agora está ${status}`);
 
         return true;
     }
