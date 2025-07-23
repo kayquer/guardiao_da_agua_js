@@ -1,0 +1,476 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\playwright.config.js",
+    "rootDir": "C:/Users/kayqu/Downloads/guardiao_da_agua_js/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 5
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/Users/kayqu/Downloads/guardiao_da_agua_js/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/kayqu/Downloads/guardiao_da_agua_js/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/kayqu/Downloads/guardiao_da_agua_js/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "firefox",
+        "name": "firefox",
+        "testDir": "C:/Users/kayqu/Downloads/guardiao_da_agua_js/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/kayqu/Downloads/guardiao_da_agua_js/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "webkit",
+        "name": "webkit",
+        "testDir": "C:/Users/kayqu/Downloads/guardiao_da_agua_js/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/kayqu/Downloads/guardiao_da_agua_js/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "C:/Users/kayqu/Downloads/guardiao_da_agua_js/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/kayqu/Downloads/guardiao_da_agua_js/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "C:/Users/kayqu/Downloads/guardiao_da_agua_js/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.54.1",
+    "workers": 8,
+    "webServer": {
+      "command": "python -m http.server 3000",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "critical-fixes-validation.spec.js",
+      "file": "critical-fixes-validation.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Guardião da Água - Critical Fixes Validation",
+          "file": "critical-fixes-validation.spec.js",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "1. Unknown Object Selection Bug Fix - Zero Console Errors",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 59927,
+                      "error": {
+                        "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#game-canvas')\u001b[22m\n\u001b[2m    - locator resolved to <canvas width=\"1280\" height=\"720\" tabindex=\"1\" id=\"game-canvas\" touch-action=\"none\" data-engine=\"Babylon.js v8.17.2\"></canvas>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <button class=\"category-btn\" data-category=\"public\">🏛️ Públicos</button> from <div class=\"hud\" id=\"game-hud\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <button class=\"category-btn\" data-category=\"public\">🏛️ Públicos</button> from <div class=\"hud\" id=\"game-hud\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#game-canvas')\u001b[22m\n\u001b[2m    - locator resolved to <canvas width=\"1280\" height=\"720\" tabindex=\"1\" id=\"game-canvas\" touch-action=\"none\" data-engine=\"Babylon.js v8.17.2\"></canvas>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <button class=\"category-btn\" data-category=\"public\">🏛️ Públicos</button> from <div class=\"hud\" id=\"game-hud\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <button class=\"category-btn\" data-category=\"public\">🏛️ Públicos</button> from <div class=\"hud\" id=\"game-hud\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\n    at C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js:47:22",
+                        "location": {
+                          "file": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js",
+                          "column": 22,
+                          "line": 47
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 45 |\u001b[39m         \n \u001b[90m 46 |\u001b[39m         \u001b[90m// Click different areas to test terrain selection\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 47 |\u001b[39m         \u001b[36mawait\u001b[39m canvas\u001b[33m.\u001b[39mclick({ position\u001b[33m:\u001b[39m { x\u001b[33m:\u001b[39m \u001b[35m200\u001b[39m\u001b[33m,\u001b[39m y\u001b[33m:\u001b[39m \u001b[35m200\u001b[39m } })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 48 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m1000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 49 |\u001b[39m         \n \u001b[90m 50 |\u001b[39m         \u001b[36mawait\u001b[39m canvas\u001b[33m.\u001b[39mclick({ position\u001b[33m:\u001b[39m { x\u001b[33m:\u001b[39m \u001b[35m600\u001b[39m\u001b[33m,\u001b[39m y\u001b[33m:\u001b[39m \u001b[35m400\u001b[39m } })\u001b[33m;\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js",
+                            "column": 22,
+                            "line": 47
+                          },
+                          "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#game-canvas')\u001b[22m\n\u001b[2m    - locator resolved to <canvas width=\"1280\" height=\"720\" tabindex=\"1\" id=\"game-canvas\" touch-action=\"none\" data-engine=\"Babylon.js v8.17.2\"></canvas>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <button class=\"category-btn\" data-category=\"public\">🏛️ Públicos</button> from <div class=\"hud\" id=\"game-hud\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <button class=\"category-btn\" data-category=\"public\">🏛️ Públicos</button> from <div class=\"hud\" id=\"game-hud\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\n\n\u001b[0m \u001b[90m 45 |\u001b[39m         \n \u001b[90m 46 |\u001b[39m         \u001b[90m// Click different areas to test terrain selection\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 47 |\u001b[39m         \u001b[36mawait\u001b[39m canvas\u001b[33m.\u001b[39mclick({ position\u001b[33m:\u001b[39m { x\u001b[33m:\u001b[39m \u001b[35m200\u001b[39m\u001b[33m,\u001b[39m y\u001b[33m:\u001b[39m \u001b[35m200\u001b[39m } })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 48 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m1000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 49 |\u001b[39m         \n \u001b[90m 50 |\u001b[39m         \u001b[36mawait\u001b[39m canvas\u001b[33m.\u001b[39mclick({ position\u001b[33m:\u001b[39m { x\u001b[33m:\u001b[39m \u001b[35m600\u001b[39m\u001b[33m,\u001b[39m y\u001b[33m:\u001b[39m \u001b[35m400\u001b[39m } })\u001b[33m;\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js:47:22\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testing building selection without console errors...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-07-23T00:16:09.194Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\test-results\\critical-fixes-validation--43aa5-g-Fix---Zero-Console-Errors-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\test-results\\critical-fixes-validation--43aa5-g-Fix---Zero-Console-Errors-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js",
+                        "column": 22,
+                        "line": 47
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e37cd203129103595900-9a96a8e6fad18105a149",
+              "file": "critical-fixes-validation.spec.js",
+              "line": 28,
+              "column": 5
+            },
+            {
+              "title": "2. Terrain Information Panel Display Fix",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 42986,
+                      "error": {
+                        "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#game-canvas')\u001b[22m\n\u001b[2m    - locator resolved to <canvas width=\"1280\" height=\"720\" tabindex=\"1\" id=\"game-canvas\" touch-action=\"none\" data-engine=\"Babylon.js v8.17.2\"></canvas>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n",
+                        "stack": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#game-canvas')\u001b[22m\n\u001b[2m    - locator resolved to <canvas width=\"1280\" height=\"720\" tabindex=\"1\" id=\"game-canvas\" touch-action=\"none\" data-engine=\"Babylon.js v8.17.2\"></canvas>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\n    at C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js:70:22",
+                        "location": {
+                          "file": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js",
+                          "column": 22,
+                          "line": 70
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 68 |\u001b[39m         \u001b[90m// Click on terrain to select it\u001b[39m\n \u001b[90m 69 |\u001b[39m         \u001b[36mconst\u001b[39m canvas \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#game-canvas'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m         \u001b[36mawait\u001b[39m canvas\u001b[33m.\u001b[39mclick({ position\u001b[33m:\u001b[39m { x\u001b[33m:\u001b[39m \u001b[35m300\u001b[39m\u001b[33m,\u001b[39m y\u001b[33m:\u001b[39m \u001b[35m200\u001b[39m } })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 72 |\u001b[39m\n \u001b[90m 73 |\u001b[39m         \u001b[90m// Check if terrain information is displayed in the right panel\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js",
+                            "column": 22,
+                            "line": 70
+                          },
+                          "message": "TimeoutError: locator.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#game-canvas')\u001b[22m\n\u001b[2m    - locator resolved to <canvas width=\"1280\" height=\"720\" tabindex=\"1\" id=\"game-canvas\" touch-action=\"none\" data-engine=\"Babylon.js v8.17.2\"></canvas>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\n\n\u001b[0m \u001b[90m 68 |\u001b[39m         \u001b[90m// Click on terrain to select it\u001b[39m\n \u001b[90m 69 |\u001b[39m         \u001b[36mconst\u001b[39m canvas \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mlocator(\u001b[32m'#game-canvas'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 70 |\u001b[39m         \u001b[36mawait\u001b[39m canvas\u001b[33m.\u001b[39mclick({ position\u001b[33m:\u001b[39m { x\u001b[33m:\u001b[39m \u001b[35m300\u001b[39m\u001b[33m,\u001b[39m y\u001b[33m:\u001b[39m \u001b[35m200\u001b[39m } })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 71 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m2000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 72 |\u001b[39m\n \u001b[90m 73 |\u001b[39m         \u001b[90m// Check if terrain information is displayed in the right panel\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js:70:22\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testing terrain information display...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-07-23T00:16:09.200Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\test-results\\critical-fixes-validation--1b780-formation-Panel-Display-Fix-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js",
+                        "column": 22,
+                        "line": 70
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e37cd203129103595900-dbfdcdfe48502a9afebe",
+              "file": "critical-fixes-validation.spec.js",
+              "line": 65,
+              "column": 5
+            },
+            {
+              "title": "3. Right Mouse Button Camera Movement Validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "passed",
+                      "duration": 39852,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testing camera controls...\n"
+                        },
+                        {
+                          "text": "✅ Camera orbital rotation working correctly\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-07-23T00:16:09.205Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e37cd203129103595900-e5017922827c160f1955",
+              "file": "critical-fixes-validation.spec.js",
+              "line": 87,
+              "column": 5
+            },
+            {
+              "title": "4. Building Size and Grid Alignment Corrections",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 52907,
+                      "error": {
+                        "message": "TimeoutError: page.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"⚡ Energia\")')\u001b[22m\n\u001b[2m    - locator resolved to <button class=\"category-btn\" data-category=\"power\">⚡ Energia</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - performing click action\u001b[22m\n\u001b[2m    - click action done\u001b[22m\n\u001b[2m    - waiting for scheduled navigations to finish\u001b[22m\n",
+                        "stack": "TimeoutError: page.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"⚡ Energia\")')\u001b[22m\n\u001b[2m    - locator resolved to <button class=\"category-btn\" data-category=\"power\">⚡ Energia</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - performing click action\u001b[22m\n\u001b[2m    - click action done\u001b[22m\n\u001b[2m    - waiting for scheduled navigations to finish\u001b[22m\n\n    at C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js:138:20",
+                        "location": {
+                          "file": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js",
+                          "column": 20,
+                          "line": 138
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 136 |\u001b[39m         \n \u001b[90m 137 |\u001b[39m         \u001b[90m// Select Energy category\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 138 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'button:has-text(\"⚡ Energia\")'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 139 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m1000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 140 |\u001b[39m\n \u001b[90m 141 |\u001b[39m         \u001b[90m// Select Thermoelectric Plant (should be 2x2)\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js",
+                            "column": 20,
+                            "line": 138
+                          },
+                          "message": "TimeoutError: page.click: Timeout 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button:has-text(\"⚡ Energia\")')\u001b[22m\n\u001b[2m    - locator resolved to <button class=\"category-btn\" data-category=\"power\">⚡ Energia</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - performing click action\u001b[22m\n\u001b[2m    - click action done\u001b[22m\n\u001b[2m    - waiting for scheduled navigations to finish\u001b[22m\n\n\n\u001b[0m \u001b[90m 136 |\u001b[39m         \n \u001b[90m 137 |\u001b[39m         \u001b[90m// Select Energy category\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 138 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mclick(\u001b[32m'button:has-text(\"⚡ Energia\")'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 139 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m1000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 140 |\u001b[39m\n \u001b[90m 141 |\u001b[39m         \u001b[90m// Select Thermoelectric Plant (should be 2x2)\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js:138:20\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testing building size corrections...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-07-23T00:16:09.210Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\test-results\\critical-fixes-validation--40aa4--Grid-Alignment-Corrections-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\test-results\\critical-fixes-validation--40aa4--Grid-Alignment-Corrections-chromium\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js",
+                        "column": 20,
+                        "line": 138
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e37cd203129103595900-9d308a225bbdf73caea6",
+              "file": "critical-fixes-validation.spec.js",
+              "line": 134,
+              "column": 5
+            },
+            {
+              "title": "5. Overall Game Stability and Zero-Error Policy",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "timedOut",
+                      "duration": 62075,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js",
+                            "column": 22,
+                            "line": 207
+                          },
+                          "message": "Error: locator.click: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - waiting for locator('#game-canvas')\u001b[22m\n\u001b[2m    - locator resolved to <canvas width=\"1280\" height=\"720\" tabindex=\"1\" id=\"game-canvas\" touch-action=\"none\" data-engine=\"Babylon.js v8.17.2\"></canvas>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <button data-category=\"public\" class=\"category-btn active\">🏛️ Públicos</button> from <div class=\"hud\" id=\"game-hud\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <button data-category=\"public\" class=\"category-btn active\">🏛️ Públicos</button> from <div class=\"hud\" id=\"game-hud\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <button data-category=\"public\" class=\"category-btn active\">🏛️ Públicos</button> from <div class=\"hud\" id=\"game-hud\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\n\n\u001b[0m \u001b[90m 205 |\u001b[39m\n \u001b[90m 206 |\u001b[39m         \u001b[90m// Test terrain selection\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 207 |\u001b[39m         \u001b[36mawait\u001b[39m canvas\u001b[33m.\u001b[39mclick({ position\u001b[33m:\u001b[39m { x\u001b[33m:\u001b[39m \u001b[35m200\u001b[39m\u001b[33m,\u001b[39m y\u001b[33m:\u001b[39m \u001b[35m200\u001b[39m } })\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                      \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 208 |\u001b[39m         \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mwaitForTimeout(\u001b[35m1000\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 209 |\u001b[39m\n \u001b[90m 210 |\u001b[39m         \u001b[90m// Filter out non-critical errors (like missing assets)\u001b[39m\u001b[0m\n\u001b[2m    at C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\tests\\critical-fixes-validation.spec.js:207:22\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🧪 Testing overall game stability...\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-07-23T00:16:09.218Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\test-results\\critical-fixes-validation--c2a63-ility-and-Zero-Error-Policy-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\kayqu\\Downloads\\guardiao_da_agua_js\\test-results\\critical-fixes-validation--c2a63-ility-and-Zero-Error-Policy-chromium\\error-context.md"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "e37cd203129103595900-3fa1835729a0d4e8bc22",
+              "file": "critical-fixes-validation.spec.js",
+              "line": 180,
+              "column": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-07-23T00:16:06.696Z",
+    "duration": 65531.41900000001,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}

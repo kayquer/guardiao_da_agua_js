@@ -2895,37 +2895,58 @@ class GameManager {
         }
 
         try {
-            // Criar indicador de seleção (anel ao redor do edifício)
-            const buildingSize = building.config.size || 1; // Fallback para size=1
-            const selectionRing = BABYLON.MeshBuilder.CreateTorus(`selection_${building.id}`, {
-                diameter: buildingSize * 2.5,
-                thickness: 0.2,
-                tessellation: 16
-            }, this.scene);
+            // ===== STANDARDIZED SELECTION INDICATOR SYSTEM =====
+            const selectionIndicator = this.createStandardizedSelectionIndicator(building);
 
-            // Posicionar no chão ao redor do edifício
-            const worldPos = this.gridManager.gridToWorld(building.gridX, building.gridZ);
-            selectionRing.position.x = worldPos.x;
-            selectionRing.position.z = worldPos.z;
-            selectionRing.position.y = 0.1;
+            if (selectionIndicator) {
+                // Armazenar referência
+                building.mesh.selectionIndicator = selectionIndicator;
 
-            // Material do indicador
-            const selectionMaterial = new BABYLON.StandardMaterial(`selectionMat_${building.id}`, this.scene);
-            selectionMaterial.diffuseColor = new BABYLON.Color3(1, 0.8, 0); // Amarelo-laranja
-            selectionMaterial.emissiveColor = new BABYLON.Color3(0.4, 0.3, 0);
-            selectionMaterial.alpha = 0.9;
-
-            selectionRing.material = selectionMaterial;
-
-            // Armazenar referência
-            building.mesh.selectionIndicator = selectionRing;
-
-            // Animação de pulsação
-            this.animateSelectionIndicator(selectionRing);
+                // Animação de pulsação
+                this.animateSelectionIndicator(selectionIndicator);
+            }
 
         } catch (error) {
             console.error('❌ Erro ao criar indicador de seleção:', error);
         }
+    }
+
+    /**
+     * Creates a standardized selection indicator that properly aligns with building footprint
+     * @param {Object} building - The building object
+     * @returns {BABYLON.Mesh} - The selection indicator mesh
+     */
+    createStandardizedSelectionIndicator(building) {
+        const buildingMesh = building.mesh;
+        const boundingBox = buildingMesh.getBoundingInfo().boundingBox;
+
+        // Calculate indicator size based on actual building footprint
+        const buildingWidth = Math.abs(boundingBox.maximum.x - boundingBox.minimum.x);
+        const buildingDepth = Math.abs(boundingBox.maximum.z - boundingBox.minimum.z);
+        const averageSize = (buildingWidth + buildingDepth) / 2;
+
+        // Create selection ring that matches building footprint
+        const selectionRing = BABYLON.MeshBuilder.CreateTorus(`selection_${building.id}`, {
+            diameter: averageSize * 1.3, // Slightly larger than building
+            thickness: 0.15,
+            tessellation: 24
+        }, this.scene);
+
+        // Position exactly at building center
+        selectionRing.position.x = buildingMesh.position.x;
+        selectionRing.position.z = buildingMesh.position.z;
+        selectionRing.position.y = 0.08; // Slightly above ground
+
+        // Standardized selection material
+        const selectionMaterial = new BABYLON.StandardMaterial(`selectionMat_${building.id}`, this.scene);
+        selectionMaterial.diffuseColor = new BABYLON.Color3(1, 0.8, 0); // Golden yellow
+        selectionMaterial.emissiveColor = new BABYLON.Color3(0.4, 0.3, 0);
+        selectionMaterial.alpha = 0.9;
+        selectionMaterial.backFaceCulling = false;
+
+        selectionRing.material = selectionMaterial;
+
+        return selectionRing;
     }
 
     removeSelectionIndicator(building) {

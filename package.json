@@ -22,7 +22,7 @@
   "author": "Kayquer",
   "license": "MIT",
   "devDependencies": {
-    "@playwright/test": "^1.40.0"
+    "@playwright/test": "^1.54.1"
   },
   "engines": {
     "node": ">=16.0.0"

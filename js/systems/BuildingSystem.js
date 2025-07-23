@@ -1309,72 +1309,431 @@ class BuildingSystem {
     }
     
     createBuildingMesh(gridX, gridZ, buildingType) {
-        const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
+        // ===== STANDARDIZED BUILDING GRAPHICS SYSTEM =====
+        const standardizedMesh = this.createStandardizedBuildingMesh(buildingType);
 
-        // Criar mesh estilo Minecraft voxel
-        let mesh = this.createMinecraftStyleMesh(buildingType);
-
-        if (!mesh) {
-            // Fallback para mesh básico voxel
-            mesh = this.createBasicVoxelMesh(buildingType);
+        if (!standardizedMesh) {
+            console.error(`❌ Failed to create mesh for building type: ${buildingType.id}`);
+            return null;
         }
 
-        // Posicionar no mundo (X e Z apenas, Y será ajustado depois)
+        // ===== STANDARDIZED POSITIONING SYSTEM =====
+        this.applyStandardizedPositioning(standardizedMesh, gridX, gridZ, buildingType);
+
+        // ===== STANDARDIZED MATERIAL APPLICATION =====
+        this.applyStandardizedMaterial(standardizedMesh, buildingType);
+
+        // ===== STANDARDIZED SHADOW SYSTEM =====
+        this.applyStandardizedShadows(standardizedMesh);
+
+        // ===== STANDARDIZED TERRAIN INTEGRATION =====
+        this.adjustBuildingToTerrain(standardizedMesh, gridX, gridZ);
+
+        // ===== STANDARDIZED SHADOW CREATION =====
+        const terrainHeight = this.getTerrainHeightAt(gridX, gridZ);
+        this.createStandardizedBuildingShadow(standardizedMesh, terrainHeight);
+
+        // ===== STANDARDIZED METADATA =====
+        this.applyStandardizedMetadata(standardizedMesh, buildingType, gridX, gridZ);
+
+        // ===== STANDARDIZED LABELING =====
+        const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
+        this.createBuildingNameLabel(standardizedMesh, buildingType, worldPos);
+
+        return standardizedMesh;
+    }
+
+    // ===== STANDARDIZED BUILDING GRAPHICS SYSTEM =====
+
+    /**
+     * Creates a standardized building mesh with consistent sizing and positioning
+     * @param {Object} buildingType - The building type configuration
+     * @returns {BABYLON.Mesh} - The standardized building mesh
+     */
+    createStandardizedBuildingMesh(buildingType) {
+        // Get standardized dimensions
+        const dimensions = this.getStandardizedBuildingDimensions(buildingType);
+
+        // Create mesh based on category with standardized approach
+        switch (buildingType.category) {
+            case 'water':
+                return this.createStandardizedWaterFacilityMesh(buildingType, dimensions);
+            case 'treatment':
+                return this.createStandardizedTreatmentPlantMesh(buildingType, dimensions);
+            case 'storage':
+                return this.createStandardizedStorageMesh(buildingType, dimensions);
+            case 'residential':
+                return this.createStandardizedHouseMesh(buildingType, dimensions);
+            case 'power':
+                return this.createStandardizedPowerPlantMesh(buildingType, dimensions);
+            case 'infrastructure':
+                return this.createStandardizedInfrastructureMesh(buildingType, dimensions);
+            case 'public':
+                return this.createStandardizedPublicBuildingMesh(buildingType, dimensions);
+            default:
+                return this.createStandardizedBasicMesh(buildingType, dimensions);
+        }
+    }
+
+    /**
+     * Calculates standardized building dimensions for consistent sizing
+     * @param {Object} buildingType - The building type configuration
+     * @returns {Object} - Standardized dimensions object
+     */
+    getStandardizedBuildingDimensions(buildingType) {
+        const BUILDING_SCALE_FACTOR = 0.85; // Consistent scale factor
+        const buildingSize = buildingType.size || 1;
+        const cellSize = this.gridManager.cellSize;
+        const actualSize = buildingSize * cellSize * BUILDING_SCALE_FACTOR;
+
+        return {
+            size: buildingSize,
+            cellSize: cellSize,
+            scaleFactor: BUILDING_SCALE_FACTOR,
+            actualSize: actualSize,
+            width: actualSize,
+            depth: actualSize,
+            height: this.getStandardizedBuildingHeight(buildingType)
+        };
+    }
+
+    /**
+     * Calculates standardized building height based on type and size
+     * @param {Object} buildingType - The building type configuration
+     * @returns {number} - Standardized height
+     */
+    getStandardizedBuildingHeight(buildingType) {
+        const baseHeight = 1.5;
+        const sizeMultiplier = (buildingType.size || 1) * 0.3;
+
+        // Category-specific height adjustments
+        const categoryHeights = {
+            'water': baseHeight + 0.5,
+            'treatment': baseHeight + 1.0,
+            'storage': baseHeight + 1.5,
+            'residential': baseHeight,
+            'power': baseHeight + 1.5,
+            'infrastructure': baseHeight * 0.3,
+            'public': baseHeight + 2.0,
+            'commercial': baseHeight + 1.0,
+            'industrial': baseHeight + 1.2
+        };
+
+        return (categoryHeights[buildingType.category] || baseHeight) + sizeMultiplier;
+    }
+
+    /**
+     * Applies standardized positioning to building mesh
+     * @param {BABYLON.Mesh} mesh - The building mesh
+     * @param {number} gridX - Grid X coordinate
+     * @param {number} gridZ - Grid Z coordinate
+     * @param {Object} buildingType - The building type configuration
+     */
+    applyStandardizedPositioning(mesh, gridX, gridZ, buildingType) {
+        const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
+        const buildingSize = buildingType.size || 1;
+
+        // Base positioning
         mesh.position.x = worldPos.x;
         mesh.position.z = worldPos.z;
-        mesh.position.y = 0; // Será ajustado em adjustBuildingToTerrain
+        mesh.position.y = 0; // Will be adjusted by terrain integration
 
-        // Aplicar material estilo Minecraft
+        // Multi-cell building center adjustment
+        if (buildingSize > 1) {
+            const offset = (buildingSize - 1) * this.gridManager.cellSize * 0.5;
+            mesh.position.x += offset;
+            mesh.position.z += offset;
+        }
+    }
+
+    /**
+     * Applies standardized material to building mesh
+     * @param {BABYLON.Mesh} mesh - The building mesh
+     * @param {Object} buildingType - The building type configuration
+     */
+    applyStandardizedMaterial(mesh, buildingType) {
         const material = this.createMinecraftBuildingMaterial(buildingType);
         mesh.material = material;
+    }
 
-        // Adicionar sombras
+    /**
+     * Applies standardized shadow settings to building mesh
+     * @param {BABYLON.Mesh} mesh - The building mesh
+     */
+    applyStandardizedShadows(mesh) {
         if (this.scene.shadowGenerator) {
             this.scene.shadowGenerator.addShadowCaster(mesh);
         }
         mesh.receiveShadows = true;
+    }
 
-        // Ajustar posicionamento preciso no terreno
-        this.adjustBuildingToTerrain(mesh, gridX, gridZ);
-
-        // Criar sombra projetada no chão
-        const terrainHeight = this.getTerrainHeightAt(gridX, gridZ);
-        this.createBuildingShadow(mesh, mesh.position, terrainHeight);
-
-        // Metadados
+    /**
+     * Applies standardized metadata to building mesh
+     * @param {BABYLON.Mesh} mesh - The building mesh
+     * @param {Object} buildingType - The building type configuration
+     * @param {number} gridX - Grid X coordinate
+     * @param {number} gridZ - Grid Z coordinate
+     */
+    applyStandardizedMetadata(mesh, buildingType, gridX, gridZ) {
         mesh.metadata = {
             building: true,
             buildingType: buildingType.id,
             gridX,
-            gridZ
+            gridZ,
+            standardized: true // Mark as using standardized system
         };
+    }
 
-        // Criar label de nome do edifício
-        this.createBuildingNameLabel(mesh, buildingType, worldPos);
+    // ===== STANDARDIZED MESH CREATION METHODS =====
+
+    /**
+     * Creates standardized basic building mesh
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh
+     */
+    createStandardizedBasicMesh(buildingType, dimensions) {
+        const mesh = BABYLON.MeshBuilder.CreateBox(`building_${buildingType.id}`, {
+            width: dimensions.width,
+            height: dimensions.height,
+            depth: dimensions.depth
+        }, this.scene);
 
         return mesh;
     }
 
-    createMinecraftStyleMesh(buildingType) {
-        // Criar edifícios com estilo voxel baseado na categoria
-        switch (buildingType.category) {
-            case 'water':
-                return this.createWaterFacilityMesh(buildingType);
-            case 'treatment':
-                return this.createTreatmentPlantMesh(buildingType);
-            case 'storage':
-                return this.createStorageMesh(buildingType);
-            case 'residential':
-                return this.createHouseMesh(buildingType);
-            case 'power':
-                return this.createPowerPlantMesh(buildingType);
-            case 'infrastructure':
-                return this.createInfrastructureMesh(buildingType);
-            case 'public':
-                return this.createPublicBuildingMesh(buildingType);
-            default:
-                return null;
+    /**
+     * Creates standardized water facility mesh
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh
+     */
+    createStandardizedWaterFacilityMesh(buildingType, dimensions) {
+        // Base structure
+        const base = BABYLON.MeshBuilder.CreateBox("waterBase", {
+            width: dimensions.width,
+            height: dimensions.height * 0.3,
+            depth: dimensions.depth
+        }, this.scene);
+
+        // Tower structure
+        const tower = BABYLON.MeshBuilder.CreateBox("waterTower", {
+            width: dimensions.width * 0.6,
+            height: dimensions.height * 0.7,
+            depth: dimensions.depth * 0.6
+        }, this.scene);
+        tower.position.y = dimensions.height * 0.5;
+
+        const merged = BABYLON.Mesh.MergeMeshes([base, tower]);
+        merged.name = `waterFacility_${buildingType.id}`;
+
+        return merged;
+    }
+
+    /**
+     * Creates standardized power plant mesh
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh
+     */
+    createStandardizedPowerPlantMesh(buildingType, dimensions) {
+        // Main building
+        const main = BABYLON.MeshBuilder.CreateBox("powerMain", {
+            width: dimensions.width,
+            height: dimensions.height * 0.8,
+            depth: dimensions.depth
+        }, this.scene);
+
+        // Cooling towers
+        const tower1 = BABYLON.MeshBuilder.CreateCylinder("powerTower1", {
+            height: dimensions.height * 0.6,
+            diameterTop: dimensions.width * 0.3,
+            diameterBottom: dimensions.width * 0.3,
+            tessellation: 8
+        }, this.scene);
+        tower1.position.y = dimensions.height * 0.7;
+        tower1.position.x = dimensions.width * 0.25;
+
+        const tower2 = tower1.clone("powerTower2");
+        tower2.position.x = -dimensions.width * 0.25;
+
+        const merged = BABYLON.Mesh.MergeMeshes([main, tower1, tower2]);
+        merged.name = `powerPlant_${buildingType.id}`;
+
+        return merged;
+    }
+
+    /**
+     * Creates standardized treatment plant mesh
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh
+     */
+    createStandardizedTreatmentPlantMesh(buildingType, dimensions) {
+        // Main building
+        const main = BABYLON.MeshBuilder.CreateBox("treatmentMain", {
+            width: dimensions.width,
+            height: dimensions.height * 0.7,
+            depth: dimensions.depth
+        }, this.scene);
+
+        // Chimney
+        const chimney = BABYLON.MeshBuilder.CreateBox("treatmentChimney", {
+            width: dimensions.width * 0.2,
+            height: dimensions.height * 0.5,
+            depth: dimensions.depth * 0.2
+        }, this.scene);
+        chimney.position.y = dimensions.height * 0.85;
+        chimney.position.x = dimensions.width * 0.3;
+
+        const merged = BABYLON.Mesh.MergeMeshes([main, chimney]);
+        merged.name = `treatmentPlant_${buildingType.id}`;
+
+        return merged;
+    }
+
+    /**
+     * Creates standardized storage mesh
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh
+     */
+    createStandardizedStorageMesh(buildingType, dimensions) {
+        const tank = BABYLON.MeshBuilder.CreateCylinder("storageTank", {
+            height: dimensions.height,
+            diameterTop: dimensions.width * 0.8,
+            diameterBottom: dimensions.width * 0.8,
+            tessellation: 12
+        }, this.scene);
+
+        tank.name = `storage_${buildingType.id}`;
+        return tank;
+    }
+
+    /**
+     * Creates standardized house mesh
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh
+     */
+    createStandardizedHouseMesh(buildingType, dimensions) {
+        // Base house
+        const base = BABYLON.MeshBuilder.CreateBox("houseBase", {
+            width: dimensions.width,
+            height: dimensions.height * 0.8,
+            depth: dimensions.depth
+        }, this.scene);
+
+        // Roof
+        const roof = BABYLON.MeshBuilder.CreateBox("houseRoof", {
+            width: dimensions.width * 1.1,
+            height: dimensions.height * 0.4,
+            depth: dimensions.depth * 1.1
+        }, this.scene);
+        roof.position.y = dimensions.height * 0.6;
+        roof.scaling.y = 0.5;
+
+        const merged = BABYLON.Mesh.MergeMeshes([base, roof]);
+        merged.name = `house_${buildingType.id}`;
+
+        return merged;
+    }
+
+    /**
+     * Creates standardized infrastructure mesh
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh
+     */
+    createStandardizedInfrastructureMesh(buildingType, dimensions) {
+        if (buildingType.id === 'road') {
+            return BABYLON.MeshBuilder.CreateBox("road", {
+                width: dimensions.width,
+                height: dimensions.height * 0.1,
+                depth: dimensions.depth
+            }, this.scene);
+        } else if (buildingType.id === 'pipe') {
+            const pipe = BABYLON.MeshBuilder.CreateCylinder("pipe", {
+                height: dimensions.width,
+                diameterTop: dimensions.width * 0.2,
+                diameterBottom: dimensions.width * 0.2,
+                tessellation: 8
+            }, this.scene);
+            pipe.rotation.z = Math.PI / 2;
+            return pipe;
         }
+
+        return this.createStandardizedBasicMesh(buildingType, dimensions);
+    }
+
+    /**
+     * Creates standardized public building mesh
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh
+     */
+    createStandardizedPublicBuildingMesh(buildingType, dimensions) {
+        if (buildingType.id === 'city_hall') {
+            // City Hall with distinctive architecture
+            const base = BABYLON.MeshBuilder.CreateBox("cityHallBase", {
+                width: dimensions.width,
+                height: dimensions.height * 0.8,
+                depth: dimensions.depth
+            }, this.scene);
+
+            const tower = BABYLON.MeshBuilder.CreateBox("cityHallTower", {
+                width: dimensions.width * 0.4,
+                height: dimensions.height * 0.6,
+                depth: dimensions.depth * 0.4
+            }, this.scene);
+            tower.position.y = dimensions.height * 0.7;
+
+            const merged = BABYLON.Mesh.MergeMeshes([base, tower]);
+            merged.name = `cityHall_${buildingType.id}`;
+            return merged;
+        }
+
+        return this.createStandardizedBasicMesh(buildingType, dimensions);
+    }
+
+    /**
+     * Creates standardized building shadow with proper alignment
+     * @param {BABYLON.Mesh} buildingMesh - The building mesh
+     * @param {number} terrainHeight - The terrain height
+     */
+    createStandardizedBuildingShadow(buildingMesh, terrainHeight) {
+        const boundingBox = buildingMesh.getBoundingInfo().boundingBox;
+
+        // Calculate shadow size based on actual building footprint
+        const buildingWidth = Math.abs(boundingBox.maximum.x - boundingBox.minimum.x);
+        const buildingDepth = Math.abs(boundingBox.maximum.z - boundingBox.minimum.z);
+
+        // Shadow slightly larger for realistic effect
+        const shadowWidth = buildingWidth * 1.05;
+        const shadowDepth = buildingDepth * 1.05;
+
+        const shadow = BABYLON.MeshBuilder.CreateGround(`shadow_${buildingMesh.name}`, {
+            width: shadowWidth,
+            height: shadowDepth
+        }, this.scene);
+
+        // Position shadow exactly under building center
+        shadow.position.x = buildingMesh.position.x;
+        shadow.position.z = buildingMesh.position.z;
+        shadow.position.y = terrainHeight + 0.005;
+
+        // Standardized shadow material
+        const shadowMaterial = new BABYLON.StandardMaterial(`shadowMat_${buildingMesh.name}`, this.scene);
+        shadowMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        shadowMaterial.alpha = 0.3;
+        shadowMaterial.backFaceCulling = false;
+        shadow.material = shadowMaterial;
+
+        // Associate shadow with building
+        buildingMesh.shadowMesh = shadow;
+        this.shadowMeshes.set(buildingMesh.name, shadow);
+
+        return shadow;
     }
 
     createBasicVoxelMesh(buildingType) {
