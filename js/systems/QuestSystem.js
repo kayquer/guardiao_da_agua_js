@@ -46,10 +46,10 @@ class QuestSystem {
         this.urgentMissions = new Set();
         this.timeWindowMissions = new Map();
 
-        // ===== ENHANCED MISSION MANAGEMENT SYSTEM =====
+        // ===== SIMPLIFIED MISSION CATEGORIES - ONLY 2 PRIMARY CATEGORIES =====
         this.missionCategories = {
             primary: {
-                name: 'Missões Principais',
+                name: 'Missões Primárias',
                 description: 'Atividades essenciais para o progresso do jogo',
                 icon: '🎯',
                 color: '#00ff88'
@@ -59,84 +59,12 @@ class QuestSystem {
                 description: 'Conteúdo educacional opcional e desafios extras',
                 icon: '📚',
                 color: '#4a9eff'
-            },
-            water_management: {
-                name: 'Gestão Hídrica',
-                description: 'Missões focadas em recursos hídricos',
-                icon: '💧',
-                color: '#00bfff'
-            },
-            environmental: {
-                name: 'Proteção Ambiental',
-                description: 'Missões sobre impacto ambiental',
-                icon: '🌱',
-                color: '#32cd32'
-            },
-            urban_planning: {
-                name: 'Planejamento Urbano',
-                description: 'Missões sobre desenvolvimento urbano',
-                icon: '🏙️',
-                color: '#ffa500'
-            },
-            crisis: {
-                name: 'Gestão de Crises',
-                description: 'Missões de resposta a emergências',
-                icon: '⚠️',
-                color: '#ff4444'
-            },
-
-            // Additional categories used by missions
-            environment: {
-                name: 'Meio Ambiente',
-                description: 'Missões de proteção e conservação ambiental',
-                icon: '🌍',
-                color: '#228B22'
-            },
-            infrastructure: {
-                name: 'Infraestrutura',
-                description: 'Desenvolvimento de infraestrutura básica',
-                icon: '🏗️',
-                color: '#8B4513'
-            },
-            sustainability: {
-                name: 'Sustentabilidade',
-                description: 'Práticas sustentáveis e desenvolvimento responsável',
-                icon: '♻️',
-                color: '#32CD32'
-            },
-
-            // ===== ENHANCED MISSION CATEGORIES =====
-            story: {
-                name: 'Narrativa',
-                description: 'Missões com história e escolhas que impactam o futuro',
-                icon: '📖',
-                color: '#9B59B6'
-            },
-            community: {
-                name: 'Comunidade',
-                description: 'Engajamento cidadão e participação pública',
-                icon: '👥',
-                color: '#E67E22'
-            },
-            innovation: {
-                name: 'Inovação',
-                description: 'Pesquisa, desenvolvimento e novas tecnologias',
-                icon: '🔬',
-                color: '#3498DB'
-            },
-            seasonal: {
-                name: 'Eventos Sazonais',
-                description: 'Desafios especiais por tempo limitado',
-                icon: '🌟',
-                color: '#F39C12'
-            },
-            emergency: {
-                name: 'Emergências',
-                description: 'Situações críticas que requerem resposta imediata',
-                icon: '🚨',
-                color: '#E74C3C'
             }
         };
+
+        // ===== SIMPLIFIED MISSION INTERFACE =====
+        // Note: Old detailed categories have been simplified to just 'primary' and 'secondary'
+        // for better user experience and reduced complexity
 
         this.missionUI = {
             isOpen: false,
@@ -182,7 +110,7 @@ class QuestSystem {
             title: 'Bem-vindo, Guardião!',
             description: 'Construa sua primeira bomba de água para começar a fornecer água à população.',
             type: 'primary',
-            category: 'water_management',
+            category: 'primary',
             difficulty: 'beginner',
             estimatedTime: '5 minutos',
             prerequisites: [],
@@ -221,7 +149,7 @@ class QuestSystem {
             title: 'Tratando a Poluição',
             description: 'A poluição está afetando a qualidade da água. Construa uma estação de tratamento.',
             type: 'tutorial',
-            category: 'environment',
+            category: 'secondary',
             objectives: [
                 {
                     id: 'build_treatment',
@@ -262,7 +190,7 @@ class QuestSystem {
             title: 'Armazenamento Estratégico',
             description: 'Construa reservatórios para garantir fornecimento constante de água.',
             type: 'tutorial',
-            category: 'infrastructure',
+            category: 'secondary',
             objectives: [
                 {
                     id: 'build_storage',
@@ -304,7 +232,7 @@ class QuestSystem {
             title: 'Cidade Sustentável',
             description: 'Desenvolva uma infraestrutura hídrica sustentável para sua cidade.',
             type: 'main',
-            category: 'sustainability',
+            category: 'primary',
             objectives: [
                 {
                     id: 'population_growth',
@@ -357,7 +285,7 @@ class QuestSystem {
             title: 'Crise Hídrica',
             description: 'Supere uma crise de escassez de água mantendo a cidade funcionando.',
             type: 'challenge',
-            category: 'crisis',
+            category: 'secondary',
             timeLimit: 600, // 10 minutos
             objectives: [
                 {
@@ -401,7 +329,7 @@ class QuestSystem {
             title: 'Compreendendo o Ciclo Hidrológico',
             description: 'Aprenda sobre o ciclo da água e sua importância para o ecossistema.',
             type: 'secondary',
-            category: 'environmental',
+            category: 'secondary',
             difficulty: 'beginner',
             estimatedTime: '10 minutos',
             prerequisites: ['tutorial_01'],
@@ -448,7 +376,7 @@ class QuestSystem {
             title: 'Gestão de Bacia Hidrográfica',
             description: 'Entenda como proteger e gerenciar uma bacia hidrográfica urbana.',
             type: 'secondary',
-            category: 'water_management',
+            category: 'secondary',
             difficulty: 'intermediate',
             estimatedTime: '15 minutos',
             prerequisites: ['tutorial_01', 'edu_hydrological_cycle'],
@@ -508,7 +436,7 @@ class QuestSystem {
             title: 'Crise: Água Subterrânea Contaminada',
             description: 'Responda a uma emergência de contaminação da água subterrânea por nitratos e coliformes fecais.',
             type: 'secondary',
-            category: 'crisis',
+            category: 'secondary',
             difficulty: 'advanced',
             estimatedTime: '20 minutos',
             prerequisites: ['tutorial_01'],
@@ -569,7 +497,7 @@ class QuestSystem {
             title: 'Impactos da Produção Canavieira',
             description: 'Gerencie os impactos ambientais da produção de cana-de-açúcar na bacia hidrográfica.',
             type: 'secondary',
-            category: 'environmental',
+            category: 'secondary',
             difficulty: 'expert',
             estimatedTime: '30 minutos',
             prerequisites: ['edu_watershed_management'],
@@ -640,7 +568,7 @@ class QuestSystem {
             title: 'Infraestrutura Verde Urbana',
             description: 'Implemente soluções baseadas na natureza para gestão sustentável da água urbana.',
             type: 'primary',
-            category: 'urban_planning',
+            category: 'primary',
             difficulty: 'intermediate',
             estimatedTime: '25 minutos',
             prerequisites: ['edu_hydrological_cycle'],
@@ -719,7 +647,7 @@ class QuestSystem {
             title: 'Centro de Pesquisas Hídricas',
             description: 'Estabeleça um centro de pesquisas para desenvolver tecnologias inovadoras de gestão hídrica.',
             type: 'primary',
-            category: 'water_management',
+            category: 'primary',
             difficulty: 'expert',
             estimatedTime: '40 minutos',
             prerequisites: ['crisis_groundwater_contamination', 'green_infrastructure'],
@@ -794,7 +722,7 @@ class QuestSystem {
             title: 'A Nova Gestora - Parte 1: Primeiro Dia',
             description: 'Você foi nomeada a nova gestora de recursos hídricos da cidade. Conheça a situação atual e tome suas primeiras decisões.',
             type: 'story',
-            category: 'story',
+            category: 'secondary',
             difficulty: 'beginner',
             estimatedTime: '8 minutos',
             chainId: 'nova_gestora',
@@ -854,7 +782,7 @@ class QuestSystem {
             title: 'A Nova Gestora - Parte 2: Primeira Crise',
             description: 'Um vazamento foi detectado na rede principal. Como você lidará com esta primeira emergência?',
             type: 'story',
-            category: 'emergency',
+            category: 'secondary',
             difficulty: 'intermediate',
             estimatedTime: '12 minutos',
             chainId: 'nova_gestora',
@@ -936,7 +864,7 @@ class QuestSystem {
             title: '💧 Dia Mundial da Água - Campanha Especial',
             description: 'Organize uma campanha especial para o Dia Mundial da Água. Eduque a população e promova a conservação.',
             type: 'seasonal',
-            category: 'seasonal',
+            category: 'secondary',
             difficulty: 'intermediate',
             estimatedTime: '20 minutos',
             urgency: 'normal',
@@ -999,7 +927,7 @@ class QuestSystem {
             title: '☣️ EMERGÊNCIA: Contaminação Detectada',
             description: 'Contaminação química foi detectada no reservatório principal. Ação imediata necessária para proteger a saúde pública!',
             type: 'emergency',
-            category: 'emergency',
+            category: 'secondary',
             difficulty: 'expert',
             estimatedTime: '10 minutos',
             urgency: 'critical',
@@ -1885,49 +1813,68 @@ class QuestSystem {
         const missions = this.getMissionsByCategory(currentCategory);
 
         const content = `
-            <div class="mission-interface">
+            <div class="mission-interface enhanced">
                 <div class="mission-header">
                     <h3>🎯 Sistema de Missões</h3>
                     <button class="close-btn" onclick="window.gameManager.questSystem.closeMissionInterface()">✖️</button>
                 </div>
 
-                <div class="mission-categories">
+                <div class="mission-categories-simplified">
                     ${categories.map(cat => {
                         const category = this.missionCategories[cat];
                         const isActive = cat === currentCategory;
                         const missionCount = this.getMissionsByCategory(cat).length;
 
                         return `
-                            <button class="category-btn ${isActive ? 'active' : ''}"
+                            <button class="category-btn-large ${isActive ? 'active' : ''}"
                                     onclick="window.gameManager.questSystem.selectCategory('${cat}')">
-                                <span class="category-icon">${category.icon}</span>
-                                <span class="category-name">${category.name}</span>
-                                <span class="mission-count">${missionCount}</span>
+                                <div class="category-icon-large">${category.icon}</div>
+                                <div class="category-info">
+                                    <div class="category-name-large">${category.name}</div>
+                                    <div class="category-description-small">${category.description}</div>
+                                    <div class="mission-count-badge">${missionCount} missões</div>
+                                </div>
                             </button>
                         `;
                     }).join('')}
                 </div>
 
-                <div class="category-description">
-                    <p>${this.missionCategories[currentCategory].description}</p>
+                <div class="mission-content-area">
+                    <div class="mission-list-header">
+                        <h4>📋 ${this.missionCategories[currentCategory].name}</h4>
+                        <div class="mission-list-stats">
+                            <span class="active-missions">${this.activeQuests.size} ativas</span>
+                            <span class="completed-missions">${this.completedQuests.size} completas</span>
+                        </div>
+                    </div>
+
+                    <div class="mission-list-enhanced">
+                        ${missions.length > 0 ?
+                            missions.map(mission => this.renderMissionCard(mission)).join('') :
+                            `<div class="no-missions">
+                                <div class="no-missions-icon">📭</div>
+                                <div class="no-missions-text">Nenhuma missão disponível nesta categoria</div>
+                                <div class="no-missions-hint">Explore outras categorias ou complete missões anteriores</div>
+                            </div>`
+                        }
+                    </div>
                 </div>
 
-                <div class="mission-list">
-                    ${missions.map(mission => this.renderMissionCard(mission)).join('')}
-                </div>
-
-                <div class="mission-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">Missões Ativas:</span>
+                <div class="mission-stats-compact">
+                    <div class="stat-item-compact">
+                        <span class="stat-icon">🎯</span>
                         <span class="stat-value">${this.activeQuests.size}</span>
+                        <span class="stat-label">Ativas</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Missões Completas:</span>
+                    <div class="stat-item-compact">
+                        <span class="stat-icon">✅</span>
                         <span class="stat-value">${this.completedQuests.size}</span>
+                        <span class="stat-label">Completas</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Pontuação Total:</span>
+                    <div class="stat-item-compact">
+                        <span class="stat-icon">⭐</span>
                         <span class="stat-value">${this.totalScore}</span>
+                        <span class="stat-label">Pontos</span>
                     </div>
                 </div>
             </div>
@@ -2040,6 +1987,7 @@ class QuestSystem {
 
                 <div class="mission-description">
                     <p>${mission.description}</p>
+                    ${this.renderMissionInfoCards(mission)}
                 </div>
 
                 <div class="mission-meta">
@@ -2082,6 +2030,53 @@ class QuestSystem {
                 <span class="stakeholder-list">${stakeholderNames.join(', ')}</span>
             </div>
         `;
+    }
+
+    /**
+     * Renders informational cards for mission categories (simplified version)
+     */
+    renderMissionInfoCards(mission) {
+        // Get related info cards based on mission category
+        const relatedCards = this.getRelatedInfoCards(mission);
+
+        if (relatedCards.length === 0) return '';
+
+        return `
+            <div class="mission-info-cards">
+                <div class="info-cards-label">Categorias Relacionadas:</div>
+                <div class="info-cards-container">
+                    ${relatedCards.map(cardKey => {
+                        const card = this.missionCategories[cardKey];
+                        return `
+                            <div class="mission-info-card" style="border-left-color: ${card.color}">
+                                <span class="info-card-icon" style="color: ${card.color}">${card.icon}</span>
+                                <div class="info-card-content">
+                                    <div class="info-card-name">${card.name}</div>
+                                    <div class="info-card-description">${card.description}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Gets related info cards for a mission based on its simplified category
+     * Returns simplified categories that match the mission's category (primary/secondary)
+     */
+    getRelatedInfoCards(mission) {
+        // For simplified mission interface, return the mission's category as a related card
+        // This ensures consistency with the simplified 2-category system
+        if (mission.category === 'primary') {
+            return ['primary'];
+        } else if (mission.category === 'secondary') {
+            return ['secondary'];
+        }
+
+        // Fallback: if mission doesn't have a category, return empty array
+        return [];
     }
 
     // ===== ENHANCED UI SYNCHRONIZATION =====
@@ -2250,15 +2245,11 @@ class QuestSystem {
     // ===== MISSION MANAGEMENT HELPERS =====
 
     /**
-     * Gets missions by category or type
+     * Gets missions by category - now simplified to only primary/secondary
      */
     getMissionsByCategory(category) {
         return Array.from(this.quests.values()).filter(mission => {
-            // Handle primary/secondary type filtering
-            if (category === 'primary' || category === 'secondary') {
-                return mission.type === category;
-            }
-            // Handle regular category filtering
+            // Filter by the simplified category system
             return mission.category === category;
         });
     }
