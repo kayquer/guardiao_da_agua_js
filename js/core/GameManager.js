@@ -1066,10 +1066,23 @@ class GameManager {
                 return;
             }
 
+            // ===== VALIDATE INPUT PARAMETERS =====
+            if (!isFinite(deltaX) || !isFinite(deltaZ)) {
+                console.error('❌ Invalid movement deltas in moveIsometricCamera:', { deltaX, deltaZ });
+                return;
+            }
+
             // ===== GET CURRENT STATE =====
             const currentTarget = this.camera.getTarget();
             if (!currentTarget) {
                 console.error('❌ Failed to get camera target in moveIsometricCamera');
+                return;
+            }
+
+            // ===== VALIDATE CURRENT CAMERA TARGET =====
+            if (!isFinite(currentTarget.x) || !isFinite(currentTarget.z)) {
+                console.error('❌ Camera target has invalid values, attempting recovery:', currentTarget);
+                this.recoverCameraState();
                 return;
             }
 
@@ -1080,12 +1093,32 @@ class GameManager {
                 currentTarget.z + deltaZ
             );
 
+            // ===== VALIDATE NEW TARGET CALCULATION =====
+            if (!isFinite(newTarget.x) || !isFinite(newTarget.z)) {
+                console.error('❌ New target calculation resulted in invalid values:', {
+                    newTarget,
+                    currentTarget,
+                    deltaX,
+                    deltaZ
+                });
+                return;
+            }
+
             // ===== ENHANCED BOUNDS CHECKING =====
             const originalX = newTarget.x;
             const originalZ = newTarget.z;
 
             newTarget.x = Math.max(this.cameraLimits.minX, Math.min(this.cameraLimits.maxX, newTarget.x));
             newTarget.z = Math.max(this.cameraLimits.minZ, Math.min(this.cameraLimits.maxZ, newTarget.z));
+
+            // ===== VALIDATE BOUNDED TARGET =====
+            if (!isFinite(newTarget.x) || !isFinite(newTarget.z)) {
+                console.error('❌ Bounds checking resulted in invalid values:', {
+                    newTarget,
+                    bounds: this.cameraLimits
+                });
+                return;
+            }
 
             // ===== LOG BOUNDS VIOLATIONS =====
             if (originalX !== newTarget.x || originalZ !== newTarget.z) {
@@ -1224,20 +1257,30 @@ class GameManager {
     startRenderLoop() {
         this.engine.runRenderLoop(() => {
             const currentTime = performance.now();
+
+            // ===== FIX: Initialize lastUpdateTime on first frame to prevent huge deltaTime =====
+            if (this.lastUpdateTime === 0) {
+                this.lastUpdateTime = currentTime;
+                return; // Skip first frame to avoid massive deltaTime
+            }
+
             const deltaTime = currentTime - this.lastUpdateTime;
-            
+
+            // ===== SAFETY: Cap deltaTime to prevent NaN issues from large frame gaps =====
+            const cappedDeltaTime = Math.min(deltaTime, 100); // Cap at 100ms (10 FPS minimum)
+
             // Atualizar controles de câmera WASD (sempre ativo)
-            this.updateCameraControls(deltaTime);
+            this.updateCameraControls(cappedDeltaTime);
 
             // Atualizar jogo
-            this.update(deltaTime);
+            this.update(cappedDeltaTime);
 
             // Renderizar cena
             this.scene.render();
-            
+
             this.lastUpdateTime = currentTime;
             this.frameCount++;
-            
+
             // Atualizar FPS
             if (currentTime - this.lastFPSUpdate > 1000) {
                 this.currentFPS = this.frameCount;
@@ -1983,8 +2026,25 @@ class GameManager {
             return;
         }
 
+        // ===== VALIDATE INPUTS TO PREVENT NaN =====
+        if (!deltaTime || deltaTime <= 0 || !isFinite(deltaTime)) {
+            console.warn('⚠️ Invalid deltaTime in camera movement:', deltaTime);
+            return;
+        }
+
+        if (!this.cameraControls.speed || !isFinite(this.cameraControls.speed)) {
+            console.warn('⚠️ Invalid camera speed:', this.cameraControls.speed);
+            return;
+        }
+
         const keys = this.cameraControls.keys;
         const speed = this.cameraControls.speed * (deltaTime / 16.67); // Normalize to 60 FPS
+
+        // ===== VALIDATE CALCULATED SPEED =====
+        if (!isFinite(speed) || speed > 10) { // Cap speed to prevent extreme values
+            console.warn('⚠️ Invalid calculated speed:', speed, 'deltaTime:', deltaTime);
+            return;
+        }
 
         // Check if any movement key is pressed
         const isMoving = keys.W || keys.A || keys.S || keys.D;
@@ -2010,6 +2070,12 @@ class GameManager {
             if (keys.D) { // Right (North-East in isometric)
                 deltaX += speed * 0.707;
                 deltaZ -= speed * 0.707;
+            }
+
+            // ===== VALIDATE MOVEMENT DELTAS BEFORE APPLYING =====
+            if (!isFinite(deltaX) || !isFinite(deltaZ)) {
+                console.error('❌ Invalid movement deltas:', { deltaX, deltaZ, speed, deltaTime });
+                return;
             }
 
             // Apply movement if any
