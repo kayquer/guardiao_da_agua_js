@@ -72,6 +72,30 @@ class QuestSystem {
         this.initializeQuests();
         
         console.log('✅ QuestSystem inicializado');
+
+        // ===== GLOBAL DEBUG FUNCTIONS =====
+        if (typeof window !== 'undefined') {
+            window.validateMission = (missionId) => this.validateMissionCompletion(missionId);
+            window.forceCompleteMission = (missionId) => this.forceCompleteMission(missionId);
+            window.listActiveMissions = () => {
+                console.log('🎯 Active Missions:');
+                this.activeQuests.forEach(questId => {
+                    const quest = this.quests.get(questId);
+                    if (quest) {
+                        console.log(`  - ${quest.title} (${questId}): ${Math.round(quest.progress * 100)}%`);
+                    }
+                });
+            };
+            window.listAllMissions = () => {
+                console.log('📋 All Missions:');
+                this.quests.forEach((quest, questId) => {
+                    const status = this.completedQuests.has(questId) ? 'Completed' :
+                                  this.activeQuests.has(questId) ? 'Active' : 'Available';
+                    console.log(`  - ${quest.title} (${questId}): ${status}`);
+                });
+            };
+            console.log('🧪 Mission debug functions available: validateMission(), forceCompleteMission(), listActiveMissions(), listAllMissions()');
+        }
     }
     
     // ===== INICIALIZAÇÃO =====
@@ -807,8 +831,14 @@ class QuestSystem {
         });
         
         // Calcular progresso total
+        const oldProgress = quest.progress;
         quest.progress = totalProgress / quest.objectives.length;
-        
+
+        // Update UI if progress changed
+        if (Math.abs(oldProgress - quest.progress) > 0.01) {
+            this.updateQuestUI();
+        }
+
         // Verificar limite de tempo
         if (quest.timeLimit) {
             const elapsed = (Date.now() - quest.startTime) / 1000;
@@ -817,7 +847,7 @@ class QuestSystem {
                 return;
             }
         }
-        
+
         // Verificar conclusão
         if (allObjectivesComplete) {
             this.completeQuest(questId);
@@ -1119,6 +1149,8 @@ class QuestSystem {
                     </div>
                 </div>
 
+                ${this.renderPrerequisites(mission)}
+
                 <div class="mission-progress">
                     <div class="progress-bar">
                         <div class="progress-fill" style="width: ${progressPercent}%"></div>
@@ -1134,21 +1166,167 @@ class QuestSystem {
         `;
     }
 
-    // ===== LEGACY UI SUPPORT =====
+    // ===== ENHANCED UI SYNCHRONIZATION =====
     updateQuestUI() {
+        this.updateMissionInfoPanel();
+        this.updateMissionProgressDisplay();
+
+        // Update mission interface if it's open
+        if (this.missionUI.isOpen) {
+            this.renderMissionInterface();
+        }
+    }
+
+    /**
+     * Updates the mission-info panel in the sidebar
+     */
+    updateMissionInfoPanel() {
         const currentMissionElement = document.getElementById('current-mission');
-        const missionProgressElement = document.getElementById('mission-progress');
+        const progressTextElement = document.querySelector('.mission-info .progress-text');
 
-        if (this.currentMainQuest) {
-            const quest = this.quests.get(this.currentMainQuest);
-            if (quest && currentMissionElement) {
-                currentMissionElement.textContent = quest.description;
+        if (!currentMissionElement) return;
 
-                if (missionProgressElement) {
-                    missionProgressElement.style.width = `${quest.progress * 100}%`;
+        // Find the most relevant active mission to display
+        let displayMission = null;
+
+        // Priority 1: Current main quest
+        if (this.currentMainQuest && this.activeQuests.has(this.currentMainQuest)) {
+            displayMission = this.quests.get(this.currentMainQuest);
+        }
+
+        // Priority 2: Any active primary mission
+        if (!displayMission) {
+            for (const questId of this.activeQuests) {
+                const quest = this.quests.get(questId);
+                if (quest && quest.type === 'primary') {
+                    displayMission = quest;
+                    break;
                 }
             }
         }
+
+        // Priority 3: Any active mission
+        if (!displayMission && this.activeQuests.size > 0) {
+            const firstActiveId = this.activeQuests.values().next().value;
+            displayMission = this.quests.get(firstActiveId);
+        }
+
+        // Update the display
+        if (displayMission) {
+            currentMissionElement.textContent = displayMission.description;
+
+            // Update progress text
+            if (progressTextElement) {
+                const completedObjectives = displayMission.objectives.filter(obj => obj.current >= obj.required).length;
+                const totalObjectives = displayMission.objectives.length;
+                progressTextElement.textContent = `${completedObjectives}/${totalObjectives}`;
+            }
+        } else {
+            currentMissionElement.textContent = 'Nenhuma missão ativa';
+            if (progressTextElement) {
+                progressTextElement.textContent = '0/0';
+            }
+        }
+    }
+
+    /**
+     * Updates the mission progress bar
+     */
+    updateMissionProgressDisplay() {
+        const missionProgressElement = document.getElementById('mission-progress');
+        if (!missionProgressElement) return;
+
+        // Find the mission to display (same logic as above)
+        let displayMission = null;
+
+        if (this.currentMainQuest && this.activeQuests.has(this.currentMainQuest)) {
+            displayMission = this.quests.get(this.currentMainQuest);
+        } else if (this.activeQuests.size > 0) {
+            // Find first active primary mission, or any active mission
+            for (const questId of this.activeQuests) {
+                const quest = this.quests.get(questId);
+                if (quest && quest.type === 'primary') {
+                    displayMission = quest;
+                    break;
+                }
+            }
+
+            if (!displayMission) {
+                const firstActiveId = this.activeQuests.values().next().value;
+                displayMission = this.quests.get(firstActiveId);
+            }
+        }
+
+        if (displayMission) {
+            const progressPercent = this.calculateMissionProgress(displayMission);
+            missionProgressElement.style.width = `${progressPercent}%`;
+        } else {
+            missionProgressElement.style.width = '0%';
+        }
+    }
+
+    /**
+     * Calculates mission progress percentage
+     */
+    calculateMissionProgress(mission) {
+        if (!mission || !mission.objectives || mission.objectives.length === 0) {
+            return 0;
+        }
+
+        const totalObjectives = mission.objectives.length;
+        const completedObjectives = mission.objectives.filter(obj => obj.current >= obj.required).length;
+
+        return Math.round((completedObjectives / totalObjectives) * 100);
+    }
+
+    /**
+     * Renders prerequisite information for a mission
+     */
+    renderPrerequisites(mission) {
+        if (!mission.prerequisites || mission.prerequisites.length === 0) {
+            return '';
+        }
+
+        const prerequisiteInfo = mission.prerequisites.map(prereqId => {
+            const prereqMission = this.quests.get(prereqId);
+            const isCompleted = this.completedQuests.has(prereqId);
+
+            if (prereqMission) {
+                return {
+                    title: prereqMission.title,
+                    completed: isCompleted,
+                    id: prereqId
+                };
+            } else {
+                return {
+                    title: prereqId,
+                    completed: isCompleted,
+                    id: prereqId
+                };
+            }
+        });
+
+        const allCompleted = prerequisiteInfo.every(prereq => prereq.completed);
+        const statusClass = allCompleted ? 'prerequisites-met' : 'prerequisites-pending';
+
+        return `
+            <div class="mission-prerequisites ${statusClass}">
+                <div class="prerequisites-header">
+                    <span class="meta-label">Pré-requisitos:</span>
+                    <span class="prerequisites-status">
+                        ${allCompleted ? '✅ Completos' : '⏳ Pendentes'}
+                    </span>
+                </div>
+                <div class="prerequisites-list">
+                    ${prerequisiteInfo.map(prereq => `
+                        <div class="prerequisite-item ${prereq.completed ? 'completed' : 'pending'}">
+                            <span class="prerequisite-icon">${prereq.completed ? '✅' : '⏳'}</span>
+                            <span class="prerequisite-title">${prereq.title}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
     }
     
     // ===== MISSION MANAGEMENT HELPERS =====
@@ -1300,9 +1478,66 @@ class QuestSystem {
 
         // Check prerequisites
         if (mission.prerequisites && mission.prerequisites.length > 0) {
-            return mission.prerequisites.every(prereq => this.completedQuests.has(prereq));
+            const prerequisitesMet = mission.prerequisites.every(prereq => this.completedQuests.has(prereq));
+            if (!prerequisitesMet) {
+                console.log(`🔒 Mission ${mission.title} blocked by prerequisites:`,
+                    mission.prerequisites.filter(prereq => !this.completedQuests.has(prereq)));
+                return false;
+            }
         }
 
+        return true;
+    }
+
+    /**
+     * Validates mission completion logic
+     */
+    validateMissionCompletion(missionId) {
+        const mission = this.quests.get(missionId);
+        if (!mission) {
+            console.error(`❌ Mission validation failed: Mission ${missionId} not found`);
+            return false;
+        }
+
+        console.log(`🔍 Validating mission completion: ${mission.title}`);
+
+        // Check each objective
+        let allObjectivesComplete = true;
+        mission.objectives.forEach((objective, index) => {
+            const progress = this.checkObjectiveProgress(objective);
+            const isComplete = progress >= objective.required;
+
+            console.log(`  📋 Objective ${index + 1}: ${objective.description}`);
+            console.log(`     Progress: ${progress}/${objective.required} ${isComplete ? '✅' : '⏳'}`);
+
+            if (!isComplete) {
+                allObjectivesComplete = false;
+            }
+        });
+
+        console.log(`🎯 Mission ${mission.title} completion status: ${allObjectivesComplete ? '✅ Complete' : '⏳ In Progress'}`);
+        return allObjectivesComplete;
+    }
+
+    /**
+     * Forces mission completion for testing purposes
+     */
+    forceCompleteMission(missionId) {
+        const mission = this.quests.get(missionId);
+        if (!mission) {
+            console.error(`❌ Cannot force complete: Mission ${missionId} not found`);
+            return false;
+        }
+
+        console.log(`🧪 Force completing mission: ${mission.title}`);
+
+        // Complete all objectives
+        mission.objectives.forEach(objective => {
+            objective.current = objective.required;
+        });
+
+        // Complete the mission
+        this.completeQuest(missionId);
         return true;
     }
 
