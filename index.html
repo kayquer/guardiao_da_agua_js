@@ -151,13 +151,24 @@
             <div class="hud-bottom">
                 <div class="info-panel">
                     <div class="mission-info">
-                        <h4>Missão Atual</h4>
-                        <p id="current-mission">Construa sua primeira estação de tratamento de água</p>
+                        <div class="mission-header">
+                            <h4>Missão Atual</h4>
+                            <div class="mission-urgency" id="mission-urgency"></div>
+                        </div>
+                        <div class="mission-objective-display" id="mission-objective-display" onclick="window.gameManager.questSystem.focusOnCurrentObjective()">
+                            <div class="objective-icon" id="objective-icon">🎯</div>
+                            <div class="objective-content">
+                                <div class="objective-title" id="current-mission">Construa sua primeira estação de tratamento de água</div>
+                                <div class="objective-action" id="objective-action">Clique para ver detalhes</div>
+                            </div>
+                            <div class="objective-status" id="objective-status">
+                                <div class="progress-text">1/4</div>
+                            </div>
+                        </div>
                         <div class="mission-progress">
                             <div class="progress-bar">
                                 <div class="progress-fill" id="mission-progress" style="width: 25%"></div>
                             </div>
-                            <span class="progress-text">1/4</span>
                         </div>
                     </div>
                     

@@ -2063,6 +2063,199 @@ class QuestSystem {
     }
 
     /**
+     * Gets the most important current objective for a mission
+     */
+    getCurrentObjective(mission) {
+        if (!mission || !mission.objectives) return null;
+
+        // Find the first incomplete objective
+        for (const objective of mission.objectives) {
+            if (objective.current < objective.required) {
+                return objective;
+            }
+        }
+
+        // If all objectives are complete, return the last one
+        return mission.objectives[mission.objectives.length - 1] || null;
+    }
+
+    /**
+     * Gets actionable text for an objective
+     */
+    getActionableObjectiveText(objective, mission) {
+        if (!objective) return mission.description;
+
+        // Create actionable text based on objective type
+        const remaining = objective.required - objective.current;
+
+        if (objective.type === 'build') {
+            if (remaining > 0) {
+                return `Construa ${remaining} ${objective.buildingType || 'edifício(s)'}`;
+            } else {
+                return `✅ ${objective.description}`;
+            }
+        } else if (objective.type === 'resource') {
+            if (remaining > 0) {
+                return `Colete ${remaining} unidades de ${objective.resourceType || 'recursos'}`;
+            } else {
+                return `✅ ${objective.description}`;
+            }
+        } else if (objective.type === 'reach') {
+            if (remaining > 0) {
+                return `Alcance ${objective.required} ${objective.targetType || 'pontos'}`;
+            } else {
+                return `✅ ${objective.description}`;
+            }
+        }
+
+        // Default fallback
+        return objective.description || mission.description;
+    }
+
+    /**
+     * Gets action text for an objective
+     */
+    getObjectiveActionText(objective, mission) {
+        if (!objective) return 'Clique para ver detalhes';
+
+        const remaining = objective.required - objective.current;
+
+        if (remaining <= 0) {
+            return 'Objetivo concluído!';
+        }
+
+        if (objective.type === 'build') {
+            return 'Abrir painel de construção';
+        } else if (objective.type === 'resource') {
+            return 'Ver recursos necessários';
+        } else if (objective.type === 'reach') {
+            return 'Ver progresso detalhado';
+        }
+
+        return 'Clique para mais informações';
+    }
+
+    /**
+     * Gets appropriate icon for an objective
+     */
+    getObjectiveIcon(objective, mission) {
+        if (!objective) return '🎯';
+
+        const remaining = objective.required - objective.current;
+
+        if (remaining <= 0) {
+            return '✅';
+        }
+
+        if (objective.type === 'build') {
+            return '🏗️';
+        } else if (objective.type === 'resource') {
+            return '📦';
+        } else if (objective.type === 'reach') {
+            return '📈';
+        }
+
+        return '🎯';
+    }
+
+    /**
+     * Gets mission urgency information
+     */
+    getMissionUrgency(mission) {
+        if (!mission) return { level: 'none', text: '' };
+
+        // Check for explicit urgency
+        if (mission.urgency === 'high' || mission.urgency === 'critical') {
+            return {
+                level: mission.urgency,
+                text: mission.urgency === 'critical' ? 'CRÍTICA' : 'URGENTE'
+            };
+        }
+
+        // Check for time windows
+        if (mission.timeWindow && mission.status === 'available') {
+            const timeLeft = mission.timeWindow.end - Date.now();
+            const hoursLeft = Math.ceil(timeLeft / (1000 * 60 * 60));
+
+            if (hoursLeft <= 2) {
+                return { level: 'critical', text: 'CRÍTICA' };
+            } else if (hoursLeft <= 6) {
+                return { level: 'high', text: 'URGENTE' };
+            } else if (hoursLeft <= 24) {
+                return { level: 'medium', text: 'MODERADA' };
+            }
+        }
+
+        // Check mission type
+        if (mission.type === 'primary') {
+            return { level: 'medium', text: 'IMPORTANTE' };
+        }
+
+        return { level: 'low', text: 'NORMAL' };
+    }
+
+    /**
+     * Handles click on current objective display
+     */
+    focusOnCurrentObjective() {
+        if (!this.currentDisplayMission) {
+            // No current mission, open mission interface
+            this.openMissionInterface();
+            return;
+        }
+
+        const mission = this.currentDisplayMission;
+        const currentObjective = this.getCurrentObjective(mission);
+
+        if (!currentObjective) {
+            // Show mission details
+            this.showMissionDetails(mission.id);
+            return;
+        }
+
+        // Handle different objective types
+        if (currentObjective.type === 'build') {
+            // Open building panel for the required building type
+            if (currentObjective.buildingType && window.gameManager.uiManager) {
+                // Try to open the appropriate building category
+                this.openBuildingCategory(currentObjective.buildingType);
+            } else {
+                // Fallback to mission details
+                this.showMissionDetails(mission.id);
+            }
+        } else {
+            // For other types, show mission details
+            this.showMissionDetails(mission.id);
+        }
+    }
+
+    /**
+     * Opens the appropriate building category for an objective
+     */
+    openBuildingCategory(buildingType) {
+        // Map building types to UI categories
+        const categoryMap = {
+            'water_pump': 'water',
+            'well': 'water',
+            'desalination_plant': 'water',
+            'rain_garden': 'water',
+            'floating_garden': 'water',
+            'monitoring_station': 'water',
+            'quality_monitor': 'water',
+            'treatment_plant': 'treatment',
+            'reservoir': 'storage',
+            'water_tower': 'storage'
+        };
+
+        const category = categoryMap[buildingType] || 'water';
+
+        // Trigger building category selection
+        if (window.gameManager.uiManager && window.gameManager.uiManager.selectBuildingCategory) {
+            window.gameManager.uiManager.selectBuildingCategory(category);
+        }
+    }
+
+    /**
      * Gets related info cards for a mission based on its simplified category
      * Returns simplified categories that match the mission's category (primary/secondary)
      */
@@ -2091,11 +2284,16 @@ class QuestSystem {
     }
 
     /**
-     * Updates the mission-info panel in the sidebar
+     * Updates the enhanced mission-info panel in the sidebar
      */
     updateMissionInfoPanel() {
         const currentMissionElement = document.getElementById('current-mission');
         const progressTextElement = document.querySelector('.mission-info .progress-text');
+        const objectiveActionElement = document.getElementById('objective-action');
+        const objectiveIconElement = document.getElementById('objective-icon');
+        const objectiveStatusElement = document.getElementById('objective-status');
+        const missionUrgencyElement = document.getElementById('mission-urgency');
+        const progressFillElement = document.getElementById('mission-progress');
 
         if (!currentMissionElement) return;
 
@@ -2126,19 +2324,73 @@ class QuestSystem {
 
         // Update the display
         if (displayMission) {
-            currentMissionElement.textContent = displayMission.description;
+            // Get the most important current objective
+            const currentObjective = this.getCurrentObjective(displayMission);
 
-            // Update progress text
+            if (currentObjective) {
+                // Update objective title with actionable text
+                currentMissionElement.textContent = this.getActionableObjectiveText(currentObjective, displayMission);
+
+                // Update action text
+                if (objectiveActionElement) {
+                    objectiveActionElement.textContent = this.getObjectiveActionText(currentObjective, displayMission);
+                }
+
+                // Update objective icon based on type
+                if (objectiveIconElement) {
+                    objectiveIconElement.textContent = this.getObjectiveIcon(currentObjective, displayMission);
+                }
+            } else {
+                currentMissionElement.textContent = displayMission.description;
+                if (objectiveActionElement) {
+                    objectiveActionElement.textContent = 'Clique para ver detalhes';
+                }
+                if (objectiveIconElement) {
+                    objectiveIconElement.textContent = '🎯';
+                }
+            }
+
+            // Update progress
+            const completedObjectives = displayMission.objectives.filter(obj => obj.current >= obj.required).length;
+            const totalObjectives = displayMission.objectives.length;
+            const progressPercent = totalObjectives > 0 ? (completedObjectives / totalObjectives) * 100 : 0;
+
             if (progressTextElement) {
-                const completedObjectives = displayMission.objectives.filter(obj => obj.current >= obj.required).length;
-                const totalObjectives = displayMission.objectives.length;
                 progressTextElement.textContent = `${completedObjectives}/${totalObjectives}`;
             }
+
+            if (progressFillElement) {
+                progressFillElement.style.width = `${progressPercent}%`;
+            }
+
+            // Update urgency indicator
+            if (missionUrgencyElement) {
+                const urgency = this.getMissionUrgency(displayMission);
+                missionUrgencyElement.textContent = urgency.text;
+                missionUrgencyElement.className = `mission-urgency ${urgency.level}`;
+                missionUrgencyElement.style.display = urgency.level !== 'none' ? 'block' : 'none';
+            }
+
+            // Store current mission for click handler
+            this.currentDisplayMission = displayMission;
         } else {
             currentMissionElement.textContent = 'Nenhuma missão ativa';
             if (progressTextElement) {
                 progressTextElement.textContent = '0/0';
             }
+            if (objectiveActionElement) {
+                objectiveActionElement.textContent = 'Inicie uma missão';
+            }
+            if (objectiveIconElement) {
+                objectiveIconElement.textContent = '📋';
+            }
+            if (progressFillElement) {
+                progressFillElement.style.width = '0%';
+            }
+            if (missionUrgencyElement) {
+                missionUrgencyElement.style.display = 'none';
+            }
+            this.currentDisplayMission = null;
         }
     }
 
