@@ -402,6 +402,287 @@ class QuestSystem {
             }
         });
 
+        // ===== MISSÕES DE GESTÃO DE CRISES =====
+
+        // Contaminação de Água Subterrânea
+        this.addQuest('crisis_groundwater_contamination', {
+            title: 'Crise: Água Subterrânea Contaminada',
+            description: 'Responda a uma emergência de contaminação da água subterrânea por nitratos e coliformes fecais.',
+            type: 'secondary',
+            category: 'crisis',
+            difficulty: 'advanced',
+            estimatedTime: '20 minutos',
+            prerequisites: ['tutorial_01'],
+            objectives: [
+                {
+                    id: 'identify_contamination_source',
+                    description: 'Identificar fonte de contaminação (agrotóxicos/esgoto)',
+                    type: 'investigation',
+                    target: 'contamination_source',
+                    current: 0,
+                    required: 1
+                },
+                {
+                    id: 'build_water_treatment',
+                    description: 'Construir estação de tratamento de água',
+                    type: 'build',
+                    target: 'water_treatment_plant',
+                    current: 0,
+                    required: 1
+                },
+                {
+                    id: 'implement_monitoring',
+                    description: 'Implementar monitoramento de qualidade da água',
+                    type: 'build',
+                    target: 'water_quality_monitor',
+                    current: 0,
+                    required: 3
+                }
+            ],
+            rewards: {
+                score: 500,
+                budget: 10000,
+                experience: 250,
+                unlock: ['advanced_water_treatment']
+            },
+            educationalContent: {
+                concepts: ['água subterrânea contaminada', 'nitratos', 'coliformes fecais', 'chorume'],
+                facts: [
+                    'Nitratos em excesso na água podem causar metahemoglobinemia em bebês.',
+                    'Coliformes fecais indicam contaminação por esgoto e risco de doenças.',
+                    'Chorume de aterros pode contaminar aquíferos por décadas.',
+                    'Agrotóxicos podem persistir no solo e contaminar água subterrânea.',
+                    'Baixo oxigênio dissolvido indica poluição orgânica severa.'
+                ],
+                tips: [
+                    'Monitore regularmente a qualidade da água em poços próximos a atividades agrícolas.',
+                    'Implemente barreiras de proteção ao redor de fontes de água.',
+                    'Use tecnologias de biorremediação para tratar contaminação orgânica.',
+                    'Estabeleça zonas de proteção ao redor de poços de abastecimento.'
+                ]
+            }
+        });
+
+        // ===== MISSÕES AMBIENTAIS AVANÇADAS =====
+
+        // Produção Canavieira e Impactos
+        this.addQuest('env_sugarcane_impact', {
+            title: 'Impactos da Produção Canavieira',
+            description: 'Gerencie os impactos ambientais da produção de cana-de-açúcar na bacia hidrográfica.',
+            type: 'secondary',
+            category: 'environmental',
+            difficulty: 'expert',
+            estimatedTime: '30 minutos',
+            prerequisites: ['edu_watershed_management'],
+            objectives: [
+                {
+                    id: 'assess_pesticide_impact',
+                    description: 'Avaliar impacto do uso de agrotóxicos',
+                    type: 'analysis',
+                    target: 'pesticide_assessment',
+                    current: 0,
+                    required: 1
+                },
+                {
+                    id: 'implement_buffer_zones',
+                    description: 'Criar zonas de amortecimento ao redor de rios',
+                    type: 'build',
+                    target: 'buffer_zone',
+                    current: 0,
+                    required: 5
+                },
+                {
+                    id: 'manage_livestock_waste',
+                    description: 'Implementar gestão de resíduos da pecuária',
+                    type: 'build',
+                    target: 'livestock_waste_management',
+                    current: 0,
+                    required: 2
+                },
+                {
+                    id: 'prevent_erosion',
+                    description: 'Implementar medidas contra erosão e assoreamento',
+                    type: 'build',
+                    target: 'erosion_control',
+                    current: 0,
+                    required: 3
+                }
+            ],
+            rewards: {
+                score: 750,
+                budget: 15000,
+                experience: 400,
+                unlock: ['sustainable_agriculture', 'advanced_erosion_control']
+            },
+            educationalContent: {
+                concepts: ['produção canavieira', 'uso de agrotóxicos', 'pecuária', 'erosão', 'assoreamento', 'sedimentação'],
+                facts: [
+                    'A cana-de-açúcar é uma das culturas que mais consome água no Brasil.',
+                    'Agrotóxicos podem contaminar águas superficiais e subterrâneas.',
+                    'Pecuária intensiva pode causar compactação do solo e erosão.',
+                    'Erosão causa perda de solo fértil e assoreamento de rios.',
+                    'Sedimentação reduz a capacidade de armazenamento de reservatórios.',
+                    'Zonas de amortecimento reduzem em até 90% a chegada de poluentes aos rios.'
+                ],
+                tips: [
+                    'Mantenha pelo menos 50m de vegetação entre cultivos e corpos d\'água.',
+                    'Use práticas de agricultura sustentável para reduzir uso de agrotóxicos.',
+                    'Implemente sistemas de rotação de pastagens para evitar degradação.',
+                    'Construa terraços e curvas de nível para controlar erosão.',
+                    'Monitore a turbidez da água como indicador de sedimentação.'
+                ]
+            }
+        });
+
+        // ===== MISSÕES DE INFRAESTRUTURA VERDE =====
+
+        // Soluções Baseadas na Natureza
+        this.addQuest('green_infrastructure', {
+            title: 'Infraestrutura Verde Urbana',
+            description: 'Implemente soluções baseadas na natureza para gestão sustentável da água urbana.',
+            type: 'primary',
+            category: 'urban_planning',
+            difficulty: 'intermediate',
+            estimatedTime: '25 minutos',
+            prerequisites: ['edu_hydrological_cycle'],
+            objectives: [
+                {
+                    id: 'create_linear_park',
+                    description: 'Criar parque linear em contato com o rio',
+                    type: 'build',
+                    target: 'linear_park',
+                    current: 0,
+                    required: 1
+                },
+                {
+                    id: 'install_green_roofs',
+                    description: 'Instalar tetos verdes em edifícios públicos',
+                    type: 'build',
+                    target: 'green_roof',
+                    current: 0,
+                    required: 5
+                },
+                {
+                    id: 'build_green_walls',
+                    description: 'Construir paredes verdes para purificação do ar',
+                    type: 'build',
+                    target: 'green_wall',
+                    current: 0,
+                    required: 3
+                },
+                {
+                    id: 'create_floating_gardens',
+                    description: 'Instalar jardins flutuantes com plantas filtradoras',
+                    type: 'build',
+                    target: 'floating_garden',
+                    current: 0,
+                    required: 2
+                },
+                {
+                    id: 'prevent_disorderly_occupation',
+                    description: 'Prevenir ocupação desordenada em áreas de bacia',
+                    type: 'management',
+                    target: 'occupation_control',
+                    current: 0,
+                    required: 1
+                }
+            ],
+            rewards: {
+                score: 600,
+                budget: 20000,
+                experience: 300,
+                unlock: ['advanced_green_infrastructure', 'urban_ecology']
+            },
+            educationalContent: {
+                concepts: ['parque linear', 'jardim de chuva', 'tetos verdes', 'paredes verdes', 'jardins flutuantes', 'ocupação desordenada'],
+                facts: [
+                    'Parques lineares protegem rios urbanos e oferecem lazer à população.',
+                    'Tetos verdes podem reduzir em até 50% o escoamento superficial.',
+                    'Paredes verdes melhoram a qualidade do ar e reduzem temperatura urbana.',
+                    'Jardins flutuantes com plantas filtradoras purificam a água naturalmente.',
+                    'Ocupação desordenada em bacias hidrográficas aumenta risco de enchentes.',
+                    'Infraestrutura verde custa 50% menos que soluções convencionais.'
+                ],
+                tips: [
+                    'Use plantas nativas em projetos de infraestrutura verde.',
+                    'Integre parques lineares com ciclovias e transporte público.',
+                    'Escolha plantas com alta capacidade de filtração para jardins flutuantes.',
+                    'Implemente zoneamento rigoroso para proteger áreas de bacia.',
+                    'Combine múltiplas soluções verdes para máxima eficiência.'
+                ]
+            }
+        });
+
+        // ===== MISSÃO DE PESQUISA E DESENVOLVIMENTO =====
+
+        // Centro de Pesquisas Hídricas
+        this.addQuest('research_center_mission', {
+            title: 'Centro de Pesquisas Hídricas',
+            description: 'Estabeleça um centro de pesquisas para desenvolver tecnologias inovadoras de gestão hídrica.',
+            type: 'primary',
+            category: 'water_management',
+            difficulty: 'expert',
+            estimatedTime: '40 minutos',
+            prerequisites: ['crisis_groundwater_contamination', 'green_infrastructure'],
+            objectives: [
+                {
+                    id: 'build_research_center',
+                    description: 'Construir Centro de Pesquisas Hídricas',
+                    type: 'build',
+                    target: 'water_research_center',
+                    current: 0,
+                    required: 1
+                },
+                {
+                    id: 'develop_monitoring_network',
+                    description: 'Desenvolver rede de monitoramento da bacia',
+                    type: 'build',
+                    target: 'monitoring_station',
+                    current: 0,
+                    required: 10
+                },
+                {
+                    id: 'research_new_technologies',
+                    description: 'Pesquisar tecnologias de tratamento avançado',
+                    type: 'research',
+                    target: 'advanced_treatment_tech',
+                    current: 0,
+                    required: 3
+                },
+                {
+                    id: 'educate_community',
+                    description: 'Educar comunidade sobre proteção hídrica',
+                    type: 'education',
+                    target: 'community_education',
+                    current: 0,
+                    required: 1000 // pessoas educadas
+                }
+            ],
+            rewards: {
+                score: 1000,
+                budget: 50000,
+                experience: 500,
+                unlock: ['master_water_guardian']
+            },
+            educationalContent: {
+                concepts: ['centros de pesquisas', 'monitoramento ambiental', 'tecnologias hídricas', 'educação ambiental'],
+                facts: [
+                    'Centros de pesquisa são fundamentais para inovação em gestão hídrica.',
+                    'Monitoramento contínuo permite detecção precoce de problemas.',
+                    'Tecnologias avançadas podem tratar até 99% dos contaminantes.',
+                    'Educação ambiental é a base para mudanças comportamentais duradouras.',
+                    'Pesquisa aplicada gera soluções específicas para cada região.'
+                ],
+                tips: [
+                    'Integre universidades e institutos de pesquisa ao projeto.',
+                    'Use sensores IoT para monitoramento em tempo real.',
+                    'Desenvolva tecnologias adaptadas às condições locais.',
+                    'Crie programas educacionais para diferentes faixas etárias.',
+                    'Compartilhe resultados de pesquisa com outras cidades.'
+                ]
+            }
+        });
+
         console.log(`✅ ${this.quests.size} missões definidas`);
     }
     

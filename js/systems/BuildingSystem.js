@@ -957,6 +957,266 @@ class BuildingSystem {
             }
         });
 
+        // ===== EDIFÍCIOS EDUCACIONAIS E DE PESQUISA =====
+
+        // Centro de Pesquisas Hídricas
+        this.addBuildingType('water_research_center', {
+            name: 'Centro de Pesquisas Hídricas',
+            icon: '🔬',
+            category: 'public',
+            cost: 100000,
+            buildTime: 45,
+            size: { width: 3, height: 3 },
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                population: 1000,
+                budget: 100000
+            },
+            effects: {
+                research: 50,
+                education: 30,
+                satisfaction: 15,
+                waterQuality: 20
+            },
+            description: 'Centro avançado para pesquisa e desenvolvimento de tecnologias hídricas',
+            educationalContent: {
+                concepts: ['centros de pesquisas', 'inovação tecnológica', 'gestão hídrica'],
+                facts: [
+                    'Centros de pesquisa aceleram o desenvolvimento de soluções inovadoras.',
+                    'Pesquisa aplicada gera tecnologias específicas para cada região.',
+                    'Colaboração científica multiplica os resultados de pesquisa.'
+                ]
+            }
+        });
+
+        // ===== INFRAESTRUTURA VERDE =====
+
+        // Parque Linear
+        this.addBuildingType('linear_park', {
+            name: 'Parque Linear',
+            icon: '🌳',
+            category: 'public',
+            cost: 25000,
+            buildTime: 20,
+            size: { width: 5, height: 2 },
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: true
+            },
+            effects: {
+                satisfaction: 25,
+                pollution: -15,
+                waterQuality: 15,
+                biodiversity: 30
+            },
+            description: 'Parque linear que protege rios urbanos e oferece lazer sustentável',
+            educationalContent: {
+                concepts: ['parque linear', 'proteção de rios', 'lazer sustentável'],
+                facts: [
+                    'Parques lineares protegem margens de rios da ocupação irregular.',
+                    'Vegetação ripária filtra poluentes antes que cheguem aos rios.',
+                    'Espaços verdes urbanos melhoram a qualidade de vida da população.'
+                ]
+            }
+        });
+
+        // Jardim de Chuva
+        this.addBuildingType('rain_garden', {
+            name: 'Jardim de Chuva',
+            icon: '🌧️',
+            category: 'water',
+            cost: 8000,
+            buildTime: 10,
+            size: { width: 2, height: 2 },
+            requirements: {
+                terrain: ['grassland', 'lowland']
+            },
+            effects: {
+                waterStorage: 50,
+                pollution: -10,
+                satisfaction: 10,
+                floodControl: 20
+            },
+            description: 'Sistema natural de drenagem que reduz enchentes e filtra água',
+            educationalContent: {
+                concepts: ['jardim de chuva', 'drenagem sustentável', 'infiltração'],
+                facts: [
+                    'Jardins de chuva reduzem o escoamento superficial em até 30%.',
+                    'Plantas nativas filtram naturalmente poluentes da água.',
+                    'Sistemas de drenagem verde custam menos que obras convencionais.'
+                ]
+            }
+        });
+
+        // Teto Verde
+        this.addBuildingType('green_roof', {
+            name: 'Teto Verde',
+            icon: '🏢',
+            category: 'public',
+            cost: 15000,
+            buildTime: 15,
+            size: { width: 2, height: 2 },
+            requirements: {
+                terrain: ['grassland', 'lowland']
+            },
+            effects: {
+                waterStorage: 30,
+                pollution: -8,
+                satisfaction: 12,
+                energyEfficiency: 15
+            },
+            description: 'Cobertura vegetal que reduz escoamento e melhora eficiência energética',
+            educationalContent: {
+                concepts: ['tetos verdes', 'eficiência energética', 'retenção de água'],
+                facts: [
+                    'Tetos verdes podem reter até 75% da água da chuva.',
+                    'Reduzem a temperatura interna em até 5°C no verão.',
+                    'Melhoram a qualidade do ar urbano através da fotossíntese.'
+                ]
+            }
+        });
+
+        // Parede Verde
+        this.addBuildingType('green_wall', {
+            name: 'Parede Verde',
+            icon: '🌿',
+            category: 'public',
+            cost: 12000,
+            buildTime: 12,
+            size: { width: 1, height: 2 },
+            requirements: {
+                terrain: ['grassland', 'lowland']
+            },
+            effects: {
+                pollution: -12,
+                satisfaction: 15,
+                airQuality: 20,
+                temperature: -2
+            },
+            description: 'Sistema vertical de plantas que purifica o ar e reduz temperatura',
+            educationalContent: {
+                concepts: ['paredes verdes', 'purificação do ar', 'ilha de calor urbana'],
+                facts: [
+                    'Paredes verdes podem filtrar até 15kg de CO2 por ano por m².',
+                    'Reduzem a temperatura ambiente em até 5°C.',
+                    'Melhoram a acústica urbana absorvendo ruídos.'
+                ]
+            }
+        });
+
+        // Jardim Flutuante
+        this.addBuildingType('floating_garden', {
+            name: 'Jardim Flutuante',
+            icon: '🪷',
+            category: 'water',
+            cost: 18000,
+            buildTime: 18,
+            size: { width: 3, height: 3 },
+            requirements: {
+                terrain: ['water'],
+                waterBody: true
+            },
+            effects: {
+                waterQuality: 25,
+                pollution: -20,
+                biodiversity: 35,
+                satisfaction: 20
+            },
+            description: 'Sistema flutuante com plantas filtradoras que purificam a água',
+            educationalContent: {
+                concepts: ['jardins flutuantes', 'plantas filtradoras', 'fitorremediação'],
+                facts: [
+                    'Plantas aquáticas podem remover até 90% dos nutrientes em excesso.',
+                    'Sistemas flutuantes não ocupam espaço terrestre valioso.',
+                    'Fitorremediação é uma tecnologia natural e sustentável.'
+                ]
+            }
+        });
+
+        // ===== SISTEMAS DE MONITORAMENTO =====
+
+        // Estação de Monitoramento
+        this.addBuildingType('monitoring_station', {
+            name: 'Estação de Monitoramento',
+            icon: '📊',
+            category: 'water',
+            cost: 20000,
+            buildTime: 15,
+            size: { width: 1, height: 1 },
+            requirements: {
+                terrain: ['grassland', 'lowland'],
+                nearWater: true
+            },
+            effects: {
+                monitoring: 40,
+                waterQuality: 10,
+                earlyWarning: 30
+            },
+            description: 'Sistema automatizado de monitoramento da qualidade da água',
+            educationalContent: {
+                concepts: ['monitoramento ambiental', 'qualidade da água', 'sensores IoT'],
+                facts: [
+                    'Monitoramento contínuo permite detecção precoce de problemas.',
+                    'Sensores IoT fornecem dados em tempo real sobre qualidade da água.',
+                    'Sistemas de alerta precoce podem prevenir crises hídricas.'
+                ]
+            }
+        });
+
+        // Monitor de Qualidade da Água
+        this.addBuildingType('water_quality_monitor', {
+            name: 'Monitor de Qualidade',
+            icon: '🔍',
+            category: 'water',
+            cost: 12000,
+            buildTime: 10,
+            size: { width: 1, height: 1 },
+            requirements: {
+                terrain: ['grassland', 'lowland', 'water']
+            },
+            effects: {
+                monitoring: 25,
+                waterQuality: 15,
+                healthSafety: 20
+            },
+            description: 'Equipamento para análise contínua de parâmetros de qualidade da água',
+            educationalContent: {
+                concepts: ['qualidade da água', 'parâmetros físico-químicos', 'saúde pública'],
+                facts: [
+                    'pH, turbidez e oxigênio dissolvido são indicadores básicos de qualidade.',
+                    'Coliformes fecais indicam contaminação por esgoto.',
+                    'Monitoramento regular previne doenças de veiculação hídrica.'
+                ]
+            }
+        });
+
+        // Sistema de Controle de Erosão
+        this.addBuildingType('erosion_control', {
+            name: 'Controle de Erosão',
+            icon: '🛡️',
+            category: 'infrastructure',
+            cost: 15000,
+            buildTime: 20,
+            size: { width: 2, height: 1 },
+            requirements: {
+                terrain: ['grassland', 'highland']
+            },
+            effects: {
+                soilProtection: 30,
+                waterQuality: 15,
+                sedimentControl: 25
+            },
+            description: 'Terraços e barreiras para prevenir erosão e assoreamento',
+            educationalContent: {
+                concepts: ['erosão', 'assoreamento', 'sedimentação', 'conservação do solo'],
+                facts: [
+                    'Erosão causa perda de 25 bilhões de toneladas de solo por ano no mundo.',
+                    'Sedimentação reduz a capacidade de reservatórios em 1% ao ano.',
+                    'Terraços podem reduzir a erosão em até 95%.'
+                ]
+            }
+        });
+
         console.log(`✅ ${this.buildingTypes.size} tipos de edifícios definidos`);
     }
 
