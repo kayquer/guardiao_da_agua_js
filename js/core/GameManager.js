@@ -748,13 +748,22 @@ class GameManager {
     }
 
     handleIsometricKeyDown(event) {
-        // ===== CAMERA DEBUGGING: Log key down events =====
+        // ===== ENHANCED CAMERA DEBUGGING: Log key down events with camera state =====
+        const cameraState = this.getCameraStateSnapshot();
         this.logCameraEvent('keyDown', {
             code: event.code,
             key: event.key,
             timestamp: Date.now(),
-            currentKeys: { ...this.cameraControls.keys }
+            currentKeys: { ...this.cameraControls.keys },
+            cameraState: cameraState,
+            enabled: this.cameraControls.enabled
         });
+
+        // ===== SAFETY CHECK: Ensure camera is properly initialized =====
+        if (!this.camera || !this.cameraControls.enabled) {
+            console.warn('⚠️ Camera not initialized or disabled, ignoring key input:', event.code);
+            return;
+        }
 
         // Arrow keys support for camera movement
         switch (event.code) {
@@ -769,6 +778,15 @@ class GameManager {
             case 'ArrowLeft':
                 this.cameraControls.keys.A = true;
                 event.preventDefault();
+                // ===== ENHANCED DEBUGGING: Log ArrowLeft specific state =====
+                console.log('🎮 ArrowLeft pressed - Camera state before movement:', {
+                    target: this.camera.getTarget(),
+                    position: this.camera.position,
+                    alpha: this.camera.alpha,
+                    beta: this.camera.beta,
+                    radius: this.camera.radius,
+                    bounds: this.cameraLimits
+                });
                 break;
             case 'ArrowRight':
                 this.cameraControls.keys.D = true;
@@ -778,13 +796,22 @@ class GameManager {
     }
 
     handleIsometricKeyUp(event) {
-        // ===== CAMERA DEBUGGING: Log key up events =====
+        // ===== ENHANCED CAMERA DEBUGGING: Log key up events with camera state =====
+        const cameraState = this.getCameraStateSnapshot();
         this.logCameraEvent('keyUp', {
             code: event.code,
             key: event.key,
             timestamp: Date.now(),
-            currentKeys: { ...this.cameraControls.keys }
+            currentKeys: { ...this.cameraControls.keys },
+            cameraState: cameraState,
+            enabled: this.cameraControls.enabled
         });
+
+        // ===== SAFETY CHECK: Ensure camera is properly initialized =====
+        if (!this.camera || !this.cameraControls.enabled) {
+            console.warn('⚠️ Camera not initialized or disabled, ignoring key input:', event.code);
+            return;
+        }
 
         // Arrow keys support for camera movement
         switch (event.code) {
@@ -799,11 +826,62 @@ class GameManager {
             case 'ArrowLeft':
                 this.cameraControls.keys.A = false;
                 event.preventDefault();
+                // ===== ENHANCED DEBUGGING: Log ArrowLeft specific state =====
+                console.log('🎮 ArrowLeft released - Camera state after movement:', {
+                    target: this.camera.getTarget(),
+                    position: this.camera.position,
+                    alpha: this.camera.alpha,
+                    beta: this.camera.beta,
+                    radius: this.camera.radius,
+                    bounds: this.cameraLimits
+                });
                 break;
             case 'ArrowRight':
                 this.cameraControls.keys.D = false;
                 event.preventDefault();
                 break;
+        }
+    }
+
+    // ===== CAMERA STATE DEBUGGING METHODS =====
+
+    /**
+     * Gets a comprehensive snapshot of the current camera state
+     * @returns {Object} Camera state information
+     */
+    getCameraStateSnapshot() {
+        if (!this.camera) {
+            return { error: 'Camera not initialized' };
+        }
+
+        try {
+            const target = this.camera.getTarget();
+            return {
+                position: {
+                    x: this.camera.position.x,
+                    y: this.camera.position.y,
+                    z: this.camera.position.z
+                },
+                target: {
+                    x: target.x,
+                    y: target.y,
+                    z: target.z
+                },
+                alpha: this.camera.alpha,
+                beta: this.camera.beta,
+                radius: this.camera.radius,
+                bounds: this.cameraLimits,
+                viewport: {
+                    width: this.canvas.width,
+                    height: this.canvas.height
+                },
+                scene: {
+                    visible: this.scene ? this.scene.isReady() : false,
+                    meshCount: this.scene ? this.scene.meshes.length : 0
+                }
+            };
+        } catch (error) {
+            return { error: 'Failed to get camera state: ' + error.message };
         }
     }
 
@@ -971,27 +1049,69 @@ class GameManager {
     }
 
     /**
-     * Moves the isometric camera by specified amounts
+     * Moves the isometric camera by specified amounts with enhanced error handling
      * @param {number} deltaX - Movement in X direction
      * @param {number} deltaZ - Movement in Z direction
      */
     moveIsometricCamera(deltaX, deltaZ) {
         try {
+            // ===== SAFETY CHECKS =====
+            if (!this.camera) {
+                console.error('❌ Camera not initialized in moveIsometricCamera');
+                return;
+            }
+
+            if (!this.cameraLimits) {
+                console.error('❌ Camera limits not defined in moveIsometricCamera');
+                return;
+            }
+
+            // ===== GET CURRENT STATE =====
             const currentTarget = this.camera.getTarget();
+            if (!currentTarget) {
+                console.error('❌ Failed to get camera target in moveIsometricCamera');
+                return;
+            }
+
+            // ===== CALCULATE NEW POSITION =====
             const newTarget = new BABYLON.Vector3(
                 currentTarget.x + deltaX,
                 currentTarget.y,
                 currentTarget.z + deltaZ
             );
 
-            // Apply camera bounds
+            // ===== ENHANCED BOUNDS CHECKING =====
+            const originalX = newTarget.x;
+            const originalZ = newTarget.z;
+
             newTarget.x = Math.max(this.cameraLimits.minX, Math.min(this.cameraLimits.maxX, newTarget.x));
             newTarget.z = Math.max(this.cameraLimits.minZ, Math.min(this.cameraLimits.maxZ, newTarget.z));
 
+            // ===== LOG BOUNDS VIOLATIONS =====
+            if (originalX !== newTarget.x || originalZ !== newTarget.z) {
+                console.log('📷 Camera movement bounded:', {
+                    requested: { x: originalX, z: originalZ },
+                    applied: { x: newTarget.x, z: newTarget.z },
+                    bounds: this.cameraLimits
+                });
+            }
+
+            // ===== APPLY MOVEMENT =====
             this.camera.setTarget(newTarget);
 
+            // ===== VERIFY CAMERA STATE AFTER MOVEMENT =====
+            const verifyTarget = this.camera.getTarget();
+            if (!verifyTarget || Math.abs(verifyTarget.x - newTarget.x) > 0.01 || Math.abs(verifyTarget.z - newTarget.z) > 0.01) {
+                console.error('❌ Camera target verification failed after movement:', {
+                    expected: newTarget,
+                    actual: verifyTarget
+                });
+            }
+
         } catch (error) {
-            console.warn('⚠️ Error in isometric camera movement:', error);
+            console.error('❌ Critical error in isometric camera movement:', error);
+            // ===== ATTEMPT CAMERA RECOVERY =====
+            this.recoverCameraState();
         }
     }
 
@@ -1827,10 +1947,42 @@ class GameManager {
     }
 
     /**
-     * Updates camera movement based on WASD/Arrow keys for isometric view
+     * Camera recovery function to restore camera to a safe state
+     */
+    recoverCameraState() {
+        try {
+            console.log('🔧 Attempting camera recovery...');
+
+            if (!this.camera) {
+                console.error('❌ Cannot recover: camera not initialized');
+                return;
+            }
+
+            // Reset to safe default position
+            const safeTarget = new BABYLON.Vector3(0, 0, 0);
+            this.camera.setTarget(safeTarget);
+
+            // Reset camera angles to isometric defaults
+            this.camera.alpha = this.CAMERA_CONSTANTS.ISOMETRIC_ALPHA;
+            this.camera.beta = this.CAMERA_CONSTANTS.ISOMETRIC_BETA;
+            this.camera.radius = this.CAMERA_CONSTANTS.DEFAULT_ZOOM_DISTANCE;
+
+            console.log('✅ Camera recovery completed');
+        } catch (error) {
+            console.error('❌ Camera recovery failed:', error);
+        }
+    }
+
+    /**
+     * Updates camera movement based on WASD/Arrow keys for isometric view with enhanced safety
      * @param {number} deltaTime - Frame delta time
      */
     updateIsometricKeyboardMovement(deltaTime) {
+        // ===== SAFETY CHECKS =====
+        if (!this.camera || !this.cameraControls.enabled) {
+            return;
+        }
+
         const keys = this.cameraControls.keys;
         const speed = this.cameraControls.speed * (deltaTime / 16.67); // Normalize to 60 FPS
 
@@ -3854,4 +4006,21 @@ window.setCameraDebugLevel = (level) => {
     }
 };
 
-console.log('🎮 Camera debug functions available: getCameraDebug(), clearCameraDebug(), setCameraDebugLevel(level)');
+window.getCameraState = () => {
+    if (window.gameManager) {
+        return window.gameManager.getCameraStateSnapshot();
+    } else {
+        console.warn('⚠️ GameManager not initialized yet');
+        return null;
+    }
+};
+
+window.recoverCamera = () => {
+    if (window.gameManager) {
+        window.gameManager.recoverCameraState();
+    } else {
+        console.warn('⚠️ GameManager not initialized yet');
+    }
+};
+
+console.log('🎮 Camera debug functions available: getCameraDebug(), clearCameraDebug(), setCameraDebugLevel(level), getCameraState(), recoverCamera()');
