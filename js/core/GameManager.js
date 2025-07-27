@@ -358,9 +358,11 @@ class GameManager {
             // Mouse controls
             leftMouseDown: false,
             rightMouseDown: false,
+            middleMouseDown: false,  // Added middle mouse button support
             lastMouseX: 0,
             lastMouseY: 0,
             isPanning: false,
+            panningButton: null,     // Track which button is being used for panning
 
             // Edge scrolling
             edgeScrolling: {
@@ -479,6 +481,20 @@ class GameManager {
     // ===== CAMERA DEBUGGING SYSTEM =====
 
     /**
+     * Get human-readable mouse button name
+     * @param {number} button - Mouse button number
+     * @returns {string} Button name
+     */
+    getMouseButtonName(button) {
+        switch (button) {
+            case 0: return 'left';
+            case 1: return 'middle';
+            case 2: return 'right';
+            default: return `unknown(${button})`;
+        }
+    }
+
+    /**
      * Logs camera events for debugging purposes
      * @param {string} eventType - Type of camera event
      * @param {object} data - Event data
@@ -507,7 +523,7 @@ class GameManager {
         }
 
         // Log based on level
-        if (this.cameraDebug.logLevel === 'basic' && ['mouseDown', 'mouseUp', 'panStart', 'panEnd', 'panError'].includes(eventType)) {
+        if (this.cameraDebug.logLevel === 'basic' && ['mouseDown', 'mouseUp', 'panStart', 'panEnd', 'dragMove', 'panOperation', 'panError', 'wheel', 'zoomOperation'].includes(eventType)) {
             console.log(`🎮 Camera ${eventType}:`, data);
         } else if (this.cameraDebug.logLevel === 'detailed' && !throttled) {
             console.log(`🎮 Camera ${eventType}:`, data);
@@ -580,6 +596,7 @@ class GameManager {
         // ===== CAMERA DEBUGGING: Log mouse down events =====
         this.logCameraEvent('mouseDown', {
             button: event.button,
+            buttonName: this.getMouseButtonName(event.button),
             clientX: event.clientX,
             clientY: event.clientY,
             timestamp: Date.now(),
@@ -593,9 +610,23 @@ class GameManager {
         if (event.button === 0) { // Left mouse button for panning
             this.isometricCameraState.leftMouseDown = true;
             this.isometricCameraState.isPanning = true;
+            this.isometricCameraState.panningButton = 'left';
 
             // ===== CAMERA DEBUGGING: Log panning start =====
             this.logCameraEvent('panStart', {
+                button: 'left',
+                mouseX: event.clientX,
+                mouseY: event.clientY,
+                cameraTarget: this.camera.getTarget().clone()
+            });
+        } else if (event.button === 1) { // Middle mouse button for alternative panning
+            this.isometricCameraState.middleMouseDown = true;
+            this.isometricCameraState.isPanning = true;
+            this.isometricCameraState.panningButton = 'middle';
+
+            // ===== CAMERA DEBUGGING: Log middle mouse panning start =====
+            this.logCameraEvent('panStart', {
+                button: 'middle',
                 mouseX: event.clientX,
                 mouseY: event.clientY,
                 cameraTarget: this.camera.getTarget().clone()
@@ -610,22 +641,37 @@ class GameManager {
         // ===== CAMERA DEBUGGING: Log mouse up events =====
         this.logCameraEvent('mouseUp', {
             button: event.button,
+            buttonName: this.getMouseButtonName(event.button),
             timestamp: Date.now(),
             wasPanning: this.isometricCameraState.isPanning,
+            panningButton: this.isometricCameraState.panningButton,
             cameraPosition: this.camera ? this.camera.getTarget().clone() : null
         });
 
         if (event.button === 0) { // Left mouse button
             this.isometricCameraState.leftMouseDown = false;
 
-            if (this.isometricCameraState.isPanning) {
-                // ===== CAMERA DEBUGGING: Log panning end =====
+            if (this.isometricCameraState.isPanning && this.isometricCameraState.panningButton === 'left') {
+                // ===== CAMERA DEBUGGING: Log left mouse panning end =====
                 this.logCameraEvent('panEnd', {
+                    button: 'left',
                     finalCameraTarget: this.camera ? this.camera.getTarget().clone() : null
                 });
+                this.isometricCameraState.isPanning = false;
+                this.isometricCameraState.panningButton = null;
             }
+        } else if (event.button === 1) { // Middle mouse button
+            this.isometricCameraState.middleMouseDown = false;
 
-            this.isometricCameraState.isPanning = false;
+            if (this.isometricCameraState.isPanning && this.isometricCameraState.panningButton === 'middle') {
+                // ===== CAMERA DEBUGGING: Log middle mouse panning end =====
+                this.logCameraEvent('panEnd', {
+                    button: 'middle',
+                    finalCameraTarget: this.camera ? this.camera.getTarget().clone() : null
+                });
+                this.isometricCameraState.isPanning = false;
+                this.isometricCameraState.panningButton = null;
+            }
         }
     }
 
@@ -637,20 +683,52 @@ class GameManager {
         const deltaX = event.clientX - this.isometricCameraState.lastMouseX;
         const deltaY = event.clientY - this.isometricCameraState.lastMouseY;
 
-        // ===== CAMERA DEBUGGING: Log mouse move events (throttled) =====
-        if (this.cameraDebug.enabled && this.cameraDebug.logLevel === 'verbose') {
-            this.logCameraEvent('mouseMove', {
-                deltaX,
-                deltaY,
-                isPanning: this.isometricCameraState.isPanning,
-                leftMouseDown: this.isometricCameraState.leftMouseDown,
-                timestamp: Date.now()
-            }, true); // throttled = true
+        // ===== CAMERA DEBUGGING: Enhanced mouse move logging =====
+        if (this.cameraDebug.enabled) {
+            // Always log drag operations (not just in verbose mode)
+            if (this.isometricCameraState.isPanning) {
+                this.logCameraEvent('dragMove', {
+                    deltaX,
+                    deltaY,
+                    button: this.isometricCameraState.panningButton,
+                    leftMouseDown: this.isometricCameraState.leftMouseDown,
+                    middleMouseDown: this.isometricCameraState.middleMouseDown,
+                    cameraTarget: this.camera.getTarget().clone(),
+                    timestamp: Date.now()
+                });
+            }
+
+            // Log all mouse moves in verbose mode
+            if (this.cameraDebug.logLevel === 'verbose') {
+                this.logCameraEvent('mouseMove', {
+                    deltaX,
+                    deltaY,
+                    isPanning: this.isometricCameraState.isPanning,
+                    leftMouseDown: this.isometricCameraState.leftMouseDown,
+                    middleMouseDown: this.isometricCameraState.middleMouseDown,
+                    timestamp: Date.now()
+                }, true); // throttled = true
+            }
         }
 
-        // Handle camera panning (only with left mouse button in isometric view)
-        if (this.isometricCameraState.isPanning && this.isometricCameraState.leftMouseDown) {
+        // Handle camera panning (left mouse button OR middle mouse button)
+        if (this.isometricCameraState.isPanning &&
+            (this.isometricCameraState.leftMouseDown || this.isometricCameraState.middleMouseDown)) {
+
+            // ===== CAMERA DEBUGGING: Log pan operation =====
+            this.logCameraEvent('panOperation', {
+                deltaX,
+                deltaY,
+                button: this.isometricCameraState.panningButton,
+                beforeTarget: this.camera.getTarget().clone()
+            });
+
             this.panIsometricCamera(deltaX, deltaY);
+
+            // Log after pan operation
+            this.logCameraEvent('panOperationComplete', {
+                afterTarget: this.camera.getTarget().clone()
+            });
         }
 
         // Handle edge scrolling
