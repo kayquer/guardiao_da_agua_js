@@ -479,19 +479,33 @@ class UIManager {
     
     createMobileControls() {
         if (!this.isMobile) return;
-        
+
+        // Remove existing mobile controls
+        document.querySelectorAll('.mobile-toggle').forEach(btn => btn.remove());
+
         // Criar botões de toggle para mobile
         const leftToggle = document.createElement('button');
         leftToggle.className = 'mobile-toggle left';
         leftToggle.innerHTML = '🏗️';
+        leftToggle.title = 'Abrir painel de construção';
         leftToggle.addEventListener('click', () => this.toggleMobilePanel('left'));
         document.body.appendChild(leftToggle);
-        
+
         const rightToggle = document.createElement('button');
         rightToggle.className = 'mobile-toggle right';
         rightToggle.innerHTML = 'ℹ️';
+        rightToggle.title = 'Abrir painel de informações';
         rightToggle.addEventListener('click', () => this.toggleMobilePanel('right'));
         document.body.appendChild(rightToggle);
+
+        // Store references for later updates
+        this.mobileToggleButtons = {
+            left: leftToggle,
+            right: rightToggle
+        };
+
+        // Create mobile panel headers for hud-right
+        this.createMobilePanelHeaders();
     }
     
     // ===== ATUALIZAÇÃO =====
@@ -1552,46 +1566,160 @@ class UIManager {
         }
     }
     
-    // ===== MOBILE =====
+    // ===== ENHANCED MOBILE PANEL MANAGEMENT =====
+    createMobilePanelHeaders() {
+        if (!this.isMobile) return;
+
+        // Add mobile header to hud-right panel
+        const hudRight = document.querySelector('.hud-right');
+        const detailsPanel = hudRight?.querySelector('.details-panel');
+
+        if (detailsPanel && !detailsPanel.querySelector('.mobile-panel-header')) {
+            // Create mobile header
+            const mobileHeader = document.createElement('div');
+            mobileHeader.className = 'mobile-panel-header';
+
+            const title = document.createElement('div');
+            title.className = 'mobile-panel-title';
+            title.textContent = 'Informações';
+
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'mobile-close-btn';
+            closeBtn.innerHTML = '✕';
+            closeBtn.title = 'Fechar painel';
+            closeBtn.addEventListener('click', () => this.closeMobilePanel('right'));
+
+            mobileHeader.appendChild(title);
+            mobileHeader.appendChild(closeBtn);
+
+            // Insert at the beginning of details panel
+            detailsPanel.insertBefore(mobileHeader, detailsPanel.firstChild);
+        }
+    }
+
     toggleMobilePanel(side) {
         if (!this.isMobile) return;
-        
-        const panel = side === 'left' ? 
-            document.querySelector('.hud-left') : 
+
+        const panel = side === 'left' ?
+            document.querySelector('.hud-left') :
             document.querySelector('.hud-right');
-        
+
         if (panel) {
-            this.mobilePanelsVisible[side] = !this.mobilePanelsVisible[side];
-            
-            if (this.mobilePanelsVisible[side]) {
+            const wasVisible = this.mobilePanelsVisible[side];
+
+            // Close all panels first
+            this.closeAllMobilePanels();
+
+            if (!wasVisible) {
+                // Open the requested panel
+                this.mobilePanelsVisible[side] = true;
                 panel.classList.add('active');
-                // Fechar o outro painel
-                const otherSide = side === 'left' ? 'right' : 'left';
-                const otherPanel = document.querySelector(`.hud-${otherSide}`);
-                if (otherPanel) {
-                    otherPanel.classList.remove('active');
-                    this.mobilePanelsVisible[otherSide] = false;
+
+                // Update toggle button state
+                if (this.mobileToggleButtons && this.mobileToggleButtons[side]) {
+                    this.mobileToggleButtons[side].classList.add('active');
                 }
-            } else {
-                panel.classList.remove('active');
+
+                // Add escape key listener for mobile panels
+                this.addMobileEscapeListener();
             }
         }
     }
+
+    closeMobilePanel(side) {
+        if (!this.isMobile) return;
+
+        const panel = side === 'left' ?
+            document.querySelector('.hud-left') :
+            document.querySelector('.hud-right');
+
+        if (panel) {
+            this.mobilePanelsVisible[side] = false;
+            panel.classList.remove('active');
+
+            // Update toggle button state
+            if (this.mobileToggleButtons && this.mobileToggleButtons[side]) {
+                this.mobileToggleButtons[side].classList.remove('active');
+            }
+
+            // Remove escape listener if no panels are open
+            if (!this.mobilePanelsVisible.left && !this.mobilePanelsVisible.right) {
+                this.removeMobileEscapeListener();
+            }
+        }
+    }
+
+    closeAllMobilePanels() {
+        if (!this.isMobile) return;
+
+        ['left', 'right'].forEach(side => {
+            const panel = document.querySelector(`.hud-${side}`);
+            if (panel) {
+                this.mobilePanelsVisible[side] = false;
+                panel.classList.remove('active');
+
+                // Update toggle button state
+                if (this.mobileToggleButtons && this.mobileToggleButtons[side]) {
+                    this.mobileToggleButtons[side].classList.remove('active');
+                }
+            }
+        });
+
+        this.removeMobileEscapeListener();
+    }
+
+    addMobileEscapeListener() {
+        if (!this.mobileEscapeListener) {
+            this.mobileEscapeListener = (event) => {
+                if (event.key === 'Escape') {
+                    this.closeAllMobilePanels();
+                }
+            };
+            document.addEventListener('keydown', this.mobileEscapeListener);
+        }
+    }
+
+    removeMobileEscapeListener() {
+        if (this.mobileEscapeListener) {
+            document.removeEventListener('keydown', this.mobileEscapeListener);
+            this.mobileEscapeListener = null;
+        }
+    }
     
-    // ===== RESPONSIVIDADE =====
+    // ===== ENHANCED RESPONSIVIDADE =====
     handleResize() {
         const wasMobile = this.isMobile;
         this.isMobile = window.innerWidth <= 768;
-        
+
         if (wasMobile !== this.isMobile) {
             // Mudou entre mobile e desktop
             if (this.isMobile && !wasMobile) {
+                // Switching to mobile
                 this.createMobileControls();
+                this.closeAllMobilePanels(); // Ensure panels are closed initially
             } else if (!this.isMobile && wasMobile) {
-                // Remover controles mobile
-                document.querySelectorAll('.mobile-toggle').forEach(btn => btn.remove());
+                // Switching to desktop
+                this.cleanupMobileControls();
             }
         }
+    }
+
+    cleanupMobileControls() {
+        // Remove mobile controls
+        document.querySelectorAll('.mobile-toggle').forEach(btn => btn.remove());
+
+        // Remove mobile panel headers
+        document.querySelectorAll('.mobile-panel-header').forEach(header => header.remove());
+
+        // Reset mobile state
+        this.mobilePanelsVisible = { left: false, right: false };
+        this.mobileToggleButtons = null;
+        this.removeMobileEscapeListener();
+
+        // Remove active classes from panels
+        document.querySelectorAll('.hud-left, .hud-right').forEach(panel => {
+            panel.classList.remove('active');
+        });
     }
 
     setupHelpModal() {
