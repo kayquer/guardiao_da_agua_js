@@ -59,6 +59,26 @@ class GameManager {
             enabled: true
         };
 
+        // ===== CAMERA DEBUGGING SYSTEM =====
+        this.cameraDebug = {
+            enabled: true,
+            logLevel: 'detailed', // 'basic', 'detailed', 'verbose'
+            eventCounts: {
+                mouseDown: 0,
+                mouseUp: 0,
+                mouseMove: 0,
+                keyDown: 0,
+                keyUp: 0,
+                wheel: 0,
+                panOperations: 0,
+                zoomOperations: 0
+            },
+            lastEvents: [],
+            maxEventHistory: 50,
+            cameraStateHistory: [],
+            maxStateHistory: 20
+        };
+
         // Performance
         this.frameCount = 0;
         this.lastFPSUpdate = 0;
@@ -456,10 +476,116 @@ class GameManager {
         console.log('🎮 Isometric RTS-style camera controls initialized');
     }
 
+    // ===== CAMERA DEBUGGING SYSTEM =====
+
+    /**
+     * Logs camera events for debugging purposes
+     * @param {string} eventType - Type of camera event
+     * @param {object} data - Event data
+     * @param {boolean} throttled - Whether to throttle this event
+     */
+    logCameraEvent(eventType, data, throttled = false) {
+        if (!this.cameraDebug.enabled) return;
+
+        // Throttle verbose events to prevent spam
+        if (throttled && this.cameraDebug.logLevel !== 'verbose') return;
+
+        const timestamp = Date.now();
+        const eventData = {
+            type: eventType,
+            timestamp,
+            data: { ...data }
+        };
+
+        // Update event counts
+        this.cameraDebug.eventCounts[eventType] = (this.cameraDebug.eventCounts[eventType] || 0) + 1;
+
+        // Add to event history
+        this.cameraDebug.lastEvents.push(eventData);
+        if (this.cameraDebug.lastEvents.length > this.cameraDebug.maxEventHistory) {
+            this.cameraDebug.lastEvents.shift();
+        }
+
+        // Log based on level
+        if (this.cameraDebug.logLevel === 'basic' && ['mouseDown', 'mouseUp', 'panStart', 'panEnd', 'panError'].includes(eventType)) {
+            console.log(`🎮 Camera ${eventType}:`, data);
+        } else if (this.cameraDebug.logLevel === 'detailed' && !throttled) {
+            console.log(`🎮 Camera ${eventType}:`, data);
+        } else if (this.cameraDebug.logLevel === 'verbose') {
+            console.log(`🎮 Camera ${eventType}:`, data);
+        }
+
+        // Store camera state for critical events
+        if (['panError', 'panStart', 'panEnd'].includes(eventType) && this.camera) {
+            this.cameraDebug.cameraStateHistory.push({
+                timestamp,
+                eventType,
+                cameraState: {
+                    target: this.camera.getTarget().clone(),
+                    radius: this.camera.radius,
+                    alpha: this.camera.alpha,
+                    beta: this.camera.beta,
+                    enabled: this.cameraControls.enabled
+                }
+            });
+
+            if (this.cameraDebug.cameraStateHistory.length > this.cameraDebug.maxStateHistory) {
+                this.cameraDebug.cameraStateHistory.shift();
+            }
+        }
+    }
+
+    /**
+     * Gets camera debugging information
+     */
+    getCameraDebugInfo() {
+        return {
+            eventCounts: { ...this.cameraDebug.eventCounts },
+            recentEvents: this.cameraDebug.lastEvents.slice(-10),
+            recentStates: this.cameraDebug.cameraStateHistory.slice(-5),
+            currentCameraState: this.camera ? {
+                target: this.camera.getTarget().clone(),
+                radius: this.camera.radius,
+                alpha: this.camera.alpha,
+                beta: this.camera.beta,
+                enabled: this.cameraControls.enabled
+            } : null
+        };
+    }
+
+    /**
+     * Clears camera debug history
+     */
+    clearCameraDebugHistory() {
+        this.cameraDebug.lastEvents = [];
+        this.cameraDebug.cameraStateHistory = [];
+        this.cameraDebug.eventCounts = {
+            mouseDown: 0,
+            mouseUp: 0,
+            mouseMove: 0,
+            keyDown: 0,
+            keyUp: 0,
+            wheel: 0,
+            panOperations: 0,
+            zoomOperations: 0
+        };
+        console.log('🎮 Camera debug history cleared');
+    }
+
     // ===== ISOMETRIC CAMERA EVENT HANDLERS =====
 
     handleIsometricMouseDown(event) {
         if (!this.camera) return;
+
+        // ===== CAMERA DEBUGGING: Log mouse down events =====
+        this.logCameraEvent('mouseDown', {
+            button: event.button,
+            clientX: event.clientX,
+            clientY: event.clientY,
+            timestamp: Date.now(),
+            cameraPosition: this.camera.getTarget().clone(),
+            cameraRadius: this.camera.radius
+        });
 
         this.isometricCameraState.lastMouseX = event.clientX;
         this.isometricCameraState.lastMouseY = event.clientY;
@@ -467,6 +593,13 @@ class GameManager {
         if (event.button === 0) { // Left mouse button for panning
             this.isometricCameraState.leftMouseDown = true;
             this.isometricCameraState.isPanning = true;
+
+            // ===== CAMERA DEBUGGING: Log panning start =====
+            this.logCameraEvent('panStart', {
+                mouseX: event.clientX,
+                mouseY: event.clientY,
+                cameraTarget: this.camera.getTarget().clone()
+            });
         }
         // Note: Right mouse button disabled for isometric view (no rotation allowed)
 
@@ -474,8 +607,24 @@ class GameManager {
     }
 
     handleIsometricMouseUp(event) {
+        // ===== CAMERA DEBUGGING: Log mouse up events =====
+        this.logCameraEvent('mouseUp', {
+            button: event.button,
+            timestamp: Date.now(),
+            wasPanning: this.isometricCameraState.isPanning,
+            cameraPosition: this.camera ? this.camera.getTarget().clone() : null
+        });
+
         if (event.button === 0) { // Left mouse button
             this.isometricCameraState.leftMouseDown = false;
+
+            if (this.isometricCameraState.isPanning) {
+                // ===== CAMERA DEBUGGING: Log panning end =====
+                this.logCameraEvent('panEnd', {
+                    finalCameraTarget: this.camera ? this.camera.getTarget().clone() : null
+                });
+            }
+
             this.isometricCameraState.isPanning = false;
         }
     }
@@ -487,6 +636,17 @@ class GameManager {
         // Calculate mouse deltas for camera panning
         const deltaX = event.clientX - this.isometricCameraState.lastMouseX;
         const deltaY = event.clientY - this.isometricCameraState.lastMouseY;
+
+        // ===== CAMERA DEBUGGING: Log mouse move events (throttled) =====
+        if (this.cameraDebug.enabled && this.cameraDebug.logLevel === 'verbose') {
+            this.logCameraEvent('mouseMove', {
+                deltaX,
+                deltaY,
+                isPanning: this.isometricCameraState.isPanning,
+                leftMouseDown: this.isometricCameraState.leftMouseDown,
+                timestamp: Date.now()
+            }, true); // throttled = true
+        }
 
         // Handle camera panning (only with left mouse button in isometric view)
         if (this.isometricCameraState.isPanning && this.isometricCameraState.leftMouseDown) {
@@ -510,6 +670,14 @@ class GameManager {
     }
 
     handleIsometricKeyDown(event) {
+        // ===== CAMERA DEBUGGING: Log key down events =====
+        this.logCameraEvent('keyDown', {
+            code: event.code,
+            key: event.key,
+            timestamp: Date.now(),
+            currentKeys: { ...this.cameraControls.keys }
+        });
+
         // Arrow keys support for camera movement
         switch (event.code) {
             case 'ArrowUp':
@@ -532,6 +700,14 @@ class GameManager {
     }
 
     handleIsometricKeyUp(event) {
+        // ===== CAMERA DEBUGGING: Log key up events =====
+        this.logCameraEvent('keyUp', {
+            code: event.code,
+            key: event.key,
+            timestamp: Date.now(),
+            currentKeys: { ...this.cameraControls.keys }
+        });
+
         // Arrow keys support for camera movement
         switch (event.code) {
             case 'ArrowUp':
@@ -581,6 +757,9 @@ class GameManager {
      */
     panIsometricCamera(deltaX, deltaY) {
         try {
+            // ===== CAMERA DEBUGGING: Log pan operation start =====
+            const oldTarget = this.camera.getTarget().clone();
+
             // ===== CLEAN CODE REFACTORING: Use constants for camera sensitivity =====
             const sensitivity = this.CAMERA_CONSTANTS.PAN_SENSITIVITY || 0.02;
 
@@ -593,14 +772,41 @@ class GameManager {
             const newTarget = currentTarget.add(worldMovement);
 
             // Apply camera bounds
-            newTarget.x = Math.max(this.cameraLimits.minX, Math.min(this.cameraLimits.maxX, newTarget.x));
-            newTarget.z = Math.max(this.cameraLimits.minZ, Math.min(this.cameraLimits.maxZ, newTarget.z));
+            const boundedTarget = new BABYLON.Vector3(
+                Math.max(this.cameraLimits.minX, Math.min(this.cameraLimits.maxX, newTarget.x)),
+                newTarget.y,
+                Math.max(this.cameraLimits.minZ, Math.min(this.cameraLimits.maxZ, newTarget.z))
+            );
 
             // Apply smooth movement
-            this.camera.setTarget(newTarget);
+            this.camera.setTarget(boundedTarget);
+
+            // ===== CAMERA DEBUGGING: Log pan operation =====
+            this.logCameraEvent('panOperation', {
+                deltaX,
+                deltaY,
+                worldMovement: worldMovement.clone(),
+                oldTarget,
+                newTarget: boundedTarget.clone(),
+                sensitivity,
+                wasBounded: !newTarget.equals(boundedTarget)
+            });
 
         } catch (error) {
             console.warn('⚠️ Error in isometric camera panning:', error);
+
+            // ===== CAMERA DEBUGGING: Log error =====
+            this.logCameraEvent('panError', {
+                error: error.message,
+                deltaX,
+                deltaY,
+                cameraState: this.camera ? {
+                    target: this.camera.getTarget().clone(),
+                    radius: this.camera.radius,
+                    alpha: this.camera.alpha,
+                    beta: this.camera.beta
+                } : null
+            });
         }
     }
 
@@ -781,12 +987,29 @@ class GameManager {
     handleIsometricWheel(event) {
         if (!this.camera) return;
 
+        // ===== CAMERA DEBUGGING: Log wheel events =====
+        this.logCameraEvent('wheel', {
+            deltaY: event.deltaY,
+            currentRadius: this.camera.radius,
+            timestamp: Date.now(),
+            cameraTarget: this.camera.getTarget().clone()
+        });
+
         // ===== CLEAN CODE REFACTORING: Use constants for zoom sensitivity =====
         const zoomSensitivity = this.CAMERA_CONSTANTS.ZOOM_SENSITIVITY || 2;
         const deltaRadius = event.deltaY > 0 ? zoomSensitivity : -zoomSensitivity;
 
+        const oldRadius = this.camera.radius;
         const newRadius = this.camera.radius + deltaRadius;
         this.camera.radius = Math.max(this.camera.lowerRadiusLimit, Math.min(this.camera.upperRadiusLimit, newRadius));
+
+        // ===== CAMERA DEBUGGING: Log zoom operation =====
+        this.logCameraEvent('zoomOperation', {
+            oldRadius,
+            newRadius: this.camera.radius,
+            deltaRadius,
+            wasLimited: newRadius !== this.camera.radius
+        });
 
         // Ensure angles remain fixed for isometric view
         this.camera.alpha = this.isometricAngles.alpha;
@@ -2876,6 +3099,17 @@ class GameManager {
         const isKeyDown = kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN;
         const isKeyUp = kbInfo.type === BABYLON.KeyboardEventTypes.KEYUP;
 
+        // ===== CAMERA DEBUGGING: Log WASD key events =====
+        if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(kbInfo.event.code)) {
+            this.logCameraEvent(isKeyDown ? 'wasdKeyDown' : 'wasdKeyUp', {
+                code: kbInfo.event.code,
+                key: kbInfo.event.key,
+                timestamp: Date.now(),
+                currentKeys: { ...this.cameraControls.keys },
+                enabled: this.cameraControls.enabled
+            });
+        }
+
         // Controles WASD para movimento da câmera
         if (this.cameraControls.enabled) {
             switch (kbInfo.event.code) {
@@ -3513,3 +3747,33 @@ class GameManager {
 // Exportar para escopo global
 window.GameManager = GameManager;
 console.log('🎮 GameManager carregado e exportado para window.GameManager');
+
+// ===== CAMERA DEBUGGING: Global debug functions =====
+window.getCameraDebug = () => {
+    if (window.gameManager) {
+        return window.gameManager.getCameraDebugInfo();
+    } else {
+        console.warn('⚠️ GameManager not initialized yet');
+        return null;
+    }
+};
+
+window.clearCameraDebug = () => {
+    if (window.gameManager) {
+        window.gameManager.clearCameraDebugHistory();
+    } else {
+        console.warn('⚠️ GameManager not initialized yet');
+    }
+};
+
+window.setCameraDebugLevel = (level) => {
+    if (window.gameManager) {
+        window.gameManager.cameraDebug.logLevel = level;
+        console.log(`🎮 Camera debug level set to: ${level}`);
+        console.log('Available levels: basic, detailed, verbose');
+    } else {
+        console.warn('⚠️ GameManager not initialized yet');
+    }
+};
+
+console.log('🎮 Camera debug functions available: getCameraDebug(), clearCameraDebug(), setCameraDebugLevel(level)');
