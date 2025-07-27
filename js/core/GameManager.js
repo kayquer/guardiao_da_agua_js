@@ -290,7 +290,7 @@ class GameManager {
         // ===== ISOMETRIC RTS-STYLE CAMERA SYSTEM =====
 
         // ===== CLEAN CODE REFACTORING: Use constants for camera configuration =====
-        const CAMERA_CONSTANTS = window.GameConstants?.CAMERA || {
+        this.CAMERA_CONSTANTS = window.GameConstants?.CAMERA || {
             ISOMETRIC_ALPHA: -Math.PI / 4,
             ISOMETRIC_BETA: Math.PI / 3.5,
             DEFAULT_ZOOM_DISTANCE: 30,
@@ -301,9 +301,9 @@ class GameManager {
         // Create isometric camera with fixed angle (SimCity/Age of Empires style)
         this.camera = new BABYLON.ArcRotateCamera(
             "isometricCamera",
-            CAMERA_CONSTANTS.ISOMETRIC_ALPHA,     // Alpha: 45-degree horizontal angle (fixed)
-            CAMERA_CONSTANTS.ISOMETRIC_BETA,      // Beta: ~51-degree vertical angle for isometric view (fixed)
-            CAMERA_CONSTANTS.DEFAULT_ZOOM_DISTANCE, // Radius: zoom distance
+            this.CAMERA_CONSTANTS.ISOMETRIC_ALPHA,     // Alpha: 45-degree horizontal angle (fixed)
+            this.CAMERA_CONSTANTS.ISOMETRIC_BETA,      // Beta: ~51-degree vertical angle for isometric view (fixed)
+            this.CAMERA_CONSTANTS.DEFAULT_ZOOM_DISTANCE, // Radius: zoom distance
             BABYLON.Vector3.Zero(),
             this.scene
         );
@@ -313,8 +313,8 @@ class GameManager {
 
         // Fixed isometric angles - prevent rotation
         this.isometricAngles = {
-            alpha: CAMERA_CONSTANTS.ISOMETRIC_ALPHA,      // 45 degrees horizontal (fixed)
-            beta: CAMERA_CONSTANTS.ISOMETRIC_BETA         // ~51 degrees vertical (fixed)
+            alpha: this.CAMERA_CONSTANTS.ISOMETRIC_ALPHA,      // 45 degrees horizontal (fixed)
+            beta: this.CAMERA_CONSTANTS.ISOMETRIC_BETA         // ~51 degrees vertical (fixed)
         };
 
         // Lock camera to isometric angles
@@ -322,11 +322,11 @@ class GameManager {
         this.camera.beta = this.isometricAngles.beta;
 
         // Zoom limits for isometric view
-        this.camera.lowerRadiusLimit = CAMERA_CONSTANTS.MIN_ZOOM_DISTANCE;
-        this.camera.upperRadiusLimit = CAMERA_CONSTANTS.MAX_ZOOM_DISTANCE;
+        this.camera.lowerRadiusLimit = this.CAMERA_CONSTANTS.MIN_ZOOM_DISTANCE;
+        this.camera.upperRadiusLimit = this.CAMERA_CONSTANTS.MAX_ZOOM_DISTANCE;
 
         // ===== RTS-STYLE CAMERA BOUNDS =====
-        this.cameraLimits = CAMERA_CONSTANTS.BOUNDS || {
+        this.cameraLimits = this.CAMERA_CONSTANTS.BOUNDS || {
             minX: -30,
             maxX: 70,
             minZ: -30,
@@ -345,8 +345,8 @@ class GameManager {
             // Edge scrolling
             edgeScrolling: {
                 enabled: true,
-                threshold: CAMERA_CONSTANTS.EDGE_SCROLL_THRESHOLD || 50,      // Pixels from edge to trigger scrolling
-                speed: CAMERA_CONSTANTS.EDGE_SCROLL_SPEED || 0.8,             // Edge scroll speed
+                threshold: this.CAMERA_CONSTANTS.EDGE_SCROLL_THRESHOLD || 50,      // Pixels from edge to trigger scrolling
+                speed: this.CAMERA_CONSTANTS.EDGE_SCROLL_SPEED || 0.8,             // Edge scroll speed
                 isScrolling: false
             },
 
@@ -356,9 +356,9 @@ class GameManager {
         };
 
         // ===== SMOOTH MOVEMENT SETTINGS =====
-        this.camera.inertia = CAMERA_CONSTANTS.INERTIA || 0.9;                                    // Smooth camera movement
-        this.camera.angularSensibilityX = CAMERA_CONSTANTS.ANGULAR_SENSITIVITY_DISABLED || 0;     // Disable rotation
-        this.camera.angularSensibilityY = CAMERA_CONSTANTS.ANGULAR_SENSITIVITY_DISABLED || 0;     // Disable rotation
+        this.camera.inertia = this.CAMERA_CONSTANTS.INERTIA || 0.9;                                    // Smooth camera movement
+        this.camera.angularSensibilityX = this.CAMERA_CONSTANTS.ANGULAR_SENSITIVITY_DISABLED || 0;     // Disable rotation
+        this.camera.angularSensibilityY = this.CAMERA_CONSTANTS.ANGULAR_SENSITIVITY_DISABLED || 0;     // Disable rotation
 
         // Setup isometric camera controls
         this.setupIsometricCameraControls();
@@ -561,7 +561,7 @@ class GameManager {
     panIsometricCamera(deltaX, deltaY) {
         try {
             // ===== CLEAN CODE REFACTORING: Use constants for camera sensitivity =====
-            const sensitivity = CAMERA_CONSTANTS.PAN_SENSITIVITY || 0.02;
+            const sensitivity = this.CAMERA_CONSTANTS.PAN_SENSITIVITY || 0.02;
 
             // Calculate movement in world space based on isometric view
             // In isometric view, we need to transform screen movement to world movement
@@ -761,7 +761,7 @@ class GameManager {
         if (!this.camera) return;
 
         // ===== CLEAN CODE REFACTORING: Use constants for zoom sensitivity =====
-        const zoomSensitivity = CAMERA_CONSTANTS.ZOOM_SENSITIVITY || 2;
+        const zoomSensitivity = this.CAMERA_CONSTANTS.ZOOM_SENSITIVITY || 2;
         const deltaRadius = event.deltaY > 0 ? zoomSensitivity : -zoomSensitivity;
 
         const newRadius = this.camera.radius + deltaRadius;
