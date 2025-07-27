@@ -588,6 +588,52 @@ class GameManager {
         console.log('🎮 Camera debug history cleared');
     }
 
+    // ===== CRITICAL FIX: Validation Helper Functions =====
+    /**
+     * Validates if a value is a valid finite number (not NaN, not Infinity)
+     * @param {*} value - Value to validate
+     * @returns {boolean} - True if valid number
+     */
+    isValidNumber(value) {
+        return typeof value === 'number' && isFinite(value) && !isNaN(value);
+    }
+
+    /**
+     * Validates if a Vector3 has valid coordinates
+     * @param {BABYLON.Vector3} vector - Vector to validate
+     * @returns {boolean} - True if all coordinates are valid
+     */
+    isValidVector3(vector) {
+        if (!vector || typeof vector !== 'object') return false;
+        return this.isValidNumber(vector.x) &&
+               this.isValidNumber(vector.y) &&
+               this.isValidNumber(vector.z);
+    }
+
+    /**
+     * Recovers camera state when corruption is detected
+     */
+    recoverCameraState() {
+        console.warn('🔧 Attempting camera state recovery...');
+
+        try {
+            // Reset to default isometric position
+            const defaultTarget = new BABYLON.Vector3(0, 0, 0);
+            const defaultRadius = 50;
+
+            if (this.camera) {
+                this.camera.setTarget(defaultTarget);
+                this.camera.radius = defaultRadius;
+                this.camera.alpha = this.isometricAngles.alpha;
+                this.camera.beta = this.isometricAngles.beta;
+
+                console.log('✅ Camera state recovered successfully');
+            }
+        } catch (error) {
+            console.error('❌ Failed to recover camera state:', error);
+        }
+    }
+
     // ===== ISOMETRIC CAMERA EVENT HANDLERS =====
 
     handleIsometricMouseDown(event) {
@@ -679,9 +725,34 @@ class GameManager {
     handleConsolidatedMouseMove(event) {
         if (!this.camera) return;
 
+        // ===== CRITICAL FIX: Validate mouse coordinates to prevent NaN =====
+        if (!this.isValidNumber(event.clientX) || !this.isValidNumber(event.clientY)) {
+            console.warn('❌ Invalid mouse coordinates detected:', { clientX: event.clientX, clientY: event.clientY });
+            return;
+        }
+
+        // Validate last mouse position
+        if (!this.isValidNumber(this.isometricCameraState.lastMouseX) || !this.isValidNumber(this.isometricCameraState.lastMouseY)) {
+            console.warn('❌ Invalid last mouse position, resetting:', {
+                lastMouseX: this.isometricCameraState.lastMouseX,
+                lastMouseY: this.isometricCameraState.lastMouseY
+            });
+            this.isometricCameraState.lastMouseX = event.clientX;
+            this.isometricCameraState.lastMouseY = event.clientY;
+            return;
+        }
+
         // Calculate mouse deltas for camera panning
         const deltaX = event.clientX - this.isometricCameraState.lastMouseX;
         const deltaY = event.clientY - this.isometricCameraState.lastMouseY;
+
+        // ===== CRITICAL FIX: Validate calculated deltas =====
+        if (!this.isValidNumber(deltaX) || !this.isValidNumber(deltaY)) {
+            console.warn('❌ Invalid mouse deltas calculated:', { deltaX, deltaY, event: { clientX: event.clientX, clientY: event.clientY } });
+            this.isometricCameraState.lastMouseX = event.clientX;
+            this.isometricCameraState.lastMouseY = event.clientY;
+            return;
+        }
 
         // ===== CAMERA DEBUGGING: Enhanced mouse move logging =====
         if (this.cameraDebug.enabled) {
@@ -913,6 +984,12 @@ class GameManager {
      */
     panIsometricCamera(deltaX, deltaY) {
         try {
+            // ===== CRITICAL FIX: Validate input parameters =====
+            if (!this.isValidNumber(deltaX) || !this.isValidNumber(deltaY)) {
+                console.warn('❌ Invalid deltas in panIsometricCamera:', { deltaX, deltaY });
+                return;
+            }
+
             // ===== CAMERA DEBUGGING: Log pan operation start =====
             const oldTarget = this.camera.getTarget().clone();
 
@@ -923,9 +1000,33 @@ class GameManager {
             // In isometric view, we need to transform screen movement to world movement
             const worldMovement = this.screenToIsometricWorld(deltaX, deltaY, sensitivity);
 
+            // ===== CRITICAL FIX: Validate world movement result =====
+            if (!this.isValidVector3(worldMovement)) {
+                console.warn('❌ Invalid world movement calculated in panIsometricCamera:', {
+                    worldMovement, deltaX, deltaY, sensitivity
+                });
+                return;
+            }
+
             // Get current target and calculate new target
             const currentTarget = this.camera.getTarget();
+
+            // ===== CRITICAL FIX: Validate current target =====
+            if (!this.isValidVector3(currentTarget)) {
+                console.warn('❌ Invalid current camera target in panIsometricCamera:', currentTarget);
+                this.recoverCameraState();
+                return;
+            }
+
             const newTarget = currentTarget.add(worldMovement);
+
+            // ===== CRITICAL FIX: Validate new target after addition =====
+            if (!this.isValidVector3(newTarget)) {
+                console.warn('❌ Invalid new target calculated in panIsometricCamera:', {
+                    newTarget, currentTarget, worldMovement
+                });
+                return;
+            }
 
             // Apply camera bounds
             const boundedTarget = new BABYLON.Vector3(
@@ -992,6 +1093,12 @@ class GameManager {
      * @see {@link panIsometricCamera} For usage in camera panning
      */
     screenToIsometricWorld(deltaX, deltaY, sensitivity) {
+        // ===== CRITICAL FIX: Validate input parameters to prevent NaN =====
+        if (!this.isValidNumber(deltaX) || !this.isValidNumber(deltaY) || !this.isValidNumber(sensitivity)) {
+            console.warn('❌ Invalid parameters in screenToIsometricWorld:', { deltaX, deltaY, sensitivity });
+            return new BABYLON.Vector3(0, 0, 0); // Return zero vector instead of NaN
+        }
+
         // For isometric view, we need to account for the 45-degree rotation
         // Screen X movement affects both world X and Z
         // Screen Y movement affects world Z primarily
@@ -1002,6 +1109,14 @@ class GameManager {
         // Transform screen movement to world movement for isometric view
         const worldX = (-deltaX * cos45 + deltaY * sin45) * sensitivity;
         const worldZ = (-deltaX * sin45 - deltaY * cos45) * sensitivity;
+
+        // ===== CRITICAL FIX: Validate calculated world coordinates =====
+        if (!this.isValidNumber(worldX) || !this.isValidNumber(worldZ)) {
+            console.warn('❌ Invalid world coordinates calculated in screenToIsometricWorld:', {
+                worldX, worldZ, deltaX, deltaY, sensitivity, cos45, sin45
+            });
+            return new BABYLON.Vector3(0, 0, 0); // Return zero vector instead of NaN
+        }
 
         return new BABYLON.Vector3(worldX, 0, worldZ);
     }
@@ -1218,6 +1333,19 @@ class GameManager {
     handleIsometricWheel(event) {
         if (!this.camera) return;
 
+        // ===== CRITICAL FIX: Validate wheel event data =====
+        if (!this.isValidNumber(event.deltaY)) {
+            console.warn('❌ Invalid wheel deltaY:', event.deltaY);
+            return;
+        }
+
+        // ===== CRITICAL FIX: Validate current camera radius =====
+        if (!this.isValidNumber(this.camera.radius)) {
+            console.warn('❌ Invalid camera radius in wheel handler:', this.camera.radius);
+            this.recoverCameraState();
+            return;
+        }
+
         // ===== CAMERA DEBUGGING: Log wheel events =====
         this.logCameraEvent('wheel', {
             deltaY: event.deltaY,
@@ -1232,6 +1360,15 @@ class GameManager {
 
         const oldRadius = this.camera.radius;
         const newRadius = this.camera.radius + deltaRadius;
+
+        // ===== CRITICAL FIX: Validate calculated radius =====
+        if (!this.isValidNumber(newRadius)) {
+            console.warn('❌ Invalid new radius calculated in wheel handler:', {
+                oldRadius, deltaRadius, newRadius
+            });
+            return;
+        }
+
         this.camera.radius = Math.max(this.camera.lowerRadiusLimit, Math.min(this.camera.upperRadiusLimit, newRadius));
 
         // ===== CAMERA DEBUGGING: Log zoom operation =====
