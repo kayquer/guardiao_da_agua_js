@@ -56,9 +56,9 @@ class BuildingSystem {
             remainingTime: 0
         };
 
-        // Sistema de construção com timer
+        // Sistema de construção com timer - SUPORTE A MÚLTIPLAS CONSTRUÇÕES SIMULTÂNEAS
         this.constructionQueue = new Map(); // buildingId -> construction data
-        this.constructionInProgress = false;
+        this.maxSimultaneousConstructions = 3; // Máximo de 3 construções simultâneas
         this.constructionTimeout = 30000; // 30 segundos timeout para construções
         this.lastConstructionCheck = 0;
 
@@ -71,7 +71,8 @@ class BuildingSystem {
         // Expor métodos de debug globalmente
         window.resetConstructionState = () => this.forceResetConstructionState();
         window.getConstructionInfo = () => ({
-            inProgress: this.constructionInProgress,
+            activeConstructions: this.constructionQueue.size,
+            maxConstructions: this.maxSimultaneousConstructions,
             queueSize: this.constructionQueue.size,
             queue: Array.from(this.constructionQueue.keys())
         });
@@ -1193,14 +1194,14 @@ class BuildingSystem {
             return null;
         }
 
-        // Verificar se há construção em andamento
-        if (this.constructionInProgress) {
-            // Verificar se a construção não está travada
+        // Verificar se atingiu o limite de construções simultâneas
+        if (this.constructionQueue.size >= this.maxSimultaneousConstructions) {
+            // Verificar se há construções travadas antes de bloquear
             this.validateConstructionState();
 
-            if (this.constructionInProgress) {
-                this.showNotification('⚠️ Construção já em andamento', 'warning');
-                console.warn('⚠️ Construção já em andamento - aguarde a conclusão');
+            if (this.constructionQueue.size >= this.maxSimultaneousConstructions) {
+                this.showNotification(`⚠️ Máximo de ${this.maxSimultaneousConstructions} construções simultâneas atingido`, 'warning');
+                console.warn(`⚠️ Máximo de ${this.maxSimultaneousConstructions} construções simultâneas atingido - aguarde a conclusão de uma construção`);
                 return null;
             }
         }
@@ -3400,7 +3401,6 @@ class BuildingSystem {
     }
 
     startConstruction(buildingData) {
-        this.constructionInProgress = true;
         this.constructionQueue.set(buildingData.id, buildingData);
 
         // Criar indicador de progresso 3D
@@ -3409,12 +3409,11 @@ class BuildingSystem {
         // Aplicar efeito visual de construção
         this.applyConstructionVisuals(buildingData);
 
-        console.log(`🚧 Iniciando construção de ${buildingData.config.name} (${buildingData.constructionDuration / 1000}s)`);
+        console.log(`🚧 Iniciando construção de ${buildingData.config.name} (${buildingData.constructionDuration / 1000}s) [${this.constructionQueue.size}/${this.maxSimultaneousConstructions}]`);
     }
 
     updateConstructions(deltaTime) {
         if (this.constructionQueue.size === 0) {
-            this.constructionInProgress = false;
             return;
         }
 
@@ -3452,9 +3451,8 @@ class BuildingSystem {
             }
         });
 
-        // Verificar se ainda há construções em andamento
+        // Log quando todas as construções são concluídas
         if (this.constructionQueue.size === 0) {
-            this.constructionInProgress = false;
             console.log('✅ Todas as construções concluídas');
         }
     }
@@ -3479,9 +3477,9 @@ class BuildingSystem {
         // Mostrar indicador de conclusão
         this.showCompletionIndicator(buildingData);
 
-        // Verificar se há mais construções na fila
-        if (this.constructionQueue.size === 0) {
-            this.constructionInProgress = false;
+        // Log do progresso das construções restantes
+        if (this.constructionQueue.size > 0) {
+            console.log(`📊 Construções restantes: ${this.constructionQueue.size}/${this.maxSimultaneousConstructions}`);
         }
     }
 
@@ -3489,11 +3487,9 @@ class BuildingSystem {
     validateConstructionState() {
         const currentTime = Date.now();
 
-        // Verificar se há construções travadas (timeout)
-        if (this.constructionInProgress && this.constructionQueue.size === 0) {
-            console.warn('⚠️ Estado de construção inconsistente detectado - resetando');
-            this.forceResetConstructionState();
-            return;
+        // Verificar se há construções órfãs ou travadas
+        if (this.constructionQueue.size === 0) {
+            return; // Nenhuma construção em andamento
         }
 
         // Verificar timeout de construções
@@ -3508,7 +3504,6 @@ class BuildingSystem {
 
     forceResetConstructionState() {
         console.log('🔄 Forçando reset do estado de construção...');
-        this.constructionInProgress = false;
         this.constructionQueue.clear();
         this.showNotification('Sistema de construção reiniciado', 'info');
     }
