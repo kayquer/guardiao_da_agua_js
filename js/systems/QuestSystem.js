@@ -60,6 +60,26 @@ class QuestSystem {
                 description: 'Missões de resposta a emergências',
                 icon: '⚠️',
                 color: '#ff4444'
+            },
+
+            // Additional categories used by missions
+            environment: {
+                name: 'Meio Ambiente',
+                description: 'Missões de proteção e conservação ambiental',
+                icon: '🌍',
+                color: '#228B22'
+            },
+            infrastructure: {
+                name: 'Infraestrutura',
+                description: 'Desenvolvimento de infraestrutura básica',
+                icon: '🏗️',
+                color: '#8B4513'
+            },
+            sustainability: {
+                name: 'Sustentabilidade',
+                description: 'Práticas sustentáveis e desenvolvimento responsável',
+                icon: '♻️',
+                color: '#32CD32'
             }
         };
 
@@ -1332,10 +1352,17 @@ class QuestSystem {
     // ===== MISSION MANAGEMENT HELPERS =====
 
     /**
-     * Gets missions by category
+     * Gets missions by category or type
      */
     getMissionsByCategory(category) {
-        return Array.from(this.quests.values()).filter(mission => mission.category === category);
+        return Array.from(this.quests.values()).filter(mission => {
+            // Handle primary/secondary type filtering
+            if (category === 'primary' || category === 'secondary') {
+                return mission.type === category;
+            }
+            // Handle regular category filtering
+            return mission.category === category;
+        });
     }
 
     /**
