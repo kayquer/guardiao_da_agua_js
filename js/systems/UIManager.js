@@ -1119,6 +1119,11 @@ class UIManager {
             this.uiState.currentOpenPanel = panelType;
             this.currentOpenPanel = panelType; // Legacy compatibility
 
+            // ===== FIX: Ensure details panel is visible after transition =====
+            if (this.elements.detailsPanel) {
+                this.elements.detailsPanel.style.display = 'flex';
+            }
+
             // ===== ENHANCED PANEL ROUTING =====
             const panelMethods = {
                 'water': () => this.showWaterDetailsPanel(),
