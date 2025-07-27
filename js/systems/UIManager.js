@@ -30,6 +30,7 @@ class UIManager {
             speed3xBtn: document.getElementById('btn-speed-3x'),
             helpBtn: document.getElementById('btn-help'),
             menuBtn: document.getElementById('btn-menu'),
+            missionBtn: document.getElementById('btn-missions'),
             
             // Painéis
             buildingPanel: document.getElementById('building-panel'),
@@ -126,6 +127,27 @@ class UIManager {
         this.handleResize();
 
         console.log('✅ Interface inicializada');
+    }
+
+    // ===== MISSION MANAGEMENT UI =====
+
+    /**
+     * Shows the mission management panel
+     */
+    showMissionPanel() {
+        if (this.elements.detailsPanel) {
+            this.elements.detailsPanel.style.display = 'flex';
+            this.uiState.currentOpenPanel = 'missions';
+        }
+    }
+
+    /**
+     * Closes the mission management panel
+     */
+    closeMissionPanel() {
+        if (this.elements.detailsPanel && this.uiState.currentOpenPanel === 'missions') {
+            this.closeResourcePanel();
+        }
     }
     
     setupEventListeners() {
