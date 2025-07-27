@@ -532,9 +532,27 @@ window.addEventListener('beforeunload', function(e) {
 // ===== TRATAMENTO DE ERROS GLOBAIS =====
 window.addEventListener('error', function(e) {
     console.error('❌ Erro global:', e.error);
-    
-    if (!isGameInitialized) {
-        showLoadingError(e.error);
+
+    // Only show loading error for critical errors during initialization
+    // Prevent page reloads for minor errors during gameplay
+    if (!isGameInitialized && e.error && e.error.message) {
+        // Only trigger loading error for critical initialization failures
+        const criticalErrors = [
+            'BABYLON is not defined',
+            'GAME_CONFIG is not defined',
+            'Failed to initialize',
+            'Critical dependency missing'
+        ];
+
+        const isCriticalError = criticalErrors.some(errorText =>
+            e.error.message.includes(errorText)
+        );
+
+        if (isCriticalError) {
+            showLoadingError(e.error);
+        } else {
+            console.warn('⚠️ Non-critical error during initialization:', e.error.message);
+        }
     }
 });
 
