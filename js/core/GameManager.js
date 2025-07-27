@@ -414,8 +414,9 @@ class GameManager {
             this.handleIsometricMouseUp(event);
         });
 
+        // CONSOLIDATED MOUSE MOVE HANDLER - Handles all mouse movement in one place
         this.canvas.addEventListener('mousemove', (event) => {
-            this.handleIsometricMouseMove(event);
+            this.handleConsolidatedMouseMove(event);
         });
 
         // Mouse wheel for zoom
@@ -423,13 +424,19 @@ class GameManager {
             this.handleIsometricWheel(event);
         });
 
-        // Edge scrolling detection
-        this.canvas.addEventListener('mousemove', (event) => {
-            this.handleEdgeScrolling(event);
-        });
-
         this.canvas.addEventListener('mouseleave', () => {
+            // Camera cleanup
             this.isometricCameraState.edgeScrolling.isScrolling = false;
+
+            // Hover system cleanup
+            this.hideHoverInfo();
+            this.hideAllBuildingLabels();
+
+            // Clear throttle timeout if it exists
+            if (this.mouseHoverThrottle && this.mouseHoverThrottle.timeoutId) {
+                clearTimeout(this.mouseHoverThrottle.timeoutId);
+                this.mouseHoverThrottle.timeoutId = null;
+            }
         });
 
         // Arrow keys support (in addition to WASD)
@@ -473,19 +480,33 @@ class GameManager {
         }
     }
 
-    handleIsometricMouseMove(event) {
+    // ===== CONSOLIDATED MOUSE MOVE HANDLER - PERFORMANCE FIX =====
+    handleConsolidatedMouseMove(event) {
         if (!this.camera) return;
 
+        // Calculate mouse deltas for camera panning
         const deltaX = event.clientX - this.isometricCameraState.lastMouseX;
         const deltaY = event.clientY - this.isometricCameraState.lastMouseY;
 
-        // Only allow panning with left mouse button (no rotation in isometric view)
+        // Handle camera panning (only with left mouse button in isometric view)
         if (this.isometricCameraState.isPanning && this.isometricCameraState.leftMouseDown) {
             this.panIsometricCamera(deltaX, deltaY);
         }
 
+        // Handle edge scrolling
+        this.handleEdgeScrolling(event);
+
+        // Handle mouse hover with throttling for performance
+        this.handleMouseHoverThrottled(event);
+
+        // Update mouse position for next frame
         this.isometricCameraState.lastMouseX = event.clientX;
         this.isometricCameraState.lastMouseY = event.clientY;
+    }
+
+    // Legacy method for compatibility - now calls consolidated handler
+    handleIsometricMouseMove(event) {
+        this.handleConsolidatedMouseMove(event);
     }
 
     handleIsometricKeyDown(event) {
@@ -1719,21 +1740,10 @@ class GameManager {
             timeoutId: null
         };
 
-        // Adicionar listener de movimento do mouse com throttling
-        this.canvas.addEventListener('mousemove', (event) => {
-            this.handleMouseHoverThrottled(event);
-        });
+        // Mouse hover is now handled by the consolidated mouse move handler in setupIsometricCameraControls()
+        // This eliminates duplicate mousemove listeners and improves performance
 
-        // Adicionar listener para sair da tela
-        this.canvas.addEventListener('mouseleave', () => {
-            this.hideHoverInfo();
-            this.hideAllBuildingLabels();
-            // Limpar throttle timeout se existir
-            if (this.mouseHoverThrottle.timeoutId) {
-                clearTimeout(this.mouseHoverThrottle.timeoutId);
-                this.mouseHoverThrottle.timeoutId = null;
-            }
-        });
+        // Note: mouseleave is already handled in setupIsometricCameraControls() with consolidated cleanup
 
         // Adicionar listener de clique para construção
         this.canvas.addEventListener('click', (event) => {
