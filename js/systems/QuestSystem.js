@@ -19,9 +19,32 @@ class QuestSystem {
         this.questCounter = 0;
         this.totalScore = 0;
         this.achievements = new Set();
-        
+
         // Configurações
         this.maxActiveQuests = 3;
+
+        // ===== ENHANCED MISSION SYSTEM =====
+        // Mission chains for connected storylines
+        this.missionChains = new Map();
+        this.activeChains = new Set();
+
+        // Player choices and consequences
+        this.playerChoices = new Map();
+        this.reputation = {
+            citizens: 50,      // Citizen satisfaction with decisions
+            environment: 50,   // Environmental groups approval
+            business: 50,      // Business community support
+            government: 50     // Government/regulatory approval
+        };
+
+        // Dynamic mission state
+        this.seasonalEvents = new Map();
+        this.emergencyEvents = new Set();
+        this.missionNotifications = [];
+
+        // Enhanced timing system
+        this.urgentMissions = new Set();
+        this.timeWindowMissions = new Map();
 
         // ===== ENHANCED MISSION MANAGEMENT SYSTEM =====
         this.missionCategories = {
@@ -80,6 +103,38 @@ class QuestSystem {
                 description: 'Práticas sustentáveis e desenvolvimento responsável',
                 icon: '♻️',
                 color: '#32CD32'
+            },
+
+            // ===== ENHANCED MISSION CATEGORIES =====
+            story: {
+                name: 'Narrativa',
+                description: 'Missões com história e escolhas que impactam o futuro',
+                icon: '📖',
+                color: '#9B59B6'
+            },
+            community: {
+                name: 'Comunidade',
+                description: 'Engajamento cidadão e participação pública',
+                icon: '👥',
+                color: '#E67E22'
+            },
+            innovation: {
+                name: 'Inovação',
+                description: 'Pesquisa, desenvolvimento e novas tecnologias',
+                icon: '🔬',
+                color: '#3498DB'
+            },
+            seasonal: {
+                name: 'Eventos Sazonais',
+                description: 'Desafios especiais por tempo limitado',
+                icon: '🌟',
+                color: '#F39C12'
+            },
+            emergency: {
+                name: 'Emergências',
+                description: 'Situações críticas que requerem resposta imediata',
+                icon: '🚨',
+                color: '#E74C3C'
             }
         };
 
@@ -727,18 +782,364 @@ class QuestSystem {
             }
         });
 
-        console.log(`✅ ${this.quests.size} missões definidas`);
+        // ===== ENHANCED MISSIONS =====
+        this.addEnhancedMissions();
+
+        console.log(`✅ ${this.quests.size} missões definidas (incluindo missões aprimoradas)`);
+    }
+
+    addEnhancedMissions() {
+        // ===== STORY MISSION CHAIN: "A NOVA GESTORA" =====
+        this.addQuest('story_chain_01_01', {
+            title: 'A Nova Gestora - Parte 1: Primeiro Dia',
+            description: 'Você foi nomeada a nova gestora de recursos hídricos da cidade. Conheça a situação atual e tome suas primeiras decisões.',
+            type: 'story',
+            category: 'story',
+            difficulty: 'beginner',
+            estimatedTime: '8 minutos',
+            chainId: 'nova_gestora',
+            chainPosition: 1,
+            urgency: 'normal',
+            missionIcon: '👩‍💼',
+            stakeholders: ['citizens', 'government'],
+            scalingRewards: true,
+            objectives: [
+                {
+                    id: 'inspect_infrastructure',
+                    description: 'Inspecionar a infraestrutura existente (construir 1 estação de monitoramento)',
+                    type: 'build',
+                    target: 'monitoring_station',
+                    current: 0,
+                    required: 1
+                },
+                {
+                    id: 'meet_citizens',
+                    description: 'Conhecer as necessidades dos cidadãos (manter satisfação acima de 60%)',
+                    type: 'resource',
+                    target: 'satisfaction',
+                    current: 0,
+                    required: 60,
+                    comparison: 'greater'
+                }
+            ],
+            choices: [
+                {
+                    id: 'management_style',
+                    question: 'Qual será seu estilo de gestão?',
+                    options: [
+                        {
+                            text: 'Priorizar eficiência e resultados rápidos',
+                            consequences: { reputation: { business: 5, citizens: -2 } }
+                        },
+                        {
+                            text: 'Focar em participação cidadã e transparência',
+                            consequences: { reputation: { citizens: 5, government: -2 } }
+                        },
+                        {
+                            text: 'Equilibrar todas as necessidades',
+                            consequences: { reputation: { citizens: 2, business: 2, government: 2 } }
+                        }
+                    ]
+                }
+            ],
+            rewards: {
+                score: 150,
+                budget: 3000,
+                experience: 75,
+                reputation: { government: 3 }
+            }
+        });
+
+        this.addQuest('story_chain_01_02', {
+            title: 'A Nova Gestora - Parte 2: Primeira Crise',
+            description: 'Um vazamento foi detectado na rede principal. Como você lidará com esta primeira emergência?',
+            type: 'story',
+            category: 'emergency',
+            difficulty: 'intermediate',
+            estimatedTime: '12 minutos',
+            chainId: 'nova_gestora',
+            chainPosition: 2,
+            urgency: 'high',
+            timeLimit: 900, // 15 minutos
+            missionIcon: '🚨',
+            stakeholders: ['citizens', 'environment'],
+            scalingRewards: true,
+            status: 'locked', // Unlocked when previous mission completes
+            objectives: [
+                {
+                    id: 'emergency_response',
+                    description: 'Responder à emergência (construir 1 estação de reparo)',
+                    type: 'build',
+                    target: 'repair_station',
+                    current: 0,
+                    required: 1
+                },
+                {
+                    id: 'minimize_waste',
+                    description: 'Minimizar desperdício de água (manter eficiência acima de 75%)',
+                    type: 'resource',
+                    target: 'water_efficiency',
+                    current: 0,
+                    required: 75,
+                    comparison: 'greater'
+                },
+                {
+                    id: 'public_communication',
+                    description: 'Comunicar-se com o público (manter satisfação acima de 50% durante a crise)',
+                    type: 'sustained',
+                    target: 'satisfaction',
+                    current: 0,
+                    required: 300, // 5 minutos
+                    threshold: 50
+                }
+            ],
+            choices: [
+                {
+                    id: 'crisis_approach',
+                    question: 'Como você abordará esta crise?',
+                    options: [
+                        {
+                            text: 'Reparo rápido, mesmo com custos altos',
+                            consequences: {
+                                budget: -2000,
+                                reputation: { citizens: 5, business: -3 }
+                            }
+                        },
+                        {
+                            text: 'Solução econômica, mas mais demorada',
+                            consequences: {
+                                timeLimit: 1200,
+                                reputation: { business: 3, citizens: -2 }
+                            }
+                        },
+                        {
+                            text: 'Buscar ajuda de especialistas externos',
+                            consequences: {
+                                budget: -1000,
+                                reputation: { government: 2, environment: 3 }
+                            }
+                        }
+                    ]
+                }
+            ],
+            rewards: {
+                score: 250,
+                budget: 4000,
+                experience: 100,
+                reputation: { citizens: 5 },
+                performanceUnlocks: ['advanced_monitoring']
+            }
+        });
+
+        // ===== SEASONAL EVENT: DIA MUNDIAL DA ÁGUA =====
+        this.addQuest('seasonal_water_day', {
+            title: '💧 Dia Mundial da Água - Campanha Especial',
+            description: 'Organize uma campanha especial para o Dia Mundial da Água. Eduque a população e promova a conservação.',
+            type: 'seasonal',
+            category: 'seasonal',
+            difficulty: 'intermediate',
+            estimatedTime: '20 minutos',
+            urgency: 'normal',
+            timeWindow: { start: Date.now(), end: Date.now() + (7 * 24 * 60 * 60 * 1000) }, // 7 days
+            missionIcon: '🌍',
+            stakeholders: ['citizens', 'environment'],
+            scalingRewards: true,
+            objectives: [
+                {
+                    id: 'education_campaign',
+                    description: 'Construir 3 centros educacionais',
+                    type: 'build',
+                    target: 'education_center',
+                    current: 0,
+                    required: 3
+                },
+                {
+                    id: 'water_conservation',
+                    description: 'Reduzir consumo per capita em 15%',
+                    type: 'resource',
+                    target: 'water_consumption_reduction',
+                    current: 0,
+                    required: 15,
+                    comparison: 'greater'
+                },
+                {
+                    id: 'community_engagement',
+                    description: 'Alcançar 85% de satisfação cidadã',
+                    type: 'resource',
+                    target: 'satisfaction',
+                    current: 0,
+                    required: 85,
+                    comparison: 'greater'
+                }
+            ],
+            dynamicObjectives: [
+                {
+                    id: 'bonus_recycling',
+                    description: 'BÔNUS: Implementar sistema de reciclagem de água',
+                    type: 'build',
+                    target: 'water_recycling_plant',
+                    current: 0,
+                    required: 1,
+                    unlockCondition: 'satisfaction >= 80'
+                }
+            ],
+            rewards: {
+                score: 400,
+                budget: 6000,
+                experience: 150,
+                achievement: 'water_day_champion',
+                reputation: { citizens: 8, environment: 10 },
+                unlock: ['advanced_filtration'],
+                performanceUnlocks: ['smart_meters', 'leak_detection_ai']
+            }
+        });
+
+        // ===== EMERGENCY MISSION: CONTAMINAÇÃO =====
+        this.addQuest('emergency_contamination', {
+            title: '☣️ EMERGÊNCIA: Contaminação Detectada',
+            description: 'Contaminação química foi detectada no reservatório principal. Ação imediata necessária para proteger a saúde pública!',
+            type: 'emergency',
+            category: 'emergency',
+            difficulty: 'expert',
+            estimatedTime: '10 minutos',
+            urgency: 'critical',
+            timeLimit: 600, // 10 minutos
+            missionIcon: '☣️',
+            stakeholders: ['citizens', 'environment', 'government'],
+            scalingRewards: true,
+            objectives: [
+                {
+                    id: 'isolate_contamination',
+                    description: 'URGENTE: Isolar fonte de contaminação (construir 2 estações de isolamento)',
+                    type: 'build',
+                    target: 'isolation_station',
+                    current: 0,
+                    required: 2
+                },
+                {
+                    id: 'alternative_supply',
+                    description: 'Estabelecer fornecimento alternativo (construir 3 pontos de distribuição)',
+                    type: 'build',
+                    target: 'distribution_point',
+                    current: 0,
+                    required: 3
+                },
+                {
+                    id: 'public_safety',
+                    description: 'Manter segurança pública (satisfação não pode cair abaixo de 30%)',
+                    type: 'avoid',
+                    target: 'satisfaction_critical',
+                    current: 0,
+                    required: 30,
+                    comparison: 'greater'
+                }
+            ],
+            choices: [
+                {
+                    id: 'contamination_response',
+                    question: 'Estratégia de resposta à contaminação:',
+                    options: [
+                        {
+                            text: 'Evacuação preventiva da área afetada',
+                            consequences: {
+                                reputation: { citizens: 8, government: 5 },
+                                budget: -5000
+                            }
+                        },
+                        {
+                            text: 'Tratamento in-loco com tecnologia avançada',
+                            consequences: {
+                                reputation: { environment: 8, business: 3 },
+                                budget: -3000
+                            }
+                        },
+                        {
+                            text: 'Coordenação com autoridades estaduais',
+                            consequences: {
+                                reputation: { government: 10 },
+                                timeLimit: 900 // Mais tempo disponível
+                            }
+                        }
+                    ]
+                }
+            ],
+            rewards: {
+                score: 500,
+                budget: 8000,
+                experience: 200,
+                achievement: 'crisis_hero',
+                reputation: { citizens: 10, environment: 8, government: 6 },
+                unlock: ['contamination_detector', 'emergency_protocol'],
+                performanceUnlocks: ['rapid_response_team', 'advanced_treatment']
+            },
+            consequences: {
+                failure: {
+                    reputation: { citizens: -15, environment: -10, government: -8 },
+                    budget: -10000,
+                    unlockMission: 'recovery_contamination'
+                }
+            }
+        });
     }
     
     addQuest(id, config) {
-        this.quests.set(id, {
+        const quest = {
             id,
             ...config,
             status: 'available',
             startTime: null,
             completionTime: null,
-            progress: 0
+            progress: 0,
+
+            // ===== ENHANCED MISSION PROPERTIES =====
+            urgency: config.urgency || 'normal',           // low, normal, high, critical
+            chainId: config.chainId || null,               // Mission chain identifier
+            chainPosition: config.chainPosition || 0,      // Position in chain
+            timeWindow: config.timeWindow || null,          // Time window to start mission
+            choices: config.choices || [],                 // Interactive choices
+            consequences: config.consequences || {},        // Results of choices
+            dynamicObjectives: config.dynamicObjectives || [], // Conditional objectives
+            scalingRewards: config.scalingRewards || false,    // Performance-based rewards
+            missionIcon: config.missionIcon || '🎯',       // Visual icon
+            stakeholders: config.stakeholders || [],       // Affected reputation groups
+            unlockConditions: config.unlockConditions || {}, // Special unlock requirements
+        };
+
+        this.quests.set(id, quest);
+
+        // Register mission chain if specified
+        if (quest.chainId) {
+            this.registerMissionChain(quest.chainId, id, quest.chainPosition);
+        }
+    }
+
+    // ===== ENHANCED MISSION CHAIN SYSTEM =====
+    registerMissionChain(chainId, missionId, position) {
+        if (!this.missionChains.has(chainId)) {
+            this.missionChains.set(chainId, []);
+        }
+
+        const chain = this.missionChains.get(chainId);
+        chain[position] = missionId;
+
+        // Sort chain by position
+        chain.sort((a, b) => {
+            const questA = this.quests.get(a);
+            const questB = this.quests.get(b);
+            return (questA?.chainPosition || 0) - (questB?.chainPosition || 0);
         });
+    }
+
+    getNextMissionInChain(chainId, currentPosition) {
+        const chain = this.missionChains.get(chainId);
+        if (!chain) return null;
+
+        const nextIndex = chain.findIndex(missionId => {
+            const quest = this.quests.get(missionId);
+            return quest && quest.chainPosition > currentPosition;
+        });
+
+        return nextIndex >= 0 ? chain[nextIndex] : null;
     }
     
     // ===== CONTROLE DE MISSÕES =====
@@ -792,42 +1193,242 @@ class QuestSystem {
     completeQuest(questId) {
         const quest = this.quests.get(questId);
         if (!quest || quest.status !== 'active') return false;
-        
+
         // Marcar como completa
         quest.status = 'completed';
         quest.completionTime = Date.now();
         this.activeQuests.delete(questId);
         this.completedQuests.add(questId);
-        
-        // Aplicar recompensas
-        this.applyQuestRewards(quest);
-        
+
+        // ===== ENHANCED COMPLETION SYSTEM =====
+
+        // Calculate performance-based rewards
+        const performanceMultiplier = this.calculatePerformanceMultiplier(quest);
+
+        // Aplicar recompensas (with scaling if enabled)
+        this.applyQuestRewards(quest, performanceMultiplier);
+
+        // Handle mission chain progression
+        if (quest.chainId) {
+            this.progressMissionChain(quest.chainId, quest.chainPosition);
+        }
+
+        // Apply reputation changes based on stakeholders
+        this.updateReputation(quest);
+
+        // Remove from urgent missions if applicable
+        this.urgentMissions.delete(questId);
+
         // Verificar próximas missões
         this.checkUnlockConditions();
-        
+
         // Atualizar UI
         this.updateQuestUI();
-        
-        // Notificar
+
+        // Enhanced notification with performance feedback
         if (this.gameManager.uiManager) {
+            const performanceText = performanceMultiplier > 1 ?
+                ` (Desempenho Excelente! +${Math.round((performanceMultiplier - 1) * 100)}% bônus)` : '';
+
             this.gameManager.uiManager.showNotification(
-                `Missão completa: ${quest.title}`,
-                'success'
+                `Missão completa: ${quest.title}${performanceText}`,
+                'success',
+                5000
             );
         }
-        
+
         // Som de sucesso
         AudioManager.playSound('sfx_success');
-        
-        console.log(`✅ Missão completa: ${quest.title}`);
+
+        console.log(`✅ Missão completa: ${quest.title} (Performance: ${performanceMultiplier.toFixed(2)}x)`);
         return true;
     }
+
+    // ===== ENHANCED MISSION PROGRESSION =====
+    progressMissionChain(chainId, completedPosition) {
+        const nextMissionId = this.getNextMissionInChain(chainId, completedPosition);
+
+        if (nextMissionId) {
+            const nextMission = this.quests.get(nextMissionId);
+            if (nextMission && nextMission.status === 'locked') {
+                nextMission.status = 'available';
+
+                // Notify player about new mission
+                if (this.gameManager.uiManager) {
+                    this.gameManager.uiManager.showNotification(
+                        `🔓 Nova missão desbloqueada: ${nextMission.title}`,
+                        'info',
+                        6000
+                    );
+                }
+
+                console.log(`🔓 Missão da cadeia desbloqueada: ${nextMission.title}`);
+            }
+        } else {
+            // Chain completed
+            this.activeChains.delete(chainId);
+
+            if (this.gameManager.uiManager) {
+                this.gameManager.uiManager.showNotification(
+                    `🏆 Série de missões completa!`,
+                    'success',
+                    4000
+                );
+            }
+        }
+    }
+
+    calculatePerformanceMultiplier(quest) {
+        if (!quest.scalingRewards) return 1.0;
+
+        let multiplier = 1.0;
+        const completionTime = quest.completionTime - quest.startTime;
+
+        // Time bonus (faster completion = higher multiplier)
+        if (quest.estimatedTime) {
+            const estimatedMs = this.parseTimeToMs(quest.estimatedTime);
+            if (completionTime < estimatedMs * 0.8) {
+                multiplier += 0.3; // 30% bonus for fast completion
+            } else if (completionTime < estimatedMs) {
+                multiplier += 0.1; // 10% bonus for on-time completion
+            }
+        }
+
+        // Objective completion bonus
+        const perfectCompletion = quest.objectives.every(obj => obj.current >= obj.required);
+        if (perfectCompletion) {
+            multiplier += 0.2; // 20% bonus for perfect completion
+        }
+
+        return Math.min(multiplier, 2.0); // Cap at 2x multiplier
+    }
+
+    parseTimeToMs(timeString) {
+        // Convert "5 minutos" to milliseconds
+        const match = timeString.match(/(\d+)\s*(minuto|hora)/);
+        if (!match) return 300000; // Default 5 minutes
+
+        const value = parseInt(match[1]);
+        const unit = match[2];
+
+        if (unit.startsWith('minuto')) {
+            return value * 60 * 1000;
+        } else if (unit.startsWith('hora')) {
+            return value * 60 * 60 * 1000;
+        }
+
+        return 300000; // Default 5 minutes
+    }
     
-    // ===== ATUALIZAÇÃO =====
+    // ===== ENHANCED UPDATE SYSTEM =====
     update(deltaTime) {
         // Atualizar progresso das missões ativas
         this.activeQuests.forEach(questId => {
             this.updateQuestProgress(questId, deltaTime);
+        });
+
+        // ===== NEW UPDATE FEATURES =====
+
+        // Check time window missions
+        this.checkTimeWindowMissions();
+
+        // Update urgent mission indicators
+        this.updateUrgencyIndicators();
+
+        // Process dynamic objectives
+        this.processDynamicObjectives();
+
+        // Check for automatic choice triggers
+        this.checkChoiceTriggers();
+    }
+
+    updateUrgencyIndicators() {
+        // Update UI indicators for urgent missions
+        const urgentMissions = this.getMissionsByUrgency('critical').concat(
+            this.getMissionsByUrgency('high')
+        );
+
+        if (urgentMissions.length > 0 && this.gameManager.uiManager) {
+            // TODO: Add pulsing urgency indicator to UI
+        }
+    }
+
+    processDynamicObjectives() {
+        this.activeQuests.forEach(questId => {
+            const quest = this.quests.get(questId);
+            if (!quest || !quest.dynamicObjectives) return;
+
+            quest.dynamicObjectives.forEach(dynObj => {
+                if (!dynObj.activated && this.checkUnlockCondition(dynObj.unlockCondition)) {
+                    // Activate dynamic objective
+                    dynObj.activated = true;
+                    quest.objectives.push(dynObj);
+
+                    if (this.gameManager.uiManager) {
+                        this.gameManager.uiManager.showNotification(
+                            `🎯 Novo objetivo: ${dynObj.description}`,
+                            'info',
+                            5000
+                        );
+                    }
+
+                    console.log(`🎯 Objetivo dinâmico ativado: ${dynObj.description}`);
+                }
+            });
+        });
+    }
+
+    checkUnlockCondition(condition) {
+        if (!condition) return true;
+
+        // Parse condition string (e.g., "satisfaction >= 80")
+        const match = condition.match(/(\w+)\s*(>=|<=|>|<|==)\s*(\d+)/);
+        if (!match) return false;
+
+        const [, resource, operator, value] = match;
+        const currentValue = this.getResourceValue(resource);
+        const targetValue = parseInt(value);
+
+        switch (operator) {
+            case '>=': return currentValue >= targetValue;
+            case '<=': return currentValue <= targetValue;
+            case '>': return currentValue > targetValue;
+            case '<': return currentValue < targetValue;
+            case '==': return currentValue === targetValue;
+            default: return false;
+        }
+    }
+
+    getResourceValue(resourceName) {
+        const resourceManager = this.gameManager.resourceManager;
+        if (!resourceManager) return 0;
+
+        switch (resourceName) {
+            case 'satisfaction':
+                return resourceManager.resources.satisfaction?.current || 0;
+            case 'population':
+                return resourceManager.resources.population?.current || 0;
+            case 'pollution':
+                return resourceManager.resources.pollution?.current || 0;
+            case 'budget':
+                return resourceManager.resources.budget?.current || 0;
+            case 'water':
+                return resourceManager.resources.water?.current || 0;
+            default:
+                return 0;
+        }
+    }
+
+    checkChoiceTriggers() {
+        this.activeQuests.forEach(questId => {
+            const quest = this.quests.get(questId);
+            if (!quest || !quest.choices) return;
+
+            quest.choices.forEach(choice => {
+                if (choice.autoTrigger && this.checkUnlockCondition(choice.autoTrigger)) {
+                    this.presentChoice(questId, choice.id);
+                }
+            });
         });
     }
     
@@ -938,23 +1539,33 @@ class QuestSystem {
         }
     }
     
-    // ===== RECOMPENSAS =====
-    applyQuestRewards(quest) {
+    // ===== ENHANCED REWARDS SYSTEM =====
+    applyQuestRewards(quest, performanceMultiplier = 1.0) {
         if (!quest.rewards) return;
-        
+
         const resourceManager = this.gameManager.resourceManager;
         const buildingSystem = this.gameManager.buildingSystem;
-        
-        // Pontuação
+
+        // Pontuação (with performance scaling)
         if (quest.rewards.score) {
-            this.totalScore += quest.rewards.score;
+            const scaledScore = Math.round(quest.rewards.score * performanceMultiplier);
+            this.totalScore += scaledScore;
+
+            if (performanceMultiplier > 1) {
+                console.log(`🎯 Pontuação com bônus: ${scaledScore} (${quest.rewards.score} base + ${Math.round((performanceMultiplier - 1) * quest.rewards.score)} bônus)`);
+            }
         }
-        
-        // Orçamento
+
+        // Orçamento (with performance scaling)
         if (quest.rewards.budget && resourceManager) {
-            resourceManager.resources.budget.current += quest.rewards.budget;
+            const scaledBudget = Math.round(quest.rewards.budget * performanceMultiplier);
+            resourceManager.resources.budget.current += scaledBudget;
+
+            if (performanceMultiplier > 1) {
+                console.log(`💰 Orçamento com bônus: ${scaledBudget}`);
+            }
         }
-        
+
         // Desbloqueios
         if (quest.rewards.unlock) {
             quest.rewards.unlock.forEach(buildingTypeId => {
@@ -965,11 +1576,225 @@ class QuestSystem {
                 }
             });
         }
-        
+
         // Conquistas
         if (quest.rewards.achievement) {
             this.unlockAchievement(quest.rewards.achievement);
         }
+
+        // ===== NEW REWARD TYPES =====
+
+        // Experience points
+        if (quest.rewards.experience) {
+            const scaledExp = Math.round(quest.rewards.experience * performanceMultiplier);
+            // TODO: Implement experience system
+            console.log(`⭐ Experiência ganha: ${scaledExp}`);
+        }
+
+        // Reputation changes
+        if (quest.rewards.reputation) {
+            Object.entries(quest.rewards.reputation).forEach(([group, change]) => {
+                this.modifyReputation(group, change);
+            });
+        }
+
+        // Special unlocks based on performance
+        if (quest.rewards.performanceUnlocks && performanceMultiplier >= 1.5) {
+            quest.rewards.performanceUnlocks.forEach(unlock => {
+                console.log(`🌟 Desbloqueio especial por desempenho: ${unlock}`);
+                // TODO: Implement special unlocks
+            });
+        }
+    }
+
+    // ===== REPUTATION SYSTEM =====
+    updateReputation(quest) {
+        if (!quest.stakeholders || quest.stakeholders.length === 0) return;
+
+        // Base reputation change based on quest completion
+        const baseChange = quest.type === 'challenge' ? 3 : 2;
+
+        quest.stakeholders.forEach(stakeholder => {
+            this.modifyReputation(stakeholder, baseChange);
+        });
+    }
+
+    modifyReputation(group, change) {
+        if (this.reputation.hasOwnProperty(group)) {
+            this.reputation[group] = Math.max(0, Math.min(100, this.reputation[group] + change));
+
+            if (Math.abs(change) >= 5) {
+                const direction = change > 0 ? 'melhorou' : 'piorou';
+                const emoji = change > 0 ? '👍' : '👎';
+
+                if (this.gameManager.uiManager) {
+                    this.gameManager.uiManager.showNotification(
+                        `${emoji} Reputação com ${this.getStakeholderName(group)} ${direction}`,
+                        change > 0 ? 'success' : 'warning',
+                        3000
+                    );
+                }
+            }
+
+            console.log(`📊 Reputação ${group}: ${this.reputation[group]} (${change > 0 ? '+' : ''}${change})`);
+        }
+    }
+
+    getStakeholderName(group) {
+        const names = {
+            citizens: 'Cidadãos',
+            environment: 'Ambientalistas',
+            business: 'Empresários',
+            government: 'Governo'
+        };
+        return names[group] || group;
+    }
+
+    // ===== INTERACTIVE CHOICE SYSTEM =====
+    presentChoice(questId, choiceId) {
+        const quest = this.quests.get(questId);
+        if (!quest || quest.status !== 'active') return;
+
+        const choice = quest.choices.find(c => c.id === choiceId);
+        if (!choice) return;
+
+        // Show choice dialog
+        this.showChoiceDialog(quest, choice);
+    }
+
+    showChoiceDialog(quest, choice) {
+        if (!this.gameManager.uiManager) return;
+
+        const dialogContent = `
+            <div class="choice-dialog">
+                <div class="choice-header">
+                    <h3>${quest.title}</h3>
+                    <p class="choice-question">${choice.question}</p>
+                </div>
+                <div class="choice-options">
+                    ${choice.options.map((option, index) => `
+                        <button class="choice-option"
+                                onclick="window.gameManager.questSystem.makeChoice('${quest.id}', '${choice.id}', ${index})">
+                            ${option.text}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        // TODO: Implement choice dialog UI
+        console.log('Choice Dialog:', dialogContent);
+    }
+
+    makeChoice(questId, choiceId, optionIndex) {
+        const quest = this.quests.get(questId);
+        if (!quest) return;
+
+        const choice = quest.choices.find(c => c.id === choiceId);
+        if (!choice || !choice.options[optionIndex]) return;
+
+        const selectedOption = choice.options[optionIndex];
+
+        // Store player choice
+        this.playerChoices.set(`${questId}_${choiceId}`, {
+            questId,
+            choiceId,
+            optionIndex,
+            option: selectedOption,
+            timestamp: Date.now()
+        });
+
+        // Apply immediate consequences
+        this.applyChoiceConsequences(selectedOption.consequences);
+
+        // Remove choice from quest (can only choose once)
+        quest.choices = quest.choices.filter(c => c.id !== choiceId);
+
+        // Notify player
+        if (this.gameManager.uiManager) {
+            this.gameManager.uiManager.showNotification(
+                `Decisão tomada: ${selectedOption.text}`,
+                'info',
+                4000
+            );
+        }
+
+        console.log(`🎯 Escolha feita: ${selectedOption.text}`);
+    }
+
+    applyChoiceConsequences(consequences) {
+        if (!consequences) return;
+
+        // Apply reputation changes
+        if (consequences.reputation) {
+            Object.entries(consequences.reputation).forEach(([group, change]) => {
+                this.modifyReputation(group, change);
+            });
+        }
+
+        // Apply budget changes
+        if (consequences.budget && this.gameManager.resourceManager) {
+            this.gameManager.resourceManager.resources.budget.current += consequences.budget;
+
+            if (consequences.budget !== 0) {
+                const type = consequences.budget > 0 ? 'Ganho' : 'Gasto';
+                const amount = Math.abs(consequences.budget);
+                console.log(`💰 ${type} de orçamento: ${amount}`);
+            }
+        }
+
+        // Apply time limit changes
+        if (consequences.timeLimit) {
+            // TODO: Implement dynamic time limit changes
+            console.log(`⏰ Limite de tempo alterado: ${consequences.timeLimit}s`);
+        }
+
+        // Apply other consequences
+        Object.entries(consequences).forEach(([key, value]) => {
+            if (!['reputation', 'budget', 'timeLimit'].includes(key)) {
+                console.log(`🔄 Consequência aplicada: ${key} = ${value}`);
+            }
+        });
+    }
+
+    // ===== ENHANCED MISSION MANAGEMENT =====
+    getAvailableChoices(questId) {
+        const quest = this.quests.get(questId);
+        return quest?.choices || [];
+    }
+
+    getMissionsByUrgency(urgencyLevel) {
+        return Array.from(this.quests.values()).filter(quest =>
+            quest.urgency === urgencyLevel && quest.status === 'active'
+        );
+    }
+
+    getActiveEmergencies() {
+        return this.getMissionsByUrgency('critical').concat(
+            this.getMissionsByUrgency('high')
+        );
+    }
+
+    checkTimeWindowMissions() {
+        const now = Date.now();
+
+        this.quests.forEach(quest => {
+            if (quest.timeWindow && quest.status === 'available') {
+                if (now > quest.timeWindow.end) {
+                    // Mission expired
+                    quest.status = 'expired';
+                    console.log(`⏰ Missão expirou: ${quest.title}`);
+
+                    if (this.gameManager.uiManager) {
+                        this.gameManager.uiManager.showNotification(
+                            `⏰ Missão expirou: ${quest.title}`,
+                            'warning',
+                            5000
+                        );
+                    }
+                }
+            }
+        });
     }
     
     unlockAchievement(achievementId) {
@@ -1124,7 +1949,12 @@ class QuestSystem {
         let statusText = 'Disponível';
         let actionButton = '';
 
-        if (isCompleted) {
+        // ===== ENHANCED STATUS HANDLING =====
+        if (mission.status === 'expired') {
+            statusClass = 'expired';
+            statusText = 'Expirada';
+            actionButton = '<button class="mission-btn expired" disabled>⏰ Expirada</button>';
+        } else if (isCompleted) {
             statusClass = 'completed';
             statusText = 'Completa';
             actionButton = '<button class="mission-btn completed" disabled>✓ Completa</button>';
@@ -1132,6 +1962,11 @@ class QuestSystem {
             statusClass = 'active';
             statusText = 'Ativa';
             actionButton = '<button class="mission-btn active" disabled>⏳ Em Progresso</button>';
+
+            // Add choice button if choices are available
+            if (mission.choices && mission.choices.length > 0) {
+                actionButton += `<button class="mission-btn choice" onclick="window.gameManager.questSystem.presentChoice('${mission.id}', '${mission.choices[0].id}')">🎭 Decidir</button>`;
+            }
         } else if (canStart) {
             statusClass = 'available';
             statusText = 'Disponível';
@@ -1142,16 +1977,65 @@ class QuestSystem {
             actionButton = '<button class="mission-btn locked" disabled>🔒 Bloqueada</button>';
         }
 
+        // ===== ENHANCED VISUAL INDICATORS =====
+
+        // Urgency indicator
+        let urgencyIndicator = '';
+        if (mission.urgency === 'critical') {
+            urgencyIndicator = '<span class="urgency-indicator critical">🚨 CRÍTICA</span>';
+            statusClass += ' critical-urgency';
+        } else if (mission.urgency === 'high') {
+            urgencyIndicator = '<span class="urgency-indicator high">⚡ URGENTE</span>';
+            statusClass += ' high-urgency';
+        }
+
+        // Chain indicator
+        let chainIndicator = '';
+        if (mission.chainId) {
+            chainIndicator = `<span class="chain-indicator">🔗 Parte ${mission.chainPosition}</span>`;
+        }
+
+        // Time window indicator
+        let timeWindowIndicator = '';
+        if (mission.timeWindow && mission.status === 'available') {
+            const timeLeft = mission.timeWindow.end - Date.now();
+            const hoursLeft = Math.ceil(timeLeft / (1000 * 60 * 60));
+            if (hoursLeft > 0) {
+                timeWindowIndicator = `<span class="time-window">⏰ ${hoursLeft}h restantes</span>`;
+            }
+        }
+
+        // Special features indicators
+        let featuresIndicators = '';
+        if (mission.scalingRewards) {
+            featuresIndicators += '<span class="feature-indicator scaling">⭐ Recompensas Dinâmicas</span>';
+        }
+        if (mission.choices && mission.choices.length > 0) {
+            featuresIndicators += '<span class="feature-indicator choices">🎭 Decisões</span>';
+        }
+        if (mission.stakeholders && mission.stakeholders.length > 0) {
+            featuresIndicators += '<span class="feature-indicator stakeholders">👥 Impacto Social</span>';
+        }
+
         const progressPercent = isActive ? (mission.progress * 100) : (isCompleted ? 100 : 0);
 
         return `
             <div class="mission-card ${statusClass}" onclick="window.gameManager.questSystem.selectMission('${mission.id}')">
                 <div class="mission-card-header">
                     <div class="mission-title">
-                        <span class="category-icon" style="color: ${category.color}">${category.icon}</span>
+                        <span class="mission-icon" style="color: ${category.color}">${mission.missionIcon || category.icon}</span>
                         <h4>${mission.title}</h4>
                     </div>
-                    <div class="mission-status ${statusClass}">${statusText}</div>
+                    <div class="mission-status-area">
+                        <div class="mission-status ${statusClass}">${statusText}</div>
+                        ${urgencyIndicator}
+                    </div>
+                </div>
+
+                <div class="mission-indicators">
+                    ${chainIndicator}
+                    ${timeWindowIndicator}
+                    ${featuresIndicators}
                 </div>
 
                 <div class="mission-description">
@@ -1169,6 +2053,7 @@ class QuestSystem {
                     </div>
                 </div>
 
+                ${this.renderStakeholders(mission)}
                 ${this.renderPrerequisites(mission)}
 
                 <div class="mission-progress">
@@ -1182,6 +2067,19 @@ class QuestSystem {
                     ${actionButton}
                     <button class="mission-btn info" onclick="window.gameManager.questSystem.showMissionDetails('${mission.id}')">ℹ️ Detalhes</button>
                 </div>
+            </div>
+        `;
+    }
+
+    renderStakeholders(mission) {
+        if (!mission.stakeholders || mission.stakeholders.length === 0) return '';
+
+        const stakeholderNames = mission.stakeholders.map(s => this.getStakeholderName(s));
+
+        return `
+            <div class="mission-stakeholders">
+                <span class="meta-label">Grupos Afetados:</span>
+                <span class="stakeholder-list">${stakeholderNames.join(', ')}</span>
             </div>
         `;
     }
