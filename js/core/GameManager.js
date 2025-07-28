@@ -361,6 +361,10 @@ class GameManager {
             middleMouseDown: false,  // Added middle mouse button support
             lastMouseX: 0,
             lastMouseY: 0,
+            mouseDownTime: 0,
+            mouseDownPosition: { x: 0, y: 0 },
+            wasLastActionClick: false,
+            wasLastActionDrag: false,
             isPanning: false,
             panningButton: null,     // Track which button is being used for panning
 
@@ -376,6 +380,10 @@ class GameManager {
             isMoving: false,
             targetPosition: BABYLON.Vector3.Zero()
         };
+
+        // ===== CRITICAL FIX: Initialize pointer event throttling and debug controls =====
+        this.debugLevel = 1; // 0=off, 1=basic, 2=detailed
+        this.lastPointerMoveLog = 0;
 
         // ===== SMOOTH MOVEMENT SETTINGS =====
         this.camera.inertia = this.CAMERA_CONSTANTS.INERTIA || 0.9;                                    // Smooth camera movement
@@ -844,6 +852,52 @@ class GameManager {
             }
         } catch (error) {
             console.error('❌ Error in building placement click:', error);
+        }
+    }
+
+    // ===== CRITICAL FIX: Camera recovery method to prevent blue screen crashes =====
+    recoverCameraState() {
+        try {
+            console.log('🔧 Attempting camera state recovery...');
+
+            // Reset camera to safe default position
+            const safeTarget = new BABYLON.Vector3(20, 0, 20); // Center of 40x40 grid
+            const safeRadius = 50;
+            const safeAlpha = Math.PI / 4; // 45 degrees
+            const safeBeta = Math.PI / 3;  // 60 degrees (isometric)
+
+            if (this.camera) {
+                this.camera.setTarget(safeTarget);
+                this.camera.radius = safeRadius;
+                this.camera.alpha = safeAlpha;
+                this.camera.beta = safeBeta;
+
+                console.log('✅ Camera position recovered to safe defaults');
+            }
+
+            // Reset camera state flags
+            if (this.isometricCameraState) {
+                this.isometricCameraState.isPanning = false;
+                this.isometricCameraState.panningButton = null;
+                this.isometricCameraState.leftMouseDown = false;
+                this.isometricCameraState.middleMouseDown = false;
+                this.isometricCameraState.lastMouseX = 0;
+                this.isometricCameraState.lastMouseY = 0;
+
+                console.log('✅ Camera state flags reset');
+            }
+
+            // Remove any stuck global event listeners
+            this.removeGlobalDragListeners();
+
+            console.log('✅ Camera recovery completed successfully');
+
+        } catch (error) {
+            console.error('❌ Critical error during camera recovery:', error);
+            // Last resort: reload the page if recovery fails
+            if (confirm('O jogo encontrou um erro crítico. Recarregar a página?')) {
+                window.location.reload();
+            }
         }
     }
 
@@ -3653,25 +3707,66 @@ class GameManager {
     handlePointerEvent(pointerInfo) {
         if (this.gameState !== 'playing') return;
 
-        // ===== ENHANCED DEBUGGING: Log pointer events with camera state =====
-        const eventType = pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN ? 'POINTERDOWN' :
-                         pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP ? 'POINTERUP' : 'OTHER';
+        // ===== CRITICAL FIX: Add error handling to prevent crashes =====
+        try {
+            // ===== CRITICAL FIX: Throttled logging to prevent browser overload =====
+            const eventType = pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN ? 'POINTERDOWN' :
+                             pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP ? 'POINTERUP' :
+                             pointerInfo.type === BABYLON.PointerEventTypes.POINTERMOVE ? 'POINTERMOVE' : 'OTHER';
 
-        console.log(`🖱️ Pointer Event: ${eventType}`, {
-            button: pointerInfo.event?.button,
-            isPanning: this.isometricCameraState?.isPanning,
-            buildMode: this.buildMode,
-            previewMode: this.buildingSystem?.previewMode,
-            timestamp: Date.now()
-        });
+            // ===== CRITICAL FIX: Only log important events or throttled POINTERMOVE events =====
+            const now = Date.now();
+            const shouldLog = eventType !== 'POINTERMOVE' ||
+                             !this.lastPointerMoveLog ||
+                             (now - this.lastPointerMoveLog) > 500; // Log POINTERMOVE max every 500ms
 
-        switch (pointerInfo.type) {
-            case BABYLON.PointerEventTypes.POINTERDOWN:
-                this.handlePointerDown(pointerInfo);
-                break;
-            case BABYLON.PointerEventTypes.POINTERUP:
-                this.handlePointerUp(pointerInfo);
-                break;
+            if (shouldLog) {
+                if (eventType === 'POINTERMOVE') {
+                    this.lastPointerMoveLog = now;
+                }
+
+                // Only log if not in rapid-fire mode to prevent browser overload
+                if (eventType !== 'POINTERMOVE' || this.debugLevel >= 2) {
+                    console.log(`🖱️ Pointer Event: ${eventType}`, {
+                        button: pointerInfo.event?.button,
+                        isPanning: this.isometricCameraState?.isPanning,
+                        buildMode: this.buildMode,
+                        previewMode: this.buildingSystem?.previewMode,
+                        timestamp: now
+                    });
+                }
+            }
+
+            // ===== CRITICAL FIX: Filter out POINTERMOVE events during camera panning =====
+            if (eventType === 'POINTERMOVE' && this.isometricCameraState?.isPanning) {
+                // Skip processing POINTERMOVE during camera panning to prevent conflicts
+                return;
+            }
+
+            switch (pointerInfo.type) {
+                case BABYLON.PointerEventTypes.POINTERDOWN:
+                    this.handlePointerDown(pointerInfo);
+                    break;
+                case BABYLON.PointerEventTypes.POINTERUP:
+                    this.handlePointerUp(pointerInfo);
+                    break;
+                case BABYLON.PointerEventTypes.POINTERMOVE:
+                    // Handle POINTERMOVE events if needed (currently not used for building placement)
+                    break;
+            }
+        } catch (error) {
+            // ===== CRITICAL FIX: Error recovery to prevent blue screen crashes =====
+            console.error('❌ Critical error in handlePointerEvent:', error);
+
+            // Reset camera state if corrupted
+            if (this.isometricCameraState && (
+                isNaN(this.camera?.getTarget()?.x) ||
+                isNaN(this.camera?.getTarget()?.y) ||
+                isNaN(this.camera?.getTarget()?.z)
+            )) {
+                console.log('🔧 Recovering from corrupted camera state...');
+                this.recoverCameraState();
+            }
         }
     }
     
