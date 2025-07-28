@@ -901,6 +901,62 @@ class GameManager {
         }
     }
 
+    // ===== CRITICAL FIX: 3D Renderer recovery method to prevent blue screen crashes =====
+    recover3DRenderer() {
+        try {
+            console.log('🔧 Attempting 3D renderer recovery...');
+
+            // Check if engine is still valid
+            if (this.engine && !this.engine.isDisposed) {
+                // Force engine resize to refresh rendering
+                this.engine.resize();
+                console.log('✅ Engine resize completed');
+            }
+
+            // Check if scene is still valid
+            if (this.scene && !this.scene.isDisposed) {
+                // Force scene render to refresh 3D area
+                this.scene.render();
+                console.log('✅ Scene render forced');
+
+                // Reset scene state if needed
+                if (!this.scene.isReady()) {
+                    console.log('🔧 Scene not ready, waiting for initialization...');
+                    this.scene.executeWhenReady(() => {
+                        console.log('✅ Scene ready after recovery');
+                    });
+                }
+            }
+
+            // Recover camera state as well
+            this.recoverCameraState();
+
+            // Clear any pending pointer events
+            if (this.scene && this.scene.onPointerObservable) {
+                // Temporarily disable pointer events to break any loops
+                const originalObservable = this.scene.onPointerObservable;
+                this.scene.onPointerObservable.clear();
+
+                // Re-enable after a short delay
+                setTimeout(() => {
+                    if (this.scene && !this.scene.isDisposed) {
+                        this.scene.onPointerObservable = originalObservable;
+                        console.log('✅ Pointer events re-enabled after recovery');
+                    }
+                }, 100);
+            }
+
+            console.log('✅ 3D renderer recovery completed successfully');
+
+        } catch (error) {
+            console.error('❌ Critical error during 3D renderer recovery:', error);
+            // Last resort: force page reload
+            if (confirm('O renderizador 3D encontrou um erro crítico. Recarregar a página?')) {
+                window.location.reload();
+            }
+        }
+    }
+
     // ===== CRITICAL FIX: Global drag event management to prevent focus loss =====
     addGlobalDragListeners() {
         // Remove any existing listeners first to prevent duplicates
@@ -3707,14 +3763,56 @@ class GameManager {
     handlePointerEvent(pointerInfo) {
         if (this.gameState !== 'playing') return;
 
-        // ===== CRITICAL FIX: Add error handling to prevent crashes =====
+        // ===== CRITICAL FIX: Add comprehensive error handling to prevent 3D renderer crashes =====
         try {
-            // ===== CRITICAL FIX: Throttled logging to prevent browser overload =====
-            const eventType = pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN ? 'POINTERDOWN' :
-                             pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP ? 'POINTERUP' :
-                             pointerInfo.type === BABYLON.PointerEventTypes.POINTERMOVE ? 'POINTERMOVE' : 'OTHER';
+            // ===== CRITICAL FIX: Complete event type detection for all Babylon.js pointer events =====
+            let eventType = 'UNKNOWN';
+            let eventCode = pointerInfo.type;
 
-            // ===== CRITICAL FIX: Only log important events or throttled POINTERMOVE events =====
+            // Map all Babylon.js pointer event types
+            switch (pointerInfo.type) {
+                case BABYLON.PointerEventTypes.POINTERDOWN:
+                    eventType = 'POINTERDOWN';
+                    break;
+                case BABYLON.PointerEventTypes.POINTERUP:
+                    eventType = 'POINTERUP';
+                    break;
+                case BABYLON.PointerEventTypes.POINTERMOVE:
+                    eventType = 'POINTERMOVE';
+                    break;
+                case BABYLON.PointerEventTypes.POINTERWHEEL:
+                    eventType = 'POINTERWHEEL';
+                    break;
+                case BABYLON.PointerEventTypes.POINTERPICK:
+                    eventType = 'POINTERPICK';
+                    break;
+                case BABYLON.PointerEventTypes.POINTERTAP:
+                    eventType = 'POINTERTAP';
+                    break;
+                case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
+                    eventType = 'POINTERDOUBLETAP';
+                    break;
+                default:
+                    eventType = `OTHER(${eventCode})`;
+                    break;
+            }
+
+            // ===== CRITICAL FIX: Filter dangerous events during camera operations =====
+            const isDuringCameraOperation = this.isometricCameraState?.isPanning ||
+                                          this.isometricCameraState?.leftMouseDown ||
+                                          this.isometricCameraState?.middleMouseDown;
+
+            // ===== CRITICAL FIX: Block events that can corrupt 3D renderer during camera operations =====
+            if (isDuringCameraOperation && (
+                pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK ||
+                pointerInfo.type === BABYLON.PointerEventTypes.POINTERTAP ||
+                pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP
+            )) {
+                // Silently ignore these events during camera operations to prevent 3D corruption
+                return;
+            }
+
+            // ===== CRITICAL FIX: Throttled logging with complete event information =====
             const now = Date.now();
             const shouldLog = eventType !== 'POINTERMOVE' ||
                              !this.lastPointerMoveLog ||
@@ -3725,24 +3823,21 @@ class GameManager {
                     this.lastPointerMoveLog = now;
                 }
 
-                // Only log if not in rapid-fire mode to prevent browser overload
+                // Enhanced logging for debugging "OTHER" events
                 if (eventType !== 'POINTERMOVE' || this.debugLevel >= 2) {
                     console.log(`🖱️ Pointer Event: ${eventType}`, {
                         button: pointerInfo.event?.button,
+                        eventCode: eventCode,
                         isPanning: this.isometricCameraState?.isPanning,
                         buildMode: this.buildMode,
                         previewMode: this.buildingSystem?.previewMode,
+                        isDuringCameraOp: isDuringCameraOperation,
                         timestamp: now
                     });
                 }
             }
 
-            // ===== CRITICAL FIX: Filter out POINTERMOVE events during camera panning =====
-            if (eventType === 'POINTERMOVE' && this.isometricCameraState?.isPanning) {
-                // Skip processing POINTERMOVE during camera panning to prevent conflicts
-                return;
-            }
-
+            // ===== CRITICAL FIX: Enhanced event processing with 3D renderer protection =====
             switch (pointerInfo.type) {
                 case BABYLON.PointerEventTypes.POINTERDOWN:
                     this.handlePointerDown(pointerInfo);
@@ -3751,21 +3846,60 @@ class GameManager {
                     this.handlePointerUp(pointerInfo);
                     break;
                 case BABYLON.PointerEventTypes.POINTERMOVE:
-                    // Handle POINTERMOVE events if needed (currently not used for building placement)
+                    // Skip POINTERMOVE during camera panning to prevent conflicts
+                    if (!isDuringCameraOperation) {
+                        // Handle POINTERMOVE events if needed (currently not used for building placement)
+                    }
+                    break;
+                case BABYLON.PointerEventTypes.POINTERWHEEL:
+                    // Handle mouse wheel events (zoom)
+                    if (!isDuringCameraOperation) {
+                        // Wheel events can be processed when not panning
+                    }
+                    break;
+                case BABYLON.PointerEventTypes.POINTERPICK:
+                case BABYLON.PointerEventTypes.POINTERTAP:
+                case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
+                    // These events are already filtered above during camera operations
+                    // Process them only when camera is not active
+                    if (!isDuringCameraOperation) {
+                        // Handle pick/tap events for building placement
+                    }
+                    break;
+                default:
+                    // Log unknown events for debugging but don't process them
+                    if (this.debugLevel >= 1) {
+                        console.warn(`⚠️ Unknown pointer event type: ${eventCode}`);
+                    }
                     break;
             }
         } catch (error) {
-            // ===== CRITICAL FIX: Error recovery to prevent blue screen crashes =====
+            // ===== CRITICAL FIX: Enhanced error recovery to prevent blue screen crashes =====
             console.error('❌ Critical error in handlePointerEvent:', error);
 
-            // Reset camera state if corrupted
-            if (this.isometricCameraState && (
-                isNaN(this.camera?.getTarget()?.x) ||
-                isNaN(this.camera?.getTarget()?.y) ||
-                isNaN(this.camera?.getTarget()?.z)
-            )) {
-                console.log('🔧 Recovering from corrupted camera state...');
-                this.recoverCameraState();
+            // Check for 3D renderer corruption
+            if (this.scene && this.camera) {
+                try {
+                    // Validate camera state
+                    const target = this.camera.getTarget();
+                    if (isNaN(target.x) || isNaN(target.y) || isNaN(target.z) ||
+                        !isFinite(target.x) || !isFinite(target.y) || !isFinite(target.z)) {
+                        console.log('🔧 Recovering from corrupted camera state...');
+                        this.recoverCameraState();
+                    }
+
+                    // Validate scene state
+                    if (!this.scene.isReady() || this.scene.isDisposed) {
+                        console.log('🔧 Scene corrupted, attempting recovery...');
+                        this.recover3DRenderer();
+                    }
+                } catch (recoveryError) {
+                    console.error('❌ Critical error during recovery:', recoveryError);
+                    // Last resort: force page reload
+                    if (confirm('O jogo encontrou um erro crítico na renderização 3D. Recarregar a página?')) {
+                        window.location.reload();
+                    }
+                }
             }
         }
     }
