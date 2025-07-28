@@ -348,6 +348,10 @@ async function continueGame() {
 
             showScreen('game-screen');
             isGameInitialized = true;
+
+            // Tornar gameManager disponível globalmente para testes
+            window.gameManager = gameManager;
+
             console.log('✅ Jogo carregado com sucesso');
         } else {
             alert('Nenhum jogo salvo encontrado!');
