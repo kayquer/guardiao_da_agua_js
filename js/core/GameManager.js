@@ -3906,17 +3906,49 @@ class GameManager {
     
     handlePointerDown(pointerInfo) {
         const pickInfo = pointerInfo.pickInfo;
+        const button = pointerInfo.event?.button;
+
+        // ===== CRITICAL FIX: Immediately set camera panning state for left mouse button =====
+        if (button === 0 && pickInfo.hit) { // Left mouse button
+            // Check if clicking on terrain (not buildings) - this should be camera panning
+            const pickedMeshName = pickInfo.pickedMesh?.name;
+            const isTerrainClick = !pickedMeshName || pickedMeshName.includes('terrain') || pickedMeshName.includes('ground');
+
+            if (isTerrainClick && !this.buildMode) {
+                // This is a camera panning operation, not object selection
+                this.isometricCameraState.isPanning = true;
+                this.isometricCameraState.leftMouseDown = true;
+                this.isometricCameraState.mouseDownTime = Date.now();
+                this.isometricCameraState.mouseDownPosition = {
+                    x: pointerInfo.event.clientX,
+                    y: pointerInfo.event.clientY
+                };
+                this.isometricCameraState.panningButton = 'left';
+
+                console.log(`🎮 Camera panning initiated via pointer event:`, {
+                    button: button,
+                    pickedMesh: pickedMeshName,
+                    isTerrainClick: isTerrainClick,
+                    buildMode: this.buildMode,
+                    timestamp: Date.now()
+                });
+
+                // Block any further processing for camera operations
+                return;
+            }
+        }
 
         // ===== ENHANCED DEBUGGING: Log pointer down with detailed state =====
         console.log(`🖱️ PointerDown Handler:`, {
             hit: pickInfo.hit,
-            button: pointerInfo.event?.button,
+            button: button,
             isPanning: this.isometricCameraState?.isPanning,
             leftMouseDown: this.isometricCameraState?.leftMouseDown,
             buildMode: this.buildMode,
             currentBuildingType: this.currentBuildingType,
             previewMode: this.buildingSystem?.previewMode,
             pickedPoint: pickInfo.pickedPoint,
+            pickedMesh: pickInfo.pickedMesh?.name,
             timestamp: Date.now()
         });
 
@@ -3926,21 +3958,51 @@ class GameManager {
             return;
         }
 
+        // ===== CRITICAL FIX: Block object selection during camera operations =====
+        if (this.isometricCameraState?.leftMouseDown || this.isometricCameraState?.middleMouseDown) {
+            console.log(`🚫 Blocking object selection - camera operation in progress`);
+            return;
+        }
+
         if (pickInfo.hit) {
             if (this.buildMode && this.currentBuildingType) {
                 // Modo construção
                 console.log(`🏗️ Attempting building placement at:`, pickInfo.pickedPoint);
                 this.buildingSystem.placeBuildingAt(pickInfo.pickedPoint, this.currentBuildingType);
             } else {
-                // Seleção de objeto
-                console.log(`🎯 Selecting object:`, pickInfo.pickedMesh?.name);
-                this.selectObject(pickInfo.pickedMesh);
+                // Seleção de objeto - only if not camera operation
+                const pickedMeshName = pickInfo.pickedMesh?.name;
+                if (pickedMeshName && !pickedMeshName.includes('terrain') && !pickedMeshName.includes('ground')) {
+                    console.log(`🎯 Selecting object:`, pickedMeshName);
+                    this.selectObject(pickInfo.pickedMesh);
+                } else {
+                    console.log(`🚫 Ignoring terrain click - not a selectable object`);
+                }
             }
         }
     }
     
     handlePointerUp(pointerInfo) {
-        // Implementar se necessário
+        const button = pointerInfo.event?.button;
+
+        // ===== CRITICAL FIX: Handle end of camera panning operations =====
+        if (button === 0 && this.isometricCameraState?.isPanning && this.isometricCameraState?.leftMouseDown) {
+            console.log(`🎮 Camera panning ended via pointer event:`, {
+                button: button,
+                wasPanning: this.isometricCameraState.isPanning,
+                timestamp: Date.now()
+            });
+
+            // Let the mouse event handler manage the state cleanup
+            // This ensures consistency between pointer and mouse event systems
+        }
+
+        console.log(`🖱️ PointerUp Handler:`, {
+            button: button,
+            isPanning: this.isometricCameraState?.isPanning,
+            leftMouseDown: this.isometricCameraState?.leftMouseDown,
+            timestamp: Date.now()
+        });
     }
     
     handleKeyboardEvent(kbInfo) {
