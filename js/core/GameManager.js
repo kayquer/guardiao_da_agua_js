@@ -658,7 +658,7 @@ class GameManager {
     handleIsometricMouseDown(event) {
         if (!this.camera) return;
 
-        // ===== CAMERA DEBUGGING: Log mouse down events =====
+        // ===== ENHANCED CAMERA DEBUGGING: Log mouse down events with building system state =====
         this.logCameraEvent('mouseDown', {
             button: event.button,
             buttonName: this.getMouseButtonName(event.button),
@@ -666,7 +666,15 @@ class GameManager {
             clientY: event.clientY,
             timestamp: Date.now(),
             cameraPosition: this.camera.getTarget().clone(),
-            cameraRadius: this.camera.radius
+            cameraRadius: this.camera.radius,
+            buildMode: this.buildMode,
+            previewMode: this.buildingSystem?.previewMode,
+            currentBuildingType: this.currentBuildingType,
+            buildingSystemState: this.buildingSystem ? {
+                selectedBuildingType: this.buildingSystem.selectedBuildingType,
+                previewMode: this.buildingSystem.previewMode,
+                isConstructing: this.buildingSystem.isConstructing
+            } : null
         });
 
         this.isometricCameraState.lastMouseX = event.clientX;
@@ -674,6 +682,8 @@ class GameManager {
 
         if (event.button === 0) { // Left mouse button for panning
             this.isometricCameraState.leftMouseDown = true;
+            this.isometricCameraState.mouseDownTime = Date.now();
+            this.isometricCameraState.mouseDownPosition = { x: event.clientX, y: event.clientY };
             this.isometricCameraState.isPanning = true;
             this.isometricCameraState.panningButton = 'left';
 
@@ -728,16 +738,44 @@ class GameManager {
             this.isometricCameraState.leftMouseDown = false;
 
             if (this.isometricCameraState.isPanning && this.isometricCameraState.panningButton === 'left') {
-                // ===== CAMERA DEBUGGING: Log left mouse panning end =====
+                // ===== ENHANCED CLICK VS DRAG DETECTION =====
+                const mouseUpTime = Date.now();
+                const timeDiff = mouseUpTime - (this.isometricCameraState.mouseDownTime || 0);
+                const mouseUpPosition = { x: event.clientX, y: event.clientY };
+                const mouseDownPosition = this.isometricCameraState.mouseDownPosition || { x: 0, y: 0 };
+                const distance = Math.sqrt(
+                    Math.pow(mouseUpPosition.x - mouseDownPosition.x, 2) +
+                    Math.pow(mouseUpPosition.y - mouseDownPosition.y, 2)
+                );
+
+                const wasClick = timeDiff < 200 && distance < 5; // Less than 200ms and 5px movement = click
+                const wasDrag = timeDiff >= 200 || distance >= 5; // More than 200ms or 5px movement = drag
+
+                // ===== CAMERA DEBUGGING: Log left mouse panning end with click/drag detection =====
                 this.logCameraEvent('panEnd', {
                     button: 'left',
-                    finalCameraTarget: this.camera ? this.camera.getTarget().clone() : null
+                    finalCameraTarget: this.camera ? this.camera.getTarget().clone() : null,
+                    timeDiff,
+                    distance,
+                    wasClick,
+                    wasDrag,
+                    mouseDownPosition,
+                    mouseUpPosition
                 });
+
                 this.isometricCameraState.isPanning = false;
                 this.isometricCameraState.panningButton = null;
+                this.isometricCameraState.wasLastActionClick = wasClick;
+                this.isometricCameraState.wasLastActionDrag = wasDrag;
 
                 // ===== CRITICAL FIX: Remove global event listeners when dragging ends =====
                 this.removeGlobalDragListeners();
+
+                // ===== BUILDING PLACEMENT LOGIC: Only allow building placement on actual clicks =====
+                if (wasClick && this.buildingSystem?.previewMode) {
+                    console.log(`🏗️ Click detected during preview mode - attempting building placement`);
+                    this.handleBuildingPlacementClick(event);
+                }
             }
         } else if (event.button === 1) { // Middle mouse button
             this.isometricCameraState.middleMouseDown = false;
@@ -757,6 +795,56 @@ class GameManager {
         }
 
         event.preventDefault();
+    }
+
+    // ===== BUILDING PLACEMENT CLICK HANDLER =====
+    handleBuildingPlacementClick(event) {
+        if (!this.buildingSystem || !this.buildingSystem.previewMode) return;
+
+        try {
+            // Get mouse position on canvas
+            const rect = this.canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            // Create ray to detect position in 3D world
+            const pickInfo = this.scene.pick(x, y);
+
+            if (pickInfo.hit && pickInfo.pickedPoint) {
+                // Convert world position to grid with perfect snap
+                const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
+
+                // Force grid alignment - ensure integer coordinates
+                gridPos.x = Math.floor(gridPos.x);
+                gridPos.z = Math.floor(gridPos.z);
+
+                console.log(`🏗️ Building placement click at grid position:`, gridPos);
+
+                // Attempt to place building
+                const success = this.buildingSystem.confirmPlacement(gridPos.x, gridPos.z);
+
+                if (success) {
+                    // Construction successful, stop preview
+                    this.buildingSystem.stopPreviewMode();
+
+                    // Show notification
+                    if (this.uiManager) {
+                        this.uiManager.showNotification('Edifício construído com sucesso!', 'success');
+                    }
+
+                    console.log(`✅ Building placed successfully at (${gridPos.x}, ${gridPos.z})`);
+                } else {
+                    // Construction failed, show error
+                    if (this.uiManager) {
+                        this.uiManager.showNotification('Não é possível construir nesta posição!', 'error');
+                    }
+
+                    console.log(`❌ Building placement failed at (${gridPos.x}, ${gridPos.z})`);
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error in building placement click:', error);
+        }
     }
 
     // ===== CRITICAL FIX: Global drag event management to prevent focus loss =====
@@ -3564,7 +3652,19 @@ class GameManager {
     
     handlePointerEvent(pointerInfo) {
         if (this.gameState !== 'playing') return;
-        
+
+        // ===== ENHANCED DEBUGGING: Log pointer events with camera state =====
+        const eventType = pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN ? 'POINTERDOWN' :
+                         pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP ? 'POINTERUP' : 'OTHER';
+
+        console.log(`🖱️ Pointer Event: ${eventType}`, {
+            button: pointerInfo.event?.button,
+            isPanning: this.isometricCameraState?.isPanning,
+            buildMode: this.buildMode,
+            previewMode: this.buildingSystem?.previewMode,
+            timestamp: Date.now()
+        });
+
         switch (pointerInfo.type) {
             case BABYLON.PointerEventTypes.POINTERDOWN:
                 this.handlePointerDown(pointerInfo);
@@ -3577,13 +3677,34 @@ class GameManager {
     
     handlePointerDown(pointerInfo) {
         const pickInfo = pointerInfo.pickInfo;
-        
+
+        // ===== ENHANCED DEBUGGING: Log pointer down with detailed state =====
+        console.log(`🖱️ PointerDown Handler:`, {
+            hit: pickInfo.hit,
+            button: pointerInfo.event?.button,
+            isPanning: this.isometricCameraState?.isPanning,
+            leftMouseDown: this.isometricCameraState?.leftMouseDown,
+            buildMode: this.buildMode,
+            currentBuildingType: this.currentBuildingType,
+            previewMode: this.buildingSystem?.previewMode,
+            pickedPoint: pickInfo.pickedPoint,
+            timestamp: Date.now()
+        });
+
+        // ===== CRITICAL FIX: Prevent building placement during camera panning =====
+        if (this.isometricCameraState?.isPanning) {
+            console.log(`🚫 Blocking building placement - camera is panning`);
+            return;
+        }
+
         if (pickInfo.hit) {
             if (this.buildMode && this.currentBuildingType) {
                 // Modo construção
+                console.log(`🏗️ Attempting building placement at:`, pickInfo.pickedPoint);
                 this.buildingSystem.placeBuildingAt(pickInfo.pickedPoint, this.currentBuildingType);
             } else {
                 // Seleção de objeto
+                console.log(`🎯 Selecting object:`, pickInfo.pickedMesh?.name);
                 this.selectObject(pickInfo.pickedMesh);
             }
         }
