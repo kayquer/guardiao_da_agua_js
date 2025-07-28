@@ -1827,6 +1827,7 @@ class QuestSystem {
 
                         return `
                             <button class="category-btn-large ${isActive ? 'active' : ''}"
+                                    data-tooltip="${category.name} (${missionCount} missões)"
                                     onclick="window.gameManager.questSystem.selectCategory('${cat}')">
                                 <div class="category-icon-large">${category.icon}</div>
                                 <div class="category-info">

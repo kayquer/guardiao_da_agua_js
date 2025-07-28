@@ -278,6 +278,36 @@
         font-size: 1.3rem;
         order: -1; /* Title first on mobile */
     }
+
+    /* ===== MISSION CATEGORIES MOBILE ===== */
+    .mission-categories-simplified {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .category-btn-large {
+        max-width: none !important;
+        min-width: auto !important;
+        padding: 1rem 1.5rem !important;
+        gap: 1rem !important;
+    }
+
+    .category-btn-large .category-info {
+        opacity: 1 !important;
+        transform: translateX(0) !important;
+        width: auto !important;
+        min-width: auto !important;
+    }
+
+    .category-btn-large .category-icon-large {
+        font-size: 2rem !important;
+    }
+
+    /* Hide tooltips on mobile */
+    .category-btn-large::before,
+    .category-btn-large::after {
+        display: none !important;
+    }
     
     /* ===== BOTÕES DE TOGGLE MOBILE ===== */
     .mobile-toggle {
