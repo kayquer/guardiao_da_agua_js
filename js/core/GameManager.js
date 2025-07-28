@@ -427,18 +427,30 @@ class GameManager {
 
     // ===== ISOMETRIC RTS-STYLE CAMERA CONTROLS =====
     setupIsometricCameraControls() {
-        // Mouse events for panning
+        // ===== CRITICAL FIX: Store bound event handlers for proper cleanup =====
+        this.boundMouseMoveHandler = (event) => this.handleConsolidatedMouseMove(event);
+        this.boundMouseUpHandler = (event) => this.handleIsometricMouseUp(event);
+
+        // Mouse events for panning - only mousedown on canvas
         this.canvas.addEventListener('mousedown', (event) => {
             this.handleIsometricMouseDown(event);
         });
 
-        this.canvas.addEventListener('mouseup', (event) => {
-            this.handleIsometricMouseUp(event);
+        // ===== CRITICAL FIX: Only add mousemove to canvas for non-dragging operations =====
+        // During dragging, we'll use document-level events to prevent focus loss
+        this.canvas.addEventListener('mousemove', (event) => {
+            // Only handle non-dragging mouse moves on canvas
+            if (!this.isometricCameraState.isPanning) {
+                this.handleConsolidatedMouseMove(event);
+            }
         });
 
-        // CONSOLIDATED MOUSE MOVE HANDLER - Handles all mouse movement in one place
-        this.canvas.addEventListener('mousemove', (event) => {
-            this.handleConsolidatedMouseMove(event);
+        // ===== CRITICAL FIX: Only handle mouseup on canvas when not dragging =====
+        this.canvas.addEventListener('mouseup', (event) => {
+            // Only handle mouseup on canvas when not dragging
+            if (!this.isometricCameraState.isPanning) {
+                this.handleIsometricMouseUp(event);
+            }
         });
 
         // Mouse wheel for zoom
@@ -475,7 +487,14 @@ class GameManager {
             event.preventDefault();
         });
 
-        console.log('🎮 Isometric RTS-style camera controls initialized');
+        // ===== CRITICAL FIX: Prevent middle mouse button default behavior globally =====
+        document.addEventListener('mousedown', (event) => {
+            if (event.button === 1) { // Middle mouse button
+                event.preventDefault();
+            }
+        });
+
+        console.log('🎮 Isometric RTS-style camera controls initialized with focus-loss prevention');
     }
 
     // ===== CAMERA DEBUGGING SYSTEM =====
@@ -658,6 +677,9 @@ class GameManager {
             this.isometricCameraState.isPanning = true;
             this.isometricCameraState.panningButton = 'left';
 
+            // ===== CRITICAL FIX: Add global event listeners during dragging =====
+            this.addGlobalDragListeners();
+
             // ===== CAMERA DEBUGGING: Log panning start =====
             this.logCameraEvent('panStart', {
                 button: 'left',
@@ -670,6 +692,9 @@ class GameManager {
             this.isometricCameraState.isPanning = true;
             this.isometricCameraState.panningButton = 'middle';
 
+            // ===== CRITICAL FIX: Add global event listeners during dragging =====
+            this.addGlobalDragListeners();
+
             // ===== CAMERA DEBUGGING: Log middle mouse panning start =====
             this.logCameraEvent('panStart', {
                 button: 'middle',
@@ -681,6 +706,11 @@ class GameManager {
         // Note: Right mouse button disabled for isometric view (no rotation allowed)
 
         event.preventDefault();
+
+        // ===== CRITICAL FIX: Ensure canvas maintains focus during drag operations =====
+        if (this.canvas && this.canvas.focus) {
+            this.canvas.focus();
+        }
     }
 
     handleIsometricMouseUp(event) {
@@ -705,6 +735,9 @@ class GameManager {
                 });
                 this.isometricCameraState.isPanning = false;
                 this.isometricCameraState.panningButton = null;
+
+                // ===== CRITICAL FIX: Remove global event listeners when dragging ends =====
+                this.removeGlobalDragListeners();
             }
         } else if (event.button === 1) { // Middle mouse button
             this.isometricCameraState.middleMouseDown = false;
@@ -717,8 +750,40 @@ class GameManager {
                 });
                 this.isometricCameraState.isPanning = false;
                 this.isometricCameraState.panningButton = null;
+
+                // ===== CRITICAL FIX: Remove global event listeners when dragging ends =====
+                this.removeGlobalDragListeners();
             }
         }
+
+        event.preventDefault();
+    }
+
+    // ===== CRITICAL FIX: Global drag event management to prevent focus loss =====
+    addGlobalDragListeners() {
+        // Remove any existing listeners first to prevent duplicates
+        this.removeGlobalDragListeners();
+
+        // Add global mousemove and mouseup listeners during dragging
+        document.addEventListener('mousemove', this.boundMouseMoveHandler, { passive: false });
+        document.addEventListener('mouseup', this.boundMouseUpHandler, { passive: false });
+
+        // ===== CAMERA DEBUGGING: Log global listener addition =====
+        this.logCameraEvent('globalListenersAdded', {
+            timestamp: Date.now(),
+            panningButton: this.isometricCameraState.panningButton
+        });
+    }
+
+    removeGlobalDragListeners() {
+        // Remove global listeners
+        document.removeEventListener('mousemove', this.boundMouseMoveHandler);
+        document.removeEventListener('mouseup', this.boundMouseUpHandler);
+
+        // ===== CAMERA DEBUGGING: Log global listener removal =====
+        this.logCameraEvent('globalListenersRemoved', {
+            timestamp: Date.now()
+        });
     }
 
     // ===== CONSOLIDATED MOUSE MOVE HANDLER - PERFORMANCE FIX =====
@@ -4132,6 +4197,9 @@ class GameManager {
     
     // ===== CLEANUP =====
     dispose() {
+        // ===== CRITICAL FIX: Clean up global drag listeners =====
+        this.removeGlobalDragListeners();
+
         if (this.engine) {
             this.engine.dispose();
         }
