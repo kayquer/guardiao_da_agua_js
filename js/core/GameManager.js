@@ -355,10 +355,8 @@ class GameManager {
 
         // ===== ISOMETRIC CAMERA STATE =====
         this.isometricCameraState = {
-            // Mouse controls
-            leftMouseDown: false,
+            // Mouse controls (camera panning with mouse buttons disabled)
             rightMouseDown: false,
-            middleMouseDown: false,  // Added middle mouse button support
             lastMouseX: 0,
             lastMouseY: 0,
             mouseDownTime: 0,
@@ -366,7 +364,6 @@ class GameManager {
             wasLastActionClick: false,
             wasLastActionDrag: false,
             isPanning: false,
-            panningButton: null,     // Track which button is being used for panning
 
             // Edge scrolling
             edgeScrolling: {
@@ -688,39 +685,7 @@ class GameManager {
         this.isometricCameraState.lastMouseX = event.clientX;
         this.isometricCameraState.lastMouseY = event.clientY;
 
-        if (event.button === 0) { // Left mouse button for panning
-            this.isometricCameraState.leftMouseDown = true;
-            this.isometricCameraState.mouseDownTime = Date.now();
-            this.isometricCameraState.mouseDownPosition = { x: event.clientX, y: event.clientY };
-            this.isometricCameraState.isPanning = true;
-            this.isometricCameraState.panningButton = 'left';
 
-            // ===== CRITICAL FIX: Add global event listeners during dragging =====
-            this.addGlobalDragListeners();
-
-            // ===== CAMERA DEBUGGING: Log panning start =====
-            this.logCameraEvent('panStart', {
-                button: 'left',
-                mouseX: event.clientX,
-                mouseY: event.clientY,
-                cameraTarget: this.camera.getTarget().clone()
-            });
-        } else if (event.button === 1) { // Middle mouse button for alternative panning
-            this.isometricCameraState.middleMouseDown = true;
-            this.isometricCameraState.isPanning = true;
-            this.isometricCameraState.panningButton = 'middle';
-
-            // ===== CRITICAL FIX: Add global event listeners during dragging =====
-            this.addGlobalDragListeners();
-
-            // ===== CAMERA DEBUGGING: Log middle mouse panning start =====
-            this.logCameraEvent('panStart', {
-                button: 'middle',
-                mouseX: event.clientX,
-                mouseY: event.clientY,
-                cameraTarget: this.camera.getTarget().clone()
-            });
-        }
         // Note: Right mouse button disabled for isometric view (no rotation allowed)
 
         event.preventDefault();
@@ -737,70 +702,10 @@ class GameManager {
             button: event.button,
             buttonName: this.getMouseButtonName(event.button),
             timestamp: Date.now(),
-            wasPanning: this.isometricCameraState.isPanning,
-            panningButton: this.isometricCameraState.panningButton,
             cameraPosition: this.camera ? this.camera.getTarget().clone() : null
         });
 
-        if (event.button === 0) { // Left mouse button
-            this.isometricCameraState.leftMouseDown = false;
 
-            if (this.isometricCameraState.isPanning && this.isometricCameraState.panningButton === 'left') {
-                // ===== ENHANCED CLICK VS DRAG DETECTION =====
-                const mouseUpTime = Date.now();
-                const timeDiff = mouseUpTime - (this.isometricCameraState.mouseDownTime || 0);
-                const mouseUpPosition = { x: event.clientX, y: event.clientY };
-                const mouseDownPosition = this.isometricCameraState.mouseDownPosition || { x: 0, y: 0 };
-                const distance = Math.sqrt(
-                    Math.pow(mouseUpPosition.x - mouseDownPosition.x, 2) +
-                    Math.pow(mouseUpPosition.y - mouseDownPosition.y, 2)
-                );
-
-                const wasClick = timeDiff < 200 && distance < 5; // Less than 200ms and 5px movement = click
-                const wasDrag = timeDiff >= 200 || distance >= 5; // More than 200ms or 5px movement = drag
-
-                // ===== CAMERA DEBUGGING: Log left mouse panning end with click/drag detection =====
-                this.logCameraEvent('panEnd', {
-                    button: 'left',
-                    finalCameraTarget: this.camera ? this.camera.getTarget().clone() : null,
-                    timeDiff,
-                    distance,
-                    wasClick,
-                    wasDrag,
-                    mouseDownPosition,
-                    mouseUpPosition
-                });
-
-                this.isometricCameraState.isPanning = false;
-                this.isometricCameraState.panningButton = null;
-                this.isometricCameraState.wasLastActionClick = wasClick;
-                this.isometricCameraState.wasLastActionDrag = wasDrag;
-
-                // ===== CRITICAL FIX: Remove global event listeners when dragging ends =====
-                this.removeGlobalDragListeners();
-
-                // ===== BUILDING PLACEMENT LOGIC: Only allow building placement on actual clicks =====
-                if (wasClick && this.buildingSystem?.previewMode) {
-                    console.log(`🏗️ Click detected during preview mode - attempting building placement`);
-                    this.handleBuildingPlacementClick(event);
-                }
-            }
-        } else if (event.button === 1) { // Middle mouse button
-            this.isometricCameraState.middleMouseDown = false;
-
-            if (this.isometricCameraState.isPanning && this.isometricCameraState.panningButton === 'middle') {
-                // ===== CAMERA DEBUGGING: Log middle mouse panning end =====
-                this.logCameraEvent('panEnd', {
-                    button: 'middle',
-                    finalCameraTarget: this.camera ? this.camera.getTarget().clone() : null
-                });
-                this.isometricCameraState.isPanning = false;
-                this.isometricCameraState.panningButton = null;
-
-                // ===== CRITICAL FIX: Remove global event listeners when dragging ends =====
-                this.removeGlobalDragListeners();
-            }
-        }
 
         event.preventDefault();
     }
@@ -878,9 +783,6 @@ class GameManager {
             // Reset camera state flags
             if (this.isometricCameraState) {
                 this.isometricCameraState.isPanning = false;
-                this.isometricCameraState.panningButton = null;
-                this.isometricCameraState.leftMouseDown = false;
-                this.isometricCameraState.middleMouseDown = false;
                 this.isometricCameraState.lastMouseX = 0;
                 this.isometricCameraState.lastMouseY = 0;
 
@@ -957,31 +859,14 @@ class GameManager {
         }
     }
 
-    // ===== CRITICAL FIX: Global drag event management to prevent focus loss =====
+    // ===== GLOBAL DRAG LISTENERS NO LONGER NEEDED =====
+    // Camera panning with mouse buttons has been disabled
     addGlobalDragListeners() {
-        // Remove any existing listeners first to prevent duplicates
-        this.removeGlobalDragListeners();
-
-        // Add global mousemove and mouseup listeners during dragging
-        document.addEventListener('mousemove', this.boundMouseMoveHandler, { passive: false });
-        document.addEventListener('mouseup', this.boundMouseUpHandler, { passive: false });
-
-        // ===== CAMERA DEBUGGING: Log global listener addition =====
-        this.logCameraEvent('globalListenersAdded', {
-            timestamp: Date.now(),
-            panningButton: this.isometricCameraState.panningButton
-        });
+        // No longer needed - camera panning disabled
     }
 
     removeGlobalDragListeners() {
-        // Remove global listeners
-        document.removeEventListener('mousemove', this.boundMouseMoveHandler);
-        document.removeEventListener('mouseup', this.boundMouseUpHandler);
-
-        // ===== CAMERA DEBUGGING: Log global listener removal =====
-        this.logCameraEvent('globalListenersRemoved', {
-            timestamp: Date.now()
-        });
+        // No longer needed - camera panning disabled
     }
 
     // ===== CONSOLIDATED MOUSE MOVE HANDLER - PERFORMANCE FIX =====
@@ -1021,49 +906,16 @@ class GameManager {
         if (this.cameraDebug.enabled) {
             // Always log drag operations (not just in verbose mode)
             if (this.isometricCameraState.isPanning) {
-                this.logCameraEvent('dragMove', {
-                    deltaX,
-                    deltaY,
-                    button: this.isometricCameraState.panningButton,
-                    leftMouseDown: this.isometricCameraState.leftMouseDown,
-                    middleMouseDown: this.isometricCameraState.middleMouseDown,
-                    cameraTarget: this.camera.getTarget().clone(),
-                    timestamp: Date.now()
-                });
+                // Camera panning logging disabled - no mouse button panning allowed
             }
 
             // Log all mouse moves in verbose mode
             if (this.cameraDebug.logLevel === 'verbose') {
-                this.logCameraEvent('mouseMove', {
-                    deltaX,
-                    deltaY,
-                    isPanning: this.isometricCameraState.isPanning,
-                    leftMouseDown: this.isometricCameraState.leftMouseDown,
-                    middleMouseDown: this.isometricCameraState.middleMouseDown,
-                    timestamp: Date.now()
-                }, true); // throttled = true
+                // Mouse move logging simplified - no mouse button panning allowed
             }
         }
 
-        // Handle camera panning (left mouse button OR middle mouse button)
-        if (this.isometricCameraState.isPanning &&
-            (this.isometricCameraState.leftMouseDown || this.isometricCameraState.middleMouseDown)) {
-
-            // ===== CAMERA DEBUGGING: Log pan operation =====
-            this.logCameraEvent('panOperation', {
-                deltaX,
-                deltaY,
-                button: this.isometricCameraState.panningButton,
-                beforeTarget: this.camera.getTarget().clone()
-            });
-
-            this.panIsometricCamera(deltaX, deltaY);
-
-            // Log after pan operation
-            this.logCameraEvent('panOperationComplete', {
-                afterTarget: this.camera.getTarget().clone()
-            });
-        }
+        // Camera panning has been disabled for left and middle mouse buttons
 
         // Handle edge scrolling
         this.handleEdgeScrolling(event);
@@ -3798,9 +3650,8 @@ class GameManager {
             }
 
             // ===== CRITICAL FIX: Filter dangerous events during camera operations =====
-            const isDuringCameraOperation = this.isometricCameraState?.isPanning ||
-                                          this.isometricCameraState?.leftMouseDown ||
-                                          this.isometricCameraState?.middleMouseDown;
+            // Note: Camera panning with mouse buttons has been disabled
+            const isDuringCameraOperation = false;
 
             // ===== CRITICAL FIX: Block events that can corrupt 3D renderer during camera operations =====
             if (isDuringCameraOperation && (
@@ -3908,42 +3759,12 @@ class GameManager {
         const pickInfo = pointerInfo.pickInfo;
         const button = pointerInfo.event?.button;
 
-        // ===== CRITICAL FIX: Immediately set camera panning state for left mouse button =====
-        if (button === 0 && pickInfo.hit) { // Left mouse button
-            // Check if clicking on terrain (not buildings) - this should be camera panning
-            const pickedMeshName = pickInfo.pickedMesh?.name;
-            const isTerrainClick = !pickedMeshName || pickedMeshName.includes('terrain') || pickedMeshName.includes('ground');
 
-            if (isTerrainClick && !this.buildMode) {
-                // This is a camera panning operation, not object selection
-                this.isometricCameraState.isPanning = true;
-                this.isometricCameraState.leftMouseDown = true;
-                this.isometricCameraState.mouseDownTime = Date.now();
-                this.isometricCameraState.mouseDownPosition = {
-                    x: pointerInfo.event.clientX,
-                    y: pointerInfo.event.clientY
-                };
-                this.isometricCameraState.panningButton = 'left';
-
-                console.log(`🎮 Camera panning initiated via pointer event:`, {
-                    button: button,
-                    pickedMesh: pickedMeshName,
-                    isTerrainClick: isTerrainClick,
-                    buildMode: this.buildMode,
-                    timestamp: Date.now()
-                });
-
-                // Block any further processing for camera operations
-                return;
-            }
-        }
 
         // ===== ENHANCED DEBUGGING: Log pointer down with detailed state =====
         console.log(`🖱️ PointerDown Handler:`, {
             hit: pickInfo.hit,
             button: button,
-            isPanning: this.isometricCameraState?.isPanning,
-            leftMouseDown: this.isometricCameraState?.leftMouseDown,
             buildMode: this.buildMode,
             currentBuildingType: this.currentBuildingType,
             previewMode: this.buildingSystem?.previewMode,
@@ -3958,11 +3779,7 @@ class GameManager {
             return;
         }
 
-        // ===== CRITICAL FIX: Block object selection during camera operations =====
-        if (this.isometricCameraState?.leftMouseDown || this.isometricCameraState?.middleMouseDown) {
-            console.log(`🚫 Blocking object selection - camera operation in progress`);
-            return;
-        }
+        // Camera operations with mouse buttons have been disabled
 
         if (pickInfo.hit) {
             if (this.buildMode && this.currentBuildingType) {
@@ -3985,22 +3802,10 @@ class GameManager {
     handlePointerUp(pointerInfo) {
         const button = pointerInfo.event?.button;
 
-        // ===== CRITICAL FIX: Handle end of camera panning operations =====
-        if (button === 0 && this.isometricCameraState?.isPanning && this.isometricCameraState?.leftMouseDown) {
-            console.log(`🎮 Camera panning ended via pointer event:`, {
-                button: button,
-                wasPanning: this.isometricCameraState.isPanning,
-                timestamp: Date.now()
-            });
 
-            // Let the mouse event handler manage the state cleanup
-            // This ensures consistency between pointer and mouse event systems
-        }
 
         console.log(`🖱️ PointerUp Handler:`, {
             button: button,
-            isPanning: this.isometricCameraState?.isPanning,
-            leftMouseDown: this.isometricCameraState?.leftMouseDown,
             timestamp: Date.now()
         });
     }
