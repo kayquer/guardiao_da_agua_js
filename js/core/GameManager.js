@@ -419,8 +419,18 @@ class GameManager {
     }
     
     setupControls() {
-        // Configurar picking (seleção de objetos)
+        // ===== CRITICAL FIX: Filter pointer events at Babylon.js observable level =====
+        // This prevents Babylon.js from processing buttons 0 and 1 internally, which was causing 3D scene corruption
         this.scene.onPointerObservable.add((pointerInfo) => {
+            // Filter out left mouse button (0) and middle mouse button (1) events BEFORE processing
+            const button = pointerInfo.event?.button;
+            if (button === 0 || button === 1) {
+                // Completely prevent Babylon.js from processing these events
+                // This stops the 3D scene corruption that was causing the solid color background
+                return;
+            }
+
+            // Only process right mouse button (2) and other valid events
             this.handlePointerEvent(pointerInfo);
         });
 
@@ -629,29 +639,7 @@ class GameManager {
                this.isValidNumber(vector.z);
     }
 
-    /**
-     * Recovers camera state when corruption is detected
-     */
-    recoverCameraState() {
-        console.warn('🔧 Attempting camera state recovery...');
-
-        try {
-            // Reset to default isometric position
-            const defaultTarget = new BABYLON.Vector3(0, 0, 0);
-            const defaultRadius = 50;
-
-            if (this.camera) {
-                this.camera.setTarget(defaultTarget);
-                this.camera.radius = defaultRadius;
-                this.camera.alpha = this.isometricAngles.alpha;
-                this.camera.beta = this.isometricAngles.beta;
-
-                console.log('✅ Camera state recovered successfully');
-            }
-        } catch (error) {
-            console.error('❌ Failed to recover camera state:', error);
-        }
-    }
+    // ===== REMOVED: Duplicate recoverCameraState() method - using consolidated version below =====
 
     // ===== ISOMETRIC CAMERA EVENT HANDLERS =====
 
@@ -691,10 +679,8 @@ class GameManager {
 
         event.preventDefault();
 
-        // ===== CRITICAL FIX: Ensure canvas maintains focus during drag operations =====
-        if (this.canvas && this.canvas.focus) {
-            this.canvas.focus();
-        }
+        // ===== CRITICAL FIX: Removed canvas.focus() call that was causing rendering context issues =====
+        // Canvas focus was interfering with 3D rendering and causing the scene to disappear
     }
 
     handleIsometricMouseUp(event) {
@@ -767,48 +753,7 @@ class GameManager {
         }
     }
 
-    // ===== CRITICAL FIX: Camera recovery method to prevent blue screen crashes =====
-    recoverCameraState() {
-        try {
-            console.log('🔧 Attempting camera state recovery...');
-
-            // Reset camera to safe default position
-            const safeTarget = new BABYLON.Vector3(20, 0, 20); // Center of 40x40 grid
-            const safeRadius = 50;
-            const safeAlpha = Math.PI / 4; // 45 degrees
-            const safeBeta = Math.PI / 3;  // 60 degrees (isometric)
-
-            if (this.camera) {
-                this.camera.setTarget(safeTarget);
-                this.camera.radius = safeRadius;
-                this.camera.alpha = safeAlpha;
-                this.camera.beta = safeBeta;
-
-                console.log('✅ Camera position recovered to safe defaults');
-            }
-
-            // Reset camera state flags
-            if (this.isometricCameraState) {
-                this.isometricCameraState.isPanning = false;
-                this.isometricCameraState.lastMouseX = 0;
-                this.isometricCameraState.lastMouseY = 0;
-
-                console.log('✅ Camera state flags reset');
-            }
-
-            // Remove any stuck global event listeners
-            this.removeGlobalDragListeners();
-
-            console.log('✅ Camera recovery completed successfully');
-
-        } catch (error) {
-            console.error('❌ Critical error during camera recovery:', error);
-            // Last resort: reload the page if recovery fails
-            if (confirm('O jogo encontrou um erro crítico. Recarregar a página?')) {
-                window.location.reload();
-            }
-        }
-    }
+    // ===== REMOVED: Second duplicate recoverCameraState() method - using consolidated version below =====
 
     // ===== CRITICAL FIX: 3D Renderer recovery method to prevent blue screen crashes =====
     recover3DRenderer() {
@@ -2249,19 +2194,32 @@ class GameManager {
     }
 
     /**
-     * Camera recovery function to restore camera to a safe state
+     * ===== CRITICAL FIX: Enhanced camera recovery to prevent 3D scene corruption =====
+     * Camera recovery function to restore camera to a safe state and prevent scene disappearance
      */
     recoverCameraState() {
         try {
-            console.log('🔧 Attempting camera recovery...');
+            console.log('🔧 Attempting enhanced camera recovery...');
 
             if (!this.camera) {
                 console.error('❌ Cannot recover: camera not initialized');
                 return;
             }
 
-            // Reset to safe default position
-            const safeTarget = new BABYLON.Vector3(0, 0, 0);
+            // ===== STEP 1: Stop all ongoing camera operations =====
+            if (this.isometricCameraState) {
+                this.isometricCameraState.isPanning = false;
+                this.isometricCameraState.lastMouseX = 0;
+                this.isometricCameraState.lastMouseY = 0;
+                this.isometricCameraState.edgeScrolling.isScrolling = false;
+                this.isometricCameraState.edgeScrolling.direction = { x: 0, z: 0 };
+            }
+
+            // ===== STEP 2: Remove any stuck global event listeners =====
+            this.removeGlobalDragListeners();
+
+            // ===== STEP 3: Reset camera to safe isometric position =====
+            const safeTarget = new BABYLON.Vector3(20, 0, 20); // Center of 40x40 grid
             this.camera.setTarget(safeTarget);
 
             // Reset camera angles to isometric defaults
@@ -2269,9 +2227,26 @@ class GameManager {
             this.camera.beta = this.CAMERA_CONSTANTS.ISOMETRIC_BETA;
             this.camera.radius = this.CAMERA_CONSTANTS.DEFAULT_ZOOM_DISTANCE;
 
-            console.log('✅ Camera recovery completed');
+            // ===== STEP 4: Force scene refresh to prevent rendering corruption =====
+            if (this.scene && this.engine) {
+                this.scene.render();
+                this.engine.resize();
+            }
+
+            console.log('✅ Enhanced camera recovery completed successfully');
+
         } catch (error) {
-            console.error('❌ Camera recovery failed:', error);
+            console.error('❌ Enhanced camera recovery failed:', error);
+
+            // ===== LAST RESORT: Force complete scene refresh =====
+            try {
+                if (this.engine && !this.engine.isDisposed) {
+                    this.engine.resize();
+                    console.log('🔧 Forced engine resize as fallback');
+                }
+            } catch (fallbackError) {
+                console.error('❌ Fallback recovery also failed:', fallbackError);
+            }
         }
     }
 
@@ -2523,10 +2498,9 @@ class GameManager {
 
         // Note: mouseleave is already handled in setupIsometricCameraControls() with consolidated cleanup
 
-        // Adicionar listener de clique para construção
-        this.canvas.addEventListener('click', (event) => {
-            this.handleMouseClick(event);
-        });
+        // ===== CRITICAL FIX: Removed conflicting canvas click listener =====
+        // Canvas click events are now handled exclusively through Babylon.js pointer observable
+        // This eliminates the double event handling that was causing 3D scene corruption
 
         // Adicionar listener de ESC para cancelar preview e limpar seleção
         document.addEventListener('keydown', (event) => {
