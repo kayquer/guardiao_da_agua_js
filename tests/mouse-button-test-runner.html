@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mouse Button Removal Tests</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        
+        .test-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .test-button:hover {
+            background-color: #2980b9;
+        }
+        
+        .test-button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .results.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .results.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .results.info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .console-output {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .success-message {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Mouse Button Removal Tests</h1>
+        
+        <div class="warning">
+            <strong>⚠️ Test Objective:</strong> Verify that left mouse button (0) and middle mouse button (1) events are completely ignored by the GameManager event handling system. No console logs should be generated for these buttons.
+        </div>
+        
+        <div class="test-section">
+            <h2>🎯 Test Controls</h2>
+            <button class="test-button" onclick="runUnitTests()">Run Unit Tests</button>
+            <button class="test-button" onclick="runInteractiveTests()">Run Interactive Tests</button>
+            <button class="test-button" onclick="clearResults()">Clear Results</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Test Results</h2>
+            <div class="stats" id="stats" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-number" id="passed-count">0</div>
+                    <div class="stat-label">Passed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="failed-count">0</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="error-count">0</div>
+                    <div class="stat-label">Errors</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="success-rate">0%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+            </div>
+            <div id="results" class="results info">Click "Run Unit Tests" to start testing...</div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🖥️ Console Output</h2>
+            <div id="console-output" class="console-output">Console output will appear here...</div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎮 Interactive Test Area</h2>
+            <p>Click the area below with different mouse buttons to test event handling:</p>
+            <div id="interactive-area" style="
+                width: 100%;
+                height: 200px;
+                border: 2px dashed #3498db;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: #ecf0f1;
+                cursor: pointer;
+                border-radius: 5px;
+                font-size: 18px;
+                color: #2c3e50;
+            ">
+                Click here with different mouse buttons
+            </div>
+            <div id="interactive-results" class="results info" style="margin-top: 10px;">
+                Interactive test results will appear here...
+            </div>
+        </div>
+    </div>
+
+    <script src="mouse-button-removal-tests.js"></script>
+    <script>
+        // Capture console output
+        let consoleOutput = [];
+        const originalConsoleLog = console.log;
+        const originalConsoleWarn = console.warn;
+        const originalConsoleError = console.error;
+        
+        function captureConsole() {
+            console.log = (...args) => {
+                const message = args.join(' ');
+                consoleOutput.push(`[LOG] ${message}`);
+                updateConsoleDisplay();
+                originalConsoleLog(...args);
+            };
+            
+            console.warn = (...args) => {
+                const message = args.join(' ');
+                consoleOutput.push(`[WARN] ${message}`);
+                updateConsoleDisplay();
+                originalConsoleWarn(...args);
+            };
+            
+            console.error = (...args) => {
+                const message = args.join(' ');
+                consoleOutput.push(`[ERROR] ${message}`);
+                updateConsoleDisplay();
+                originalConsoleError(...args);
+            };
+        }
+        
+        function updateConsoleDisplay() {
+            const consoleDiv = document.getElementById('console-output');
+            consoleDiv.textContent = consoleOutput.slice(-50).join('\n'); // Show last 50 messages
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').textContent = 'Results cleared. Click "Run Unit Tests" to start testing...';
+            document.getElementById('results').className = 'results info';
+            document.getElementById('interactive-results').textContent = 'Interactive test results will appear here...';
+            document.getElementById('interactive-results').className = 'results info';
+            document.getElementById('stats').style.display = 'none';
+            consoleOutput = [];
+            updateConsoleDisplay();
+        }
+        
+        function updateStats(results) {
+            document.getElementById('passed-count').textContent = results.passed;
+            document.getElementById('failed-count').textContent = results.failed;
+            document.getElementById('error-count').textContent = results.errors;
+            document.getElementById('success-rate').textContent = 
+                results.total > 0 ? `${(results.passed / results.total * 100).toFixed(1)}%` : '0%';
+            document.getElementById('stats').style.display = 'grid';
+        }
+        
+        function runUnitTests() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.textContent = 'Running unit tests...';
+            resultsDiv.className = 'results info';
+            
+            try {
+                const tests = new MouseButtonRemovalTests();
+                const results = tests.runAllTests();
+                
+                updateStats(results);
+                
+                if (results.failed === 0 && results.errors === 0) {
+                    resultsDiv.className = 'results success';
+                    resultsDiv.textContent = `✅ All tests passed! Mouse button 0 and 1 events are completely ignored.\n\nResults: ${results.passed}/${results.total} tests passed`;
+                } else {
+                    resultsDiv.className = 'results error';
+                    resultsDiv.textContent = `❌ Some tests failed!\n\nResults: ${results.passed} passed, ${results.failed} failed, ${results.errors} errors`;
+                }
+            } catch (error) {
+                resultsDiv.className = 'results error';
+                resultsDiv.textContent = `💥 Test execution failed: ${error.message}`;
+            }
+        }
+        
+        function runInteractiveTests() {
+            const interactiveArea = document.getElementById('interactive-area');
+            const interactiveResults = document.getElementById('interactive-results');
+            
+            interactiveResults.textContent = 'Interactive testing started. Click the area above with different mouse buttons...';
+            interactiveResults.className = 'results info';
+            
+            let clickCount = 0;
+            let testResults = [];
+            
+            // Remove existing listeners
+            interactiveArea.replaceWith(interactiveArea.cloneNode(true));
+            const newArea = document.getElementById('interactive-area');
+            
+            // Add mouse event listeners
+            newArea.addEventListener('mousedown', (event) => {
+                clickCount++;
+                const button = event.button;
+                const buttonName = button === 0 ? 'Left' : button === 1 ? 'Middle' : button === 2 ? 'Right' : `Unknown(${button})`;
+                
+                testResults.push({
+                    click: clickCount,
+                    button: button,
+                    buttonName: buttonName,
+                    shouldBeIgnored: button === 0 || button === 1,
+                    timestamp: new Date().toLocaleTimeString()
+                });
+                
+                // Update display
+                let resultText = 'Interactive Test Results:\n\n';
+                testResults.forEach(result => {
+                    const status = result.shouldBeIgnored ? '🚫 IGNORED' : '✅ PROCESSED';
+                    resultText += `${result.click}. ${result.buttonName} Button (${result.button}) - ${status} at ${result.timestamp}\n`;
+                });
+                
+                resultText += '\n📝 Expected Behavior:\n';
+                resultText += '• Left Button (0): Should be IGNORED\n';
+                resultText += '• Middle Button (1): Should be IGNORED\n';
+                resultText += '• Right Button (2): Should be PROCESSED\n';
+                
+                interactiveResults.textContent = resultText;
+                interactiveResults.className = 'results info';
+                
+                event.preventDefault();
+            });
+            
+            newArea.addEventListener('contextmenu', (event) => {
+                event.preventDefault();
+            });
+        }
+        
+        // Initialize
+        captureConsole();
+        
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(runUnitTests, 1000);
+        });
+    </script>
+</body>
+</html>

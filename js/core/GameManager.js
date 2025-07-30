@@ -492,12 +492,7 @@ class GameManager {
             event.preventDefault();
         });
 
-        // ===== CRITICAL FIX: Prevent middle mouse button default behavior globally =====
-        document.addEventListener('mousedown', (event) => {
-            if (event.button === 1) { // Middle mouse button
-                event.preventDefault();
-            }
-        });
+        // Middle mouse button events are now completely ignored in event handlers
 
         console.log('🎮 Isometric RTS-style camera controls initialized with focus-loss prevention');
     }
@@ -663,6 +658,12 @@ class GameManager {
     handleIsometricMouseDown(event) {
         if (!this.camera) return;
 
+        // ===== COMPLETE REMOVAL: Filter out left mouse button (0) and middle mouse button (1) events =====
+        if (event.button === 0 || event.button === 1) {
+            // Completely ignore left mouse button and middle mouse button events
+            return;
+        }
+
         // ===== ENHANCED CAMERA DEBUGGING: Log mouse down events with building system state =====
         this.logCameraEvent('mouseDown', {
             button: event.button,
@@ -697,6 +698,12 @@ class GameManager {
     }
 
     handleIsometricMouseUp(event) {
+        // ===== COMPLETE REMOVAL: Filter out left mouse button (0) and middle mouse button (1) events =====
+        if (event.button === 0 || event.button === 1) {
+            // Completely ignore left mouse button and middle mouse button events
+            return;
+        }
+
         // ===== CAMERA DEBUGGING: Log mouse up events =====
         this.logCameraEvent('mouseUp', {
             button: event.button,
@@ -3615,6 +3622,14 @@ class GameManager {
     handlePointerEvent(pointerInfo) {
         if (this.gameState !== 'playing') return;
 
+        // ===== COMPLETE REMOVAL: Filter out left mouse button (0) and middle mouse button (1) events =====
+        const button = pointerInfo.event?.button;
+        if (button === 0 || button === 1) {
+            // Completely ignore left mouse button and middle mouse button events
+            // No logging, no processing, no handling whatsoever
+            return;
+        }
+
         // ===== CRITICAL FIX: Add comprehensive error handling to prevent 3D renderer crashes =====
         try {
             // ===== CRITICAL FIX: Complete event type detection for all Babylon.js pointer events =====
@@ -3759,7 +3774,11 @@ class GameManager {
         const pickInfo = pointerInfo.pickInfo;
         const button = pointerInfo.event?.button;
 
-
+        // ===== COMPLETE REMOVAL: Filter out left mouse button (0) and middle mouse button (1) events =====
+        if (button === 0 || button === 1) {
+            // Completely ignore left mouse button and middle mouse button events
+            return;
+        }
 
         // ===== ENHANCED DEBUGGING: Log pointer down with detailed state =====
         console.log(`🖱️ PointerDown Handler:`, {
@@ -3802,7 +3821,11 @@ class GameManager {
     handlePointerUp(pointerInfo) {
         const button = pointerInfo.event?.button;
 
-
+        // ===== COMPLETE REMOVAL: Filter out left mouse button (0) and middle mouse button (1) events =====
+        if (button === 0 || button === 1) {
+            // Completely ignore left mouse button and middle mouse button events
+            return;
+        }
 
         console.log(`🖱️ PointerUp Handler:`, {
             button: button,
