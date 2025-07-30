@@ -387,8 +387,8 @@ class GameManager {
         this.camera.angularSensibilityX = this.CAMERA_CONSTANTS.ANGULAR_SENSITIVITY_DISABLED || 0;     // Disable rotation
         this.camera.angularSensibilityY = this.CAMERA_CONSTANTS.ANGULAR_SENSITIVITY_DISABLED || 0;     // Disable rotation
 
-        // Setup isometric camera controls
-        this.setupIsometricCameraControls();
+        // ===== REMOVIDO: Setup isometric camera controls (causa conflitos) =====
+        // this.setupIsometricCameraControls();
     }
     
     setupLighting() {
@@ -419,106 +419,269 @@ class GameManager {
     }
     
     setupControls() {
-        // ===== CRITICAL FIX: Selective pointer event filtering to prevent 3D corruption while preserving functionality =====
-        // This prevents problematic drag operations while allowing essential left-click interactions
+        // ===== USAR APENAS BABYLON.JS POINTER OBSERVABLE (sem canvas events duplicados) =====
         this.scene.onPointerObservable.add((pointerInfo) => {
-            const button = pointerInfo.event?.button;
-
-            // ===== SELECTIVE FILTERING: Only block problematic drag operations =====
-            if (button === 0 || button === 1) {
-                // Allow POINTERDOWN and POINTERUP for building placement and selection
-                if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN ||
-                    pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP ||
-                    pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK ||
-                    pointerInfo.type === BABYLON.PointerEventTypes.POINTERTAP) {
-                    // Process essential click events for game functionality
-                    this.handlePointerEvent(pointerInfo);
-                    return;
-                }
-
-                // Block POINTERMOVE and other drag-related events that cause 3D corruption
-                if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERMOVE) {
-                    // Skip problematic drag operations that corrupt the 3D scene
-                    return;
-                }
+            try {
+                this.handleUnifiedPointerEvent(pointerInfo);
+            } catch (error) {
+                console.error('❌ Erro no pointer event:', error);
+                this.recover3DRenderer();
             }
-
-            // Process all other events normally (right mouse button, wheel, etc.)
-            this.handlePointerEvent(pointerInfo);
         });
 
-        // Configurar teclado
+        // ===== ADICIONAR LISTENER DIRETO PARA WHEEL (Babylon.js não converte wheel para POINTERWHEEL) =====
+        this.canvas.addEventListener('wheel', (event) => {
+            try {
+                this.handleSafeWheelDirect(event);
+            } catch (error) {
+                console.error('❌ Erro no wheel event:', error);
+                this.recover3DRenderer();
+            }
+        });
+
+        // Keyboard events apenas
         this.scene.onKeyboardObservable.add((kbInfo) => {
             this.handleKeyboardEvent(kbInfo);
         });
+
+        console.log('🎮 Sistema de controles unificado inicializado');
     }
 
-    // ===== ISOMETRIC RTS-STYLE CAMERA CONTROLS =====
-    setupIsometricCameraControls() {
-        // ===== CRITICAL FIX: Store bound event handlers for proper cleanup =====
-        this.boundMouseMoveHandler = (event) => this.handleConsolidatedMouseMove(event);
-        this.boundMouseUpHandler = (event) => this.handleIsometricMouseUp(event);
+    /**
+     * Handler unificado para todos os eventos de pointer
+     * Previne conflitos e corrupção do renderer 3D
+     */
+    handleUnifiedPointerEvent(pointerInfo) {
+        const button = pointerInfo.event?.button;
+        const eventType = pointerInfo.type;
 
-        // Mouse events for panning - only mousedown on canvas
-        this.canvas.addEventListener('mousedown', (event) => {
-            this.handleIsometricMouseDown(event);
-        });
+        // ===== VALIDAÇÃO CRÍTICA: Evitar estados inválidos =====
+        if (!this.camera || !this.scene || this.scene.isDisposed) {
+            console.warn('⚠️ Renderer 3D em estado inválido, ignorando evento');
+            return;
+        }
 
-        // ===== CRITICAL FIX: Only add mousemove to canvas for non-dragging operations =====
-        // During dragging, we'll use document-level events to prevent focus loss
-        this.canvas.addEventListener('mousemove', (event) => {
-            // Only handle non-dragging mouse moves on canvas
-            if (!this.isometricCameraState.isPanning) {
-                this.handleConsolidatedMouseMove(event);
+        // ===== BLOQUEAR OPERAÇÕES PROBLEMÁTICAS =====
+        // Bloquear completamente mouse drag que causa corrupção
+        if (button === 0 || button === 1) { // Left/Middle mouse
+            switch (eventType) {
+                case BABYLON.PointerEventTypes.POINTERDOWN:
+                    this.handleSafeMouseDown(pointerInfo);
+                    break;
+                case BABYLON.PointerEventTypes.POINTERUP:
+                    this.handleSafeMouseUp(pointerInfo);
+                    break;
+                case BABYLON.PointerEventTypes.POINTERMOVE:
+                    // BLOQUEAR POINTERMOVE para left/middle mouse (causa corrupção)
+                    return;
+                case BABYLON.PointerEventTypes.POINTERPICK:
+                case BABYLON.PointerEventTypes.POINTERTAP:
+                    this.handleSafePick(pointerInfo);
+                    break;
+                default:
+                    // Ignorar outros eventos problemáticos
+                    return;
             }
-        });
+        }
 
-        // ===== CRITICAL FIX: Only handle mouseup on canvas when not dragging =====
-        this.canvas.addEventListener('mouseup', (event) => {
-            // Only handle mouseup on canvas when not dragging
-            if (!this.isometricCameraState.isPanning) {
-                this.handleIsometricMouseUp(event);
+        // Mouse wheel (botão 2) - permitir apenas zoom
+        if (eventType === BABYLON.PointerEventTypes.POINTERWHEEL) {
+            this.handleSafeWheel(pointerInfo);
+        }
+    }
+
+    /**
+     * Handler seguro para mouse down - sem drag operations
+     */
+    handleSafeMouseDown(pointerInfo) {
+        const button = pointerInfo.event?.button;
+
+        // Apenas left mouse button para building placement
+        if (button === 0) {
+            this.handleBuildingPlacementOnly(pointerInfo);
+        }
+
+        // Ignorar middle mouse button completamente
+    }
+
+    /**
+     * Handler seguro para mouse up
+     */
+    handleSafeMouseUp(pointerInfo) {
+        // Simplesmente finalizar qualquer operação pendente
+        // Sem lógica complexa que possa corromper o renderer
+    }
+
+    /**
+     * Handler seguro para pick/tap - apenas building placement
+     */
+    handleSafePick(pointerInfo) {
+        if (this.buildingSystem && this.buildingSystem.previewMode) {
+            this.handleBuildingPlacementOnly(pointerInfo);
+        }
+    }
+
+    /**
+     * Building placement isolado - sem interferir com câmera
+     */
+    handleBuildingPlacementOnly(pointerInfo) {
+        const pickInfo = pointerInfo.pickInfo;
+
+        if (!pickInfo || !pickInfo.hit) return;
+
+        try {
+            const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
+            gridPos.x = Math.floor(gridPos.x);
+            gridPos.z = Math.floor(gridPos.z);
+
+            if (this.buildingSystem.previewMode) {
+                const success = this.buildingSystem.confirmPlacement(gridPos.x, gridPos.z);
+                if (success) {
+                    this.buildingSystem.stopPreviewMode();
+                    this.uiManager?.showNotification('Edifício construído!', 'success');
+                }
+            } else {
+                // Seleção de edifício
+                this.handleBuildingSelection(gridPos.x, gridPos.z);
             }
-        });
+        } catch (error) {
+            console.error('❌ Erro no building placement:', error);
+        }
+    }
 
-        // Mouse wheel for zoom
-        this.canvas.addEventListener('wheel', (event) => {
-            this.handleIsometricWheel(event);
-        });
+    /**
+     * Handler seguro para mouse wheel - apenas zoom
+     */
+    handleSafeWheel(pointerInfo) {
+        const deltaY = pointerInfo.event?.deltaY;
+        if (!deltaY || !this.isValidNumber(deltaY)) return;
 
-        this.canvas.addEventListener('mouseleave', () => {
-            // Camera cleanup
-            this.isometricCameraState.edgeScrolling.isScrolling = false;
+        try {
+            const zoomSensitivity = 2;
+            const deltaRadius = deltaY > 0 ? zoomSensitivity : -zoomSensitivity;
+            const newRadius = this.camera.radius + deltaRadius;
 
-            // Hover system cleanup
-            this.hideHoverInfo();
-            this.hideAllBuildingLabels();
+            this.camera.radius = Math.max(
+                this.camera.lowerRadiusLimit,
+                Math.min(this.camera.upperRadiusLimit, newRadius)
+            );
 
-            // Clear throttle timeout if it exists
-            if (this.mouseHoverThrottle && this.mouseHoverThrottle.timeoutId) {
-                clearTimeout(this.mouseHoverThrottle.timeoutId);
-                this.mouseHoverThrottle.timeoutId = null;
-            }
-        });
+            // Manter ângulos isométricos
+            this.camera.alpha = this.isometricAngles.alpha;
+            this.camera.beta = this.isometricAngles.beta;
 
-        // Arrow keys support (in addition to WASD)
-        document.addEventListener('keydown', (event) => {
-            this.handleIsometricKeyDown(event);
-        });
+        } catch (error) {
+            console.error('❌ Erro no zoom:', error);
+            this.recoverCameraState();
+        }
+    }
 
-        document.addEventListener('keyup', (event) => {
-            this.handleIsometricKeyUp(event);
-        });
+    /**
+     * Handler direto para eventos wheel do canvas - bypass do Babylon.js
+     */
+    handleSafeWheelDirect(event) {
+        if (!this.camera) return;
 
-        // Prevent context menu
-        this.canvas.addEventListener('contextmenu', (event) => {
+        const deltaY = event.deltaY;
+        if (!deltaY || !this.isValidNumber(deltaY)) return;
+
+        try {
+            const zoomSensitivity = 2;
+            const deltaRadius = deltaY > 0 ? zoomSensitivity : -zoomSensitivity;
+            const oldRadius = this.camera.radius;
+            const newRadius = this.camera.radius + deltaRadius;
+
+            this.camera.radius = Math.max(
+                this.camera.lowerRadiusLimit,
+                Math.min(this.camera.upperRadiusLimit, newRadius)
+            );
+
+            // Manter ângulos isométricos
+            this.camera.alpha = this.isometricAngles.alpha;
+            this.camera.beta = this.isometricAngles.beta;
+
+            // Log para debug
+            console.log('🎮 Camera wheel:', {
+                deltaY: deltaY,
+                oldRadius: oldRadius,
+                newRadius: this.camera.radius,
+                deltaRadius: deltaRadius
+            });
+
             event.preventDefault();
-        });
 
-        // Middle mouse button events are now completely ignored in event handlers
-
-        console.log('🎮 Isometric RTS-style camera controls initialized with focus-loss prevention');
+        } catch (error) {
+            console.error('❌ Erro no zoom direto:', error);
+            this.recoverCameraState();
+        }
     }
+
+    // ===== REMOVIDO: ISOMETRIC RTS-STYLE CAMERA CONTROLS (causa conflitos) =====
+    // setupIsometricCameraControls() {
+    //     // ===== CRITICAL FIX: Store bound event handlers for proper cleanup =====
+    //     this.boundMouseMoveHandler = (event) => this.handleConsolidatedMouseMove(event);
+    //     this.boundMouseUpHandler = (event) => this.handleIsometricMouseUp(event);
+
+    //     // Mouse events for panning - only mousedown on canvas
+    //     this.canvas.addEventListener('mousedown', (event) => {
+    //         this.handleIsometricMouseDown(event);
+    //     });
+
+    //     // ===== CRITICAL FIX: Only add mousemove to canvas for non-dragging operations =====
+    //     // During dragging, we'll use document-level events to prevent focus loss
+    //     this.canvas.addEventListener('mousemove', (event) => {
+    //         // Only handle non-dragging mouse moves on canvas
+    //         if (!this.isometricCameraState.isPanning) {
+    //             this.handleConsolidatedMouseMove(event);
+    //         }
+    //     });
+
+    //     // ===== CRITICAL FIX: Only handle mouseup on canvas when not dragging =====
+    //     this.canvas.addEventListener('mouseup', (event) => {
+    //         // Only handle mouseup on canvas when not dragging
+    //         if (!this.isometricCameraState.isPanning) {
+    //             this.handleIsometricMouseUp(event);
+    //         }
+    //     });
+
+    //     // Mouse wheel for zoom
+    //     this.canvas.addEventListener('wheel', (event) => {
+    //         this.handleIsometricWheel(event);
+    //     });
+
+    //     this.canvas.addEventListener('mouseleave', () => {
+    //         // Camera cleanup
+    //         this.isometricCameraState.edgeScrolling.isScrolling = false;
+
+    //         // Hover system cleanup
+    //         this.hideHoverInfo();
+    //         this.hideAllBuildingLabels();
+
+    //         // Clear throttle timeout if it exists
+    //         if (this.mouseHoverThrottle && this.mouseHoverThrottle.timeoutId) {
+    //             clearTimeout(this.mouseHoverThrottle.timeoutId);
+    //             this.mouseHoverThrottle.timeoutId = null;
+    //         }
+    //     });
+
+    //     // Arrow keys support (in addition to WASD)
+    //     document.addEventListener('keydown', (event) => {
+    //         this.handleIsometricKeyDown(event);
+    //     });
+
+    //     document.addEventListener('keyup', (event) => {
+    //         this.handleIsometricKeyUp(event);
+    //     });
+
+    //     // Prevent context menu
+    //     this.canvas.addEventListener('contextmenu', (event) => {
+    //         event.preventDefault();
+    //     });
+
+    //     // Middle mouse button events are now completely ignored in event handlers
+
+    //     console.log('🎮 Isometric RTS-style camera controls initialized with focus-loss prevention');
+    // }
 
     // ===== CAMERA DEBUGGING SYSTEM =====
 
@@ -656,84 +819,86 @@ class GameManager {
 
     // ===== ISOMETRIC CAMERA EVENT HANDLERS =====
 
-    handleIsometricMouseDown(event) {
-        if (!this.camera) return;
+    // ===== REMOVIDO: handleIsometricMouseDown (causa conflitos) =====
+    // handleIsometricMouseDown(event) {
+    //     if (!this.camera) return;
 
-        // ===== SELECTIVE FILTERING: Allow left mouse clicks but prevent problematic drag operations =====
-        if (event.button === 0) {
-            // Allow left mouse button for building placement and selection
-            // But prevent camera drag operations that cause 3D corruption
-            this.isometricCameraState.leftMouseDown = false; // Disable camera dragging
-            this.isometricCameraState.isPanning = false;     // Prevent panning state
+    //     // ===== SELECTIVE FILTERING: Allow left mouse clicks but prevent problematic drag operations =====
+    //     if (event.button === 0) {
+    //         // Allow left mouse button for building placement and selection
+    //         // But prevent camera drag operations that cause 3D corruption
+    //         this.isometricCameraState.leftMouseDown = false; // Disable camera dragging
+    //         this.isometricCameraState.isPanning = false;     // Prevent panning state
 
-            // Process the click for building placement/selection
-            this.handleBuildingPlacementClick(event);
-            return;
-        }
+    //         // Process the click for building placement/selection
+    //         this.handleBuildingPlacementClick(event);
+    //         return;
+    //     }
 
-        if (event.button === 1) {
-            // Completely ignore middle mouse button events (still problematic)
-            return;
-        }
+    //     if (event.button === 1) {
+    //         // Completely ignore middle mouse button events (still problematic)
+    //         return;
+    //     }
 
-        // ===== ENHANCED CAMERA DEBUGGING: Log mouse down events with building system state =====
-        this.logCameraEvent('mouseDown', {
-            button: event.button,
-            buttonName: this.getMouseButtonName(event.button),
-            clientX: event.clientX,
-            clientY: event.clientY,
-            timestamp: Date.now(),
-            cameraPosition: this.camera.getTarget().clone(),
-            cameraRadius: this.camera.radius,
-            buildMode: this.buildMode,
-            previewMode: this.buildingSystem?.previewMode,
-            currentBuildingType: this.currentBuildingType,
-            buildingSystemState: this.buildingSystem ? {
-                selectedBuildingType: this.buildingSystem.selectedBuildingType,
-                previewMode: this.buildingSystem.previewMode,
-                isConstructing: this.buildingSystem.isConstructing
-            } : null
-        });
+    //     // ===== ENHANCED CAMERA DEBUGGING: Log mouse down events with building system state =====
+    //     this.logCameraEvent('mouseDown', {
+    //         button: event.button,
+    //         buttonName: this.getMouseButtonName(event.button),
+    //         clientX: event.clientX,
+    //         clientY: event.clientY,
+    //         timestamp: Date.now(),
+    //         cameraPosition: this.camera.getTarget().clone(),
+    //         cameraRadius: this.camera.radius,
+    //         buildMode: this.buildMode,
+    //         previewMode: this.buildingSystem?.previewMode,
+    //         currentBuildingType: this.currentBuildingType,
+    //         buildingSystemState: this.buildingSystem ? {
+    //             selectedBuildingType: this.buildingSystem.selectedBuildingType,
+    //             previewMode: this.buildingSystem.previewMode,
+    //             isConstructing: this.buildingSystem.isConstructing
+    //         } : null
+    //     });
 
-        this.isometricCameraState.lastMouseX = event.clientX;
-        this.isometricCameraState.lastMouseY = event.clientY;
-
-
-        // Note: Right mouse button disabled for isometric view (no rotation allowed)
-
-        event.preventDefault();
-
-        // ===== CRITICAL FIX: Removed canvas.focus() call that was causing rendering context issues =====
-        // Canvas focus was interfering with 3D rendering and causing the scene to disappear
-    }
-
-    handleIsometricMouseUp(event) {
-        // ===== SELECTIVE FILTERING: Allow left mouse clicks but prevent problematic operations =====
-        if (event.button === 0) {
-            // Allow left mouse button up events for completing building placement/selection
-            // But ensure no camera drag state is maintained
-            this.isometricCameraState.leftMouseDown = false;
-            this.isometricCameraState.isPanning = false;
-            return; // Process normally for building interactions
-        }
-
-        if (event.button === 1) {
-            // Completely ignore middle mouse button events (still problematic)
-            return;
-        }
-
-        // ===== CAMERA DEBUGGING: Log mouse up events =====
-        this.logCameraEvent('mouseUp', {
-            button: event.button,
-            buttonName: this.getMouseButtonName(event.button),
-            timestamp: Date.now(),
-            cameraPosition: this.camera ? this.camera.getTarget().clone() : null
-        });
+    //     this.isometricCameraState.lastMouseX = event.clientX;
+    //     this.isometricCameraState.lastMouseY = event.clientY;
 
 
+    //     // Note: Right mouse button disabled for isometric view (no rotation allowed)
 
-        event.preventDefault();
-    }
+    //     event.preventDefault();
+
+    //     // ===== CRITICAL FIX: Removed canvas.focus() call that was causing rendering context issues =====
+    //     // Canvas focus was interfering with 3D rendering and causing the scene to disappear
+    // }
+
+    // ===== REMOVIDO: handleIsometricMouseUp (causa conflitos) =====
+    // handleIsometricMouseUp(event) {
+    //     // ===== SELECTIVE FILTERING: Allow left mouse clicks but prevent problematic operations =====
+    //     if (event.button === 0) {
+    //         // Allow left mouse button up events for completing building placement/selection
+    //         // But ensure no camera drag state is maintained
+    //         this.isometricCameraState.leftMouseDown = false;
+    //         this.isometricCameraState.isPanning = false;
+    //         return; // Process normally for building interactions
+    //     }
+
+    //     if (event.button === 1) {
+    //         // Completely ignore middle mouse button events (still problematic)
+    //         return;
+    //     }
+
+    //     // ===== CAMERA DEBUGGING: Log mouse up events =====
+    //     this.logCameraEvent('mouseUp', {
+    //         button: event.button,
+    //         buttonName: this.getMouseButtonName(event.button),
+    //         timestamp: Date.now(),
+    //         cameraPosition: this.camera ? this.camera.getTarget().clone() : null
+    //     });
+
+
+
+    //     event.preventDefault();
+    // }
 
     // ===== BUILDING PLACEMENT CLICK HANDLER =====
     handleBuildingPlacementClick(event) {
@@ -788,56 +953,67 @@ class GameManager {
     // ===== REMOVED: Second duplicate recoverCameraState() method - using consolidated version below =====
 
     // ===== CRITICAL FIX: 3D Renderer recovery method to prevent blue screen crashes =====
+    /**
+     * Recovery aprimorado para prevenir "fundo azul"
+     */
     recover3DRenderer() {
-        try {
-            console.log('🔧 Attempting 3D renderer recovery...');
+        console.log('🔧 Iniciando recovery completo do renderer 3D...');
 
-            // Check if engine is still valid
-            if (this.engine && !this.engine.isDisposed) {
-                // Force engine resize to refresh rendering
-                this.engine.resize();
-                console.log('✅ Engine resize completed');
+        try {
+            // ===== STEP 1: Parar todas as operações =====
+            if (this.isometricCameraState) {
+                this.isometricCameraState.isPanning = false;
+                this.isometricCameraState.leftMouseDown = false;
+                this.isometricCameraState.rightMouseDown = false;
             }
 
-            // Check if scene is still valid
-            if (this.scene && !this.scene.isDisposed) {
-                // Force scene render to refresh 3D area
-                this.scene.render();
-                console.log('✅ Scene render forced');
+            // ===== STEP 2: Validar e corrigir estado da câmera =====
+            if (this.camera) {
+                const target = this.camera.getTarget();
 
-                // Reset scene state if needed
-                if (!this.scene.isReady()) {
-                    console.log('🔧 Scene not ready, waiting for initialization...');
-                    this.scene.executeWhenReady(() => {
-                        console.log('✅ Scene ready after recovery');
-                    });
+                // Detectar valores inválidos
+                if (!this.isValidVector3(target)) {
+                    console.log('🔧 Corrigindo target inválido da câmera');
+                    this.camera.setTarget(new BABYLON.Vector3(20, 0, 20));
+                }
+
+                // Corrigir ângulos
+                this.camera.alpha = this.CAMERA_CONSTANTS.ISOMETRIC_ALPHA;
+                this.camera.beta = this.CAMERA_CONSTANTS.ISOMETRIC_BETA;
+
+                // Corrigir radius
+                if (!this.isValidNumber(this.camera.radius)) {
+                    this.camera.radius = this.CAMERA_CONSTANTS.DEFAULT_ZOOM_DISTANCE;
                 }
             }
 
-            // Recover camera state as well
-            this.recoverCameraState();
+            // ===== STEP 3: Forçar refresh do engine =====
+            if (this.engine && !this.engine.isDisposed) {
+                this.engine.resize();
 
-            // Clear any pending pointer events
-            if (this.scene && this.scene.onPointerObservable) {
-                // Temporarily disable pointer events to break any loops
-                const originalObservable = this.scene.onPointerObservable;
-                this.scene.onPointerObservable.clear();
-
-                // Re-enable after a short delay
+                // Forçar re-render
                 setTimeout(() => {
                     if (this.scene && !this.scene.isDisposed) {
-                        this.scene.onPointerObservable = originalObservable;
-                        console.log('✅ Pointer events re-enabled after recovery');
+                        this.scene.render();
                     }
                 }, 100);
             }
 
-            console.log('✅ 3D renderer recovery completed successfully');
+            // ===== STEP 4: Verificar canvas =====
+            if (this.canvas) {
+                const rect = this.canvas.getBoundingClientRect();
+                if (rect.width === 0 || rect.height === 0) {
+                    this.setupCanvas(); // Re-configurar canvas
+                }
+            }
+
+            console.log('✅ Recovery do renderer 3D concluído');
 
         } catch (error) {
-            console.error('❌ Critical error during 3D renderer recovery:', error);
-            // Last resort: force page reload
-            if (confirm('O renderizador 3D encontrou um erro crítico. Recarregar a página?')) {
+            console.error('❌ Falha crítica no recovery:', error);
+
+            // Último recurso: recarregar página
+            if (confirm('Erro crítico no renderer 3D. Recarregar página?')) {
                 window.location.reload();
             }
         }
@@ -853,69 +1029,69 @@ class GameManager {
         // No longer needed - camera panning disabled
     }
 
-    // ===== CONSOLIDATED MOUSE MOVE HANDLER - PERFORMANCE FIX =====
-    handleConsolidatedMouseMove(event) {
-        if (!this.camera) return;
+    // ===== REMOVIDO: CONSOLIDATED MOUSE MOVE HANDLER (causa conflitos) =====
+    // handleConsolidatedMouseMove(event) {
+    //     if (!this.camera) return;
 
-        // ===== CRITICAL FIX: Validate mouse coordinates to prevent NaN =====
-        if (!this.isValidNumber(event.clientX) || !this.isValidNumber(event.clientY)) {
-            console.warn('❌ Invalid mouse coordinates detected:', { clientX: event.clientX, clientY: event.clientY });
-            return;
-        }
+    //     // ===== CRITICAL FIX: Validate mouse coordinates to prevent NaN =====
+    //     if (!this.isValidNumber(event.clientX) || !this.isValidNumber(event.clientY)) {
+    //         console.warn('❌ Invalid mouse coordinates detected:', { clientX: event.clientX, clientY: event.clientY });
+    //         return;
+    //     }
 
-        // Validate last mouse position
-        if (!this.isValidNumber(this.isometricCameraState.lastMouseX) || !this.isValidNumber(this.isometricCameraState.lastMouseY)) {
-            console.warn('❌ Invalid last mouse position, resetting:', {
-                lastMouseX: this.isometricCameraState.lastMouseX,
-                lastMouseY: this.isometricCameraState.lastMouseY
-            });
-            this.isometricCameraState.lastMouseX = event.clientX;
-            this.isometricCameraState.lastMouseY = event.clientY;
-            return;
-        }
+    //     // Validate last mouse position
+    //     if (!this.isValidNumber(this.isometricCameraState.lastMouseX) || !this.isValidNumber(this.isometricCameraState.lastMouseY)) {
+    //         console.warn('❌ Invalid last mouse position, resetting:', {
+    //             lastMouseX: this.isometricCameraState.lastMouseX,
+    //             lastMouseY: this.isometricCameraState.lastMouseY
+    //         });
+    //         this.isometricCameraState.lastMouseX = event.clientX;
+    //         this.isometricCameraState.lastMouseY = event.clientY;
+    //         return;
+    //     }
 
-        // Calculate mouse deltas for camera panning
-        const deltaX = event.clientX - this.isometricCameraState.lastMouseX;
-        const deltaY = event.clientY - this.isometricCameraState.lastMouseY;
+    //     // Calculate mouse deltas for camera panning
+    //     const deltaX = event.clientX - this.isometricCameraState.lastMouseX;
+    //     const deltaY = event.clientY - this.isometricCameraState.lastMouseY;
 
-        // ===== CRITICAL FIX: Validate calculated deltas =====
-        if (!this.isValidNumber(deltaX) || !this.isValidNumber(deltaY)) {
-            console.warn('❌ Invalid mouse deltas calculated:', { deltaX, deltaY, event: { clientX: event.clientX, clientY: event.clientY } });
-            this.isometricCameraState.lastMouseX = event.clientX;
-            this.isometricCameraState.lastMouseY = event.clientY;
-            return;
-        }
+    //     // ===== CRITICAL FIX: Validate calculated deltas =====
+    //     if (!this.isValidNumber(deltaX) || !this.isValidNumber(deltaY)) {
+    //         console.warn('❌ Invalid mouse deltas calculated:', { deltaX, deltaY, event: { clientX: event.clientX, clientY: event.clientY } });
+    //         this.isometricCameraState.lastMouseX = event.clientX;
+    //         this.isometricCameraState.lastMouseY = event.clientY;
+    //         return;
+    //     }
 
-        // ===== CAMERA DEBUGGING: Enhanced mouse move logging =====
-        if (this.cameraDebug.enabled) {
-            // Always log drag operations (not just in verbose mode)
-            if (this.isometricCameraState.isPanning) {
-                // Camera panning logging disabled - no mouse button panning allowed
-            }
+    //     // ===== CAMERA DEBUGGING: Enhanced mouse move logging =====
+    //     if (this.cameraDebug.enabled) {
+    //         // Always log drag operations (not just in verbose mode)
+    //         if (this.isometricCameraState.isPanning) {
+    //             // Camera panning logging disabled - no mouse button panning allowed
+    //         }
 
-            // Log all mouse moves in verbose mode
-            if (this.cameraDebug.logLevel === 'verbose') {
-                // Mouse move logging simplified - no mouse button panning allowed
-            }
-        }
+    //         // Log all mouse moves in verbose mode
+    //         if (this.cameraDebug.logLevel === 'verbose') {
+    //             // Mouse move logging simplified - no mouse button panning allowed
+    //         }
+    //     }
 
-        // Camera panning has been disabled for left and middle mouse buttons
+    //     // Camera panning has been disabled for left and middle mouse buttons
 
-        // Handle edge scrolling
-        this.handleEdgeScrolling(event);
+    //     // Handle edge scrolling
+    //     this.handleEdgeScrolling(event);
 
-        // Handle mouse hover with throttling for performance
-        this.handleMouseHoverThrottled(event);
+    //     // Handle mouse hover with throttling for performance
+    //     this.handleMouseHoverThrottled(event);
 
-        // Update mouse position for next frame
-        this.isometricCameraState.lastMouseX = event.clientX;
-        this.isometricCameraState.lastMouseY = event.clientY;
-    }
+    //     // Update mouse position for next frame
+    //     this.isometricCameraState.lastMouseX = event.clientX;
+    //     this.isometricCameraState.lastMouseY = event.clientY;
+    // }
 
-    // Legacy method for compatibility - now calls consolidated handler
-    handleIsometricMouseMove(event) {
-        this.handleConsolidatedMouseMove(event);
-    }
+    // ===== REMOVIDO: Legacy method for compatibility (causa conflitos) =====
+    // handleIsometricMouseMove(event) {
+    //     this.handleConsolidatedMouseMove(event);
+    // }
 
     handleIsometricKeyDown(event) {
         // ===== ENHANCED CAMERA DEBUGGING: Log key down events with camera state =====
@@ -1429,66 +1605,67 @@ class GameManager {
      *     gameManager.handleIsometricWheel(event);
      * });
      */
-    handleIsometricWheel(event) {
-        if (!this.camera) return;
+    // ===== REMOVIDO: handleIsometricWheel (causa conflitos) =====
+    // handleIsometricWheel(event) {
+    //     if (!this.camera) return;
 
-        // ===== CRITICAL FIX: Validate wheel event data =====
-        if (!this.isValidNumber(event.deltaY)) {
-            console.warn('❌ Invalid wheel deltaY:', event.deltaY);
-            return;
-        }
+    //     // ===== CRITICAL FIX: Validate wheel event data =====
+    //     if (!this.isValidNumber(event.deltaY)) {
+    //         console.warn('❌ Invalid wheel deltaY:', event.deltaY);
+    //         return;
+    //     }
 
-        // ===== CRITICAL FIX: Validate current camera radius =====
-        if (!this.isValidNumber(this.camera.radius)) {
-            console.warn('❌ Invalid camera radius in wheel handler:', this.camera.radius);
-            this.recoverCameraState();
-            return;
-        }
+    //     // ===== CRITICAL FIX: Validate current camera radius =====
+    //     if (!this.isValidNumber(this.camera.radius)) {
+    //         console.warn('❌ Invalid camera radius in wheel handler:', this.camera.radius);
+    //         this.recoverCameraState();
+    //         return;
+    //     }
 
-        // ===== CAMERA DEBUGGING: Log wheel events =====
-        this.logCameraEvent('wheel', {
-            deltaY: event.deltaY,
-            currentRadius: this.camera.radius,
-            timestamp: Date.now(),
-            cameraTarget: this.camera.getTarget().clone()
-        });
+    //     // ===== CAMERA DEBUGGING: Log wheel events =====
+    //     this.logCameraEvent('wheel', {
+    //         deltaY: event.deltaY,
+    //         currentRadius: this.camera.radius,
+    //         timestamp: Date.now(),
+    //         cameraTarget: this.camera.getTarget().clone()
+    //     });
 
-        // ===== CLEAN CODE REFACTORING: Use constants for zoom sensitivity =====
-        const zoomSensitivity = this.CAMERA_CONSTANTS.ZOOM_SENSITIVITY || 2;
-        const deltaRadius = event.deltaY > 0 ? zoomSensitivity : -zoomSensitivity;
+    //     // ===== CLEAN CODE REFACTORING: Use constants for zoom sensitivity =====
+    //     const zoomSensitivity = this.CAMERA_CONSTANTS.ZOOM_SENSITIVITY || 2;
+    //     const deltaRadius = event.deltaY > 0 ? zoomSensitivity : -zoomSensitivity;
 
-        const oldRadius = this.camera.radius;
-        const newRadius = this.camera.radius + deltaRadius;
+    //     const oldRadius = this.camera.radius;
+    //     const newRadius = this.camera.radius + deltaRadius;
 
-        // ===== CRITICAL FIX: Validate calculated radius =====
-        if (!this.isValidNumber(newRadius)) {
-            console.warn('❌ Invalid new radius calculated in wheel handler:', {
-                oldRadius, deltaRadius, newRadius
-            });
-            return;
-        }
+    //     // ===== CRITICAL FIX: Validate calculated radius =====
+    //     if (!this.isValidNumber(newRadius)) {
+    //         console.warn('❌ Invalid new radius calculated in wheel handler:', {
+    //             oldRadius, deltaRadius, newRadius
+    //         });
+    //         return;
+    //     }
 
-        this.camera.radius = Math.max(this.camera.lowerRadiusLimit, Math.min(this.camera.upperRadiusLimit, newRadius));
+    //     this.camera.radius = Math.max(this.camera.lowerRadiusLimit, Math.min(this.camera.upperRadiusLimit, newRadius));
 
-        // ===== CAMERA DEBUGGING: Log zoom operation =====
-        this.logCameraEvent('zoomOperation', {
-            oldRadius,
-            newRadius: this.camera.radius,
-            deltaRadius,
-            wasLimited: newRadius !== this.camera.radius
-        });
+    //     // ===== CAMERA DEBUGGING: Log zoom operation =====
+    //     this.logCameraEvent('zoomOperation', {
+    //         oldRadius,
+    //         newRadius: this.camera.radius,
+    //         deltaRadius,
+    //         wasLimited: newRadius !== this.camera.radius
+    //     });
 
-        // Ensure angles remain fixed for isometric view
-        this.camera.alpha = this.isometricAngles.alpha;
-        this.camera.beta = this.isometricAngles.beta;
+    //     // Ensure angles remain fixed for isometric view
+    //     this.camera.alpha = this.isometricAngles.alpha;
+    //     this.camera.beta = this.isometricAngles.beta;
 
-        event.preventDefault();
-    }
+    //     event.preventDefault();
+    // }
 
-    // Legacy method for compatibility
-    handleCameraWheel(event) {
-        this.handleIsometricWheel(event);
-    }
+    // ===== REMOVIDO: Legacy method for compatibility (causa conflitos) =====
+    // handleCameraWheel(event) {
+    //     this.handleIsometricWheel(event);
+    // }
     
     startRenderLoop() {
         this.engine.runRenderLoop(() => {
