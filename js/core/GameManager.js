@@ -419,18 +419,31 @@ class GameManager {
     }
     
     setupControls() {
-        // ===== CRITICAL FIX: Filter pointer events at Babylon.js observable level =====
-        // This prevents Babylon.js from processing buttons 0 and 1 internally, which was causing 3D scene corruption
+        // ===== CRITICAL FIX: Selective pointer event filtering to prevent 3D corruption while preserving functionality =====
+        // This prevents problematic drag operations while allowing essential left-click interactions
         this.scene.onPointerObservable.add((pointerInfo) => {
-            // Filter out left mouse button (0) and middle mouse button (1) events BEFORE processing
             const button = pointerInfo.event?.button;
+
+            // ===== SELECTIVE FILTERING: Only block problematic drag operations =====
             if (button === 0 || button === 1) {
-                // Completely prevent Babylon.js from processing these events
-                // This stops the 3D scene corruption that was causing the solid color background
-                return;
+                // Allow POINTERDOWN and POINTERUP for building placement and selection
+                if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN ||
+                    pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP ||
+                    pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK ||
+                    pointerInfo.type === BABYLON.PointerEventTypes.POINTERTAP) {
+                    // Process essential click events for game functionality
+                    this.handlePointerEvent(pointerInfo);
+                    return;
+                }
+
+                // Block POINTERMOVE and other drag-related events that cause 3D corruption
+                if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERMOVE) {
+                    // Skip problematic drag operations that corrupt the 3D scene
+                    return;
+                }
             }
 
-            // Only process right mouse button (2) and other valid events
+            // Process all other events normally (right mouse button, wheel, etc.)
             this.handlePointerEvent(pointerInfo);
         });
 
@@ -646,9 +659,20 @@ class GameManager {
     handleIsometricMouseDown(event) {
         if (!this.camera) return;
 
-        // ===== COMPLETE REMOVAL: Filter out left mouse button (0) and middle mouse button (1) events =====
-        if (event.button === 0 || event.button === 1) {
-            // Completely ignore left mouse button and middle mouse button events
+        // ===== SELECTIVE FILTERING: Allow left mouse clicks but prevent problematic drag operations =====
+        if (event.button === 0) {
+            // Allow left mouse button for building placement and selection
+            // But prevent camera drag operations that cause 3D corruption
+            this.isometricCameraState.leftMouseDown = false; // Disable camera dragging
+            this.isometricCameraState.isPanning = false;     // Prevent panning state
+
+            // Process the click for building placement/selection
+            this.handleBuildingPlacementClick(event);
+            return;
+        }
+
+        if (event.button === 1) {
+            // Completely ignore middle mouse button events (still problematic)
             return;
         }
 
@@ -684,9 +708,17 @@ class GameManager {
     }
 
     handleIsometricMouseUp(event) {
-        // ===== COMPLETE REMOVAL: Filter out left mouse button (0) and middle mouse button (1) events =====
-        if (event.button === 0 || event.button === 1) {
-            // Completely ignore left mouse button and middle mouse button events
+        // ===== SELECTIVE FILTERING: Allow left mouse clicks but prevent problematic operations =====
+        if (event.button === 0) {
+            // Allow left mouse button up events for completing building placement/selection
+            // But ensure no camera drag state is maintained
+            this.isometricCameraState.leftMouseDown = false;
+            this.isometricCameraState.isPanning = false;
+            return; // Process normally for building interactions
+        }
+
+        if (event.button === 1) {
+            // Completely ignore middle mouse button events (still problematic)
             return;
         }
 
@@ -3596,11 +3628,25 @@ class GameManager {
     handlePointerEvent(pointerInfo) {
         if (this.gameState !== 'playing') return;
 
-        // ===== COMPLETE REMOVAL: Filter out left mouse button (0) and middle mouse button (1) events =====
+        // ===== SELECTIVE FILTERING: Allow essential left mouse interactions =====
         const button = pointerInfo.event?.button;
-        if (button === 0 || button === 1) {
-            // Completely ignore left mouse button and middle mouse button events
-            // No logging, no processing, no handling whatsoever
+        if (button === 0) {
+            // Allow left mouse button for essential game interactions
+            // Only process POINTERDOWN, POINTERUP, POINTERPICK, POINTERTAP
+            if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN ||
+                pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP ||
+                pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK ||
+                pointerInfo.type === BABYLON.PointerEventTypes.POINTERTAP) {
+                // Process essential click events for building placement and selection
+                // Continue with normal processing below
+            } else {
+                // Block other left mouse events (like POINTERMOVE during drag) that cause corruption
+                return;
+            }
+        }
+
+        if (button === 1) {
+            // Completely ignore middle mouse button events (still problematic)
             return;
         }
 
@@ -3748,9 +3794,18 @@ class GameManager {
         const pickInfo = pointerInfo.pickInfo;
         const button = pointerInfo.event?.button;
 
-        // ===== COMPLETE REMOVAL: Filter out left mouse button (0) and middle mouse button (1) events =====
-        if (button === 0 || button === 1) {
-            // Completely ignore left mouse button and middle mouse button events
+        // ===== SELECTIVE FILTERING: Allow left mouse clicks for building placement =====
+        if (button === 0) {
+            // Allow left mouse button for building placement and selection
+            // Process building placement logic
+            if (pickInfo && pickInfo.hit) {
+                this.handleBuildingPlacementClick(pointerInfo.event);
+            }
+            return;
+        }
+
+        if (button === 1) {
+            // Completely ignore middle mouse button events (still problematic)
             return;
         }
 
@@ -3795,9 +3850,15 @@ class GameManager {
     handlePointerUp(pointerInfo) {
         const button = pointerInfo.event?.button;
 
-        // ===== COMPLETE REMOVAL: Filter out left mouse button (0) and middle mouse button (1) events =====
-        if (button === 0 || button === 1) {
-            // Completely ignore left mouse button and middle mouse button events
+        // ===== SELECTIVE FILTERING: Allow left mouse clicks for building interactions =====
+        if (button === 0) {
+            // Allow left mouse button up events for completing building interactions
+            // No special processing needed, just allow the event to complete
+            return;
+        }
+
+        if (button === 1) {
+            // Completely ignore middle mouse button events (still problematic)
             return;
         }
 
