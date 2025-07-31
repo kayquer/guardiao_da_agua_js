@@ -4695,6 +4695,26 @@ class BuildingSystem {
 
         this.previewMode = false;
         this.selectedBuildingType = null;
+
+        // Limpar preview
+        this.clearPreview();
+
+        // Limpar feedback UI
+        if (this.gameManager && this.gameManager.uiManager) {
+            this.gameManager.uiManager.hideBuildingPlacementFeedback();
+        }
+
+        // Resetar cursor
+        if (this.gameManager && this.gameManager.canvas) {
+            this.gameManager.canvas.style.cursor = 'grab';
+        }
+    }
+
+    stopPreviewMode() {
+        console.log('🔍 Parando modo preview');
+
+        this.previewMode = false;
+        this.selectedBuildingType = null;
         this.clearPreview();
     }
 
@@ -4793,12 +4813,28 @@ class BuildingSystem {
         // Verificar se todas as células necessárias estão dentro dos limites do grid
         const isWithinBounds = this.isPlacementWithinBounds(gridX, gridZ, buildingType.size);
 
+        // Determinar se a posição é válida
+        const isValid = canPlaceResult.canPlace && isWithinBounds;
+
         // Atualizar posição dos meshes
         if (this.previewMesh) {
             const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
             this.previewMesh.position = worldPos;
             this.previewMesh.position.y += this.previewMesh.getBoundingInfo().boundingBox.extendSize.y;
             this.previewMesh.setEnabled(true);
+
+            // ===== ENHANCED PREVIEW MESH VISUAL FEEDBACK =====
+            if (this.previewMesh.material) {
+                if (isValid) {
+                    this.previewMesh.material.diffuseColor = new BABYLON.Color3(0, 1, 0); // Verde para válido
+                    this.previewMesh.material.alpha = 0.6;
+                    this.previewMesh.material.emissiveColor = new BABYLON.Color3(0, 0.2, 0);
+                } else {
+                    this.previewMesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0); // Vermelho para inválido
+                    this.previewMesh.material.alpha = 0.8;
+                    this.previewMesh.material.emissiveColor = new BABYLON.Color3(0.2, 0, 0);
+                }
+            }
         }
 
         if (this.previewMarker) {
@@ -4806,21 +4842,58 @@ class BuildingSystem {
             this.previewMarker.position.x = worldPos.x;
             this.previewMarker.position.z = worldPos.z;
 
-            // Mudar cor baseado na validade
+            // ===== ENHANCED MARKER VISUAL FEEDBACK =====
             const material = this.previewMarker.material;
-            if (canPlaceResult.canPlace && isWithinBounds) {
+            if (isValid) {
                 material.diffuseColor = new BABYLON.Color3(0, 1, 0); // Verde
                 material.emissiveColor = new BABYLON.Color3(0, 0.3, 0);
+                // Animação suave para posição válida
+                this.previewMarker.scaling = new BABYLON.Vector3(1, 1, 1);
             } else {
                 material.diffuseColor = new BABYLON.Color3(1, 0, 0); // Vermelho
                 material.emissiveColor = new BABYLON.Color3(0.3, 0, 0);
+                // Animação de "shake" para posição inválida
+                this.previewMarker.scaling = new BABYLON.Vector3(1.1, 1, 1.1);
             }
 
             this.previewMarker.setEnabled(true);
         }
 
+        // ===== AUDIO FEEDBACK FOR INVALID PLACEMENT =====
+        if (!isValid && this.lastPreviewWasValid) {
+            // Play subtle error sound when moving from valid to invalid position
+            if (typeof AudioManager !== 'undefined') {
+                AudioManager.playSound('sfx_click', 0.2);
+            }
+        }
+        this.lastPreviewWasValid = isValid;
+
+        // ===== ENHANCED UI FEEDBACK =====
+        this.updatePreviewUIFeedback(isValid, canPlaceResult);
+
         // Mostrar indicadores de células ocupadas para edifícios multi-célula
-        this.updateMultiCellPreview(gridX, gridZ, buildingType.size, canPlaceResult.canPlace && isWithinBounds);
+        this.updateMultiCellPreview(gridX, gridZ, buildingType.size, isValid);
+
+        // Log para debug (apenas quando a posição muda)
+        console.log(`🔍 Preview updated: (${gridX}, ${gridZ}) - ${isValid ? 'VALID' : 'INVALID'} - ${canPlaceResult.reason || 'No reason'}`);
+    }
+
+    updatePreviewUIFeedback(isValid, canPlaceResult) {
+        // Update cursor style
+        if (this.gameManager && this.gameManager.canvas) {
+            this.gameManager.canvas.style.cursor = isValid ? 'crosshair' : 'not-allowed';
+        }
+
+        // Show placement feedback in UI
+        if (this.gameManager && this.gameManager.uiManager) {
+            const buildingName = this.buildingTypes.get(this.selectedBuildingType)?.name || 'edifício';
+            const message = isValid
+                ? `✅ Clique para construir ${buildingName}`
+                : `❌ ${canPlaceResult.reason || 'Não é possível construir aqui'}`;
+
+            // Update building info panel with placement feedback
+            this.gameManager.uiManager.updateBuildingPlacementFeedback(message, isValid);
+        }
     }
 
     clearPreview() {

@@ -2668,6 +2668,59 @@ class UIManager {
             this.clearBuildingSelectionInfo();
         }
     }
+
+    // ===== BUILDING PLACEMENT FEEDBACK =====
+    updateBuildingPlacementFeedback(message, isValid) {
+        try {
+            // Find or create placement feedback element
+            let feedbackElement = document.getElementById('building-placement-feedback');
+
+            if (!feedbackElement) {
+                feedbackElement = document.createElement('div');
+                feedbackElement.id = 'building-placement-feedback';
+                feedbackElement.className = 'building-placement-feedback';
+                document.body.appendChild(feedbackElement);
+            }
+
+            // Update content and styling
+            feedbackElement.textContent = message;
+            feedbackElement.className = `building-placement-feedback ${isValid ? 'valid' : 'invalid'}`;
+            feedbackElement.style.display = 'block';
+
+            // Position near the bottom center of the screen
+            feedbackElement.style.position = 'fixed';
+            feedbackElement.style.bottom = '120px';
+            feedbackElement.style.left = '50%';
+            feedbackElement.style.transform = 'translateX(-50%)';
+            feedbackElement.style.zIndex = '1000';
+            feedbackElement.style.padding = '10px 20px';
+            feedbackElement.style.borderRadius = '8px';
+            feedbackElement.style.fontSize = '14px';
+            feedbackElement.style.fontWeight = 'bold';
+            feedbackElement.style.pointerEvents = 'none';
+            feedbackElement.style.transition = 'all 0.3s ease';
+
+            if (isValid) {
+                feedbackElement.style.backgroundColor = 'rgba(0, 150, 0, 0.9)';
+                feedbackElement.style.color = 'white';
+                feedbackElement.style.border = '2px solid #00aa00';
+            } else {
+                feedbackElement.style.backgroundColor = 'rgba(200, 0, 0, 0.9)';
+                feedbackElement.style.color = 'white';
+                feedbackElement.style.border = '2px solid #cc0000';
+            }
+
+        } catch (error) {
+            console.warn('⚠️ Error updating building placement feedback:', error);
+        }
+    }
+
+    hideBuildingPlacementFeedback() {
+        const feedbackElement = document.getElementById('building-placement-feedback');
+        if (feedbackElement) {
+            feedbackElement.style.display = 'none';
+        }
+    }
 }
 
 // Exportar para escopo global

@@ -274,6 +274,9 @@ class GameManager {
             console.log('🚫 Babylon.js pointer observables desabilitados');
         }
 
+        // ===== BUILDING PLACEMENT MOUSE INTERACTION =====
+        this.setupBuildingPlacementControls();
+
         this.canvas.addEventListener('wheel', (event) => {
             try {
                 this.handleIsolatedWheel(event);
@@ -287,7 +290,101 @@ class GameManager {
             this.handleKeyboardEvent(kbInfo);
         });
 
-        console.log('🎮 Controles inicializados: apenas ZOOM permitido');
+        console.log('🎮 Controles inicializados: ZOOM + Building Placement permitidos');
+    }
+
+    // ===== BUILDING PLACEMENT CONTROLS =====
+    setupBuildingPlacementControls() {
+        // Mouse move for building preview
+        this.canvas.addEventListener('mousemove', (event) => {
+            this.handleBuildingPreviewMouseMove(event);
+        });
+
+        // Mouse click for building placement
+        this.canvas.addEventListener('click', (event) => {
+            this.handleBuildingPlacementClick(event);
+        });
+
+        // Right click to cancel building mode
+        this.canvas.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            if (this.buildMode) {
+                this.exitBuildMode();
+                console.log('🚫 Building mode cancelled via right-click');
+            }
+        });
+
+        console.log('🏗️ Building placement controls initialized');
+    }
+
+    handleBuildingPreviewMouseMove(event) {
+        if (!this.buildMode || !this.buildingSystem || !this.buildingSystem.previewMode) {
+            return;
+        }
+
+        try {
+            // Get mouse position relative to canvas
+            const rect = this.canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            // Convert screen coordinates to world coordinates using ray casting
+            const pickInfo = this.scene.pick(x, y, (mesh) => {
+                return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
+            });
+
+            if (pickInfo.hit && pickInfo.pickedPoint) {
+                // Convert world position to grid coordinates
+                const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
+
+                // Update building preview at this position
+                this.buildingSystem.updatePreview(gridPos.x, gridPos.z);
+            }
+
+        } catch (error) {
+            console.warn('⚠️ Error in building preview mouse move:', error);
+        }
+    }
+
+    handleBuildingPlacementClick(event) {
+        if (!this.buildMode || !this.buildingSystem || !this.buildingSystem.previewMode) {
+            return;
+        }
+
+        try {
+            // Get mouse position relative to canvas
+            const rect = this.canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            // Convert screen coordinates to world coordinates using ray casting
+            const pickInfo = this.scene.pick(x, y, (mesh) => {
+                return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
+            });
+
+            if (pickInfo.hit && pickInfo.pickedPoint) {
+                // Convert world position to grid coordinates
+                const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
+
+                // Attempt to place building at this position
+                const success = this.buildingSystem.confirmPlacement(gridPos.x, gridPos.z);
+
+                if (success) {
+                    console.log(`✅ Building placed successfully at (${gridPos.x}, ${gridPos.z})`);
+                    // Exit build mode after successful placement
+                    this.exitBuildMode();
+                } else {
+                    console.warn(`⚠️ Cannot place building at (${gridPos.x}, ${gridPos.z})`);
+                    // Play error sound
+                    if (typeof AudioManager !== 'undefined') {
+                        AudioManager.playSound('sfx_build_error', 0.6);
+                    }
+                }
+            }
+
+        } catch (error) {
+            console.error('❌ Error in building placement click:', error);
+        }
     }
 
     handleIsolatedWheel(event) {
@@ -1206,7 +1303,16 @@ class GameManager {
         this.buildMode = false;
         this.currentBuildingType = null;
         this.canvas.style.cursor = 'grab';
+
+        // Clear building system preview mode
+        if (this.buildingSystem && this.buildingSystem.previewMode) {
+            this.buildingSystem.stopPreviewMode();
+        }
+
+        // Clear UI selection and feedback
         this.uiManager.clearBuildingSelection();
+        this.uiManager.hideBuildingPlacementFeedback();
+
         console.log('🏗️ Modo construção desativado');
     }
 
