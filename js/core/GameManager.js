@@ -613,9 +613,21 @@ getEventTypeName(eventType) {
                 this.isValidNumber(this.isometricAngles.alpha) &&
                 this.isValidNumber(this.isometricAngles.beta)) {
 
+                // ===== CRITICAL: Capturar estado antes da operação =====
+                const beforeState = {
+                    position: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z },
+                    target: this.camera.getTarget().clone(),
+                    alpha: this.camera.alpha,
+                    beta: this.camera.beta,
+                    radius: this.camera.radius
+                };
+
                 // Manter ângulos isométricos apenas se forem válidos
                 this.camera.alpha = this.isometricAngles.alpha;
                 this.camera.beta = this.isometricAngles.beta;
+
+                // ===== CRITICAL: Validar após mudança de ângulos =====
+                this.validateCameraPositionChange('alpha/beta assignment in handleSafeWheel', beforeState);
             } else {
                 // Se os ângulos estão corrompidos, usar valores seguros
                 console.warn('⚠️ Ângulos isométricos corrompidos em handleSafeWheel, usando valores seguros');
@@ -997,18 +1009,30 @@ getEventTypeName(eventType) {
         // ===== STEP 3: Resetar câmera para estado GARANTIDO =====
         if (this.camera) {
             console.log('🔧 Resetando câmera para estado seguro');
-            
-            // Posição central segura
+
+            // ===== CRITICAL FIX: Validar valores antes de aplicar =====
+            const safeAlpha = -Math.PI / 4;
+            const safeBeta = Math.PI / 3.5;
+            const safeRadius = 30;
             const safeTarget = new BABYLON.Vector3(20, 0, 20);
+
+            // Verificar se os valores são válidos
+            if (!this.isValidNumber(safeAlpha) || !this.isValidNumber(safeBeta) ||
+                !this.isValidNumber(safeRadius) || !this.isValidVector3(safeTarget)) {
+                console.error('❌ Valores seguros corrompidos durante recovery!');
+                return;
+            }
+
+            // Aplicar valores seguros
             this.camera.setTarget(safeTarget);
-            
-            // Ângulos isométricos fixos
-            this.camera.alpha = -Math.PI / 4;
-            this.camera.beta = Math.PI / 3.5;
-            this.camera.radius = 30;
-            
-            // Forçar atualização da câmera
-            this.camera.rebuildAnglesAndRadius();
+            this.camera.alpha = safeAlpha;
+            this.camera.beta = safeBeta;
+            this.camera.radius = safeRadius;
+
+            // ===== CRITICAL: NÃO chamar rebuildAnglesAndRadius() - CAUSA CORRUPÇÃO NaN =====
+            // this.camera.rebuildAnglesAndRadius(); // REMOVIDO - causa NaN em position.x/z
+
+            console.log('✅ Câmera resetada sem rebuildAnglesAndRadius()');
         }
         
         // ===== STEP 4: Forçar re-render completo =====
@@ -1352,8 +1376,20 @@ getEventTypeName(eventType) {
                 Math.max(this.cameraLimits.minZ, Math.min(this.cameraLimits.maxZ, newTarget.z))
             );
 
+            // ===== CRITICAL: Capturar estado antes da operação =====
+            const beforeState = {
+                position: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z },
+                target: this.camera.getTarget().clone(),
+                alpha: this.camera.alpha,
+                beta: this.camera.beta,
+                radius: this.camera.radius
+            };
+
             // Apply smooth movement
             this.camera.setTarget(boundedTarget);
+
+            // ===== CRITICAL: Validar imediatamente após operação =====
+            this.validateCameraPositionChange('setTarget in handleCameraPan', beforeState);
 
             // ===== CAMERA DEBUGGING: Log pan operation =====
             this.logCameraEvent('panOperation', {
@@ -1561,8 +1597,20 @@ getEventTypeName(eventType) {
                 });
             }
 
+            // ===== CRITICAL: Capturar estado antes da operação =====
+            const beforeState = {
+                position: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z },
+                target: this.camera.getTarget().clone(),
+                alpha: this.camera.alpha,
+                beta: this.camera.beta,
+                radius: this.camera.radius
+            };
+
             // ===== APPLY MOVEMENT =====
             this.camera.setTarget(newTarget);
+
+            // ===== CRITICAL: Validar imediatamente após operação =====
+            this.validateCameraPositionChange('setTarget in moveIsometricCamera', beforeState);
 
             // ===== VERIFY CAMERA STATE AFTER MOVEMENT =====
             const verifyTarget = this.camera.getTarget();
@@ -2399,9 +2447,21 @@ centerCameraOnCityHall(gridX, gridZ) {
         // ===== MOVIMENTO DIRETO SEM ANIMAÇÕES =====
         const targetPosition = new BABYLON.Vector3(worldPos.x, 0, worldPos.z);
 
+        // ===== CRITICAL: Capturar estado antes da operação =====
+        const beforeState = {
+            position: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z },
+            target: this.camera.getTarget().clone(),
+            alpha: this.camera.alpha,
+            beta: this.camera.beta,
+            radius: this.camera.radius
+        };
+
         // Aplicar diretamente sem animações
         this.camera.setTarget(targetPosition);
         this.camera.radius = 25;
+
+        // ===== CRITICAL: Validar após setTarget =====
+        this.validateCameraPositionChange('setTarget in centerCameraOnCityHall', beforeState);
 
         // ===== CRITICAL FIX: Validar ângulos isométricos antes de aplicar =====
         if (this.isometricAngles &&
@@ -2480,7 +2540,8 @@ validateCameraStateWithBreaker() {
                 alpha, beta, radius,
                 target: { x: target.x, y: target.y, z: target.z },
                 position: { x: position.x, y: position.y, z: position.z },
-                corruptionCount: this.renderState.corruptionCount
+                corruptionCount: this.renderState.corruptionCount,
+                stackTrace: new Error().stack
             });
             
             return false;
@@ -2493,6 +2554,43 @@ validateCameraStateWithBreaker() {
         return false;
     }
 }
+
+/**
+ * ===== CRITICAL: Função para detectar exatamente onde NaN é introduzido =====
+ * Monitora mudanças na posição da câmera e detecta NaN imediatamente
+ */
+validateCameraPositionChange(operation, beforeState) {
+    if (!this.camera) return;
+
+    try {
+        const afterPosition = this.camera.position;
+        const afterTarget = this.camera.getTarget();
+
+        // Detectar se NaN foi introduzido
+        const hasNaNPosition = isNaN(afterPosition.x) || isNaN(afterPosition.y) || isNaN(afterPosition.z);
+        const hasNaNTarget = isNaN(afterTarget.x) || isNaN(afterTarget.y) || isNaN(afterTarget.z);
+
+        if (hasNaNPosition || hasNaNTarget) {
+            console.error('🚨 NaN DETECTADO IMEDIATAMENTE APÓS OPERAÇÃO:', {
+                operation,
+                beforeState,
+                afterPosition: { x: afterPosition.x, y: afterPosition.y, z: afterPosition.z },
+                afterTarget: { x: afterTarget.x, y: afterTarget.y, z: afterTarget.z },
+                alpha: this.camera.alpha,
+                beta: this.camera.beta,
+                radius: this.camera.radius,
+                stackTrace: new Error().stack
+            });
+
+            // Recuperação imediata
+            this.emergencyRecovery();
+        }
+
+    } catch (error) {
+        console.error('❌ Erro na validação de mudança de posição:', error);
+    }
+}
+
 /**
  * Recuperação de emergência que para TODAS as operações
  */
@@ -3149,9 +3247,21 @@ handleIsolatedWheel(event) {
             this.isValidNumber(this.isometricAngles.alpha) &&
             this.isValidNumber(this.isometricAngles.beta)) {
 
+            // ===== CRITICAL: Capturar estado antes da operação =====
+            const beforeStateSafe = {
+                position: { x: this.camera.position.x, y: this.camera.position.y, z: this.camera.position.z },
+                target: this.camera.getTarget().clone(),
+                alpha: this.camera.alpha,
+                beta: this.camera.beta,
+                radius: this.camera.radius
+            };
+
             // Manter ângulos isométricos apenas se forem válidos
             this.camera.alpha = this.isometricAngles.alpha;
             this.camera.beta = this.isometricAngles.beta;
+
+            // ===== CRITICAL: Validar após mudança de ângulos =====
+            this.validateCameraPositionChange('alpha/beta assignment in handleIsolatedWheel', beforeStateSafe);
         } else {
             // Se os ângulos estão corrompidos, usar valores seguros
             console.warn('⚠️ Ângulos isométricos corrompidos, usando valores seguros');
