@@ -47,30 +47,15 @@ class GameManager {
         this.buildMode = false;
         this.currentBuildingType = null;
 
-        // Controles de câmera WASD
-        this.cameraControls = {
-            keys: {
-                W: false,
-                A: false,
-                S: false,
-                D: false
-            },
-            speed: 0.5,
-            enabled: true
-        };
+        // ===== REMOVED: Camera controls WASD =====
+        // All keyboard camera movement has been disabled
 
         // ===== CAMERA DEBUGGING SYSTEM =====
         this.cameraDebug = {
             enabled: true,
             logLevel: 'detailed', // 'basic', 'detailed', 'verbose'
             eventCounts: {
-                mouseDown: 0,
-                mouseUp: 0,
-                mouseMove: 0,
-                keyDown: 0,
-                keyUp: 0,
                 wheel: 0,
-                panOperations: 0,
                 zoomOperations: 0
             },
             lastEvents: [],
@@ -470,12 +455,14 @@ class GameManager {
         }
     });
 
-    // Keyboard events apenas
+    // ===== KEYBOARD EVENTS: Non-camera functionality only =====
+    // Camera movement via keyboard has been disabled
+    // Preserving game controls (Space, Escape, Digit1-3)
     this.scene.onKeyboardObservable.add((kbInfo) => {
         this.handleKeyboardEvent(kbInfo);
     });
 
-    console.log('🎮 Camera controls initialized: WHEEL ZOOM ONLY (all mouse input disabled)');
+    console.log('🎮 Camera controls initialized: WHEEL ZOOM ONLY (all camera movement disabled)');
     }
 
     /**
@@ -694,7 +681,7 @@ getEventTypeName(eventType) {
                     radius: this.camera.radius,
                     alpha: this.camera.alpha,
                     beta: this.camera.beta,
-                    enabled: this.cameraControls.enabled
+                    enabled: true // Camera always enabled, keyboard movement disabled
                 }
             });
 
@@ -717,7 +704,7 @@ getEventTypeName(eventType) {
                 radius: this.camera.radius,
                 alpha: this.camera.alpha,
                 beta: this.camera.beta,
-                enabled: this.cameraControls.enabled
+                enabled: true // Camera always enabled, keyboard movement disabled
             } : null
         };
     }
@@ -1054,101 +1041,8 @@ getEventTypeName(eventType) {
     //     this.handleConsolidatedMouseMove(event);
     // }
 
-    handleIsometricKeyDown(event) {
-        // ===== ENHANCED CAMERA DEBUGGING: Log key down events with camera state =====
-        const cameraState = this.getCameraStateSnapshot();
-        this.logCameraEvent('keyDown', {
-            code: event.code,
-            key: event.key,
-            timestamp: Date.now(),
-            currentKeys: { ...this.cameraControls.keys },
-            cameraState: cameraState,
-            enabled: this.cameraControls.enabled
-        });
-
-        // ===== SAFETY CHECK: Ensure camera is properly initialized =====
-        if (!this.camera || !this.cameraControls.enabled) {
-            console.warn('⚠️ Camera not initialized or disabled, ignoring key input:', event.code);
-            return;
-        }
-
-        // Arrow keys support for camera movement
-        switch (event.code) {
-            case 'ArrowUp':
-                this.cameraControls.keys.W = true;
-                event.preventDefault();
-                break;
-            case 'ArrowDown':
-                this.cameraControls.keys.S = true;
-                event.preventDefault();
-                break;
-            case 'ArrowLeft':
-                this.cameraControls.keys.A = true;
-                event.preventDefault();
-                // ===== ENHANCED DEBUGGING: Log ArrowLeft specific state =====
-                console.log('🎮 ArrowLeft pressed - Camera state before movement:', {
-                    target: this.camera.getTarget(),
-                    position: this.camera.position,
-                    alpha: this.camera.alpha,
-                    beta: this.camera.beta,
-                    radius: this.camera.radius,
-                    bounds: this.cameraLimits
-                });
-                break;
-            case 'ArrowRight':
-                this.cameraControls.keys.D = true;
-                event.preventDefault();
-                break;
-        }
-    }
-
-    handleIsometricKeyUp(event) {
-        // ===== ENHANCED CAMERA DEBUGGING: Log key up events with camera state =====
-        const cameraState = this.getCameraStateSnapshot();
-        this.logCameraEvent('keyUp', {
-            code: event.code,
-            key: event.key,
-            timestamp: Date.now(),
-            currentKeys: { ...this.cameraControls.keys },
-            cameraState: cameraState,
-            enabled: this.cameraControls.enabled
-        });
-
-        // ===== SAFETY CHECK: Ensure camera is properly initialized =====
-        if (!this.camera || !this.cameraControls.enabled) {
-            console.warn('⚠️ Camera not initialized or disabled, ignoring key input:', event.code);
-            return;
-        }
-
-        // Arrow keys support for camera movement
-        switch (event.code) {
-            case 'ArrowUp':
-                this.cameraControls.keys.W = false;
-                event.preventDefault();
-                break;
-            case 'ArrowDown':
-                this.cameraControls.keys.S = false;
-                event.preventDefault();
-                break;
-            case 'ArrowLeft':
-                this.cameraControls.keys.A = false;
-                event.preventDefault();
-                // ===== ENHANCED DEBUGGING: Log ArrowLeft specific state =====
-                console.log('🎮 ArrowLeft released - Camera state after movement:', {
-                    target: this.camera.getTarget(),
-                    position: this.camera.position,
-                    alpha: this.camera.alpha,
-                    beta: this.camera.beta,
-                    radius: this.camera.radius,
-                    bounds: this.cameraLimits
-                });
-                break;
-            case 'ArrowRight':
-                this.cameraControls.keys.D = false;
-                event.preventDefault();
-                break;
-        }
-    }
+    // ===== REMOVED: handleIsometricKeyDown and handleIsometricKeyUp =====
+    // All keyboard camera movement functionality has been disabled
 
     // ===== CAMERA STATE DEBUGGING METHODS =====
 
@@ -2447,7 +2341,7 @@ centerCameraOnCityHall(gridX, gridZ) {
 }
     // ===== ISOMETRIC RTS-STYLE CAMERA CONTROLS UPDATE =====
 updateCameraControls(deltaTime) {
-    if (!this.camera || !this.cameraControls.enabled) return;
+    if (!this.camera) return;
     
     // ===== VALIDAÇÃO PREVENTIVA ANTES DE QUALQUER OPERAÇÃO =====
     if (!this.validateCameraState()) {
@@ -2457,10 +2351,10 @@ updateCameraControls(deltaTime) {
     
     // Enforce isometric angles
     this.enforceIsometricAngles();
-    
-    // Handle WASD/Arrow key movement
-    this.updateIsometricKeyboardMovement(deltaTime);
-    
+
+    // ===== REMOVED: WASD/Arrow key movement =====
+    // All keyboard camera movement has been disabled
+
     // Handle edge scrolling
     this.updateEdgeScrolling(deltaTime);
     
@@ -2575,18 +2469,11 @@ emergencyRecovery() {
             this.isometricCameraState.edgeScrolling.isScrolling = false;
         }
         
-        // ===== STEP 3: DESABILITAR CONTROLES TEMPORARIAMENTE =====
-        const originalEnabled = this.cameraControls.enabled;
-        this.cameraControls.enabled = false;
-        
-        // ===== STEP 4: RECRIAR CÂMERA COMPLETAMENTE =====
+        // ===== STEP 3: RECRIAR CÂMERA COMPLETAMENTE =====
         this.recreateCamera();
-        
-        // ===== STEP 5: REABILITAR CONTROLES APÓS DELAY =====
-        setTimeout(() => {
-            this.cameraControls.enabled = originalEnabled;
-            console.log('✅ Controles de câmera reabilitados após recuperação');
-        }, 1000);
+
+        // ===== STEP 4: CAMERA RECOVERY COMPLETE =====
+        console.log('✅ Camera recovery completed (keyboard controls permanently disabled)');
         
         this.renderState.recoveryAttempts++;
         
@@ -2882,77 +2769,8 @@ enforceIsometricAngles() {
         }
     }
 
-    /**
-     * Updates camera movement based on WASD/Arrow keys for isometric view with enhanced safety
-     * @param {number} deltaTime - Frame delta time
-     */
-    updateIsometricKeyboardMovement(deltaTime) {
-        // ===== SAFETY CHECKS =====
-        if (!this.camera || !this.cameraControls.enabled) {
-            return;
-        }
-
-        // ===== VALIDATE INPUTS TO PREVENT NaN =====
-        if (!deltaTime || deltaTime <= 0 || !isFinite(deltaTime)) {
-            console.warn('⚠️ Invalid deltaTime in camera movement:', deltaTime);
-            return;
-        }
-
-        if (!this.cameraControls.speed || !isFinite(this.cameraControls.speed)) {
-            console.warn('⚠️ Invalid camera speed:', this.cameraControls.speed);
-            return;
-        }
-
-        const keys = this.cameraControls.keys;
-        const speed = this.cameraControls.speed * (deltaTime / 16.67); // Normalize to 60 FPS
-
-        // ===== VALIDATE CALCULATED SPEED =====
-        if (!isFinite(speed) || speed > 10) { // Cap speed to prevent extreme values
-            console.warn('⚠️ Invalid calculated speed:', speed, 'deltaTime:', deltaTime);
-            return;
-        }
-
-        // Check if any movement key is pressed
-        const isMoving = keys.W || keys.A || keys.S || keys.D;
-        if (!isMoving && !this.isometricCameraState.edgeScrolling.isScrolling) return;
-
-        try {
-            let deltaX = 0;
-            let deltaZ = 0;
-
-            // Calculate movement in isometric space
-            if (keys.W) { // Forward (North-West in isometric)
-                deltaX -= speed * 0.707; // cos(45°)
-                deltaZ -= speed * 0.707; // sin(45°)
-            }
-            if (keys.S) { // Backward (South-East in isometric)
-                deltaX += speed * 0.707;
-                deltaZ += speed * 0.707;
-            }
-            if (keys.A) { // Left (South-West in isometric)
-                deltaX -= speed * 0.707;
-                deltaZ += speed * 0.707;
-            }
-            if (keys.D) { // Right (North-East in isometric)
-                deltaX += speed * 0.707;
-                deltaZ -= speed * 0.707;
-            }
-
-            // ===== VALIDATE MOVEMENT DELTAS BEFORE APPLYING =====
-            if (!isFinite(deltaX) || !isFinite(deltaZ)) {
-                console.error('❌ Invalid movement deltas:', { deltaX, deltaZ, speed, deltaTime });
-                return;
-            }
-
-            // Apply movement if any
-            if (deltaX !== 0 || deltaZ !== 0) {
-                this.moveIsometricCamera(deltaX, deltaZ);
-            }
-
-        } catch (error) {
-            console.error('❌ Error in isometric keyboard movement:', error);
-        }
-    }
+    // ===== REMOVED: updateIsometricKeyboardMovement =====
+    // All keyboard camera movement functionality has been disabled
 
     /**
      * Updates edge scrolling movement
@@ -4297,38 +4115,11 @@ handleIsolatedWheel(event) {
     
     handleKeyboardEvent(kbInfo) {
         const isKeyDown = kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN;
-        const isKeyUp = kbInfo.type === BABYLON.KeyboardEventTypes.KEYUP;
 
-        // ===== CAMERA DEBUGGING: Log WASD key events =====
-        if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(kbInfo.event.code)) {
-            this.logCameraEvent(isKeyDown ? 'wasdKeyDown' : 'wasdKeyUp', {
-                code: kbInfo.event.code,
-                key: kbInfo.event.key,
-                timestamp: Date.now(),
-                currentKeys: { ...this.cameraControls.keys },
-                enabled: this.cameraControls.enabled
-            });
-        }
+        // ===== REMOVED: All camera movement keyboard controls =====
+        // WASD and Arrow keys no longer control camera movement
 
-        // Controles WASD para movimento da câmera
-        if (this.cameraControls.enabled) {
-            switch (kbInfo.event.code) {
-                case 'KeyW':
-                    this.cameraControls.keys.W = isKeyDown;
-                    break;
-                case 'KeyA':
-                    this.cameraControls.keys.A = isKeyDown;
-                    break;
-                case 'KeyS':
-                    this.cameraControls.keys.S = isKeyDown;
-                    break;
-                case 'KeyD':
-                    this.cameraControls.keys.D = isKeyDown;
-                    break;
-            }
-        }
-
-        // Outros controles apenas no keydown
+        // Game controls only (non-camera functionality preserved)
         if (isKeyDown) {
             switch (kbInfo.event.code) {
                 case 'Space':
