@@ -349,8 +349,8 @@ class GameManager {
         };
 
         // ===== CRITICAL FIX: Validar ângulos antes de aplicar à câmera =====
-        if (this.isValidNumber(this.isometricAngles.alpha) &&
-            this.isValidNumber(this.isometricAngles.beta)) {
+        if (this.isValidCameraAngle(this.isometricAngles.alpha) &&
+            this.isValidCameraAngle(this.isometricAngles.beta)) {
 
             // Lock camera to isometric angles
             this.camera.alpha = this.isometricAngles.alpha;
@@ -445,79 +445,31 @@ class GameManager {
     }
     
     setupControls() {
-    // ===== USAR APENAS BABYLON.JS POINTER OBSERVABLE =====
-    this.scene.onPointerObservable.add((pointerInfo) => {
+    // ===== CRITICAL FIX: REMOVE ALL DRAG/CLICK FUNCTIONALITY =====
+    // Completely disable all pointer events that can cause camera corruption
+
+    // ===== WHEEL HANDLER ISOLADO - ONLY ZOOM ALLOWED =====
+    this.canvas.addEventListener('wheel', (event) => {
         try {
-            this.handleUnifiedPointerEvent(pointerInfo);
+            this.handleIsolatedWheel(event);
         } catch (error) {
-            console.error('❌ Erro no pointer event:', error);
-            this.recover3DRenderer();
+            console.error('❌ Erro no wheel isolado:', error);
+            this.recoverCameraState();
         }
     });
-
-    // ===== REMOVER: wheel listener duplicado (já está no hover system) =====
-    // this.canvas.addEventListener('wheel', (event) => { ... });
 
     // Keyboard events apenas
     this.scene.onKeyboardObservable.add((kbInfo) => {
         this.handleKeyboardEvent(kbInfo);
     });
 
-    console.log('🎮 Sistema de controles unificado inicializado (sem wheel duplicado)');
+    console.log('🎮 Camera controls initialized: WHEEL ZOOM ONLY (all drag/click removed)');
     }
 
     /**
-     * Handler unificado para todos os eventos de pointer
-     * Previne conflitos e corrupção do renderer 3D
+     * ===== REMOVED: All pointer event handlers to prevent camera corruption =====
+     * All drag and click functionality has been disabled to eliminate NaN/Infinity corruption
      */
-    handleUnifiedPointerEvent(pointerInfo) {
-    const button = pointerInfo.event?.button;
-    const eventType = pointerInfo.type;
-
-    // ===== VALIDAÇÃO CRÍTICA =====
-    if (!this.camera || !this.scene || this.scene.isDisposed) {
-        console.warn('⚠️ Renderer 3D em estado inválido, ignorando evento');
-        return;
-    }
-
-    // ===== LOG APENAS EVENTOS IMPORTANTES =====
-    if (eventType === BABYLON.PointerEventTypes.POINTERDOWN || 
-        eventType === BABYLON.PointerEventTypes.POINTERUP) {
-        console.log(`🖱️ Pointer Event: ${this.getEventTypeName(eventType)}`, {
-            button: button,
-            buttonName: this.getMouseButtonName(button),
-            previewMode: this.buildingSystem?.previewMode
-        });
-    }
-
-    // ===== PROCESSAR APENAS EVENTOS ESSENCIAIS =====
-    switch (eventType) {
-        case BABYLON.PointerEventTypes.POINTERDOWN:
-            if (button === 0) { // Apenas botão esquerdo
-                this.handleSafeMouseDown(pointerInfo);
-            }
-            break;
-            
-        case BABYLON.PointerEventTypes.POINTERUP:
-            if (button === 0) { // Apenas botão esquerdo
-                this.handleSafeMouseUp(pointerInfo);
-            }
-            break;
-            
-        case BABYLON.PointerEventTypes.POINTERPICK:
-        case BABYLON.PointerEventTypes.POINTERTAP:
-            if (button === 0) { // Apenas botão esquerdo
-                this.handleSafePick(pointerInfo);
-            }
-            break;
-            
-        // ===== IGNORAR TODOS OS OUTROS EVENTOS =====
-        case BABYLON.PointerEventTypes.POINTERMOVE:
-        case BABYLON.PointerEventTypes.POINTERWHEEL:
-        default:
-            return; // Bloquear completamente
-    }
-}
 
 // ===== HELPER PARA NOMES DE EVENTOS =====
 getEventTypeName(eventType) {
@@ -533,63 +485,14 @@ getEventTypeName(eventType) {
 }
 
     /**
-     * Handler seguro para mouse down - sem drag operations
+     * ===== REMOVED: All mouse handlers to prevent camera corruption =====
+     * Building placement and all click functionality has been disabled
      */
-    handleSafeMouseDown(pointerInfo) {
-        const button = pointerInfo.event?.button;
-
-        // Apenas left mouse button para building placement
-        if (button === 0) {
-            this.handleBuildingPlacementOnly(pointerInfo);
-        }
-
-        // Ignorar middle mouse button completamente
-    }
 
     /**
-     * Handler seguro para mouse up
+     * ===== REMOVED: Building placement to prevent camera corruption =====
+     * All building placement functionality has been disabled
      */
-    handleSafeMouseUp(pointerInfo) {
-        // Simplesmente finalizar qualquer operação pendente
-        // Sem lógica complexa que possa corromper o renderer
-    }
-
-    /**
-     * Handler seguro para pick/tap - apenas building placement
-     */
-    handleSafePick(pointerInfo) {
-        if (this.buildingSystem && this.buildingSystem.previewMode) {
-            this.handleBuildingPlacementOnly(pointerInfo);
-        }
-    }
-
-    /**
-     * Building placement isolado - sem interferir com câmera
-     */
-    handleBuildingPlacementOnly(pointerInfo) {
-        const pickInfo = pointerInfo.pickInfo;
-
-        if (!pickInfo || !pickInfo.hit) return;
-
-        try {
-            const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
-            gridPos.x = Math.floor(gridPos.x);
-            gridPos.z = Math.floor(gridPos.z);
-
-            if (this.buildingSystem.previewMode) {
-                const success = this.buildingSystem.confirmPlacement(gridPos.x, gridPos.z);
-                if (success) {
-                    this.buildingSystem.stopPreviewMode();
-                    this.uiManager?.showNotification('Edifício construído!', 'success');
-                }
-            } else {
-                // Seleção de edifício
-                this.handleBuildingSelection(gridPos.x, gridPos.z);
-            }
-        } catch (error) {
-            console.error('❌ Erro no building placement:', error);
-        }
-    }
 
     /**
      * Handler seguro para mouse wheel - apenas zoom
@@ -610,8 +513,8 @@ getEventTypeName(eventType) {
 
             // ===== CRITICAL FIX: Validar ângulos isométricos antes de aplicar =====
             if (this.isometricAngles &&
-                this.isValidNumber(this.isometricAngles.alpha) &&
-                this.isValidNumber(this.isometricAngles.beta)) {
+                this.isValidCameraAngle(this.isometricAngles.alpha) &&
+                this.isValidCameraAngle(this.isometricAngles.beta)) {
 
                 // ===== CRITICAL: Capturar estado antes da operação =====
                 const beforeState = {
@@ -828,12 +731,39 @@ getEventTypeName(eventType) {
 
     // ===== CRITICAL FIX: Validation Helper Functions =====
     /**
-     * Validates if a value is a valid finite number (not NaN, not Infinity)
+     * ===== ENHANCED: Validates if a value is a valid finite number =====
+     * Specifically checks for NaN, Infinity, and -Infinity corruption
      * @param {*} value - Value to validate
      * @returns {boolean} - True if valid number
      */
     isValidNumber(value) {
-        return typeof value === 'number' && isFinite(value) && !isNaN(value);
+        // Check for basic type
+        if (typeof value !== 'number') return false;
+
+        // ===== CRITICAL: Explicit checks for corruption values =====
+        if (isNaN(value)) return false;           // NaN corruption
+        if (value === Infinity) return false;    // Infinity corruption
+        if (value === -Infinity) return false;   // -Infinity corruption
+        if (!isFinite(value)) return false;      // Any other non-finite value
+
+        return true;
+    }
+
+    /**
+     * ===== NEW: Validates camera angle values specifically =====
+     * Additional validation for alpha and beta camera angles
+     * @param {number} angle - Angle value to validate
+     * @returns {boolean} - True if valid camera angle
+     */
+    isValidCameraAngle(angle) {
+        if (!this.isValidNumber(angle)) return false;
+
+        // Camera angles should be within reasonable bounds
+        // Alpha: typically -2π to 2π
+        // Beta: typically 0 to π
+        if (Math.abs(angle) > 10) return false; // Reasonable upper bound
+
+        return true;
     }
 
     /**
@@ -2465,8 +2395,8 @@ centerCameraOnCityHall(gridX, gridZ) {
 
         // ===== CRITICAL FIX: Validar ângulos isométricos antes de aplicar =====
         if (this.isometricAngles &&
-            this.isValidNumber(this.isometricAngles.alpha) &&
-            this.isValidNumber(this.isometricAngles.beta)) {
+            this.isValidCameraAngle(this.isometricAngles.alpha) &&
+            this.isValidCameraAngle(this.isometricAngles.beta)) {
 
             this.camera.alpha = this.isometricAngles.alpha;
             this.camera.beta = this.isometricAngles.beta;
@@ -2526,9 +2456,9 @@ validateCameraStateWithBreaker() {
         const target = this.camera.getTarget();
         const position = this.camera.position;
         
-        // Verificar se há valores inválidos
-        const hasInvalidAlpha = !this.isValidNumber(alpha);
-        const hasInvalidBeta = !this.isValidNumber(beta);
+        // ===== ENHANCED: Verificar se há valores inválidos com validação específica para ângulos =====
+        const hasInvalidAlpha = !this.isValidCameraAngle(alpha);
+        const hasInvalidBeta = !this.isValidCameraAngle(beta);
         const hasInvalidRadius = !this.isValidNumber(radius);
         const hasInvalidTarget = !this.isValidVector3(target);
         const hasInvalidPosition = !this.isValidVector3(position);
@@ -2838,7 +2768,7 @@ enforceIsometricAngles() {
         const targetAlpha = this.isometricAngles.alpha;
         const targetBeta = this.isometricAngles.beta;
         
-        if (!this.isValidNumber(targetAlpha) || !this.isValidNumber(targetBeta)) {
+        if (!this.isValidCameraAngle(targetAlpha) || !this.isValidCameraAngle(targetBeta)) {
             console.error('❌ Ângulos isométricos inválidos:', { targetAlpha, targetBeta });
             return;
         }
@@ -2848,7 +2778,7 @@ enforceIsometricAngles() {
         const currentBeta = this.camera.beta;
         
         // Só aplicar se houver diferença significativa E os valores atuais forem válidos
-        if (this.isValidNumber(currentAlpha) && this.isValidNumber(currentBeta)) {
+        if (this.isValidCameraAngle(currentAlpha) && this.isValidCameraAngle(currentBeta)) {
             const alphaDiff = Math.abs(currentAlpha - targetAlpha);
             const betaDiff = Math.abs(currentBeta - targetBeta);
             
@@ -3158,52 +3088,22 @@ enforceIsometricAngles() {
         }
     }
 
-    // ===== SISTEMA DE HOVER/TOOLTIP =====
+    // ===== CRITICAL FIX: DISABLE ALL HOVER FUNCTIONALITY =====
     setupHoverSystem() {
-    if (!this.scene || !this.canvas) return;
+        // All mouse hover functionality has been disabled to prevent camera corruption
 
-    // ===== SISTEMA DE HOVER SEGURO - SEM CONFLITOS COM BUILDING PLACEMENT =====
-    this.mouseHoverThrottle = {
-        lastCall: 0,
-        delay: 16, // ~60 FPS (16ms entre chamadas)
-        timeoutId: null
-    };
-
-    // ===== ADICIONAR MOUSEMOVE APENAS PARA HOVER (não para camera) =====
-    this.canvas.addEventListener('mousemove', (event) => {
-        try {
-            // CRITICAL: Só processar hover se NÃO estiver em modo building placement
-            if (!this.buildingSystem || !this.buildingSystem.previewMode) {
-                this.handleMouseHoverThrottled(event);
+        // Keep only ESC key functionality for building preview
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                if (this.buildingSystem && this.buildingSystem.previewMode) {
+                    this.cancelBuildingPreview();
+                } else if (this.selectedBuilding) {
+                    this.deselectBuilding();
+                }
             }
-        } catch (error) {
-            console.warn('⚠️ Erro no hover mousemove:', error);
-        }
-    });
+        });
 
-    // Mouse leave cleanup
-    this.canvas.addEventListener('mouseleave', () => {
-        this.hideHoverInfo();
-        this.hideAllBuildingLabels();
-        
-        if (this.mouseHoverThrottle && this.mouseHoverThrottle.timeoutId) {
-            clearTimeout(this.mouseHoverThrottle.timeoutId);
-            this.mouseHoverThrottle.timeoutId = null;
-        }
-    });
-
-    // ESC para cancelar preview
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-            if (this.buildingSystem && this.buildingSystem.previewMode) {
-                this.cancelBuildingPreview();
-            } else if (this.selectedBuilding) {
-                this.deselectBuilding();
-            }
-        }
-    });
-
-    console.log('🎮 Sistema de hover seguro inicializado');
+        console.log('🎮 Hover system disabled to prevent camera corruption');
     }
     /**
  * Configurar wheel/zoom de forma isolada
@@ -3244,8 +3144,8 @@ handleIsolatedWheel(event) {
 
         // ===== CRITICAL FIX: Validar ângulos isométricos antes de aplicar =====
         if (this.isometricAngles &&
-            this.isValidNumber(this.isometricAngles.alpha) &&
-            this.isValidNumber(this.isometricAngles.beta)) {
+            this.isValidCameraAngle(this.isometricAngles.alpha) &&
+            this.isValidCameraAngle(this.isometricAngles.beta)) {
 
             // ===== CRITICAL: Capturar estado antes da operação =====
             const beforeStateSafe = {
