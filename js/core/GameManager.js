@@ -259,6 +259,9 @@ class GameManager {
 
         // Configurar sistema de hover
         this.setupHoverSystem();
+        
+        // ===== ADICIONAR: Configurar wheel handler isolado =====
+        this.setupWheelHandler();
 
         // Iniciar loop de renderização
         this.startRenderLoop();
@@ -318,6 +321,14 @@ class GameManager {
             MAX_ZOOM_DISTANCE: 60
         };
 
+        // ===== CRITICAL FIX: Validar constantes da câmera =====
+        if (!this.isValidNumber(this.CAMERA_CONSTANTS.ISOMETRIC_ALPHA) ||
+            !this.isValidNumber(this.CAMERA_CONSTANTS.ISOMETRIC_BETA)) {
+            console.error('❌ Constantes da câmera inválidas, usando valores seguros');
+            this.CAMERA_CONSTANTS.ISOMETRIC_ALPHA = -Math.PI / 4;
+            this.CAMERA_CONSTANTS.ISOMETRIC_BETA = Math.PI / 3.5;
+        }
+
         // Create isometric camera with fixed angle (SimCity/Age of Empires style)
         this.camera = new BABYLON.ArcRotateCamera(
             "isometricCamera",
@@ -337,9 +348,24 @@ class GameManager {
             beta: this.CAMERA_CONSTANTS.ISOMETRIC_BETA         // ~51 degrees vertical (fixed)
         };
 
-        // Lock camera to isometric angles
-        this.camera.alpha = this.isometricAngles.alpha;
-        this.camera.beta = this.isometricAngles.beta;
+        // ===== CRITICAL FIX: Validar ângulos antes de aplicar à câmera =====
+        if (this.isValidNumber(this.isometricAngles.alpha) &&
+            this.isValidNumber(this.isometricAngles.beta)) {
+
+            // Lock camera to isometric angles
+            this.camera.alpha = this.isometricAngles.alpha;
+            this.camera.beta = this.isometricAngles.beta;
+        } else {
+            console.error('❌ Ângulos isométricos inválidos durante setup, usando valores seguros');
+            this.camera.alpha = -Math.PI / 4;
+            this.camera.beta = Math.PI / 3.5;
+
+            // Corrigir valores
+            this.isometricAngles = {
+                alpha: -Math.PI / 4,
+                beta: Math.PI / 3.5
+            };
+        }
 
         // Zoom limits for isometric view
         this.camera.lowerRadiusLimit = this.CAMERA_CONSTANTS.MIN_ZOOM_DISTANCE;
@@ -419,32 +445,25 @@ class GameManager {
     }
     
     setupControls() {
-        // ===== USAR APENAS BABYLON.JS POINTER OBSERVABLE (sem canvas events duplicados) =====
-        this.scene.onPointerObservable.add((pointerInfo) => {
-            try {
-                this.handleUnifiedPointerEvent(pointerInfo);
-            } catch (error) {
-                console.error('❌ Erro no pointer event:', error);
-                this.recover3DRenderer();
-            }
-        });
+    // ===== USAR APENAS BABYLON.JS POINTER OBSERVABLE =====
+    this.scene.onPointerObservable.add((pointerInfo) => {
+        try {
+            this.handleUnifiedPointerEvent(pointerInfo);
+        } catch (error) {
+            console.error('❌ Erro no pointer event:', error);
+            this.recover3DRenderer();
+        }
+    });
 
-        // ===== ADICIONAR LISTENER DIRETO PARA WHEEL (Babylon.js não converte wheel para POINTERWHEEL) =====
-        this.canvas.addEventListener('wheel', (event) => {
-            try {
-                this.handleSafeWheelDirect(event);
-            } catch (error) {
-                console.error('❌ Erro no wheel event:', error);
-                this.recover3DRenderer();
-            }
-        });
+    // ===== REMOVER: wheel listener duplicado (já está no hover system) =====
+    // this.canvas.addEventListener('wheel', (event) => { ... });
 
-        // Keyboard events apenas
-        this.scene.onKeyboardObservable.add((kbInfo) => {
-            this.handleKeyboardEvent(kbInfo);
-        });
+    // Keyboard events apenas
+    this.scene.onKeyboardObservable.add((kbInfo) => {
+        this.handleKeyboardEvent(kbInfo);
+    });
 
-        console.log('🎮 Sistema de controles unificado inicializado');
+    console.log('🎮 Sistema de controles unificado inicializado (sem wheel duplicado)');
     }
 
     /**
@@ -452,43 +471,66 @@ class GameManager {
      * Previne conflitos e corrupção do renderer 3D
      */
     handleUnifiedPointerEvent(pointerInfo) {
-        const button = pointerInfo.event?.button;
-        const eventType = pointerInfo.type;
+    const button = pointerInfo.event?.button;
+    const eventType = pointerInfo.type;
 
-        // ===== VALIDAÇÃO CRÍTICA: Evitar estados inválidos =====
-        if (!this.camera || !this.scene || this.scene.isDisposed) {
-            console.warn('⚠️ Renderer 3D em estado inválido, ignorando evento');
-            return;
-        }
-
-        // ===== BLOQUEAR OPERAÇÕES PROBLEMÁTICAS =====
-        // Bloquear completamente mouse drag que causa corrupção
-        if (button === 0 || button === 1) { // Left/Middle mouse
-            switch (eventType) {
-                case BABYLON.PointerEventTypes.POINTERDOWN:
-                    this.handleSafeMouseDown(pointerInfo);
-                    break;
-                case BABYLON.PointerEventTypes.POINTERUP:
-                    this.handleSafeMouseUp(pointerInfo);
-                    break;
-                case BABYLON.PointerEventTypes.POINTERMOVE:
-                    // BLOQUEAR POINTERMOVE para left/middle mouse (causa corrupção)
-                    return;
-                case BABYLON.PointerEventTypes.POINTERPICK:
-                case BABYLON.PointerEventTypes.POINTERTAP:
-                    this.handleSafePick(pointerInfo);
-                    break;
-                default:
-                    // Ignorar outros eventos problemáticos
-                    return;
-            }
-        }
-
-        // Mouse wheel (botão 2) - permitir apenas zoom
-        if (eventType === BABYLON.PointerEventTypes.POINTERWHEEL) {
-            this.handleSafeWheel(pointerInfo);
-        }
+    // ===== VALIDAÇÃO CRÍTICA =====
+    if (!this.camera || !this.scene || this.scene.isDisposed) {
+        console.warn('⚠️ Renderer 3D em estado inválido, ignorando evento');
+        return;
     }
+
+    // ===== LOG APENAS EVENTOS IMPORTANTES =====
+    if (eventType === BABYLON.PointerEventTypes.POINTERDOWN || 
+        eventType === BABYLON.PointerEventTypes.POINTERUP) {
+        console.log(`🖱️ Pointer Event: ${this.getEventTypeName(eventType)}`, {
+            button: button,
+            buttonName: this.getMouseButtonName(button),
+            previewMode: this.buildingSystem?.previewMode
+        });
+    }
+
+    // ===== PROCESSAR APENAS EVENTOS ESSENCIAIS =====
+    switch (eventType) {
+        case BABYLON.PointerEventTypes.POINTERDOWN:
+            if (button === 0) { // Apenas botão esquerdo
+                this.handleSafeMouseDown(pointerInfo);
+            }
+            break;
+            
+        case BABYLON.PointerEventTypes.POINTERUP:
+            if (button === 0) { // Apenas botão esquerdo
+                this.handleSafeMouseUp(pointerInfo);
+            }
+            break;
+            
+        case BABYLON.PointerEventTypes.POINTERPICK:
+        case BABYLON.PointerEventTypes.POINTERTAP:
+            if (button === 0) { // Apenas botão esquerdo
+                this.handleSafePick(pointerInfo);
+            }
+            break;
+            
+        // ===== IGNORAR TODOS OS OUTROS EVENTOS =====
+        case BABYLON.PointerEventTypes.POINTERMOVE:
+        case BABYLON.PointerEventTypes.POINTERWHEEL:
+        default:
+            return; // Bloquear completamente
+    }
+}
+
+// ===== HELPER PARA NOMES DE EVENTOS =====
+getEventTypeName(eventType) {
+    switch (eventType) {
+        case BABYLON.PointerEventTypes.POINTERDOWN: return 'POINTERDOWN';
+        case BABYLON.PointerEventTypes.POINTERUP: return 'POINTERUP';
+        case BABYLON.PointerEventTypes.POINTERMOVE: return 'POINTERMOVE';
+        case BABYLON.PointerEventTypes.POINTERWHEEL: return 'POINTERWHEEL';
+        case BABYLON.PointerEventTypes.POINTERPICK: return 'POINTERPICK';
+        case BABYLON.PointerEventTypes.POINTERTAP: return 'POINTERTAP';
+        default: return `UNKNOWN(${eventType})`;
+    }
+}
 
     /**
      * Handler seguro para mouse down - sem drag operations
@@ -566,9 +608,26 @@ class GameManager {
                 Math.min(this.camera.upperRadiusLimit, newRadius)
             );
 
-            // Manter ângulos isométricos
-            this.camera.alpha = this.isometricAngles.alpha;
-            this.camera.beta = this.isometricAngles.beta;
+            // ===== CRITICAL FIX: Validar ângulos isométricos antes de aplicar =====
+            if (this.isometricAngles &&
+                this.isValidNumber(this.isometricAngles.alpha) &&
+                this.isValidNumber(this.isometricAngles.beta)) {
+
+                // Manter ângulos isométricos apenas se forem válidos
+                this.camera.alpha = this.isometricAngles.alpha;
+                this.camera.beta = this.isometricAngles.beta;
+            } else {
+                // Se os ângulos estão corrompidos, usar valores seguros
+                console.warn('⚠️ Ângulos isométricos corrompidos em handleSafeWheel, usando valores seguros');
+                this.camera.alpha = -Math.PI / 4;  // -45 graus
+                this.camera.beta = Math.PI / 3.5;   // ~51 graus
+
+                // Restaurar valores seguros
+                this.isometricAngles = {
+                    alpha: -Math.PI / 4,
+                    beta: Math.PI / 3.5
+                };
+            }
 
         } catch (error) {
             console.error('❌ Erro no zoom:', error);
@@ -576,45 +635,7 @@ class GameManager {
         }
     }
 
-    /**
-     * Handler direto para eventos wheel do canvas - bypass do Babylon.js
-     */
-    handleSafeWheelDirect(event) {
-        if (!this.camera) return;
 
-        const deltaY = event.deltaY;
-        if (!deltaY || !this.isValidNumber(deltaY)) return;
-
-        try {
-            const zoomSensitivity = 2;
-            const deltaRadius = deltaY > 0 ? zoomSensitivity : -zoomSensitivity;
-            const oldRadius = this.camera.radius;
-            const newRadius = this.camera.radius + deltaRadius;
-
-            this.camera.radius = Math.max(
-                this.camera.lowerRadiusLimit,
-                Math.min(this.camera.upperRadiusLimit, newRadius)
-            );
-
-            // Manter ângulos isométricos
-            this.camera.alpha = this.isometricAngles.alpha;
-            this.camera.beta = this.isometricAngles.beta;
-
-            // Log para debug
-            console.log('🎮 Camera wheel:', {
-                deltaY: deltaY,
-                oldRadius: oldRadius,
-                newRadius: this.camera.radius,
-                deltaRadius: deltaRadius
-            });
-
-            event.preventDefault();
-
-        } catch (error) {
-            console.error('❌ Erro no zoom direto:', error);
-            this.recoverCameraState();
-        }
-    }
 
     // ===== REMOVIDO: ISOMETRIC RTS-STYLE CAMERA CONTROLS (causa conflitos) =====
     // setupIsometricCameraControls() {
@@ -957,67 +978,88 @@ class GameManager {
      * Recovery aprimorado para prevenir "fundo azul"
      */
     recover3DRenderer() {
-        console.log('🔧 Iniciando recovery completo do renderer 3D...');
-
-        try {
-            // ===== STEP 1: Parar todas as operações =====
-            if (this.isometricCameraState) {
-                this.isometricCameraState.isPanning = false;
-                this.isometricCameraState.leftMouseDown = false;
-                this.isometricCameraState.rightMouseDown = false;
-            }
-
-            // ===== STEP 2: Validar e corrigir estado da câmera =====
-            if (this.camera) {
-                const target = this.camera.getTarget();
-
-                // Detectar valores inválidos
-                if (!this.isValidVector3(target)) {
-                    console.log('🔧 Corrigindo target inválido da câmera');
-                    this.camera.setTarget(new BABYLON.Vector3(20, 0, 20));
-                }
-
-                // Corrigir ângulos
-                this.camera.alpha = this.CAMERA_CONSTANTS.ISOMETRIC_ALPHA;
-                this.camera.beta = this.CAMERA_CONSTANTS.ISOMETRIC_BETA;
-
-                // Corrigir radius
-                if (!this.isValidNumber(this.camera.radius)) {
-                    this.camera.radius = this.CAMERA_CONSTANTS.DEFAULT_ZOOM_DISTANCE;
-                }
-            }
-
-            // ===== STEP 3: Forçar refresh do engine =====
-            if (this.engine && !this.engine.isDisposed) {
-                this.engine.resize();
-
-                // Forçar re-render
+    console.log('🔧 Iniciando recovery CRÍTICO do renderer 3D...');
+    
+    try {
+        // ===== STEP 1: Parar TODAS as operações mouse/pointer =====
+        if (this.isometricCameraState) {
+            this.isometricCameraState.isPanning = false;
+            this.isometricCameraState.leftMouseDown = false;
+            this.isometricCameraState.rightMouseDown = false;
+        }
+        
+        // ===== STEP 2: Limpar estados de building system =====
+        if (this.buildingSystem && this.buildingSystem.previewMode) {
+            console.log('🔧 Cancelando preview mode durante recovery');
+            this.buildingSystem.stopPreviewMode();
+        }
+        
+        // ===== STEP 3: Resetar câmera para estado GARANTIDO =====
+        if (this.camera) {
+            console.log('🔧 Resetando câmera para estado seguro');
+            
+            // Posição central segura
+            const safeTarget = new BABYLON.Vector3(20, 0, 20);
+            this.camera.setTarget(safeTarget);
+            
+            // Ângulos isométricos fixos
+            this.camera.alpha = -Math.PI / 4;
+            this.camera.beta = Math.PI / 3.5;
+            this.camera.radius = 30;
+            
+            // Forçar atualização da câmera
+            this.camera.rebuildAnglesAndRadius();
+        }
+        
+        // ===== STEP 4: Forçar re-render completo =====
+        if (this.engine && !this.engine.isDisposed) {
+            console.log('🔧 Forçando resize e re-render do engine');
+            
+            // Força resize
+            this.engine.resize();
+            
+            // Múltiplos re-renders para garantir estabilidade
+            for (let i = 0; i < 3; i++) {
                 setTimeout(() => {
                     if (this.scene && !this.scene.isDisposed) {
                         this.scene.render();
                     }
-                }, 100);
-            }
-
-            // ===== STEP 4: Verificar canvas =====
-            if (this.canvas) {
-                const rect = this.canvas.getBoundingClientRect();
-                if (rect.width === 0 || rect.height === 0) {
-                    this.setupCanvas(); // Re-configurar canvas
-                }
-            }
-
-            console.log('✅ Recovery do renderer 3D concluído');
-
-        } catch (error) {
-            console.error('❌ Falha crítica no recovery:', error);
-
-            // Último recurso: recarregar página
-            if (confirm('Erro crítico no renderer 3D. Recarregar página?')) {
-                window.location.reload();
+                }, i * 50);
             }
         }
+        
+        // ===== STEP 5: Verificar e corrigir canvas =====
+        if (this.canvas) {
+            const rect = this.canvas.getBoundingClientRect();
+            console.log('🔧 Canvas state:', {
+                width: rect.width,
+                height: rect.height,
+                visible: this.canvas.style.display !== 'none'
+            });
+            
+            if (rect.width === 0 || rect.height === 0) {
+                this.setupCanvas();
+            }
+        }
+        
+        console.log('✅ Recovery CRÍTICO do renderer 3D concluído');
+        
+    } catch (error) {
+        console.error('❌ FALHA CRÍTICA no recovery do renderer:', error);
+        
+        // ===== ÚLTIMO RECURSO: Reinicialização completa =====
+        const restart = confirm(
+            'ERRO CRÍTICO no renderer 3D detectado!\n\n' +
+            'O jogo pode estar em estado instável.\n' +
+            'Recarregar a página para recuperar?\n\n' +
+            '(Progresso não salvo será perdido)'
+        );
+        
+        if (restart) {
+            window.location.reload();
+        }
     }
+}
 
     // ===== GLOBAL DRAG LISTENERS NO LONGER NEEDED =====
     // Camera panning with mouse buttons has been disabled
@@ -1666,43 +1708,85 @@ class GameManager {
     // handleCameraWheel(event) {
     //     this.handleIsometricWheel(event);
     // }
-    
-    startRenderLoop() {
-        this.engine.runRenderLoop(() => {
-            const currentTime = performance.now();
+ startRenderLoop() {
+    // ===== CIRCUIT BREAKER PARA PREVENIR LOOPS INFINITOS =====
+    this.renderState = {
+        corruptionCount: 0,
+        maxCorruptions: 5,
+        lastCorruptionTime: 0,
+        circuitBreakerActive: false,
+        recoveryAttempts: 0,
+        maxRecoveryAttempts: 3
+    };
 
-            // ===== FIX: Initialize lastUpdateTime on first frame to prevent huge deltaTime =====
-            if (this.lastUpdateTime === 0) {
-                this.lastUpdateTime = currentTime;
-                return; // Skip first frame to avoid massive deltaTime
-            }
+    this.engine.runRenderLoop(() => {
+        const currentTime = performance.now();
 
-            const deltaTime = currentTime - this.lastUpdateTime;
+        // ===== CIRCUIT BREAKER: Parar render se corrupção persistente =====
+        if (this.renderState.circuitBreakerActive) {
+            console.error('🚨 CIRCUIT BREAKER ATIVO - Render loop parado devido à corrupção persistente');
+            this.handleCriticalFailure();
+            return;
+        }
 
-            // ===== SAFETY: Cap deltaTime to prevent NaN issues from large frame gaps =====
-            const cappedDeltaTime = Math.min(deltaTime, 100); // Cap at 100ms (10 FPS minimum)
-
-            // Atualizar controles de câmera WASD (sempre ativo)
-            this.updateCameraControls(cappedDeltaTime);
-
-            // Atualizar jogo
-            this.update(cappedDeltaTime);
-
-            // Renderizar cena
-            this.scene.render();
-
+        // ===== FIX: Initialize lastUpdateTime on first frame =====
+        if (this.lastUpdateTime === 0) {
             this.lastUpdateTime = currentTime;
-            this.frameCount++;
+            return;
+        }
 
-            // Atualizar FPS
-            if (currentTime - this.lastFPSUpdate > 1000) {
-                this.currentFPS = this.frameCount;
-                this.frameCount = 0;
-                this.lastFPSUpdate = currentTime;
+        const deltaTime = currentTime - this.lastUpdateTime;
+        const cappedDeltaTime = Math.min(deltaTime, 100);
+
+        // ===== VALIDAÇÃO COM CIRCUIT BREAKER =====
+        if (!this.validateCameraStateWithBreaker()) {
+            console.warn('⚠️ Câmera inválida detectada, tentando recuperação...');
+            
+            // Incrementar contador de corrupção
+            this.renderState.corruptionCount++;
+            this.renderState.lastCorruptionTime = currentTime;
+            
+            // Se muitas corrupções em pouco tempo, ativar circuit breaker
+            if (this.renderState.corruptionCount >= this.renderState.maxCorruptions) {
+                console.error('🚨 MUITAS CORRUPÇÕES DETECTADAS - Ativando circuit breaker');
+                this.renderState.circuitBreakerActive = true;
+                return;
             }
-        });
-    }
-    
+            
+            // Tentar recuperação
+            this.emergencyRecovery();
+            this.lastUpdateTime = currentTime;
+            return;
+        }
+
+        // ===== RESET CONTADOR SE CÂMERA ESTÁ OK =====
+        if (this.renderState.corruptionCount > 0 && 
+            (currentTime - this.renderState.lastCorruptionTime) > 5000) {
+            this.renderState.corruptionCount = 0;
+            console.log('✅ Contador de corrupção resetado - câmera estável');
+        }
+
+        // ===== RENDER NORMAL =====
+        try {
+            this.updateCameraControls(cappedDeltaTime);
+            this.update(cappedDeltaTime);
+            this.scene.render();
+        } catch (error) {
+            console.error('❌ Erro durante render normal:', error);
+            this.renderState.corruptionCount++;
+        }
+
+        this.lastUpdateTime = currentTime;
+        this.frameCount++;
+
+        // Atualizar FPS
+        if (currentTime - this.lastFPSUpdate > 1000) {
+            this.currentFPS = this.frameCount;
+            this.frameCount = 0;
+            this.lastFPSUpdate = currentTime;
+        }
+    });
+}
     // ===== LOOP PRINCIPAL =====
     update(deltaTime) {
         if (this.gameState !== 'playing') return;
@@ -2301,106 +2385,391 @@ class GameManager {
             console.error('❌ Erro ao criar efeitos de iluminação:', error);
         }
     }
-
-    centerCameraOnCityHall(gridX, gridZ) {
-        if (!this.camera || !this.gridManager) {
-            console.warn('⚠️ Câmera ou GridManager não disponível para centralização');
-            return;
-        }
-
-        try {
-            // Converter posição do grid para coordenadas do mundo
-            const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
-
-            console.log(`📷 Centralizando câmera na Prefeitura Municipal em (${gridX}, ${gridZ}) -> mundo (${worldPos.x}, ${worldPos.z})`);
-
-            // Criar posição alvo para a câmera
-            const targetPosition = new BABYLON.Vector3(worldPos.x, 0, worldPos.z);
-
-            // Animar transição suave da câmera para a nova posição
-            const animationTarget = BABYLON.Animation.CreateAndStartAnimation(
-                "cameraTargetAnimation",
-                this.camera,
-                "target",
-                60, // 60 FPS
-                120, // 2 segundos de duração
-                this.camera.getTarget(),
-                targetPosition,
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
-                new BABYLON.CubicEase(),
-                () => {
-                    console.log('✅ Câmera centralizada na Prefeitura Municipal');
-                }
-            );
-
-            // Ajustar zoom para uma visão adequada da cidade
-            const animationRadius = BABYLON.Animation.CreateAndStartAnimation(
-                "cameraRadiusAnimation",
-                this.camera,
-                "radius",
-                60, // 60 FPS
-                120, // 2 segundos de duração
-                this.camera.radius,
-                25, // Zoom adequado para ver a Prefeitura e arredores
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
-                new BABYLON.CubicEase()
-            );
-
-            // Ensure isometric angles are maintained during animation
-            const animationAlpha = BABYLON.Animation.CreateAndStartAnimation(
-                "cameraAlphaAnimation",
-                this.camera,
-                "alpha",
-                60, // 60 FPS
-                120, // 2 segundos de duração
-                this.camera.alpha,
-                this.isometricAngles.alpha, // Use fixed isometric angle
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
-                new BABYLON.CubicEase()
-            );
-
-            const animationBeta = BABYLON.Animation.CreateAndStartAnimation(
-                "cameraBetaAnimation",
-                this.camera,
-                "beta",
-                60, // 60 FPS
-                120, // 2 segundos de duração
-                this.camera.beta,
-                this.isometricAngles.beta, // Use fixed isometric angle
-                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT,
-                new BABYLON.CubicEase()
-            );
-
-        } catch (error) {
-            console.error('❌ Erro ao centralizar câmera na Prefeitura Municipal:', error);
-        }
+centerCameraOnCityHall(gridX, gridZ) {
+    if (!this.camera || !this.gridManager) {
+        console.warn('⚠️ Câmera ou GridManager não disponível para centralização');
+        return;
     }
 
+    try {
+        // ===== CRITICAL FIX: SEM ANIMAÇÕES - movimento direto para prevenir corrupção =====
+        const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
+        console.log(`📷 Centralizando câmera na Prefeitura Municipal em (${gridX}, ${gridZ})`);
+
+        // ===== MOVIMENTO DIRETO SEM ANIMAÇÕES =====
+        const targetPosition = new BABYLON.Vector3(worldPos.x, 0, worldPos.z);
+
+        // Aplicar diretamente sem animações
+        this.camera.setTarget(targetPosition);
+        this.camera.radius = 25;
+
+        // ===== CRITICAL FIX: Validar ângulos isométricos antes de aplicar =====
+        if (this.isometricAngles &&
+            this.isValidNumber(this.isometricAngles.alpha) &&
+            this.isValidNumber(this.isometricAngles.beta)) {
+
+            this.camera.alpha = this.isometricAngles.alpha;
+            this.camera.beta = this.isometricAngles.beta;
+        } else {
+            // Se os ângulos estão corrompidos, usar valores seguros
+            console.warn('⚠️ Ângulos isométricos corrompidos em centerCameraOnCityHall, usando valores seguros');
+            this.camera.alpha = -Math.PI / 4;  // -45 graus
+            this.camera.beta = Math.PI / 3.5;   // ~51 graus
+
+            // Restaurar valores seguros
+            this.isometricAngles = {
+                alpha: -Math.PI / 4,
+                beta: Math.PI / 3.5
+            };
+        }
+        
+        console.log('✅ Câmera centralizada diretamente (sem animações)');
+
+    } catch (error) {
+        console.error('❌ Erro ao centralizar câmera:', error);
+    }
+}
     // ===== ISOMETRIC RTS-STYLE CAMERA CONTROLS UPDATE =====
-    updateCameraControls(deltaTime) {
-        if (!this.camera || !this.cameraControls.enabled) return;
-
-        // Ensure camera maintains isometric angles
-        this.enforceIsometricAngles();
-
-        // Handle WASD/Arrow key movement
-        this.updateIsometricKeyboardMovement(deltaTime);
-
-        // Handle edge scrolling
-        this.updateEdgeScrolling(deltaTime);
+updateCameraControls(deltaTime) {
+    if (!this.camera || !this.cameraControls.enabled) return;
+    
+    // ===== VALIDAÇÃO PREVENTIVA ANTES DE QUALQUER OPERAÇÃO =====
+    if (!this.validateCameraState()) {
+        console.warn('⚠️ Câmera em estado inválido, pulando frame');
+        return; // Pular este frame se câmera está corrompida
     }
+    
+    // Enforce isometric angles
+    this.enforceIsometricAngles();
+    
+    // Handle WASD/Arrow key movement
+    this.updateIsometricKeyboardMovement(deltaTime);
+    
+    // Handle edge scrolling
+    this.updateEdgeScrolling(deltaTime);
+    
+    // ===== VALIDAÇÃO PÓS-OPERAÇÃO =====
+    if (!this.validateCameraState()) {
+        console.error('🚨 Câmera corrompida APÓS operações de controle!');
+    }
+}
+/**
+ * Validação de câmera com circuit breaker para prevenir loops infinitos
+ */
+validateCameraStateWithBreaker() {
+    if (!this.camera) return false;
+    
+    try {
+        const alpha = this.camera.alpha;
+        const beta = this.camera.beta;
+        const radius = this.camera.radius;
+        const target = this.camera.getTarget();
+        const position = this.camera.position;
+        
+        // Verificar se há valores inválidos
+        const hasInvalidAlpha = !this.isValidNumber(alpha);
+        const hasInvalidBeta = !this.isValidNumber(beta);
+        const hasInvalidRadius = !this.isValidNumber(radius);
+        const hasInvalidTarget = !this.isValidVector3(target);
+        const hasInvalidPosition = !this.isValidVector3(position);
+        
+        if (hasInvalidAlpha || hasInvalidBeta || hasInvalidRadius || 
+            hasInvalidTarget || hasInvalidPosition) {
+            
+            console.error('🚨 CORRUPÇÃO DETECTADA COM CIRCUIT BREAKER:', {
+                alpha, beta, radius,
+                target: { x: target.x, y: target.y, z: target.z },
+                position: { x: position.x, y: position.y, z: position.z },
+                corruptionCount: this.renderState.corruptionCount
+            });
+            
+            return false;
+        }
+        
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Erro na validação com circuit breaker:', error);
+        return false;
+    }
+}
+/**
+ * Recuperação de emergência que para TODAS as operações
+ */
+emergencyRecovery() {
+    console.log('🚨 INICIANDO RECUPERAÇÃO DE EMERGÊNCIA...');
+    
+    try {
+        // ===== STEP 1: PARAR TODAS AS ANIMAÇÕES =====
+        if (this.scene) {
+            // Parar TODAS as animações na cena
+            this.scene.stopAllAnimations();
+            
+            // Limpar todas as animações da câmera
+            if (this.camera && this.camera.animations) {
+                this.camera.animations = [];
+            }
+            
+            console.log('🔧 Todas as animações paradas');
+        }
+        
+        // ===== STEP 2: RESETAR ESTADOS DE CONTROLE =====
+        if (this.isometricCameraState) {
+            this.isometricCameraState.isPanning = false;
+            this.isometricCameraState.leftMouseDown = false;
+            this.isometricCameraState.rightMouseDown = false;
+            this.isometricCameraState.edgeScrolling.isScrolling = false;
+        }
+        
+        // ===== STEP 3: DESABILITAR CONTROLES TEMPORARIAMENTE =====
+        const originalEnabled = this.cameraControls.enabled;
+        this.cameraControls.enabled = false;
+        
+        // ===== STEP 4: RECRIAR CÂMERA COMPLETAMENTE =====
+        this.recreateCamera();
+        
+        // ===== STEP 5: REABILITAR CONTROLES APÓS DELAY =====
+        setTimeout(() => {
+            this.cameraControls.enabled = originalEnabled;
+            console.log('✅ Controles de câmera reabilitados após recuperação');
+        }, 1000);
+        
+        this.renderState.recoveryAttempts++;
+        
+        console.log(`✅ Recuperação de emergência concluída (tentativa ${this.renderState.recoveryAttempts})`);
+        
+    } catch (error) {
+        console.error('❌ Falha crítica na recuperação de emergência:', error);
+        this.renderState.circuitBreakerActive = true;
+    }
+}
+/**
+ * Recria a câmera completamente para eliminar qualquer corrupção
+ */
+recreateCamera() {
+    console.log('🔧 Recriando câmera completamente...');
+    
+    try {
+        // ===== STEP 1: Salvar referências importantes =====
+        const oldCamera = this.camera;
+        const scene = this.scene;
+        
+        // ===== STEP 2: Criar nova câmera com valores seguros =====
+        const safeAlpha = -Math.PI / 4;
+        const safeBeta = Math.PI / 3.5;
+        const safeRadius = 30;
+        const safeTarget = new BABYLON.Vector3(20, 0, 20);
+        
+        const newCamera = new BABYLON.ArcRotateCamera(
+            "recoveredCamera",
+            safeAlpha,
+            safeBeta,
+            safeRadius,
+            safeTarget,
+            scene
+        );
+        
+        // ===== STEP 3: Configurar nova câmera =====
+        newCamera.attachControl(this.canvas, false);
+        newCamera.lowerRadiusLimit = 10;
+        newCamera.upperRadiusLimit = 60;
+        newCamera.inertia = 0.9;
+        newCamera.angularSensibilityX = 0;
+        newCamera.angularSensibilityY = 0;
+        
+        // ===== STEP 4: Substituir câmera antiga =====
+        this.camera = newCamera;
+        scene.activeCamera = newCamera;
+        
+        // ===== STEP 5: Atualizar referências isométricas =====
+        this.isometricAngles = {
+            alpha: safeAlpha,
+            beta: safeBeta
+        };
+        
+        // ===== STEP 6: Limpar câmera antiga =====
+        if (oldCamera) {
+            try {
+                oldCamera.dispose();
+            } catch (disposeError) {
+                console.warn('⚠️ Erro ao dispor câmera antiga:', disposeError);
+            }
+        }
+        
+        console.log('✅ Câmera recriada com sucesso');
+        
+    } catch (error) {
+        console.error('❌ Erro ao recriar câmera:', error);
+        throw error;
+    }
+}
+/**
+ * Handler para falhas críticas que não podem ser recuperadas
+ */
+handleCriticalFailure() {
+    console.error('🚨 FALHA CRÍTICA DO SISTEMA 3D DETECTADA');
+    
+    // Parar render loop
+    if (this.engine) {
+        try {
+            this.engine.stopRenderLoop();
+            console.log('🔧 Render loop parado');
+        } catch (error) {
+            console.error('❌ Erro ao parar render loop:', error);
+        }
+    }
+    
+    // Mostrar mensagem de erro na UI
+    const errorMessage = `
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                    background: rgba(0,0,0,0.8); color: white; z-index: 10000;
+                    display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <h1>🚨 Erro Crítico no Sistema 3D</h1>
+            <p>O sistema de renderização 3D encontrou um erro irrecuperável.</p>
+            <p>Isso pode ser causado por:</p>
+            <ul style="text-align: left;">
+                <li>Conflitos entre sistemas de controle de câmera</li>
+                <li>Corrupção matemática nos cálculos da câmera</li>
+                <li>Operações inválidas no Babylon.js</li>
+            </ul>
+            <br>
+            <button onclick="window.location.reload()" 
+                    style="padding: 10px 20px; font-size: 16px; background: #007acc; color: white; border: none; cursor: pointer;">
+                🔄 Recarregar Página
+            </button>
+            <br>
+            <small>O progresso não salvo será perdido.</small>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', errorMessage);
+}
+/**
+ * ===== CRITICAL FIX: Validação preventiva contra corrupção matemática da câmera =====
+ * Monitora e corrige valores inválidos em tempo real
+ */
+validateCameraState() {
+    if (!this.camera) return false;
+    
+    try {
+        // Verificar se alpha/beta/radius são válidos
+        const alpha = this.camera.alpha;
+        const beta = this.camera.beta;
+        const radius = this.camera.radius;
+        const target = this.camera.getTarget();
+        
+        const hasInvalidAlpha = !this.isValidNumber(alpha);
+        const hasInvalidBeta = !this.isValidNumber(beta);
+        const hasInvalidRadius = !this.isValidNumber(radius);
+        const hasInvalidTarget = !this.isValidVector3(target);
+        
+        if (hasInvalidAlpha || hasInvalidBeta || hasInvalidRadius || hasInvalidTarget) {
+            console.error('🚨 CORRUPÇÃO MATEMÁTICA DA CÂMERA DETECTADA!', {
+                alpha: alpha,
+                beta: beta,
+                radius: radius,
+                target: target,
+                position: this.camera.position
+            });
+            
+            // Recuperação imediata
+            this.recoverCameraFromCorruption();
+            return false;
+        }
+        
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Erro na validação da câmera:', error);
+        this.recoverCameraFromCorruption();
+        return false;
+    }
+}
 
+/**
+ * Recuperação específica para corrupção matemática
+ */
+recoverCameraFromCorruption() {
+    console.log('🔧 RECUPERANDO CÂMERA DE CORRUPÇÃO MATEMÁTICA...');
+    
+    try {
+        // ===== PARAR TODAS AS OPERAÇÕES =====
+        if (this.isometricCameraState) {
+            this.isometricCameraState.isPanning = false;
+            this.isometricCameraState.leftMouseDown = false;
+            this.isometricCameraState.rightMouseDown = false;
+        }
+        
+        // ===== RESETAR CÂMERA COM VALORES GARANTIDOS =====
+        const safeAlpha = -Math.PI / 4;  // -45 graus
+        const safeBeta = Math.PI / 3.5;   // ~51 graus
+        const safeRadius = 30;
+        const safeTarget = new BABYLON.Vector3(20, 0, 20);
+        
+        // Aplicar valores seguros DIRETAMENTE
+        this.camera.alpha = safeAlpha;
+        this.camera.beta = safeBeta;
+        this.camera.radius = safeRadius;
+        this.camera.setTarget(safeTarget);
+        
+        // ===== CRITICAL: NÃO chamar rebuildAnglesAndRadius() pois pode causar mais corrupção =====
+        
+        // Atualizar referências isométricas
+        this.isometricAngles.alpha = safeAlpha;
+        this.isometricAngles.beta = safeBeta;
+        
+        console.log('✅ Câmera recuperada de corrupção matemática');
+        
+    } catch (error) {
+        console.error('❌ Falha na recuperação de corrupção:', error);
+        
+        // Último recurso
+        if (confirm('Erro crítico na câmera 3D. Recarregar página?')) {
+            window.location.reload();
+        }
+    }
+}
     /**
      * Enforces fixed isometric camera angles
      */
-    enforceIsometricAngles() {
-        // Continuously enforce isometric angles to prevent drift
-        if (Math.abs(this.camera.alpha - this.isometricAngles.alpha) > 0.01 ||
-            Math.abs(this.camera.beta - this.isometricAngles.beta) > 0.01) {
-            this.camera.alpha = this.isometricAngles.alpha;
-            this.camera.beta = this.isometricAngles.beta;
+enforceIsometricAngles() {
+    if (!this.camera || !this.isometricAngles) return;
+    
+    try {
+        // ===== VALIDAR ANTES DE APLICAR =====
+        const targetAlpha = this.isometricAngles.alpha;
+        const targetBeta = this.isometricAngles.beta;
+        
+        if (!this.isValidNumber(targetAlpha) || !this.isValidNumber(targetBeta)) {
+            console.error('❌ Ângulos isométricos inválidos:', { targetAlpha, targetBeta });
+            return;
         }
+        
+        // ===== VERIFICAR SE PRECISA CORREÇÃO =====
+        const currentAlpha = this.camera.alpha;
+        const currentBeta = this.camera.beta;
+        
+        // Só aplicar se houver diferença significativa E os valores atuais forem válidos
+        if (this.isValidNumber(currentAlpha) && this.isValidNumber(currentBeta)) {
+            const alphaDiff = Math.abs(currentAlpha - targetAlpha);
+            const betaDiff = Math.abs(currentBeta - targetBeta);
+            
+            if (alphaDiff > 0.01 || betaDiff > 0.01) {
+                this.camera.alpha = targetAlpha;
+                this.camera.beta = targetBeta;
+            }
+        } else {
+            // Se os valores atuais são inválidos, forçar correção
+            console.warn('⚠️ Corrigindo ângulos inválidos da câmera');
+            this.camera.alpha = targetAlpha;
+            this.camera.beta = targetBeta;
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao enforcar ângulos isométricos:', error);
+        this.recoverCameraFromCorruption();
     }
+}
 
     /**
      * ===== CRITICAL FIX: Enhanced camera recovery to prevent 3D scene corruption =====
@@ -2693,36 +3062,116 @@ class GameManager {
 
     // ===== SISTEMA DE HOVER/TOOLTIP =====
     setupHoverSystem() {
-        if (!this.scene || !this.canvas) return;
+    if (!this.scene || !this.canvas) return;
 
-        // ===== MOUSE PERFORMANCE FIX: Implementar throttling para melhorar performance =====
-        this.mouseHoverThrottle = {
-            lastCall: 0,
-            delay: 16, // ~60 FPS (16ms entre chamadas)
-            timeoutId: null
-        };
+    // ===== SISTEMA DE HOVER SEGURO - SEM CONFLITOS COM BUILDING PLACEMENT =====
+    this.mouseHoverThrottle = {
+        lastCall: 0,
+        delay: 16, // ~60 FPS (16ms entre chamadas)
+        timeoutId: null
+    };
 
-        // Mouse hover is now handled by the consolidated mouse move handler in setupIsometricCameraControls()
-        // This eliminates duplicate mousemove listeners and improves performance
-
-        // Note: mouseleave is already handled in setupIsometricCameraControls() with consolidated cleanup
-
-        // ===== CRITICAL FIX: Removed conflicting canvas click listener =====
-        // Canvas click events are now handled exclusively through Babylon.js pointer observable
-        // This eliminates the double event handling that was causing 3D scene corruption
-
-        // Adicionar listener de ESC para cancelar preview e limpar seleção
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
-                if (this.buildingSystem && this.buildingSystem.previewMode) {
-                    this.cancelBuildingPreview();
-                } else if (this.selectedBuilding) {
-                    this.deselectBuilding();
-                }
+    // ===== ADICIONAR MOUSEMOVE APENAS PARA HOVER (não para camera) =====
+    this.canvas.addEventListener('mousemove', (event) => {
+        try {
+            // CRITICAL: Só processar hover se NÃO estiver em modo building placement
+            if (!this.buildingSystem || !this.buildingSystem.previewMode) {
+                this.handleMouseHoverThrottled(event);
             }
-        });
-    }
+        } catch (error) {
+            console.warn('⚠️ Erro no hover mousemove:', error);
+        }
+    });
 
+    // Mouse leave cleanup
+    this.canvas.addEventListener('mouseleave', () => {
+        this.hideHoverInfo();
+        this.hideAllBuildingLabels();
+        
+        if (this.mouseHoverThrottle && this.mouseHoverThrottle.timeoutId) {
+            clearTimeout(this.mouseHoverThrottle.timeoutId);
+            this.mouseHoverThrottle.timeoutId = null;
+        }
+    });
+
+    // ESC para cancelar preview
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            if (this.buildingSystem && this.buildingSystem.previewMode) {
+                this.cancelBuildingPreview();
+            } else if (this.selectedBuilding) {
+                this.deselectBuilding();
+            }
+        }
+    });
+
+    console.log('🎮 Sistema de hover seguro inicializado');
+    }
+    /**
+ * Configurar wheel/zoom de forma isolada
+ */
+setupWheelHandler() {
+    if (!this.canvas) return;
+    
+    this.canvas.addEventListener('wheel', (event) => {
+        try {
+            this.handleIsolatedWheel(event);
+        } catch (error) {
+            console.error('❌ Erro no wheel isolado:', error);
+            this.recover3DRenderer();
+        }
+    }, { passive: false });
+    
+    console.log('🎮 Wheel handler isolado configurado');
+}
+
+/**
+ * Handler de wheel completamente isolado
+ */
+handleIsolatedWheel(event) {
+    if (!this.camera) return;
+
+    const deltaY = event.deltaY;
+    if (!this.isValidNumber(deltaY)) return;
+
+    try {
+        const zoomSensitivity = 2;
+        const deltaRadius = deltaY > 0 ? zoomSensitivity : -zoomSensitivity;
+        const newRadius = this.camera.radius + deltaRadius;
+
+        this.camera.radius = Math.max(
+            this.camera.lowerRadiusLimit,
+            Math.min(this.camera.upperRadiusLimit, newRadius)
+        );
+
+        // ===== CRITICAL FIX: Validar ângulos isométricos antes de aplicar =====
+        if (this.isometricAngles &&
+            this.isValidNumber(this.isometricAngles.alpha) &&
+            this.isValidNumber(this.isometricAngles.beta)) {
+
+            // Manter ângulos isométricos apenas se forem válidos
+            this.camera.alpha = this.isometricAngles.alpha;
+            this.camera.beta = this.isometricAngles.beta;
+        } else {
+            // Se os ângulos estão corrompidos, usar valores seguros
+            console.warn('⚠️ Ângulos isométricos corrompidos, usando valores seguros');
+            this.camera.alpha = -Math.PI / 4;  // -45 graus
+            this.camera.beta = Math.PI / 3.5;   // ~51 graus
+
+            // Restaurar valores seguros
+            this.isometricAngles = {
+                alpha: -Math.PI / 4,
+                beta: Math.PI / 3.5
+            };
+        }
+
+        event.preventDefault();
+
+    } catch (error) {
+        console.error('❌ Erro no zoom isolado:', error);
+        this.recoverCameraState();
+    }
+}
     // ===== MOUSE PERFORMANCE FIX: Método throttled para hover =====
     handleMouseHoverThrottled(event) {
         const now = Date.now();
@@ -4695,6 +5144,7 @@ class GameManager {
             console.log('♻️ Reciclagem cancelada pelo usuário');
         }
     }
+    
 }
 
 // Exportar para escopo global
@@ -4745,5 +5195,51 @@ window.recoverCamera = () => {
         console.warn('⚠️ GameManager not initialized yet');
     }
 };
+// ===== FUNÇÃO DE DEBUG PARA MONITORAR CORRUPÇÃO =====
+window.monitorCamera = () => {
+    if (!window.gameManager) {
+        console.warn('⚠️ GameManager não inicializado');
+        return;
+    }
+    
+    const monitor = setInterval(() => {
+        const state = window.gameManager.getCameraStateSnapshot();
+        
+        if (state.error) {
+            console.error('❌ Erro no monitoramento:', state.error);
+            clearInterval(monitor);
+            return;
+        }
+        
+        const hasInvalidAlpha = !isFinite(state.alpha) || isNaN(state.alpha);
+        const hasInvalidBeta = !isFinite(state.beta) || isNaN(state.beta);
+        const hasInvalidPosition = !isFinite(state.position.x) || isNaN(state.position.x);
+        
+        if (hasInvalidAlpha || hasInvalidBeta || hasInvalidPosition) {
+            console.error('🚨 CORRUPÇÃO DETECTADA NO MONITOR!', {
+                alpha: state.alpha,
+                beta: state.beta,
+                position: state.position,
+                target: state.target
+            });
+            
+            // Parar monitoramento
+            clearInterval(monitor);
+            
+            // Tentar recuperar
+            window.gameManager.recoverCameraFromCorruption();
+        } else {
+            console.log('✅ Câmera OK:', {
+                alpha: state.alpha.toFixed(3),
+                beta: state.beta.toFixed(3),
+                position: `(${state.position.x.toFixed(1)}, ${state.position.y.toFixed(1)}, ${state.position.z.toFixed(1)})`
+            });
+        }
+    }, 1000); // Verificar a cada segundo
+    
+    console.log('🎮 Monitor de câmera iniciado. Use Ctrl+C para parar.');
+    return monitor;
+};
 
+console.log('🎮 Comando de debug: monitorCamera() - monitora corrupção da câmera em tempo real');
 console.log('🎮 Camera debug functions available: getCameraDebug(), clearCameraDebug(), setCameraDebugLevel(level), getCameraState(), recoverCamera()');
