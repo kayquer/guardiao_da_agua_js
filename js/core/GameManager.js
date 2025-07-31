@@ -1261,6 +1261,26 @@ getEventTypeName(eventType) {
                 return;
             }
 
+            // ===== CRITICAL FIX: Prevent extreme delta values that cause corruption =====
+            const MAX_SAFE_PAN_DELTA = 5000; // Maximum safe pan delta to prevent overflow
+
+            // Clamp delta values to prevent extreme movements
+            const safeDeltaX = Math.max(-MAX_SAFE_PAN_DELTA, Math.min(MAX_SAFE_PAN_DELTA, deltaX));
+            const safeDeltaY = Math.max(-MAX_SAFE_PAN_DELTA, Math.min(MAX_SAFE_PAN_DELTA, deltaY));
+
+            // Log if extreme values were detected and clamped
+            if (safeDeltaX !== deltaX || safeDeltaY !== deltaY) {
+                console.warn('⚠️ Extreme pan deltas clamped to prevent camera corruption:', {
+                    original: { deltaX, deltaY },
+                    clamped: { deltaX: safeDeltaX, deltaY: safeDeltaY },
+                    maxSafe: MAX_SAFE_PAN_DELTA
+                });
+            }
+
+            // Use the safe delta values for the rest of the function
+            deltaX = safeDeltaX;
+            deltaY = safeDeltaY;
+
             // ===== CAMERA DEBUGGING: Log pan operation start =====
             const oldTarget = this.camera.getTarget().clone();
 
@@ -1301,9 +1321,9 @@ getEventTypeName(eventType) {
 
             // Apply camera bounds
             const boundedTarget = new BABYLON.Vector3(
-                Math.max(this.cameraLimits.minX, Math.min(this.cameraLimits.maxX, newTarget.x)),
+                Math.max(this.cameraLimits.MIN_X, Math.min(this.cameraLimits.MAX_X, newTarget.x)),
                 newTarget.y,
-                Math.max(this.cameraLimits.minZ, Math.min(this.cameraLimits.maxZ, newTarget.z))
+                Math.max(this.cameraLimits.MIN_Z, Math.min(this.cameraLimits.MAX_Z, newTarget.z))
             );
 
             // ===== CRITICAL: Capturar estado antes da operação =====
@@ -1382,6 +1402,27 @@ getEventTypeName(eventType) {
             return new BABYLON.Vector3(0, 0, 0); // Return zero vector instead of NaN
         }
 
+        // ===== CRITICAL FIX: Prevent extreme values that cause mathematical overflow =====
+        // Define safe maximum values to prevent camera corruption
+        const MAX_SAFE_DELTA = 10000; // Maximum safe screen delta in pixels
+        const MAX_SAFE_SENSITIVITY = 10; // Maximum safe sensitivity multiplier
+        const MIN_SAFE_SENSITIVITY = 0.0001; // Minimum safe sensitivity to prevent division issues
+
+        // Clamp deltaX and deltaY to safe ranges
+        const safeDeltaX = Math.max(-MAX_SAFE_DELTA, Math.min(MAX_SAFE_DELTA, deltaX));
+        const safeDeltaY = Math.max(-MAX_SAFE_DELTA, Math.min(MAX_SAFE_DELTA, deltaY));
+
+        // Clamp sensitivity to safe range
+        const safeSensitivity = Math.max(MIN_SAFE_SENSITIVITY, Math.min(MAX_SAFE_SENSITIVITY, sensitivity));
+
+        // Log if values were clamped to help with debugging
+        if (safeDeltaX !== deltaX || safeDeltaY !== deltaY || safeSensitivity !== sensitivity) {
+            console.warn('⚠️ Extreme values clamped in screenToIsometricWorld:', {
+                original: { deltaX, deltaY, sensitivity },
+                clamped: { deltaX: safeDeltaX, deltaY: safeDeltaY, sensitivity: safeSensitivity }
+            });
+        }
+
         // For isometric view, we need to account for the 45-degree rotation
         // Screen X movement affects both world X and Z
         // Screen Y movement affects world Z primarily
@@ -1389,16 +1430,36 @@ getEventTypeName(eventType) {
         const cos45 = Math.cos(Math.PI / 4); // 0.707
         const sin45 = Math.sin(Math.PI / 4); // 0.707
 
-        // Transform screen movement to world movement for isometric view
-        const worldX = (-deltaX * cos45 + deltaY * sin45) * sensitivity;
-        const worldZ = (-deltaX * sin45 - deltaY * cos45) * sensitivity;
+        // Transform screen movement to world movement for isometric view using safe values
+        const worldX = (-safeDeltaX * cos45 + safeDeltaY * sin45) * safeSensitivity;
+        const worldZ = (-safeDeltaX * sin45 - safeDeltaY * cos45) * safeSensitivity;
 
         // ===== CRITICAL FIX: Validate calculated world coordinates =====
         if (!this.isValidNumber(worldX) || !this.isValidNumber(worldZ)) {
-            console.warn('❌ Invalid world coordinates calculated in screenToIsometricWorld:', {
-                worldX, worldZ, deltaX, deltaY, sensitivity, cos45, sin45
+            console.error('🚨 CRITICAL: Invalid world coordinates calculated in screenToIsometricWorld:', {
+                worldX, worldZ,
+                inputs: { deltaX: safeDeltaX, deltaY: safeDeltaY, sensitivity: safeSensitivity },
+                constants: { cos45, sin45 }
             });
             return new BABYLON.Vector3(0, 0, 0); // Return zero vector instead of NaN
+        }
+
+        // ===== ADDITIONAL SAFETY: Check for extreme world coordinates =====
+        const MAX_WORLD_COORDINATE = 1000; // Maximum safe world coordinate
+        if (Math.abs(worldX) > MAX_WORLD_COORDINATE || Math.abs(worldZ) > MAX_WORLD_COORDINATE) {
+            console.warn('⚠️ World coordinates exceed safe limits, clamping:', {
+                original: { worldX, worldZ },
+                clamped: {
+                    worldX: Math.max(-MAX_WORLD_COORDINATE, Math.min(MAX_WORLD_COORDINATE, worldX)),
+                    worldZ: Math.max(-MAX_WORLD_COORDINATE, Math.min(MAX_WORLD_COORDINATE, worldZ))
+                }
+            });
+
+            return new BABYLON.Vector3(
+                Math.max(-MAX_WORLD_COORDINATE, Math.min(MAX_WORLD_COORDINATE, worldX)),
+                0,
+                Math.max(-MAX_WORLD_COORDINATE, Math.min(MAX_WORLD_COORDINATE, worldZ))
+            );
         }
 
         return new BABYLON.Vector3(worldX, 0, worldZ);
