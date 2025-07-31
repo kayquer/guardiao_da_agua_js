@@ -445,8 +445,20 @@ class GameManager {
     }
     
     setupControls() {
-    // ===== CRITICAL FIX: REMOVE ALL DRAG/CLICK FUNCTIONALITY =====
-    // Completely disable all pointer events that can cause camera corruption
+    // ===== CRITICAL FIX: COMPLETELY DISABLE ALL POINTER EVENTS =====
+    // Remove all mouse input handlers to prevent camera corruption
+
+    // ===== DISABLE ALL BABYLON.JS POINTER OBSERVABLES =====
+    // This prevents any pointer events from being processed by Babylon.js
+    if (this.scene && this.scene.onPointerObservable) {
+        // Clear any existing observers
+        this.scene.onPointerObservable._observers = [];
+
+        // Disable the observable entirely
+        this.scene.onPointerObservable.clear();
+
+        console.log('🚫 All Babylon.js pointer observables disabled');
+    }
 
     // ===== WHEEL HANDLER ISOLADO - ONLY ZOOM ALLOWED =====
     this.canvas.addEventListener('wheel', (event) => {
@@ -463,7 +475,7 @@ class GameManager {
         this.handleKeyboardEvent(kbInfo);
     });
 
-    console.log('🎮 Camera controls initialized: WHEEL ZOOM ONLY (all drag/click removed)');
+    console.log('🎮 Camera controls initialized: WHEEL ZOOM ONLY (all mouse input disabled)');
     }
 
     /**
@@ -863,55 +875,8 @@ getEventTypeName(eventType) {
     //     event.preventDefault();
     // }
 
-    // ===== BUILDING PLACEMENT CLICK HANDLER =====
-    handleBuildingPlacementClick(event) {
-        if (!this.buildingSystem || !this.buildingSystem.previewMode) return;
-
-        try {
-            // Get mouse position on canvas
-            const rect = this.canvas.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-
-            // Create ray to detect position in 3D world
-            const pickInfo = this.scene.pick(x, y);
-
-            if (pickInfo.hit && pickInfo.pickedPoint) {
-                // Convert world position to grid with perfect snap
-                const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
-
-                // Force grid alignment - ensure integer coordinates
-                gridPos.x = Math.floor(gridPos.x);
-                gridPos.z = Math.floor(gridPos.z);
-
-                console.log(`🏗️ Building placement click at grid position:`, gridPos);
-
-                // Attempt to place building
-                const success = this.buildingSystem.confirmPlacement(gridPos.x, gridPos.z);
-
-                if (success) {
-                    // Construction successful, stop preview
-                    this.buildingSystem.stopPreviewMode();
-
-                    // Show notification
-                    if (this.uiManager) {
-                        this.uiManager.showNotification('Edifício construído com sucesso!', 'success');
-                    }
-
-                    console.log(`✅ Building placed successfully at (${gridPos.x}, ${gridPos.z})`);
-                } else {
-                    // Construction failed, show error
-                    if (this.uiManager) {
-                        this.uiManager.showNotification('Não é possível construir nesta posição!', 'error');
-                    }
-
-                    console.log(`❌ Building placement failed at (${gridPos.x}, ${gridPos.z})`);
-                }
-            }
-        } catch (error) {
-            console.error('❌ Error in building placement click:', error);
-        }
-    }
+    // ===== REMOVED: handleBuildingPlacementClick - All mouse input disabled =====
+    // Building placement is now handled through UI buttons only
 
     // ===== REMOVED: Second duplicate recoverCameraState() method - using consolidated version below =====
 
@@ -4322,248 +4287,13 @@ handleIsolatedWheel(event) {
         }
     }
     
-    handlePointerEvent(pointerInfo) {
-        if (this.gameState !== 'playing') return;
-
-        // ===== SELECTIVE FILTERING: Allow essential left mouse interactions =====
-        const button = pointerInfo.event?.button;
-        if (button === 0) {
-            // Allow left mouse button for essential game interactions
-            // Only process POINTERDOWN, POINTERUP, POINTERPICK, POINTERTAP
-            if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOWN ||
-                pointerInfo.type === BABYLON.PointerEventTypes.POINTERUP ||
-                pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK ||
-                pointerInfo.type === BABYLON.PointerEventTypes.POINTERTAP) {
-                // Process essential click events for building placement and selection
-                // Continue with normal processing below
-            } else {
-                // Block other left mouse events (like POINTERMOVE during drag) that cause corruption
-                return;
-            }
-        }
-
-        if (button === 1) {
-            // Completely ignore middle mouse button events (still problematic)
-            return;
-        }
-
-        // ===== CRITICAL FIX: Add comprehensive error handling to prevent 3D renderer crashes =====
-        try {
-            // ===== CRITICAL FIX: Complete event type detection for all Babylon.js pointer events =====
-            let eventType = 'UNKNOWN';
-            let eventCode = pointerInfo.type;
-
-            // Map all Babylon.js pointer event types
-            switch (pointerInfo.type) {
-                case BABYLON.PointerEventTypes.POINTERDOWN:
-                    eventType = 'POINTERDOWN';
-                    break;
-                case BABYLON.PointerEventTypes.POINTERUP:
-                    eventType = 'POINTERUP';
-                    break;
-                case BABYLON.PointerEventTypes.POINTERMOVE:
-                    eventType = 'POINTERMOVE';
-                    break;
-                case BABYLON.PointerEventTypes.POINTERWHEEL:
-                    eventType = 'POINTERWHEEL';
-                    break;
-                case BABYLON.PointerEventTypes.POINTERPICK:
-                    eventType = 'POINTERPICK';
-                    break;
-                case BABYLON.PointerEventTypes.POINTERTAP:
-                    eventType = 'POINTERTAP';
-                    break;
-                case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
-                    eventType = 'POINTERDOUBLETAP';
-                    break;
-                default:
-                    eventType = `OTHER(${eventCode})`;
-                    break;
-            }
-
-            // ===== CRITICAL FIX: Filter dangerous events during camera operations =====
-            // Note: Camera panning with mouse buttons has been disabled
-            const isDuringCameraOperation = false;
-
-            // ===== CRITICAL FIX: Block events that can corrupt 3D renderer during camera operations =====
-            if (isDuringCameraOperation && (
-                pointerInfo.type === BABYLON.PointerEventTypes.POINTERPICK ||
-                pointerInfo.type === BABYLON.PointerEventTypes.POINTERTAP ||
-                pointerInfo.type === BABYLON.PointerEventTypes.POINTERDOUBLETAP
-            )) {
-                // Silently ignore these events during camera operations to prevent 3D corruption
-                return;
-            }
-
-            // ===== CRITICAL FIX: Throttled logging with complete event information =====
-            const now = Date.now();
-            const shouldLog = eventType !== 'POINTERMOVE' ||
-                             !this.lastPointerMoveLog ||
-                             (now - this.lastPointerMoveLog) > 500; // Log POINTERMOVE max every 500ms
-
-            if (shouldLog) {
-                if (eventType === 'POINTERMOVE') {
-                    this.lastPointerMoveLog = now;
-                }
-
-                // Enhanced logging for debugging "OTHER" events
-                if (eventType !== 'POINTERMOVE' || this.debugLevel >= 2) {
-                    console.log(`🖱️ Pointer Event: ${eventType}`, {
-                        button: pointerInfo.event?.button,
-                        eventCode: eventCode,
-                        isPanning: this.isometricCameraState?.isPanning,
-                        buildMode: this.buildMode,
-                        previewMode: this.buildingSystem?.previewMode,
-                        isDuringCameraOp: isDuringCameraOperation,
-                        timestamp: now
-                    });
-                }
-            }
-
-            // ===== CRITICAL FIX: Enhanced event processing with 3D renderer protection =====
-            switch (pointerInfo.type) {
-                case BABYLON.PointerEventTypes.POINTERDOWN:
-                    this.handlePointerDown(pointerInfo);
-                    break;
-                case BABYLON.PointerEventTypes.POINTERUP:
-                    this.handlePointerUp(pointerInfo);
-                    break;
-                case BABYLON.PointerEventTypes.POINTERMOVE:
-                    // Skip POINTERMOVE during camera panning to prevent conflicts
-                    if (!isDuringCameraOperation) {
-                        // Handle POINTERMOVE events if needed (currently not used for building placement)
-                    }
-                    break;
-                case BABYLON.PointerEventTypes.POINTERWHEEL:
-                    // Handle mouse wheel events (zoom)
-                    if (!isDuringCameraOperation) {
-                        // Wheel events can be processed when not panning
-                    }
-                    break;
-                case BABYLON.PointerEventTypes.POINTERPICK:
-                case BABYLON.PointerEventTypes.POINTERTAP:
-                case BABYLON.PointerEventTypes.POINTERDOUBLETAP:
-                    // These events are already filtered above during camera operations
-                    // Process them only when camera is not active
-                    if (!isDuringCameraOperation) {
-                        // Handle pick/tap events for building placement
-                    }
-                    break;
-                default:
-                    // Log unknown events for debugging but don't process them
-                    if (this.debugLevel >= 1) {
-                        console.warn(`⚠️ Unknown pointer event type: ${eventCode}`);
-                    }
-                    break;
-            }
-        } catch (error) {
-            // ===== CRITICAL FIX: Enhanced error recovery to prevent blue screen crashes =====
-            console.error('❌ Critical error in handlePointerEvent:', error);
-
-            // Check for 3D renderer corruption
-            if (this.scene && this.camera) {
-                try {
-                    // Validate camera state
-                    const target = this.camera.getTarget();
-                    if (isNaN(target.x) || isNaN(target.y) || isNaN(target.z) ||
-                        !isFinite(target.x) || !isFinite(target.y) || !isFinite(target.z)) {
-                        console.log('🔧 Recovering from corrupted camera state...');
-                        this.recoverCameraState();
-                    }
-
-                    // Validate scene state
-                    if (!this.scene.isReady() || this.scene.isDisposed) {
-                        console.log('🔧 Scene corrupted, attempting recovery...');
-                        this.recover3DRenderer();
-                    }
-                } catch (recoveryError) {
-                    console.error('❌ Critical error during recovery:', recoveryError);
-                    // Last resort: force page reload
-                    if (confirm('O jogo encontrou um erro crítico na renderização 3D. Recarregar a página?')) {
-                        window.location.reload();
-                    }
-                }
-            }
-        }
-    }
+    // ===== REMOVED: handlePointerEvent - All pointer events disabled =====
+    // All mouse input has been completely disabled to prevent camera corruption
+    // Building placement is now handled through UI buttons only
     
-    handlePointerDown(pointerInfo) {
-        const pickInfo = pointerInfo.pickInfo;
-        const button = pointerInfo.event?.button;
-
-        // ===== SELECTIVE FILTERING: Allow left mouse clicks for building placement =====
-        if (button === 0) {
-            // Allow left mouse button for building placement and selection
-            // Process building placement logic
-            if (pickInfo && pickInfo.hit) {
-                this.handleBuildingPlacementClick(pointerInfo.event);
-            }
-            return;
-        }
-
-        if (button === 1) {
-            // Completely ignore middle mouse button events (still problematic)
-            return;
-        }
-
-        // ===== ENHANCED DEBUGGING: Log pointer down with detailed state =====
-        console.log(`🖱️ PointerDown Handler:`, {
-            hit: pickInfo.hit,
-            button: button,
-            buildMode: this.buildMode,
-            currentBuildingType: this.currentBuildingType,
-            previewMode: this.buildingSystem?.previewMode,
-            pickedPoint: pickInfo.pickedPoint,
-            pickedMesh: pickInfo.pickedMesh?.name,
-            timestamp: Date.now()
-        });
-
-        // ===== CRITICAL FIX: Prevent building placement during camera panning =====
-        if (this.isometricCameraState?.isPanning) {
-            console.log(`🚫 Blocking building placement - camera is panning`);
-            return;
-        }
-
-        // Camera operations with mouse buttons have been disabled
-
-        if (pickInfo.hit) {
-            if (this.buildMode && this.currentBuildingType) {
-                // Modo construção
-                console.log(`🏗️ Attempting building placement at:`, pickInfo.pickedPoint);
-                this.buildingSystem.placeBuildingAt(pickInfo.pickedPoint, this.currentBuildingType);
-            } else {
-                // Seleção de objeto - only if not camera operation
-                const pickedMeshName = pickInfo.pickedMesh?.name;
-                if (pickedMeshName && !pickedMeshName.includes('terrain') && !pickedMeshName.includes('ground')) {
-                    console.log(`🎯 Selecting object:`, pickedMeshName);
-                    this.selectObject(pickInfo.pickedMesh);
-                } else {
-                    console.log(`🚫 Ignoring terrain click - not a selectable object`);
-                }
-            }
-        }
-    }
-    
-    handlePointerUp(pointerInfo) {
-        const button = pointerInfo.event?.button;
-
-        // ===== SELECTIVE FILTERING: Allow left mouse clicks for building interactions =====
-        if (button === 0) {
-            // Allow left mouse button up events for completing building interactions
-            // No special processing needed, just allow the event to complete
-            return;
-        }
-
-        if (button === 1) {
-            // Completely ignore middle mouse button events (still problematic)
-            return;
-        }
-
-        console.log(`🖱️ PointerUp Handler:`, {
-            button: button,
-            timestamp: Date.now()
-        });
-    }
+    // ===== REMOVED: handlePointerDown and handlePointerUp - All pointer events disabled =====
+    // All mouse input has been completely disabled to prevent camera corruption
+    // Building placement is now handled through UI buttons only
     
     handleKeyboardEvent(kbInfo) {
         const isKeyDown = kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN;
