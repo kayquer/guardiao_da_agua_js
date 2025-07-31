@@ -2324,42 +2324,62 @@ class UIManager {
         return 'poor';
     }
 
-    // ===== SISTEMA DE COOLDOWN VISUAL =====
+    // ===== SISTEMA DE COOLDOWN VISUAL APRIMORADO =====
     showBuildingCooldown(remainingTime, totalTime) {
         // Criar indicador de cooldown se não existir
         if (!this.cooldownIndicator) {
             this.createCooldownIndicator();
         }
 
-        // Mostrar o indicador
+        // Mostrar o indicador com animação suave
         this.cooldownIndicator.style.display = 'block';
+        this.cooldownIndicator.style.opacity = '0';
+        this.cooldownIndicator.style.transform = 'translate(-50%, -50%) scale(0.8)';
 
-        // Atualizar texto
+        // Animação de entrada
+        requestAnimationFrame(() => {
+            this.cooldownIndicator.style.transition = 'all 0.3s ease-out';
+            this.cooldownIndicator.style.opacity = '1';
+            this.cooldownIndicator.style.transform = 'translate(-50%, -50%) scale(1)';
+        });
+
+        // Atualizar texto com formatação melhorada
         const seconds = Math.ceil(remainingTime / 1000);
         const progressText = this.cooldownIndicator.querySelector('.cooldown-text');
         if (progressText) {
-            progressText.textContent = `Aguarde ${seconds}s antes de construir novamente`;
+            progressText.textContent = `⏱️ Aguarde ${seconds}s antes de construir novamente`;
         }
 
-        // Desabilitar botões de construção
+        // Desabilitar botões de construção com feedback visual
         this.disableBuildingButtons();
+
+        // Adicionar efeito de pulsação no painel de construção
+        this.addCooldownPulseEffect();
 
         // Iniciar atualização do progresso
         this.startCooldownUpdate(remainingTime, totalTime);
+
+        // Tocar som de feedback aprimorado
+        if (typeof AudioManager !== 'undefined') {
+            AudioManager.playSound('sfx_build_error', 0.6);
+        }
     }
 
     createCooldownIndicator() {
-        // Criar elemento do indicador de cooldown
+        // Criar elemento do indicador de cooldown aprimorado
         this.cooldownIndicator = document.createElement('div');
-        this.cooldownIndicator.className = 'building-cooldown';
+        this.cooldownIndicator.className = 'building-cooldown enhanced';
         this.cooldownIndicator.style.display = 'none';
 
         this.cooldownIndicator.innerHTML = `
+            <div class="cooldown-icon">🏗️</div>
             <div class="cooldown-text">Aguarde antes de construir novamente</div>
             <div class="cooldown-progress">
                 <div class="cooldown-progress-fill"></div>
+                <div class="cooldown-progress-glow"></div>
             </div>
             <div class="cooldown-time">0s</div>
+            <div class="cooldown-subtitle">Sistema de construção em pausa</div>
         `;
 
         // Adicionar ao body
@@ -2380,17 +2400,34 @@ class UIManager {
             const timeLeft = Math.max(0, endTime - now);
             const progress = Math.min(1, (totalTime - timeLeft) / totalTime);
 
-            // Atualizar barra de progresso
+            // Atualizar barra de progresso com animação suave
             const progressFill = this.cooldownIndicator.querySelector('.cooldown-progress-fill');
+            const progressGlow = this.cooldownIndicator.querySelector('.cooldown-progress-glow');
             if (progressFill) {
                 progressFill.style.width = `${progress * 100}%`;
+
+                // Mudança de cor baseada no progresso
+                const hue = progress * 120; // De vermelho (0) para verde (120)
+                progressFill.style.background = `hsl(${hue}, 70%, 50%)`;
+
+                if (progressGlow) {
+                    progressGlow.style.width = `${progress * 100}%`;
+                    progressGlow.style.boxShadow = `0 0 10px hsl(${hue}, 70%, 50%)`;
+                }
             }
 
-            // Atualizar tempo restante
+            // Atualizar tempo restante com formatação melhorada
             const timeDisplay = this.cooldownIndicator.querySelector('.cooldown-time');
             if (timeDisplay) {
                 const seconds = Math.ceil(timeLeft / 1000);
                 timeDisplay.textContent = `${seconds}s`;
+
+                // Efeito de pulsação nos últimos 3 segundos
+                if (seconds <= 3 && seconds > 0) {
+                    timeDisplay.style.animation = 'pulse 0.5s ease-in-out infinite alternate';
+                } else {
+                    timeDisplay.style.animation = '';
+                }
             }
 
             // Verificar se terminou
@@ -2402,7 +2439,16 @@ class UIManager {
 
     hideBuildingCooldown() {
         if (this.cooldownIndicator) {
-            this.cooldownIndicator.style.display = 'none';
+            // Animação de saída suave
+            this.cooldownIndicator.style.transition = 'all 0.3s ease-in';
+            this.cooldownIndicator.style.opacity = '0';
+            this.cooldownIndicator.style.transform = 'translate(-50%, -50%) scale(0.8)';
+
+            setTimeout(() => {
+                if (this.cooldownIndicator) {
+                    this.cooldownIndicator.style.display = 'none';
+                }
+            }, 300);
         }
 
         if (this.cooldownUpdateInterval) {
@@ -2410,8 +2456,19 @@ class UIManager {
             this.cooldownUpdateInterval = null;
         }
 
-        // Reabilitar botões de construção
+        // Reabilitar botões de construção com feedback visual
         this.enableBuildingButtons();
+
+        // Remover efeito de pulsação do painel
+        this.removeCooldownPulseEffect();
+
+        // Tocar som de sucesso
+        if (typeof AudioManager !== 'undefined') {
+            AudioManager.playSound('sfx_success', 0.3);
+        }
+
+        // Mostrar notificação de cooldown finalizado
+        this.showNotification('Sistema de construção reativado!', 'success', 2000);
     }
 
     disableBuildingButtons() {
@@ -2419,7 +2476,17 @@ class UIManager {
         buildingItems.forEach(item => {
             item.classList.add('cooldown-disabled');
             item.style.pointerEvents = 'none';
-            item.style.opacity = '0.5';
+            item.style.opacity = '0.4';
+            item.style.filter = 'grayscale(50%)';
+            item.style.transition = 'all 0.3s ease';
+
+            // Adicionar overlay de cooldown
+            if (!item.querySelector('.cooldown-overlay')) {
+                const overlay = document.createElement('div');
+                overlay.className = 'cooldown-overlay';
+                overlay.innerHTML = '⏱️';
+                item.appendChild(overlay);
+            }
         });
     }
 
@@ -2429,7 +2496,36 @@ class UIManager {
             item.classList.remove('cooldown-disabled');
             item.style.pointerEvents = '';
             item.style.opacity = '';
+            item.style.filter = '';
+            item.style.transition = 'all 0.3s ease';
+
+            // Remover overlay de cooldown
+            const overlay = item.querySelector('.cooldown-overlay');
+            if (overlay) {
+                overlay.remove();
+            }
+
+            // Efeito de "reativação" suave
+            item.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                item.style.transform = '';
+            }, 200);
         });
+    }
+
+    // Adicionar efeito de pulsação no painel durante cooldown
+    addCooldownPulseEffect() {
+        const buildingPanel = document.querySelector('.building-panel');
+        if (buildingPanel) {
+            buildingPanel.classList.add('cooldown-pulse');
+        }
+    }
+
+    removeCooldownPulseEffect() {
+        const buildingPanel = document.querySelector('.building-panel');
+        if (buildingPanel) {
+            buildingPanel.classList.remove('cooldown-pulse');
+        }
     }
 
     // ===== SISTEMA UNIFICADO DE TOOLTIPS =====

@@ -147,6 +147,9 @@ class AudioManager {
         this.createBeepSound('sfx_error', 300, 0.3);
         this.createBeepSound('sfx_success', 1000, 0.2);
 
+        // ===== SONS ESPECÍFICOS PARA CONSTRUÇÃO =====
+        this.createConstructionSounds();
+
         // Som de água (ruído branco filtrado)
         this.createWaterSound('sfx_water');
 
@@ -416,6 +419,231 @@ class AudioManager {
         });
 
         console.log('🌙 Som procedural de noite criado');
+    }
+
+    // ===== SONS ESPECÍFICOS PARA CONSTRUÇÃO =====
+    createConstructionSounds() {
+        console.log('🏗️ Criando sons de construção procedurais...');
+
+        // Som de colocação de edifício (martelo + clique)
+        this.createConstructionPlacementSound('sfx_build_place');
+
+        // Som de progresso de construção (marteladas rítmicas)
+        this.createConstructionProgressSound('sfx_build_progress');
+
+        // Som de conclusão (fanfarra simples)
+        this.createConstructionCompletionSound('sfx_build_complete');
+
+        // Som de erro de construção (buzzer)
+        this.createConstructionErrorSound('sfx_build_error');
+
+        console.log('✅ Sons de construção procedurais criados');
+    }
+
+    createConstructionPlacementSound(key) {
+        if (!window.AudioContext && !window.webkitAudioContext) return;
+
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            const createPlacementSound = () => {
+                const duration = 0.3;
+                const sampleRate = audioContext.sampleRate;
+                const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+                const data = buffer.getChannelData(0);
+
+                for (let i = 0; i < data.length; i++) {
+                    const t = i / sampleRate;
+
+                    // Combinação de frequências para simular martelo
+                    const hammer = Math.sin(2 * Math.PI * 200 * t) * Math.exp(-t * 8);
+                    const click = Math.sin(2 * Math.PI * 800 * t) * Math.exp(-t * 15);
+                    const thud = Math.sin(2 * Math.PI * 80 * t) * Math.exp(-t * 5);
+
+                    data[i] = (hammer * 0.4 + click * 0.3 + thud * 0.3) * 0.5;
+                }
+
+                return buffer;
+            };
+
+            this.sounds.set(key, {
+                play: () => {
+                    try {
+                        const source = audioContext.createBufferSource();
+                        const gainNode = audioContext.createGain();
+
+                        source.buffer = createPlacementSound();
+                        gainNode.gain.value = this.sfxVolume * this.masterVolume * 0.6;
+
+                        source.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        source.start();
+                    } catch (error) {
+                        console.warn(`⚠️ Erro ao reproduzir ${key}:`, error);
+                    }
+                },
+                setVolume: (volume) => { /* Implementado no play */ }
+            });
+
+        } catch (error) {
+            console.warn(`⚠️ Erro ao criar som de colocação ${key}:`, error);
+        }
+    }
+
+    createConstructionProgressSound(key) {
+        if (!window.AudioContext && !window.webkitAudioContext) return;
+
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            const createProgressSound = () => {
+                const duration = 0.4;
+                const sampleRate = audioContext.sampleRate;
+                const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+                const data = buffer.getChannelData(0);
+
+                for (let i = 0; i < data.length; i++) {
+                    const t = i / sampleRate;
+
+                    // Som de martelada com eco
+                    const beat1 = Math.sin(2 * Math.PI * 150 * t) * Math.exp(-t * 6);
+                    const beat2 = Math.sin(2 * Math.PI * 300 * t) * Math.exp(-t * 8);
+                    const echo = Math.sin(2 * Math.PI * 100 * t) * Math.exp(-t * 3) * 0.3;
+
+                    // Adicionar ruído para textura
+                    const noise = (Math.random() - 0.5) * 0.1 * Math.exp(-t * 10);
+
+                    data[i] = (beat1 * 0.4 + beat2 * 0.3 + echo + noise) * 0.4;
+                }
+
+                return buffer;
+            };
+
+            this.sounds.set(key, {
+                play: () => {
+                    try {
+                        const source = audioContext.createBufferSource();
+                        const gainNode = audioContext.createGain();
+
+                        source.buffer = createProgressSound();
+                        gainNode.gain.value = this.sfxVolume * this.masterVolume * 0.4;
+
+                        source.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        source.start();
+                    } catch (error) {
+                        console.warn(`⚠️ Erro ao reproduzir ${key}:`, error);
+                    }
+                },
+                setVolume: (volume) => { /* Implementado no play */ }
+            });
+
+        } catch (error) {
+            console.warn(`⚠️ Erro ao criar som de progresso ${key}:`, error);
+        }
+    }
+
+    createConstructionCompletionSound(key) {
+        if (!window.AudioContext && !window.webkitAudioContext) return;
+
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            const createCompletionSound = () => {
+                const duration = 1.0;
+                const sampleRate = audioContext.sampleRate;
+                const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+                const data = buffer.getChannelData(0);
+
+                for (let i = 0; i < data.length; i++) {
+                    const t = i / sampleRate;
+
+                    // Fanfarra ascendente
+                    const note1 = Math.sin(2 * Math.PI * 440 * t) * Math.exp(-t * 2); // A
+                    const note2 = Math.sin(2 * Math.PI * 554 * t) * Math.exp(-t * 1.5); // C#
+                    const note3 = Math.sin(2 * Math.PI * 659 * t) * Math.exp(-t * 1); // E
+
+                    // Envelope para criar efeito de fanfarra
+                    const envelope = Math.sin(Math.PI * t / duration) * Math.exp(-t * 0.8);
+
+                    data[i] = (note1 * 0.3 + note2 * 0.3 + note3 * 0.4) * envelope * 0.6;
+                }
+
+                return buffer;
+            };
+
+            this.sounds.set(key, {
+                play: () => {
+                    try {
+                        const source = audioContext.createBufferSource();
+                        const gainNode = audioContext.createGain();
+
+                        source.buffer = createCompletionSound();
+                        gainNode.gain.value = this.sfxVolume * this.masterVolume * 0.7;
+
+                        source.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        source.start();
+                    } catch (error) {
+                        console.warn(`⚠️ Erro ao reproduzir ${key}:`, error);
+                    }
+                },
+                setVolume: (volume) => { /* Implementado no play */ }
+            });
+
+        } catch (error) {
+            console.warn(`⚠️ Erro ao criar som de conclusão ${key}:`, error);
+        }
+    }
+
+    createConstructionErrorSound(key) {
+        if (!window.AudioContext && !window.webkitAudioContext) return;
+
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            const createErrorSound = () => {
+                const duration = 0.5;
+                const sampleRate = audioContext.sampleRate;
+                const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
+                const data = buffer.getChannelData(0);
+
+                for (let i = 0; i < data.length; i++) {
+                    const t = i / sampleRate;
+
+                    // Som de buzzer descendente
+                    const freq = 400 - (t * 200); // De 400Hz para 200Hz
+                    const buzz = Math.sin(2 * Math.PI * freq * t);
+                    const envelope = Math.exp(-t * 3);
+
+                    data[i] = buzz * envelope * 0.4;
+                }
+
+                return buffer;
+            };
+
+            this.sounds.set(key, {
+                play: () => {
+                    try {
+                        const source = audioContext.createBufferSource();
+                        const gainNode = audioContext.createGain();
+
+                        source.buffer = createErrorSound();
+                        gainNode.gain.value = this.sfxVolume * this.masterVolume * 0.5;
+
+                        source.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        source.start();
+                    } catch (error) {
+                        console.warn(`⚠️ Erro ao reproduzir ${key}:`, error);
+                    }
+                },
+                setVolume: (volume) => { /* Implementado no play */ }
+            });
+
+        } catch (error) {
+            console.warn(`⚠️ Erro ao criar som de erro ${key}:`, error);
+        }
     }
 
     // ===== REPRODUÇÃO DE SONS =====

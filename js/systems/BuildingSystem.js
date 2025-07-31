@@ -1557,10 +1557,8 @@ class BuildingSystem {
             }
         }
 
-        // Tocar som de construção
-        if (typeof AudioManager !== 'undefined') {
-            AudioManager.playSound('sfx_build');
-        }
+        // ===== AUDIO FEEDBACK PARA COLOCAÇÃO =====
+        this.playBuildingPlacementAudio(buildingType);
 
         // Notificar sistema de vida urbana se for uma estrada
         if (buildingType.id === 'road' && window.gameManager && window.gameManager.cityLifeSystem) {
@@ -3689,6 +3687,9 @@ class BuildingSystem {
                 // Atualizar indicador de progresso
                 this.updateConstructionIndicator(buildingData, progress);
 
+                // ===== AUDIO FEEDBACK PARA PROGRESSO =====
+                this.playConstructionProgressAudio(buildingData, progress);
+
                 // Verificar se construção terminou
                 if (progress >= 1) {
                     completedConstructions.push(buildingData);
@@ -3733,6 +3734,9 @@ class BuildingSystem {
 
         // Aplicar efeitos nos recursos (agora que está ativo)
         this.applyBuildingEffects(buildingData, true);
+
+        // ===== AUDIO FEEDBACK PARA CONCLUSÃO =====
+        this.playConstructionCompletionAudio(buildingData);
 
         // Mostrar indicador de conclusão
         this.showCompletionIndicator(buildingData);
@@ -3939,6 +3943,7 @@ class BuildingSystem {
     }
 
     removeConstructionVisuals(buildingData) {
+        // Remover indicadores de progresso
         if (buildingData.constructionIndicators) {
             const { progressBar, progressBg, textPlane } = buildingData.constructionIndicators;
 
@@ -3948,81 +3953,317 @@ class BuildingSystem {
 
             delete buildingData.constructionIndicators;
         }
+
+        // Remover efeitos visuais aprimorados
+        this.removeConstructionEffects(buildingData);
     }
 
     applyConstructionVisuals(buildingData) {
         if (buildingData.mesh) {
-            // Aplicar efeito de construção (escala reduzida e rotação)
-            buildingData.mesh.scaling = new BABYLON.Vector3(0.5, 0.5, 0.5);
+            // Aplicar efeito de construção aprimorado
+            buildingData.mesh.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
             buildingData.originalRotation = buildingData.mesh.rotation.clone();
-
-            // Armazenar estado original para restaurar depois
             buildingData.originalScaling = new BABYLON.Vector3(1, 1, 1);
+
+            // Aplicar material de construção semi-transparente
+            this.applyConstructionMaterial(buildingData);
+
+            // Criar efeitos de partículas de construção
+            this.createConstructionParticles(buildingData);
+
+            // Adicionar animação de rotação suave durante construção
+            this.startConstructionAnimation(buildingData);
+
+            console.log(`🎨 Efeitos visuais de construção aplicados para ${buildingData.config.name}`);
         }
     }
 
     showCompletionIndicator(buildingData) {
         const worldPos = this.gridManager.gridToWorld(buildingData.gridX, buildingData.gridZ);
 
-        // Criar texto "Concluído" temporário com textura dinâmica
-        const completionText = BABYLON.MeshBuilder.CreatePlane(`completion_${buildingData.id}`, {
-            width: 2,
-            height: 0.8
-        }, this.scene);
+        // ===== EFEITOS DE CONCLUSÃO APRIMORADOS =====
+        this.createCompletionCelebration(buildingData, worldPos);
+        this.createCompletionText(buildingData, worldPos);
+        this.createCompletionParticles(buildingData, worldPos);
 
-        completionText.position.x = worldPos.x;
-        completionText.position.z = worldPos.z;
-        completionText.position.y = 4;
-        completionText.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
-
-        // ===== Z-INDEX FIX: Configurar rendering group para indicador de conclusão =====
-        completionText.renderingGroupId = 2; // Mesmo grupo dos labels
-        completionText.alphaIndex = 1001; // Índice mais alto que outros textos
-
-        // Criar textura dinâmica para "Concluído"
-        const completionTexture = new BABYLON.DynamicTexture(`completionTexture_${buildingData.id}`,
-            { width: 256, height: 64 }, this.scene);
-
-        completionTexture.drawText("Concluído!", null, null, "bold 32px Arial", "#00FF00", "#000000AA", true);
-
-        const textMaterial = new BABYLON.StandardMaterial(`completionMat_${buildingData.id}`, this.scene);
-        textMaterial.diffuseTexture = completionTexture;
-        textMaterial.emissiveTexture = completionTexture;
-        textMaterial.emissiveColor = new BABYLON.Color3(0, 0.8, 0);
-        textMaterial.backFaceCulling = false;
-        textMaterial.hasAlpha = true;
-
-        // ===== Z-INDEX FIX: Configurações de material para renderização por cima =====
-        textMaterial.disableDepthWrite = true;
-        textMaterial.needDepthPrePass = false;
-        textMaterial.separateCullingPass = false;
-
-        completionText.material = textMaterial;
-
-        // Restaurar escala do edifício
+        // Restaurar escala do edifício com animação suave
         if (buildingData.mesh) {
-            buildingData.mesh.scaling = buildingData.originalScaling || new BABYLON.Vector3(1, 1, 1);
+            this.animateBuildingCompletion(buildingData);
         }
 
-        // Remover texto após 2 segundos
-        setTimeout(() => {
-            if (completionText && !completionText.isDisposed()) {
-                // Limpar material e textura
-                if (completionText.material) {
-                    if (completionText.material.diffuseTexture) {
-                        completionText.material.diffuseTexture.dispose();
-                    }
-                    if (completionText.material.emissiveTexture) {
-                        completionText.material.emissiveTexture.dispose();
-                    }
-                    completionText.material.dispose();
-                }
-                completionText.dispose();
-            }
-        }, 2000);
+        // Mostrar notificação aprimorada
+        this.showNotification(`🎉 ${buildingData.config.name} concluído com sucesso!`, 'success');
+    }
 
-        // Mostrar notificação
-        this.showNotification(`${buildingData.config.name} concluído!`, 'success');
+    createCompletionCelebration(buildingData, worldPos) {
+        try {
+            // Criar anel de energia que se expande
+            const celebrationRing = BABYLON.MeshBuilder.CreateTorus(`celebration_${buildingData.id}`, {
+                diameter: 0.5,
+                thickness: 0.1
+            }, this.scene);
+
+            celebrationRing.position = worldPos.clone();
+            celebrationRing.position.y += 1;
+
+            // Material brilhante
+            const ringMaterial = new BABYLON.StandardMaterial(`celebrationMat_${buildingData.id}`, this.scene);
+            ringMaterial.emissiveColor = new BABYLON.Color3(0, 1, 0.5);
+            ringMaterial.disableLighting = true;
+            celebrationRing.material = ringMaterial;
+
+            // Animação de expansão e fade
+            const startTime = Date.now();
+            const duration = 1500;
+
+            const animateRing = () => {
+                if (celebrationRing.isDisposed()) return;
+
+                const elapsed = Date.now() - startTime;
+                const progress = elapsed / duration;
+
+                if (progress >= 1) {
+                    celebrationRing.dispose();
+                    ringMaterial.dispose();
+                    return;
+                }
+
+                // Expansão
+                const scale = 1 + progress * 3;
+                celebrationRing.scaling = new BABYLON.Vector3(scale, scale, scale);
+
+                // Fade out
+                ringMaterial.alpha = 1 - progress;
+
+                // Rotação
+                celebrationRing.rotation.y += 0.1;
+
+                requestAnimationFrame(animateRing);
+            };
+
+            animateRing();
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao criar celebração de conclusão:', error);
+        }
+    }
+
+    createCompletionText(buildingData, worldPos) {
+        try {
+            // Criar texto "Concluído" aprimorado
+            const completionText = BABYLON.MeshBuilder.CreatePlane(`completion_${buildingData.id}`, {
+                width: 3,
+                height: 1
+            }, this.scene);
+
+            completionText.position.x = worldPos.x;
+            completionText.position.z = worldPos.z;
+            completionText.position.y = 4;
+            completionText.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+
+            // Configurar rendering
+            completionText.renderingGroupId = 2;
+            completionText.alphaIndex = 1001;
+
+            // Criar textura dinâmica aprimorada
+            const completionTexture = new BABYLON.DynamicTexture(`completionTexture_${buildingData.id}`,
+                { width: 512, height: 128 }, this.scene);
+
+            completionTexture.drawText("✅ CONCLUÍDO!", null, null, "bold 48px Arial", "#00FF88", "#000000CC", true);
+
+            const textMaterial = new BABYLON.StandardMaterial(`completionMat_${buildingData.id}`, this.scene);
+            textMaterial.diffuseTexture = completionTexture;
+            textMaterial.emissiveTexture = completionTexture;
+            textMaterial.emissiveColor = new BABYLON.Color3(0, 1, 0.5);
+            textMaterial.backFaceCulling = false;
+            textMaterial.hasAlpha = true;
+            textMaterial.disableDepthWrite = true;
+
+            completionText.material = textMaterial;
+
+            // Animação de entrada e saída
+            completionText.scaling = new BABYLON.Vector3(0, 0, 0);
+
+            const startTime = Date.now();
+            const animateText = () => {
+                if (completionText.isDisposed()) return;
+
+                const elapsed = Date.now() - startTime;
+
+                if (elapsed < 300) {
+                    // Animação de entrada (0-300ms)
+                    const progress = elapsed / 300;
+                    const scale = this.easeOutBounce(progress);
+                    completionText.scaling = new BABYLON.Vector3(scale, scale, scale);
+                } else if (elapsed < 2000) {
+                    // Manter visível (300-2000ms)
+                    completionText.scaling = new BABYLON.Vector3(1, 1, 1);
+                    completionText.position.y = 4 + Math.sin(elapsed * 0.005) * 0.2; // Flutuação suave
+                } else if (elapsed < 2500) {
+                    // Animação de saída (2000-2500ms)
+                    const progress = (elapsed - 2000) / 500;
+                    const scale = 1 - progress;
+                    completionText.scaling = new BABYLON.Vector3(scale, scale, scale);
+                    textMaterial.alpha = 1 - progress;
+                } else {
+                    // Limpar
+                    if (completionTexture) completionTexture.dispose();
+                    if (textMaterial) textMaterial.dispose();
+                    completionText.dispose();
+                    return;
+                }
+
+                requestAnimationFrame(animateText);
+            };
+
+            animateText();
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao criar texto de conclusão:', error);
+        }
+    }
+
+    easeOutBounce(t) {
+        if (t < 1 / 2.75) {
+            return 7.5625 * t * t;
+        } else if (t < 2 / 2.75) {
+            return 7.5625 * (t -= 1.5 / 2.75) * t + 0.75;
+        } else if (t < 2.5 / 2.75) {
+            return 7.5625 * (t -= 2.25 / 2.75) * t + 0.9375;
+        } else {
+            return 7.5625 * (t -= 2.625 / 2.75) * t + 0.984375;
+        }
+    }
+
+    createCompletionParticles(buildingData, worldPos) {
+        try {
+            const particleCount = 12;
+            const particles = [];
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = BABYLON.MeshBuilder.CreateSphere(`completionParticle_${buildingData.id}_${i}`, {
+                    diameter: 0.15
+                }, this.scene);
+
+                // Posição inicial no centro
+                particle.position = worldPos.clone();
+                particle.position.y += 2;
+
+                // Material brilhante colorido
+                const particleMaterial = new BABYLON.StandardMaterial(`completionParticleMat_${buildingData.id}_${i}`, this.scene);
+                const hue = (i / particleCount) * 360;
+                const color = this.hslToRgb(hue, 0.8, 0.6);
+                particleMaterial.emissiveColor = new BABYLON.Color3(color.r, color.g, color.b);
+                particleMaterial.disableLighting = true;
+                particle.material = particleMaterial;
+
+                particles.push({ mesh: particle, material: particleMaterial });
+
+                // Animação de explosão
+                const angle = (i / particleCount) * Math.PI * 2;
+                const velocity = {
+                    x: Math.cos(angle) * (2 + Math.random()),
+                    y: 3 + Math.random() * 2,
+                    z: Math.sin(angle) * (2 + Math.random())
+                };
+
+                this.animateCompletionParticle(particle, particleMaterial, velocity, worldPos);
+            }
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao criar partículas de conclusão:', error);
+        }
+    }
+
+    animateCompletionParticle(particle, material, velocity, startPos) {
+        const startTime = Date.now();
+        const duration = 2000;
+        const gravity = -0.01;
+
+        const animateParticle = () => {
+            if (particle.isDisposed()) return;
+
+            const elapsed = Date.now() - startTime;
+            const progress = elapsed / duration;
+
+            if (progress >= 1) {
+                material.dispose();
+                particle.dispose();
+                return;
+            }
+
+            // Física simples
+            const time = elapsed / 1000;
+            particle.position.x = startPos.x + velocity.x * time;
+            particle.position.z = startPos.z + velocity.z * time;
+            particle.position.y = startPos.y + velocity.y * time + 0.5 * gravity * time * time;
+
+            // Fade out
+            material.alpha = 1 - progress;
+
+            // Rotação
+            particle.rotation.x += 0.1;
+            particle.rotation.y += 0.1;
+
+            requestAnimationFrame(animateParticle);
+        };
+
+        animateParticle();
+    }
+
+    animateBuildingCompletion(buildingData) {
+        try {
+            const mesh = buildingData.mesh;
+            const targetScale = buildingData.originalScaling || new BABYLON.Vector3(1, 1, 1);
+
+            // Animação de "pop" de conclusão
+            const startTime = Date.now();
+            const duration = 800;
+
+            const animateCompletion = () => {
+                if (mesh.isDisposed()) return;
+
+                const elapsed = Date.now() - startTime;
+                const progress = elapsed / duration;
+
+                if (progress >= 1) {
+                    mesh.scaling = targetScale;
+                    mesh.rotation = buildingData.originalRotation || BABYLON.Vector3.Zero();
+                    return;
+                }
+
+                // Efeito de "bounce" na escala
+                const bounceScale = this.easeOutBounce(progress);
+                const scale = BABYLON.Vector3.Lerp(
+                    new BABYLON.Vector3(0.3, 0.3, 0.3),
+                    targetScale,
+                    bounceScale
+                );
+
+                mesh.scaling = scale;
+
+                // Parar rotação gradualmente
+                const rotationFactor = 1 - progress;
+                mesh.rotation.y = (buildingData.originalRotation?.y || 0) + (rotationFactor * 0.1);
+
+                requestAnimationFrame(animateCompletion);
+            };
+
+            animateCompletion();
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao animar conclusão do edifício:', error);
+        }
+    }
+
+    hslToRgb(h, s, l) {
+        h /= 360;
+        const a = s * Math.min(l, 1 - l);
+        const f = n => {
+            const k = (n + h / (1/12)) % 1;
+            return l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        };
+        return { r: f(0), g: f(8), b: f(4) };
     }
 
     // ===== LABELS DE NOME DOS EDIFÍCIOS =====
@@ -5297,6 +5538,280 @@ class BuildingSystem {
         }
 
         return rentalIncome;
+    }
+
+    // ===== EFEITOS VISUAIS APRIMORADOS DE CONSTRUÇÃO =====
+    applyConstructionMaterial(buildingData) {
+        if (!buildingData.mesh || !buildingData.mesh.material) return;
+
+        try {
+            // Armazenar material original
+            buildingData.originalMaterial = buildingData.mesh.material.clone();
+
+            // Criar material de construção
+            const constructionMaterial = buildingData.mesh.material.clone();
+            constructionMaterial.alpha = 0.7;
+            constructionMaterial.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.8);
+            constructionMaterial.wireframe = false;
+
+            // Aplicar efeito de "fantasma" durante construção
+            if (constructionMaterial.diffuseColor) {
+                constructionMaterial.diffuseColor = constructionMaterial.diffuseColor.scale(0.6);
+            }
+
+            buildingData.mesh.material = constructionMaterial;
+            buildingData.constructionMaterial = constructionMaterial;
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao aplicar material de construção:', error);
+        }
+    }
+
+    createConstructionParticles(buildingData) {
+        try {
+            const worldPos = this.gridManager.gridToWorld(buildingData.gridX, buildingData.gridZ);
+
+            // Criar sistema de partículas simples usando meshes pequenos
+            const particleCount = 8;
+            buildingData.constructionParticles = [];
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = BABYLON.MeshBuilder.CreateSphere(`particle_${buildingData.id}_${i}`, {
+                    diameter: 0.1
+                }, this.scene);
+
+                // Posição aleatória ao redor do edifício
+                const angle = (i / particleCount) * Math.PI * 2;
+                const radius = 1 + Math.random() * 0.5;
+
+                particle.position.x = worldPos.x + Math.cos(angle) * radius;
+                particle.position.z = worldPos.z + Math.sin(angle) * radius;
+                particle.position.y = worldPos.y + Math.random() * 2;
+
+                // Material brilhante
+                const particleMaterial = new BABYLON.StandardMaterial(`particleMat_${buildingData.id}_${i}`, this.scene);
+                particleMaterial.emissiveColor = new BABYLON.Color3(1, 0.8, 0.2);
+                particleMaterial.disableLighting = true;
+                particle.material = particleMaterial;
+
+                // Animação de flutuação
+                this.animateConstructionParticle(particle, i);
+
+                buildingData.constructionParticles.push(particle);
+            }
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao criar partículas de construção:', error);
+        }
+    }
+
+    animateConstructionParticle(particle, index) {
+        const startY = particle.position.y;
+        const amplitude = 0.5;
+        const frequency = 0.002 + (index * 0.0003);
+
+        const animateParticle = () => {
+            if (particle.isDisposed()) return;
+
+            const time = Date.now();
+            particle.position.y = startY + Math.sin(time * frequency) * amplitude;
+            particle.rotation.y += 0.02;
+
+            requestAnimationFrame(animateParticle);
+        };
+
+        animateParticle();
+    }
+
+    startConstructionAnimation(buildingData) {
+        if (!buildingData.mesh) return;
+
+        try {
+            // Animação de crescimento gradual
+            const targetScale = buildingData.originalScaling || new BABYLON.Vector3(1, 1, 1);
+            const startScale = new BABYLON.Vector3(0.3, 0.3, 0.3);
+
+            buildingData.constructionAnimationData = {
+                startTime: Date.now(),
+                startScale: startScale.clone(),
+                targetScale: targetScale.clone(),
+                isAnimating: true
+            };
+
+            // Rotação suave durante construção
+            const rotationSpeed = 0.001;
+            const animateConstruction = () => {
+                if (!buildingData.mesh || buildingData.mesh.isDisposed() || !buildingData.constructionAnimationData?.isAnimating) {
+                    return;
+                }
+
+                const elapsed = Date.now() - buildingData.constructionStartTime;
+                const progress = Math.min(1, elapsed / buildingData.constructionDuration);
+
+                // Interpolação suave da escala
+                const currentScale = BABYLON.Vector3.Lerp(
+                    buildingData.constructionAnimationData.startScale,
+                    buildingData.constructionAnimationData.targetScale,
+                    this.easeOutCubic(progress)
+                );
+
+                buildingData.mesh.scaling = currentScale;
+
+                // Rotação sutil
+                buildingData.mesh.rotation.y += rotationSpeed;
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateConstruction);
+                }
+            };
+
+            animateConstruction();
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao iniciar animação de construção:', error);
+        }
+    }
+
+    easeOutCubic(t) {
+        return 1 - Math.pow(1 - t, 3);
+    }
+
+    removeConstructionEffects(buildingData) {
+        try {
+            // Remover partículas
+            if (buildingData.constructionParticles) {
+                buildingData.constructionParticles.forEach(particle => {
+                    if (particle && !particle.isDisposed()) {
+                        if (particle.material) particle.material.dispose();
+                        particle.dispose();
+                    }
+                });
+                delete buildingData.constructionParticles;
+            }
+
+            // Restaurar material original
+            if (buildingData.mesh && buildingData.originalMaterial) {
+                if (buildingData.constructionMaterial) {
+                    buildingData.constructionMaterial.dispose();
+                }
+                buildingData.mesh.material = buildingData.originalMaterial;
+                delete buildingData.originalMaterial;
+                delete buildingData.constructionMaterial;
+            }
+
+            // Parar animação
+            if (buildingData.constructionAnimationData) {
+                buildingData.constructionAnimationData.isAnimating = false;
+                delete buildingData.constructionAnimationData;
+            }
+
+            // Restaurar escala final
+            if (buildingData.mesh) {
+                buildingData.mesh.scaling = buildingData.originalScaling || new BABYLON.Vector3(1, 1, 1);
+                buildingData.mesh.rotation = buildingData.originalRotation || BABYLON.Vector3.Zero();
+            }
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao remover efeitos de construção:', error);
+        }
+    }
+
+    // ===== SISTEMA DE ÁUDIO PARA CONSTRUÇÃO =====
+    playConstructionCompletionAudio(buildingData) {
+        if (typeof AudioManager === 'undefined') return;
+
+        try {
+            const buildingType = buildingData.config;
+
+            // Som principal de conclusão (novo som procedural)
+            AudioManager.playSound('sfx_build_complete', 1.0);
+
+            // Som específico baseado no tipo de edifício
+            setTimeout(() => {
+                switch (buildingType.category) {
+                    case 'water':
+                        AudioManager.playSound('sfx_water', 0.6);
+                        break;
+                    case 'power':
+                        AudioManager.playSound('sfx_item', 0.5);
+                        break;
+                    case 'infrastructure':
+                        AudioManager.playSound('sfx_build', 0.4);
+                        break;
+                    case 'residential':
+                    case 'commercial':
+                    case 'industrial':
+                        AudioManager.playSound('sfx_pickup', 0.5);
+                        break;
+                    default:
+                        AudioManager.playSound('sfx_success', 0.3);
+                }
+            }, 300);
+
+            // Som de celebração extra para edifícios importantes
+            if (buildingType.cost > 10000) {
+                setTimeout(() => {
+                    AudioManager.playSound('sfx_build_complete', 0.5);
+                }, 600);
+            }
+
+            console.log(`🔊 Audio de conclusão aprimorado reproduzido para ${buildingType.name}`);
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao reproduzir áudio de conclusão:', error);
+        }
+    }
+
+    playConstructionProgressAudio(buildingData, progress) {
+        if (typeof AudioManager === 'undefined') return;
+        if (!buildingData.lastProgressAudio) buildingData.lastProgressAudio = 0;
+
+        try {
+            const now = Date.now();
+
+            // Tocar som de progresso a cada 25% de conclusão
+            const progressMilestones = [0.25, 0.5, 0.75];
+            const currentMilestone = progressMilestones.find(milestone =>
+                progress >= milestone && buildingData.lastProgressAudio < milestone
+            );
+
+            if (currentMilestone && now - (buildingData.lastProgressSound || 0) > 1500) {
+                // Usar novo som procedural de progresso
+                AudioManager.playSound('sfx_build_progress', 0.4);
+                buildingData.lastProgressAudio = currentMilestone;
+                buildingData.lastProgressSound = now;
+
+                console.log(`🔊 Som de progresso aprimorado (${Math.round(currentMilestone * 100)}%) para ${buildingData.config.name}`);
+            }
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao reproduzir áudio de progresso:', error);
+        }
+    }
+
+    playBuildingPlacementAudio(buildingType) {
+        if (typeof AudioManager === 'undefined') return;
+
+        try {
+            // Som principal de colocação (novo som procedural)
+            AudioManager.playSound('sfx_build_place', 0.8);
+
+            // Som adicional baseado no tipo
+            setTimeout(() => {
+                if (buildingType.category === 'infrastructure') {
+                    AudioManager.playSound('sfx_axe', 0.4);
+                } else if (buildingType.category === 'water') {
+                    AudioManager.playSound('sfx_water', 0.3);
+                } else {
+                    AudioManager.playSound('sfx_pickup', 0.3);
+                }
+            }, 200);
+
+            console.log(`🔊 Audio de colocação aprimorado reproduzido para ${buildingType.name}`);
+
+        } catch (error) {
+            console.warn('⚠️ Erro ao reproduzir áudio de colocação:', error);
+        }
     }
 }
 
