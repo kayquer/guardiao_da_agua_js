@@ -85,12 +85,13 @@ class UIManager {
         };
 
         // ===== UI CONFLICT RESOLUTION =====
+        // Higher numbers = higher priority (can override lower priority panels)
         this.panelPriority = {
-            'resource': 1,
-            'building': 2,
-            'terrain': 3,
-            'selection': 4,
-            'construction': 5
+            'terrain': 1,        // Lowest priority - terrain info can be overridden by anything
+            'building': 2,       // Building selection info
+            'resource': 3,       // Resource panels have higher priority
+            'selection': 4,      // Building selection details
+            'construction': 5    // Highest priority - construction mode
         };
 
         // ===== EVENT LISTENER TRACKING =====
@@ -2548,50 +2549,7 @@ class UIManager {
         }
     }
 
-    showTerrainInfo(terrainType, gridX, gridZ, mouseX, mouseY) {
-        // ===== ENHANCED TERRAIN INFORMATION DISPLAY SYSTEM =====
 
-        // ===== STATE MANAGEMENT: Check if terrain info should be displayed =====
-        if (this.uiState.isTransitioning) return;
-
-        // ===== PANEL PRIORITY: Don't override higher priority panels =====
-        const currentPriority = this.panelPriority[this.uiState.currentOpenPanel] || 0;
-        const terrainPriority = this.panelPriority['terrain'];
-
-        if (currentPriority > terrainPriority) {
-            return; // Don't show terrain info if higher priority panel is open
-        }
-
-        try {
-            // Mostrar informações de terreno diretamente sem recursão
-            const hoverInfo = document.getElementById('hover-tooltip');
-            if (hoverInfo) {
-                let content = `<div class="tooltip-header">Terreno: ${terrainType}</div>`;
-                content += `<div class="tooltip-coords">Posição: (${gridX}, ${gridZ})</div>`;
-
-                // Adicionar informações específicas do terreno
-                const terrainDescriptions = {
-                    'grassland': 'Terra fértil ideal para construção',
-                    'lowland': 'Terreno baixo adequado para edifícios',
-                    'water': 'Corpo d\'água - não construível',
-                    'highland': 'Terreno elevado com boa vista',
-                    'mountain': 'Montanha - não construível'
-                };
-
-                if (terrainDescriptions[terrainType]) {
-                    content += `<div class="tooltip-description">${terrainDescriptions[terrainType]}</div>`;
-                }
-
-                hoverInfo.innerHTML = content;
-                hoverInfo.style.left = mouseX + 'px';
-                hoverInfo.style.top = (mouseY - 10) + 'px';
-                hoverInfo.style.transform = 'translateX(-50%) translateY(-100%)';
-                hoverInfo.style.display = 'block';
-            }
-        } catch (error) {
-            console.warn('⚠️ Erro ao mostrar informações de terreno:', error);
-        }
-    }
 
     // ===== RESOURCE UI REDESIGN: Sistema de tooltips para recursos =====
     showResourceTooltip(event, resourceName, resourceType) {
@@ -2961,6 +2919,7 @@ class UIManager {
 
             // Show in details panel
             this.elements.detailsContent.innerHTML = detailsHTML;
+            this.elements.detailsPanel.style.display = 'flex';
             this.uiState.currentOpenPanel = 'terrain';
 
             // Audio feedback
@@ -2972,6 +2931,32 @@ class UIManager {
 
         } catch (error) {
             console.warn('⚠️ Error showing terrain info:', error);
+        }
+    }
+
+    // ===== TERRAIN INFORMATION CLEANUP =====
+    hideTerrainInfo() {
+        try {
+            // Clear terrain info from details panel
+            if (this.elements.detailsContent) {
+                this.elements.detailsContent.innerHTML = '<p>Selecione um item para ver detalhes</p>';
+            }
+
+            // Hide details panel if it was showing terrain info
+            if (this.elements.detailsPanel && this.uiState.currentOpenPanel === 'terrain') {
+                this.elements.detailsPanel.style.display = 'none';
+            }
+
+            // Clear panel state
+            if (this.uiState.currentOpenPanel === 'terrain') {
+                this.uiState.currentOpenPanel = null;
+                this.currentOpenPanel = null; // Legacy compatibility
+            }
+
+            console.log('🌍 Terrain info hidden');
+
+        } catch (error) {
+            console.warn('⚠️ Error hiding terrain info:', error);
         }
     }
 }

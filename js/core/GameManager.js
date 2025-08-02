@@ -395,42 +395,73 @@ class GameManager {
     }
 
     handleBuildingSelection(x, y) {
-        // Ray cast to find buildings
+        // ===== ENHANCED 3D BUILDING SELECTION SYSTEM =====
+        // Ray cast to find buildings with improved mesh name detection
         const pickInfo = this.scene.pick(x, y, (mesh) => {
-            // Look for building meshes
-            return mesh.name && (mesh.name.includes('building_') || mesh.name.includes('structure_'));
+            // Look for building meshes with actual naming patterns used in BuildingSystem
+            if (!mesh.name) return false;
+
+            const meshName = mesh.name.toLowerCase();
+            return (
+                meshName.includes('building_') ||
+                meshName.includes('structure_') ||
+                meshName.includes('waterfacility_') ||
+                meshName.includes('storage_') ||
+                meshName.includes('house_') ||
+                meshName.includes('cityhall_') ||
+                meshName.includes('treatmentplant_') ||
+                meshName.includes('powerplant_') ||
+                meshName.includes('storage_tank') ||
+                meshName.includes('treatment_') ||
+                meshName.includes('pump_') ||
+                meshName.includes('well_') ||
+                meshName.includes('desal_')
+            );
         });
 
         if (pickInfo.hit && pickInfo.pickedMesh) {
-            // Extract building ID from mesh name
+            // ===== ENHANCED BUILDING ID EXTRACTION =====
             const meshName = pickInfo.pickedMesh.name;
-            let buildingId = null;
+            const building = this.findBuildingByMesh(pickInfo.pickedMesh);
 
-            if (meshName.includes('building_')) {
-                buildingId = meshName.split('_')[1];
-            }
+            if (building) {
+                this.selectBuilding(building);
 
-            if (buildingId) {
-                // Find the building object
-                const building = this.buildingSystem.getBuildingById(`building_${buildingId}`);
-
-                if (building) {
-                    this.selectBuilding(building);
-
-                    // Audio feedback
-                    if (typeof AudioManager !== 'undefined') {
-                        AudioManager.playSound('sfx_click', 0.8);
-                    }
-
-                    console.log(`🏢 Building selected: ${building.config.name} at (${building.gridX}, ${building.gridZ})`);
-                } else {
-                    console.warn(`⚠️ Building not found for ID: building_${buildingId}`);
+                // Audio feedback
+                if (typeof AudioManager !== 'undefined') {
+                    AudioManager.playSound('sfx_click', 0.8);
                 }
+
+                console.log(`🏢 Building selected: ${building.config.name} at (${building.gridX}, ${building.gridZ})`);
+            } else {
+                console.warn(`⚠️ Building not found for mesh: ${meshName}`);
+                // Still show terrain info if building not found
+                this.handleTerrainClick(x, y);
             }
         } else {
             // Click on empty terrain - show terrain info
             this.handleTerrainClick(x, y);
         }
+    }
+
+    // ===== ENHANCED BUILDING MESH LOOKUP =====
+    findBuildingByMesh(mesh) {
+        // Search through all buildings to find the one with matching mesh
+        for (const [buildingId, building] of this.buildingSystem.buildings) {
+            if (building.mesh === mesh) {
+                return building;
+            }
+        }
+
+        // Alternative: search by mesh name patterns
+        const meshName = mesh.name;
+        for (const [buildingId, building] of this.buildingSystem.buildings) {
+            if (building.mesh && building.mesh.name === meshName) {
+                return building;
+            }
+        }
+
+        return null;
     }
 
     handleTerrainClick(x, y) {

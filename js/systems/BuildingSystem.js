@@ -2664,92 +2664,171 @@ class BuildingSystem {
     }
 
     createWaterFacilityMesh(type, size) {
+        // ===== STANDARDIZED 3D MODEL POSITIONING AND SCALING =====
+        // Use consistent scaling based on grid cell size
+        const buildingSize = size || 1;
+        const cellSize = this.gridManager.cellSize;
+        const buildingScale = 0.85; // Consistent with reference model (water reservoir)
+        const actualSize = buildingSize * cellSize * buildingScale;
+
         let mesh;
 
         if (type === 'water_pump') {
-            // Bomba de água - cilindro com base
+            // ===== WATER PUMP - STANDARDIZED SCALING =====
+            // Bomba de água - cilindro com base proporcional ao grid
             const base = BABYLON.MeshBuilder.CreateBox("pump_base", {
-                width: 1.2, height: 0.3, depth: 1.2
+                width: actualSize * 0.8,
+                height: 0.4,
+                depth: actualSize * 0.8
             }, this.scene);
 
             const cylinder = BABYLON.MeshBuilder.CreateCylinder("pump_cylinder", {
-                height: 1.5, diameter: 0.8
+                height: 1.8,
+                diameter: actualSize * 0.5
             }, this.scene);
-            cylinder.position.y = 0.9;
+            cylinder.position.y = 1.1;
 
             mesh = BABYLON.Mesh.MergeMeshes([base, cylinder]);
 
         } else if (type === 'water_well') {
-            // Poço - cilindro baixo com anel
+            // ===== WATER WELL - STANDARDIZED SCALING =====
+            // Poço - cilindro baixo com anel proporcional
             const well = BABYLON.MeshBuilder.CreateCylinder("well", {
-                height: 0.5, diameter: 1.0
+                height: 0.6,
+                diameter: actualSize * 0.6
             }, this.scene);
 
             const ring = BABYLON.MeshBuilder.CreateTorus("well_ring", {
-                diameter: 1.2, thickness: 0.1
+                diameter: actualSize * 0.7,
+                thickness: actualSize * 0.05
             }, this.scene);
-            ring.position.y = 0.3;
+            ring.position.y = 0.35;
 
             mesh = BABYLON.Mesh.MergeMeshes([well, ring]);
 
         } else if (type === 'desalination_plant') {
-            // Usina - complexo industrial
+            // ===== DESALINATION PLANT - STANDARDIZED SCALING =====
+            // Usina - complexo industrial proporcional ao tamanho
             const main = BABYLON.MeshBuilder.CreateBox("desal_main", {
-                width: 2.5, height: 2, depth: 2.5
+                width: actualSize,
+                height: 2.5,
+                depth: actualSize
             }, this.scene);
 
             const tower = BABYLON.MeshBuilder.CreateCylinder("desal_tower", {
-                height: 3, diameter: 0.8
+                height: 3.5,
+                diameter: actualSize * 0.3
             }, this.scene);
-            tower.position.x = 1;
-            tower.position.y = 1.5;
+            tower.position.x = actualSize * 0.3;
+            tower.position.y = 2.0;
 
             mesh = BABYLON.Mesh.MergeMeshes([main, tower]);
+        }
+
+        // ===== STANDARDIZED POSITIONING: Multi-cell building support =====
+        if (mesh && buildingSize > 1) {
+            const offset = (buildingSize - 1) * cellSize * 0.5;
+            mesh.position.x += offset;
+            mesh.position.z += offset;
         }
 
         return mesh;
     }
 
     createTreatmentFacilityMesh(type, size) {
-        // Estação de tratamento - edifício industrial com tanques
+        // ===== STANDARDIZED 3D MODEL POSITIONING AND SCALING =====
+        // Use consistent scaling based on water reservoir reference model
+        const buildingSize = size || 1;
+        const cellSize = this.gridManager.cellSize;
+        const buildingScale = 0.85; // Consistent with reference model
+        const actualSize = buildingSize * cellSize * buildingScale;
+
+        // ===== TREATMENT FACILITY - STANDARDIZED SCALING =====
+        // Estação de tratamento - edifício industrial com tanques proporcionais
         const main = BABYLON.MeshBuilder.CreateBox("treatment_main", {
-            width: 2.5, height: 1.5, depth: 2.5
+            width: actualSize,
+            height: 1.8,
+            depth: actualSize
         }, this.scene);
+
+        const tankDiameter = actualSize * 0.3;
+        const tankOffset = actualSize * 0.25;
 
         const tank1 = BABYLON.MeshBuilder.CreateCylinder("treatment_tank1", {
-            height: 1, diameter: 0.8
+            height: 1.2,
+            diameter: tankDiameter
         }, this.scene);
-        tank1.position.x = -0.8;
-        tank1.position.y = 1.25;
+        tank1.position.x = -tankOffset;
+        tank1.position.y = 1.5;
 
         const tank2 = BABYLON.MeshBuilder.CreateCylinder("treatment_tank2", {
-            height: 1, diameter: 0.8
+            height: 1.2,
+            diameter: tankDiameter
         }, this.scene);
-        tank2.position.x = 0.8;
-        tank2.position.y = 1.25;
+        tank2.position.x = tankOffset;
+        tank2.position.y = 1.5;
 
-        return BABYLON.Mesh.MergeMeshes([main, tank1, tank2]);
+        const merged = BABYLON.Mesh.MergeMeshes([main, tank1, tank2]);
+
+        // ===== STANDARDIZED POSITIONING: Multi-cell building support =====
+        if (buildingSize > 1) {
+            const offset = (buildingSize - 1) * cellSize * 0.5;
+            merged.position.x += offset;
+            merged.position.z += offset;
+        }
+
+        return merged;
     }
 
     createStorageFacilityMesh(type, size) {
+        // ===== STANDARDIZED 3D MODEL POSITIONING AND SCALING =====
+        // Use water reservoir as reference model for consistent scaling
+        const buildingSize = size || 1;
+        const cellSize = this.gridManager.cellSize;
+        const buildingScale = 0.85; // Consistent with other building methods
+        const actualSize = buildingSize * cellSize * buildingScale;
+
         if (type === 'water_tank') {
-            // Reservatório - cilindro grande
-            return BABYLON.MeshBuilder.CreateCylinder("storage_tank", {
-                height: 2, diameter: 1.8
+            // ===== WATER RESERVOIR - REFERENCE MODEL FOR STANDARDIZATION =====
+            // Reservatório - cilindro grande com dimensões baseadas no grid
+            const tank = BABYLON.MeshBuilder.CreateCylinder("storage_tank", {
+                height: 2.5, // Proportional height for visibility
+                diameter: actualSize * 0.9 // Slightly smaller than cell for visual clarity
             }, this.scene);
 
+            // ===== STANDARDIZED POSITIONING: Multi-cell building support =====
+            if (buildingSize > 1) {
+                const offset = (buildingSize - 1) * cellSize * 0.5;
+                tank.position.x += offset;
+                tank.position.z += offset;
+            }
+
+            return tank;
+
         } else if (type === 'water_tower') {
-            // Caixa d'água - cilindro elevado
+            // ===== WATER TOWER - STANDARDIZED SCALING =====
+            // Caixa d'água - cilindro elevado com dimensões proporcionais
             const base = BABYLON.MeshBuilder.CreateCylinder("tower_base", {
-                height: 2.5, diameter: 0.3
+                height: 3.0, // Proportional to actualSize
+                diameter: actualSize * 0.15 // Thin support column
             }, this.scene);
 
             const tank = BABYLON.MeshBuilder.CreateCylinder("tower_tank", {
-                height: 1, diameter: 1.2
+                height: 1.2,
+                diameter: actualSize * 0.6 // Proportional to building size
             }, this.scene);
-            tank.position.y = 2;
+            tank.position.y = 2.4; // Position on top of base
 
-            return BABYLON.Mesh.MergeMeshes([base, tank]);
+            const merged = BABYLON.Mesh.MergeMeshes([base, tank]);
+
+            // ===== STANDARDIZED POSITIONING: Multi-cell building support =====
+            if (buildingSize > 1) {
+                const offset = (buildingSize - 1) * cellSize * 0.5;
+                merged.position.x += offset;
+                merged.position.z += offset;
+            }
+
+            return merged;
         }
 
         return null;
