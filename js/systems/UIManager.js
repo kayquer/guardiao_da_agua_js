@@ -190,6 +190,15 @@ class UIManager {
                 this.closeResourcePanel();
             }
         });
+
+        // ===== ENHANCED MOBILE TOUCH SUPPORT =====
+        this.setupMobileTouchSupport();
+
+        // ===== MISSION OBJECTIVE CLICK HANDLERS =====
+        this.setupMissionObjectiveHandlers();
+
+        // ===== CONTROL BUTTON ENHANCEMENTS =====
+        this.setupControlButtonEnhancements();
     }
 
     // ===== LATERAL MENU STABILITY FIX: Event listener management =====
@@ -2719,6 +2728,250 @@ class UIManager {
         const feedbackElement = document.getElementById('building-placement-feedback');
         if (feedbackElement) {
             feedbackElement.style.display = 'none';
+        }
+    }
+
+    // ===== ENHANCED MOBILE TOUCH SUPPORT =====
+    setupMobileTouchSupport() {
+        console.log('📱 Setting up enhanced mobile touch support...');
+
+        // Add touch event listeners to all interactive elements
+        const interactiveElements = document.querySelectorAll(
+            '.resource-item, .building-item, .category-btn, .control-btn, .mission-objective, button'
+        );
+
+        interactiveElements.forEach(element => {
+            // Add touch feedback
+            element.addEventListener('touchstart', (e) => {
+                element.style.transform = 'scale(0.95)';
+                element.style.transition = 'transform 0.1s ease';
+            }, { passive: true });
+
+            element.addEventListener('touchend', (e) => {
+                element.style.transform = '';
+                element.style.transition = 'transform 0.2s ease';
+            }, { passive: true });
+
+            element.addEventListener('touchcancel', (e) => {
+                element.style.transform = '';
+                element.style.transition = 'transform 0.2s ease';
+            }, { passive: true });
+        });
+
+        // Enhanced touch support for canvas interactions
+        if (this.gameManager && this.gameManager.canvas) {
+            this.gameManager.canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                // Convert touch to mouse event for building placement
+                if (this.gameManager.buildMode) {
+                    const touch = e.touches[0];
+                    const rect = this.gameManager.canvas.getBoundingClientRect();
+                    const mouseEvent = new MouseEvent('mousemove', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                    this.gameManager.handleBuildingPreviewMouseMove(mouseEvent);
+                }
+            }, { passive: false });
+
+            this.gameManager.canvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                // Convert touch to mouse click for building placement
+                if (this.gameManager.buildMode && e.changedTouches.length > 0) {
+                    const touch = e.changedTouches[0];
+                    const mouseEvent = new MouseEvent('click', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                    this.gameManager.handleBuildingPlacementClick(mouseEvent);
+                }
+            }, { passive: false });
+        }
+
+        console.log('✅ Enhanced mobile touch support initialized');
+    }
+
+    // ===== MISSION OBJECTIVE CLICK HANDLERS =====
+    setupMissionObjectiveHandlers() {
+        console.log('🎯 Setting up mission objective click handlers...');
+
+        // Add click handlers to mission objectives
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.mission-objective')) {
+                const objective = e.target.closest('.mission-objective');
+                this.handleMissionObjectiveClick(objective);
+            }
+        });
+
+        console.log('✅ Mission objective click handlers initialized');
+    }
+
+    handleMissionObjectiveClick(objectiveElement) {
+        try {
+            // Get objective data
+            const objectiveText = objectiveElement.textContent;
+
+            // Check if it's a building objective
+            if (objectiveText.includes('Construa') || objectiveText.includes('edifício')) {
+                // Open building panel
+                this.gameManager.uiManager.selectCategory('water');
+
+                // Show helpful notification
+                this.showNotification(
+                    '🏗️ Painel de construção aberto! Selecione um edifício para construir.',
+                    'info',
+                    4000
+                );
+
+                // Audio feedback
+                if (typeof AudioManager !== 'undefined') {
+                    AudioManager.playSound('sfx_click', 0.6);
+                }
+
+                console.log('🎯 Mission objective clicked: opened building panel');
+            }
+
+        } catch (error) {
+            console.warn('⚠️ Error handling mission objective click:', error);
+        }
+    }
+
+    // ===== CONTROL BUTTON ENHANCEMENTS =====
+    setupControlButtonEnhancements() {
+        console.log('🎮 Setting up control button enhancements...');
+
+        // Enhanced pause button
+        const pauseBtn = document.getElementById('btn-pause');
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => {
+                if (this.gameManager.gameState === 'playing') {
+                    this.gameManager.pauseGame();
+                    this.showNotification('⏸️ Jogo pausado', 'info', 2000);
+                } else if (this.gameManager.gameState === 'paused') {
+                    this.gameManager.resumeGame();
+                    this.showNotification('▶️ Jogo retomado', 'info', 2000);
+                }
+                AudioManager.playSound('sfx_click', 0.8);
+            });
+        }
+
+        // Enhanced speed buttons
+        ['btn-speed-1x', 'btn-speed-2x', 'btn-speed-3x'].forEach((btnId, index) => {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    const speed = index + 1;
+                    this.gameManager.setTimeScale(speed);
+                    this.showNotification(`⚡ Velocidade: ${speed}x`, 'info', 2000);
+                    AudioManager.playSound('sfx_click', 0.6);
+                });
+            }
+        });
+
+        // Enhanced help button
+        const helpBtn = document.getElementById('btn-help');
+        if (helpBtn) {
+            helpBtn.addEventListener('click', () => {
+                this.showHelpModal();
+                AudioManager.playSound('sfx_click', 0.8);
+            });
+        }
+
+        // Enhanced missions button
+        const missionsBtn = document.getElementById('btn-missions');
+        if (missionsBtn) {
+            missionsBtn.addEventListener('click', () => {
+                if (this.gameManager.questSystem) {
+                    this.gameManager.questSystem.openMissionInterface();
+                    AudioManager.playSound('sfx_click', 0.8);
+                }
+            });
+        }
+
+        console.log('✅ Control button enhancements initialized');
+    }
+
+    // ===== TERRAIN INFORMATION DISPLAY =====
+    showTerrainInfo(gridX, gridZ, terrainType) {
+        try {
+            // Clear any existing panels
+            this.closeCurrentPanel();
+
+            // Create terrain info content
+            const terrainDescriptions = {
+                'grassland': {
+                    name: 'Pastagem',
+                    description: 'Terra fértil ideal para construção de edifícios residenciais e comerciais',
+                    buildable: true,
+                    icon: '🌿'
+                },
+                'lowland': {
+                    name: 'Planície',
+                    description: 'Terreno baixo adequado para edifícios e infraestrutura',
+                    buildable: true,
+                    icon: '🏞️'
+                },
+                'water': {
+                    name: 'Corpo d\'água',
+                    description: 'Fonte natural de água. Não é possível construir aqui',
+                    buildable: false,
+                    icon: '💧'
+                },
+                'highland': {
+                    name: 'Terreno Elevado',
+                    description: 'Terreno elevado com boa vista, ideal para edifícios especiais',
+                    buildable: true,
+                    icon: '⛰️'
+                },
+                'mountain': {
+                    name: 'Montanha',
+                    description: 'Terreno montanhoso. Não é possível construir aqui',
+                    buildable: false,
+                    icon: '🏔️'
+                }
+            };
+
+            const terrain = terrainDescriptions[terrainType] || {
+                name: 'Terreno Desconhecido',
+                description: 'Tipo de terreno não identificado',
+                buildable: false,
+                icon: '❓'
+            };
+
+            let detailsHTML = `
+                <div class="terrain-info-panel">
+                    <h4>${terrain.icon} Informações do Terreno</h4>
+                    <div class="terrain-details">
+                        <div class="terrain-header">
+                            <h5>${terrain.name}</h5>
+                            <span class="terrain-coords">Posição: (${gridX}, ${gridZ})</span>
+                        </div>
+                        <p class="terrain-description">${terrain.description}</p>
+                        <div class="terrain-properties">
+                            <div class="property">
+                                <span class="property-label">Construível:</span>
+                                <span class="property-value ${terrain.buildable ? 'positive' : 'negative'}">
+                                    ${terrain.buildable ? '✅ Sim' : '❌ Não'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Show in details panel
+            this.elements.detailsContent.innerHTML = detailsHTML;
+            this.uiState.currentOpenPanel = 'terrain';
+
+            // Audio feedback
+            if (typeof AudioManager !== 'undefined') {
+                AudioManager.playSound('sfx_click', 0.4);
+            }
+
+            console.log(`🌍 Terrain info displayed: ${terrain.name} at (${gridX}, ${gridZ})`);
+
+        } catch (error) {
+            console.warn('⚠️ Error showing terrain info:', error);
         }
     }
 }

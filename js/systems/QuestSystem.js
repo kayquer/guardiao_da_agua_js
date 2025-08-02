@@ -1165,8 +1165,8 @@ class QuestSystem {
             );
         }
 
-        // Som de sucesso
-        AudioManager.playSound('sfx_success');
+        // ===== ENHANCED MISSION COMPLETION AUDIO FEEDBACK =====
+        this.playMissionCompletionAudio(quest, performanceMultiplier);
 
         console.log(`✅ Missão completa: ${quest.title} (Performance: ${performanceMultiplier.toFixed(2)}x)`);
         return true;
@@ -2782,6 +2782,126 @@ class QuestSystem {
                     }
                 });
             }
+        }
+    }
+
+    // ===== ENHANCED MISSION COMPLETION AUDIO FEEDBACK =====
+    playMissionCompletionAudio(quest, performanceMultiplier) {
+        try {
+            // Determine audio based on mission importance and performance
+            let primarySound = 'sfx_success';
+            let celebrationLevel = 'normal';
+
+            // Check mission importance
+            if (quest.priority === 'high' || quest.urgency === 'urgent') {
+                celebrationLevel = 'important';
+            }
+
+            // Check performance multiplier
+            if (performanceMultiplier >= 1.5) {
+                celebrationLevel = 'excellent';
+            } else if (performanceMultiplier >= 1.2) {
+                celebrationLevel = 'good';
+            }
+
+            // Play primary completion sound
+            AudioManager.playSound(primarySound, 0.8);
+
+            // Add celebration effects based on level
+            setTimeout(() => {
+                switch (celebrationLevel) {
+                    case 'excellent':
+                        // Excellent performance - fanfare
+                        AudioManager.playSound('sfx_pickup', 0.6);
+                        setTimeout(() => {
+                            AudioManager.playSound('sfx_item', 0.4);
+                        }, 200);
+                        setTimeout(() => {
+                            AudioManager.playSound('sfx_success', 0.5);
+                        }, 400);
+                        break;
+
+                    case 'important':
+                        // Important mission - double celebration
+                        AudioManager.playSound('sfx_pickup', 0.7);
+                        setTimeout(() => {
+                            AudioManager.playSound('sfx_success', 0.6);
+                        }, 300);
+                        break;
+
+                    case 'good':
+                        // Good performance - bonus sound
+                        AudioManager.playSound('sfx_pickup', 0.5);
+                        break;
+
+                    default:
+                        // Normal completion - single sound already played
+                        break;
+                }
+            }, 150);
+
+            // Create procedural victory sound for special occasions
+            if (celebrationLevel === 'excellent') {
+                setTimeout(() => {
+                    this.createProceduralVictorySound();
+                }, 600);
+            }
+
+            console.log(`🔊 Mission completion audio played: ${celebrationLevel} level for "${quest.title}"`);
+
+        } catch (error) {
+            console.warn('⚠️ Error playing mission completion audio:', error);
+            // Fallback to simple success sound
+            AudioManager.playSound('sfx_success', 0.8);
+        }
+    }
+
+    createProceduralVictorySound() {
+        try {
+            if (typeof AudioManager === 'undefined' || !AudioManager.getInstance().audioContext) {
+                return;
+            }
+
+            const audioContext = AudioManager.getInstance().audioContext;
+            const masterVolume = AudioManager.getInstance().masterVolume;
+            const sfxVolume = AudioManager.getInstance().sfxVolume;
+
+            // Create a celebratory chord progression
+            const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5 (C major chord)
+            const duration = 0.8;
+
+            frequencies.forEach((freq, index) => {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                    oscillator.type = 'sine';
+
+                    // Envelope for musical sound
+                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(
+                        masterVolume * sfxVolume * 0.3,
+                        audioContext.currentTime + 0.1
+                    );
+                    gainNode.gain.exponentialRampToValueAtTime(
+                        0.001,
+                        audioContext.currentTime + duration
+                    );
+
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + duration);
+
+                }, index * 100);
+            });
+
+            console.log('🎵 Procedural victory sound created');
+
+        } catch (error) {
+            console.warn('⚠️ Error creating procedural victory sound:', error);
         }
     }
 }

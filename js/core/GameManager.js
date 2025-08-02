@@ -347,43 +347,114 @@ class GameManager {
     }
 
     handleBuildingPlacementClick(event) {
-        if (!this.buildMode || !this.buildingSystem || !this.buildingSystem.previewMode) {
-            return;
-        }
-
         try {
             // Get mouse position relative to canvas
             const rect = this.canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
 
-            // Convert screen coordinates to world coordinates using ray casting
-            const pickInfo = this.scene.pick(x, y, (mesh) => {
-                return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
-            });
-
-            if (pickInfo.hit && pickInfo.pickedPoint) {
-                // Convert world position to grid coordinates
-                const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
-
-                // Attempt to place building at this position
-                const success = this.buildingSystem.confirmPlacement(gridPos.x, gridPos.z);
-
-                if (success) {
-                    console.log(`✅ Building placed successfully at (${gridPos.x}, ${gridPos.z})`);
-                    // Exit build mode after successful placement
-                    this.exitBuildMode();
-                } else {
-                    console.warn(`⚠️ Cannot place building at (${gridPos.x}, ${gridPos.z})`);
-                    // Play error sound
-                    if (typeof AudioManager !== 'undefined') {
-                        AudioManager.playSound('sfx_build_error', 0.6);
-                    }
-                }
+            // ===== ENHANCED 3D INTERACTION SYSTEM =====
+            if (this.buildMode && this.buildingSystem && this.buildingSystem.previewMode) {
+                // Building placement mode
+                this.handleBuildingPlacement(x, y);
+            } else {
+                // Building selection mode
+                this.handleBuildingSelection(x, y);
             }
 
         } catch (error) {
             console.error('❌ Error in building placement click:', error);
+        }
+    }
+
+    handleBuildingPlacement(x, y) {
+        // Convert screen coordinates to world coordinates using ray casting
+        const pickInfo = this.scene.pick(x, y, (mesh) => {
+            return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
+        });
+
+        if (pickInfo.hit && pickInfo.pickedPoint) {
+            // Convert world position to grid coordinates
+            const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
+
+            // Attempt to place building at this position
+            const success = this.buildingSystem.confirmPlacement(gridPos.x, gridPos.z);
+
+            if (success) {
+                console.log(`✅ Building placed successfully at (${gridPos.x}, ${gridPos.z})`);
+                // Exit build mode after successful placement
+                this.exitBuildMode();
+            } else {
+                console.warn(`⚠️ Cannot place building at (${gridPos.x}, ${gridPos.z})`);
+                // Play error sound
+                if (typeof AudioManager !== 'undefined') {
+                    AudioManager.playSound('sfx_build_error', 0.6);
+                }
+            }
+        }
+    }
+
+    handleBuildingSelection(x, y) {
+        // Ray cast to find buildings
+        const pickInfo = this.scene.pick(x, y, (mesh) => {
+            // Look for building meshes
+            return mesh.name && (mesh.name.includes('building_') || mesh.name.includes('structure_'));
+        });
+
+        if (pickInfo.hit && pickInfo.pickedMesh) {
+            // Extract building ID from mesh name
+            const meshName = pickInfo.pickedMesh.name;
+            let buildingId = null;
+
+            if (meshName.includes('building_')) {
+                buildingId = meshName.split('_')[1];
+            }
+
+            if (buildingId) {
+                // Find the building object
+                const building = this.buildingSystem.getBuildingById(`building_${buildingId}`);
+
+                if (building) {
+                    this.selectBuilding(building);
+
+                    // Audio feedback
+                    if (typeof AudioManager !== 'undefined') {
+                        AudioManager.playSound('sfx_click', 0.8);
+                    }
+
+                    console.log(`🏢 Building selected: ${building.config.name} at (${building.gridX}, ${building.gridZ})`);
+                } else {
+                    console.warn(`⚠️ Building not found for ID: building_${buildingId}`);
+                }
+            }
+        } else {
+            // Click on empty terrain - show terrain info
+            this.handleTerrainClick(x, y);
+        }
+    }
+
+    handleTerrainClick(x, y) {
+        // Ray cast to terrain
+        const pickInfo = this.scene.pick(x, y, (mesh) => {
+            return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
+        });
+
+        if (pickInfo.hit && pickInfo.pickedPoint) {
+            // Convert world position to grid coordinates
+            const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
+
+            // Get terrain type
+            const terrainType = this.gridManager.getTerrainType(gridPos.x, gridPos.z);
+
+            // Show terrain information in UI
+            if (this.uiManager) {
+                this.uiManager.showTerrainInfo(gridPos.x, gridPos.z, terrainType);
+            }
+
+            // Clear building selection
+            this.deselectBuilding();
+
+            console.log(`🌍 Terrain clicked: ${terrainType} at (${gridPos.x}, ${gridPos.z})`);
         }
     }
 
