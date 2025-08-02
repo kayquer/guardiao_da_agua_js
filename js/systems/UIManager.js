@@ -365,7 +365,8 @@ class UIManager {
             this.uiState.lastInteraction = now;
 
             // ===== STATE MANAGEMENT: Handle panel transitions =====
-            this.handleResourcePanelTransition(type);
+            // User-initiated panel switch - override priority restrictions
+            this.handleResourcePanelTransition(type, true);
         };
 
         item.addEventListener('click', clickHandler);
@@ -401,8 +402,9 @@ class UIManager {
     /**
      * Handles resource panel transitions with proper state management
      * @param {string} resourceType - The resource type to show
+     * @param {boolean} userInitiated - Whether this is a user-initiated panel switch (overrides priority)
      */
-    handleResourcePanelTransition(resourceType) {
+    handleResourcePanelTransition(resourceType, userInitiated = false) {
         try {
             // ===== STATE TRANSITION MANAGEMENT =====
             if (this.uiState.isTransitioning) {
@@ -412,15 +414,20 @@ class UIManager {
 
             this.uiState.isTransitioning = true;
 
-            // ===== PANEL PRIORITY SYSTEM =====
+            // ===== ENHANCED PANEL PRIORITY SYSTEM =====
             const currentPriority = this.panelPriority[this.uiState.currentOpenPanel] || 0;
             const newPriority = this.panelPriority['resource'];
 
-            // Allow resource panels to override lower priority panels
-            if (currentPriority > newPriority && this.uiState.currentOpenPanel !== resourceType) {
-                console.log(`⚠️ Higher priority panel (${this.uiState.currentOpenPanel}) is open, resource panel blocked`);
+            // ===== FIX: Allow user-initiated panel switches to override priority restrictions =====
+            if (!userInitiated && currentPriority > newPriority && this.uiState.currentOpenPanel !== resourceType) {
+                console.log(`⚠️ Higher priority panel (${this.uiState.currentOpenPanel}) is open, resource panel blocked (system-initiated)`);
                 this.uiState.isTransitioning = false;
                 return;
+            }
+
+            // User-initiated switches always succeed
+            if (userInitiated && this.uiState.currentOpenPanel !== resourceType) {
+                console.log(`🎯 User-initiated panel switch: ${this.uiState.currentOpenPanel} → ${resourceType}`);
             }
 
             // ===== CLEAN TRANSITION =====

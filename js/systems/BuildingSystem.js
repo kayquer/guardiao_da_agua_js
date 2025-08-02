@@ -1754,6 +1754,16 @@ class BuildingSystem {
     applyStandardizedMaterial(mesh, buildingType) {
         const material = this.createMinecraftBuildingMaterial(buildingType);
         mesh.material = material;
+
+        // ===== FIX BUILDING VISIBILITY: Ensure mesh is visible =====
+        mesh.isVisible = true;
+        mesh.setEnabled(true);
+
+        // Ensure material is properly applied
+        if (material) {
+            material.needDepthPrePass = false;
+            material.backFaceCulling = false; // Better visibility for voxel style
+        }
     }
 
     /**
@@ -1837,7 +1847,22 @@ class BuildingSystem {
      * @returns {BABYLON.Mesh} - The building mesh
      */
     createStandardizedPowerPlantMesh(buildingType, dimensions) {
-        // Main building
+        // ===== ENHANCED POWER BUILDING MESH CREATION =====
+        // Handle specific power building types with proper grid alignment
+
+        if (buildingType.id === 'solar_farm') {
+            return this.createStandardizedSolarFarmMesh(buildingType, dimensions);
+        } else if (buildingType.id === 'wind_farm') {
+            return this.createStandardizedWindFarmMesh(buildingType, dimensions);
+        } else if (buildingType.id === 'power_pole') {
+            return this.createStandardizedPowerPoleMesh(buildingType, dimensions);
+        } else if (buildingType.id === 'hydroelectric_plant') {
+            return this.createStandardizedHydroelectricMesh(buildingType, dimensions);
+        } else if (buildingType.id === 'nuclear_plant') {
+            return this.createStandardizedNuclearPlantMesh(buildingType, dimensions);
+        }
+
+        // Default power plant (thermal, coal, etc.)
         const main = BABYLON.MeshBuilder.CreateBox("powerMain", {
             width: dimensions.width,
             height: dimensions.height * 0.8,
@@ -1859,6 +1884,211 @@ class BuildingSystem {
 
         const merged = BABYLON.Mesh.MergeMeshes([main, tower1, tower2]);
         merged.name = `powerPlant_${buildingType.id}`;
+
+        return merged;
+    }
+
+    /**
+     * Creates standardized solar farm mesh with proper grid alignment
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh
+     */
+    createStandardizedSolarFarmMesh(buildingType, dimensions) {
+        // Base platform
+        const base = BABYLON.MeshBuilder.CreateBox("solarBase", {
+            width: dimensions.width,
+            height: dimensions.height * 0.1,
+            depth: dimensions.depth
+        }, this.scene);
+
+        // Solar panels - arranged in grid pattern
+        const panelWidth = dimensions.width * 0.35;
+        const panelDepth = dimensions.depth * 0.4;
+        const panelHeight = dimensions.height * 0.05;
+
+        const panel1 = BABYLON.MeshBuilder.CreateBox("solarPanel1", {
+            width: panelWidth,
+            height: panelHeight,
+            depth: panelDepth
+        }, this.scene);
+        panel1.position.x = -dimensions.width * 0.25;
+        panel1.position.y = dimensions.height * 0.4;
+        panel1.position.z = -dimensions.depth * 0.2;
+        panel1.rotation.z = Math.PI / 12; // Slight tilt
+
+        const panel2 = panel1.clone("solarPanel2");
+        panel2.position.x = dimensions.width * 0.25;
+
+        const panel3 = panel1.clone("solarPanel3");
+        panel3.position.x = -dimensions.width * 0.25;
+        panel3.position.z = dimensions.depth * 0.2;
+
+        const panel4 = panel1.clone("solarPanel4");
+        panel4.position.x = dimensions.width * 0.25;
+        panel4.position.z = dimensions.depth * 0.2;
+
+        const merged = BABYLON.Mesh.MergeMeshes([base, panel1, panel2, panel3, panel4]);
+        merged.name = `solarFarm_${buildingType.id}`;
+
+        return merged;
+    }
+
+    /**
+     * Creates standardized wind farm mesh with proper grid alignment
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh
+     */
+    createStandardizedWindFarmMesh(buildingType, dimensions) {
+        // Base platform
+        const base = BABYLON.MeshBuilder.CreateCylinder("windBase", {
+            height: dimensions.height * 0.1,
+            diameter: dimensions.width * 0.3
+        }, this.scene);
+
+        // Tower
+        const tower = BABYLON.MeshBuilder.CreateCylinder("windTower", {
+            height: dimensions.height * 0.7,
+            diameterTop: dimensions.width * 0.08,
+            diameterBottom: dimensions.width * 0.12,
+            tessellation: 8
+        }, this.scene);
+        tower.position.y = dimensions.height * 0.4;
+
+        // Nacelle
+        const nacelle = BABYLON.MeshBuilder.CreateBox("windNacelle", {
+            width: dimensions.width * 0.2,
+            height: dimensions.height * 0.1,
+            depth: dimensions.width * 0.1
+        }, this.scene);
+        nacelle.position.y = dimensions.height * 0.75;
+
+        // Turbine blades
+        const bladeLength = dimensions.width * 0.35;
+        const blade1 = BABYLON.MeshBuilder.CreateBox("windBlade1", {
+            width: dimensions.width * 0.02,
+            height: bladeLength,
+            depth: dimensions.width * 0.01
+        }, this.scene);
+        blade1.position.y = dimensions.height * 0.75;
+        blade1.position.x = dimensions.width * 0.15;
+
+        const blade2 = blade1.clone("windBlade2");
+        blade2.rotation.z = 2 * Math.PI / 3;
+
+        const blade3 = blade1.clone("windBlade3");
+        blade3.rotation.z = 4 * Math.PI / 3;
+
+        const merged = BABYLON.Mesh.MergeMeshes([base, tower, nacelle, blade1, blade2, blade3]);
+        merged.name = `windFarm_${buildingType.id}`;
+
+        return merged;
+    }
+
+    /**
+     * Creates standardized power pole mesh with proper grid alignment
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh
+     */
+    createStandardizedPowerPoleMesh(buildingType, dimensions) {
+        // Main pole
+        const pole = BABYLON.MeshBuilder.CreateCylinder("powerPole", {
+            height: dimensions.height,
+            diameterTop: dimensions.width * 0.05,
+            diameterBottom: dimensions.width * 0.08,
+            tessellation: 6
+        }, this.scene);
+
+        // Cross arms
+        const crossArm = BABYLON.MeshBuilder.CreateBox("powerCrossArm", {
+            width: dimensions.width * 0.8,
+            height: dimensions.height * 0.03,
+            depth: dimensions.width * 0.03
+        }, this.scene);
+        crossArm.position.y = dimensions.height * 0.8;
+
+        const merged = BABYLON.Mesh.MergeMeshes([pole, crossArm]);
+        merged.name = `powerPole_${buildingType.id}`;
+
+        return merged;
+    }
+
+    /**
+     * Creates standardized hydroelectric plant mesh with proper grid alignment
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh
+     */
+    createStandardizedHydroelectricMesh(buildingType, dimensions) {
+        // Main building
+        const main = BABYLON.MeshBuilder.CreateBox("hydroMain", {
+            width: dimensions.width,
+            height: dimensions.height * 0.6,
+            depth: dimensions.depth
+        }, this.scene);
+
+        // Dam structure
+        const dam = BABYLON.MeshBuilder.CreateBox("hydroDam", {
+            width: dimensions.width * 1.2,
+            height: dimensions.height * 0.8,
+            depth: dimensions.depth * 0.3
+        }, this.scene);
+        dam.position.z = -dimensions.depth * 0.4;
+
+        // Turbine housing
+        const turbine = BABYLON.MeshBuilder.CreateCylinder("hydroTurbine", {
+            height: dimensions.height * 0.4,
+            diameter: dimensions.width * 0.4,
+            tessellation: 8
+        }, this.scene);
+        turbine.position.y = dimensions.height * 0.5;
+        turbine.position.z = dimensions.depth * 0.2;
+
+        const merged = BABYLON.Mesh.MergeMeshes([main, dam, turbine]);
+        merged.name = `hydroelectric_${buildingType.id}`;
+
+        return merged;
+    }
+
+    /**
+     * Creates standardized nuclear plant mesh with proper grid alignment
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh
+     */
+    createStandardizedNuclearPlantMesh(buildingType, dimensions) {
+        // Main reactor building
+        const main = BABYLON.MeshBuilder.CreateBox("nuclearMain", {
+            width: dimensions.width,
+            height: dimensions.height * 0.7,
+            depth: dimensions.depth
+        }, this.scene);
+
+        // Reactor dome
+        const dome = BABYLON.MeshBuilder.CreateSphere("nuclearDome", {
+            diameter: dimensions.width * 0.6,
+            segments: 8
+        }, this.scene);
+        dome.position.y = dimensions.height * 0.6;
+        dome.scaling.y = 0.6; // Flatten the dome
+
+        // Cooling towers
+        const tower1 = BABYLON.MeshBuilder.CreateCylinder("nuclearTower1", {
+            height: dimensions.height * 0.9,
+            diameterTop: dimensions.width * 0.25,
+            diameterBottom: dimensions.width * 0.35,
+            tessellation: 8
+        }, this.scene);
+        tower1.position.y = dimensions.height * 0.45;
+        tower1.position.x = dimensions.width * 0.4;
+
+        const tower2 = tower1.clone("nuclearTower2");
+        tower2.position.x = -dimensions.width * 0.4;
+
+        const merged = BABYLON.Mesh.MergeMeshes([main, dome, tower1, tower2]);
+        merged.name = `nuclear_${buildingType.id}`;
 
         return merged;
     }
@@ -4022,6 +4252,8 @@ class BuildingSystem {
     }
 
     removeConstructionVisuals(buildingData) {
+        // ===== FIX BUILDING VISIBILITY: Restore building to normal state =====
+
         // Remover indicadores de progresso
         if (buildingData.constructionIndicators) {
             const { progressBar, progressBg, textPlane } = buildingData.constructionIndicators;
@@ -4031,6 +4263,29 @@ class BuildingSystem {
             if (textPlane && !textPlane.isDisposed()) textPlane.dispose();
 
             delete buildingData.constructionIndicators;
+        }
+
+        // ===== CRITICAL FIX: Restore building mesh to normal state =====
+        if (buildingData.mesh && !buildingData.mesh.isDisposed()) {
+            // Restore original scaling immediately
+            buildingData.mesh.scaling = buildingData.originalScaling || new BABYLON.Vector3(1, 1, 1);
+
+            // Restore original rotation
+            buildingData.mesh.rotation = buildingData.originalRotation || BABYLON.Vector3.Zero();
+
+            // Restore original material if it exists
+            if (buildingData.originalMaterial) {
+                buildingData.mesh.material = buildingData.originalMaterial;
+            } else {
+                // Apply proper building material if original wasn't saved
+                this.applyStandardizedMaterial(buildingData.mesh, buildingData.config);
+            }
+
+            // Ensure mesh is visible
+            buildingData.mesh.isVisible = true;
+            buildingData.mesh.setEnabled(true);
+
+            console.log(`🔧 Building mesh restored to normal state: ${buildingData.config.name}`);
         }
 
         // Remover efeitos visuais aprimorados
