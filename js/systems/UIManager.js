@@ -84,6 +84,12 @@ class UIManager {
         // ===== UI CONFLICT RESOLUTION =====
         // Use GameConstants.js as authoritative source for panel priorities
 
+        // ===== STANDARDIZED STATE UPDATE HELPER =====
+        this.updatePanelState = (panelType) => {
+            this.uiState.currentOpenPanel = panelType;
+            console.log(`📋 Panel state updated: ${panelType || 'null'}`);
+        };
+
         // ===== EVENT LISTENER TRACKING =====
         this.eventListeners = {
             resource: [],
@@ -1123,7 +1129,7 @@ class UIManager {
             this.closeCurrentPanel();
 
             // ===== UPDATE STATE =====
-            this.uiState.currentOpenPanel = panelType;
+            this.updatePanelState(panelType);
 
             // ===== FIX: Ensure details panel is visible after transition =====
             if (this.elements.detailsPanel) {
@@ -1162,7 +1168,7 @@ class UIManager {
             // ===== ENHANCED RESOURCE PANEL CLOSING =====
 
             // ===== STATE CLEANUP =====
-            this.uiState.currentOpenPanel = null;
+            this.updatePanelState(null);
 
             // ===== PANEL CLEANUP =====
             if (this.elements.detailsContent) {
@@ -2003,7 +2009,7 @@ class UIManager {
 
         detailsContent.innerHTML = content;
         detailsPanel.style.display = 'block';
-        this.uiState.currentOpenPanel = 'selection';
+        this.updatePanelState('selection');
 
         console.log(`📋 Informações de seleção exibidas para ${building.config.name}`);
     }
@@ -2013,7 +2019,7 @@ class UIManager {
 
         if (detailsPanel && this.uiState.currentOpenPanel === 'selection') {
             detailsPanel.style.display = 'none';
-            this.uiState.currentOpenPanel = null;
+            this.updatePanelState(null);
         }
     }
 
@@ -2201,7 +2207,7 @@ class UIManager {
 
         detailsContent.innerHTML = content;
         detailsPanel.style.display = 'block';
-        this.uiState.currentOpenPanel = 'loans';
+        this.updatePanelState('loans');
 
         // Calcular preview inicial
         this.calculateLoanPreview();
@@ -2214,7 +2220,7 @@ class UIManager {
 
         if (detailsPanel && this.uiState.currentOpenPanel === 'loans') {
             detailsPanel.style.display = 'none';
-            this.uiState.currentOpenPanel = null;
+            this.updatePanelState(null);
         }
     }
 
@@ -2908,7 +2914,7 @@ class UIManager {
 
             // Clear panel state
             if (this.uiState.currentOpenPanel === 'terrain') {
-                this.uiState.currentOpenPanel = null;
+                this.updatePanelState(null);
             }
 
             console.log('🌍 Terrain info hidden');
