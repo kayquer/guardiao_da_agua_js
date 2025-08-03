@@ -59,22 +59,21 @@ class AudioManager {
             return;
         }
 
-        // Lista de sons para carregar (incluindo novos sons Pixabay)
+        // Lista de sons para carregar (incluindo Archive.org 1001 Sound Effects)
         const soundKeys = [
-            // Background Music (Legacy + Pixabay)
+            // Background Music (Legacy)
             'bgm_main', 'bgm_caketown', 'bgm_waves', 'bgm_whispers',
-            'bgm_peaceful_water', 'bgm_nature_calm', 'bgm_environmental',
 
-            // UI Sound Effects (Pixabay)
+            // UI Sound Effects (Archive.org)
             'sfx_ui_click', 'sfx_ui_hover', 'sfx_ui_select', 'sfx_ui_error', 'sfx_ui_success',
 
-            // Construction Sound Effects (Pixabay)
+            // Construction Sound Effects (Archive.org)
             'sfx_construction_start', 'sfx_construction_progress', 'sfx_construction_complete', 'sfx_building_place',
 
-            // Environmental Sound Effects (Pixabay)
+            // Environmental Sound Effects (Archive.org)
             'sfx_water_flow', 'sfx_water_splash', 'sfx_nature_birds', 'sfx_wind_gentle', 'sfx_rain_light',
 
-            // Alert/Notification Sounds (Pixabay)
+            // Alert/Notification Sounds (Archive.org)
             'sfx_mission_start', 'sfx_mission_complete', 'sfx_warning_alert', 'sfx_resource_low',
 
             // Legacy Sound Effects
@@ -895,7 +894,7 @@ class AudioManager {
         }
     }
     
-    // ===== ENHANCED PIXABAY AUDIO METHODS =====
+    // ===== ENHANCED ARCHIVE.ORG AUDIO METHODS =====
 
     // UI Sound Effects
     playUIClick() { this.playSound('sfx_ui_click', 0.7); }
@@ -923,10 +922,10 @@ class AudioManager {
     playWarningAlert() { this.playSound('sfx_warning_alert', 0.8); }
     playResourceLow() { this.playSound('sfx_resource_low', 0.7); }
 
-    // Enhanced Background Music Control
-    playPeacefulWaterMusic() { this.playMusic('bgm_peaceful_water'); }
-    playNatureCalmMusic() { this.playMusic('bgm_nature_calm'); }
-    playEnvironmentalMusic() { this.playMusic('bgm_environmental'); }
+    // Enhanced Background Music Control (Legacy)
+    playMainMusic() { this.playMusic('bgm_main'); }
+    playWavesMusic() { this.playMusic('bgm_waves'); }
+    playWhispersMusic() { this.playMusic('bgm_whispers'); }
 
     // Smart Audio Selection (fallback system)
     playSmartUISound(action) {

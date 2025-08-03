@@ -28,42 +28,38 @@ class AssetLoader {
                 { type: 'image', key: 'tileset', path: 'Sprites/SUNNYSIDE_WORLD_ASSETS_V0.2/TILESET/SunnysideWorld_Tileset_V0.1.png' },
                 { type: 'image', key: 'ui_elements', path: 'Sprites/SUNNYSIDEWORLD_UI_V1.0/PNG/Blue/Default/button_square_header_large_square_screws.png' },
                 
-                // ===== BACKGROUND MUSIC (Pixabay Royalty-Free) =====
+                // ===== BACKGROUND MUSIC (Legacy) =====
                 { type: 'audio', key: 'bgm_main', path: 'Sounds/BGM/TownTheme.mp3', optional: true },
                 { type: 'audio', key: 'bgm_caketown', path: 'Sounds/BGM/Caketown 1.mp3', optional: true },
                 { type: 'audio', key: 'bgm_waves', path: 'Sounds/BGM/Waves of Destiny ext v2.mp3', optional: true },
                 { type: 'audio', key: 'bgm_whispers', path: 'Sounds/BGM/Whispers of the Deep ext v1.mp3', optional: true },
 
-                // New Pixabay Background Music
-                { type: 'audio', key: 'bgm_peaceful_water', path: 'Sounds/BGM/Pixabay/peaceful-water-ambience.mp3', optional: true },
-                { type: 'audio', key: 'bgm_nature_calm', path: 'Sounds/BGM/Pixabay/nature-calm-meditation.mp3', optional: true },
-                { type: 'audio', key: 'bgm_environmental', path: 'Sounds/BGM/Pixabay/environmental-awareness.mp3', optional: true },
+                // ===== ARCHIVE.ORG 1001 SOUND EFFECTS =====
+                // UI Sound Effects
+                { type: 'audio', key: 'sfx_ui_click', path: 'Sounds/SFX/Archive/ui-click.wav', optional: true },
+                { type: 'audio', key: 'sfx_ui_hover', path: 'Sounds/SFX/Archive/ui-hover.wav', optional: true },
+                { type: 'audio', key: 'sfx_ui_select', path: 'Sounds/SFX/Archive/ui-select.wav', optional: true },
+                { type: 'audio', key: 'sfx_ui_error', path: 'Sounds/SFX/Archive/ui-error.wav', optional: true },
+                { type: 'audio', key: 'sfx_ui_success', path: 'Sounds/SFX/Archive/ui-success.wav', optional: true },
 
-                // ===== UI SOUND EFFECTS (Pixabay Royalty-Free) =====
-                { type: 'audio', key: 'sfx_ui_click', path: 'Sounds/SFX/UI/Pixabay/ui-click-button.mp3', optional: true },
-                { type: 'audio', key: 'sfx_ui_hover', path: 'Sounds/SFX/UI/Pixabay/ui-hover-soft.mp3', optional: true },
-                { type: 'audio', key: 'sfx_ui_select', path: 'Sounds/SFX/UI/Pixabay/ui-select-confirm.mp3', optional: true },
-                { type: 'audio', key: 'sfx_ui_error', path: 'Sounds/SFX/UI/Pixabay/ui-error-notification.mp3', optional: true },
-                { type: 'audio', key: 'sfx_ui_success', path: 'Sounds/SFX/UI/Pixabay/ui-success-chime.mp3', optional: true },
+                // Construction Sound Effects
+                { type: 'audio', key: 'sfx_construction_start', path: 'Sounds/SFX/Archive/construction-hammer.wav', optional: true },
+                { type: 'audio', key: 'sfx_construction_progress', path: 'Sounds/SFX/Archive/construction-machinery.wav', optional: true },
+                { type: 'audio', key: 'sfx_construction_complete', path: 'Sounds/SFX/Archive/construction-complete.wav', optional: true },
+                { type: 'audio', key: 'sfx_building_place', path: 'Sounds/SFX/Archive/building-place.wav', optional: true },
 
-                // ===== CONSTRUCTION SOUND EFFECTS (Pixabay Royalty-Free) =====
-                { type: 'audio', key: 'sfx_construction_start', path: 'Sounds/SFX/Construction/Pixabay/construction-hammer.mp3', optional: true },
-                { type: 'audio', key: 'sfx_construction_progress', path: 'Sounds/SFX/Construction/Pixabay/construction-machinery.mp3', optional: true },
-                { type: 'audio', key: 'sfx_construction_complete', path: 'Sounds/SFX/Construction/Pixabay/construction-complete-bell.mp3', optional: true },
-                { type: 'audio', key: 'sfx_building_place', path: 'Sounds/SFX/Construction/Pixabay/building-placement.mp3', optional: true },
+                // Environmental Sound Effects
+                { type: 'audio', key: 'sfx_water_flow', path: 'Sounds/SFX/Archive/water-flow.wav', optional: true },
+                { type: 'audio', key: 'sfx_water_splash', path: 'Sounds/SFX/Archive/water-splash.wav', optional: true },
+                { type: 'audio', key: 'sfx_nature_birds', path: 'Sounds/SFX/Archive/nature-birds.wav', optional: true },
+                { type: 'audio', key: 'sfx_wind_gentle', path: 'Sounds/SFX/Archive/wind-gentle.wav', optional: true },
+                { type: 'audio', key: 'sfx_rain_light', path: 'Sounds/SFX/Archive/rain-light.wav', optional: true },
 
-                // ===== ENVIRONMENTAL SOUND EFFECTS (Pixabay Royalty-Free) =====
-                { type: 'audio', key: 'sfx_water_flow', path: 'Sounds/SFX/Environment/Pixabay/water-flowing-stream.mp3', optional: true },
-                { type: 'audio', key: 'sfx_water_splash', path: 'Sounds/SFX/Environment/Pixabay/water-splash-drop.mp3', optional: true },
-                { type: 'audio', key: 'sfx_nature_birds', path: 'Sounds/SFX/Environment/Pixabay/nature-birds-chirping.mp3', optional: true },
-                { type: 'audio', key: 'sfx_wind_gentle', path: 'Sounds/SFX/Environment/Pixabay/wind-gentle-breeze.mp3', optional: true },
-                { type: 'audio', key: 'sfx_rain_light', path: 'Sounds/SFX/Environment/Pixabay/rain-light-drops.mp3', optional: true },
-
-                // ===== ALERT/NOTIFICATION SOUNDS (Pixabay Royalty-Free) =====
-                { type: 'audio', key: 'sfx_mission_start', path: 'Sounds/SFX/Notifications/Pixabay/mission-start-fanfare.mp3', optional: true },
-                { type: 'audio', key: 'sfx_mission_complete', path: 'Sounds/SFX/Notifications/Pixabay/mission-complete-success.mp3', optional: true },
-                { type: 'audio', key: 'sfx_warning_alert', path: 'Sounds/SFX/Notifications/Pixabay/warning-alert-beep.mp3', optional: true },
-                { type: 'audio', key: 'sfx_resource_low', path: 'Sounds/SFX/Notifications/Pixabay/resource-low-warning.mp3', optional: true },
+                // Alert/Notification Sounds
+                { type: 'audio', key: 'sfx_mission_start', path: 'Sounds/SFX/Archive/mission-start.wav', optional: true },
+                { type: 'audio', key: 'sfx_mission_complete', path: 'Sounds/SFX/Archive/mission-complete.wav', optional: true },
+                { type: 'audio', key: 'sfx_warning_alert', path: 'Sounds/SFX/Archive/warning-alert.wav', optional: true },
+                { type: 'audio', key: 'sfx_resource_low', path: 'Sounds/SFX/Archive/resource-low.wav', optional: true },
 
                 // ===== LEGACY SOUND EFFECTS (Existing) =====
                 { type: 'audio', key: 'sfx_pickup', path: 'Sounds/SFX/Environment/pickup.wav', optional: true },

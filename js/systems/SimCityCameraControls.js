@@ -410,10 +410,10 @@ class SimCityCameraControls {
 
         // Forward/backward movement (relative to camera facing direction)
         if (this.keys.w) {
-            moveVector.z -= moveSpeed; // Forward
+            moveVector.z += moveSpeed; // Forward (corrected direction)
         }
         if (this.keys.s) {
-            moveVector.z += moveSpeed; // Backward
+            moveVector.z -= moveSpeed; // Backward (corrected direction)
         }
 
         // Left/right movement (relative to camera facing direction)
