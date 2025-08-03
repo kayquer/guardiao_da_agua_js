@@ -84,39 +84,60 @@ class SimCityCameraControls {
     setupMouseControls() {
         // Mouse down - start drag/rotation
         this.canvas.addEventListener('mousedown', (event) => {
-            // Only handle camera controls if not in building mode
-            if (this.gameManager.buildMode) return;
-            
+            // More intelligent building mode check - only block if actively placing a building
+            const isActivelyBuilding = this.gameManager.buildMode &&
+                                     this.gameManager.buildingSystem &&
+                                     this.gameManager.buildingSystem.previewMode;
+
+            if (isActivelyBuilding) {
+                console.log('🏗️ Camera controls blocked - actively placing building');
+                return;
+            }
+
             if (event.button === 0) { // Left button - pan
                 this.isDragging = true;
                 this.canvas.style.cursor = 'grabbing';
+                console.log('🖱️ Mouse drag started');
             } else if (event.button === 2) { // Right button - rotation
                 this.isRotating = true;
                 this.canvas.style.cursor = 'grab';
+                console.log('🖱️ Mouse rotation started');
             }
-            
+
             this.lastPointerPosition = { x: event.clientX, y: event.clientY };
             event.preventDefault();
         });
-        
+
         // Mouse move - execute drag/rotation
         this.canvas.addEventListener('mousemove', (event) => {
-            if (this.gameManager.buildMode) return;
-            
+            // Allow camera movement unless actively placing a building
+            const isActivelyBuilding = this.gameManager.buildMode &&
+                                     this.gameManager.buildingSystem &&
+                                     this.gameManager.buildingSystem.previewMode;
+
+            if (isActivelyBuilding) return;
+
             if (this.isDragging) {
                 this.handlePan(event);
             } else if (this.isRotating) {
                 this.handleRotation(event);
             }
         });
-        
+
         // Mouse up - stop drag/rotation
         this.canvas.addEventListener('mouseup', () => {
+            if (this.isDragging) {
+                console.log('🖱️ Mouse drag ended');
+            }
+            if (this.isRotating) {
+                console.log('🖱️ Mouse rotation ended');
+            }
+
             this.isDragging = false;
             this.isRotating = false;
             this.canvas.style.cursor = 'default';
         });
-        
+
         // Mouse leave - stop all interactions
         this.canvas.addEventListener('mouseleave', () => {
             this.isDragging = false;
@@ -134,14 +155,19 @@ class SimCityCameraControls {
     setupTouchControls() {
         // Touch start
         this.canvas.addEventListener('touchstart', (event) => {
-            if (this.gameManager.buildMode) return;
-            
+            // More intelligent building mode check for touch
+            const isActivelyBuilding = this.gameManager.buildMode &&
+                                     this.gameManager.buildingSystem &&
+                                     this.gameManager.buildingSystem.previewMode;
+
+            if (isActivelyBuilding) return;
+
             this.touchStartPositions = Array.from(event.touches).map(touch => ({
                 x: touch.clientX,
                 y: touch.clientY,
                 id: touch.identifier
             }));
-            
+
             if (event.touches.length === 1) {
                 // Single touch - pan
                 this.isPanning = true;
@@ -153,20 +179,25 @@ class SimCityCameraControls {
                 // Two finger - zoom/rotate
                 this.setupTwoFingerGesture(event);
             }
-            
+
             event.preventDefault();
         }, { passive: false });
-        
+
         // Touch move
         this.canvas.addEventListener('touchmove', (event) => {
-            if (this.gameManager.buildMode) return;
-            
+            // Allow touch movement unless actively placing a building
+            const isActivelyBuilding = this.gameManager.buildMode &&
+                                     this.gameManager.buildingSystem &&
+                                     this.gameManager.buildingSystem.previewMode;
+
+            if (isActivelyBuilding) return;
+
             if (event.touches.length === 1 && this.isPanning) {
                 this.handleTouchPan(event);
             } else if (event.touches.length === 2) {
                 this.handleTwoFingerGesture(event);
             }
-            
+
             event.preventDefault();
         }, { passive: false });
         
@@ -373,32 +404,46 @@ class SimCityCameraControls {
     updateKeyboardMovement() {
         const moveSpeed = this.config.keyboardMoveSpeed;
         const rotateSpeed = this.config.keyboardRotateSpeed;
-        
-        // Movement
+
+        // Calculate movement vector relative to camera rotation
+        let moveVector = new BABYLON.Vector3(0, 0, 0);
+
+        // Forward/backward movement (relative to camera facing direction)
         if (this.keys.w) {
-            this.camera.target.z -= moveSpeed;
+            moveVector.z -= moveSpeed; // Forward
         }
         if (this.keys.s) {
-            this.camera.target.z += moveSpeed;
+            moveVector.z += moveSpeed; // Backward
         }
+
+        // Left/right movement (relative to camera facing direction)
         if (this.keys.a) {
-            this.camera.target.x -= moveSpeed;
+            moveVector.x -= moveSpeed; // Left
         }
         if (this.keys.d) {
-            this.camera.target.x += moveSpeed;
+            moveVector.x += moveSpeed; // Right
         }
-        
-        // Rotation
+
+        // Apply camera rotation to movement vector if there's any movement
+        if (moveVector.length() > 0) {
+            const rotatedMovement = moveVector.rotateByQuaternionToRef(
+                BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.Up(), this.camera.alpha),
+                new BABYLON.Vector3()
+            );
+
+            // Apply the rotated movement to camera target
+            this.camera.target.addInPlace(rotatedMovement);
+
+            // Apply bounds after movement
+            this.enforceBounds();
+        }
+
+        // Rotation (independent of movement)
         if (this.keys.q) {
             this.camera.alpha -= rotateSpeed;
         }
         if (this.keys.e) {
             this.camera.alpha += rotateSpeed;
-        }
-        
-        // Apply bounds after keyboard movement
-        if (this.keys.w || this.keys.s || this.keys.a || this.keys.d) {
-            this.enforceBounds();
         }
     }
     

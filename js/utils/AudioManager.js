@@ -59,9 +59,25 @@ class AudioManager {
             return;
         }
 
-        // Lista de sons para carregar (usando arquivos existentes)
+        // Lista de sons para carregar (incluindo novos sons Pixabay)
         const soundKeys = [
+            // Background Music (Legacy + Pixabay)
             'bgm_main', 'bgm_caketown', 'bgm_waves', 'bgm_whispers',
+            'bgm_peaceful_water', 'bgm_nature_calm', 'bgm_environmental',
+
+            // UI Sound Effects (Pixabay)
+            'sfx_ui_click', 'sfx_ui_hover', 'sfx_ui_select', 'sfx_ui_error', 'sfx_ui_success',
+
+            // Construction Sound Effects (Pixabay)
+            'sfx_construction_start', 'sfx_construction_progress', 'sfx_construction_complete', 'sfx_building_place',
+
+            // Environmental Sound Effects (Pixabay)
+            'sfx_water_flow', 'sfx_water_splash', 'sfx_nature_birds', 'sfx_wind_gentle', 'sfx_rain_light',
+
+            // Alert/Notification Sounds (Pixabay)
+            'sfx_mission_start', 'sfx_mission_complete', 'sfx_warning_alert', 'sfx_resource_low',
+
+            // Legacy Sound Effects
             'sfx_pickup', 'sfx_item', 'sfx_walk', 'sfx_watering', 'sfx_dig', 'sfx_axe'
         ];
 
@@ -879,6 +895,75 @@ class AudioManager {
         }
     }
     
+    // ===== ENHANCED PIXABAY AUDIO METHODS =====
+
+    // UI Sound Effects
+    playUIClick() { this.playSound('sfx_ui_click', 0.7); }
+    playUIHover() { this.playSound('sfx_ui_hover', 0.5); }
+    playUISelect() { this.playSound('sfx_ui_select', 0.8); }
+    playUIError() { this.playSound('sfx_ui_error', 0.9); }
+    playUISuccess() { this.playSound('sfx_ui_success', 0.8); }
+
+    // Construction Sound Effects
+    playConstructionStart() { this.playSound('sfx_construction_start', 0.7); }
+    playConstructionProgress() { this.playSound('sfx_construction_progress', 0.6); }
+    playConstructionComplete() { this.playSound('sfx_construction_complete', 0.8); }
+    playBuildingPlace() { this.playSound('sfx_building_place', 0.7); }
+
+    // Environmental Sound Effects
+    playWaterFlow() { this.playSound('sfx_water_flow', 0.6); }
+    playWaterSplash() { this.playSound('sfx_water_splash', 0.7); }
+    playNatureBirds() { this.playSound('sfx_nature_birds', 0.5); }
+    playWindGentle() { this.playSound('sfx_wind_gentle', 0.4); }
+    playRainLight() { this.playSound('sfx_rain_light', 0.5); }
+
+    // Alert/Notification Sounds
+    playMissionStart() { this.playSound('sfx_mission_start', 0.8); }
+    playMissionComplete() { this.playSound('sfx_mission_complete', 0.9); }
+    playWarningAlert() { this.playSound('sfx_warning_alert', 0.8); }
+    playResourceLow() { this.playSound('sfx_resource_low', 0.7); }
+
+    // Enhanced Background Music Control
+    playPeacefulWaterMusic() { this.playMusic('bgm_peaceful_water'); }
+    playNatureCalmMusic() { this.playMusic('bgm_nature_calm'); }
+    playEnvironmentalMusic() { this.playMusic('bgm_environmental'); }
+
+    // Smart Audio Selection (fallback system)
+    playSmartUISound(action) {
+        const soundMap = {
+            'click': 'sfx_ui_click',
+            'hover': 'sfx_ui_hover',
+            'select': 'sfx_ui_select',
+            'error': 'sfx_ui_error',
+            'success': 'sfx_ui_success'
+        };
+
+        const soundKey = soundMap[action];
+        if (soundKey && this.sounds.has(soundKey)) {
+            this.playSound(soundKey, 0.7);
+        } else {
+            // Fallback to procedural sounds
+            this.playSound(`sfx_${action}`, 0.7);
+        }
+    }
+
+    playSmartConstructionSound(phase) {
+        const soundMap = {
+            'start': 'sfx_construction_start',
+            'progress': 'sfx_construction_progress',
+            'complete': 'sfx_construction_complete',
+            'place': 'sfx_building_place'
+        };
+
+        const soundKey = soundMap[phase];
+        if (soundKey && this.sounds.has(soundKey)) {
+            this.playSound(soundKey, 0.7);
+        } else {
+            // Fallback to existing procedural sounds
+            this.playSound(`sfx_build_${phase}`, 0.7);
+        }
+    }
+
     // ===== GETTERS =====
     isEnabled() { return this.enabled; }
     getMasterVolume() { return this.masterVolume; }
