@@ -328,10 +328,12 @@ class GameManager {
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
 
-            // Convert screen coordinates to world coordinates using ray casting
-            const pickInfo = this.scene.pick(x, y, (mesh) => {
+            // Convert screen coordinates to world coordinates using optimized ray casting
+            const terrainFilter = (mesh) => {
                 return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
-            });
+            };
+            terrainFilter.name = 'terrain'; // For cache key
+            const pickInfo = this.performRayCast(x, y, terrainFilter);
 
             if (pickInfo.hit && pickInfo.pickedPoint) {
                 // Convert world position to grid coordinates
@@ -368,10 +370,12 @@ class GameManager {
     }
 
     handleBuildingPlacement(x, y) {
-        // Convert screen coordinates to world coordinates using ray casting
-        const pickInfo = this.scene.pick(x, y, (mesh) => {
+        // Convert screen coordinates to world coordinates using optimized ray casting
+        const terrainFilter = (mesh) => {
             return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
-        });
+        };
+        terrainFilter.name = 'terrain'; // For cache key
+        const pickInfo = this.performRayCast(x, y, terrainFilter);
 
         if (pickInfo.hit && pickInfo.pickedPoint) {
             // Convert world position to grid coordinates
@@ -396,8 +400,8 @@ class GameManager {
 
     handleBuildingSelection(x, y) {
         // ===== ENHANCED 3D BUILDING SELECTION SYSTEM =====
-        // Ray cast to find buildings with improved mesh name detection
-        const pickInfo = this.scene.pick(x, y, (mesh) => {
+        // Ray cast to find buildings with improved mesh name detection using optimized ray casting
+        const buildingFilter = (mesh) => {
             // Look for building meshes with actual naming patterns used in BuildingSystem
             if (!mesh.name) return false;
 
@@ -417,7 +421,9 @@ class GameManager {
                 meshName.includes('well_') ||
                 meshName.includes('desal_')
             );
-        });
+        };
+        buildingFilter.name = 'building'; // For cache key
+        const pickInfo = this.performRayCast(x, y, buildingFilter);
 
         if (pickInfo.hit && pickInfo.pickedMesh) {
             // ===== ENHANCED BUILDING ID EXTRACTION =====
@@ -444,18 +450,42 @@ class GameManager {
         }
     }
 
-    // ===== ENHANCED BUILDING MESH LOOKUP =====
+    // ===== OPTIMIZED RAY CASTING SYSTEM =====
+    performRayCast(x, y, meshFilter) {
+        // Centralized ray casting with caching for performance
+        const cacheKey = `${x}_${y}_${meshFilter.name || 'default'}`;
+
+        // Simple frame-based cache to avoid duplicate ray casts in same frame
+        const currentFrame = this.scene.getFrameId ? this.scene.getFrameId() : Date.now();
+        if (this.rayCastCache && this.rayCastCache.frame === currentFrame && this.rayCastCache[cacheKey]) {
+            return this.rayCastCache[cacheKey];
+        }
+
+        // Perform ray cast
+        const pickInfo = this.scene.pick(x, y, meshFilter);
+
+        // Initialize cache if needed
+        if (!this.rayCastCache || this.rayCastCache.frame !== currentFrame) {
+            this.rayCastCache = { frame: currentFrame };
+        }
+
+        // Cache result
+        this.rayCastCache[cacheKey] = pickInfo;
+        return pickInfo;
+    }
+
+    // ===== OPTIMIZED BUILDING MESH LOOKUP =====
     findBuildingByMesh(mesh) {
-        // Search through all buildings to find the one with matching mesh
+        // Single iteration combining both search strategies for optimal performance
+        const meshName = mesh.name;
+
         for (const [buildingId, building] of this.buildingSystem.buildings) {
+            // Primary search: direct mesh reference comparison (fastest)
             if (building.mesh === mesh) {
                 return building;
             }
-        }
 
-        // Alternative: search by mesh name patterns
-        const meshName = mesh.name;
-        for (const [buildingId, building] of this.buildingSystem.buildings) {
+            // Secondary search: mesh name comparison (fallback within same iteration)
             if (building.mesh && building.mesh.name === meshName) {
                 return building;
             }
@@ -465,10 +495,12 @@ class GameManager {
     }
 
     handleTerrainClick(x, y) {
-        // Ray cast to terrain
-        const pickInfo = this.scene.pick(x, y, (mesh) => {
+        // Ray cast to terrain using optimized ray casting
+        const terrainFilter = (mesh) => {
             return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
-        });
+        };
+        terrainFilter.name = 'terrain'; // For cache key
+        const pickInfo = this.performRayCast(x, y, terrainFilter);
 
         if (pickInfo.hit && pickInfo.pickedPoint) {
             // Convert world position to grid coordinates
