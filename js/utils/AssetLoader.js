@@ -34,32 +34,14 @@ class AssetLoader {
                 { type: 'audio', key: 'bgm_waves', path: 'Sounds/BGM/Waves of Destiny ext v2.mp3', optional: true },
                 { type: 'audio', key: 'bgm_whispers', path: 'Sounds/BGM/Whispers of the Deep ext v1.mp3', optional: true },
 
-                // ===== ARCHIVE.ORG 1001 SOUND EFFECTS =====
-                // UI Sound Effects
-                { type: 'audio', key: 'sfx_ui_click', path: 'Sounds/SFX/Archive/ui-click.wav', optional: true },
-                { type: 'audio', key: 'sfx_ui_hover', path: 'Sounds/SFX/Archive/ui-hover.wav', optional: true },
-                { type: 'audio', key: 'sfx_ui_select', path: 'Sounds/SFX/Archive/ui-select.wav', optional: true },
-                { type: 'audio', key: 'sfx_ui_error', path: 'Sounds/SFX/Archive/ui-error.wav', optional: true },
-                { type: 'audio', key: 'sfx_ui_success', path: 'Sounds/SFX/Archive/ui-success.wav', optional: true },
-
-                // Construction Sound Effects
-                { type: 'audio', key: 'sfx_construction_start', path: 'Sounds/SFX/Archive/construction-hammer.wav', optional: true },
-                { type: 'audio', key: 'sfx_construction_progress', path: 'Sounds/SFX/Archive/construction-machinery.wav', optional: true },
-                { type: 'audio', key: 'sfx_construction_complete', path: 'Sounds/SFX/Archive/construction-complete.wav', optional: true },
-                { type: 'audio', key: 'sfx_building_place', path: 'Sounds/SFX/Archive/building-place.wav', optional: true },
-
-                // Environmental Sound Effects
-                { type: 'audio', key: 'sfx_water_flow', path: 'Sounds/SFX/Archive/water-flow.wav', optional: true },
-                { type: 'audio', key: 'sfx_water_splash', path: 'Sounds/SFX/Archive/water-splash.wav', optional: true },
-                { type: 'audio', key: 'sfx_nature_birds', path: 'Sounds/SFX/Archive/nature-birds.wav', optional: true },
-                { type: 'audio', key: 'sfx_wind_gentle', path: 'Sounds/SFX/Archive/wind-gentle.wav', optional: true },
-                { type: 'audio', key: 'sfx_rain_light', path: 'Sounds/SFX/Archive/rain-light.wav', optional: true },
-
-                // Alert/Notification Sounds
-                { type: 'audio', key: 'sfx_mission_start', path: 'Sounds/SFX/Archive/mission-start.wav', optional: true },
-                { type: 'audio', key: 'sfx_mission_complete', path: 'Sounds/SFX/Archive/mission-complete.wav', optional: true },
-                { type: 'audio', key: 'sfx_warning_alert', path: 'Sounds/SFX/Archive/warning-alert.wav', optional: true },
-                { type: 'audio', key: 'sfx_resource_low', path: 'Sounds/SFX/Archive/resource-low.wav', optional: true },
+                // ===== RSE SOUNDFX COLLECTION =====
+                // Core RSE SoundFX Effects
+                { type: 'audio', key: 'sfx_click1', path: 'Sounds/SFX/RSE/click1.mp3', optional: true },
+                { type: 'audio', key: 'sfx_beep1', path: 'Sounds/SFX/RSE/beep1.mp3', optional: true },
+                { type: 'audio', key: 'sfx_bling1', path: 'Sounds/SFX/RSE/bling1.mp3', optional: true },
+                { type: 'audio', key: 'sfx_error1', path: 'Sounds/SFX/RSE/error1.mp3', optional: true },
+                { type: 'audio', key: 'sfx_chime1', path: 'Sounds/SFX/RSE/chime1.mp3', optional: true },
+                { type: 'audio', key: 'sfx_splash1', path: 'Sounds/SFX/RSE/splash1.mp3', optional: true },
 
                 // ===== LEGACY SOUND EFFECTS (Existing) =====
                 { type: 'audio', key: 'sfx_pickup', path: 'Sounds/SFX/Environment/pickup.wav', optional: true },
