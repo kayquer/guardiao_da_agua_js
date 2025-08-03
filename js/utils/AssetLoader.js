@@ -44,7 +44,7 @@ class AssetLoader {
                 { type: 'audio', key: 'sfx_splash1', path: 'Sounds/SFX/RSE/splash1.mp3', optional: true },
 
                 // ===== 3D MODELS =====
-                { type: 'model', key: 'water_tank_3d', path: 'models/buildings/Water Tank.glb', optional: true },
+                // Removed water_tank_3d - reverted to procedural graphics
 
                 // ===== LEGACY SOUND EFFECTS (Existing) =====
                 { type: 'audio', key: 'sfx_pickup', path: 'Sounds/SFX/Environment/pickup.wav', optional: true },
