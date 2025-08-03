@@ -82,14 +82,7 @@ class UIManager {
         };
 
         // ===== UI CONFLICT RESOLUTION =====
-        // Higher numbers = higher priority (can override lower priority panels)
-        this.panelPriority = {
-            'terrain': 1,        // Lowest priority - terrain info can be overridden by anything
-            'building': 2,       // Building selection info
-            'resource': 3,       // Resource panels have higher priority
-            'selection': 4,      // Building selection details
-            'construction': 5    // Highest priority - construction mode
-        };
+        // Use GameConstants.js as authoritative source for panel priorities
 
         // ===== EVENT LISTENER TRACKING =====
         this.eventListeners = {
@@ -412,8 +405,8 @@ class UIManager {
             this.uiState.isTransitioning = true;
 
             // ===== ENHANCED PANEL PRIORITY SYSTEM =====
-            const currentPriority = this.panelPriority[this.uiState.currentOpenPanel] || 0;
-            const newPriority = this.panelPriority['resource'];
+            const currentPriority = GameConstants.UI.PANEL_PRIORITIES[this.uiState.currentOpenPanel] || 0;
+            const newPriority = GameConstants.UI.PANEL_PRIORITIES['resource'];
 
             // ===== FIX: Allow user-initiated panel switches to override priority restrictions =====
             if (!userInitiated && currentPriority > newPriority && this.uiState.currentOpenPanel !== resourceType) {
