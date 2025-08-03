@@ -8,9 +8,6 @@ class UIManager {
         console.log('🖥️ Inicializando UIManager...');
 
         this.gameManager = gameManager;
-
-        // Estado dos painéis de informação
-        this.currentOpenPanel = null;
         
         // Elementos da UI
         this.elements = {
@@ -187,7 +184,7 @@ class UIManager {
 
         // ESC key para fechar painéis
         document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && this.currentOpenPanel) {
+            if (event.key === 'Escape' && this.uiState.currentOpenPanel) {
                 this.closeResourcePanel();
             }
         });
@@ -1170,7 +1167,6 @@ class UIManager {
 
             // ===== UPDATE STATE =====
             this.uiState.currentOpenPanel = panelType;
-            this.currentOpenPanel = panelType; // Legacy compatibility
 
             // ===== FIX: Ensure details panel is visible after transition =====
             if (this.elements.detailsPanel) {
@@ -1210,7 +1206,6 @@ class UIManager {
 
             // ===== STATE CLEANUP =====
             this.uiState.currentOpenPanel = null;
-            this.currentOpenPanel = null; // Legacy compatibility
 
             // ===== PANEL CLEANUP =====
             if (this.elements.detailsContent) {
@@ -2051,7 +2046,7 @@ class UIManager {
 
         detailsContent.innerHTML = content;
         detailsPanel.style.display = 'block';
-        this.currentOpenPanel = 'selection';
+        this.uiState.currentOpenPanel = 'selection';
 
         console.log(`📋 Informações de seleção exibidas para ${building.config.name}`);
     }
@@ -2059,9 +2054,9 @@ class UIManager {
     clearBuildingSelectionInfo() {
         const detailsPanel = this.elements.detailsPanel;
 
-        if (detailsPanel && this.currentOpenPanel === 'selection') {
+        if (detailsPanel && this.uiState.currentOpenPanel === 'selection') {
             detailsPanel.style.display = 'none';
-            this.currentOpenPanel = null;
+            this.uiState.currentOpenPanel = null;
         }
     }
 
@@ -2249,7 +2244,7 @@ class UIManager {
 
         detailsContent.innerHTML = content;
         detailsPanel.style.display = 'block';
-        this.currentOpenPanel = 'loans';
+        this.uiState.currentOpenPanel = 'loans';
 
         // Calcular preview inicial
         this.calculateLoanPreview();
@@ -2260,9 +2255,9 @@ class UIManager {
     closeLoanInterface() {
         const detailsPanel = this.elements.detailsPanel;
 
-        if (detailsPanel && this.currentOpenPanel === 'loans') {
+        if (detailsPanel && this.uiState.currentOpenPanel === 'loans') {
             detailsPanel.style.display = 'none';
-            this.currentOpenPanel = null;
+            this.uiState.currentOpenPanel = null;
         }
     }
 
@@ -2957,7 +2952,6 @@ class UIManager {
             // Clear panel state
             if (this.uiState.currentOpenPanel === 'terrain') {
                 this.uiState.currentOpenPanel = null;
-                this.currentOpenPanel = null; // Legacy compatibility
             }
 
             console.log('🌍 Terrain info hidden');
