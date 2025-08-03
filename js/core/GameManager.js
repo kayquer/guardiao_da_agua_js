@@ -332,8 +332,7 @@ class GameManager {
             const terrainFilter = (mesh) => {
                 return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
             };
-            terrainFilter.name = 'terrain'; // For cache key
-            const pickInfo = this.performRayCast(x, y, terrainFilter);
+            const pickInfo = this.performRayCast(x, y, terrainFilter, 'terrain');
 
             if (pickInfo.hit && pickInfo.pickedPoint) {
                 // Convert world position to grid coordinates
@@ -374,8 +373,7 @@ class GameManager {
         const terrainFilter = (mesh) => {
             return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
         };
-        terrainFilter.name = 'terrain'; // For cache key
-        const pickInfo = this.performRayCast(x, y, terrainFilter);
+        const pickInfo = this.performRayCast(x, y, terrainFilter, 'terrain');
 
         if (pickInfo.hit && pickInfo.pickedPoint) {
             // Convert world position to grid coordinates
@@ -422,8 +420,7 @@ class GameManager {
                 meshName.includes('desal_')
             );
         };
-        buildingFilter.name = 'building'; // For cache key
-        const pickInfo = this.performRayCast(x, y, buildingFilter);
+        const pickInfo = this.performRayCast(x, y, buildingFilter, 'building');
 
         if (pickInfo.hit && pickInfo.pickedMesh) {
             // ===== ENHANCED BUILDING ID EXTRACTION =====
@@ -451,14 +448,15 @@ class GameManager {
     }
 
     // ===== OPTIMIZED RAY CASTING SYSTEM =====
-    performRayCast(x, y, meshFilter) {
+    performRayCast(x, y, meshFilter, cacheKey = 'default') {
         // Centralized ray casting with caching for performance
-        const cacheKey = `${x}_${y}_${meshFilter.name || 'default'}`;
+        // Fixed: Use explicit cacheKey parameter instead of trying to modify read-only function.name property
+        const fullCacheKey = `${x}_${y}_${cacheKey}`;
 
         // Simple frame-based cache to avoid duplicate ray casts in same frame
         const currentFrame = this.scene.getFrameId ? this.scene.getFrameId() : Date.now();
-        if (this.rayCastCache && this.rayCastCache.frame === currentFrame && this.rayCastCache[cacheKey]) {
-            return this.rayCastCache[cacheKey];
+        if (this.rayCastCache && this.rayCastCache.frame === currentFrame && this.rayCastCache[fullCacheKey]) {
+            return this.rayCastCache[fullCacheKey];
         }
 
         // Perform ray cast
@@ -470,7 +468,7 @@ class GameManager {
         }
 
         // Cache result
-        this.rayCastCache[cacheKey] = pickInfo;
+        this.rayCastCache[fullCacheKey] = pickInfo;
         return pickInfo;
     }
 
@@ -499,8 +497,7 @@ class GameManager {
         const terrainFilter = (mesh) => {
             return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
         };
-        terrainFilter.name = 'terrain'; // For cache key
-        const pickInfo = this.performRayCast(x, y, terrainFilter);
+        const pickInfo = this.performRayCast(x, y, terrainFilter, 'terrain');
 
         if (pickInfo.hit && pickInfo.pickedPoint) {
             // Convert world position to grid coordinates
