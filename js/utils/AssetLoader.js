@@ -43,6 +43,9 @@ class AssetLoader {
                 { type: 'audio', key: 'sfx_chime1', path: 'Sounds/SFX/RSE/chime1.mp3', optional: true },
                 { type: 'audio', key: 'sfx_splash1', path: 'Sounds/SFX/RSE/splash1.mp3', optional: true },
 
+                // ===== 3D MODELS =====
+                { type: 'model', key: 'water_tank_3d', path: 'models/buildings/Water Tank.glb', optional: true },
+
                 // ===== LEGACY SOUND EFFECTS (Existing) =====
                 { type: 'audio', key: 'sfx_pickup', path: 'Sounds/SFX/Environment/pickup.wav', optional: true },
                 { type: 'audio', key: 'sfx_item', path: 'Sounds/SFX/Environment/item_sound.wav', optional: true },
@@ -86,6 +89,9 @@ class AssetLoader {
                     break;
                 case 'audio':
                     asset = await this.loadAudio(path);
+                    break;
+                case 'model':
+                    asset = await this.loadModel(path);
                     break;
                 case 'procedural':
                     asset = this.createProceduralTexture(key);
@@ -167,7 +173,37 @@ class AssetLoader {
             audio.load();
         });
     }
-    
+
+    // ===== CARREGAMENTO DE MODELOS 3D =====
+    loadModel(path) {
+        return new Promise((resolve, reject) => {
+            // Store the model path for later loading in Babylon.js scene
+            // We can't load the actual model here since we need a Babylon.js scene
+            resolve({
+                path: path,
+                type: 'glb',
+                loaded: false,
+                loadInScene: async (scene) => {
+                    try {
+                        console.log(`🎯 Carregando modelo 3D: ${path}`);
+                        const result = await BABYLON.SceneLoader.ImportMeshAsync("", "", path, scene);
+                        console.log(`✅ Modelo 3D carregado: ${path}`);
+                        return {
+                            meshes: result.meshes,
+                            rootMesh: result.meshes[0],
+                            animationGroups: result.animationGroups,
+                            skeletons: result.skeletons,
+                            loaded: true
+                        };
+                    } catch (error) {
+                        console.error(`❌ Erro ao carregar modelo 3D ${path}:`, error);
+                        throw error;
+                    }
+                }
+            });
+        });
+    }
+
     // ===== TEXTURAS PROCEDURAIS =====
     createProceduralTexture(key) {
         const canvas = document.createElement('canvas');

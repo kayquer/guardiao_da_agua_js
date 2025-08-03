@@ -2129,6 +2129,12 @@ class BuildingSystem {
      * @returns {BABYLON.Mesh} - The building mesh
      */
     createStandardizedStorageMesh(buildingType, dimensions) {
+        // Special handling for water tank with 3D model
+        if (buildingType.id === 'water_tank') {
+            return this.createWaterTankWithModel(buildingType, dimensions);
+        }
+
+        // Default storage mesh for other storage types
         const tank = BABYLON.MeshBuilder.CreateCylinder("storageTank", {
             height: dimensions.height,
             diameterTop: dimensions.width * 0.8,
@@ -2138,6 +2144,103 @@ class BuildingSystem {
 
         tank.name = `storage_${buildingType.id}`;
         return tank;
+    }
+
+    /**
+     * Creates water tank with 3D model support
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     * @returns {BABYLON.Mesh} - The building mesh (placeholder that gets replaced)
+     */
+    createWaterTankWithModel(buildingType, dimensions) {
+        // Create placeholder mesh first (for immediate display)
+        const placeholder = BABYLON.MeshBuilder.CreateCylinder("waterTankPlaceholder", {
+            height: dimensions.height,
+            diameterTop: dimensions.width * 0.8,
+            diameterBottom: dimensions.width * 0.8,
+            tessellation: 12
+        }, this.scene);
+
+        placeholder.name = `storage_${buildingType.id}_placeholder`;
+
+        // Try to load 3D model asynchronously and replace placeholder
+        this.loadWaterTank3DModel(placeholder, buildingType, dimensions);
+
+        return placeholder;
+    }
+
+    /**
+     * Loads 3D water tank model and replaces placeholder
+     * @param {BABYLON.Mesh} placeholder - The placeholder mesh to replace
+     * @param {Object} buildingType - The building type configuration
+     * @param {Object} dimensions - Standardized dimensions
+     */
+    async loadWaterTank3DModel(placeholder, buildingType, dimensions) {
+        try {
+            const waterTankAsset = AssetLoader.getAsset('water_tank_3d');
+            if (waterTankAsset && waterTankAsset.loadInScene) {
+                console.log('🎯 Carregando modelo 3D do reservatório de água...');
+
+                const modelData = await waterTankAsset.loadInScene(this.scene);
+                if (modelData && modelData.meshes && modelData.meshes.length > 0) {
+                    const rootMesh = modelData.rootMesh;
+
+                    // Copy position and properties from placeholder
+                    rootMesh.position = placeholder.position.clone();
+                    rootMesh.rotation = placeholder.rotation.clone();
+
+                    // Scale the model to fit the grid cell
+                    const targetSize = dimensions.width * 0.9;
+                    const boundingInfo = rootMesh.getBoundingInfo();
+                    const modelSize = boundingInfo.boundingBox.extendSize;
+                    const maxDimension = Math.max(modelSize.x, modelSize.z) * 2;
+
+                    if (maxDimension > 0) {
+                        const scale = targetSize / maxDimension;
+                        rootMesh.scaling = new BABYLON.Vector3(scale, scale, scale);
+                    }
+
+                    // Ensure the model is positioned on the ground
+                    const groundY = boundingInfo.boundingBox.minimum.y * rootMesh.scaling.y;
+                    rootMesh.position.y = placeholder.position.y - groundY;
+
+                    // Copy metadata and properties
+                    rootMesh.name = `storage_${buildingType.id}`;
+                    rootMesh.metadata = placeholder.metadata;
+
+                    // Replace placeholder in building system
+                    this.replaceBuildingMesh(placeholder, rootMesh);
+
+                    // Dispose placeholder
+                    placeholder.dispose();
+
+                    console.log('✅ Modelo 3D do reservatório carregado e substituído com sucesso');
+                    return;
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ Erro ao carregar modelo 3D do reservatório:', error);
+        }
+
+        console.log('🔄 Mantendo reservatório procedural');
+    }
+
+    /**
+     * Replaces a building mesh in the system
+     * @param {BABYLON.Mesh} oldMesh - The old mesh to replace
+     * @param {BABYLON.Mesh} newMesh - The new mesh to use
+     */
+    replaceBuildingMesh(oldMesh, newMesh) {
+        // Update any references to the old mesh
+        if (this.buildings) {
+            for (const [buildingId, buildingData] of this.buildings.entries()) {
+                if (buildingData.mesh === oldMesh) {
+                    buildingData.mesh = newMesh;
+                    console.log(`🔄 Mesh substituído para edifício ${buildingId}`);
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -3019,21 +3122,9 @@ class BuildingSystem {
         const actualSize = buildingSize * cellSize * buildingScale;
 
         if (type === 'water_tank') {
-            // ===== WATER RESERVOIR - REFERENCE MODEL FOR STANDARDIZATION =====
-            // Reservatório - cilindro grande com dimensões baseadas no grid
-            const tank = BABYLON.MeshBuilder.CreateCylinder("storage_tank", {
-                height: 2.5, // Proportional height for visibility
-                diameter: actualSize * 0.9 // Slightly smaller than cell for visual clarity
-            }, this.scene);
-
-            // ===== STANDARDIZED POSITIONING: Multi-cell building support =====
-            if (buildingSize > 1) {
-                const offset = (buildingSize - 1) * cellSize * 0.5;
-                tank.position.x += offset;
-                tank.position.z += offset;
-            }
-
-            return tank;
+            // ===== WATER RESERVOIR - 3D MODEL OR FALLBACK =====
+            return this.createWaterTank3D(buildingSize, cellSize, actualSize);
+        }
 
         } else if (type === 'water_tower') {
             // ===== WATER TOWER - STANDARDIZED SCALING =====
@@ -3062,6 +3153,70 @@ class BuildingSystem {
         }
 
         return null;
+    }
+
+    // ===== 3D MODEL WATER TANK =====
+    async createWaterTank3D(buildingSize, cellSize, actualSize) {
+        try {
+            // Try to load 3D model first
+            const waterTankAsset = AssetLoader.getAsset('water_tank_3d');
+            if (waterTankAsset && waterTankAsset.loadInScene) {
+                console.log('🎯 Carregando modelo 3D do reservatório de água...');
+
+                const modelData = await waterTankAsset.loadInScene(this.scene);
+                if (modelData && modelData.meshes && modelData.meshes.length > 0) {
+                    const rootMesh = modelData.rootMesh;
+
+                    // Scale the model to fit the grid cell
+                    const targetSize = actualSize * 0.9; // Slightly smaller than cell
+                    const boundingInfo = rootMesh.getBoundingInfo();
+                    const modelSize = boundingInfo.boundingBox.extendSize;
+                    const maxDimension = Math.max(modelSize.x, modelSize.z) * 2; // *2 because extendSize is half
+
+                    if (maxDimension > 0) {
+                        const scale = targetSize / maxDimension;
+                        rootMesh.scaling = new BABYLON.Vector3(scale, scale, scale);
+                    }
+
+                    // Position for multi-cell buildings
+                    if (buildingSize > 1) {
+                        const offset = (buildingSize - 1) * cellSize * 0.5;
+                        rootMesh.position.x += offset;
+                        rootMesh.position.z += offset;
+                    }
+
+                    // Ensure the model is positioned on the ground
+                    const groundY = boundingInfo.boundingBox.minimum.y * rootMesh.scaling.y;
+                    rootMesh.position.y = -groundY;
+
+                    console.log('✅ Modelo 3D do reservatório carregado com sucesso');
+                    return rootMesh;
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ Erro ao carregar modelo 3D do reservatório, usando fallback:', error);
+        }
+
+        // Fallback to procedural cylinder
+        console.log('🔄 Usando reservatório procedural como fallback');
+        return this.createWaterTankFallback(buildingSize, cellSize, actualSize);
+    }
+
+    createWaterTankFallback(buildingSize, cellSize, actualSize) {
+        // Original procedural water tank
+        const tank = BABYLON.MeshBuilder.CreateCylinder("storage_tank", {
+            height: 2.5, // Proportional height for visibility
+            diameter: actualSize * 0.9 // Slightly smaller than cell for visual clarity
+        }, this.scene);
+
+        // Position for multi-cell buildings
+        if (buildingSize > 1) {
+            const offset = (buildingSize - 1) * cellSize * 0.5;
+            tank.position.x += offset;
+            tank.position.z += offset;
+        }
+
+        return tank;
     }
 
     createResidentialMesh(type, size) {
