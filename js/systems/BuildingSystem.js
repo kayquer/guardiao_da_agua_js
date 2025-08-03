@@ -3124,8 +3124,6 @@ class BuildingSystem {
         if (type === 'water_tank') {
             // ===== WATER RESERVOIR - 3D MODEL OR FALLBACK =====
             return this.createWaterTank3D(buildingSize, cellSize, actualSize);
-        }
-
         } else if (type === 'water_tower') {
             // ===== WATER TOWER - STANDARDIZED SCALING =====
             // Caixa d'água - cilindro elevado com dimensões proporcionais
@@ -3156,9 +3154,19 @@ class BuildingSystem {
     }
 
     // ===== 3D MODEL WATER TANK =====
-    async createWaterTank3D(buildingSize, cellSize, actualSize) {
+    createWaterTank3D(buildingSize, cellSize, actualSize) {
+        // Create placeholder mesh first (for immediate display)
+        const placeholder = this.createWaterTankFallback(buildingSize, cellSize, actualSize);
+
+        // Try to load 3D model asynchronously and replace placeholder
+        this.loadWaterTank3DModelAsync(placeholder, buildingSize, cellSize, actualSize);
+
+        return placeholder;
+    }
+
+    async loadWaterTank3DModelAsync(placeholder, buildingSize, cellSize, actualSize) {
         try {
-            // Try to load 3D model first
+            // Try to load 3D model
             const waterTankAsset = AssetLoader.getAsset('water_tank_3d');
             if (waterTankAsset && waterTankAsset.loadInScene) {
                 console.log('🎯 Carregando modelo 3D do reservatório de água...');
@@ -3166,6 +3174,10 @@ class BuildingSystem {
                 const modelData = await waterTankAsset.loadInScene(this.scene);
                 if (modelData && modelData.meshes && modelData.meshes.length > 0) {
                     const rootMesh = modelData.rootMesh;
+
+                    // Copy position and properties from placeholder
+                    rootMesh.position = placeholder.position.clone();
+                    rootMesh.rotation = placeholder.rotation.clone();
 
                     // Scale the model to fit the grid cell
                     const targetSize = actualSize * 0.9; // Slightly smaller than cell
@@ -3178,28 +3190,29 @@ class BuildingSystem {
                         rootMesh.scaling = new BABYLON.Vector3(scale, scale, scale);
                     }
 
-                    // Position for multi-cell buildings
-                    if (buildingSize > 1) {
-                        const offset = (buildingSize - 1) * cellSize * 0.5;
-                        rootMesh.position.x += offset;
-                        rootMesh.position.z += offset;
-                    }
-
                     // Ensure the model is positioned on the ground
                     const groundY = boundingInfo.boundingBox.minimum.y * rootMesh.scaling.y;
-                    rootMesh.position.y = -groundY;
+                    rootMesh.position.y = placeholder.position.y - groundY;
 
-                    console.log('✅ Modelo 3D do reservatório carregado com sucesso');
-                    return rootMesh;
+                    // Copy metadata and properties
+                    rootMesh.name = placeholder.name.replace('_placeholder', '');
+                    rootMesh.metadata = placeholder.metadata;
+
+                    // Replace placeholder in building system
+                    this.replaceBuildingMesh(placeholder, rootMesh);
+
+                    // Dispose placeholder
+                    placeholder.dispose();
+
+                    console.log('✅ Modelo 3D do reservatório carregado e substituído com sucesso');
+                    return;
                 }
             }
         } catch (error) {
-            console.warn('⚠️ Erro ao carregar modelo 3D do reservatório, usando fallback:', error);
+            console.warn('⚠️ Erro ao carregar modelo 3D do reservatório:', error);
         }
 
-        // Fallback to procedural cylinder
-        console.log('🔄 Usando reservatório procedural como fallback');
-        return this.createWaterTankFallback(buildingSize, cellSize, actualSize);
+        console.log('🔄 Mantendo reservatório procedural');
     }
 
     createWaterTankFallback(buildingSize, cellSize, actualSize) {
