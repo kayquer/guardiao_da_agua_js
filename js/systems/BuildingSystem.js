@@ -5044,14 +5044,6 @@ class BuildingSystem {
         }
     }
 
-    stopPreviewMode() {
-        console.log('🔍 Parando modo preview');
-
-        this.previewMode = false;
-        this.selectedBuildingType = null;
-        this.clearPreview();
-    }
-
     createPreviewMesh(buildingTypeId) {
         const buildingType = this.buildingTypes.get(buildingTypeId);
         if (!buildingType) return;

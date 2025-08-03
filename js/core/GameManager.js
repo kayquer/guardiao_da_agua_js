@@ -1459,6 +1459,57 @@ class GameManager {
         this.refreshInfoPanel();
     }
 
+    // ===== RECICLAGEM DE EDIFÍCIOS =====
+    recycleBuildingWithConfirmation(buildingId) {
+        if (!buildingId || !this.buildingSystem) {
+            console.warn('⚠️ ID do edifício ou BuildingSystem inválido');
+            return;
+        }
+
+        const building = this.buildingSystem.buildings.get(buildingId);
+        if (!building) {
+            console.warn(`⚠️ Edifício não encontrado: ${buildingId}`);
+            return;
+        }
+
+        const buildingName = building.config?.name || 'Edifício Desconhecido';
+        const recoveryValue = this.buildingSystem.getRecyclingValue(buildingId);
+
+        // Mostrar diálogo de confirmação
+        const confirmed = confirm(
+            `♻️ Reciclar ${buildingName}?\n\n` +
+            `Você receberá R$ ${recoveryValue} de volta.\n` +
+            `Esta ação não pode ser desfeita.`
+        );
+
+        if (confirmed) {
+            const result = this.buildingSystem.recycleBuilding(buildingId);
+
+            if (result.success) {
+                console.log(`♻️ ${buildingName} reciclado com sucesso. Recursos recuperados: R$ ${result.recoveredAmount}`);
+
+                // Limpar seleção se o edifício reciclado estava selecionado
+                if (this.selectedBuilding && this.selectedBuilding.id === buildingId) {
+                    this.deselectBuilding();
+                }
+
+                // Tocar som de sucesso
+                if (typeof AudioManager !== 'undefined') {
+                    AudioManager.playSound('sfx_success', 0.8);
+                }
+            } else {
+                console.error(`❌ Falha ao reciclar ${buildingName}`);
+
+                // Tocar som de erro
+                if (typeof AudioManager !== 'undefined') {
+                    AudioManager.playSound('sfx_build_error', 0.6);
+                }
+            }
+        } else {
+            console.log(`🚫 Reciclagem de ${buildingName} cancelada pelo usuário`);
+        }
+    }
+
     clearBuildingSelection() {
         if (this.selectedBuilding) {
             this.removeSelectionIndicator(this.selectedBuilding);
