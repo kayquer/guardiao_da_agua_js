@@ -274,23 +274,56 @@ class GameManager {
             console.log('🚫 Babylon.js pointer observables desabilitados');
         }
 
+        // ===== DISABLE DEFAULT BABYLON.JS CAMERA CONTROLS =====
+        this.camera.detachControl(this.canvas);
+
+        // ===== INITIALIZE SIMCITY-STYLE CAMERA CONTROLS =====
+        if (window.SimCityCameraControls) {
+            this.cameraControls = new window.SimCityCameraControls(
+                this.camera,
+                this.canvas,
+                this.scene,
+                this
+            );
+
+            // Configure camera bounds based on grid size
+            this.cameraControls.setBounds(-20, 60, -20, 60);
+            this.cameraControls.setZoomLimits(15, 80);
+
+            // Apply settings if available
+            if (this.settingsManager) {
+                const settings = this.settingsManager.getSettings();
+                if (settings.controls) {
+                    this.cameraControls.setSensitivity(
+                        settings.controls.cameraSensitivity * 0.02,
+                        settings.controls.cameraSensitivity * 0.008,
+                        settings.controls.zoomSpeed * 0.15
+                    );
+                }
+            }
+
+            console.log('🎮 SimCity-style camera controls initialized');
+        } else {
+            console.warn('⚠️ SimCityCameraControls not found, falling back to basic zoom');
+            // Fallback to basic zoom only
+            this.canvas.addEventListener('wheel', (event) => {
+                try {
+                    this.handleIsolatedWheel(event);
+                } catch (error) {
+                    console.error('❌ Erro no wheel:', error);
+                    this.recoverCameraState();
+                }
+            });
+        }
+
         // ===== BUILDING PLACEMENT MOUSE INTERACTION =====
         this.setupBuildingPlacementControls();
-
-        this.canvas.addEventListener('wheel', (event) => {
-            try {
-                this.handleIsolatedWheel(event);
-            } catch (error) {
-                console.error('❌ Erro no wheel:', error);
-                this.recoverCameraState();
-            }
-        });
 
         this.scene.onKeyboardObservable.add((kbInfo) => {
             this.handleKeyboardEvent(kbInfo);
         });
 
-        console.log('🎮 Controles inicializados: ZOOM + Building Placement permitidos');
+        console.log('🎮 Controles inicializados: SimCity Camera + Building Placement');
     }
 
     // ===== BUILDING PLACEMENT CONTROLS =====
@@ -867,14 +900,18 @@ class GameManager {
 
     updateCameraControls(deltaTime) {
         if (!this.camera) return;
-        
+
         if (!this.validateCameraStateWithBreaker()) {
             console.warn('⚠️ Câmera inválida, pulando frame');
             return;
         }
-        
-        this.enforceIsometricAngles();
-        
+
+        // Only enforce isometric angles if not using SimCity controls
+        // SimCity controls handle their own angle management
+        if (!this.cameraControls) {
+            this.enforceIsometricAngles();
+        }
+
         if (!this.validateCameraStateWithBreaker()) {
             console.error('🚨 Câmera corrompida após operações de controle');
         }
