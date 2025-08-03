@@ -3864,38 +3864,7 @@ class BuildingSystem {
     }
     
     // ===== PREVIEW =====
-    showBuildingPreview(gridX, gridZ, buildingTypeId) {
-        this.hideBuildingPreview();
-        
-        const buildingType = this.buildingTypes.get(buildingTypeId);
-        if (!buildingType) return;
-        
-        const canPlace = this.canPlaceBuilding(gridX, gridZ, buildingTypeId);
-        const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
-        
-        // Criar mesh de preview
-        this.previewMesh = BABYLON.MeshBuilder.CreateBox("preview", {
-            width: buildingType.size * 1.5,
-            height: 2,
-            depth: buildingType.size * 1.5
-        }, this.scene);
-        
-        this.previewMesh.position = worldPos;
-        this.previewMesh.position.y += 1;
-        
-        // Material baseado na validade
-        const material = canPlace.canPlace ? 
-            this.materials.get('preview') : 
-            this.materials.get('error');
-        this.previewMesh.material = material;
-    }
-    
-    hideBuildingPreview() {
-        if (this.previewMesh) {
-            this.previewMesh.dispose();
-            this.previewMesh = null;
-        }
-    }
+    // Note: Old preview methods removed - using advanced preview system (startPreviewMode, stopPreviewMode, updatePreview)
     
     // ===== ATUALIZAÇÃO =====
     update(deltaTime) {
