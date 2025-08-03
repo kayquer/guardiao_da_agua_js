@@ -55,26 +55,19 @@ class AudioManager {
     // ===== CARREGAMENTO DE ASSETS =====
     loadFromAssetLoader() {
         if (typeof AssetLoader === 'undefined' || !AssetLoader.instance) {
-            console.log('📦 AssetLoader não disponível, usando sons procedurais');
+            console.log('📦 AssetLoader não disponível, carregando sons RSE/SoundFX');
+            this.loadRSESoundFX();
             return;
         }
 
-        // Lista de sons para carregar (incluindo Archive.org 1001 Sound Effects)
+        // Lista de sons para carregar (RSE SoundFX)
         const soundKeys = [
             // Background Music (Legacy)
             'bgm_main', 'bgm_caketown', 'bgm_waves', 'bgm_whispers',
 
-            // UI Sound Effects (Archive.org)
-            'sfx_ui_click', 'sfx_ui_hover', 'sfx_ui_select', 'sfx_ui_error', 'sfx_ui_success',
-
-            // Construction Sound Effects (Archive.org)
-            'sfx_construction_start', 'sfx_construction_progress', 'sfx_construction_complete', 'sfx_building_place',
-
-            // Environmental Sound Effects (Archive.org)
-            'sfx_water_flow', 'sfx_water_splash', 'sfx_nature_birds', 'sfx_wind_gentle', 'sfx_rain_light',
-
-            // Alert/Notification Sounds (Archive.org)
-            'sfx_mission_start', 'sfx_mission_complete', 'sfx_warning_alert', 'sfx_resource_low',
+            // RSE SoundFX Effects
+            'sfx_click1', 'sfx_beep1', 'sfx_bling1', 'sfx_error1', 'sfx_chime1',
+            'sfx_splash1', 'sfx_whoosh1', 'sfx_fanfare1', 'sfx_alarm1',
 
             // Legacy Sound Effects
             'sfx_pickup', 'sfx_item', 'sfx_walk', 'sfx_watering', 'sfx_dig', 'sfx_axe'
@@ -94,6 +87,9 @@ class AudioManager {
                 console.log(`⚠️ Asset de áudio não encontrado: ${key}, usando fallback`);
             }
         });
+
+        // Load RSE SoundFX as fallback
+        this.loadRSESoundFX();
     }
     
     // ===== CARREGAMENTO DE SONS =====
@@ -338,6 +334,123 @@ class AudioManager {
         } catch (error) {
             console.log(`⚠️ Erro ao carregar ${soundName}, usando som procedural:`, error);
         }
+    }
+
+    // ===== RSE SOUNDFX LOADING =====
+    loadRSESoundFX() {
+        console.log('🎵 Carregando RSE SoundFX...');
+
+        // Load individual sound files
+        const rseSounds = [
+            { key: 'sfx_click1', file: 'click1.mp3', category: 'ui' },
+            { key: 'sfx_beep1', file: 'beep1.mp3', category: 'ui' },
+            { key: 'sfx_bling1', file: 'bling1.mp3', category: 'success' },
+            { key: 'sfx_error1', file: 'error1.mp3', category: 'error' },
+            { key: 'sfx_chime1', file: 'chime1.mp3', category: 'notification' },
+            { key: 'sfx_splash1', file: 'splash1.mp3', category: 'water' }
+        ];
+
+        rseSounds.forEach(soundInfo => {
+            this.loadRSESoundFile(soundInfo.key, soundInfo.file, soundInfo.category);
+        });
+
+        // Create sound mappings for compatibility
+        this.createRSESoundMappings();
+    }
+
+    loadRSESoundFile(key, filename, category) {
+        try {
+            const audio = new Audio(`Sounds/SFX/RSE/${filename}`);
+            audio.preload = 'auto';
+
+            audio.addEventListener('canplaythrough', () => {
+                this.sounds.set(key, {
+                    play: () => {
+                        audio.currentTime = 0;
+                        audio.volume = this.sfxVolume * this.masterVolume;
+                        audio.play().catch(error => {
+                            console.warn(`⚠️ Erro ao reproduzir ${key}:`, error);
+                        });
+                    },
+                    setVolume: (volume) => {
+                        audio.volume = volume * this.sfxVolume * this.masterVolume;
+                    },
+                    pause: () => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    },
+                    audio: audio
+                });
+                console.log(`🔊 RSE SoundFX carregado: ${key} (${category})`);
+            });
+
+            audio.addEventListener('error', () => {
+                console.log(`⚠️ Arquivo RSE ${filename} não encontrado, usando som procedural`);
+                this.createProceduralSound(key, category);
+            });
+
+        } catch (error) {
+            console.log(`⚠️ Erro ao carregar RSE ${filename}, usando som procedural:`, error);
+            this.createProceduralSound(key, category);
+        }
+    }
+
+    createRSESoundMappings() {
+        // Map old Archive.org sound names to new RSE sounds
+        const soundMappings = {
+            // UI Sounds
+            'sfx_ui_click': 'sfx_click1',
+            'sfx_ui_hover': 'sfx_beep1',
+            'sfx_ui_select': 'sfx_bling1',
+            'sfx_ui_error': 'sfx_error1',
+            'sfx_ui_success': 'sfx_chime1',
+
+            // Construction Sounds
+            'sfx_construction_start': 'sfx_click1',
+            'sfx_construction_progress': 'sfx_beep1',
+            'sfx_construction_complete': 'sfx_chime1',
+            'sfx_building_place': 'sfx_bling1',
+
+            // Environmental Sounds
+            'sfx_water_flow': 'sfx_splash1',
+            'sfx_water_splash': 'sfx_splash1',
+
+            // Alert/Notification Sounds
+            'sfx_mission_start': 'sfx_chime1',
+            'sfx_mission_complete': 'sfx_bling1',
+            'sfx_warning_alert': 'sfx_error1',
+            'sfx_resource_low': 'sfx_error1',
+
+            // Legacy mappings
+            'sfx_click': 'sfx_click1',
+            'sfx_build': 'sfx_bling1',
+            'sfx_water': 'sfx_splash1',
+            'sfx_success': 'sfx_chime1',
+            'sfx_error': 'sfx_error1'
+        };
+
+        // Create aliases for compatibility
+        Object.entries(soundMappings).forEach(([oldKey, newKey]) => {
+            const newSound = this.sounds.get(newKey);
+            if (newSound && !this.sounds.has(oldKey)) {
+                this.sounds.set(oldKey, newSound);
+                console.log(`🔗 RSE Mapeamento criado: ${oldKey} -> ${newKey}`);
+            }
+        });
+    }
+
+    createProceduralSound(key, category) {
+        // Create procedural fallback sounds based on category
+        const frequencies = {
+            'ui': 800,
+            'success': 1200,
+            'error': 400,
+            'notification': 1000,
+            'water': 600
+        };
+
+        const frequency = frequencies[category] || 800;
+        this.createBeepSound(key, frequency, 0.2);
     }
 
     createProceduralAmbientSounds() {
@@ -894,29 +1007,29 @@ class AudioManager {
         }
     }
     
-    // ===== ENHANCED ARCHIVE.ORG AUDIO METHODS =====
+    // ===== RSE SOUNDFX AUDIO METHODS =====
 
-    // UI Sound Effects
+    // UI Sound Effects (mapped to RSE SoundFX)
     playUIClick() { this.playSound('sfx_ui_click', 0.7); }
     playUIHover() { this.playSound('sfx_ui_hover', 0.5); }
     playUISelect() { this.playSound('sfx_ui_select', 0.8); }
     playUIError() { this.playSound('sfx_ui_error', 0.9); }
     playUISuccess() { this.playSound('sfx_ui_success', 0.8); }
 
-    // Construction Sound Effects
+    // Construction Sound Effects (mapped to RSE SoundFX)
     playConstructionStart() { this.playSound('sfx_construction_start', 0.7); }
     playConstructionProgress() { this.playSound('sfx_construction_progress', 0.6); }
     playConstructionComplete() { this.playSound('sfx_construction_complete', 0.8); }
     playBuildingPlace() { this.playSound('sfx_building_place', 0.7); }
 
-    // Environmental Sound Effects
+    // Environmental Sound Effects (mapped to RSE SoundFX)
     playWaterFlow() { this.playSound('sfx_water_flow', 0.6); }
     playWaterSplash() { this.playSound('sfx_water_splash', 0.7); }
     playNatureBirds() { this.playSound('sfx_nature_birds', 0.5); }
     playWindGentle() { this.playSound('sfx_wind_gentle', 0.4); }
     playRainLight() { this.playSound('sfx_rain_light', 0.5); }
 
-    // Alert/Notification Sounds
+    // Alert/Notification Sounds (mapped to RSE SoundFX)
     playMissionStart() { this.playSound('sfx_mission_start', 0.8); }
     playMissionComplete() { this.playSound('sfx_mission_complete', 0.9); }
     playWarningAlert() { this.playSound('sfx_warning_alert', 0.8); }
