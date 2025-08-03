@@ -2008,7 +2008,7 @@ class UIManager {
         `;
 
         detailsContent.innerHTML = content;
-        detailsPanel.style.display = 'block';
+        detailsPanel.style.display = 'flex';
         this.updatePanelState('selection');
 
         console.log(`📋 Informações de seleção exibidas para ${building.config.name}`);
@@ -2206,7 +2206,7 @@ class UIManager {
         `;
 
         detailsContent.innerHTML = content;
-        detailsPanel.style.display = 'block';
+        detailsPanel.style.display = 'flex';
         this.updatePanelState('loans');
 
         // Calcular preview inicial
