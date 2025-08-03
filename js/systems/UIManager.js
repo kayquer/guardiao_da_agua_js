@@ -930,45 +930,9 @@ class UIManager {
         `;
     }
     
-    showBuildingDetails(building) {
-        if (!this.elements.detailsContent || !building) return;
-
-        // Verificar se o building tem as propriedades necessárias
-        const buildingName = building.config?.name || building.type || 'Edifício Desconhecido';
-        const gridX = building.gridX ?? 'N/A';
-        const gridZ = building.gridZ ?? 'N/A';
-        const efficiency = building.efficiency != null ? Math.round(building.efficiency * 100) : 0;
-        const status = building.active != null ? (building.active ? 'Ativo' : 'Inativo') : 'Desconhecido';
-        const buildingId = building.id || 'unknown';
-
-        this.elements.detailsContent.innerHTML = `
-            <div class="detail-item">
-                <div class="detail-label">Edifício:</div>
-                <div class="detail-value">${buildingName}</div>
-            </div>
-            <div class="detail-item">
-                <div class="detail-label">Posição:</div>
-                <div class="detail-value">(${gridX}, ${gridZ})</div>
-            </div>
-            <div class="detail-item">
-                <div class="detail-label">Eficiência:</div>
-                <div class="detail-value">${efficiency}%</div>
-            </div>
-            <div class="detail-item">
-                <div class="detail-label">Status:</div>
-                <div class="detail-value">${status}</div>
-            </div>
-            <button class="overlay-btn secondary" onclick="gameManager.buildingSystem.removeBuilding('${buildingId}')">
-                🗑️ Demolir
-            </button>
-        `;
-    }
-    
-    clearBuildingDetails() {
-        if (this.elements.detailsContent) {
-            this.elements.detailsContent.innerHTML = '<p>Selecione um item para ver detalhes</p>';
-        }
-    }
+    // ===== BUILDING DETAILS CONSOLIDATED =====
+    // Note: Building details functionality has been consolidated into showBuildingSelectionInfo()
+    // for better consistency and comprehensive information display
     
     // ===== CONTROLES DE JOGO =====
     togglePause() {
