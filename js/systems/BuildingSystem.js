@@ -3863,8 +3863,19 @@ class BuildingSystem {
         );
     }
     
-    // ===== PREVIEW =====
-    // Note: Old preview methods removed - using advanced preview system (startPreviewMode, stopPreviewMode, updatePreview)
+    // ===== PREVIEW SYSTEM CONSOLIDATION =====
+    // ✅ UNIFIED PREVIEW SYSTEM: All preview functionality consolidated into advanced system
+    // - startPreviewMode(): Initiates building placement preview with visual feedback
+    // - stopPreviewMode(): Cleanly exits preview mode with UI cleanup
+    // - updatePreview(): Real-time preview updates with validation and visual cues
+    // - createPreviewMesh(): Specialized mesh creation for different building types
+    // - createPreviewMarker(): Ground markers with color-coded validity feedback
+    // - Multi-cell preview support for large buildings
+    // - Audio feedback for invalid placements
+    // - UI cursor changes and placement feedback
+    //
+    // 🗑️ REMOVED: Legacy simple preview methods (showBuildingPreview, hideBuildingPreview)
+    // 🎯 RESULT: Single, comprehensive preview system with enhanced user experience
     
     // ===== ATUALIZAÇÃO =====
     update(deltaTime) {
