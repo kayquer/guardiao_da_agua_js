@@ -507,8 +507,10 @@ class UIManager {
 
         // Remove existing mobile controls
         document.querySelectorAll('.mobile-toggle').forEach(btn => btn.remove());
+        document.querySelectorAll('.mobile-top-toggle').forEach(btn => btn.remove());
 
-        // Criar botões de toggle para mobile
+        // ===== BOTTOM TOGGLES (Building and Information Panels) =====
+        // Criar botões de toggle para mobile (bottom)
         const leftToggle = document.createElement('button');
         leftToggle.className = 'mobile-toggle left';
         leftToggle.innerHTML = '🏗️';
@@ -539,14 +541,104 @@ class UIManager {
 
         document.body.appendChild(rightToggle);
 
+        // ===== TOP TOGGLES (Resource Panel and Control Buttons) =====
+        // Create toggle button for resource-panel
+        const resourceToggle = document.createElement('button');
+        resourceToggle.className = 'mobile-top-toggle resource-toggle';
+        resourceToggle.innerHTML = '📊';
+        resourceToggle.title = 'Mostrar/Ocultar recursos';
+
+        const resourceToggleHandler = (e) => {
+            e.preventDefault();
+            this.toggleTopHudElement('resource-panel');
+        };
+        resourceToggle.addEventListener('click', resourceToggleHandler);
+        resourceToggle.addEventListener('touchend', resourceToggleHandler, { passive: false });
+
+        // Create toggle button for control-buttons
+        const controlToggle = document.createElement('button');
+        controlToggle.className = 'mobile-top-toggle control-toggle';
+        controlToggle.innerHTML = '⚙️';
+        controlToggle.title = 'Mostrar/Ocultar controles';
+
+        const controlToggleHandler = (e) => {
+            e.preventDefault();
+            this.toggleTopHudElement('control-buttons');
+        };
+        controlToggle.addEventListener('click', controlToggleHandler);
+        controlToggle.addEventListener('touchend', controlToggleHandler, { passive: false });
+
+        // Add top toggles to hud-top
+        const hudTop = document.querySelector('.hud-top');
+        if (hudTop) {
+            hudTop.appendChild(resourceToggle);
+            hudTop.appendChild(controlToggle);
+        }
+
         // Store references for later updates
         this.mobileToggleButtons = {
             left: leftToggle,
-            right: rightToggle
+            right: rightToggle,
+            resource: resourceToggle,
+            control: controlToggle
         };
+
+        // Initialize top HUD elements as hidden on mobile
+        this.initializeTopHudVisibility();
 
         // Create mobile panel headers for hud-right
         this.createMobilePanelHeaders();
+    }
+
+    /**
+     * Toggle visibility of top HUD elements (resource-panel or control-buttons)
+     * @param {string} elementClass - The class name of the element to toggle
+     */
+    toggleTopHudElement(elementClass) {
+        if (!this.isMobile) return;
+
+        const element = document.querySelector(`.${elementClass}`);
+        if (!element) return;
+
+        const isVisible = element.classList.contains('mobile-visible');
+
+        if (isVisible) {
+            element.classList.remove('mobile-visible');
+            // Update toggle button state
+            const toggleBtn = elementClass === 'resource-panel' ?
+                this.mobileToggleButtons.resource :
+                this.mobileToggleButtons.control;
+            if (toggleBtn) {
+                toggleBtn.classList.remove('active');
+            }
+        } else {
+            element.classList.add('mobile-visible');
+            // Update toggle button state
+            const toggleBtn = elementClass === 'resource-panel' ?
+                this.mobileToggleButtons.resource :
+                this.mobileToggleButtons.control;
+            if (toggleBtn) {
+                toggleBtn.classList.add('active');
+            }
+        }
+    }
+
+    /**
+     * Initialize top HUD elements visibility on mobile
+     */
+    initializeTopHudVisibility() {
+        if (!this.isMobile) return;
+
+        const resourcePanel = document.querySelector('.resource-panel');
+        const controlButtons = document.querySelector('.control-buttons');
+
+        // Hide both by default on mobile
+        if (resourcePanel) {
+            resourcePanel.classList.remove('mobile-visible');
+        }
+        if (controlButtons) {
+            controlButtons.classList.remove('mobile-visible');
+        }
     }
     
     // ===== ATUALIZAÇÃO =====
@@ -946,7 +1038,8 @@ class UIManager {
         if (!detailsContent) return;
 
         // Check if player can afford the building
-        const canAfford = this.gameManager.resourceManager.money >= buildingType.cost;
+        const currentBudget = this.gameManager.resourceManager.resources.budget.current;
+        const canAfford = currentBudget >= buildingType.cost;
 
         detailsContent.innerHTML = `
             <div class="mobile-building-details">
@@ -1776,11 +1869,15 @@ class UIManager {
                     this.mobileToggleButtons[side].classList.add('active');
                 }
 
-                // If opening right panel (info), also show resource panel in top HUD
+                // ===== PANEL SEPARATION: Hide control-buttons when right panel is open =====
                 if (side === 'right') {
-                    const resourcePanel = document.querySelector('.resource-panel');
-                    if (resourcePanel) {
-                        resourcePanel.classList.add('mobile-active');
+                    const controlButtons = document.querySelector('.control-buttons');
+                    if (controlButtons) {
+                        controlButtons.classList.remove('mobile-visible');
+                    }
+                    // Update control toggle button state
+                    if (this.mobileToggleButtons && this.mobileToggleButtons.control) {
+                        this.mobileToggleButtons.control.classList.remove('active');
                     }
                 }
 
@@ -1806,13 +1903,8 @@ class UIManager {
                 this.mobileToggleButtons[side].classList.remove('active');
             }
 
-            // If closing right panel (info), also hide resource panel and remove build button
+            // If closing right panel (info), remove build button
             if (side === 'right') {
-                const resourcePanel = document.querySelector('.resource-panel');
-                if (resourcePanel) {
-                    resourcePanel.classList.remove('mobile-active');
-                }
-
                 // Remove mobile build button if it exists
                 const mobileBuildBtn = document.querySelector('.mobile-build-btn');
                 if (mobileBuildBtn) {
@@ -2898,12 +2990,33 @@ class UIManager {
 
         // Enhanced touch support for canvas interactions
         if (this.gameManager && this.gameManager.canvas) {
+            // Store touch start position to detect taps vs drags
+            let touchStartPos = null;
+            let touchStartTime = 0;
+
             this.gameManager.canvas.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                // Convert touch to mouse event for building placement
+
+                const touch = e.touches[0];
+                touchStartPos = { x: touch.clientX, y: touch.clientY };
+                touchStartTime = Date.now();
+
+                // Convert touch to mouse event for building placement preview
                 if (this.gameManager.buildMode) {
+                    const mouseEvent = new MouseEvent('mousemove', {
+                        clientX: touch.clientX,
+                        clientY: touch.clientY
+                    });
+                    this.gameManager.handleBuildingPreviewMouseMove(mouseEvent);
+                }
+            }, { passive: false });
+
+            this.gameManager.canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+
+                // Update building preview position during drag
+                if (this.gameManager.buildMode && e.touches.length > 0) {
                     const touch = e.touches[0];
-                    const rect = this.gameManager.canvas.getBoundingClientRect();
                     const mouseEvent = new MouseEvent('mousemove', {
                         clientX: touch.clientX,
                         clientY: touch.clientY
@@ -2914,15 +3027,66 @@ class UIManager {
 
             this.gameManager.canvas.addEventListener('touchend', (e) => {
                 e.preventDefault();
-                // Convert touch to mouse click for building placement
-                if (this.gameManager.buildMode && e.changedTouches.length > 0) {
-                    const touch = e.changedTouches[0];
-                    const mouseEvent = new MouseEvent('click', {
+
+                if (e.changedTouches.length === 0) return;
+
+                const touch = e.changedTouches[0];
+                const touchEndPos = { x: touch.clientX, y: touch.clientY };
+                const touchDuration = Date.now() - touchStartTime;
+
+                // Calculate distance moved
+                const distance = touchStartPos ?
+                    Math.sqrt(
+                        Math.pow(touchEndPos.x - touchStartPos.x, 2) +
+                        Math.pow(touchEndPos.y - touchStartPos.y, 2)
+                    ) : 0;
+
+                // Only trigger click if it's a tap (short duration, minimal movement)
+                const isTap = touchDuration < 300 && distance < 10;
+
+                if (isTap) {
+                    // Create a proper pointer event for Babylon.js
+                    const pointerEvent = new PointerEvent('pointerdown', {
                         clientX: touch.clientX,
-                        clientY: touch.clientY
+                        clientY: touch.clientY,
+                        bubbles: true,
+                        cancelable: true,
+                        view: window,
+                        pointerId: 1,
+                        pointerType: 'touch'
                     });
-                    this.gameManager.handleBuildingPlacementClick(mouseEvent);
+
+                    if (this.gameManager.buildMode) {
+                        // Building placement mode
+                        const mouseEvent = new MouseEvent('click', {
+                            clientX: touch.clientX,
+                            clientY: touch.clientY,
+                            bubbles: true,
+                            cancelable: true
+                        });
+                        this.gameManager.handleBuildingPlacementClick(mouseEvent);
+                    } else {
+                        // Normal mode - trigger Babylon.js scene picking
+                        // This will handle terrain clicks and building selection
+                        this.gameManager.canvas.dispatchEvent(pointerEvent);
+
+                        // Also dispatch pointerup for complete interaction
+                        const pointerUpEvent = new PointerEvent('pointerup', {
+                            clientX: touch.clientX,
+                            clientY: touch.clientY,
+                            bubbles: true,
+                            cancelable: true,
+                            view: window,
+                            pointerId: 1,
+                            pointerType: 'touch'
+                        });
+                        this.gameManager.canvas.dispatchEvent(pointerUpEvent);
+                    }
                 }
+
+                // Reset touch tracking
+                touchStartPos = null;
+                touchStartTime = 0;
             }, { passive: false });
         }
 

@@ -37,46 +37,56 @@
         height: 60px;
         padding: 0 1rem;
         flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
     }
-    
+
+    /* Hide resource panel and control buttons by default on mobile */
     .resource-panel {
+        display: none;
+    }
+
+    .control-buttons {
+        display: none;
+    }
+
+    /* Show resource panel when active (opened via toggle) */
+    .resource-panel.mobile-active {
+        display: flex;
         gap: 0.5rem;
         flex-wrap: wrap;
         justify-content: center;
         width: 100%;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background: linear-gradient(180deg, rgba(45,53,97,0.98) 0%, rgba(26,31,58,0.98) 100%);
+        padding: 1rem;
+        z-index: 75;
+        border-bottom: 4px solid var(--cartoon-blue);
+        box-shadow: 0 6px 0 rgba(0, 0, 0, 0.3);
+        animation: slideInFromTop 0.3s ease-out;
     }
-    
-    .resource-item {
-        padding: 0.3rem 0.8rem;
-        font-size: 0.8rem;
-        min-width: 80px;
+
+    .resource-panel.mobile-active .resource-item {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        min-width: 100px;
     }
-    
+
     .resource-icon {
-        font-size: 1rem;
+        font-size: 1.2rem;
     }
-    
+
     .resource-label {
         display: none; /* Oculta labels em mobile */
-    }
-    
-    .control-buttons {
-        position: absolute;
-        top: 5px;
-        right: 1rem;
-        gap: 0.3rem;
-    }
-    
-    .control-btn {
-        width: 35px;
-        height: 35px;
-        font-size: 0.8rem;
     }
     
     /* ===== PAINÉIS LATERAIS MOBILE ===== */
     .hud-left {
         width: 100%;
-        height: 200px;
+        height: calc(100% - 80px);
         top: auto;
         bottom: 60px;
         left: 0;
@@ -127,7 +137,7 @@
 
     .hud-right .mobile-panel-title {
         font-size: 1.2rem;
-        color: #00ff88;
+        color: #00FF88;
         font-weight: bold;
     }
 
@@ -154,7 +164,162 @@
     .hud-right .mobile-close-btn:active {
         transform: scale(0.95);
     }
-    
+
+    /* ===== MOBILE BUILDING DETAILS MODAL ===== */
+    .hud-right .details-content {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+        padding-bottom: 100px; /* Space for build button */
+    }
+
+    .hud-right .mobile-build-btn {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        padding: 1rem 2rem;
+        background: linear-gradient(145deg, var(--cartoon-green), #00D470);
+        color: white;
+        border: 4px solid #00AA55;
+        border-radius: 16px;
+        font-size: 1.3rem;
+        font-weight: bold;
+        font-family: 'Fredoka', sans-serif;
+        cursor: pointer;
+        box-shadow: 0 8px 0 #008844;
+        transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        z-index: 75;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .hud-right .mobile-build-btn:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 0 #008844, 0 0 20px var(--cartoon-green);
+    }
+
+    .hud-right .mobile-build-btn:active {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 0 #008844;
+    }
+
+    .hud-right .mobile-build-btn.disabled {
+        background: linear-gradient(145deg, #666, #555);
+        border-color: #444;
+        box-shadow: 0 8px 0 #333;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .hud-right .mobile-build-btn.disabled:hover {
+        transform: none;
+        box-shadow: 0 8px 0 #333;
+    }
+
+    /* Mobile building details content */
+    .mobile-building-details {
+        padding: 1rem 0;
+    }
+
+    .mobile-building-details .building-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .mobile-building-details .building-icon-large {
+        font-size: 4rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .mobile-building-details h2 {
+        font-size: 1.8rem;
+        color: var(--cartoon-orange);
+        margin: 0;
+        font-family: 'Lilita One', cursive;
+    }
+
+    .mobile-building-details .building-description {
+        background: rgba(0, 212, 255, 0.1);
+        padding: 1rem;
+        border-radius: 12px;
+        border-left: 4px solid var(--cartoon-blue);
+        margin-bottom: 1.5rem;
+    }
+
+    .mobile-building-details .building-description p {
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .mobile-building-details .building-stats-mobile {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .mobile-building-details .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.8rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mobile-building-details .stat-label {
+        font-weight: bold;
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .mobile-building-details .stat-value {
+        font-size: 1.1rem;
+        color: var(--cartoon-green);
+        font-weight: bold;
+    }
+
+    .mobile-building-details .stat-value.critical {
+        color: var(--cartoon-red);
+        animation: pulse-critical-cartoon 1s infinite;
+    }
+
+    .mobile-building-details .building-requirements {
+        background: rgba(255, 140, 0, 0.1);
+        padding: 1rem;
+        border-radius: 12px;
+        border-left: 4px solid var(--cartoon-orange);
+    }
+
+    .mobile-building-details .building-requirements h4 {
+        margin: 0 0 0.5rem 0;
+        color: var(--cartoon-orange);
+        font-size: 1.1rem;
+    }
+
+    .mobile-building-details .building-requirements ul {
+        margin: 0;
+        padding-left: 1.5rem;
+        list-style: none;
+    }
+
+    .mobile-building-details .building-requirements li {
+        font-size: 0.95rem;
+        margin-bottom: 0.3rem;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .mobile-building-details .building-requirements li::before {
+        content: '▸ ';
+        color: var(--cartoon-orange);
+        font-weight: bold;
+    }
+
     .building-panel {
         padding: 1rem;
     }
@@ -170,9 +335,9 @@
     }
     
     .category-btn {
-        min-width: 80px;
-        padding: 0.4rem;
-        font-size: 0.8rem;
+        padding: 0.3rem;
+        font-size: 1rem;
+        font-weight: normal;
     }
     
     .building-items {
@@ -182,6 +347,7 @@
     .building-item {
         padding: 0.8rem;
         gap: 0.8rem;
+        margin: 10px 0px;
     }
     
     .building-icon {
@@ -191,15 +357,15 @@
     }
     
     .building-name {
-        font-size: 0.9rem;
+        font-size: 1.4rem;
     }
     
     .building-cost {
-        font-size: 0.8rem;
+        font-size: 1rem;
     }
     
     .building-description {
-        font-size: 0.7rem;
+        font-size: 1rem;
     }
     
     /* ===== PAINEL INFERIOR MOBILE ===== */
@@ -316,13 +482,13 @@
         width: 50px;
         height: 50px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #3498db, #2980b9);
+        background: linear-gradient(135deg, #00D4FF, #00A8CC);
         border: none;
         color: white;
         font-size: 1.2rem;
         cursor: pointer;
         z-index: 60;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        box-shadow: 0 8px 0 rgba(0, 0, 0, 0.3);
         transition: all 0.3s ease;
     }
     
@@ -488,15 +654,7 @@
 /* ===== TOUCH DEVICES ===== */
 @media (hover: none) and (pointer: coarse) {
     
-    .building-item:hover {
-        background: rgba(255,255,255,0.05);
-        transform: none;
-    }
     
-    .building-item:active {
-        background: rgba(255,255,255,0.1);
-        transform: scale(0.98);
-    }
     
     .menu-btn:hover {
         transform: none;
@@ -524,20 +682,18 @@
         min-height: 44px;
     }
     
-    .building-item {
-        min-height: 60px;
-    }
+    
 }
 
-/* ===== ENHANCED MOBILE TOGGLE BUTTONS ===== */
+/* ===== ENHANCED MOBILE TOGGLE BUTTONS (BOTTOM) ===== */
 .mobile-toggle {
     position: fixed;
     bottom: 20px;
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.3);
-    background: linear-gradient(135deg, rgba(0,255,136,0.8) 0%, rgba(0,200,100,0.8) 100%);
+    border: 3px solid rgba(255,255,255,0.4);
+    background: linear-gradient(135deg, rgba(0,255,136,0.9) 0%, rgba(0,200,100,0.9) 100%);
     color: white;
     font-size: 1.5rem;
     display: flex;
@@ -545,34 +701,107 @@
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    z-index: 80;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 85;
+    box-shadow: 0 8px 0 rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
 }
 
 .mobile-toggle:hover {
     transform: scale(1.1);
-    box-shadow: 0 6px 25px rgba(0,255,136,0.4);
+    box-shadow: 0 8px 0 rgba(0, 0, 0, 0.3), 0 0 20px rgba(0,255,136,0.4);
 }
 
 .mobile-toggle:active {
-    transform: scale(0.95);
+    transform: scale(0.95) translateY(2px);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
 }
 
 .mobile-toggle.left {
     left: 20px;
-    background: linear-gradient(135deg, rgba(52,152,219,0.8) 0%, rgba(41,128,185,0.8) 100%);
+    background: linear-gradient(135deg, rgba(0,212,255,0.9) 0%, rgba(0,168,204,0.9) 100%);
+    border-color: rgba(0,212,255,0.4);
 }
 
 .mobile-toggle.right {
     right: 20px;
+    background: linear-gradient(135deg, rgba(0,255,136,0.9) 0%, rgba(0,200,100,0.9) 100%);
+    border-color: rgba(0,255,136,0.4);
 }
 
 .mobile-toggle.active {
-    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(200,200,200,0.9) 100%);
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(220,220,220,0.95) 100%);
     color: #333;
-    border-color: rgba(0,255,136,0.6);
-    box-shadow: 0 6px 25px rgba(0,255,136,0.5);
+    border-color: rgba(0,255,136,0.8);
+    box-shadow: 0 8px 0 rgba(0, 0, 0, 0.3), 0 0 20px rgba(0,255,136,0.6);
+}
+
+/* ===== MOBILE TOP TOGGLE BUTTONS (TOP HUD) ===== */
+.mobile-top-toggle {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(100,100,255,0.9) 0%, rgba(80,80,200,0.9) 100%);
+    border: 2px solid rgba(100,100,255,0.4);
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 85;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    margin-left: 10px;
+}
+
+.mobile-top-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 15px rgba(100,100,255,0.4);
+}
+
+.mobile-top-toggle:active {
+    transform: scale(0.95) translateY(2px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.mobile-top-toggle.resource-toggle {
+    background: linear-gradient(135deg, rgba(255,165,0,0.9) 0%, rgba(200,130,0,0.9) 100%);
+    border-color: rgba(255,165,0,0.4);
+}
+
+.mobile-top-toggle.control-toggle {
+    background: linear-gradient(135deg, rgba(150,150,150,0.9) 0%, rgba(100,100,100,0.9) 100%);
+    border-color: rgba(150,150,150,0.4);
+}
+
+.mobile-top-toggle.active {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(220,220,220,0.95) 100%);
+    color: #333;
+    border-color: rgba(100,100,255,0.8);
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 15px rgba(100,100,255,0.6);
+}
+
+/* ===== MOBILE TOP HUD VISIBILITY ===== */
+@media screen and (max-width: 768px) {
+    .hud-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .resource-panel,
+    .control-buttons {
+        display: none;
+    }
+
+    .resource-panel.mobile-visible,
+    .control-buttons.mobile-visible {
+        display: flex;
+    }
 }
 
 /* ===== MOBILE PANEL ANIMATIONS ===== */
@@ -596,6 +825,18 @@
         transform: translateX(0);
         opacity: 1;
     }
+}
+
+@keyframes slideInFromTop {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
 }
 
 .hud-left.active {
