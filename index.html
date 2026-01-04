@@ -6,7 +6,7 @@
     <title>Guardião da Água - Jogo Educacional</title>
     <meta name="description" content="Jogo educacional de simulação e gerenciamento de recursos hídricos">
     <meta name="keywords" content="água, educação, sustentabilidade, jogo, simulação">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
     <!-- CSS -->
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/ui.css">
@@ -81,6 +81,26 @@
         <div id="game-hud" class="hud">
             <!-- Painel Superior - Recursos -->
             <div class="hud-top">
+                <!-- Compact Resource Indicators (Mobile) -->
+                <div class="compact-resources">
+                    <div class="compact-resource-item" id="compact-budget">
+                        <span class="compact-icon">💰</span>
+                        <span class="compact-value">50K</span>
+                    </div>
+                    <div class="compact-resource-item" id="compact-water">
+                        <span class="compact-icon">💧</span>
+                        <span class="compact-value">1000L</span>
+                    </div>
+                    <div class="compact-resource-item" id="compact-energy">
+                        <span class="compact-icon">⚡</span>
+                        <span class="compact-value">0MW</span>
+                    </div>
+                    <div class="compact-resource-item" id="compact-population">
+                        <span class="compact-icon">👥</span>
+                        <span class="compact-value">500</span>
+                    </div>
+                </div>
+
                 <div class="resource-panel">
                     <div class="resource-item">
                         <span class="resource-icon">💧</span>

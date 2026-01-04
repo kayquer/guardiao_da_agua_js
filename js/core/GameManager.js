@@ -46,40 +46,49 @@ class GameManager {
         this.frameCount = 0;
         this.lastFPSUpdate = 0;
         this.currentFPS = 60;
-        this.memoryMonitoring = {
-            enabled: true,
-            lastCheck: 0,
-            checkInterval: 5000,
-            maxMemoryUsage: 0,
-            memoryHistory: []
-        };
 
-        // Sistema de relógio
         this.gameStartTime = null;
         this.gameClockTime = null;
         this.dayNightCycle = 0;
         this.lastDayNightState = null;
 
-        // Sistema de hover/seleção
         this.hoverInfo = null;
         this.lastHoverPosition = { x: -1, z: -1 };
         this.currentHoverEffect = null;
         this.currentTerrainSelection = null;
         this.lastHoveredBuilding = null;
 
-        // Circuit breaker para render
-        this.renderState = {
-            corruptionCount: 0,
-            maxCorruptions: 5,
-            lastCorruptionTime: 0,
-            circuitBreakerActive: false,
-            recoveryAttempts: 0,
-            maxRecoveryAttempts: 3
-        };
-
         // Auto-save
         this.autoSaveTimer = 0;
         this.initialized = false;
+
+        // Estado de renderização e recuperação de erros
+        this.renderState = {
+            circuitBreakerActive: false,
+            corruptionCount: 0,
+            maxCorruptions: 5,
+            lastCorruptionTime: 0,
+            recoveryAttempts: 0,
+            lastErrorTime: 0
+        };
+        // Estado de renderização e recuperação de erros
+        this.renderState = {
+            circuitBreakerActive: false,
+            corruptionCount: 0,
+            maxCorruptions: 5,
+            lastCorruptionTime: 0,
+            recoveryAttempts: 0,
+            lastErrorTime: 0
+        };
+
+        // Monitoramento de memória e performance
+        this.memoryMonitoring = {
+            enabled: true,
+            lastCheck: 0,
+            checkInterval: 5000, // Verificar a cada 5 segundos
+            memoryHistory: [],
+            maxMemoryUsage: 0
+        };
     }
 
     // ===== VALIDAÇÃO DE DEPENDÊNCIAS =====
@@ -197,8 +206,8 @@ class GameManager {
             MAX_ZOOM_DISTANCE: 60
         };
 
-        if (!this.isValidNumber(this.CAMERA_CONSTANTS.ISOMETRIC_ALPHA) ||
-            !this.isValidNumber(this.CAMERA_CONSTANTS.ISOMETRIC_BETA)) {
+        if (!this.validate(this.CAMERA_CONSTANTS.ISOMETRIC_ALPHA) ||
+            !this.validate(this.CAMERA_CONSTANTS.ISOMETRIC_BETA)) {
             console.error('❌ Constantes da câmera inválidas, usando valores seguros');
             this.CAMERA_CONSTANTS.ISOMETRIC_ALPHA = -Math.PI / 4;
             this.CAMERA_CONSTANTS.ISOMETRIC_BETA = Math.PI / 3.5;
@@ -220,8 +229,8 @@ class GameManager {
             beta: this.CAMERA_CONSTANTS.ISOMETRIC_BETA
         };
 
-        if (this.isValidCameraAngle(this.isometricAngles.alpha) &&
-            this.isValidCameraAngle(this.isometricAngles.beta)) {
+        if (this.validate(this.isometricAngles.alpha, 'number', {absMax: 10}) &&
+            this.validate(this.isometricAngles.beta, 'number', {absMax: 10})) {
             this.camera.alpha = this.isometricAngles.alpha;
             this.camera.beta = this.isometricAngles.beta;
         } else {
@@ -555,7 +564,7 @@ class GameManager {
         if (!this.camera) return;
 
         const deltaY = event.deltaY;
-        if (!this.isValidNumber(deltaY)) return;
+        if (!this.validate(deltaY)) return;
 
         try {
             const zoomSensitivity = 2;
@@ -568,8 +577,8 @@ class GameManager {
             );
 
             if (this.isometricAngles &&
-                this.isValidCameraAngle(this.isometricAngles.alpha) &&
-                this.isValidCameraAngle(this.isometricAngles.beta)) {
+                this.validate(this.isometricAngles.alpha, 'number', {absMax: 10}) &&
+                this.validate(this.isometricAngles.beta, 'number', {absMax: 10})) {
 
                 const beforeState = this.getCameraState();
                 this.camera.alpha = this.isometricAngles.alpha;
@@ -698,19 +707,26 @@ class GameManager {
     }
 
     // ===== VALIDAÇÃO E RECUPERAÇÃO =====
-    isValidNumber(value) {
-        return typeof value === 'number' && isFinite(value) && !isNaN(value);
-    }
-
-    isValidCameraAngle(angle) {
-        return this.isValidNumber(angle) && Math.abs(angle) <= 10;
-    }
-
-    isValidVector3(vector) {
-        if (!vector || typeof vector !== 'object') return false;
-        return this.isValidNumber(vector.x) && 
-               this.isValidNumber(vector.y) && 
-               this.isValidNumber(vector.z);
+    validate(value, type = 'number', options = {}) {
+        if (type === 'number') {
+            const isValid = typeof value === 'number' && isFinite(value) && !isNaN(value);
+            if (!isValid) return false;
+            
+            if (options.min !== undefined && value < options.min) return false;
+            if (options.max !== undefined && value > options.max) return false;
+            if (options.absMax !== undefined && Math.abs(value) > options.absMax) return false;
+            
+            return true;
+        }
+        
+        if (type === 'vector3') {
+            if (!value || typeof value !== 'object') return false;
+            return this.validate(value.x, 'number', options) && 
+                   this.validate(value.y, 'number', options) && 
+                   this.validate(value.z, 'number', options);
+        }
+        
+        return false;
     }
 
     validateCameraStateWithBreaker() {
@@ -723,9 +739,9 @@ class GameManager {
             const target = this.camera.getTarget();
             const position = this.camera.position;
             
-            if (!this.isValidCameraAngle(alpha) || !this.isValidCameraAngle(beta) || 
-                !this.isValidNumber(radius) || !this.isValidVector3(target) || 
-                !this.isValidVector3(position)) {
+            if (!this.validate(alpha, 'number', {absMax: 10}) || !this.validate(beta, 'number', {absMax: 10}) || 
+                !this.validate(radius) || !this.validate(target, 'vector3') || 
+                !this.validate(position, 'vector3')) {
                 
                 console.error('🚨 Corrupção detectada:', {
                     alpha, beta, radius,
@@ -924,7 +940,7 @@ class GameManager {
             const targetAlpha = this.isometricAngles.alpha;
             const targetBeta = this.isometricAngles.beta;
             
-            if (!this.isValidCameraAngle(targetAlpha) || !this.isValidCameraAngle(targetBeta)) {
+            if (!this.validate(targetAlpha, 'number', {absMax: 10}) || !this.validate(targetBeta, 'number', {absMax: 10})) {
                 console.error('❌ Ângulos isométricos inválidos:', { targetAlpha, targetBeta });
                 return;
             }
@@ -932,7 +948,7 @@ class GameManager {
             const currentAlpha = this.camera.alpha;
             const currentBeta = this.camera.beta;
             
-            if (this.isValidCameraAngle(currentAlpha) && this.isValidCameraAngle(currentBeta)) {
+            if (this.validate(currentAlpha, 'number', {absMax: 10}) && this.validate(currentBeta, 'number', {absMax: 10})) {
                 const alphaDiff = Math.abs(currentAlpha - targetAlpha);
                 const betaDiff = Math.abs(currentBeta - targetBeta);
                 
@@ -1317,8 +1333,8 @@ class GameManager {
             this.validateCameraPositionChange('centerCameraOnCityHall', beforeState);
 
             if (this.isometricAngles &&
-                this.isValidCameraAngle(this.isometricAngles.alpha) &&
-                this.isValidCameraAngle(this.isometricAngles.beta)) {
+                this.validate(this.isometricAngles.alpha, 'number', {absMax: 10}) &&
+                this.validate(this.isometricAngles.beta, 'number', {absMax: 10})) {
 
                 this.camera.alpha = this.isometricAngles.alpha;
                 this.camera.beta = this.isometricAngles.beta;
@@ -1464,6 +1480,7 @@ class GameManager {
         this.currentBuildingType = buildingType;
         this.canvas.style.cursor = 'crosshair';
         this.startBuildingPreview(buildingType);
+        this.createPlacementOverlay(buildingType);
         console.log(`🏗️ Modo construção: ${buildingType}`);
     }
 
@@ -1476,6 +1493,9 @@ class GameManager {
         if (this.buildingSystem && this.buildingSystem.previewMode) {
             this.buildingSystem.stopPreviewMode();
         }
+
+        // Clear placement overlay
+        this.clearPlacementOverlay();
 
         // Clear UI selection and feedback
         this.uiManager.clearBuildingSelection();
@@ -1858,6 +1878,97 @@ class GameManager {
                 console.log('🧪 Teste de stress concluído');
             }, 2000);
         }, 1000);
+    }
+
+    // ===== BUILDING PLACEMENT OVERLAY SYSTEM =====
+    createPlacementOverlay(buildingType) {
+        // Clear any existing overlay
+        this.clearPlacementOverlay();
+
+        const buildingTypeData = this.buildingSystem.buildingTypes.get(buildingType);
+        if (!buildingTypeData) {
+            console.warn(`⚠️ Building type not found: ${buildingType}`);
+            return;
+        }
+
+        console.log(`🎨 Creating placement overlay for ${buildingType}...`);
+
+        // Create overlay mesh array
+        this.placementOverlayMeshes = [];
+
+        const gridSize = this.gridManager.gridSize;
+        const cellSize = this.gridManager.cellSize;
+        const buildingSize = buildingTypeData.size || 1;
+
+        // Create a semi-transparent plane for each grid cell
+        for (let x = 0; x < gridSize; x++) {
+            for (let z = 0; z < gridSize; z++) {
+                // Check if building can be placed at this position
+                const canPlaceResult = this.buildingSystem.canPlaceBuilding(x, z, buildingType);
+                const canPlace = canPlaceResult.canPlace;
+
+                // Determine color based on validity
+                const color = canPlace
+                    ? new BABYLON.Color4(0, 1, 0, 0.3)  // Green with 30% opacity
+                    : new BABYLON.Color4(1, 0, 0, 0.3); // Red with 30% opacity
+
+                // Create plane for this cell
+                const plane = BABYLON.MeshBuilder.CreatePlane(`overlay_${x}_${z}`, {
+                    width: cellSize * 0.95,
+                    height: cellSize * 0.95
+                }, this.scene);
+
+                // Position the plane slightly above the terrain
+                const worldPos = this.gridManager.gridToWorld(x, z);
+                const elevation = this.gridManager.getElevation(x, z);
+                plane.position = new BABYLON.Vector3(
+                    worldPos.x,
+                    elevation * this.gridManager.gridHeight + 0.1, // Slightly above terrain
+                    worldPos.z
+                );
+
+                // Rotate to be horizontal
+                plane.rotation.x = Math.PI / 2;
+
+                // Create material
+                const material = new BABYLON.StandardMaterial(`overlayMat_${x}_${z}`, this.scene);
+                material.diffuseColor = new BABYLON.Color3(color.r, color.g, color.b);
+                material.alpha = color.a;
+                material.backFaceCulling = false;
+                material.disableLighting = true;
+                material.emissiveColor = new BABYLON.Color3(color.r, color.g, color.b);
+
+                plane.material = material;
+
+                // Store reference
+                this.placementOverlayMeshes.push(plane);
+            }
+        }
+
+        console.log(`✅ Placement overlay created with ${this.placementOverlayMeshes.length} cells`);
+    }
+
+    clearPlacementOverlay() {
+        if (this.placementOverlayMeshes && this.placementOverlayMeshes.length > 0) {
+            console.log(`🗑️ Clearing placement overlay (${this.placementOverlayMeshes.length} meshes)...`);
+
+            this.placementOverlayMeshes.forEach(mesh => {
+                if (mesh.material) {
+                    mesh.material.dispose();
+                }
+                mesh.dispose();
+            });
+
+            this.placementOverlayMeshes = [];
+            console.log('✅ Placement overlay cleared');
+        }
+    }
+
+    updatePlacementOverlay(buildingType) {
+        // Recreate overlay with updated building type
+        if (this.buildMode && buildingType) {
+            this.createPlacementOverlay(buildingType);
+        }
     }
 
     // ===== GETTERS =====

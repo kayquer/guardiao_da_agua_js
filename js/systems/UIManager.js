@@ -723,6 +723,53 @@ class UIManager {
                 this.elements.gameClock.textContent = '00/00/0000 00:00';
             }
         }
+
+        // ===== UPDATE COMPACT RESOURCE INDICATORS (MOBILE) =====
+        this.updateCompactResourceIndicators(resources);
+    }
+
+    updateCompactResourceIndicators(resources) {
+        if (!this.isMobile) return;
+
+        // Budget (Money)
+        const compactBudget = document.querySelector('#compact-budget .compact-value');
+        if (compactBudget && resources.budget) {
+            const budget = Math.round(resources.budget.current || 0);
+            compactBudget.textContent = this.formatCompactNumber(budget);
+        }
+
+        // Water
+        const compactWater = document.querySelector('#compact-water .compact-value');
+        if (compactWater && resources.water) {
+            const current = Math.round(resources.water.current || 0);
+            const storage = Math.round(resources.water.storage || resources.water.max || 1000);
+            compactWater.textContent = `${current}/${storage}L`;
+        }
+
+        // Energy
+        const compactEnergy = document.querySelector('#compact-energy .compact-value');
+        if (compactEnergy && resources.electricity) {
+            const current = Math.round(resources.electricity.current || 0);
+            const generation = Math.round(resources.electricity.generation || 0);
+            compactEnergy.textContent = `${current}/${generation}MW`;
+        }
+
+        // Population
+        const compactPopulation = document.querySelector('#compact-population .compact-value');
+        if (compactPopulation && resources.population) {
+            const current = Math.round(resources.population.current || 0);
+            const max = Math.round(resources.population.max || 1000);
+            compactPopulation.textContent = `${current}/${max}`;
+        }
+    }
+
+    formatCompactNumber(num) {
+        if (num >= 1000000) {
+            return `${(num / 1000000).toFixed(1)}M`;
+        } else if (num >= 1000) {
+            return `${(num / 1000).toFixed(1)}K`;
+        }
+        return num.toString();
     }
     
     updateResourceStatus(element, current, max) {
@@ -2993,6 +3040,11 @@ class UIManager {
             // Store touch start position to detect taps vs drags
             let touchStartPos = null;
             let touchStartTime = 0;
+            let touchHoldTimer = null;
+            let multiSelectTimer = null;
+            let isHoldingForInfo = false;
+            let isMultiSelectMode = false;
+            let multiSelectStartPos = null;
 
             this.gameManager.canvas.addEventListener('touchstart', (e) => {
                 e.preventDefault();
@@ -3000,6 +3052,43 @@ class UIManager {
                 const touch = e.touches[0];
                 touchStartPos = { x: touch.clientX, y: touch.clientY };
                 touchStartTime = Date.now();
+                isHoldingForInfo = false;
+                isMultiSelectMode = false;
+
+                // Clear any existing timers
+                if (touchHoldTimer) clearTimeout(touchHoldTimer);
+                if (multiSelectTimer) clearTimeout(multiSelectTimer);
+
+                // Set up 500ms timer for info display
+                touchHoldTimer = setTimeout(() => {
+                    const currentPos = { x: touch.clientX, y: touch.clientY };
+                    const distance = Math.sqrt(
+                        Math.pow(currentPos.x - touchStartPos.x, 2) +
+                        Math.pow(currentPos.y - touchStartPos.y, 2)
+                    );
+
+                    // Only show info if finger hasn't moved much (< 10px)
+                    if (distance < 10) {
+                        isHoldingForInfo = true;
+                        this.showTouchHoldInfo(touch.clientX, touch.clientY);
+                    }
+                }, 500);
+
+                // Set up 2s timer for multi-selection mode
+                multiSelectTimer = setTimeout(() => {
+                    const currentPos = { x: touch.clientX, y: touch.clientY };
+                    const distance = Math.sqrt(
+                        Math.pow(currentPos.x - touchStartPos.x, 2) +
+                        Math.pow(currentPos.y - touchStartPos.y, 2)
+                    );
+
+                    // Only activate multi-select if finger hasn't moved much (< 10px)
+                    if (distance < 10) {
+                        isMultiSelectMode = true;
+                        multiSelectStartPos = { x: touch.clientX, y: touch.clientY };
+                        this.startMultiSelectMode(touch.clientX, touch.clientY);
+                    }
+                }, 2000);
 
                 // Convert touch to mouse event for building placement preview
                 if (this.gameManager.buildMode) {
@@ -3014,9 +3103,41 @@ class UIManager {
             this.gameManager.canvas.addEventListener('touchmove', (e) => {
                 e.preventDefault();
 
+                if (e.touches.length === 0) return;
+                const touch = e.touches[0];
+
+                // Calculate movement distance
+                const distance = touchStartPos ?
+                    Math.sqrt(
+                        Math.pow(touch.clientX - touchStartPos.x, 2) +
+                        Math.pow(touch.clientY - touchStartPos.y, 2)
+                    ) : 0;
+
+                // If moved more than 10px, cancel hold timers (user is dragging)
+                if (distance > 10) {
+                    if (touchHoldTimer) {
+                        clearTimeout(touchHoldTimer);
+                        touchHoldTimer = null;
+                    }
+                    if (multiSelectTimer) {
+                        clearTimeout(multiSelectTimer);
+                        multiSelectTimer = null;
+                    }
+                    this.hideTouchHoldInfo();
+                }
+
+                // Update multi-select rectangle if in multi-select mode
+                if (isMultiSelectMode && multiSelectStartPos) {
+                    this.updateMultiSelectRectangle(
+                        multiSelectStartPos.x,
+                        multiSelectStartPos.y,
+                        touch.clientX,
+                        touch.clientY
+                    );
+                }
+
                 // Update building preview position during drag
-                if (this.gameManager.buildMode && e.touches.length > 0) {
-                    const touch = e.touches[0];
+                if (this.gameManager.buildMode) {
                     const mouseEvent = new MouseEvent('mousemove', {
                         clientX: touch.clientX,
                         clientY: touch.clientY
@@ -3027,6 +3148,16 @@ class UIManager {
 
             this.gameManager.canvas.addEventListener('touchend', (e) => {
                 e.preventDefault();
+
+                // Clear timers
+                if (touchHoldTimer) {
+                    clearTimeout(touchHoldTimer);
+                    touchHoldTimer = null;
+                }
+                if (multiSelectTimer) {
+                    clearTimeout(multiSelectTimer);
+                    multiSelectTimer = null;
+                }
 
                 if (e.changedTouches.length === 0) return;
 
@@ -3041,37 +3172,27 @@ class UIManager {
                         Math.pow(touchEndPos.y - touchStartPos.y, 2)
                     ) : 0;
 
-                // Only trigger click if it's a tap (short duration, minimal movement)
-                const isTap = touchDuration < 300 && distance < 10;
+                // Handle multi-select mode completion
+                if (isMultiSelectMode && multiSelectStartPos) {
+                    this.completeMultiSelect(
+                        multiSelectStartPos.x,
+                        multiSelectStartPos.y,
+                        touch.clientX,
+                        touch.clientY
+                    );
+                    isMultiSelectMode = false;
+                    multiSelectStartPos = null;
+                } else if (isHoldingForInfo) {
+                    // Just hide the info tooltip
+                    this.hideTouchHoldInfo();
+                    isHoldingForInfo = false;
+                } else {
+                    // Only trigger click if it's a tap (short duration, minimal movement)
+                    const isTap = touchDuration < 300 && distance < 10;
 
-                if (isTap) {
-                    // Create a proper pointer event for Babylon.js
-                    const pointerEvent = new PointerEvent('pointerdown', {
-                        clientX: touch.clientX,
-                        clientY: touch.clientY,
-                        bubbles: true,
-                        cancelable: true,
-                        view: window,
-                        pointerId: 1,
-                        pointerType: 'touch'
-                    });
-
-                    if (this.gameManager.buildMode) {
-                        // Building placement mode
-                        const mouseEvent = new MouseEvent('click', {
-                            clientX: touch.clientX,
-                            clientY: touch.clientY,
-                            bubbles: true,
-                            cancelable: true
-                        });
-                        this.gameManager.handleBuildingPlacementClick(mouseEvent);
-                    } else {
-                        // Normal mode - trigger Babylon.js scene picking
-                        // This will handle terrain clicks and building selection
-                        this.gameManager.canvas.dispatchEvent(pointerEvent);
-
-                        // Also dispatch pointerup for complete interaction
-                        const pointerUpEvent = new PointerEvent('pointerup', {
+                    if (isTap) {
+                        // Create a proper pointer event for Babylon.js
+                        const pointerEvent = new PointerEvent('pointerdown', {
                             clientX: touch.clientX,
                             clientY: touch.clientY,
                             bubbles: true,
@@ -3080,7 +3201,33 @@ class UIManager {
                             pointerId: 1,
                             pointerType: 'touch'
                         });
-                        this.gameManager.canvas.dispatchEvent(pointerUpEvent);
+
+                        if (this.gameManager.buildMode) {
+                            // Building placement mode
+                            const mouseEvent = new MouseEvent('click', {
+                                clientX: touch.clientX,
+                                clientY: touch.clientY,
+                                bubbles: true,
+                                cancelable: true
+                            });
+                            this.gameManager.handleBuildingPlacementClick(mouseEvent);
+                        } else {
+                            // Normal mode - trigger Babylon.js scene picking
+                            // This will handle terrain clicks and building selection
+                            this.gameManager.canvas.dispatchEvent(pointerEvent);
+
+                            // Also dispatch pointerup for complete interaction
+                            const pointerUpEvent = new PointerEvent('pointerup', {
+                                clientX: touch.clientX,
+                                clientY: touch.clientY,
+                                bubbles: true,
+                                cancelable: true,
+                                view: window,
+                                pointerId: 1,
+                                pointerType: 'touch'
+                            });
+                            this.gameManager.canvas.dispatchEvent(pointerUpEvent);
+                        }
                     }
                 }
 
@@ -3091,6 +3238,232 @@ class UIManager {
         }
 
         console.log('✅ Enhanced mobile touch support initialized');
+    }
+
+    // ===== TOUCH-AND-HOLD INFO DISPLAY (500ms) =====
+    showTouchHoldInfo(clientX, clientY) {
+        // Get pick info from Babylon.js scene
+        const pickResult = this.gameManager.scene.pick(clientX, clientY);
+
+        if (!pickResult || !pickResult.hit) {
+            return;
+        }
+
+        let infoText = '';
+        let infoTitle = '';
+
+        // Check if we hit a building
+        if (pickResult.pickedMesh && pickResult.pickedMesh.metadata && pickResult.pickedMesh.metadata.buildingId) {
+            const buildingId = pickResult.pickedMesh.metadata.buildingId;
+            const building = this.gameManager.buildingSystem.buildings.get(buildingId);
+
+            if (building) {
+                infoTitle = building.config.name;
+                infoText = `Tipo: ${building.config.category}\n`;
+                if (building.config.waterProduction) {
+                    infoText += `💧 Produção: ${building.config.waterProduction}L/s\n`;
+                }
+                if (building.config.energyConsumption) {
+                    infoText += `⚡ Consumo: ${building.config.energyConsumption}MW\n`;
+                }
+                if (building.config.maintenanceCost) {
+                    infoText += `🔧 Manutenção: R$ ${building.config.maintenanceCost}/min`;
+                }
+            }
+        } else if (pickResult.pickedPoint) {
+            // Hit terrain
+            const gridPos = this.gameManager.gridManager.worldToGrid(pickResult.pickedPoint);
+            const terrainType = this.gameManager.gridManager.getTerrainType(gridPos.x, gridPos.z);
+            const elevation = this.gameManager.gridManager.getElevation(gridPos.x, gridPos.z);
+            const isOccupied = this.gameManager.gridManager.isCellOccupied(gridPos.x, gridPos.z);
+
+            const terrainNames = {
+                'water': '💧 Água',
+                'grassland': '🌿 Campo',
+                'lowland': '🏞️ Planície',
+                'hill': '⛰️ Colina',
+                'mountain': '🏔️ Montanha'
+            };
+
+            infoTitle = terrainNames[terrainType] || terrainType;
+            infoText = `Elevação: ${(elevation * 100).toFixed(0)}%\n`;
+            infoText += `Posição: (${gridPos.x}, ${gridPos.z})\n`;
+            infoText += isOccupied ? '❌ Ocupado' : '✅ Disponível';
+        }
+
+        if (infoTitle || infoText) {
+            this.displayTouchTooltip(clientX, clientY, infoTitle, infoText);
+        }
+    }
+
+    displayTouchTooltip(x, y, title, text) {
+        // Remove existing tooltip
+        this.hideTouchHoldInfo();
+
+        // Create tooltip element
+        const tooltip = document.createElement('div');
+        tooltip.id = 'touch-hold-tooltip';
+        tooltip.style.position = 'fixed';
+        tooltip.style.left = `${x + 20}px`;
+        tooltip.style.top = `${y - 60}px`;
+        tooltip.style.background = 'linear-gradient(135deg, rgba(45, 53, 97, 0.98) 0%, rgba(26, 31, 58, 0.98) 100%)';
+        tooltip.style.color = '#fff';
+        tooltip.style.padding = '12px 16px';
+        tooltip.style.borderRadius = '12px';
+        tooltip.style.fontSize = '0.85rem';
+        tooltip.style.fontWeight = '600';
+        tooltip.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.5), 0 0 20px rgba(100, 100, 255, 0.4)';
+        tooltip.style.border = '2px solid rgba(100, 100, 255, 0.4)';
+        tooltip.style.zIndex = '10000';
+        tooltip.style.pointerEvents = 'none';
+        tooltip.style.maxWidth = '250px';
+        tooltip.style.whiteSpace = 'pre-line';
+        tooltip.style.backdropFilter = 'blur(10px)';
+
+        if (title) {
+            const titleEl = document.createElement('div');
+            titleEl.textContent = title;
+            titleEl.style.fontWeight = '700';
+            titleEl.style.marginBottom = '8px';
+            titleEl.style.fontSize = '1rem';
+            titleEl.style.color = '#00ff88';
+            tooltip.appendChild(titleEl);
+        }
+
+        if (text) {
+            const textEl = document.createElement('div');
+            textEl.textContent = text;
+            textEl.style.fontSize = '0.8rem';
+            textEl.style.lineHeight = '1.4';
+            tooltip.appendChild(textEl);
+        }
+
+        document.body.appendChild(tooltip);
+
+        // Adjust position if tooltip goes off screen
+        const rect = tooltip.getBoundingClientRect();
+        if (rect.right > window.innerWidth) {
+            tooltip.style.left = `${x - rect.width - 20}px`;
+        }
+        if (rect.bottom > window.innerHeight) {
+            tooltip.style.top = `${y - rect.height - 20}px`;
+        }
+    }
+
+    hideTouchHoldInfo() {
+        const tooltip = document.getElementById('touch-hold-tooltip');
+        if (tooltip) {
+            tooltip.remove();
+        }
+    }
+
+    // ===== MULTI-SELECTION MODE (2s HOLD) =====
+    startMultiSelectMode(x, y) {
+        console.log('🎯 Multi-select mode activated');
+
+        // Create selection rectangle overlay
+        const selectionRect = document.createElement('div');
+        selectionRect.id = 'multi-select-rectangle';
+        selectionRect.style.position = 'fixed';
+        selectionRect.style.left = `${x}px`;
+        selectionRect.style.top = `${y}px`;
+        selectionRect.style.width = '0px';
+        selectionRect.style.height = '0px';
+        selectionRect.style.border = '3px dashed rgba(0, 255, 136, 0.8)';
+        selectionRect.style.background = 'rgba(0, 255, 136, 0.2)';
+        selectionRect.style.zIndex = '9999';
+        selectionRect.style.pointerEvents = 'none';
+        selectionRect.style.boxShadow = '0 0 20px rgba(0, 255, 136, 0.6)';
+
+        document.body.appendChild(selectionRect);
+
+        // Show notification
+        this.showNotification('🎯 Modo de seleção múltipla ativado! Arraste para selecionar edifícios.', 'info', 3000);
+    }
+
+    updateMultiSelectRectangle(startX, startY, currentX, currentY) {
+        const selectionRect = document.getElementById('multi-select-rectangle');
+        if (!selectionRect) return;
+
+        const left = Math.min(startX, currentX);
+        const top = Math.min(startY, currentY);
+        const width = Math.abs(currentX - startX);
+        const height = Math.abs(currentY - startY);
+
+        selectionRect.style.left = `${left}px`;
+        selectionRect.style.top = `${top}px`;
+        selectionRect.style.width = `${width}px`;
+        selectionRect.style.height = `${height}px`;
+    }
+
+    completeMultiSelect(startX, startY, endX, endY) {
+        console.log(`🎯 Completing multi-select from (${startX}, ${startY}) to (${endX}, ${endY})`);
+
+        // Remove selection rectangle
+        const selectionRect = document.getElementById('multi-select-rectangle');
+        if (selectionRect) {
+            selectionRect.remove();
+        }
+
+        // Get all buildings within the selection rectangle
+        const selectedBuildings = [];
+        const buildings = this.gameManager.buildingSystem.buildings;
+
+        buildings.forEach((building, buildingId) => {
+            if (building.mesh) {
+                // Project 3D position to 2D screen coordinates
+                const screenPos = BABYLON.Vector3.Project(
+                    building.mesh.position,
+                    BABYLON.Matrix.Identity(),
+                    this.gameManager.scene.getTransformMatrix(),
+                    this.gameManager.camera.viewport.toGlobal(
+                        this.gameManager.engine.getRenderWidth(),
+                        this.gameManager.engine.getRenderHeight()
+                    )
+                );
+
+                const x = screenPos.x;
+                const y = screenPos.y;
+
+                // Check if building is within selection rectangle
+                const minX = Math.min(startX, endX);
+                const maxX = Math.max(startX, endX);
+                const minY = Math.min(startY, endY);
+                const maxY = Math.max(startY, endY);
+
+                if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
+                    selectedBuildings.push(building);
+                }
+            }
+        });
+
+        console.log(`✅ Selected ${selectedBuildings.length} buildings`);
+
+        // Show notification with selected buildings
+        if (selectedBuildings.length > 0) {
+            this.showNotification(
+                `✅ ${selectedBuildings.length} edifício(s) selecionado(s)`,
+                'success',
+                3000
+            );
+
+            // Highlight selected buildings (optional - you can add visual feedback here)
+            selectedBuildings.forEach(building => {
+                if (building.mesh) {
+                    // Add a temporary highlight effect
+                    const originalColor = building.mesh.material.emissiveColor.clone();
+                    building.mesh.material.emissiveColor = new BABYLON.Color3(0, 1, 0.5);
+
+                    setTimeout(() => {
+                        if (building.mesh && building.mesh.material) {
+                            building.mesh.material.emissiveColor = originalColor;
+                        }
+                    }, 1000);
+                }
+            });
+        } else {
+            this.showNotification('❌ Nenhum edifício selecionado', 'warning', 2000);
+        }
     }
 
     // ===== MISSION OBJECTIVE CLICK HANDLERS =====

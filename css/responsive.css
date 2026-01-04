@@ -41,15 +41,19 @@
         align-items: center;
     }
 
-    /* Hide resource panel and control buttons by default on mobile */
-    .resource-panel {
-        display: none;
-    }
+    
 
-    .control-buttons {
-        display: none;
+    .resource-item{
+      padding: 0px;
+      gap: 0px;
+      width: 150px;
     }
-
+    .resource-tooltip{
+      display: none;
+    }
+    .resource-value{
+      font-size: 0.9rem;
+    }
     /* Show resource panel when active (opened via toggle) */
     .resource-panel.mobile-active {
         display: flex;
@@ -86,12 +90,12 @@
     /* ===== PAINÉIS LATERAIS MOBILE ===== */
     .hud-left {
         width: 100%;
-        height: calc(100% - 80px);
+        height: calc(100% - 60px);
         top: auto;
-        bottom: 60px;
+        bottom: 0px;
         left: 0;
         right: 0;
-        background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 100%);
+        background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.9) 100%);
         transform: translateY(100%);
         transition: transform 0.3s ease;
         z-index: 60;
@@ -370,8 +374,11 @@
     
     /* ===== PAINEL INFERIOR MOBILE ===== */
     .hud-bottom {
-        height: 60px;
+        height: 0px;
         padding: 0.5rem 1rem;
+        overflow: hidden;
+        bottom: -30px;
+        transition: all 0.3s ease;
     }
     
     .info-panel {
@@ -750,7 +757,7 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
-    z-index: 85;
+    z-index: 55;
     box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(10px);
     margin-left: 10px;
@@ -783,6 +790,55 @@
     box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 15px rgba(100,100,255,0.6);
 }
 
+/* ===== COMPACT RESOURCE INDICATORS (MOBILE) ===== */
+.compact-resources {
+    display: none; /* Hidden on desktop */
+}
+
+@media screen and (max-width: 768px) {
+    .compact-resources {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 5px 10px;
+        background: linear-gradient(135deg, rgba(45, 53, 97, 0.95) 0%, rgba(26, 31, 58, 0.95) 100%);
+        border-radius: 20px;
+        box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 0 15px rgba(100, 100, 255, 0.3);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(100, 100, 255, 0.3);
+    }
+
+    .compact-resource-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #fff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        transition: all 0.3s ease;
+    }
+
+    .compact-resource-item:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.05);
+    }
+
+    .compact-icon {
+        font-size: 1rem;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    }
+
+    .compact-value {
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+}
+
 /* ===== MOBILE TOP HUD VISIBILITY ===== */
 @media screen and (max-width: 768px) {
     .hud-top {
@@ -795,12 +851,18 @@
 
     .resource-panel,
     .control-buttons {
-        display: none;
+        height: 0px;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.18, 0.89, 0.38, 1.49)
     }
 
     .resource-panel.mobile-visible,
     .control-buttons.mobile-visible {
-        display: flex;
+        height: auto;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+        padding: 10px;
+        background: linear-gradient(180deg, #2D3561 0%, #1A1F3A 100%);
     }
 }
 
@@ -836,7 +898,6 @@
         transform: translateY(0);
         opacity: 1;
     }
-}
 }
 
 .hud-left.active {
