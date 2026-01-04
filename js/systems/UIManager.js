@@ -54,9 +54,13 @@ class UIManager {
             currentCategory: 'water',
             selectedBuilding: null,
             currentOpenPanel: null,
-            isTransitioning: false,
+            isTransitioning: false
+        };
+
+        this.cooldownManager = {
             lastInteraction: 0,
-            interactionCooldown: 150 // Prevent rapid state changes
+            defaultCooldown: 200,
+            active: new Map()
         };
 
         // Legacy compatibility
@@ -104,6 +108,22 @@ class UIManager {
         this.setupHelpModal();
     }
     
+    isOnCooldown(action) {
+        const now = Date.now();
+        const cooldownEnd = this.cooldownManager.active.get(action);
+        return cooldownEnd && now < cooldownEnd;
+    }
+
+    setCooldown(action, duration = this.cooldownManager.defaultCooldown) {
+        const now = Date.now();
+        this.cooldownManager.active.set(action, now + duration);
+        this.cooldownManager.lastInteraction = now;
+        
+        setTimeout(() => {
+            this.cooldownManager.active.delete(action);
+        }, duration);
+    }
+
     // ===== INICIALIZAÇÃO =====
     initialize() {
         console.log('🖥️ Inicializando interface...');
@@ -227,10 +247,8 @@ class UIManager {
                 e.preventDefault();
                 e.stopPropagation();
 
-                // ===== STABILITY FIX: Prevent multiple rapid clicks =====
-                if (this.categoryClickCooldown) return;
-                this.categoryClickCooldown = true;
-                setTimeout(() => this.categoryClickCooldown = false, 200);
+                if (this.isOnCooldown('category')) return;
+                this.setCooldown('category', this.cooldownManager.defaultCooldown);
 
                 const category = e.target.dataset.category;
                 if (category) {
@@ -266,10 +284,8 @@ class UIManager {
                 // ===== STABILITY FIX: Prevent clicks on disabled items =====
                 if (item.classList.contains('disabled')) return;
 
-                // ===== STABILITY FIX: Prevent multiple rapid clicks =====
-                if (this.buildingClickCooldown) return;
-                this.buildingClickCooldown = true;
-                setTimeout(() => this.buildingClickCooldown = false, 300);
+                if (this.isOnCooldown('building')) return;
+                this.setCooldown('building', 300);
 
                 const buildingType = item.dataset.buildingType;
                 if (buildingType) {
@@ -353,12 +369,8 @@ class UIManager {
             e.preventDefault();
             e.stopPropagation();
 
-            // ===== INTERACTION COOLDOWN: Prevent rapid clicks =====
-            const now = Date.now();
-            if (now - this.uiState.lastInteraction < this.uiState.interactionCooldown) {
-                return;
-            }
-            this.uiState.lastInteraction = now;
+            if (this.isOnCooldown('resource-panel')) return;
+            this.setCooldown('resource-panel', this.cooldownManager.defaultCooldown);
 
             // ===== STATE MANAGEMENT: Handle panel transitions =====
             // User-initiated panel switch - override priority restrictions
@@ -501,14 +513,30 @@ class UIManager {
         leftToggle.className = 'mobile-toggle left';
         leftToggle.innerHTML = '🏗️';
         leftToggle.title = 'Abrir painel de construção';
-        leftToggle.addEventListener('click', () => this.toggleMobilePanel('left'));
+
+        // Add both click and touch event handlers
+        const leftToggleHandler = (e) => {
+            e.preventDefault();
+            this.toggleMobilePanel('left');
+        };
+        leftToggle.addEventListener('click', leftToggleHandler);
+        leftToggle.addEventListener('touchend', leftToggleHandler, { passive: false });
+
         document.body.appendChild(leftToggle);
 
         const rightToggle = document.createElement('button');
         rightToggle.className = 'mobile-toggle right';
         rightToggle.innerHTML = 'ℹ️';
         rightToggle.title = 'Abrir painel de informações';
-        rightToggle.addEventListener('click', () => this.toggleMobilePanel('right'));
+
+        // Add both click and touch event handlers
+        const rightToggleHandler = (e) => {
+            e.preventDefault();
+            this.toggleMobilePanel('right');
+        };
+        rightToggle.addEventListener('click', rightToggleHandler);
+        rightToggle.addEventListener('touchend', rightToggleHandler, { passive: false });
+
         document.body.appendChild(rightToggle);
 
         // Store references for later updates
@@ -818,18 +846,25 @@ class UIManager {
                 return;
             }
 
-            // ===== PANEL STATE MANAGEMENT =====
-            this.closeCurrentPanel(); // Close any open resource panels
+            // ===== MOBILE VS DESKTOP FLOW =====
+            if (this.isMobile) {
+                // Mobile: Show full-screen details modal with "Construir" button
+                this.showMobileBuildingDetailsModal(buildingType, buildingTypeId);
+            } else {
+                // Desktop: Enter build mode directly
+                // ===== PANEL STATE MANAGEMENT =====
+                this.closeCurrentPanel(); // Close any open resource panels
 
-            // Enter construction mode
-            this.gameManager.enterBuildMode(buildingTypeId);
+                // Enter construction mode
+                this.gameManager.enterBuildMode(buildingTypeId);
 
-            // Show building requirements with enhanced display
-            this.showEnhancedBuildingRequirements(buildingType);
+                // Show building requirements with enhanced display
+                this.showEnhancedBuildingRequirements(buildingType);
 
-            // Update UI state
-            this.uiState.currentOpenPanel = 'construction';
-            this.uiState.selectedBuilding = buildingTypeId;
+                // Update UI state
+                this.uiState.currentOpenPanel = 'construction';
+                this.uiState.selectedBuilding = buildingTypeId;
+            }
 
             // Audio feedback
             AudioManager.playSound('sfx_click');
@@ -884,7 +919,129 @@ class UIManager {
             `;
         }
     }
-    
+
+    /**
+     * Shows mobile building details modal with "Construir" button
+     * @param {Object} buildingType - The building type object
+     * @param {string} buildingTypeId - The building type ID
+     */
+    showMobileBuildingDetailsModal(buildingType, buildingTypeId) {
+        console.log('📱 Opening mobile building details modal:', buildingType.name);
+
+        // Open the right panel (details panel)
+        const hudRight = document.querySelector('.hud-right');
+        if (!hudRight) return;
+
+        // Show the panel
+        this.mobilePanelsVisible.right = true;
+        hudRight.classList.add('active');
+
+        // Update toggle button state
+        if (this.mobileToggleButtons && this.mobileToggleButtons.right) {
+            this.mobileToggleButtons.right.classList.add('active');
+        }
+
+        // Build the details content
+        const detailsContent = this.elements.detailsContent;
+        if (!detailsContent) return;
+
+        // Check if player can afford the building
+        const canAfford = this.gameManager.resourceManager.money >= buildingType.cost;
+
+        detailsContent.innerHTML = `
+            <div class="mobile-building-details">
+                <div class="building-header">
+                    <div class="building-icon-large">${buildingType.icon || '🏗️'}</div>
+                    <h2>${buildingType.name}</h2>
+                </div>
+
+                <div class="building-description">
+                    <p>${buildingType.description || 'Sem descrição disponível'}</p>
+                </div>
+
+                <div class="building-stats-mobile">
+                    <div class="stat-item">
+                        <span class="stat-label">💰 Custo:</span>
+                        <span class="stat-value ${!canAfford ? 'critical' : ''}">R$ ${buildingType.cost.toLocaleString()}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">🔧 Manutenção:</span>
+                        <span class="stat-value">R$ ${buildingType.maintenanceCost}/min</span>
+                    </div>
+                    ${buildingType.waterProduction ? `
+                        <div class="stat-item">
+                            <span class="stat-label">💧 Produção de Água:</span>
+                            <span class="stat-value">${buildingType.waterProduction}L/s</span>
+                        </div>
+                    ` : ''}
+                    ${buildingType.pollutionReduction ? `
+                        <div class="stat-item">
+                            <span class="stat-label">🌿 Redução de Poluição:</span>
+                            <span class="stat-value">${buildingType.pollutionReduction}%</span>
+                        </div>
+                    ` : ''}
+                    ${buildingType.powerGeneration ? `
+                        <div class="stat-item">
+                            <span class="stat-label">⚡ Geração de Energia:</span>
+                            <span class="stat-value">${buildingType.powerGeneration} MW</span>
+                        </div>
+                    ` : ''}
+                    ${buildingType.powerConsumption ? `
+                        <div class="stat-item">
+                            <span class="stat-label">🔌 Consumo de Energia:</span>
+                            <span class="stat-value">${buildingType.powerConsumption} MW</span>
+                        </div>
+                    ` : ''}
+                </div>
+
+                ${buildingType.requirements && buildingType.requirements.nearWater ? `
+                    <div class="building-requirements">
+                        <h4>📋 Requisitos Especiais</h4>
+                        <ul>
+                            <li>💧 Deve estar próximo à água</li>
+                        </ul>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        // Create and add the "Construir" button
+        const existingBtn = hudRight.querySelector('.mobile-build-btn');
+        if (existingBtn) {
+            existingBtn.remove();
+        }
+
+        const buildBtn = document.createElement('button');
+        buildBtn.className = `mobile-build-btn ${!canAfford ? 'disabled' : ''}`;
+        buildBtn.innerHTML = `<span>🏗️</span> Construir`;
+        buildBtn.disabled = !canAfford;
+
+        buildBtn.addEventListener('click', () => {
+            if (!canAfford) {
+                this.showNotification('❌ Dinheiro insuficiente!', 'error', 3000);
+                AudioManager.playSound('sfx_build_error', 0.6);
+                return;
+            }
+
+            // Close the modal
+            this.closeMobilePanel('right');
+
+            // Enter build mode
+            this.gameManager.enterBuildMode(buildingTypeId);
+
+            // Update UI state
+            this.uiState.currentOpenPanel = 'construction';
+            this.uiState.selectedBuilding = buildingTypeId;
+
+            console.log('🏗️ Entering build mode from mobile modal');
+        });
+
+        hudRight.appendChild(buildBtn);
+
+        // Add escape key listener
+        this.addMobileEscapeListener();
+    }
+
     clearBuildingSelection() {
         document.querySelectorAll('.building-item').forEach(item => {
             item.classList.remove('selected');
@@ -1130,6 +1287,23 @@ class UIManager {
 
             // ===== UPDATE STATE =====
             this.updatePanelState(panelType);
+
+            // ===== MOBILE: Open right panel if on mobile =====
+            if (this.isMobile) {
+                const hudRight = document.querySelector('.hud-right');
+                if (hudRight) {
+                    this.mobilePanelsVisible.right = true;
+                    hudRight.classList.add('active');
+
+                    // Update toggle button state
+                    if (this.mobileToggleButtons && this.mobileToggleButtons.right) {
+                        this.mobileToggleButtons.right.classList.add('active');
+                    }
+
+                    // Add escape key listener
+                    this.addMobileEscapeListener();
+                }
+            }
 
             // ===== FIX: Ensure details panel is visible after transition =====
             if (this.elements.detailsPanel) {
@@ -1562,7 +1736,14 @@ class UIManager {
             closeBtn.className = 'mobile-close-btn';
             closeBtn.innerHTML = '✕';
             closeBtn.title = 'Fechar painel';
-            closeBtn.addEventListener('click', () => this.closeMobilePanel('right'));
+
+            // Add both click and touch event handlers
+            const closeBtnHandler = (e) => {
+                e.preventDefault();
+                this.closeMobilePanel('right');
+            };
+            closeBtn.addEventListener('click', closeBtnHandler);
+            closeBtn.addEventListener('touchend', closeBtnHandler, { passive: false });
 
             mobileHeader.appendChild(title);
             mobileHeader.appendChild(closeBtn);
@@ -1595,6 +1776,14 @@ class UIManager {
                     this.mobileToggleButtons[side].classList.add('active');
                 }
 
+                // If opening right panel (info), also show resource panel in top HUD
+                if (side === 'right') {
+                    const resourcePanel = document.querySelector('.resource-panel');
+                    if (resourcePanel) {
+                        resourcePanel.classList.add('mobile-active');
+                    }
+                }
+
                 // Add escape key listener for mobile panels
                 this.addMobileEscapeListener();
             }
@@ -1615,6 +1804,20 @@ class UIManager {
             // Update toggle button state
             if (this.mobileToggleButtons && this.mobileToggleButtons[side]) {
                 this.mobileToggleButtons[side].classList.remove('active');
+            }
+
+            // If closing right panel (info), also hide resource panel and remove build button
+            if (side === 'right') {
+                const resourcePanel = document.querySelector('.resource-panel');
+                if (resourcePanel) {
+                    resourcePanel.classList.remove('mobile-active');
+                }
+
+                // Remove mobile build button if it exists
+                const mobileBuildBtn = document.querySelector('.mobile-build-btn');
+                if (mobileBuildBtn) {
+                    mobileBuildBtn.remove();
+                }
             }
 
             // Remove escape listener if no panels are open
@@ -1639,6 +1842,18 @@ class UIManager {
                 }
             }
         });
+
+        // Hide resource panel
+        const resourcePanel = document.querySelector('.resource-panel');
+        if (resourcePanel) {
+            resourcePanel.classList.remove('mobile-active');
+        }
+
+        // Remove mobile build button if it exists
+        const mobileBuildBtn = document.querySelector('.mobile-build-btn');
+        if (mobileBuildBtn) {
+            mobileBuildBtn.remove();
+        }
 
         this.removeMobileEscapeListener();
     }
