@@ -1881,7 +1881,7 @@ class GameManager {
     }
 
     // ===== BUILDING PLACEMENT OVERLAY SYSTEM =====
-    createPlacementOverlay(buildingType) {
+    async createPlacementOverlay(buildingType) {
         // Clear any existing overlay
         this.clearPlacementOverlay();
 
@@ -1900,17 +1900,37 @@ class GameManager {
         const cellSize = this.gridManager.cellSize;
         const buildingSize = buildingTypeData.size || 1;
 
-        // Create a semi-transparent plane for each grid cell
+        // Create shared materials for better performance
+        const validMaterial = new BABYLON.StandardMaterial('overlayValidMat', this.scene);
+        validMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);
+        validMaterial.alpha = 0.4;
+        validMaterial.backFaceCulling = false;
+        validMaterial.disableLighting = true;
+        validMaterial.emissiveColor = new BABYLON.Color3(0, 1, 0);
+
+        const invalidMaterial = new BABYLON.StandardMaterial('overlayInvalidMat', this.scene);
+        invalidMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0);
+        invalidMaterial.alpha = 0.4;
+        invalidMaterial.backFaceCulling = false;
+        invalidMaterial.disableLighting = true;
+        invalidMaterial.emissiveColor = new BABYLON.Color3(1, 0, 0);
+
+        // Process in batches to avoid UI freeze
+        const batchSize = 100; // Process 100 cells at a time
+        const totalCells = gridSize * gridSize;
+        let processedCells = 0;
+
+        // Show loading notification
+        if (this.uiManager) {
+            this.uiManager.showNotification('🎨 Preparando área de construção...', 'info', 2000);
+        }
+
+        // Process grid in batches
         for (let x = 0; x < gridSize; x++) {
             for (let z = 0; z < gridSize; z++) {
                 // Check if building can be placed at this position
                 const canPlaceResult = this.buildingSystem.canPlaceBuilding(x, z, buildingType);
                 const canPlace = canPlaceResult.canPlace;
-
-                // Determine color based on validity
-                const color = canPlace
-                    ? new BABYLON.Color4(0, 1, 0, 0.3)  // Green with 30% opacity
-                    : new BABYLON.Color4(1, 0, 0, 0.3); // Red with 30% opacity
 
                 // Create plane for this cell
                 const plane = BABYLON.MeshBuilder.CreatePlane(`overlay_${x}_${z}`, {
@@ -1923,29 +1943,33 @@ class GameManager {
                 const elevation = this.gridManager.getElevation(x, z);
                 plane.position = new BABYLON.Vector3(
                     worldPos.x,
-                    elevation * this.gridManager.gridHeight + 0.1, // Slightly above terrain
+                    elevation * this.gridManager.gridHeight + 0.15, // Slightly higher for visibility
                     worldPos.z
                 );
 
                 // Rotate to be horizontal
                 plane.rotation.x = Math.PI / 2;
 
-                // Create material
-                const material = new BABYLON.StandardMaterial(`overlayMat_${x}_${z}`, this.scene);
-                material.diffuseColor = new BABYLON.Color3(color.r, color.g, color.b);
-                material.alpha = color.a;
-                material.backFaceCulling = false;
-                material.disableLighting = true;
-                material.emissiveColor = new BABYLON.Color3(color.r, color.g, color.b);
-
-                plane.material = material;
+                // Use shared material
+                plane.material = canPlace ? validMaterial : invalidMaterial;
 
                 // Store reference
                 this.placementOverlayMeshes.push(plane);
+
+                processedCells++;
+
+                // Yield to UI every batch
+                if (processedCells % batchSize === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
             }
         }
 
         console.log(`✅ Placement overlay created with ${this.placementOverlayMeshes.length} cells`);
+
+        if (this.uiManager) {
+            this.uiManager.showNotification('✅ Área de construção pronta!', 'success', 1500);
+        }
     }
 
     clearPlacementOverlay() {

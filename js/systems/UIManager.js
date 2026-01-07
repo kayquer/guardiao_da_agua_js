@@ -1163,8 +1163,9 @@ class UIManager {
                 return;
             }
 
-            // Close the modal
+            // Close both mobile panels (right info panel and left building panel)
             this.closeMobilePanel('right');
+            this.closeMobilePanel('left');
 
             // Enter build mode
             this.gameManager.enterBuildMode(buildingTypeId);
@@ -1173,7 +1174,7 @@ class UIManager {
             this.uiState.currentOpenPanel = 'construction';
             this.uiState.selectedBuilding = buildingTypeId;
 
-            console.log('🏗️ Entering build mode from mobile modal');
+            console.log('🏗️ Entering build mode from mobile modal - panels closed');
         });
 
         hudRight.appendChild(buildBtn);
@@ -3088,7 +3089,7 @@ class UIManager {
                         multiSelectStartPos = { x: touch.clientX, y: touch.clientY };
                         this.startMultiSelectMode(touch.clientX, touch.clientY);
                     }
-                }, 2000);
+                }, 1200);
 
                 // Convert touch to mouse event for building placement preview
                 if (this.gameManager.buildMode) {
@@ -3212,21 +3213,38 @@ class UIManager {
                             });
                             this.gameManager.handleBuildingPlacementClick(mouseEvent);
                         } else {
-                            // Normal mode - trigger Babylon.js scene picking
-                            // This will handle terrain clicks and building selection
-                            this.gameManager.canvas.dispatchEvent(pointerEvent);
+                            // Normal mode - check if we tapped on a building
+                            const pickResult = this.gameManager.scene.pick(touch.clientX, touch.clientY);
 
-                            // Also dispatch pointerup for complete interaction
-                            const pointerUpEvent = new PointerEvent('pointerup', {
-                                clientX: touch.clientX,
-                                clientY: touch.clientY,
-                                bubbles: true,
-                                cancelable: true,
-                                view: window,
-                                pointerId: 1,
-                                pointerType: 'touch'
-                            });
-                            this.gameManager.canvas.dispatchEvent(pointerUpEvent);
+                            if (pickResult && pickResult.hit &&
+                                pickResult.pickedMesh &&
+                                pickResult.pickedMesh.metadata &&
+                                pickResult.pickedMesh.metadata.buildingId) {
+
+                                // Tapped on a building - show selection info
+                                const buildingId = pickResult.pickedMesh.metadata.buildingId;
+                                const building = this.gameManager.buildingSystem.buildings.get(buildingId);
+
+                                if (building) {
+                                    this.showBuildingSelectionInfo(building);
+                                    console.log(`🏢 Building selected via tap: ${building.config.name}`);
+                                }
+                            } else {
+                                // Trigger Babylon.js scene picking for terrain/other interactions
+                                this.gameManager.canvas.dispatchEvent(pointerEvent);
+
+                                // Also dispatch pointerup for complete interaction
+                                const pointerUpEvent = new PointerEvent('pointerup', {
+                                    clientX: touch.clientX,
+                                    clientY: touch.clientY,
+                                    bubbles: true,
+                                    cancelable: true,
+                                    view: window,
+                                    pointerId: 1,
+                                    pointerType: 'touch'
+                                });
+                                this.gameManager.canvas.dispatchEvent(pointerUpEvent);
+                            }
                         }
                     }
                 }
@@ -3258,6 +3276,10 @@ class UIManager {
             const building = this.gameManager.buildingSystem.buildings.get(buildingId);
 
             if (building) {
+                // Display full building info in details panel instead of just tooltip
+                this.showBuildingSelectionInfo(building);
+
+                // Also show a quick tooltip for immediate feedback
                 infoTitle = building.config.name;
                 infoText = `Tipo: ${building.config.category}\n`;
                 if (building.config.waterProduction) {
@@ -3269,6 +3291,9 @@ class UIManager {
                 if (building.config.maintenanceCost) {
                     infoText += `🔧 Manutenção: R$ ${building.config.maintenanceCost}/min`;
                 }
+
+                this.displayTouchTooltip(clientX, clientY, infoTitle, infoText);
+                return;
             }
         } else if (pickResult.pickedPoint) {
             // Hit terrain
@@ -3438,8 +3463,9 @@ class UIManager {
         });
 
         console.log(`✅ Selected ${selectedBuildings.length} buildings`);
+        console.table(selectedBuildings);
 
-        // Show notification with selected buildings
+        // Show notification and display buildings in details panel
         if (selectedBuildings.length > 0) {
             this.showNotification(
                 `✅ ${selectedBuildings.length} edifício(s) selecionado(s)`,
@@ -3447,7 +3473,10 @@ class UIManager {
                 3000
             );
 
-            // Highlight selected buildings (optional - you can add visual feedback here)
+            // Display multi-selection info in details panel
+            this.showMultiSelectionInfo(selectedBuildings);
+
+            // Highlight selected buildings with visual feedback
             selectedBuildings.forEach(building => {
                 if (building.mesh) {
                     // Add a temporary highlight effect
@@ -3464,6 +3493,96 @@ class UIManager {
         } else {
             this.showNotification('❌ Nenhum edifício selecionado', 'warning', 2000);
         }
+    }
+
+    // ===== MULTI-SELECTION INFO DISPLAY =====
+    showMultiSelectionInfo(buildings) {
+        if (!buildings || buildings.length === 0) return;
+
+        const detailsPanel = this.elements.detailsPanel;
+        const detailsContent = this.elements.detailsContent;
+
+        if (!detailsPanel || !detailsContent) return;
+
+        // Generate content for multiple buildings
+        let content = `
+            <div class="multi-selection-info">
+                <div class="selection-header">
+                    <h3>🏢 ${buildings.length} Edifícios Selecionados</h3>
+                    <button class="deselect-btn" onclick="window.uiManager.clearBuildingSelectionInfo()">✖️ Fechar</button>
+                </div>
+                <div class="multi-selection-list">
+        `;
+
+        // Add each building as a separate item
+        buildings.forEach((building, index) => {
+            const categoryName = this.getCategoryDisplayName(building.config.category);
+            const statusClass = building.active ? 'status-active' : 'status-inactive';
+            const statusText = building.active ? 'Ativo' : 'Inativo';
+
+            content += `
+                <div class="building-item" data-building-index="${index}">
+                    <div class="building-item-header">
+                        <h4>${index + 1}. ${building.config.name}</h4>
+                        <span class="building-category">${categoryName}</span>
+                    </div>
+                    <div class="building-item-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Status:</span>
+                            <span class="detail-value ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Eficiência:</span>
+                            <span class="detail-value">${Math.round(building.efficiency * 100)}%</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Posição:</span>
+                            <span class="detail-value">(${building.gridX}, ${building.gridZ})</span>
+                        </div>
+            `;
+
+            // Add production/consumption stats
+            if (building.config.waterProduction > 0) {
+                content += `
+                        <div class="detail-row">
+                            <span class="detail-label">💧 Produção:</span>
+                            <span class="detail-value">${building.config.waterProduction}L/s</span>
+                        </div>
+                `;
+            }
+            if (building.config.powerGeneration > 0) {
+                content += `
+                        <div class="detail-row">
+                            <span class="detail-label">⚡ Geração:</span>
+                            <span class="detail-value">${building.config.powerGeneration} MW</span>
+                        </div>
+                `;
+            }
+            if (building.config.maintenanceCost > 0) {
+                content += `
+                        <div class="detail-row">
+                            <span class="detail-label">🔧 Manutenção:</span>
+                            <span class="detail-value">R$ ${building.config.maintenanceCost}/min</span>
+                        </div>
+                `;
+            }
+
+            content += `
+                    </div>
+                </div>
+            `;
+        });
+
+        content += `
+                </div>
+            </div>
+        `;
+
+        detailsContent.innerHTML = content;
+        detailsPanel.style.display = 'flex';
+        this.updatePanelState('multi-selection');
+
+        console.log(`📋 Multi-selection info displayed for ${buildings.length} buildings`);
     }
 
     // ===== MISSION OBJECTIVE CLICK HANDLERS =====
