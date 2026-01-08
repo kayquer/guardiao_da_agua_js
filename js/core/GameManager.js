@@ -1628,24 +1628,62 @@ class GameManager {
         const buildingDepth = Math.abs(boundingBox.maximum.z - boundingBox.minimum.z);
         const averageSize = (buildingWidth + buildingDepth) / 2;
 
-        const selectionRing = BABYLON.MeshBuilder.CreateTorus(`selection_${building.id}`, {
+        // ===== ENHANCED SELECTION INDICATOR WITH PULSATING AURA =====
+
+        // Create parent node to hold all selection effects
+        const selectionParent = new BABYLON.TransformNode(`selection_parent_${building.id}`, this.scene);
+        selectionParent.position.x = buildingMesh.position.x;
+        selectionParent.position.z = buildingMesh.position.z;
+        selectionParent.position.y = 0;
+
+        // 1. Main selection ring (torus)
+        const selectionRing = BABYLON.MeshBuilder.CreateTorus(`selection_ring_${building.id}`, {
             diameter: averageSize * 1.3,
             thickness: 0.15,
-            tessellation: 24
+            tessellation: 32
         }, this.scene);
-
-        selectionRing.position.x = buildingMesh.position.x;
-        selectionRing.position.z = buildingMesh.position.z;
         selectionRing.position.y = 0.08;
+        selectionRing.parent = selectionParent;
 
-        const selectionMaterial = new BABYLON.StandardMaterial(`selectionMat_${building.id}`, this.scene);
-        selectionMaterial.diffuseColor = new BABYLON.Color3(1, 0.8, 0);
-        selectionMaterial.emissiveColor = new BABYLON.Color3(0.4, 0.3, 0);
-        selectionMaterial.alpha = 0.9;
-        selectionMaterial.backFaceCulling = false;
+        const ringMaterial = new BABYLON.StandardMaterial(`selectionRingMat_${building.id}`, this.scene);
+        ringMaterial.diffuseColor = new BABYLON.Color3(1, 0.8, 0);
+        ringMaterial.emissiveColor = new BABYLON.Color3(0.8, 0.6, 0);
+        ringMaterial.alpha = 0.9;
+        ringMaterial.backFaceCulling = false;
+        selectionRing.material = ringMaterial;
 
-        selectionRing.material = selectionMaterial;
-        return selectionRing;
+        // 2. Pulsating aura (ground disc)
+        const aura = BABYLON.MeshBuilder.CreateDisc(`selection_aura_${building.id}`, {
+            radius: averageSize * 0.8,
+            tessellation: 32
+        }, this.scene);
+        aura.rotation.x = Math.PI / 2; // Rotate to be horizontal
+        aura.position.y = 0.05;
+        aura.parent = selectionParent;
+
+        const auraMaterial = new BABYLON.StandardMaterial(`selectionAuraMat_${building.id}`, this.scene);
+        auraMaterial.diffuseColor = new BABYLON.Color3(1, 0.9, 0.3);
+        auraMaterial.emissiveColor = new BABYLON.Color3(1, 0.8, 0);
+        auraMaterial.alpha = 0.3;
+        auraMaterial.backFaceCulling = false;
+        aura.material = auraMaterial;
+
+        // 3. Point light for glow effect
+        const light = new BABYLON.PointLight(`selection_light_${building.id}`,
+            new BABYLON.Vector3(buildingMesh.position.x, buildingMesh.position.y + 2, buildingMesh.position.z),
+            this.scene);
+        light.diffuse = new BABYLON.Color3(1, 0.8, 0);
+        light.specular = new BABYLON.Color3(1, 0.9, 0.5);
+        light.intensity = 0.5;
+        light.range = averageSize * 3;
+        light.parent = selectionParent;
+
+        // Store references for animation
+        selectionParent.selectionRing = selectionRing;
+        selectionParent.selectionAura = aura;
+        selectionParent.selectionLight = light;
+
+        return selectionParent;
     }
 
     removeSelectionIndicator(building) {
@@ -1653,24 +1691,44 @@ class GameManager {
             try {
                 const indicator = building.mesh.selectionIndicator;
 
+                // ===== ENHANCED CLEANUP FOR MULTI-COMPONENT INDICATOR =====
+
+                // Stop all animations
                 if (this.scene) {
-                    this.scene.stopAnimation(indicator);
+                    if (indicator.selectionRing) {
+                        this.scene.stopAnimation(indicator.selectionRing);
+                    }
+                    if (indicator.selectionAura) {
+                        this.scene.stopAnimation(indicator.selectionAura);
+                    }
+                    if (indicator.selectionLight) {
+                        this.scene.stopAnimation(indicator.selectionLight);
+                    }
                 }
 
-                if (indicator.animations && indicator.animations.length > 0) {
-                    indicator.animations = [];
+                // Dispose ring
+                if (indicator.selectionRing && !indicator.selectionRing.isDisposed()) {
+                    if (indicator.selectionRing.material) {
+                        indicator.selectionRing.material.dispose();
+                    }
+                    indicator.selectionRing.dispose();
                 }
 
+                // Dispose aura
+                if (indicator.selectionAura && !indicator.selectionAura.isDisposed()) {
+                    if (indicator.selectionAura.material) {
+                        indicator.selectionAura.material.dispose();
+                    }
+                    indicator.selectionAura.dispose();
+                }
+
+                // Dispose light
+                if (indicator.selectionLight && !indicator.selectionLight.isDisposed()) {
+                    indicator.selectionLight.dispose();
+                }
+
+                // Dispose parent node
                 if (!indicator.isDisposed()) {
-                    if (indicator.material) {
-                        indicator.material.dispose();
-                        indicator.material = null;
-                    }
-
-                    if (indicator.parent) {
-                        indicator.parent = null;
-                    }
-
                     indicator.dispose();
                 }
 
@@ -1689,22 +1747,102 @@ class GameManager {
     }
 
     animateSelectionIndicator(indicator) {
-        const animationKeys = [];
-        animationKeys.push({ frame: 0, value: 0.8 });
-        animationKeys.push({ frame: 30, value: 1.0 });
-        animationKeys.push({ frame: 60, value: 0.8 });
+        // ===== ENHANCED PULSATING ANIMATION WITH MULTIPLE EFFECTS =====
 
-        const alphaAnimation = new BABYLON.Animation(
-            "selectionPulse",
-            "material.alpha",
-            30,
-            BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
-        );
+        // 1. Animate ring alpha (pulsing)
+        if (indicator.selectionRing) {
+            const ringAlphaKeys = [];
+            ringAlphaKeys.push({ frame: 0, value: 0.7 });
+            ringAlphaKeys.push({ frame: 30, value: 1.0 });
+            ringAlphaKeys.push({ frame: 60, value: 0.7 });
 
-        alphaAnimation.setKeys(animationKeys);
-        indicator.animations.push(alphaAnimation);
-        this.scene.beginAnimation(indicator, 0, 60, true);
+            const ringAlphaAnim = new BABYLON.Animation(
+                "ringAlphaPulse",
+                "material.alpha",
+                30,
+                BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+            );
+            ringAlphaAnim.setKeys(ringAlphaKeys);
+            indicator.selectionRing.animations.push(ringAlphaAnim);
+            this.scene.beginAnimation(indicator.selectionRing, 0, 60, true);
+        }
+
+        // 2. Animate aura scale (breathing effect)
+        if (indicator.selectionAura) {
+            const auraScaleKeys = [];
+            auraScaleKeys.push({ frame: 0, value: 1.0 });
+            auraScaleKeys.push({ frame: 30, value: 1.2 });
+            auraScaleKeys.push({ frame: 60, value: 1.0 });
+
+            const auraScaleAnim = new BABYLON.Animation(
+                "auraScalePulse",
+                "scaling",
+                30,
+                BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+            );
+            auraScaleAnim.setKeys(auraScaleKeys.map(key => ({
+                frame: key.frame,
+                value: new BABYLON.Vector3(key.value, key.value, key.value)
+            })));
+            indicator.selectionAura.animations.push(auraScaleAnim);
+            this.scene.beginAnimation(indicator.selectionAura, 0, 60, true);
+
+            // Animate aura alpha (pulsing)
+            const auraAlphaKeys = [];
+            auraAlphaKeys.push({ frame: 0, value: 0.2 });
+            auraAlphaKeys.push({ frame: 30, value: 0.4 });
+            auraAlphaKeys.push({ frame: 60, value: 0.2 });
+
+            const auraAlphaAnim = new BABYLON.Animation(
+                "auraAlphaPulse",
+                "material.alpha",
+                30,
+                BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+            );
+            auraAlphaAnim.setKeys(auraAlphaKeys);
+            indicator.selectionAura.animations.push(auraAlphaAnim);
+            this.scene.beginAnimation(indicator.selectionAura, 0, 60, true);
+        }
+
+        // 3. Animate light intensity (pulsing glow)
+        if (indicator.selectionLight) {
+            const lightIntensityKeys = [];
+            lightIntensityKeys.push({ frame: 0, value: 0.3 });
+            lightIntensityKeys.push({ frame: 30, value: 0.7 });
+            lightIntensityKeys.push({ frame: 60, value: 0.3 });
+
+            const lightIntensityAnim = new BABYLON.Animation(
+                "lightIntensityPulse",
+                "intensity",
+                30,
+                BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+            );
+            lightIntensityAnim.setKeys(lightIntensityKeys);
+            indicator.selectionLight.animations.push(lightIntensityAnim);
+            this.scene.beginAnimation(indicator.selectionLight, 0, 60, true);
+        }
+
+        // 4. Rotate the ring slowly for extra visual interest
+        if (indicator.selectionRing) {
+            const rotationKeys = [];
+            rotationKeys.push({ frame: 0, value: 0 });
+            rotationKeys.push({ frame: 120, value: Math.PI * 2 });
+
+            const rotationAnim = new BABYLON.Animation(
+                "ringRotation",
+                "rotation.y",
+                30,
+                BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+            );
+            rotationAnim.setKeys(rotationKeys);
+            indicator.selectionRing.animations.push(rotationAnim);
+            this.scene.beginAnimation(indicator.selectionRing, 0, 120, true);
+        }
     }
 
     refreshInfoPanel() {
