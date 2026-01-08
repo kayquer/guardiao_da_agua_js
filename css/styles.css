@@ -1,4 +1,4 @@
-/* ===== GUARDIÃO DA ÁGUA - ESTILOS PRINCIPAIS ===== */
+/* ===== GUARDIÃO DA ÁGUA - ESTILOS CARTOON ===== */
 
 /* Reset e Base */
 * {
@@ -9,8 +9,8 @@
 
 html, body {
     height: 100%;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    font-family: 'Lilita One', cursive;
+    background: linear-gradient(135deg, #00d4ff 0%, #0099ff 50%, #0066ff 100%);
     color: #ffffff;
     overflow: hidden;
     user-select: none;
@@ -35,7 +35,7 @@ html, body {
 
 /* ===== TELA DE LOADING ===== */
 #loading-screen {
-    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 50%, #ffd93d 100%);
     flex-direction: column;
 }
 
@@ -46,45 +46,57 @@ html, body {
 }
 
 .logo h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    animation: pulse 2s infinite;
+    font-size: 5rem;
+    margin-bottom: 0.5rem;
+    color: #fff;
+    text-shadow: 5px 5px 0px #ff1744, 8px 8px 0px #000000;
+    animation: float 3s ease-in-out infinite;
+    font-weight: 900;
+    -webkit-text-stroke: 1px #000000;
 }
 
 .logo p {
-    font-size: 1.2rem;
-    opacity: 0.8;
-    margin-bottom: 2rem;
+    font-size: 1.6rem;
+    margin-bottom: 3rem;
+    color: #fff;
+    text-shadow: 3px 3px 0px #000000, 4px 4px 0px #ff1744;
+    font-weight: bold;
+    -webkit-text-stroke: 0.5px #000000;
 }
 
 .loading-bar {
     width: 100%;
-    height: 8px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 4px;
+    height: 12px;
+    background: #ffffff;
+    border-radius: 12px;
     overflow: hidden;
     margin-bottom: 1rem;
+    border: 4px solid #000000;
+    box-shadow: 0 6px 0 #000000;
 }
 
 .loading-progress {
     height: 100%;
-    background: linear-gradient(90deg, #00d4ff, #0099cc);
-    border-radius: 4px;
+    background: linear-gradient(90deg, #00ff88, #00ffff, #00ff88);
+    border-radius: 8px;
     width: 0%;
     transition: width 0.3s ease;
-    animation: shimmer 2s infinite;
+    animation: shimmer 1.5s infinite;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.2);
 }
 
 .loading-tips {
     margin-top: 2rem;
     font-style: italic;
-    opacity: 0.7;
+    font-size: 1.1rem;
+    color: #fff;
+    text-shadow: 2px 2px 0px #000000;
+    font-weight: 700;
 }
 
 /* ===== MENU PRINCIPAL ===== */
 #main-menu {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ff6b9d 0%, #c471ed 50%, #12c2e9 100%);
 }
 
 .menu-container {
@@ -94,22 +106,28 @@ html, body {
 }
 
 .menu-header h1 {
-    font-size: 4rem;
+    font-size: 5rem;
     margin-bottom: 0.5rem;
-    text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+    color: #fff;
+    text-shadow: 5px 5px 0px #ff1744, 8px 8px 0px #000000;
     animation: float 3s ease-in-out infinite;
+    font-weight: 900;
+    -webkit-text-stroke: 1px #000000;
 }
 
 .subtitle {
-    font-size: 1.3rem;
-    opacity: 0.9;
+    font-size: 1.6rem;
     margin-bottom: 3rem;
+    color: #fff;
+    text-shadow: 3px 3px 0px #000000, 4px 4px 0px #ff1744;
+    font-weight: bold;
+    -webkit-text-stroke: 0.5px #000000;
 }
 
 .menu-buttons {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 .menu-btn {
@@ -117,41 +135,52 @@ html, body {
     align-items: center;
     justify-content: center;
     gap: 1rem;
-    padding: 1rem 2rem;
-    font-size: 1.2rem;
-    border: none;
-    border-radius: 12px;
+    padding: 1.2rem 2.5rem;
+    font-size: 1.4rem;
+    border: 5px solid #000000;
+    border-radius: 20px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
+    transition: all 0.2s ease;
+    font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
+    box-shadow: 0 8px 0 #000000;
+    position: relative;
+    top: 0;
 }
 
 .menu-btn.primary {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-    color: white;
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    background: linear-gradient(135deg, #ff3838, #ff6b6b, #ff3838);
+    color: #fff;
+    text-shadow: 3px 3px 0px #000000;
 }
 
 .menu-btn.secondary {
-    background: rgba(255,255,255,0.1);
-    color: white;
-    border: 2px solid rgba(255,255,255,0.3);
+    background: linear-gradient(135deg, #00ffff, #00d4ff, #00ffff);
+    color: #000;
+    text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
 }
 
 .menu-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    top: 4px;
+    box-shadow: 0 4px 0 #000000;
+    transform: scale(1.05);
+}
+
+.menu-btn:active:not(:disabled) {
+    top: 8px;
+    box-shadow: 0 0px 0 #000000;
 }
 
 .menu-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    filter: grayscale(0.5);
 }
 
 .btn-icon {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
+    filter: drop-shadow(2px 2px 0px #000000);
 }
 
 /* ===== TELA DO JOGO ===== */
@@ -185,7 +214,7 @@ html, body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0,0,0,0.85);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -197,55 +226,74 @@ html, body {
 }
 
 .overlay-content {
-    background: linear-gradient(135deg, #2c3e50, #34495e);
+    background: linear-gradient(135deg, #ffd93d, #ffaf40);
     padding: 3rem;
-    border-radius: 20px;
+    border-radius: 30px;
     text-align: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 
+        0 0 0 6px #000000,
+        0 12px 0 #000000;
     max-width: 500px;
+    border: 6px solid #000000;
 }
 
 .overlay-content h2 {
     margin-bottom: 2rem;
-    font-size: 2rem;
+    font-size: 2.5rem;
+    color: #fff;
+    text-shadow: 
+        4px 4px 0px #ff1744,
+        6px 6px 0px #000000;
+    font-weight: 900;
+    -webkit-text-stroke: 1px #000000;
 }
 
 .overlay-buttons {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.2rem;
 }
 
 .overlay-btn {
-    padding: 1rem 2rem;
-    font-size: 1.1rem;
-    border: none;
-    border-radius: 8px;
+    padding: 1.2rem 2.5rem;
+    font-size: 1.3rem;
+    border: 5px solid #000000;
+    border-radius: 18px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
+    transition: all 0.2s ease;
+    font-weight: 900;
+    box-shadow: 0 6px 0 #000000;
+    position: relative;
+    top: 0;
 }
 
 .overlay-btn.primary {
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: white;
+    background: linear-gradient(135deg, #00ff88, #00ffcc);
+    color: #000;
+    text-shadow: 2px 2px 0px rgba(255,255,255,0.5);
 }
 
 .overlay-btn.secondary {
-    background: rgba(255,255,255,0.1);
-    color: white;
-    border: 2px solid rgba(255,255,255,0.3);
+    background: linear-gradient(135deg, #ff6b9d, #ff8e9d);
+    color: #fff;
+    text-shadow: 2px 2px 0px #000000;
 }
 
 .overlay-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    top: 3px;
+    box-shadow: 0 3px 0 #000000;
+    transform: scale(1.05);
+}
+
+.overlay-btn:active {
+    top: 6px;
+    box-shadow: 0 0px 0 #000000;
 }
 
 /* ===== ANIMAÇÕES ===== */
 @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    0%, 100% { transform: scale(1) rotate(-2deg); }
+    50% { transform: scale(1.1) rotate(2deg); }
 }
 
 @keyframes shimmer {
@@ -254,13 +302,13 @@ html, body {
 }
 
 @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+    0%, 100% { transform: translateY(0px) rotate(-2deg); }
+    50% { transform: translateY(-15px) rotate(2deg); }
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(30px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .fade-in {
@@ -277,24 +325,26 @@ html, body {
 }
 
 .text-shadow {
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    text-shadow: 3px 3px 0px #000000;
 }
 
 /* ===== SCROLLBAR CUSTOMIZADA ===== */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 12px;
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.1);
-    border-radius: 4px;
+    background: #ffff00;
+    border-radius: 10px;
+    border: 3px solid #000000;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.3);
-    border-radius: 4px;
+    background: linear-gradient(135deg, #ff6b9d, #c471ed);
+    border-radius: 10px;
+    border: 3px solid #000000;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.5);
+    background: linear-gradient(135deg, #ff3838, #ff6b6b);
 }

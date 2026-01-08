@@ -45,6 +45,14 @@ class ResourceManager {
             }
         };
         
+        // Cache para cálculos de consumo
+        this.consumptionCache = {
+            lastUpdate: 0,
+            cacheInterval: 100,
+            cachedConsumption: 0,
+            cachedWaste: 0
+        };
+
         // Histórico para gráficos
         this.history = {
             water: [],
@@ -194,7 +202,12 @@ class ResourceManager {
 
         // Aplicar crescimento limitado pela capacidade
         const newPopulation = population.current * (1 + population.growth / 100);
+        const oldPopulation = population.current;
         population.current = Math.max(100, Math.min(population.max, newPopulation));
+        
+        if (oldPopulation !== population.current) {
+            this.invalidateConsumptionCache();
+        }
     }
 
     updatePopulationCapacity() {
@@ -257,15 +270,28 @@ class ResourceManager {
     }
     
     updateConsumption() {
+        const now = performance.now();
+        const timeSinceLastUpdate = now - this.consumptionCache.lastUpdate;
+        
+        if (timeSinceLastUpdate < this.consumptionCache.cacheInterval) {
+            this.resources.water.consumption = this.consumptionCache.cachedConsumption;
+            this.resources.water.waste = this.consumptionCache.cachedWaste;
+            return;
+        }
+        
         const population = this.resources.population;
         const water = this.resources.water;
         
-        // Consumo base: 2L por pessoa por segundo (simulação acelerada)
         water.consumption = population.current * 2;
-        
-        // Desperdício baseado na infraestrutura (será calculado pelo BuildingSystem)
-        // Por enquanto, desperdício base de 10%
         water.waste = water.consumption * 0.1;
+        
+        this.consumptionCache.cachedConsumption = water.consumption;
+        this.consumptionCache.cachedWaste = water.waste;
+        this.consumptionCache.lastUpdate = now;
+    }
+    
+    invalidateConsumptionCache() {
+        this.consumptionCache.lastUpdate = 0;
     }
     
     // ===== GESTÃO DE RECURSOS =====
@@ -431,7 +457,7 @@ class ResourceManager {
         
         // Limitar tamanho do histórico
         Object.keys(this.history).forEach(key => {
-            if (this.history[key].length > this.historyMaxLength) {
+            while (this.history[key].length > this.historyMaxLength) {
                 this.history[key].shift();
             }
         });

@@ -1529,6 +1529,14 @@ class GameManager {
         this.selectedBuilding = building;
         this.addSelectionIndicator(building);
         this.refreshInfoPanel();
+        //show hud right and info panel with info about selected building
+        this.uiManager.showBuildingSelectionInfo(building);
+        this.uiManager.toggleMobilePanel('right');
+        this.uiManager.showMissionPanel();
+        
+
+        
+
 
         console.log(`🏢 Selecionado: ${building.config.name}`);
     }
@@ -2081,7 +2089,7 @@ class GameManager {
                 const elevation = this.gridManager.getElevation(x, z);
                 plane.position = new BABYLON.Vector3(
                     worldPos.x,
-                    elevation * this.gridManager.gridHeight + 0.15, // Slightly higher for visibility
+                    elevation * this.gridManager.gridHeight + 0.75, // Slightly higher for visibility
                     worldPos.z
                 );
 

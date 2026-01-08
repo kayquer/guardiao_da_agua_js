@@ -366,36 +366,91 @@ class GridManager {
         this.waterMeshes.push(waterBlock);
     }
 
-    // Inicializar animação centralizada de água (chamado uma vez)
     initializeWaterAnimation() {
         if (this.waterAnimationInitialized) return;
 
+        const shaderMaterial = this.createWaterShaderMaterial();
+        
+        this.waterMeshes.forEach(waterBlock => {
+            if (waterBlock && waterBlock.animationData) {
+                const clonedMaterial = shaderMaterial.clone(`waterShader_${waterBlock.animationData.gridX}_${waterBlock.animationData.gridZ}`);
+                clonedMaterial.setVector2("gridPosition", new BABYLON.Vector2(waterBlock.animationData.gridX, waterBlock.animationData.gridZ));
+                clonedMaterial.setFloat("baseY", waterBlock.animationData.baseY);
+                clonedMaterial.setFloat("depth", waterBlock.animationData.depth);
+                waterBlock.material = clonedMaterial;
+            }
+        });
+
         this.scene.registerBeforeRender(() => {
             const time = Date.now() * 0.001;
-
-            // Animar todos os blocos de água de uma vez
-            this.waterMeshes.forEach(waterBlock => {
-                if (waterBlock && !waterBlock.isDisposed() && waterBlock.animationData) {
-                    const { gridX, gridZ, baseY, depth } = waterBlock.animationData;
-
-                    // Ondas mais suaves baseadas na profundidade
-                    const waveAmplitude = Math.min(0.03, depth * 0.1);
-                    const wave1 = Math.sin(time + gridX * 0.5 + gridZ * 0.3) * waveAmplitude;
-                    const wave2 = Math.cos(time * 1.3 + gridX * 0.3 + gridZ * 0.5) * waveAmplitude * 0.5;
-
-                    waterBlock.position.y = baseY + wave1 + wave2;
-
-                    // Animar transparência para simular movimento da água
-                    if (waterBlock.material && waterBlock.material.alpha) {
-                        const alphaVariation = Math.sin(time * 2 + gridX + gridZ) * 0.1;
-                        const baseAlpha = 0.6 + depth * 0.2;
-                        waterBlock.material.alpha = baseAlpha + alphaVariation;
-                    }
-                }
-            });
+            shaderMaterial.setFloat("time", time);
         });
 
         this.waterAnimationInitialized = true;
+    }
+
+    createWaterShaderMaterial() {
+        const shaderMaterial = new BABYLON.ShaderMaterial("waterShader", this.scene, {
+            vertexSource: `
+                precision highp float;
+                attribute vec3 position;
+                attribute vec3 normal;
+                uniform mat4 worldViewProjection;
+                uniform mat4 world;
+                uniform vec2 gridPosition;
+                uniform float time;
+                uniform float baseY;
+                uniform float depth;
+                varying vec3 vPosition;
+                varying vec3 vNormal;
+                
+                void main() {
+                    vec3 p = position;
+                    float waveAmplitude = min(0.03, depth * 0.1);
+                    float wave1 = sin(time + gridPosition.x * 0.5 + gridPosition.y * 0.3) * waveAmplitude;
+                    float wave2 = cos(time * 1.3 + gridPosition.x * 0.3 + gridPosition.y * 0.5) * waveAmplitude * 0.5;
+                    p.y += wave1 + wave2;
+                    
+                    vPosition = vec3(world * vec4(p, 1.0));
+                    vNormal = normalize(vec3(world * vec4(normal, 0.0)));
+                    gl_Position = worldViewProjection * vec4(p, 1.0);
+                }
+            `,
+            fragmentSource: `
+                precision highp float;
+                uniform vec2 gridPosition;
+                uniform float time;
+                uniform float depth;
+                varying vec3 vPosition;
+                varying vec3 vNormal;
+                
+                void main() {
+                    float depthFactor = min(1.0, depth / 0.5);
+                    vec3 waterColor = vec3(
+                        0.15 + (0.25 - 0.15) * (1.0 - depthFactor),
+                        0.45 + (0.56 - 0.45) * (1.0 - depthFactor),
+                        0.8 + (1.0 - 0.8) * (1.0 - depthFactor)
+                    );
+                    
+                    float alphaVariation = sin(time * 2.0 + gridPosition.x + gridPosition.y) * 0.1;
+                    float alpha = 0.6 + depth * 0.2 + alphaVariation;
+                    
+                    vec3 lightDir = normalize(vec3(1.0, 1.0, 0.5));
+                    float diffuse = max(dot(vNormal, lightDir), 0.0);
+                    vec3 finalColor = waterColor * (0.6 + 0.4 * diffuse);
+                    
+                    gl_FragColor = vec4(finalColor, alpha);
+                }
+            `
+        }, {
+            attributes: ["position", "normal"],
+            uniforms: ["worldViewProjection", "world", "gridPosition", "time", "baseY", "depth"]
+        });
+
+        shaderMaterial.backFaceCulling = false;
+        shaderMaterial.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
+        
+        return shaderMaterial;
     }
 
     createVoxelTerrainBlocks() {
@@ -594,79 +649,80 @@ class GridManager {
     }
 
     // ===== CRIAÇÃO DE DECORAÇÕES ESPECÍFICAS =====
-    createGrassPatch(gridX, gridZ) {
-        // Pequenos tufos de grama
-        const grass = BABYLON.MeshBuilder.CreateBox(`grass_${gridX}_${gridZ}`, {
-            width: 0.3, height: 0.2, depth: 0.3
-        }, this.scene);
+    createDecoration(type, gridX, gridZ) {
+        const config = {
+            grass: {
+                mesh: () => BABYLON.MeshBuilder.CreateBox(`grass_${gridX}_${gridZ}`, {
+                    width: 0.3, height: 0.2, depth: 0.3
+                }, this.scene),
+                color: new BABYLON.Color3(0.2, 0.6, 0.1),
+                alpha: 0.8
+            },
+            flower: {
+                mesh: () => BABYLON.MeshBuilder.CreateCylinder(`flower_${gridX}_${gridZ}`, {
+                    height: 0.3, diameterTop: 0.1, diameterBottom: 0.05
+                }, this.scene),
+                color: [
+                    new BABYLON.Color3(1, 0.2, 0.2),
+                    new BABYLON.Color3(1, 1, 0.2),
+                    new BABYLON.Color3(0.8, 0.2, 1),
+                    new BABYLON.Color3(1, 0.6, 0.8)
+                ][Math.floor(Math.random() * 4)]
+            },
+            bush: {
+                mesh: () => {
+                    const bush = BABYLON.MeshBuilder.CreateSphere(`bush_${gridX}_${gridZ}`, {
+                        diameter: 0.6
+                    }, this.scene);
+                    bush.scaling.y = 0.7;
+                    return bush;
+                },
+                color: new BABYLON.Color3(0.15, 0.4, 0.1)
+            },
+            tree: {
+                mesh: () => {
+                    const trunk = BABYLON.MeshBuilder.CreateCylinder(`trunk_${gridX}_${gridZ}`, {
+                        height: 1.2, diameter: 0.2
+                    }, this.scene);
+                    const crown = BABYLON.MeshBuilder.CreateSphere(`crown_${gridX}_${gridZ}`, {
+                        diameter: 1.0
+                    }, this.scene);
+                    crown.position.y = 1.0;
+                    
+                    const trunkMat = new BABYLON.StandardMaterial(`trunkMat_${gridX}_${gridZ}`, this.scene);
+                    trunkMat.diffuseColor = new BABYLON.Color3(0.4, 0.2, 0.1);
+                    trunk.material = trunkMat;
+                    
+                    const crownMat = new BABYLON.StandardMaterial(`crownMat_${gridX}_${gridZ}`, this.scene);
+                    crownMat.diffuseColor = new BABYLON.Color3(0.1, 0.5, 0.1);
+                    crown.material = crownMat;
+                    
+                    const tree = BABYLON.Mesh.MergeMeshes([trunk, crown]);
+                    tree.name = `tree_${gridX}_${gridZ}`;
+                    return tree;
+                }
+            }
+        };
 
-        const material = new BABYLON.StandardMaterial(`grassMat_${gridX}_${gridZ}`, this.scene);
-        material.diffuseColor = new BABYLON.Color3(0.2, 0.6, 0.1);
-        material.alpha = 0.8;
-        grass.material = material;
+        const decorConfig = config[type];
+        if (!decorConfig) return null;
 
-        return grass;
+        const mesh = decorConfig.mesh();
+        
+        if (type !== 'tree') {
+            const material = new BABYLON.StandardMaterial(`${type}Mat_${gridX}_${gridZ}`, this.scene);
+            material.diffuseColor = decorConfig.color;
+            if (decorConfig.alpha) material.alpha = decorConfig.alpha;
+            mesh.material = material;
+        }
+
+        return mesh;
     }
 
-    createFlowers(gridX, gridZ) {
-        // Pequenas flores coloridas
-        const flower = BABYLON.MeshBuilder.CreateCylinder(`flower_${gridX}_${gridZ}`, {
-            height: 0.3, diameterTop: 0.1, diameterBottom: 0.05
-        }, this.scene);
-
-        const material = new BABYLON.StandardMaterial(`flowerMat_${gridX}_${gridZ}`, this.scene);
-        const colors = [
-            new BABYLON.Color3(1, 0.2, 0.2), // Vermelho
-            new BABYLON.Color3(1, 1, 0.2),   // Amarelo
-            new BABYLON.Color3(0.8, 0.2, 1), // Roxo
-            new BABYLON.Color3(1, 0.6, 0.8)  // Rosa
-        ];
-        material.diffuseColor = colors[Math.floor(Math.random() * colors.length)];
-        flower.material = material;
-
-        return flower;
-    }
-
-    createBush(gridX, gridZ) {
-        // Arbusto pequeno
-        const bush = BABYLON.MeshBuilder.CreateSphere(`bush_${gridX}_${gridZ}`, {
-            diameter: 0.6
-        }, this.scene);
-        bush.scaling.y = 0.7; // Achatar um pouco
-
-        const material = new BABYLON.StandardMaterial(`bushMat_${gridX}_${gridZ}`, this.scene);
-        material.diffuseColor = new BABYLON.Color3(0.15, 0.4, 0.1);
-        bush.material = material;
-
-        return bush;
-    }
-
-    createTree(gridX, gridZ) {
-        // Árvore com tronco e copa
-        const trunk = BABYLON.MeshBuilder.CreateCylinder(`trunk_${gridX}_${gridZ}`, {
-            height: 1.2, diameter: 0.2
-        }, this.scene);
-
-        const crown = BABYLON.MeshBuilder.CreateSphere(`crown_${gridX}_${gridZ}`, {
-            diameter: 1.0
-        }, this.scene);
-        crown.position.y = 1.0;
-
-        // Materiais
-        const trunkMaterial = new BABYLON.StandardMaterial(`trunkMat_${gridX}_${gridZ}`, this.scene);
-        trunkMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.2, 0.1);
-        trunk.material = trunkMaterial;
-
-        const crownMaterial = new BABYLON.StandardMaterial(`crownMat_${gridX}_${gridZ}`, this.scene);
-        crownMaterial.diffuseColor = new BABYLON.Color3(0.1, 0.5, 0.1);
-        crown.material = crownMaterial;
-
-        // Combinar meshes
-        const tree = BABYLON.Mesh.MergeMeshes([trunk, crown]);
-        tree.name = `tree_${gridX}_${gridZ}`;
-
-        return tree;
-    }
+    createGrassPatch(gridX, gridZ) { return this.createDecoration('grass', gridX, gridZ); }
+    createFlowers(gridX, gridZ) { return this.createDecoration('flower', gridX, gridZ); }
+    createBush(gridX, gridZ) { return this.createDecoration('bush', gridX, gridZ); }
+    createTree(gridX, gridZ) { return this.createDecoration('tree', gridX, gridZ); }
 
     createSmallTree(gridX, gridZ) {
         // Árvore menor para perto da água

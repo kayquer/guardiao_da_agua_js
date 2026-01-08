@@ -19,7 +19,7 @@ class CityLifeSystem {
         // Configurações
         this.maxCars = 20;
         this.maxPedestrians = 30;
-        this.carSpawnRate = 0.02; // Probabilidade por frame
+        this.carSpawnRate = 0.02;
         this.pedestrianSpawnRate = 0.03;
         
         // Materiais
@@ -28,7 +28,13 @@ class CityLifeSystem {
         // Estado do sistema
         this.enabled = true;
         this.lastUpdate = 0;
-        this.updateInterval = 100; // ms
+        this.updateInterval = 100;
+
+        this.roadNetworkCache = {
+            isDirty: true,
+            lastUpdate: 0,
+            updateInterval: 5000
+        };
         
         this.initializeMaterials();
         this.findRoads();
@@ -68,9 +74,15 @@ class CityLifeSystem {
     }
     
     findRoads() {
+        const now = performance.now();
+        
+        if (!this.roadNetworkCache.isDirty && 
+            now - this.roadNetworkCache.lastUpdate < this.roadNetworkCache.updateInterval) {
+            return;
+        }
+        
         this.roads = [];
         
-        // Procurar por estradas construídas
         for (let x = 0; x < this.gridManager.gridSize; x++) {
             for (let z = 0; z < this.gridManager.gridSize; z++) {
                 const building = this.buildingSystem.getBuildingAt(x, z);
@@ -80,10 +92,16 @@ class CityLifeSystem {
             }
         }
         
-        // Calcular conexões entre estradas
         this.calculateRoadConnections();
         
+        this.roadNetworkCache.isDirty = false;
+        this.roadNetworkCache.lastUpdate = now;
+        
         console.log(`🛣️ Encontradas ${this.roads.length} estradas`);
+    }
+    
+    invalidateRoadNetworkCache() {
+        this.roadNetworkCache.isDirty = true;
     }
     
     calculateRoadConnections() {

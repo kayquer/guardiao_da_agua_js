@@ -303,6 +303,9 @@ async function startNewGame() {
             // Tornar gameManager disponível globalmente para testes
             window.gameManager = gameManager;
 
+            // ===== FIX: Expose uiManager globally for HTML onclick handlers =====
+            window.uiManager = gameManager.uiManager;
+
             console.log('✅ Jogo iniciado com sucesso');
         } else {
             console.error('❌ Falha ao iniciar novo jogo');
@@ -351,6 +354,9 @@ async function continueGame() {
 
             // Tornar gameManager disponível globalmente para testes
             window.gameManager = gameManager;
+
+            // ===== FIX: Expose uiManager globally for HTML onclick handlers =====
+            window.uiManager = gameManager.uiManager;
 
             console.log('✅ Jogo carregado com sucesso');
         } else {
@@ -535,7 +541,7 @@ window.addEventListener('beforeunload', function(e) {
 
 // ===== TRATAMENTO DE ERROS GLOBAIS =====
 window.addEventListener('error', function(e) {
-    console.error('❌ Erro global:', e.error);
+    console.error('❌ Erro global:', e);
 
     // Only show loading error for critical errors during initialization
     // Prevent page reloads for minor errors during gameplay
@@ -567,7 +573,7 @@ if (typeof window !== 'undefined') {
         gameManager: () => gameManager,
         showScreen,
         currentScreen: () => currentScreen
-    };
+    }; 
 }
 
 console.log('🎮 Guardião da Água - Sistema principal carregado');

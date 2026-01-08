@@ -1752,8 +1752,10 @@ class QuestSystem {
             }
         } else if (canStart) {
             statusClass = 'available';
-            statusText = 'Disponível';
-            actionButton = `<button class="mission-btn start" onclick="window.gameManager.questSystem.startMission('${mission.id}')">▶️ Iniciar</button>`;
+            statusText = 'Auto-ativada';
+            // ===== REMOVED: Start button no longer needed since missions auto-activate =====
+            // actionButton = `<button class="mission-btn start" onclick="window.gameManager.questSystem.startMission('${mission.id}')">▶️ Iniciar</button>`;
+            actionButton = ''; // No button needed - missions auto-activate
         } else {
             statusClass = 'locked';
             statusText = 'Bloqueada';
@@ -2463,7 +2465,9 @@ class QuestSystem {
 
                 <div class="mission-actions">
                     ${!isCompleted && !isActive && this.canStartMission(missionId) ?
-                        `<button class="mission-btn start" onclick="window.gameManager.questSystem.startMission('${missionId}')">▶️ Iniciar Missão</button>` :
+                        `<div class="mission-auto-start-info" style="padding: 1rem; background: rgba(0,255,136,0.1); border-radius: 8px; text-align: center;">
+                            <p style="margin: 0; color: #00ff88; font-weight: 600;">✨ Esta missão será ativada automaticamente</p>
+                        </div>` :
                         ''
                     }
                 </div>

@@ -301,18 +301,18 @@ class AudioManager {
         });
     }
 
-    loadEnvironmentSoundFile(soundName) {
+    loadSoundFile(key, filepath, onError = null) {
         try {
-            const audio = new Audio(`Sounds/SFX/Environment/${soundName}.mp3`);
+            const audio = new Audio(filepath);
             audio.preload = 'auto';
 
             audio.addEventListener('canplaythrough', () => {
-                this.sounds.set(`sfx_${soundName}`, {
+                this.sounds.set(key, {
                     play: () => {
                         audio.currentTime = 0;
                         audio.volume = this.sfxVolume * this.masterVolume;
                         audio.play().catch(error => {
-                            console.warn(`⚠️ Erro ao reproduzir ${soundName}:`, error);
+                            console.warn(`⚠️ Erro ao reproduzir ${key}:`, error);
                         });
                     },
                     setVolume: (volume) => {
@@ -324,16 +324,25 @@ class AudioManager {
                     },
                     audio: audio
                 });
-                console.log(`🌅 Som ambiente carregado: ${soundName}`);
+                console.log(`🔊 Som carregado: ${key}`);
             });
 
             audio.addEventListener('error', () => {
-                console.log(`⚠️ Arquivo ${soundName}.mp3 não encontrado, usando som procedural`);
+                console.log(`⚠️ Arquivo ${filepath} não encontrado`);
+                if (onError) onError();
             });
 
         } catch (error) {
-            console.log(`⚠️ Erro ao carregar ${soundName}, usando som procedural:`, error);
+            console.log(`⚠️ Erro ao carregar ${key}:`, error);
+            if (onError) onError();
         }
+    }
+
+    loadEnvironmentSoundFile(soundName) {
+        this.loadSoundFile(
+            `sfx_${soundName}`,
+            `Sounds/SFX/Environment/${soundName}.mp3`
+        );
     }
 
     // ===== RSE SOUNDFX LOADING =====
@@ -359,40 +368,11 @@ class AudioManager {
     }
 
     loadRSESoundFile(key, filename, category) {
-        try {
-            const audio = new Audio(`Sounds/SFX/RSE/${filename}`);
-            audio.preload = 'auto';
-
-            audio.addEventListener('canplaythrough', () => {
-                this.sounds.set(key, {
-                    play: () => {
-                        audio.currentTime = 0;
-                        audio.volume = this.sfxVolume * this.masterVolume;
-                        audio.play().catch(error => {
-                            console.warn(`⚠️ Erro ao reproduzir ${key}:`, error);
-                        });
-                    },
-                    setVolume: (volume) => {
-                        audio.volume = volume * this.sfxVolume * this.masterVolume;
-                    },
-                    pause: () => {
-                        audio.pause();
-                        audio.currentTime = 0;
-                    },
-                    audio: audio
-                });
-                console.log(`🔊 RSE SoundFX carregado: ${key} (${category})`);
-            });
-
-            audio.addEventListener('error', () => {
-                console.log(`⚠️ Arquivo RSE ${filename} não encontrado, usando som procedural`);
-                this.createProceduralSound(key, category);
-            });
-
-        } catch (error) {
-            console.log(`⚠️ Erro ao carregar RSE ${filename}, usando som procedural:`, error);
-            this.createProceduralSound(key, category);
-        }
+        this.loadSoundFile(
+            key,
+            `Sounds/SFX/RSE/${filename}`,
+            () => this.createProceduralSound(key, category)
+        );
     }
 
     createRSESoundMappings() {

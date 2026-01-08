@@ -24,7 +24,7 @@ class TutorialManager {
         this.closeBtn = document.getElementById('btn-close-tutorial');
         
         // Configurações
-        this.autoAdvance = false;
+
         this.showHints = true;
         
         this.initializeTutorialSteps();

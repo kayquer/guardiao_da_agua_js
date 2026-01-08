@@ -742,6 +742,39 @@
     box-shadow: 0 8px 0 rgba(0, 0, 0, 0.3), 0 0 20px rgba(0,255,136,0.6);
 }
 
+/* ===== SELECTION COUNTER BADGE ===== */
+.selection-counter-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FF6B9D 0%, #FF4757 100%);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: 'Fredoka', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4), 0 0 15px rgba(255, 107, 157, 0.6);
+    z-index: 10;
+    animation: pulseBadge 1.5s ease-in-out infinite;
+}
+
+@keyframes pulseBadge {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4), 0 0 15px rgba(255, 107, 157, 0.6);
+    }
+    50% {
+        transform: scale(1.15);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4), 0 0 25px rgba(255, 107, 157, 0.9);
+    }
+}
+
 /* ===== MOBILE TOP TOGGLE BUTTONS (TOP HUD) ===== */
 .mobile-top-toggle {
     position: relative;

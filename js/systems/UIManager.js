@@ -550,6 +550,13 @@ class UIManager {
         rightToggle.innerHTML = 'ℹ️';
         rightToggle.title = 'Abrir painel de informações';
 
+        // ===== SELECTION COUNTER BADGE =====
+        const selectionBadge = document.createElement('span');
+        selectionBadge.className = 'selection-counter-badge';
+        selectionBadge.style.display = 'none'; // Hidden by default
+        selectionBadge.textContent = '0';
+        rightToggle.appendChild(selectionBadge);
+
         // Add both click and touch event handlers
         const rightToggleHandler = (e) => {
             e.preventDefault();
@@ -2344,7 +2351,7 @@ class UIManager {
             <div class="building-selection-info">
                 <div class="selection-header">
                     <h3>🏢 ${building.config.name}</h3>
-                    <button class="deselect-btn" onclick="window.gameManager.deselectBuilding()">✖️ Desselecionar</button>
+                    <button class="deselect-btn" data-action="deselect">✖️ Desselecionar</button>
                 </div>
 
                 <div class="building-details">
@@ -2385,7 +2392,33 @@ class UIManager {
         detailsPanel.style.display = 'flex';
         this.updatePanelState('selection');
 
+        // ===== FIX: Add proper event listener for deselect button (mobile-friendly) =====
+        const deselectBtn = detailsContent.querySelector('.deselect-btn');
+        if (deselectBtn) {
+            // Remove any existing listeners
+            const newDeselectBtn = deselectBtn.cloneNode(true);
+            deselectBtn.parentNode.replaceChild(newDeselectBtn, deselectBtn);
+
+            // Add both click and touchend for mobile compatibility
+            const handleDeselect = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.gameManager.deselectBuilding();
+                // Close mobile panel if on mobile
+                if (this.isMobile) {
+                    this.closeMobilePanel('right');
+                }
+                console.log('✅ Building deselected via button');
+            };
+
+            newDeselectBtn.addEventListener('click', handleDeselect);
+            newDeselectBtn.addEventListener('touchend', handleDeselect, { passive: false });
+        }
+
         console.log(`📋 Informações de seleção exibidas para ${building.config.name}`);
+
+        // Update selection counter badge (1 building selected)
+        this.updateSelectionCounterBadge(1);
     }
 
     clearBuildingSelectionInfo() {
@@ -2395,6 +2428,9 @@ class UIManager {
             detailsPanel.style.display = 'none';
             this.updatePanelState(null);
         }
+
+        // Clear selection counter badge
+        this.updateSelectionCounterBadge(0);
     }
 
     generateBuildingStats(building) {
@@ -3460,8 +3496,8 @@ class UIManager {
 
         this.tooltipAutoHideTimer = setTimeout(() => {
             this.hideTouchHoldInfo();
-            console.log('🕐 Touch tooltip auto-hidden after 5 seconds');
-        }, 5000);
+            console.log('🕐 Touch tooltip auto-hidden after 2 seconds');
+        }, 2000);
     }
 
     hideTouchHoldInfo() {
@@ -3822,7 +3858,7 @@ class UIManager {
             <div class="multi-selection-info">
                 <div class="selection-header">
                     <h3>🏢 ${buildings.length} Edifícios Selecionados</h3>
-                    <button class="deselect-btn" onclick="window.uiManager.clearBuildingSelectionInfo()">✖️ Fechar</button>
+                    <button class="deselect-btn" data-action="close-multi">✖️ Fechar</button>
                 </div>
                 <div class="multi-selection-list">
         `;
@@ -3895,7 +3931,50 @@ class UIManager {
         detailsPanel.style.display = 'flex';
         this.updatePanelState('multi-selection');
 
+        // ===== FIX: Add proper event listener for close button (mobile-friendly) =====
+        const closeBtn = detailsContent.querySelector('.deselect-btn[data-action="close-multi"]');
+        if (closeBtn) {
+            // Remove any existing listeners
+            const newCloseBtn = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+
+            // Add both click and touchend for mobile compatibility
+            const handleClose = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.clearBuildingSelectionInfo();
+                // Close mobile panel if on mobile
+                if (this.isMobile) {
+                    this.closeMobilePanel('right');
+                }
+                console.log('✅ Multi-selection panel closed via button');
+            };
+
+            newCloseBtn.addEventListener('click', handleClose);
+            newCloseBtn.addEventListener('touchend', handleClose, { passive: false });
+        }
+
         console.log(`📋 Multi-selection info displayed for ${buildings.length} buildings`);
+
+        // Update selection counter badge with number of selected buildings
+        this.updateSelectionCounterBadge(buildings.length);
+    }
+
+    // ===== SELECTION COUNTER BADGE UPDATE =====
+    updateSelectionCounterBadge(count) {
+        if (!this.isMobile) return; // Only show on mobile
+
+        const badge = document.querySelector('.selection-counter-badge');
+        if (!badge) return;
+
+        if (count > 0) {
+            badge.textContent = count.toString();
+            badge.style.display = 'flex';
+            console.log(`📊 Selection counter badge updated: ${count} building(s)`);
+        } else {
+            badge.style.display = 'none';
+            console.log('📊 Selection counter badge hidden');
+        }
     }
 
     // ===== MISSION OBJECTIVE CLICK HANDLERS =====
