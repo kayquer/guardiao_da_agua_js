@@ -3297,13 +3297,14 @@ class UIManager {
                                 pickResult.pickedMesh.metadata &&
                                 pickResult.pickedMesh.metadata.buildingId) {
 
-                                // Tapped on a building - show selection info
+                                // Tapped on a building - use GameManager's selectBuilding for full aura effect
                                 const buildingId = pickResult.pickedMesh.metadata.buildingId;
                                 const building = this.gameManager.buildingSystem.buildings.get(buildingId);
 
                                 if (building) {
-                                    this.showBuildingSelectionInfo(building);
-                                    console.log(`🏢 Building selected via tap: ${building.config.name}`);
+                                    // ===== FIX: Call GameManager.selectBuilding to trigger aura effect =====
+                                    this.gameManager.selectBuilding(building);
+                                    console.log(`🏢 Building selected via tap with aura: ${building.config.name}`);
                                 }
                             } else {
                                 // Trigger Babylon.js scene picking for terrain/other interactions
@@ -3354,8 +3355,8 @@ class UIManager {
             const building = this.gameManager.buildingSystem.buildings.get(buildingId);
 
             if (building) {
-                // Display full building info in details panel instead of just tooltip
-                this.showBuildingSelectionInfo(building);
+                // ===== FIX: Use GameManager.selectBuilding to trigger aura effect =====
+                this.gameManager.selectBuilding(building);
 
                 // Also show a quick tooltip for immediate feedback
                 infoTitle = building.config.name;
@@ -3400,7 +3401,7 @@ class UIManager {
     }
 
     displayTouchTooltip(x, y, title, text) {
-        // Remove existing tooltip
+        // Remove existing tooltip and clear any existing timeout
         this.hideTouchHoldInfo();
 
         // Create tooltip element
@@ -3451,9 +3452,25 @@ class UIManager {
         if (rect.bottom > window.innerHeight) {
             tooltip.style.top = `${y - rect.height - 20}px`;
         }
+
+        // ===== AUTO-HIDE: Automatically hide tooltip after 5 seconds =====
+        if (this.tooltipAutoHideTimer) {
+            clearTimeout(this.tooltipAutoHideTimer);
+        }
+
+        this.tooltipAutoHideTimer = setTimeout(() => {
+            this.hideTouchHoldInfo();
+            console.log('🕐 Touch tooltip auto-hidden after 5 seconds');
+        }, 5000);
     }
 
     hideTouchHoldInfo() {
+        // Clear auto-hide timer if it exists
+        if (this.tooltipAutoHideTimer) {
+            clearTimeout(this.tooltipAutoHideTimer);
+            this.tooltipAutoHideTimer = null;
+        }
+
         const tooltip = document.getElementById('touch-hold-tooltip');
         if (tooltip) {
             tooltip.remove();

@@ -23,29 +23,6 @@ class QuestSystem {
         // Configurações
         this.maxActiveQuests = 3;
 
-        // ===== ENHANCED MISSION SYSTEM =====
-        // Mission chains for connected storylines
-        this.missionChains = new Map();
-        this.activeChains = new Set();
-
-        // Player choices and consequences
-        this.playerChoices = new Map();
-        this.reputation = {
-            citizens: 50,      // Citizen satisfaction with decisions
-            environment: 50,   // Environmental groups approval
-            business: 50,      // Business community support
-            government: 50     // Government/regulatory approval
-        };
-
-        // Dynamic mission state
-        this.seasonalEvents = new Map();
-        this.emergencyEvents = new Set();
-        this.missionNotifications = [];
-
-        // Enhanced timing system
-        this.urgentMissions = new Set();
-        this.timeWindowMissions = new Map();
-
         // ===== SIMPLIFIED MISSION CATEGORIES - ONLY 2 PRIMARY CATEGORIES =====
         this.missionCategories = {
             primary: {
@@ -1035,40 +1012,17 @@ class QuestSystem {
 
         this.quests.set(id, quest);
 
-        // Register mission chain if specified
-        if (quest.chainId) {
-            this.registerMissionChain(quest.chainId, id, quest.chainPosition);
-        }
+        // ===== AUTO-ACTIVATION: Automatically activate missions when they become available =====
+        // Check if mission can be auto-activated (prerequisites met, not exceeding max active)
+        setTimeout(() => {
+            if (this.canStartMission(id)) {
+                this.startQuest(id);
+                console.log(`🎯 Mission auto-activated: ${quest.title}`);
+            }
+        }, 100); // Small delay to ensure game is fully initialized
     }
 
-    // ===== ENHANCED MISSION CHAIN SYSTEM =====
-    registerMissionChain(chainId, missionId, position) {
-        if (!this.missionChains.has(chainId)) {
-            this.missionChains.set(chainId, []);
-        }
 
-        const chain = this.missionChains.get(chainId);
-        chain[position] = missionId;
-
-        // Sort chain by position
-        chain.sort((a, b) => {
-            const questA = this.quests.get(a);
-            const questB = this.quests.get(b);
-            return (questA?.chainPosition || 0) - (questB?.chainPosition || 0);
-        });
-    }
-
-    getNextMissionInChain(chainId, currentPosition) {
-        const chain = this.missionChains.get(chainId);
-        if (!chain) return null;
-
-        const nextIndex = chain.findIndex(missionId => {
-            const quest = this.quests.get(missionId);
-            return quest && quest.chainPosition > currentPosition;
-        });
-
-        return nextIndex >= 0 ? chain[nextIndex] : null;
-    }
     
     // ===== CONTROLE DE MISSÕES =====
     startFirstQuest() {
@@ -1136,18 +1090,6 @@ class QuestSystem {
         // Aplicar recompensas (with scaling if enabled)
         this.applyQuestRewards(quest, performanceMultiplier);
 
-        // Handle mission chain progression
-        if (quest.chainId) {
-            this.progressMissionChain(quest.chainId, quest.chainPosition);
-        }
-
-        // Apply reputation changes based on stakeholders
-        this.updateReputation(quest);
-
-        // Remove from urgent missions if applicable
-        this.urgentMissions.delete(questId);
-
-        // Verificar próximas missões
         this.checkUnlockConditions();
 
         // Atualizar UI
@@ -1172,39 +1114,7 @@ class QuestSystem {
         return true;
     }
 
-    // ===== ENHANCED MISSION PROGRESSION =====
-    progressMissionChain(chainId, completedPosition) {
-        const nextMissionId = this.getNextMissionInChain(chainId, completedPosition);
 
-        if (nextMissionId) {
-            const nextMission = this.quests.get(nextMissionId);
-            if (nextMission && nextMission.status === 'locked') {
-                nextMission.status = 'available';
-
-                // Notify player about new mission
-                if (this.gameManager.uiManager) {
-                    this.gameManager.uiManager.showNotification(
-                        `🔓 Nova missão desbloqueada: ${nextMission.title}`,
-                        'info',
-                        6000
-                    );
-                }
-
-                console.log(`🔓 Missão da cadeia desbloqueada: ${nextMission.title}`);
-            }
-        } else {
-            // Chain completed
-            this.activeChains.delete(chainId);
-
-            if (this.gameManager.uiManager) {
-                this.gameManager.uiManager.showNotification(
-                    `🏆 Série de missões completa!`,
-                    'success',
-                    4000
-                );
-            }
-        }
-    }
 
     calculatePerformanceMultiplier(quest) {
         if (!quest.scalingRewards) return 1.0;
@@ -1519,12 +1429,7 @@ class QuestSystem {
             console.log(`⭐ Experiência ganha: ${scaledExp}`);
         }
 
-        // Reputation changes
-        if (quest.rewards.reputation) {
-            Object.entries(quest.rewards.reputation).forEach(([group, change]) => {
-                this.modifyReputation(group, change);
-            });
-        }
+
 
         // Special unlocks based on performance
         if (quest.rewards.performanceUnlocks && performanceMultiplier >= 1.5) {
@@ -1535,48 +1440,7 @@ class QuestSystem {
         }
     }
 
-    // ===== REPUTATION SYSTEM =====
-    updateReputation(quest) {
-        if (!quest.stakeholders || quest.stakeholders.length === 0) return;
 
-        // Base reputation change based on quest completion
-        const baseChange = quest.type === 'challenge' ? 3 : 2;
-
-        quest.stakeholders.forEach(stakeholder => {
-            this.modifyReputation(stakeholder, baseChange);
-        });
-    }
-
-    modifyReputation(group, change) {
-        if (this.reputation.hasOwnProperty(group)) {
-            this.reputation[group] = Math.max(0, Math.min(100, this.reputation[group] + change));
-
-            if (Math.abs(change) >= 5) {
-                const direction = change > 0 ? 'melhorou' : 'piorou';
-                const emoji = change > 0 ? '👍' : '👎';
-
-                if (this.gameManager.uiManager) {
-                    this.gameManager.uiManager.showNotification(
-                        `${emoji} Reputação com ${this.getStakeholderName(group)} ${direction}`,
-                        change > 0 ? 'success' : 'warning',
-                        3000
-                    );
-                }
-            }
-
-            console.log(`📊 Reputação ${group}: ${this.reputation[group]} (${change > 0 ? '+' : ''}${change})`);
-        }
-    }
-
-    getStakeholderName(group) {
-        const names = {
-            citizens: 'Cidadãos',
-            environment: 'Ambientalistas',
-            business: 'Empresários',
-            government: 'Governo'
-        };
-        return names[group] || group;
-    }
 
     // ===== INTERACTIVE CHOICE SYSTEM =====
     presentChoice(questId, choiceId) {
@@ -1623,22 +1487,10 @@ class QuestSystem {
 
         const selectedOption = choice.options[optionIndex];
 
-        // Store player choice
-        this.playerChoices.set(`${questId}_${choiceId}`, {
-            questId,
-            choiceId,
-            optionIndex,
-            option: selectedOption,
-            timestamp: Date.now()
-        });
-
-        // Apply immediate consequences
         this.applyChoiceConsequences(selectedOption.consequences);
 
-        // Remove choice from quest (can only choose once)
         quest.choices = quest.choices.filter(c => c.id !== choiceId);
 
-        // Notify player
         if (this.gameManager.uiManager) {
             this.gameManager.uiManager.showNotification(
                 `Decisão tomada: ${selectedOption.text}`,
@@ -1653,14 +1505,6 @@ class QuestSystem {
     applyChoiceConsequences(consequences) {
         if (!consequences) return;
 
-        // Apply reputation changes
-        if (consequences.reputation) {
-            Object.entries(consequences.reputation).forEach(([group, change]) => {
-                this.modifyReputation(group, change);
-            });
-        }
-
-        // Apply budget changes
         if (consequences.budget && this.gameManager.resourceManager) {
             this.gameManager.resourceManager.resources.budget.current += consequences.budget;
 
@@ -1671,18 +1515,9 @@ class QuestSystem {
             }
         }
 
-        // Apply time limit changes
         if (consequences.timeLimit) {
-            // TODO: Implement dynamic time limit changes
             console.log(`⏰ Limite de tempo alterado: ${consequences.timeLimit}s`);
         }
-
-        // Apply other consequences
-        Object.entries(consequences).forEach(([key, value]) => {
-            if (!['reputation', 'budget', 'timeLimit'].includes(key)) {
-                console.log(`🔄 Consequência aplicada: ${key} = ${value}`);
-            }
-        });
     }
 
     // ===== ENHANCED MISSION MANAGEMENT =====

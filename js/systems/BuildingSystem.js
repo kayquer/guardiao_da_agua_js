@@ -28,10 +28,6 @@ class BuildingSystem {
         // Materiais
         this.materials = new Map();
         
-        // Configurações
-        this.showConstructionPreview = true;
-        this.previewMesh = null;
-
         // Sistema de preview avançado
         this.previewMode = false;
         this.previewMarker = null;
@@ -1362,6 +1358,51 @@ class BuildingSystem {
         this.materials.set('error', errorMaterial);
     }
     
+    /**
+     * Helper para fazer merge de meshes com configurações corretas
+     * @param {BABYLON.Mesh[]} meshes - Array de meshes para combinar
+     * @param {string} name - Nome do mesh resultante
+     * @param {BABYLON.Material} [material=null] - Material opcional para aplicar antes do merge
+     * @returns {BABYLON.Mesh} - Mesh combinado visível
+     */
+    mergeVisibleMeshes(meshes, name, material = null) {
+        // ✅ FIX: Aplicar material temporário ANTES do merge para preservar visibilidade
+        if (material) {
+            meshes.forEach(mesh => {
+                if (mesh && mesh.material === undefined) {
+                    mesh.material = material;
+                }
+            });
+        } else {
+            // Criar material padrão se nenhum for fornecido
+            const defaultMaterial = new BABYLON.StandardMaterial(`temp_${name}`, this.scene);
+            defaultMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+            defaultMaterial.backFaceCulling = false;
+            meshes.forEach(mesh => {
+                if (mesh && !mesh.material) {
+                    mesh.material = defaultMaterial;
+                }
+            });
+        }
+        
+        const merged = BABYLON.Mesh.MergeMeshes(
+            meshes,
+            true,  // disposeSource - libera memória dos originais
+            false, // allow32BitsIndices
+            undefined, // meshSubclass
+            false, // subdivideWithSubMeshes
+            true   // multiMultiMaterials - preserva materiais
+        );
+        
+        if (merged) {
+            merged.name = name;
+            merged.isVisible = true;
+            merged.setEnabled(true);
+        }
+        
+        return merged;
+    }
+    
     // ===== CONSTRUÇÃO =====
     canPlaceBuilding(gridX, gridZ, buildingTypeId) {
         const buildingType = this.buildingTypes.get(buildingTypeId);
@@ -1517,6 +1558,20 @@ class BuildingSystem {
             constructionStartTime: Date.now()
         };
 
+        // ===== FIX: Update mesh metadata with buildingId for touch interaction =====
+        if (building.metadata) {
+            building.metadata.buildingId = buildingId;
+        } else {
+            building.metadata = {
+                building: true,
+                buildingId: buildingId,
+                buildingType: buildingType.id,
+                gridX,
+                gridZ
+            };
+        }
+        console.log(`✅ Mesh metadata updated with buildingId: ${buildingId}`);
+
         // ===== BUILDING CREATION LOG =====
         console.log(`🏗️ Building created: ${buildingId} (${buildingTypeId}) at (${gridX}, ${gridZ})`);
         console.log(`   📊 Total buildings: ${this.buildings.size + 1}`);
@@ -1587,8 +1642,18 @@ class BuildingSystem {
         // ===== STANDARDIZED POSITIONING SYSTEM =====
         this.applyStandardizedPositioning(standardizedMesh, gridX, gridZ, buildingType);
 
-        // ===== STANDARDIZED MATERIAL APPLICATION =====
-        this.applyStandardizedMaterial(standardizedMesh, buildingType);
+        // ✅ FIX: Garantir que a rotação inicial seja sempre (0, 0, 0) alinhada ao grid
+        standardizedMesh.rotation = BABYLON.Vector3.Zero();
+        console.log(`🎯 Rotação do mesh definida para (0, 0, 0) - alinhada ao grid`);
+
+        // ===== STANDARDIZED MATERIAL APPLICATION ===
+        // ✅ FIX: Apenas aplicar material se o mesh ainda não tiver um (meshes não-merged já têm material)
+        if (!standardizedMesh.material) {
+            this.applyStandardizedMaterial(standardizedMesh, buildingType);
+            console.log(`🎨 Material aplicado para ${buildingType.name} (mesh não-merged)`);
+        } else {
+            console.log(`✅ Material preservado do merge para ${buildingType.name}`);
+        }
 
         // ===== STANDARDIZED SHADOW SYSTEM =====
         this.applyStandardizedShadows(standardizedMesh);
@@ -1834,10 +1899,7 @@ class BuildingSystem {
         }, this.scene);
         tower.position.y = dimensions.height * 0.5;
 
-        const merged = BABYLON.Mesh.MergeMeshes([base, tower]);
-        merged.name = `waterFacility_${buildingType.id}`;
-
-        return merged;
+        return this.mergeVisibleMeshes([base, tower], `waterFacility_${buildingType.id}`);
     }
 
     /**
@@ -1882,10 +1944,7 @@ class BuildingSystem {
         const tower2 = tower1.clone("powerTower2");
         tower2.position.x = -dimensions.width * 0.25;
 
-        const merged = BABYLON.Mesh.MergeMeshes([main, tower1, tower2]);
-        merged.name = `powerPlant_${buildingType.id}`;
-
-        return merged;
+        return this.mergeVisibleMeshes([main, tower1, tower2], `powerPlant_${buildingType.id}`);
     }
 
     /**
@@ -1928,10 +1987,7 @@ class BuildingSystem {
         panel4.position.x = dimensions.width * 0.25;
         panel4.position.z = dimensions.depth * 0.2;
 
-        const merged = BABYLON.Mesh.MergeMeshes([base, panel1, panel2, panel3, panel4]);
-        merged.name = `solarFarm_${buildingType.id}`;
-
-        return merged;
+        return this.mergeVisibleMeshes([base, panel1, panel2, panel3, panel4], `solarFarm_${buildingType.id}`);
     }
 
     /**
@@ -1980,10 +2036,7 @@ class BuildingSystem {
         const blade3 = blade1.clone("windBlade3");
         blade3.rotation.z = 4 * Math.PI / 3;
 
-        const merged = BABYLON.Mesh.MergeMeshes([base, tower, nacelle, blade1, blade2, blade3]);
-        merged.name = `windFarm_${buildingType.id}`;
-
-        return merged;
+        return this.mergeVisibleMeshes([base, tower, nacelle, blade1, blade2, blade3], `windFarm_${buildingType.id}`);
     }
 
     /**
@@ -2009,10 +2062,7 @@ class BuildingSystem {
         }, this.scene);
         crossArm.position.y = dimensions.height * 0.8;
 
-        const merged = BABYLON.Mesh.MergeMeshes([pole, crossArm]);
-        merged.name = `powerPole_${buildingType.id}`;
-
-        return merged;
+        return this.mergeVisibleMeshes([pole, crossArm], `powerPole_${buildingType.id}`);
     }
 
     /**
@@ -2046,10 +2096,7 @@ class BuildingSystem {
         turbine.position.y = dimensions.height * 0.5;
         turbine.position.z = dimensions.depth * 0.2;
 
-        const merged = BABYLON.Mesh.MergeMeshes([main, dam, turbine]);
-        merged.name = `hydroelectric_${buildingType.id}`;
-
-        return merged;
+        return this.mergeVisibleMeshes([main, dam, turbine], `hydroelectric_${buildingType.id}`);
     }
 
     /**
@@ -2087,10 +2134,7 @@ class BuildingSystem {
         const tower2 = tower1.clone("nuclearTower2");
         tower2.position.x = -dimensions.width * 0.4;
 
-        const merged = BABYLON.Mesh.MergeMeshes([main, dome, tower1, tower2]);
-        merged.name = `nuclear_${buildingType.id}`;
-
-        return merged;
+        return this.mergeVisibleMeshes([main, dome, tower1, tower2], `nuclear_${buildingType.id}`);
     }
 
     /**
@@ -2116,10 +2160,7 @@ class BuildingSystem {
         chimney.position.y = dimensions.height * 0.85;
         chimney.position.x = dimensions.width * 0.3;
 
-        const merged = BABYLON.Mesh.MergeMeshes([main, chimney]);
-        merged.name = `treatmentPlant_${buildingType.id}`;
-
-        return merged;
+        return this.mergeVisibleMeshes([main, chimney], `treatmentPlant_${buildingType.id}`);
     }
 
     /**
@@ -2266,10 +2307,7 @@ class BuildingSystem {
         roof.position.y = dimensions.height * 0.6;
         roof.scaling.y = 0.5;
 
-        const merged = BABYLON.Mesh.MergeMeshes([base, roof]);
-        merged.name = `house_${buildingType.id}`;
-
-        return merged;
+        return this.mergeVisibleMeshes([base, roof], `house_${buildingType.id}`);
     }
 
     /**
@@ -2305,29 +2343,27 @@ class BuildingSystem {
      * @param {Object} dimensions - Standardized dimensions
      * @returns {BABYLON.Mesh} - The building mesh
      */
-    createStandardizedPublicBuildingMesh(buildingType, dimensions) {
-        if (buildingType.id === 'city_hall') {
-            // City Hall with distinctive architecture
-            const base = BABYLON.MeshBuilder.CreateBox("cityHallBase", {
-                width: dimensions.width,
-                height: dimensions.height * 0.8,
-                depth: dimensions.depth
-            }, this.scene);
+createStandardizedPublicBuildingMesh(buildingType, dimensions) {
+    if (buildingType.id === 'city_hall') {
+        // City Hall with distinctive architecture
+        const base = BABYLON.MeshBuilder.CreateBox("cityHallBase", {
+            width: dimensions.width,
+            height: dimensions.height * 0.8,
+            depth: dimensions.depth
+        }, this.scene);
 
-            const tower = BABYLON.MeshBuilder.CreateBox("cityHallTower", {
-                width: dimensions.width * 0.4,
-                height: dimensions.height * 0.6,
-                depth: dimensions.depth * 0.4
-            }, this.scene);
-            tower.position.y = dimensions.height * 0.7;
+        const tower = BABYLON.MeshBuilder.CreateBox("cityHallTower", {
+            width: dimensions.width * 0.4,
+            height: dimensions.height * 0.6,
+            depth: dimensions.depth * 0.4
+        }, this.scene);
+        tower.position.y = dimensions.height * 0.7;
 
-            const merged = BABYLON.Mesh.MergeMeshes([base, tower]);
-            merged.name = `cityHall_${buildingType.id}`;
-            return merged;
-        }
-
-        return this.createStandardizedBasicMesh(buildingType, dimensions);
+        return this.mergeVisibleMeshes([base, tower], `cityHall_${buildingType.id}`);
     }
+
+    return this.createStandardizedBasicMesh(buildingType, dimensions);
+}
 
     /**
      * Creates standardized building shadow with proper alignment
@@ -2479,8 +2515,7 @@ class BuildingSystem {
         tower.position.y = 0.75;
 
         // Combinar meshes
-        const merged = BABYLON.Mesh.MergeMeshes([base, tower]);
-        merged.name = `waterFacility_${buildingType.id}`;
+        const merged = this.mergeVisibleMeshes([base, tower], `waterFacility_${buildingType.id}`);
 
         // ===== FIX: Adjust position for multi-cell buildings =====
         if (buildingSize > 1) {
@@ -2515,8 +2550,7 @@ class BuildingSystem {
         chimney.position.y = 2.0;
         chimney.position.x = actualSize * 0.3;
 
-        const merged = BABYLON.Mesh.MergeMeshes([main, chimney]);
-        merged.name = `treatmentPlant_${buildingType.id}`;
+        const merged = this.mergeVisibleMeshes([main, chimney], `treatmentPlant_${buildingType.id}`);
 
         // ===== FIX: Adjust position for multi-cell buildings =====
         if (buildingSize > 1) {
@@ -2578,8 +2612,7 @@ class BuildingSystem {
         roof.position.y = 1.9;
         roof.scaling.y = 0.5; // Achatar para parecer telhado
 
-        const merged = BABYLON.Mesh.MergeMeshes([base, roof]);
-        merged.name = `house_${buildingType.id}`;
+        const merged = this.mergeVisibleMeshes([base, roof], `house_${buildingType.id}`);
 
         // ===== FIX: Adjust position for multi-cell buildings =====
         if (buildingSize > 1) {
@@ -2618,8 +2651,7 @@ class BuildingSystem {
         const tower2 = tower1.clone("powerTower2");
         tower2.position.x = -actualSize * 0.3;
 
-        const merged = BABYLON.Mesh.MergeMeshes([main, tower1, tower2]);
-        merged.name = `powerPlant_${buildingType.id}`;
+        const merged = this.mergeVisibleMeshes([main, tower1, tower2], `powerPlant_${buildingType.id}`);
 
         // ===== FIX: Adjust position for multi-cell buildings =====
         if (buildingSize > 1) {
@@ -2713,8 +2745,7 @@ class BuildingSystem {
             roof.position.y = 4.0;
             roof.rotation.y = Math.PI / 4;
 
-            const merged = BABYLON.Mesh.MergeMeshes([base, column1, column2, column3, roof]);
-            merged.name = `cityHall_${buildingType.id}`;
+            const merged = this.mergeVisibleMeshes([base, column1, column2, column3, roof], `cityHall_${buildingType.id}`);
 
             // ===== FIX: Ajustar posição para edifícios multi-célula =====
             if (buildingSize > 1) {
@@ -3021,7 +3052,7 @@ class BuildingSystem {
             }, this.scene);
             cylinder.position.y = 1.1;
 
-            mesh = BABYLON.Mesh.MergeMeshes([base, cylinder]);
+            mesh = this.mergeVisibleMeshes([base, cylinder], `pump_${type}`);
 
         } else if (type === 'water_well') {
             // ===== WATER WELL - STANDARDIZED SCALING =====
@@ -3037,7 +3068,7 @@ class BuildingSystem {
             }, this.scene);
             ring.position.y = 0.35;
 
-            mesh = BABYLON.Mesh.MergeMeshes([well, ring]);
+            mesh = this.mergeVisibleMeshes([well, ring], `well_${type}`);
 
         } else if (type === 'desalination_plant') {
             // ===== DESALINATION PLANT - STANDARDIZED SCALING =====
@@ -3055,7 +3086,7 @@ class BuildingSystem {
             tower.position.x = actualSize * 0.3;
             tower.position.y = 2.0;
 
-            mesh = BABYLON.Mesh.MergeMeshes([main, tower]);
+            mesh = this.mergeVisibleMeshes([main, tower], `desal_${type}`);
         }
 
         // ===== STANDARDIZED POSITIONING: Multi-cell building support =====
@@ -3101,7 +3132,7 @@ class BuildingSystem {
         tank2.position.x = tankOffset;
         tank2.position.y = 1.5;
 
-        const merged = BABYLON.Mesh.MergeMeshes([main, tank1, tank2]);
+        const merged = this.mergeVisibleMeshes([main, tank1, tank2], `treatment_${type}`);
 
         // ===== STANDARDIZED POSITIONING: Multi-cell building support =====
         if (buildingSize > 1) {
@@ -3138,7 +3169,7 @@ class BuildingSystem {
             }, this.scene);
             tank.position.y = 2.4; // Position on top of base
 
-            const merged = BABYLON.Mesh.MergeMeshes([base, tank]);
+            const merged = this.mergeVisibleMeshes([base, tank], `tower_${type}`);
 
             // ===== STANDARDIZED POSITIONING: Multi-cell building support =====
             if (buildingSize > 1) {
@@ -3196,7 +3227,7 @@ class BuildingSystem {
             roof.position.y = 1.5;
             roof.rotation.y = Math.PI / 4;
 
-            return BABYLON.Mesh.MergeMeshes([base, roof]);
+            return this.mergeVisibleMeshes([base, roof], `house_${type}`);
 
         } else if (type === 'apartment') {
             // ===== FIX: Prédio com dimensões baseadas no tamanho real (size=2) =====
@@ -3257,7 +3288,7 @@ class BuildingSystem {
             }, this.scene);
             tree.position.y = 0.8;
 
-            return BABYLON.Mesh.MergeMeshes([base, tree]);
+            return this.mergeVisibleMeshes([base, tree], `plaza_${typeOrBuildingType}`);
 
         }
 
@@ -3306,7 +3337,7 @@ class BuildingSystem {
                 turbine2.position.x = 1.5;
                 turbine2.position.y = 1.5;
 
-                mesh = BABYLON.Mesh.MergeMeshes([main, turbine1, turbine2]);
+                mesh = this.mergeVisibleMeshes([main, turbine1, turbine2], `hydro_${type}`);
 
             } else if (type === 'power_pole') {
                 // Poste de energia - torre alta e fina
@@ -3319,7 +3350,7 @@ class BuildingSystem {
                 }, this.scene);
                 crossbar.position.y = 2.5;
 
-                mesh = BABYLON.Mesh.MergeMeshes([pole, crossbar]);
+                mesh = this.mergeVisibleMeshes([pole, crossbar], `pole_${type}`);
 
             } else if (type === 'thermal_plant') {
                 // Termelétrica - edifício industrial com chaminés
@@ -3339,7 +3370,7 @@ class BuildingSystem {
                 chimney2.position.x = 1;
                 chimney2.position.y = 2.25;
 
-                mesh = BABYLON.Mesh.MergeMeshes([main, chimney1, chimney2]);
+                mesh = this.mergeVisibleMeshes([main, chimney1, chimney2], `thermal_${type}`);
 
             } else if (type === 'nuclear_plant') {
                 // Usina nuclear - domo característico
@@ -3358,7 +3389,7 @@ class BuildingSystem {
                 tower.position.x = 2.5;
                 tower.position.y = 2.5;
 
-                mesh = BABYLON.Mesh.MergeMeshes([base, dome, tower]);
+                mesh = this.mergeVisibleMeshes([base, dome, tower], `nuclear_${type}`);
 
             } else if (type === 'coal_plant') {
                 // Usina a carvão - similar à termelétrica mas mais simples
@@ -3371,7 +3402,7 @@ class BuildingSystem {
                 }, this.scene);
                 chimney.position.y = 2.5;
 
-                mesh = BABYLON.Mesh.MergeMeshes([main, chimney]);
+                mesh = this.mergeVisibleMeshes([main, chimney], `coal_${type}`);
 
             } else if (type === 'solar_farm') {
                 // Fazenda solar - painéis solares
@@ -3393,7 +3424,7 @@ class BuildingSystem {
                 panel2.position.y = 0.8;
                 panel2.rotation.z = Math.PI / 6;
 
-                mesh = BABYLON.Mesh.MergeMeshes([base, panel1, panel2]);
+                mesh = this.mergeVisibleMeshes([base, panel1, panel2], `solar_${type}`);
 
             } else if (type === 'wind_farm') {
                 // Campo eólico - turbinas eólicas
@@ -3432,7 +3463,7 @@ class BuildingSystem {
                 blade3.position.x = 0.75;
                 blade3.rotation.z = 4 * Math.PI / 3;
 
-                mesh = BABYLON.Mesh.MergeMeshes([base, tower, nacelle, blade1, blade2, blade3]);
+                mesh = this.mergeVisibleMeshes([base, tower, nacelle, blade1, blade2, blade3], `wind_${type}`);
             }
 
             return mesh;
@@ -4228,164 +4259,362 @@ class BuildingSystem {
         }
     }
 
-    // ===== INDICADORES VISUAIS DE CONSTRUÇÃO =====
-    createConstructionIndicator(buildingData) {
-        const worldPos = this.gridManager.gridToWorld(buildingData.gridX, buildingData.gridZ);
+    // ===== FUNÇÃO REUTILIZÁVEL PARA CRIAR PLAQUINHAS DE TEXTO CARTOON =====
+createCartoonTextPlate(id, position, initialText = "", options = {}) {
+    // Presets de cores
+    const colorPresets = {
+        green: {
+            bgColor: "rgba(0, 100, 20, 0.95)",
+            highlightColor: "rgba(100, 255, 100, 0.3)",
+            outlineColor: "rgba(0, 40, 0, 1)",
+            textColor: "white",
+            emissiveColor: new BABYLON.Color3(0.5, 1, 0.5)
+        },
+        red: {
+            bgColor: "rgba(180, 20, 20, 0.95)",
+            highlightColor: "rgba(255, 100, 100, 0.3)",
+            outlineColor: "rgba(80, 0, 0, 1)",
+            textColor: "#FF4444",
+            emissiveColor: new BABYLON.Color3(1, 0.2, 0.2)
+        },
+        blue: {
+            bgColor: "rgba(20, 100, 200, 0.95)",
+            highlightColor: "rgba(100, 150, 255, 0.3)",
+            outlineColor: "rgba(0, 40, 100, 1)",
+            textColor: "#00CCFF",
+            emissiveColor: new BABYLON.Color3(0.2, 0.6, 1)
+        },
+        yellow: {
+            bgColor: "rgba(200, 180, 0, 0.95)",
+            highlightColor: "rgba(255, 255, 100, 0.3)",
+            outlineColor: "rgba(100, 80, 0, 1)",
+            textColor: "yellow",
+            emissiveColor: new BABYLON.Color3(1, 1, 0.2)
+        },
+        orange: {
+            bgColor: "rgba(200, 100, 0, 0.95)",
+            highlightColor: "rgba(255, 150, 50, 0.3)",
+            outlineColor: "rgba(100, 40, 0, 1)",
+            textColor: "#FFA500",
+            emissiveColor: new BABYLON.Color3(1, 0.6, 0)
+        },
+        purple: {
+            bgColor: "rgba(120, 20, 180, 0.95)",
+            highlightColor: "rgba(200, 100, 255, 0.3)",
+            outlineColor: "rgba(60, 0, 100, 1)",
+            textColor: "#CC00FF",
+            emissiveColor: new BABYLON.Color3(0.8, 0.2, 1)
+        }
+    };
 
-        // Criar barra de progresso 3D
-        const progressBar = BABYLON.MeshBuilder.CreateBox(`progress_${buildingData.id}`, {
-            width: 2,
-            height: 0.2,
-            depth: 0.4
-        }, this.scene);
+    // Aplicar preset se fornecido
+    let colors = {};
+    if (options.preset && colorPresets[options.preset]) {
+        colors = { ...colorPresets[options.preset] };
+    }
 
-        progressBar.position.x = worldPos.x;
-        progressBar.position.z = worldPos.z;
-        progressBar.position.y = 3; // Acima do edifício
+    // Opções padrão (podem sobrescrever o preset)
+    const config = {
+        width: 1.5,
+        height: 0.5,
+        textureWidth: 320,
+        textureHeight: 80,
+        fontSize: 44,
+        bgColor: colors.bgColor || "rgba(0, 100, 20, 0.95)",
+        highlightColor: colors.highlightColor || "rgba(100, 255, 100, 0.3)",
+        outlineColor: colors.outlineColor || "rgba(0, 40, 0, 1)",
+        textColor: colors.textColor || "white",
+        textOutlineColor: "rgba(0, 0, 0, 0.8)",
+        emissiveColor: colors.emissiveColor || new BABYLON.Color3(0.5, 1, 0.5),
+        borderRadius: 25,
+        outlineWidth: 6,
+        textOutlineWidth: 5,
+        billboard: true,
+        renderingGroupId: 2,
+        alphaIndex: 999,
+        ...options
+    };
 
-        // Material da barra de progresso
-        const progressMaterial = new BABYLON.StandardMaterial(`progressMat_${buildingData.id}`, this.scene);
-        progressMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.8, 0.2); // Verde
-        progressMaterial.emissiveColor = new BABYLON.Color3(0.1, 0.4, 0.1);
-        progressBar.material = progressMaterial;
+    // Criar plano para o texto
+    const textPlane = BABYLON.MeshBuilder.CreatePlane(`cartoonText_${id}`, {
+        width: config.width,
+        height: config.height
+    }, this.scene);
 
-        // Criar fundo da barra
-        const progressBg = BABYLON.MeshBuilder.CreateBox(`progressBg_${buildingData.id}`, {
-            width: 2.1,
-            height: 0.25,
-            depth: 0.45
-        }, this.scene);
-
-        progressBg.position.x = worldPos.x;
-        progressBg.position.z = worldPos.z;
-        progressBg.position.y = 2.98;
-
-        const bgMaterial = new BABYLON.StandardMaterial(`progressBgMat_${buildingData.id}`, this.scene);
-        bgMaterial.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3);
-        progressBg.material = bgMaterial;
-
-        // Criar texto de porcentagem com textura dinâmica
-        const textPlane = BABYLON.MeshBuilder.CreatePlane(`progressText_${buildingData.id}`, {
-            width: 1.5,
-            height: 0.5
-        }, this.scene);
-
-        textPlane.position.x = worldPos.x;
-        textPlane.position.z = worldPos.z;
-        textPlane.position.y = 3.8;
+    textPlane.position = position.clone();
+    
+    if (config.billboard) {
         textPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
-
-        // ===== Z-INDEX FIX: Configurar rendering group para indicadores de construção =====
-        textPlane.renderingGroupId = 2; // Mesmo grupo dos labels
-        textPlane.alphaIndex = 999; // Índice alto para garantir ordem de renderização
-
-        // Criar textura dinâmica para o texto de progresso
-        const progressTexture = new BABYLON.DynamicTexture(`progressTexture_${buildingData.id}`,
-            { width: 256, height: 64 }, this.scene);
-
-        // Material do texto com textura dinâmica
-        const textMaterial = new BABYLON.StandardMaterial(`textMat_${buildingData.id}`, this.scene);
-        textMaterial.diffuseTexture = progressTexture;
-        textMaterial.emissiveTexture = progressTexture;
-        textMaterial.emissiveColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-        textMaterial.backFaceCulling = false;
-        textMaterial.hasAlpha = true;
-
-        // ===== Z-INDEX FIX: Configurações de material para renderização por cima =====
-        textMaterial.disableDepthWrite = true;
-        textMaterial.needDepthPrePass = false;
-        textMaterial.separateCullingPass = false;
-
-        textPlane.material = textMaterial;
-
-        // Desenhar texto inicial (0%)
-        progressTexture.drawText("0%", null, null, "bold 32px Arial", "#FFFFFF", "#000000AA", true);
-
-        // Armazenar referências
-        buildingData.constructionIndicators = {
-            progressBar: progressBar,
-            progressBg: progressBg,
-            textPlane: textPlane
-        };
     }
 
-    updateConstructionIndicator(buildingData, progress) {
-        if (!buildingData.constructionIndicators) return;
+    // Configurar rendering
+    textPlane.renderingGroupId = config.renderingGroupId;
+    textPlane.alphaIndex = config.alphaIndex;
 
-        const { progressBar, textPlane } = buildingData.constructionIndicators;
+    // Criar textura dinâmica
+    const texture = new BABYLON.DynamicTexture(`cartoonTexture_${id}`,
+        { width: config.textureWidth, height: config.textureHeight }, this.scene, false);
 
-        // Atualizar largura da barra de progresso
-        progressBar.scaling.x = progress;
+    texture.hasAlpha = true;
 
-        // Atualizar cor baseada no progresso
-        const material = progressBar.material;
-        if (material) {
-            const red = 1 - progress;
-            const green = progress;
-            material.diffuseColor = new BABYLON.Color3(red, green, 0.2);
-            material.emissiveColor = new BABYLON.Color3(red * 0.5, green * 0.5, 0.1);
-        }
+    // Material
+    const material = new BABYLON.StandardMaterial(`cartoonMat_${id}`, this.scene);
+    material.diffuseTexture = texture;
+    material.emissiveTexture = texture;
+    material.emissiveColor = config.emissiveColor;
+    material.backFaceCulling = false;
+    material.opacityTexture = texture;
+    material.disableDepthWrite = true;
+    material.needDepthPrePass = false;
+    material.separateCullingPass = false;
 
-        // Atualizar texto de porcentagem real
-        const percentage = Math.floor(progress * 100);
-        if (textPlane.material && textPlane.material.diffuseTexture) {
-            try {
-                // Atualizar o texto na textura dinâmica
-                textPlane.material.diffuseTexture.drawText(`${percentage}%`, null, null,
-                    "bold 32px Arial", "#FFFFFF", "#000000AA", true);
-            } catch (error) {
-                console.warn('⚠️ Erro ao atualizar texto de progresso:', error);
-            }
-        }
+    textPlane.material = material;
+
+    // ===== FUNÇÃO DE DESENHO CARTOON =====
+    const drawCartoonText = (text) => {
+        const ctx = texture.getContext();
+        const centerX = config.textureWidth / 2;
+        const centerY = config.textureHeight / 2;
+        const boxWidth = config.textureWidth - 40;
+        const boxHeight = config.textureHeight - 20;
+        const radius = config.borderRadius;
+        
+        ctx.clearRect(0, 0, config.textureWidth, config.textureHeight);
+        
+        // Sombra
+        ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetX = 3;
+        ctx.shadowOffsetY = 3;
+        
+        // Desenhar retângulo arredondado - fundo
+        ctx.fillStyle = config.bgColor;
+        ctx.beginPath();
+        ctx.moveTo(centerX - boxWidth/2 + radius, centerY - boxHeight/2);
+        ctx.lineTo(centerX + boxWidth/2 - radius, centerY - boxHeight/2);
+        ctx.quadraticCurveTo(centerX + boxWidth/2, centerY - boxHeight/2, centerX + boxWidth/2, centerY - boxHeight/2 + radius);
+        ctx.lineTo(centerX + boxWidth/2, centerY + boxHeight/2 - radius);
+        ctx.quadraticCurveTo(centerX + boxWidth/2, centerY + boxHeight/2, centerX + boxWidth/2 - radius, centerY + boxHeight/2);
+        ctx.lineTo(centerX - boxWidth/2 + radius, centerY + boxHeight/2);
+        ctx.quadraticCurveTo(centerX - boxWidth/2, centerY + boxHeight/2, centerX - boxWidth/2, centerY + boxHeight/2 - radius);
+        ctx.lineTo(centerX - boxWidth/2, centerY - boxHeight/2 + radius);
+        ctx.quadraticCurveTo(centerX - boxWidth/2, centerY - boxHeight/2, centerX - boxWidth/2 + radius, centerY - boxHeight/2);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Resetar sombra
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        
+        // Contorno cartoon
+        ctx.strokeStyle = config.outlineColor;
+        ctx.lineWidth = config.outlineWidth;
+        ctx.stroke();
+        
+        // Highlight no topo (efeito 3D cartoon)
+        ctx.fillStyle = config.highlightColor;
+        ctx.beginPath();
+        ctx.moveTo(centerX - boxWidth/2 + radius, centerY - boxHeight/2);
+        ctx.lineTo(centerX + boxWidth/2 - radius, centerY - boxHeight/2);
+        ctx.quadraticCurveTo(centerX + boxWidth/2, centerY - boxHeight/2, centerX + boxWidth/2, centerY - boxHeight/2 + radius);
+        ctx.lineTo(centerX + boxWidth/2, centerY - boxHeight/2 + 15);
+        ctx.lineTo(centerX - boxWidth/2, centerY - boxHeight/2 + 15);
+        ctx.lineTo(centerX - boxWidth/2, centerY - boxHeight/2 + radius);
+        ctx.quadraticCurveTo(centerX - boxWidth/2, centerY - boxHeight/2, centerX - boxWidth/2 + radius, centerY - boxHeight/2);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Texto com contorno cartoon
+        ctx.font = `bold ${config.fontSize}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        
+        // Contorno preto grosso do texto
+        ctx.strokeStyle = config.textOutlineColor;
+        ctx.lineWidth = config.textOutlineWidth;
+        ctx.strokeText(text, centerX, centerY);
+        
+        // Texto principal
+        ctx.fillStyle = config.textColor;
+        ctx.fillText(text, centerX, centerY);
+        
+        // Brilho no texto (efeito cartoon)
+        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.fillText(text, centerX - 1, centerY - 2);
+        
+        texture.update();
+    };
+
+    // Desenhar texto inicial
+    if (initialText) {
+        drawCartoonText(initialText);
     }
 
-    removeConstructionVisuals(buildingData) {
-        // ===== FIX BUILDING VISIBILITY: Restore building to normal state =====
-
-        // Remover indicadores de progresso
-        if (buildingData.constructionIndicators) {
-            const { progressBar, progressBg, textPlane } = buildingData.constructionIndicators;
-
-            if (progressBar && !progressBar.isDisposed()) progressBar.dispose();
-            if (progressBg && !progressBg.isDisposed()) progressBg.dispose();
-            if (textPlane && !textPlane.isDisposed()) textPlane.dispose();
-
-            delete buildingData.constructionIndicators;
+    // Retornar objeto com referências
+    return {
+        mesh: textPlane,
+        texture: texture,
+        material: material,
+        updateText: drawCartoonText,
+        dispose: () => {
+            textPlane.dispose();
+            texture.dispose();
+            material.dispose();
         }
+    };
+}
+// ===== INDICADORES VISUAIS DE CONSTRUÇÃO (USANDO A FUNÇÃO REUTILIZÁVEL) =====
+createConstructionIndicator(buildingData) {
+    const worldPos = this.gridManager.gridToWorld(buildingData.gridX, buildingData.gridZ);
 
-        // ===== CRITICAL FIX: Restore building mesh to normal state =====
-        if (buildingData.mesh && !buildingData.mesh.isDisposed()) {
-            // Restore original scaling immediately
-            buildingData.mesh.scaling = buildingData.originalScaling || new BABYLON.Vector3(1, 1, 1);
+    // Criar barra de progresso 3D
+    const progressBar = BABYLON.MeshBuilder.CreateBox(`progress_${buildingData.id}`, {
+        width: 2,
+        height: 0.2,
+        depth: 0.4
+    }, this.scene);
 
-            // Restore original rotation
-            buildingData.mesh.rotation = buildingData.originalRotation || BABYLON.Vector3.Zero();
+    progressBar.position.x = worldPos.x;
+    progressBar.position.z = worldPos.z;
+    progressBar.position.y = 3;
 
-            // Restore original material if it exists
-            if (buildingData.originalMaterial) {
-                buildingData.mesh.material = buildingData.originalMaterial;
-            } else {
-                // Apply proper building material if original wasn't saved
-                this.applyStandardizedMaterial(buildingData.mesh, buildingData.config);
-            }
+    // Material da barra de progresso
+    const progressMaterial = new BABYLON.StandardMaterial(`progressMat_${buildingData.id}`, this.scene);
+    progressMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.8, 0.2);
+    progressMaterial.emissiveColor = new BABYLON.Color3(0.1, 0.4, 0.1);
+    progressBar.material = progressMaterial;
 
-            // Ensure mesh is visible
-            buildingData.mesh.isVisible = true;
-            buildingData.mesh.setEnabled(true);
+    // Criar fundo da barra
+    const progressBg = BABYLON.MeshBuilder.CreateBox(`progressBg_${buildingData.id}`, {
+        width: 2.1,
+        height: 0.25,
+        depth: 0.45
+    }, this.scene);
 
-            console.log(`🔧 Building mesh restored to normal state: ${buildingData.config.name}`);
+    progressBg.position.x = worldPos.x;
+    progressBg.position.z = worldPos.z;
+    progressBg.position.y = 2.98;
+
+    const bgMaterial = new BABYLON.StandardMaterial(`progressBgMat_${buildingData.id}`, this.scene);
+    bgMaterial.diffuseColor = new BABYLON.Color3(0.3, 0.3, 0.3);
+    progressBg.material = bgMaterial;
+
+    // ===== USAR A FUNÇÃO REUTILIZÁVEL PARA CRIAR PLAQUINHA =====
+    const textPosition = new BABYLON.Vector3(worldPos.x, 3.8, worldPos.z);
+    const textPlate = this.createCartoonTextPlate(
+        `progress_${buildingData.id}`,
+        textPosition,
+        "0%",
+        {
+            bgColor: "rgba(0, 100, 20, 0.95)", // Verde escuro
+            fontSize: 44
         }
+    );
 
-        // Remover efeitos visuais aprimorados
-        this.removeConstructionEffects(buildingData);
+    // Armazenar referências
+    buildingData.constructionIndicators = {
+        progressBar: progressBar,
+        progressBg: progressBg,
+        textPlate: textPlate
+    };
+}
+
+updateConstructionIndicator(buildingData, progress) {
+    if (!buildingData.constructionIndicators) return;
+
+    const { progressBar, textPlate } = buildingData.constructionIndicators;
+
+    // Atualizar largura da barra de progresso
+    progressBar.scaling.x = progress;
+
+    // Atualizar cor baseada no progresso
+    const material = progressBar.material;
+    if (material) {
+        const red = 1 - progress;
+        const green = progress;
+        material.diffuseColor = new BABYLON.Color3(red, green, 0.2);
+        material.emissiveColor = new BABYLON.Color3(red * 0.5, green * 0.5, 0.1);
     }
 
-    applyConstructionVisuals(buildingData) {
+    // Atualizar texto de porcentagem
+    const percentage = Math.floor(progress * 100);
+    if (textPlate && textPlate.updateText) {
+        try {
+            textPlate.updateText(`${percentage}%`);
+        } catch (error) {
+            console.warn('⚠️ Erro ao atualizar texto de progresso:', error);
+        }
+    }
+}
+
+  removeConstructionVisuals(buildingData) {
+    // ===== FIX BUILDING VISIBILITY: Restore building to normal state =====
+
+    // Remover indicadores de progresso
+    if (buildingData.constructionIndicators) {
+        const { progressBar, progressBg, textPlate } = buildingData.constructionIndicators;
+
+        // Remover barras de progresso
+        if (progressBar && !progressBar.isDisposed()) progressBar.dispose();
+        if (progressBg && !progressBg.isDisposed()) progressBg.dispose();
+        
+        // ===== USAR O MÉTODO DISPOSE DA PLAQUINHA =====
+        if (textPlate) {
+            textPlate.dispose(); // Já faz cleanup completo de mesh, texture e material
+        }
+
+        delete buildingData.constructionIndicators;
+    }
+
+    // ===== CRITICAL FIX: Restore building mesh to normal state =====
+    if (buildingData.mesh && !buildingData.mesh.isDisposed()) {
+        // ✅ FIX: Parar a animação de construção ANTES de restaurar visuais
+        if (buildingData.constructionAnimationData) {
+            buildingData.constructionAnimationData.isAnimating = false;
+        }
+
+        // Restore original scaling immediately
+        buildingData.mesh.scaling = buildingData.originalScaling || new BABYLON.Vector3(1, 1, 1);
+
+        // ✅ FIX: FORÇAR rotação para (0, 0, 0) para alinhamento perfeito com grid
+        buildingData.mesh.rotation = BABYLON.Vector3.Zero();
+        console.log(`🎯 Rotação FORÇADA para (0, 0, 0) - alinhamento perfeito ao grid`);
+
+        // ✅ FIX: Restaurar material original SEM sobrescrever com novo material
+        if (buildingData.originalMaterial) {
+            buildingData.mesh.material = buildingData.originalMaterial;
+            console.log(`♻️ Material original restaurado para ${buildingData.config.name}`);
+        }
+        // Se não houver material salvo, o mesh já deve ter o material do merge
+
+        // Ensure mesh is visible
+        buildingData.mesh.isVisible = true;
+        buildingData.mesh.setEnabled(true);
+
+        console.log(`🔧 Building mesh restored to normal state: ${buildingData.config.name}`);
+    }
+
+    // Remover efeitos visuais aprimorados
+    this.removeConstructionEffects(buildingData);
+}
+
+   applyConstructionVisuals(buildingData) {
         if (buildingData.mesh) {
+            // ✅ FIX: Garantir que a rotação esteja zerada antes de salvar
+            buildingData.mesh.rotation = BABYLON.Vector3.Zero();
+            
             // Aplicar efeito de construção aprimorado
             buildingData.mesh.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
-            buildingData.originalRotation = buildingData.mesh.rotation.clone();
+            buildingData.originalRotation = BABYLON.Vector3.Zero(); // Sempre (0, 0, 0) para grid
             buildingData.originalScaling = new BABYLON.Vector3(1, 1, 1);
+
+            // ✅ FIX: Salvar material original ANTES de aplicar efeitos de construção
+            if (!buildingData.originalMaterial && buildingData.mesh.material) {
+                buildingData.originalMaterial = buildingData.mesh.material;
+                console.log(`💾 Material original salvo para ${buildingData.config.name}`);
+            }
 
             // Aplicar material de construção semi-transparente
             this.applyConstructionMaterial(buildingData);
@@ -4469,81 +4698,81 @@ class BuildingSystem {
             console.warn('⚠️ Erro ao criar celebração de conclusão:', error);
         }
     }
-
-    createCompletionText(buildingData, worldPos) {
-        try {
-            // Criar texto "Concluído" aprimorado
-            const completionText = BABYLON.MeshBuilder.CreatePlane(`completion_${buildingData.id}`, {
+createCompletionText(buildingData, worldPos) {
+    try {
+        // ===== USAR A FUNÇÃO REUTILIZÁVEL PARA CRIAR PLAQUINHA DE CONCLUSÃO =====
+        const completionPosition = new BABYLON.Vector3(worldPos.x, 4, worldPos.z);
+        const completionPlate = this.createCartoonTextPlate(
+            `completion_${buildingData.id}`,
+            completionPosition,
+            "✅ CONCLUÍDO!",
+            {
                 width: 3,
-                height: 1
-            }, this.scene);
+                height: 1,
+                textureWidth: 512,
+                textureHeight: 128,
+                fontSize: 48,
+                bgColor: "rgba(0, 180, 80, 0.95)", // Verde vibrante
+                highlightColor: "rgba(100, 255, 150, 0.4)",
+                outlineColor: "rgba(0, 80, 40, 1)",
+                textColor: "#00FF88", // Verde neon
+                borderRadius: 30,
+                outlineWidth: 8,
+                textOutlineWidth: 6,
+                renderingGroupId: 2,
+                alphaIndex: 1001
+            }
+        );
 
-            completionText.position.x = worldPos.x;
-            completionText.position.z = worldPos.z;
-            completionText.position.y = 4;
-            completionText.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+        const completionText = completionPlate.mesh;
+        const textMaterial = completionPlate.material;
 
-            // Configurar rendering
-            completionText.renderingGroupId = 2;
-            completionText.alphaIndex = 1001;
+        // Adicionar emissão extra para efeito de brilho
+        textMaterial.emissiveColor = new BABYLON.Color3(0, 1, 0.5);
 
-            // Criar textura dinâmica aprimorada
-            const completionTexture = new BABYLON.DynamicTexture(`completionTexture_${buildingData.id}`,
-                { width: 512, height: 128 }, this.scene);
+        // Animação de entrada e saída
+        completionText.scaling = new BABYLON.Vector3(0, 0, 0);
 
-            completionTexture.drawText("✅ CONCLUÍDO!", null, null, "bold 48px Arial", "#00FF88", "#000000CC", true);
+        const startTime = Date.now();
+        const animateText = () => {
+            if (completionText.isDisposed()) return;
 
-            const textMaterial = new BABYLON.StandardMaterial(`completionMat_${buildingData.id}`, this.scene);
-            textMaterial.diffuseTexture = completionTexture;
-            textMaterial.emissiveTexture = completionTexture;
-            textMaterial.emissiveColor = new BABYLON.Color3(0, 1, 0.5);
-            textMaterial.backFaceCulling = false;
-            textMaterial.hasAlpha = true;
-            textMaterial.disableDepthWrite = true;
+            const elapsed = Date.now() - startTime;
 
-            completionText.material = textMaterial;
+            if (elapsed < 300) {
+                // Animação de entrada (0-300ms)
+                const progress = elapsed / 300;
+                const scale = this.easeOutBounce(progress);
+                completionText.scaling = new BABYLON.Vector3(scale, scale, scale);
+            } else if (elapsed < 2000) {
+                // Manter visível (300-2000ms)
+                completionText.scaling = new BABYLON.Vector3(1, 1, 1);
+                completionText.position.y = 4 + Math.sin(elapsed * 0.005) * 0.2; // Flutuação suave
+                
+                // Pulsar o brilho
+                const pulse = Math.sin(elapsed * 0.008) * 0.3 + 0.7;
+                textMaterial.emissiveColor = new BABYLON.Color3(0, pulse, pulse * 0.5);
+            } else if (elapsed < 2500) {
+                // Animação de saída (2000-2500ms)
+                const progress = (elapsed - 2000) / 500;
+                const scale = 1 - progress;
+                completionText.scaling = new BABYLON.Vector3(scale, scale, scale);
+                textMaterial.alpha = 1 - progress;
+            } else {
+                // Limpar usando o método dispose da plaquinha
+                completionPlate.dispose();
+                return;
+            }
 
-            // Animação de entrada e saída
-            completionText.scaling = new BABYLON.Vector3(0, 0, 0);
+            requestAnimationFrame(animateText);
+        };
 
-            const startTime = Date.now();
-            const animateText = () => {
-                if (completionText.isDisposed()) return;
+        animateText();
 
-                const elapsed = Date.now() - startTime;
-
-                if (elapsed < 300) {
-                    // Animação de entrada (0-300ms)
-                    const progress = elapsed / 300;
-                    const scale = this.easeOutBounce(progress);
-                    completionText.scaling = new BABYLON.Vector3(scale, scale, scale);
-                } else if (elapsed < 2000) {
-                    // Manter visível (300-2000ms)
-                    completionText.scaling = new BABYLON.Vector3(1, 1, 1);
-                    completionText.position.y = 4 + Math.sin(elapsed * 0.005) * 0.2; // Flutuação suave
-                } else if (elapsed < 2500) {
-                    // Animação de saída (2000-2500ms)
-                    const progress = (elapsed - 2000) / 500;
-                    const scale = 1 - progress;
-                    completionText.scaling = new BABYLON.Vector3(scale, scale, scale);
-                    textMaterial.alpha = 1 - progress;
-                } else {
-                    // Limpar
-                    if (completionTexture) completionTexture.dispose();
-                    if (textMaterial) textMaterial.dispose();
-                    completionText.dispose();
-                    return;
-                }
-
-                requestAnimationFrame(animateText);
-            };
-
-            animateText();
-
-        } catch (error) {
-            console.warn('⚠️ Erro ao criar texto de conclusão:', error);
-        }
+    } catch (error) {
+        console.warn('⚠️ Erro ao criar texto de conclusão:', error);
     }
+}
 
     easeOutBounce(t) {
         if (t < 1 / 2.75) {
@@ -4929,129 +5158,130 @@ class BuildingSystem {
         }
     }
 
-    addPowerShortageEffects(building) {
-        const mesh = building.mesh;
+    // ===== APLICAR NOS ÍCONES DE ESCASSEZ DE ENERGIA =====
+addPowerShortageEffects(building) {
+    const mesh = building.mesh;
 
-        // Criar ícone de escassez de energia se não existir
-        if (!mesh.powerShortageIcon) {
-            this.createPowerShortageIcon(building);
-        }
-
-        // Aplicar efeito de escurecimento no material
-        if (mesh.material && !mesh.originalEmissiveColor) {
-            // Salvar cor original
-            mesh.originalEmissiveColor = mesh.material.emissiveColor ? mesh.material.emissiveColor.clone() : new BABYLON.Color3(0, 0, 0);
-            mesh.originalDiffuseColor = mesh.material.diffuseColor ? mesh.material.diffuseColor.clone() : new BABYLON.Color3(1, 1, 1);
-
-            // Aplicar escurecimento
-            mesh.material.emissiveColor = mesh.originalEmissiveColor.scale(0.3);
-            mesh.material.diffuseColor = mesh.originalDiffuseColor.scale(0.6);
-        }
-
-        // Iniciar efeito de piscada
-        if (!mesh.powerShortageFlicker) {
-            mesh.powerShortageFlicker = {
-                time: 0,
-                interval: 2.0, // Piscar a cada 2 segundos
-                duration: 0.3   // Duração do piscar
-            };
-        }
-
-        console.log(`⚡❌ Efeitos de escassez de energia aplicados a ${building.config.name}`);
+    // Criar ícone de escassez de energia se não existir
+    if (!mesh.powerShortageIcon) {
+        this.createPowerShortageIcon(building);
     }
 
-    removePowerShortageEffects(building) {
-        const mesh = building.mesh;
+    // Aplicar efeito de escurecimento no material
+    if (mesh.material && !mesh.originalEmissiveColor) {
+        // Salvar cor original
+        mesh.originalEmissiveColor = mesh.material.emissiveColor ? mesh.material.emissiveColor.clone() : new BABYLON.Color3(0, 0, 0);
+        mesh.originalDiffuseColor = mesh.material.diffuseColor ? mesh.material.diffuseColor.clone() : new BABYLON.Color3(1, 1, 1);
 
-        // Remover ícone de escassez de energia
-        if (mesh.powerShortageIcon) {
-            this.removePowerShortageIcon(building);
-        }
-
-        // Restaurar cores originais
-        if (mesh.material && mesh.originalEmissiveColor) {
-            mesh.material.emissiveColor = mesh.originalEmissiveColor;
-            mesh.material.diffuseColor = mesh.originalDiffuseColor;
-            mesh.originalEmissiveColor = null;
-            mesh.originalDiffuseColor = null;
-        }
-
-        // Remover efeito de piscada
-        mesh.powerShortageFlicker = null;
-
-        console.log(`⚡✅ Efeitos de escassez de energia removidos de ${building.config.name}`);
+        // Aplicar escurecimento
+        mesh.material.emissiveColor = mesh.originalEmissiveColor.scale(0.3);
+        mesh.material.diffuseColor = mesh.originalDiffuseColor.scale(0.6);
     }
 
-    createPowerShortageIcon(building) {
-        try {
-            const mesh = building.mesh;
-            const worldPos = mesh.position;
+    // Iniciar efeito de piscada
+    if (!mesh.powerShortageFlicker) {
+        mesh.powerShortageFlicker = {
+            time: 0,
+            interval: 2.0, // Piscar a cada 2 segundos
+            duration: 0.3   // Duração do piscar
+        };
+    }
 
-            // Criar plano para o ícone
-            const iconPlane = BABYLON.MeshBuilder.CreatePlane(`powerIcon_${mesh.name}`, {
+    console.log(`⚡❌ Efeitos de escassez de energia aplicados a ${building.config.name}`);
+}
+
+removePowerShortageEffects(building) {
+    const mesh = building.mesh;
+
+    // Remover ícone de escassez de energia
+    if (mesh.powerShortageIcon) {
+        this.removePowerShortageIcon(building);
+    }
+
+    // Restaurar cores originais
+    if (mesh.material && mesh.originalEmissiveColor) {
+        mesh.material.emissiveColor = mesh.originalEmissiveColor;
+        mesh.material.diffuseColor = mesh.originalDiffuseColor;
+        mesh.originalEmissiveColor = null;
+        mesh.originalDiffuseColor = null;
+    }
+
+    // Remover efeito de piscada
+    mesh.powerShortageFlicker = null;
+
+    console.log(`⚡✅ Efeitos de escassez de energia removidos de ${building.config.name}`);
+}
+
+createPowerShortageIcon(building) {
+    try {
+        const mesh = building.mesh;
+        const worldPos = mesh.position;
+
+        // ===== USAR A FUNÇÃO REUTILIZÁVEL COM PRESET VERMELHO =====
+        const iconPosition = new BABYLON.Vector3(
+            worldPos.x + 1,
+            this.getBuildingHeight(building.config) + 2,
+            worldPos.z + 1
+        );
+
+        const powerIcon = this.createCartoonTextPlate(
+            `powerIcon_${mesh.name}`,
+            iconPosition,
+            "⚡❌",
+            {
+                preset: 'red', // Usar preset vermelho
                 width: 1.5,
-                height: 1.5
-            }, this.scene);
-
-            // Posicionar acima do edifício
-            iconPlane.position.x = worldPos.x + 1;
-            iconPlane.position.z = worldPos.z + 1;
-            iconPlane.position.y = this.getBuildingHeight(building.config) + 2;
-            iconPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
-
-            // Criar textura dinâmica com ícone
-            const dynamicTexture = new BABYLON.DynamicTexture(`powerIconTexture_${mesh.name}`,
-                { width: 256, height: 256 }, this.scene);
-
-            // Desenhar ícone de escassez de energia
-            const font = "bold 120px Arial";
-            const icon = "⚡❌";
-            dynamicTexture.drawText(icon, null, null, font, "#FF4444", "transparent", true);
-
-            // Criar material para o ícone
-            const iconMaterial = new BABYLON.StandardMaterial(`powerIconMat_${mesh.name}`, this.scene);
-            iconMaterial.diffuseTexture = dynamicTexture;
-            iconMaterial.emissiveTexture = dynamicTexture;
-            iconMaterial.emissiveColor = new BABYLON.Color3(1, 0.2, 0.2);
-            iconMaterial.backFaceCulling = false;
-            iconMaterial.hasAlpha = true;
-
-            iconPlane.material = iconMaterial;
-
-            // Armazenar referência
-            mesh.powerShortageIcon = iconPlane;
-
-            console.log(`⚡ Ícone de escassez de energia criado para ${building.config.name}`);
-
-        } catch (error) {
-            console.error(`❌ Erro ao criar ícone de escassez de energia:`, error);
-        }
-    }
-
-    removePowerShortageIcon(building) {
-        const mesh = building.mesh;
-        if (mesh.powerShortageIcon) {
-            try {
-                if (!mesh.powerShortageIcon.isDisposed()) {
-                    // Limpar material e textura
-                    if (mesh.powerShortageIcon.material) {
-                        if (mesh.powerShortageIcon.material.diffuseTexture) {
-                            mesh.powerShortageIcon.material.diffuseTexture.dispose();
-                        }
-                        if (mesh.powerShortageIcon.material.emissiveTexture) {
-                            mesh.powerShortageIcon.material.emissiveTexture.dispose();
-                        }
-                        mesh.powerShortageIcon.material.dispose();
-                    }
-                    mesh.powerShortageIcon.dispose();
-                }
-                mesh.powerShortageIcon = null;
-            } catch (error) {
-                console.error('❌ Erro ao remover ícone de escassez de energia:', error);
+                height: 1.5,
+                textureWidth: 256,
+                textureHeight: 256,
+                fontSize: 80,
+                borderRadius: 35,
+                outlineWidth: 8,
+                alphaIndex: 1000
             }
+        );
+
+        // Armazenar referência
+        mesh.powerShortageIcon = powerIcon;
+
+        // Adicionar animação de pulsação
+        const startTime = Date.now();
+        const animatePowerIcon = () => {
+            if (!powerIcon.mesh || powerIcon.mesh.isDisposed()) return;
+
+            const elapsed = Date.now() - startTime;
+            const pulse = Math.sin(elapsed * 0.005) * 0.15 + 1; // Pulsar entre 0.85 e 1.15
+            
+            powerIcon.mesh.scaling = new BABYLON.Vector3(pulse, pulse, pulse);
+            
+            // Pulsar emissão
+            const emissivePulse = Math.sin(elapsed * 0.005) * 0.3 + 0.7;
+            powerIcon.material.emissiveColor = new BABYLON.Color3(emissivePulse, 0.2 * emissivePulse, 0.2 * emissivePulse);
+
+            requestAnimationFrame(animatePowerIcon);
+        };
+
+        animatePowerIcon();
+
+        console.log(`⚡ Ícone de escassez de energia criado para ${building.config.name}`);
+
+    } catch (error) {
+        console.error(`❌ Erro ao criar ícone de escassez de energia:`, error);
+    }
+}
+
+removePowerShortageIcon(building) {
+    const mesh = building.mesh;
+    if (mesh.powerShortageIcon) {
+        try {
+            // Usar o método dispose da plaquinha
+            mesh.powerShortageIcon.dispose();
+            mesh.powerShortageIcon = null;
+        } catch (error) {
+            console.error('❌ Erro ao remover ícone de escassez de energia:', error);
         }
     }
-
+}
     // ===== GETTERS =====
     getBuildingTypes() { return Array.from(this.buildingTypes.values()); }
     getBuildingTypesByCategory(category) {
@@ -6118,10 +6348,14 @@ class BuildingSystem {
             const targetScale = buildingData.originalScaling || new BABYLON.Vector3(1, 1, 1);
             const startScale = new BABYLON.Vector3(0.3, 0.3, 0.3);
 
+            // ✅ FIX: Usar rotação já salva (sempre 0,0,0 para grid) ou criar nova zerada
+            const originalRotation = buildingData.originalRotation || BABYLON.Vector3.Zero();
+
             buildingData.constructionAnimationData = {
                 startTime: Date.now(),
                 startScale: startScale.clone(),
                 targetScale: targetScale.clone(),
+                originalRotation: originalRotation.clone(),
                 isAnimating: true
             };
 
@@ -6144,12 +6378,19 @@ class BuildingSystem {
 
                 buildingData.mesh.scaling = currentScale;
 
-                // Rotação sutil
+                // Rotação sutil durante construção
                 buildingData.mesh.rotation.y += rotationSpeed;
 
-                if (progress < 1) {
-                    requestAnimationFrame(animateConstruction);
+                // ✅ FIX: Ao finalizar, restaurar rotação original
+                if (progress >= 1) {
+                    buildingData.mesh.rotation.copyFrom(buildingData.constructionAnimationData.originalRotation);
+                    buildingData.mesh.scaling.copyFrom(targetScale);
+                    buildingData.constructionAnimationData.isAnimating = false;
+                    console.log(`✅ Animação de construção finalizada - rotação restaurada para ${buildingData.config.name} rotação: ${buildingData.mesh.rotation}`);
+                    return;
                 }
+
+                requestAnimationFrame(animateConstruction);
             };
 
             animateConstruction();
