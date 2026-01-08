@@ -155,6 +155,18 @@ class UIManager {
         if (this.elements.detailsPanel) {
             this.elements.detailsPanel.style.display = 'flex';
             this.uiState.currentOpenPanel = 'missions';
+            // Open the right panel (details panel)
+            const hudRight = document.querySelector('.hud-right');
+            if (!hudRight) return;
+
+            // Show the panel
+            this.mobilePanelsVisible.right = true;
+            hudRight.classList.add('active');
+
+            // Update toggle button state
+            if (this.mobileToggleButtons && this.mobileToggleButtons.right) {
+                this.mobileToggleButtons.right.classList.add('active');
+            }
         }
     }
 
@@ -164,6 +176,13 @@ class UIManager {
     closeMissionPanel() {
         if (this.elements.detailsPanel && this.uiState.currentOpenPanel === 'missions') {
             this.closeResourcePanel();
+            this.uiState.currentOpenPanel = null;
+            this.elements.detailsPanel.style.display = 'none';
+            this.elements.detailsContent.innerHTML = '';
+            this.gameManager.questSystem.updateMissionInfoPanel();
+            this.gameManager.questSystem.updateMissionProgressDisplay();
+            this.gameManager.questSystem.closeMissionInterface();
+            
         }
     }
     
@@ -3046,6 +3065,8 @@ class UIManager {
             let isHoldingForInfo = false;
             let isMultiSelectMode = false;
             let multiSelectStartPos = null;
+            let touchIndicatorTimer = null;
+            let holdCompletedForTerrain = false; // Track if 500ms hold completed for terrain
 
             this.gameManager.canvas.addEventListener('touchstart', (e) => {
                 e.preventDefault();
@@ -3055,10 +3076,26 @@ class UIManager {
                 touchStartTime = Date.now();
                 isHoldingForInfo = false;
                 isMultiSelectMode = false;
+                holdCompletedForTerrain = false;
 
                 // Clear any existing timers
                 if (touchHoldTimer) clearTimeout(touchHoldTimer);
                 if (multiSelectTimer) clearTimeout(multiSelectTimer);
+                if (touchIndicatorTimer) clearTimeout(touchIndicatorTimer);
+
+                // ===== VISUAL FEEDBACK: Show circular loading indicator after 250ms =====
+                touchIndicatorTimer = setTimeout(() => {
+                    const currentPos = { x: touch.clientX, y: touch.clientY };
+                    const distance = Math.sqrt(
+                        Math.pow(currentPos.x - touchStartPos.x, 2) +
+                        Math.pow(currentPos.y - touchStartPos.y, 2)
+                    );
+
+                    // Only show indicator if finger hasn't moved much (< 10px)
+                    if (distance < 10) {
+                        this.showTouchHoldIndicator(touch.clientX, touch.clientY);
+                    }
+                }, 250);
 
                 // Set up 500ms timer for info display
                 touchHoldTimer = setTimeout(() => {
@@ -3068,14 +3105,30 @@ class UIManager {
                         Math.pow(currentPos.y - touchStartPos.y, 2)
                     );
 
-                    // Only show info if finger hasn't moved much (< 10px)
+                    // Only process if finger hasn't moved much (< 10px)
                     if (distance < 10) {
                         isHoldingForInfo = true;
-                        this.showTouchHoldInfo(touch.clientX, touch.clientY);
+
+                        // Check what we're touching
+                        const pickResult = this.gameManager.scene.pick(touch.clientX, touch.clientY);
+
+                        if (pickResult && pickResult.hit &&
+                            pickResult.pickedMesh &&
+                            pickResult.pickedMesh.metadata &&
+                            pickResult.pickedMesh.metadata.buildingId) {
+                            // Touching a building - show info immediately
+                            this.showTouchHoldInfo(touch.clientX, touch.clientY);
+                        } else {
+                            // Touching terrain - just mark that hold completed, show info on release
+                            holdCompletedForTerrain = true;
+                        }
+
+                        // ===== VISUAL FEEDBACK: Pulse effect at 500ms =====
+                        this.pulseTouchHoldIndicator();
                     }
                 }, 500);
 
-                // Set up 2s timer for multi-selection mode
+                // Set up 1500ms timer for multi-selection mode
                 multiSelectTimer = setTimeout(() => {
                     const currentPos = { x: touch.clientX, y: touch.clientY };
                     const distance = Math.sqrt(
@@ -3087,9 +3140,11 @@ class UIManager {
                     if (distance < 10) {
                         isMultiSelectMode = true;
                         multiSelectStartPos = { x: touch.clientX, y: touch.clientY };
+                        // ===== VISUAL FEEDBACK: Complete circle at 1500ms =====
+                        this.completeTouchHoldIndicator();
                         this.startMultiSelectMode(touch.clientX, touch.clientY);
                     }
-                }, 1200);
+                }, 1500);
 
                 // Convert touch to mouse event for building placement preview
                 if (this.gameManager.buildMode) {
@@ -3124,7 +3179,12 @@ class UIManager {
                         clearTimeout(multiSelectTimer);
                         multiSelectTimer = null;
                     }
+                    if (touchIndicatorTimer) {
+                        clearTimeout(touchIndicatorTimer);
+                        touchIndicatorTimer = null;
+                    }
                     this.hideTouchHoldInfo();
+                    this.hideTouchHoldIndicator();
                 }
 
                 // Update multi-select rectangle if in multi-select mode
@@ -3159,6 +3219,13 @@ class UIManager {
                     clearTimeout(multiSelectTimer);
                     multiSelectTimer = null;
                 }
+                if (touchIndicatorTimer) {
+                    clearTimeout(touchIndicatorTimer);
+                    touchIndicatorTimer = null;
+                }
+
+                // Hide visual indicator
+                this.hideTouchHoldIndicator();
 
                 if (e.changedTouches.length === 0) return;
 
@@ -3184,14 +3251,23 @@ class UIManager {
                     isMultiSelectMode = false;
                     multiSelectStartPos = null;
                 } else if (isHoldingForInfo) {
-                    // Just hide the info tooltip
-                    this.hideTouchHoldInfo();
+                    // If hold was for terrain, show info now on release
+                    if (holdCompletedForTerrain) {
+                        this.showTouchHoldInfo(touch.clientX, touch.clientY);
+                        holdCompletedForTerrain = false;
+                    } else {
+                        // Building info was already shown, just hide the tooltip
+                        this.hideTouchHoldInfo();
+                    }
                     isHoldingForInfo = false;
                 } else {
                     // Only trigger click if it's a tap (short duration, minimal movement)
-                    const isTap = touchDuration < 300 && distance < 10;
+                    // Reduced threshold from 300ms to 250ms to match camera controls and improve responsiveness
+                    const isTap = touchDuration < 250 && distance < 10;
 
                     if (isTap) {
+                        console.log(`👆 Tap detected: duration=${touchDuration}ms, distance=${distance.toFixed(1)}px`);
+
                         // Create a proper pointer event for Babylon.js
                         const pointerEvent = new PointerEvent('pointerdown', {
                             clientX: touch.clientX,
@@ -3246,6 +3322,8 @@ class UIManager {
                                 this.gameManager.canvas.dispatchEvent(pointerUpEvent);
                             }
                         }
+                    } else {
+                        console.log(`❌ Not a tap: duration=${touchDuration}ms, distance=${distance.toFixed(1)}px`);
                     }
                 }
 
@@ -3382,11 +3460,218 @@ class UIManager {
         }
     }
 
+    // ===== TOUCH-AND-HOLD VISUAL INDICATOR =====
+    showTouchHoldIndicator(x, y) {
+        // Remove existing indicator
+        this.hideTouchHoldIndicator();
+
+        // Create circular loading indicator
+        const indicator = document.createElement('div');
+        indicator.id = 'touch-hold-indicator';
+        indicator.style.position = 'fixed';
+        indicator.style.left = `${x}px`;
+        indicator.style.top = `${y}px`;
+        indicator.style.width = '60px';
+        indicator.style.height = '60px';
+        indicator.style.transform = 'translate(-50%, -50%)';
+        indicator.style.zIndex = '10000';
+        indicator.style.pointerEvents = 'none';
+
+        // Create SVG circle
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '60');
+        svg.setAttribute('height', '60');
+        svg.style.transform = 'rotate(-90deg)'; // Start from top
+
+        // Background circle (full circle, semi-transparent)
+        const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        bgCircle.setAttribute('cx', '30');
+        bgCircle.setAttribute('cy', '30');
+        bgCircle.setAttribute('r', '25');
+        bgCircle.setAttribute('fill', 'none');
+        bgCircle.setAttribute('stroke', 'rgba(255, 255, 255, 0.3)');
+        bgCircle.setAttribute('stroke-width', '4');
+
+        // Progress circle (animated)
+        const progressCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        progressCircle.setAttribute('cx', '30');
+        progressCircle.setAttribute('cy', '30');
+        progressCircle.setAttribute('r', '25');
+        progressCircle.setAttribute('fill', 'none');
+        progressCircle.setAttribute('stroke', '#00ff88');
+        progressCircle.setAttribute('stroke-width', '4');
+        progressCircle.setAttribute('stroke-linecap', 'round');
+        progressCircle.setAttribute('stroke-dasharray', '157'); // 2 * PI * 25
+        progressCircle.setAttribute('stroke-dashoffset', '157');
+        progressCircle.style.filter = 'drop-shadow(0 0 8px rgba(0, 255, 136, 0.8))';
+        progressCircle.style.transition = 'stroke-dashoffset 1.25s linear'; // 250ms to 1500ms = 1250ms
+
+        svg.appendChild(bgCircle);
+        svg.appendChild(progressCircle);
+        indicator.appendChild(svg);
+        document.body.appendChild(indicator);
+
+        // Start animation after a brief delay
+        requestAnimationFrame(() => {
+            progressCircle.style.strokeDashoffset = '0';
+        });
+
+        // Store reference for pulse and complete effects
+        indicator.progressCircle = progressCircle;
+    }
+
+    pulseTouchHoldIndicator() {
+        const indicator = document.getElementById('touch-hold-indicator');
+        if (!indicator || !indicator.progressCircle) return;
+
+        // Create pulse effect at 500ms
+        const pulse = document.createElement('div');
+        pulse.style.position = 'absolute';
+        pulse.style.left = '50%';
+        pulse.style.top = '50%';
+        pulse.style.width = '60px';
+        pulse.style.height = '60px';
+        pulse.style.transform = 'translate(-50%, -50%)';
+        pulse.style.borderRadius = '50%';
+        pulse.style.background = 'rgba(0, 255, 136, 0.4)';
+        pulse.style.animation = 'pulse-effect 0.5s ease-out';
+
+        indicator.appendChild(pulse);
+
+        // Remove pulse after animation
+        setTimeout(() => {
+            if (pulse.parentNode) {
+                pulse.remove();
+            }
+        }, 500);
+
+        // Add text label for 500ms milestone
+        const textLabel = document.createElement('div');
+        textLabel.id = 'touch-hold-text-500';
+        textLabel.style.position = 'absolute';
+        textLabel.style.left = '50%';
+        textLabel.style.top = '80px'; // Below the circle
+        textLabel.style.transform = 'translateX(-50%)';
+        textLabel.style.whiteSpace = 'nowrap';
+        textLabel.style.fontSize = '0.75rem';
+        textLabel.style.fontWeight = '600';
+        textLabel.style.color = '#00ff88';
+        textLabel.style.textShadow = '0 0 8px rgba(0, 255, 136, 0.8), 0 2px 4px rgba(0, 0, 0, 0.8)';
+        textLabel.style.background = 'rgba(0, 0, 0, 0.7)';
+        textLabel.style.padding = '4px 8px';
+        textLabel.style.borderRadius = '6px';
+        textLabel.style.pointerEvents = 'none';
+        textLabel.textContent = 'Solte para informações de terreno';
+
+        indicator.appendChild(textLabel);
+
+        // Add pulse animation to document if not exists
+        if (!document.getElementById('pulse-animation-style')) {
+            const style = document.createElement('style');
+            style.id = 'pulse-animation-style';
+            style.textContent = `
+                @keyframes pulse-effect {
+                    0% {
+                        transform: translate(-50%, -50%) scale(1);
+                        opacity: 0.6;
+                    }
+                    100% {
+                        transform: translate(-50%, -50%) scale(2);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    completeTouchHoldIndicator() {
+        const indicator = document.getElementById('touch-hold-indicator');
+        if (!indicator || !indicator.progressCircle) return;
+
+        // Change color to indicate completion
+        indicator.progressCircle.setAttribute('stroke', '#ffaa00');
+        indicator.progressCircle.style.filter = 'drop-shadow(0 0 12px rgba(255, 170, 0, 1))';
+
+        // Add completion flash effect
+        const flash = document.createElement('div');
+        flash.style.position = 'absolute';
+        flash.style.left = '50%';
+        flash.style.top = '50%';
+        flash.style.width = '60px';
+        flash.style.height = '60px';
+        flash.style.transform = 'translate(-50%, -50%)';
+        flash.style.borderRadius = '50%';
+        flash.style.background = 'rgba(255, 170, 0, 0.6)';
+        flash.style.animation = 'flash-effect 0.3s ease-out';
+
+        indicator.appendChild(flash);
+
+        // Remove flash after animation
+        setTimeout(() => {
+            if (flash.parentNode) {
+                flash.remove();
+            }
+        }, 300);
+
+        // Remove 500ms text label if it exists
+        const oldTextLabel = document.getElementById('touch-hold-text-500');
+        if (oldTextLabel) {
+            oldTextLabel.remove();
+        }
+
+        // Add text label for 1500ms milestone
+        const textLabel = document.createElement('div');
+        textLabel.id = 'touch-hold-text-1500';
+        textLabel.style.position = 'absolute';
+        textLabel.style.left = '50%';
+        textLabel.style.top = '80px'; // Below the circle
+        textLabel.style.transform = 'translateX(-50%)';
+        textLabel.style.whiteSpace = 'nowrap';
+        textLabel.style.fontSize = '0.75rem';
+        textLabel.style.fontWeight = '600';
+        textLabel.style.color = '#ffaa00';
+        textLabel.style.textShadow = '0 0 8px rgba(255, 170, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.8)';
+        textLabel.style.background = 'rgba(0, 0, 0, 0.7)';
+        textLabel.style.padding = '4px 8px';
+        textLabel.style.borderRadius = '6px';
+        textLabel.style.pointerEvents = 'none';
+        textLabel.textContent = 'Arraste para selecionar construções';
+
+        indicator.appendChild(textLabel);
+
+        // Add flash animation to document if not exists
+        if (!document.getElementById('flash-animation-style')) {
+            const style = document.createElement('style');
+            style.id = 'flash-animation-style';
+            style.textContent = `
+                @keyframes flash-effect {
+                    0% {
+                        transform: translate(-50%, -50%) scale(0.8);
+                        opacity: 0.8;
+                    }
+                    100% {
+                        transform: translate(-50%, -50%) scale(1.5);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    hideTouchHoldIndicator() {
+        const indicator = document.getElementById('touch-hold-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+
     // ===== MULTI-SELECTION MODE (2s HOLD) =====
     startMultiSelectMode(x, y) {
         console.log('🎯 Multi-select mode activated');
 
-        // Create selection rectangle overlay
+        // Create selection rectangle overlay with orange color to match long-touch indicator
         const selectionRect = document.createElement('div');
         selectionRect.id = 'multi-select-rectangle';
         selectionRect.style.position = 'fixed';
@@ -3394,11 +3679,11 @@ class UIManager {
         selectionRect.style.top = `${y}px`;
         selectionRect.style.width = '0px';
         selectionRect.style.height = '0px';
-        selectionRect.style.border = '3px dashed rgba(0, 255, 136, 0.8)';
-        selectionRect.style.background = 'rgba(0, 255, 136, 0.2)';
+        selectionRect.style.border = '3px dashed rgba(255, 170, 0, 0.8)';
+        selectionRect.style.background = 'rgba(255, 170, 0, 0.2)';
         selectionRect.style.zIndex = '9999';
         selectionRect.style.pointerEvents = 'none';
-        selectionRect.style.boxShadow = '0 0 20px rgba(0, 255, 136, 0.6)';
+        selectionRect.style.boxShadow = '0 0 20px rgba(255, 170, 0, 0.6)';
 
         document.body.appendChild(selectionRect);
 
@@ -3434,7 +3719,7 @@ class UIManager {
         const selectedBuildings = [];
         const buildings = this.gameManager.buildingSystem.buildings;
 
-        buildings.forEach((building, buildingId) => {
+        buildings.forEach((building) => {
             if (building.mesh) {
                 // Project 3D position to 2D screen coordinates
                 const screenPos = BABYLON.Vector3.Project(
@@ -3478,13 +3763,24 @@ class UIManager {
 
             // Highlight selected buildings with visual feedback
             selectedBuildings.forEach(building => {
-                if (building.mesh) {
-                    // Add a temporary highlight effect
-                    const originalColor = building.mesh.material.emissiveColor.clone();
+                if (building.mesh && building.mesh.material) {
+                    // Add a temporary highlight effect with proper null checks
+                    let originalColor = null;
+
+                    // Safely clone the original emissive color if it exists
+                    if (building.mesh.material.emissiveColor) {
+                        originalColor = building.mesh.material.emissiveColor.clone();
+                    } else {
+                        // Fallback to default color if emissiveColor doesn't exist
+                        originalColor = new BABYLON.Color3(0, 0, 0);
+                    }
+
+                    // Set highlight color
                     building.mesh.material.emissiveColor = new BABYLON.Color3(0, 1, 0.5);
 
+                    // Restore original color after 1 second
                     setTimeout(() => {
-                        if (building.mesh && building.mesh.material) {
+                        if (building.mesh && building.mesh.material && originalColor) {
                             building.mesh.material.emissiveColor = originalColor;
                         }
                     }, 1000);

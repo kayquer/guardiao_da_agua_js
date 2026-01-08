@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Touch Interaction Test - Guardião da Água</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1f3a 0%, #2d3561 100%);
+            color: #fff;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(0, 255, 136, 0.3);
+        }
+        
+        .test-section h2 {
+            margin-top: 0;
+            color: #ffaa00;
+            font-size: 1.2rem;
+        }
+        
+        .test-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #00ff88;
+        }
+        
+        .test-item h3 {
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+            color: #fff;
+        }
+        
+        .test-item p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        
+        .test-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status-pending {
+            background: rgba(255, 170, 0, 0.3);
+            color: #ffaa00;
+        }
+        
+        .status-pass {
+            background: rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+        }
+        
+        .status-fail {
+            background: rgba(255, 68, 68, 0.3);
+            color: #ff4444;
+        }
+        
+        .start-game-btn {
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            margin: 30px auto;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .start-game-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.6);
+        }
+        
+        .instructions {
+            background: rgba(255, 170, 0, 0.2);
+            border: 2px solid rgba(255, 170, 0, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #ffaa00;
+        }
+        
+        .instructions ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin: 5px 0;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Touch Interaction Test Suite</h1>
+        
+        <div class="instructions">
+            <h3>📋 Test Instructions</h3>
+            <ul>
+                <li>Click "Start Game" to launch the water management game</li>
+                <li>Follow each test scenario below in order</li>
+                <li>Verify that each interaction works as expected</li>
+                <li>Check the browser console for any errors (should be zero)</li>
+                <li>Test on both mobile devices and desktop with touch simulation</li>
+            </ul>
+        </div>
+        
+        <button class="start-game-btn" onclick="window.open('../index.html', '_blank')">
+            🎮 Start Game
+        </button>
+
+        <div class="test-section">
+            <h2>✅ Task 1: Clone Error Fix</h2>
+            <div class="test-item">
+                <h3>Test: Multi-Selection with Different Building Materials <span class="test-status status-pending">PENDING</span></h3>
+                <p><strong>Steps:</strong></p>
+                <p>1. Place 5-10 buildings of different types (water treatment, power plant, residential, etc.)</p>
+                <p>2. Touch and hold for 1.5 seconds to activate multi-select mode</p>
+                <p>3. Drag to select all buildings</p>
+                <p>4. Release to complete selection</p>
+                <p><strong>Expected:</strong> No console errors, buildings highlight with green glow, details panel shows all selected buildings</p>
+                <p><strong>Verify:</strong> Check console for "Cannot read properties of undefined (reading 'clone')" error - should NOT appear</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>👆 Task 2: Rapid Tap Building Selection</h2>
+            <div class="test-item">
+                <h3>Test: Quick Tap on Buildings <span class="test-status status-pending">PENDING</span></h3>
+                <p><strong>Steps:</strong></p>
+                <p>1. Place several buildings on the map</p>
+                <p>2. Quickly tap on different buildings (tap duration < 250ms)</p>
+                <p>3. Try rapid successive taps on the same building</p>
+                <p>4. Try tapping on buildings of different sizes (1x1, 2x2, etc.)</p>
+                <p><strong>Expected:</strong> Each tap immediately shows the building details panel with building information</p>
+                <p><strong>Verify:</strong> Console shows "👆 Tap detected" and "🏢 Building selected via tap" messages</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 Task 3: Auto-Display Details Panel</h2>
+            <div class="test-item">
+                <h3>Test: Multi-Selection Panel Display <span class="test-status status-pending">PENDING</span></h3>
+                <p><strong>Steps:</strong></p>
+                <p>1. Place 10+ buildings on the map</p>
+                <p>2. Touch and hold for 1.5 seconds</p>
+                <p>3. Drag to select multiple buildings (try selecting 5, 10, 20 buildings)</p>
+                <p>4. Release to complete selection</p>
+                <p><strong>Expected:</strong> Details panel automatically appears showing "🏢 X Edifícios Selecionados" with list of all selected buildings</p>
+                <p><strong>Verify:</strong> Panel displays building names, categories, status, efficiency, and position for each building</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🌍 Task 4: Terrain Info on Touch Release</h2>
+            <div class="test-item">
+                <h3>Test: Terrain Information Display <span class="test-status status-pending">PENDING</span></h3>
+                <p><strong>Steps:</strong></p>
+                <p>1. Touch and hold on empty terrain (not on a building) for 500ms</p>
+                <p>2. Keep holding - terrain info should NOT appear yet</p>
+                <p>3. Release your finger after the 500ms hold</p>
+                <p>4. Try on different terrain types (water, grassland, hills, mountains)</p>
+                <p><strong>Expected:</strong> Terrain info tooltip appears ONLY after releasing finger, showing terrain type, elevation, position, and availability</p>
+                <p><strong>Verify:</strong> During hold, only the circle indicator shows. Info appears on release.</p>
+            </div>
+
+            <div class="test-item">
+                <h3>Test: Building Info During Hold <span class="test-status status-pending">PENDING</span></h3>
+                <p><strong>Steps:</strong></p>
+                <p>1. Touch and hold on a building for 500ms</p>
+                <p>2. Keep holding - building info should appear immediately at 500ms</p>
+                <p>3. Release your finger</p>
+                <p><strong>Expected:</strong> Building details panel appears during the hold (at 500ms), not on release</p>
+                <p><strong>Verify:</strong> Building behavior is different from terrain behavior</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🟠 Task 5: Orange Selection Rectangle</h2>
+            <div class="test-item">
+                <h3>Test: Multi-Selection Rectangle Color <span class="test-status status-pending">PENDING</span></h3>
+                <p><strong>Steps:</strong></p>
+                <p>1. Touch and hold for 1.5 seconds to activate multi-select mode</p>
+                <p>2. Drag to create a selection rectangle</p>
+                <p>3. Observe the rectangle color and glow effect</p>
+                <p><strong>Expected:</strong> Rectangle has orange border (rgba(255, 170, 0, 0.8)), orange background (rgba(255, 170, 0, 0.2)), and orange glow</p>
+                <p><strong>Verify:</strong> Color matches the long-touch circle indicator color (orange, not green)</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>💬 Task 6: Enhanced Visual Feedback</h2>
+            <div class="test-item">
+                <h3>Test: 500ms Text Label <span class="test-status status-pending">PENDING</span></h3>
+                <p><strong>Steps:</strong></p>
+                <p>1. Touch and hold on terrain or building</p>
+                <p>2. Wait for 500ms (circle fills halfway with pulse effect)</p>
+                <p>3. Observe the text label that appears</p>
+                <p><strong>Expected:</strong> Text label appears below circle saying "Solte para informações de terreno" in green color with dark background</p>
+                <p><strong>Verify:</strong> Text is readable, properly positioned, and has good contrast</p>
+            </div>
+
+            <div class="test-item">
+                <h3>Test: 1500ms Text Label <span class="test-status status-pending">PENDING</span></h3>
+                <p><strong>Steps:</strong></p>
+                <p>1. Touch and hold for full 1.5 seconds</p>
+                <p>2. Observe the circle complete and change to orange</p>
+                <p>3. Read the new text label that appears</p>
+                <p><strong>Expected:</strong> Text label changes to "Arraste para selecionar construções" in orange color, 500ms label is removed</p>
+                <p><strong>Verify:</strong> Text updates correctly, color matches circle color (orange)</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 Edge Cases & Performance</h2>
+            <div class="test-item">
+                <h3>Test: Screen Edge Interactions <span class="test-status status-pending">PENDING</span></h3>
+                <p><strong>Steps:</strong></p>
+                <p>1. Try tapping buildings near screen edges and corners</p>
+                <p>2. Try multi-selection starting from screen edges</p>
+                <p>3. Verify tooltips and panels don't go off-screen</p>
+                <p><strong>Expected:</strong> All interactions work correctly, UI elements stay visible</p>
+            </div>
+
+            <div class="test-item">
+                <h3>Test: Large Multi-Selection Performance <span class="test-status status-pending">PENDING</span></h3>
+                <p><strong>Steps:</strong></p>
+                <p>1. Place 50+ buildings on the map</p>
+                <p>2. Select all of them with multi-select</p>
+                <p>3. Observe performance and responsiveness</p>
+                <p><strong>Expected:</strong> Smooth performance, no lag, details panel loads quickly</p>
+                <p><strong>Verify:</strong> Check console for performance warnings</p>
+            </div>
+
+            <div class="test-item">
+                <h3>Test: Multi-Finger Touch <span class="test-status status-pending">PENDING</span></h3>
+                <p><strong>Steps:</strong></p>
+                <p>1. Try two-finger pinch zoom while in multi-select mode</p>
+                <p>2. Try accidental multi-touch during building selection</p>
+                <p><strong>Expected:</strong> Camera controls work correctly, no interference with selection</p>
+            </div>
+
+            <div class="test-item">
+                <h3>Test: Desktop Mouse Compatibility <span class="test-status status-pending">PENDING</span></h3>
+                <p><strong>Steps:</strong></p>
+                <p>1. Test all interactions with mouse on desktop</p>
+                <p>2. Verify building selection, camera controls, and UI interactions</p>
+                <p><strong>Expected:</strong> No regression in mouse functionality</p>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🚫 Zero-Error Policy Verification</h2>
+            <div class="test-item">
+                <h3>Test: Console Cleanliness <span class="test-status status-pending">PENDING</span></h3>
+                <p><strong>Steps:</strong></p>
+                <p>1. Open browser console (F12)</p>
+                <p>2. Perform all tests above</p>
+                <p>3. Monitor console throughout testing</p>
+                <p><strong>Expected:</strong> ZERO errors, ZERO warnings, only informational logs</p>
+                <p><strong>Verify:</strong> No red error messages, no yellow warnings, no unexpected logs</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
