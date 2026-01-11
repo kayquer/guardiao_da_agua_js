@@ -1,0 +1,308 @@
+/**
+ * GUARDIÃO DA ÁGUA - TUTORIAL SYSTEM CSS
+ * RPG-style tutorial interface for children aged 11-14
+ */
+
+/* ===== TUTORIAL CONTAINER ===== */
+#tutorial-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 200; /* Above all other UI */
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    background: #000;
+}
+
+/* ===== TUTORIAL BACKGROUND ===== */
+#tutorial-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(0.7);
+    z-index: 1;
+}
+
+/* ===== TUTORIAL CONTENT ===== */
+.tutorial-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 2rem;
+}
+
+/* ===== CHARACTER PORTRAIT ===== */
+.tutorial-portrait-container {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+#tutorial-portrait {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 5px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    object-fit: cover;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* ===== DIALOG BOX ===== */
+.tutorial-dialog-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: 2rem;
+}
+
+.tutorial-dialog {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 240, 255, 0.95) 100%);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+    border: 4px solid rgba(255, 255, 255, 0.8);
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ===== CHARACTER NAME ===== */
+.tutorial-character-name {
+    font-family: 'Lilita One', cursive;
+    font-size: 1.5rem;
+    color: #4a9eff;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* ===== DIALOG HEADER ===== */
+.tutorial-dialog-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 3px solid rgba(74, 158, 255, 0.3);
+}
+
+#tutorial-icon {
+    font-size: 2.5rem;
+    animation: bounce 2s ease-in-out infinite;
+}
+
+#tutorial-title {
+    font-family: 'Lilita One', cursive;
+    font-size: 1.8rem;
+    color: #2D3561;
+    flex: 1;
+}
+
+/* ===== DIALOG TEXT ===== */
+#tutorial-text {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: #2D3561;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+/* ===== TUTORIAL CONTROLS ===== */
+.tutorial-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.tutorial-progress {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1rem;
+    color: #666;
+    font-weight: 600;
+}
+
+.tutorial-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.tutorial-btn {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    border-radius: 16px;
+    border: 3px solid;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tutorial-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
+}
+
+.tutorial-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Previous Button */
+#tutorial-prev-btn {
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+    border-color: #7f8c8d;
+    color: white;
+}
+
+#tutorial-prev-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7b 100%);
+    transform: scale(1.05);
+}
+
+/* Next Button */
+#tutorial-next-btn {
+    background: linear-gradient(135deg, #00ff88 0%, #00d470 100%);
+    border-color: #00aa55;
+    color: white;
+}
+
+#tutorial-next-btn:hover {
+    background: linear-gradient(135deg, #00d470 0%, #00aa55 100%);
+    transform: scale(1.05);
+}
+
+/* Skip Button */
+#tutorial-skip-btn {
+    background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
+    border-color: #ff8c00;
+    color: #2D3561;
+}
+
+#tutorial-skip-btn:hover {
+    background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+    transform: scale(1.05);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.tutorial-dialog {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media screen and (max-width: 768px) {
+    .tutorial-content {
+        padding: 1rem;
+    }
+
+    #tutorial-portrait {
+        width: 100px;
+        height: 100px;
+    }
+
+    .tutorial-dialog {
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+
+    .tutorial-character-name {
+        font-size: 1.2rem;
+    }
+
+    #tutorial-icon {
+        font-size: 2rem;
+    }
+
+    #tutorial-title {
+        font-size: 1.4rem;
+    }
+
+    #tutorial-text {
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+
+    .tutorial-controls {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .tutorial-buttons {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .tutorial-btn {
+        width: 100%;
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+    }
+
+    .tutorial-progress {
+        font-size: 0.9rem;
+        text-align: center;
+    }
+}
+
+/* ===== LANDSCAPE MOBILE ===== */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    .tutorial-portrait-container {
+        margin-bottom: 0.5rem;
+    }
+
+    #tutorial-portrait {
+        width: 80px;
+        height: 80px;
+    }
+
+    .tutorial-dialog {
+        padding: 1rem;
+    }
+
+    #tutorial-title {
+        font-size: 1.2rem;
+    }
+
+    #tutorial-text {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+}
+

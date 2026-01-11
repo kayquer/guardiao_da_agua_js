@@ -11,7 +11,8 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/ui.css">
     <link rel="stylesheet" href="css/responsive.css">
-    
+    <link rel="stylesheet" href="css/tutorial.css">
+
     <!-- Babylon.js CDN -->
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
@@ -396,6 +397,42 @@
     <!-- Clean Code Refactoring: Game Constants (loaded first) -->
     <script src="js/config/GameConstants.js"></script>
 
+    <!-- ===== TUTORIAL SYSTEM ===== -->
+    <div id="tutorial-container">
+        <div id="tutorial-background"></div>
+        <div class="tutorial-content">
+            <!-- Character Portrait -->
+            <div class="tutorial-portrait-container">
+                <img id="tutorial-portrait" src="" alt="Pesquisadora Claudia">
+            </div>
+
+            <!-- Dialog Box -->
+            <div class="tutorial-dialog-box">
+                <div class="tutorial-dialog">
+                    <div class="tutorial-character-name" id="tutorial-character-name">Pesquisadora Claudia</div>
+
+                    <div class="tutorial-dialog-header">
+                        <span id="tutorial-icon">👋</span>
+                        <h2 id="tutorial-title">Bem-vindo!</h2>
+                    </div>
+
+                    <p id="tutorial-text">
+                        Olá! Eu sou a Pesquisadora Claudia, e você foi escolhido para uma missão muito importante!
+                    </p>
+
+                    <div class="tutorial-controls">
+                        <div class="tutorial-progress" id="tutorial-progress">1 / 16</div>
+                        <div class="tutorial-buttons">
+                            <button id="tutorial-skip-btn" class="tutorial-btn">Pular Tutorial</button>
+                            <button id="tutorial-prev-btn" class="tutorial-btn" disabled>Anterior</button>
+                            <button id="tutorial-next-btn" class="tutorial-btn">Próximo</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Utilitários primeiro -->
     <script src="js/utils/GameUtils.js"></script>
     <script src="js/utils/AssetLoader.js"></script>
@@ -418,6 +455,7 @@
     <script src="js/systems/QuestSystem.js"></script>
     <script src="js/systems/EventSystem.js"></script>
     <script src="js/systems/SaveSystem.js"></script>
+    <script src="js/systems/TutorialSystem.js"></script>
     <script src="js/systems/TutorialManager.js"></script>
     <script src="js/systems/SettingsManager.js"></script>
 

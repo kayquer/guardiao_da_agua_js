@@ -372,19 +372,52 @@ async function continueGame() {
 function startTutorial() {
     console.log('📚 Iniciando tutorial...');
 
-    // Verificar se TutorialManager está disponível
-    if (typeof TutorialManager !== 'undefined') {
+    // Verificar se TutorialSystem está disponível
+    if (typeof TutorialSystem !== 'undefined') {
         try {
-            const tutorialManager = new TutorialManager(null);
-            tutorialManager.startTutorial();
-            showScreen('tutorial-screen');
+            // Create a temporary tutorial system instance
+            const tutorialSystem = new TutorialSystem(null);
+            tutorialSystem.start();
+
+            // Setup button event listeners
+            setupTutorialButtons(tutorialSystem);
+
+            console.log('✅ Tutorial iniciado');
         } catch (error) {
             console.error('❌ Erro ao inicializar tutorial:', error);
             alert('Erro ao carregar o tutorial: ' + error.message);
         }
     } else {
-        console.error('❌ TutorialManager não carregado');
+        console.error('❌ TutorialSystem não carregado');
         alert('Sistema de tutorial não disponível. Verifique se todos os scripts foram carregados.');
+    }
+}
+
+function setupTutorialButtons(tutorialSystem) {
+    // Next button
+    const nextBtn = document.getElementById('tutorial-next-btn');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            tutorialSystem.next();
+        });
+    }
+
+    // Previous button
+    const prevBtn = document.getElementById('tutorial-prev-btn');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            tutorialSystem.previous();
+        });
+    }
+
+    // Skip button
+    const skipBtn = document.getElementById('tutorial-skip-btn');
+    if (skipBtn) {
+        skipBtn.addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja pular o tutorial?')) {
+                tutorialSystem.skip();
+            }
+        });
     }
 }
 

@@ -22,6 +22,7 @@ class GameManager {
         this.questSystem = null;
         this.eventSystem = null;
         this.saveSystem = null;
+        this.tutorialSystem = null;
         this.tutorialManager = null;
         this.cityLifeSystem = null;
 
@@ -139,6 +140,7 @@ class GameManager {
             this.questSystem = new QuestSystem(this);
             this.eventSystem = new EventSystem(this);
             this.saveSystem = new SaveSystem();
+            this.tutorialSystem = new TutorialSystem(this);
             this.tutorialManager = new TutorialManager(this);
             
             this.setupEventListeners();
