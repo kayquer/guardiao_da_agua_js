@@ -1217,10 +1217,15 @@ class BuildingSystem {
     }
 
     addBuildingType(id, config) {
+        // ===== FEATURE FLAGS: Check if building should be visible in release version =====
+        const isVisible = typeof FEATURE_FLAGS !== 'undefined' ? FEATURE_FLAGS.isBuildingVisible(id) : true;
+        const isCategoryVisible = typeof FEATURE_FLAGS !== 'undefined' ? FEATURE_FLAGS.isCategoryVisible(config.category) : true;
+
         this.buildingTypes.set(id, {
             id,
             ...config,
-            unlocked: true // Por enquanto todos desbloqueados
+            unlocked: true, // Por enquanto todos desbloqueados
+            visible: isVisible && isCategoryVisible // Hide based on feature flags
         });
     }
 
@@ -5283,10 +5288,12 @@ removePowerShortageIcon(building) {
     }
 }
     // ===== GETTERS =====
-    getBuildingTypes() { return Array.from(this.buildingTypes.values()); }
+    getBuildingTypes() {
+        return Array.from(this.buildingTypes.values()).filter(type => type.visible !== false);
+    }
     getBuildingTypesByCategory(category) {
         return Array.from(this.buildingTypes.values()).filter(
-            type => type.category === category
+            type => type.category === category && type.visible !== false
         );
     }
     getAllBuildings() { return Array.from(this.buildings.values()); }

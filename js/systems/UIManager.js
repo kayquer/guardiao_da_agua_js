@@ -517,6 +517,16 @@ class UIManager {
             { id: 'zoning', name: '🏘️ Zoneamento', icon: '🏘️' }
         ];
 
+        // ===== FEATURE FLAGS: Hide categories based on release configuration =====
+        if (typeof FEATURE_FLAGS !== 'undefined') {
+            categories.forEach(category => {
+                const categoryBtn = document.querySelector(`[data-category="${category.id}"]`);
+                if (categoryBtn && !FEATURE_FLAGS.isCategoryVisible(category.id)) {
+                    categoryBtn.style.display = 'none';
+                }
+            });
+        }
+
         // As categorias já estão no HTML, apenas configurar eventos
         this.selectCategory('water'); // Categoria padrão
     }
@@ -614,6 +624,67 @@ class UIManager {
 
         // Create mobile panel headers for hud-right
         this.createMobilePanelHeaders();
+
+        // ===== MOBILE BOTTOM HUD TOGGLE =====
+        this.createMobileBottomHudToggle();
+    }
+
+    createMobileBottomHudToggle() {
+        if (!this.isMobile) return;
+
+        // Remove existing toggle if any
+        const existingToggle = document.querySelector('.hud-bottom-toggle');
+        if (existingToggle) existingToggle.remove();
+
+        // Create toggle button
+        const hudBottomToggle = document.createElement('button');
+        hudBottomToggle.className = 'hud-bottom-toggle';
+        hudBottomToggle.innerHTML = '▲'; // Up arrow (collapsed state)
+        hudBottomToggle.title = 'Mostrar/Ocultar informações de missão';
+
+        // Track state
+        this.hudBottomExpanded = false;
+
+        // Toggle handler
+        const toggleHandler = (e) => {
+            e.preventDefault();
+            this.toggleMobileBottomHud();
+        };
+
+        hudBottomToggle.addEventListener('click', toggleHandler);
+        hudBottomToggle.addEventListener('touchend', toggleHandler, { passive: false });
+
+        document.body.appendChild(hudBottomToggle);
+
+        // Store reference
+        this.hudBottomToggleButton = hudBottomToggle;
+
+        console.log('📱 Mobile bottom HUD toggle created');
+    }
+
+    toggleMobileBottomHud() {
+        if (!this.isMobile) return;
+
+        const hudBottom = document.querySelector('.hud-bottom');
+        const toggleButton = this.hudBottomToggleButton;
+
+        if (!hudBottom || !toggleButton) return;
+
+        this.hudBottomExpanded = !this.hudBottomExpanded;
+
+        if (this.hudBottomExpanded) {
+            // Expand
+            hudBottom.classList.add('expanded');
+            toggleButton.classList.add('expanded');
+            toggleButton.innerHTML = '▼'; // Down arrow (expanded state)
+            console.log('📱 Mobile bottom HUD expanded');
+        } else {
+            // Collapse
+            hudBottom.classList.remove('expanded');
+            toggleButton.classList.remove('expanded');
+            toggleButton.innerHTML = '▲'; // Up arrow (collapsed state)
+            console.log('📱 Mobile bottom HUD collapsed');
+        }
     }
 
     /**
@@ -1815,24 +1886,87 @@ class UIManager {
 
     // ===== NOTIFICAÇÕES =====
     showNotification(message, type = 'info', duration = 5000) {
+        // ===== BREAKING NEWS SYSTEM FOR MOBILE =====
+        if (this.isMobile) {
+            this.showBreakingNews(message, type, duration);
+            return;
+        }
+
+        // Desktop notification system
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.innerHTML = `
             ${message}
             <button class="notification-close">✕</button>
         `;
-        
+
         if (this.elements.notifications) {
             this.elements.notifications.appendChild(notification);
         }
-        
+
         // Remover automaticamente
         setTimeout(() => {
             this.removeNotification(notification);
         }, duration);
-        
+
         // Limitar número de notificações
         this.limitNotifications();
+    }
+
+    // ===== BREAKING NEWS NOTIFICATION SYSTEM (MOBILE) =====
+    showBreakingNews(message, type = 'info', duration = 4000) {
+        // Create container if it doesn't exist
+        let container = document.querySelector('.breaking-news-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'breaking-news-container';
+            document.body.appendChild(container);
+        }
+
+        // Create breaking news element
+        const breakingNews = document.createElement('div');
+        breakingNews.className = `breaking-news ${type}`;
+
+        // Get icon based on type
+        const icons = {
+            info: '📢',
+            warning: '⚠️',
+            error: '❌',
+            success: '✅'
+        };
+        const icon = icons[type] || '📢';
+
+        // Get title based on type
+        const titles = {
+            info: 'Informação',
+            warning: 'Atenção',
+            error: 'Erro',
+            success: 'Sucesso'
+        };
+        const title = titles[type] || 'Notícia';
+
+        breakingNews.innerHTML = `
+            <div class="breaking-news-icon">${icon}</div>
+            <div class="breaking-news-content">
+                <div class="breaking-news-title">${title}</div>
+                <div class="breaking-news-text">${message}</div>
+            </div>
+        `;
+
+        // Add to container
+        container.appendChild(breakingNews);
+
+        // Auto-dismiss after duration
+        setTimeout(() => {
+            breakingNews.classList.add('slide-out');
+            setTimeout(() => {
+                if (breakingNews.parentElement) {
+                    breakingNews.parentElement.removeChild(breakingNews);
+                }
+            }, 400); // Match slide-out animation duration
+        }, duration);
+
+        console.log(`📱 Breaking news displayed: ${message}`);
     }
     
     removeNotification(notification, immediate = false) {
@@ -2064,18 +2198,28 @@ class UIManager {
         // Remove mobile controls
         document.querySelectorAll('.mobile-toggle').forEach(btn => btn.remove());
 
+        // Remove mobile bottom HUD toggle
+        const hudBottomToggle = document.querySelector('.hud-bottom-toggle');
+        if (hudBottomToggle) hudBottomToggle.remove();
+
         // Remove mobile panel headers
         document.querySelectorAll('.mobile-panel-header').forEach(header => header.remove());
 
         // Reset mobile state
         this.mobilePanelsVisible = { left: false, right: false };
         this.mobileToggleButtons = null;
+        this.hudBottomToggleButton = null;
+        this.hudBottomExpanded = false;
         this.removeMobileEscapeListener();
 
         // Remove active classes from panels
         document.querySelectorAll('.hud-left, .hud-right').forEach(panel => {
             panel.classList.remove('active');
         });
+
+        // Remove expanded class from hud-bottom
+        const hudBottom = document.querySelector('.hud-bottom');
+        if (hudBottom) hudBottom.classList.remove('expanded');
     }
 
     setupHelpModal() {
@@ -2475,8 +2619,12 @@ class UIManager {
         let actions = '';
         const config = building.config;
 
+        // ===== FEATURE FLAGS: Hide rental button in release version =====
+        const showRentalButton = typeof FEATURE_FLAGS !== 'undefined' ?
+            FEATURE_FLAGS.isUIFeatureVisible('rentalButton') : true;
+
         // Botão de aluguel para edifícios de infraestrutura
-        if (config.waterProduction > 0 || config.powerGeneration > 0) {
+        if (showRentalButton && (config.waterProduction > 0 || config.powerGeneration > 0)) {
             const rentalText = building.isRented ? 'Cancelar Aluguel' : 'Alugar para Outras Cidades';
             const rentalIcon = building.isRented ? '🏠' : '🏙️';
             actions += `

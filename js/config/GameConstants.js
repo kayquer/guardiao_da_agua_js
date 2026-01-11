@@ -1,12 +1,59 @@
 /**
  * ===== GUARDIÃO DA ÁGUA - GAME CONSTANTS =====
- * 
+ *
  * Clean Code Refactoring: Extract all magic numbers into meaningful constants
  * This improves code maintainability and readability while following Clean Code principles
- * 
+ *
  * @author Guardião da Água Development Team
  * @version 1.0.0
  */
+
+// ===== FEATURE FLAGS FOR RELEASE VERSION =====
+const FEATURE_FLAGS = {
+    // Building types to hide in release version
+    HIDDEN_BUILDINGS: [
+        'power_pole',
+        'thermal_plant',
+        'coal_plant',
+        'nuclear_plant'
+    ],
+
+    // Building categories to hide in release version
+    HIDDEN_CATEGORIES: [
+        'zoning',
+        'tourism',
+        'infrastructure'
+    ],
+
+    // UI features to hide in release version
+    HIDDEN_UI_FEATURES: {
+        rentalButton: true,  // Hide rental functionality
+        loanButton: false,   // Keep loan button visible
+        helpButton: false    // Keep help button visible
+    },
+
+    // Enable/disable features globally
+    ENABLE_ZONING: false,
+    ENABLE_TOURISM: false,
+    ENABLE_INFRASTRUCTURE: false,
+    ENABLE_POWER_GRID: false,
+    ENABLE_RENTAL_SYSTEM: false,
+
+    // Check if a building should be visible
+    isBuildingVisible(buildingId) {
+        return !this.HIDDEN_BUILDINGS.includes(buildingId);
+    },
+
+    // Check if a category should be visible
+    isCategoryVisible(category) {
+        return !this.HIDDEN_CATEGORIES.includes(category);
+    },
+
+    // Check if a UI feature should be visible
+    isUIFeatureVisible(featureName) {
+        return !this.HIDDEN_UI_FEATURES[featureName];
+    }
+};
 
 // ===== CAMERA CONSTANTS =====
 const CAMERA = {
