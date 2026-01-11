@@ -386,7 +386,7 @@
     }
 
     .hud-bottom.expanded {
-        height: 100px !important; /* Expanded state */
+        height: 200px !important; /* Expanded state */
         padding: 0.5rem 1rem !important;
         opacity: 1;
     }

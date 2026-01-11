@@ -21,7 +21,7 @@ class QuestSystem {
         this.achievements = new Set();
 
         // Configurações
-        this.maxActiveQuests = 3;
+        this.maxActiveQuests = 99;
 
         // ===== SIMPLIFIED MISSION CATEGORIES - ONLY 2 PRIMARY CATEGORIES =====
         this.missionCategories = {

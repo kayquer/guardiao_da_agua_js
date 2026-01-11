@@ -441,8 +441,34 @@ class SaveSystem {
         if (!gameData) {
             gameData = saveSystem.loadAutoSave();
         }
-        
+
         return gameData;
+    }
+
+    // ===== TUTORIAL COMPLETION TRACKING =====
+    setTutorialCompleted(completed = true) {
+        if (!this.storageAvailable) return false;
+
+        try {
+            localStorage.setItem('guardiao_agua_tutorial_completed', completed ? 'true' : 'false');
+            console.log(`📚 Tutorial completion status set to: ${completed}`);
+            return true;
+        } catch (error) {
+            console.error('❌ Error saving tutorial completion status:', error);
+            return false;
+        }
+    }
+
+    isTutorialCompleted() {
+        if (!this.storageAvailable) return false;
+
+        try {
+            const completed = localStorage.getItem('guardiao_agua_tutorial_completed');
+            return completed === 'true';
+        } catch (error) {
+            console.error('❌ Error checking tutorial completion status:', error);
+            return false;
+        }
     }
 }
 

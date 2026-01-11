@@ -1221,6 +1221,22 @@ class GameManager {
         this.handleResize();
         this.createStarterCity();
 
+        // FIX: Auto-start tutorial if not completed
+        if (this.tutorialSystem && this.saveSystem) {
+            const tutorialCompleted = this.saveSystem.isTutorialCompleted();
+            if (!tutorialCompleted) {
+                console.log('📚 Starting tutorial automatically (first time player)');
+                // Delay tutorial start to allow game to fully initialize
+                setTimeout(() => {
+                    if (this.tutorialSystem) {
+                        this.tutorialSystem.start();
+                    }
+                }, 1000); // 1 second delay
+            } else {
+                console.log('📚 Tutorial already completed, skipping auto-start');
+            }
+        }
+
         console.log('✅ Novo jogo iniciado');
         return true;
     }

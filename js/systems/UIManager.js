@@ -154,7 +154,8 @@ class UIManager {
     showMissionPanel() {
         if (this.elements.detailsPanel) {
             this.elements.detailsPanel.style.display = 'flex';
-            this.uiState.currentOpenPanel = 'missions';
+            this.updatePanelState('missions'); // FIX: Use updatePanelState instead of direct assignment
+
             // Open the right panel (details panel)
             const hudRight = document.querySelector('.hud-right');
             if (!hudRight) return;
@@ -176,13 +177,13 @@ class UIManager {
     closeMissionPanel() {
         if (this.elements.detailsPanel && this.uiState.currentOpenPanel === 'missions') {
             this.closeResourcePanel();
-            this.uiState.currentOpenPanel = null;
+            this.updatePanelState(null); // FIX: Use updatePanelState instead of direct assignment
             this.elements.detailsPanel.style.display = 'none';
             this.elements.detailsContent.innerHTML = '';
             this.gameManager.questSystem.updateMissionInfoPanel();
             this.gameManager.questSystem.updateMissionProgressDisplay();
             this.gameManager.questSystem.closeMissionInterface();
-            
+
         }
     }
     
@@ -941,7 +942,7 @@ class UIManager {
 
             // ===== PANEL STATE MANAGEMENT =====
             if (this.uiState.currentOpenPanel === 'construction') {
-                this.uiState.currentOpenPanel = 'building';
+                this.updatePanelState('building'); // FIX: Use updatePanelState
             }
 
             console.log(`🏗️ Categoria selecionada: ${category}`);
@@ -997,7 +998,7 @@ class UIManager {
             this.setupBuildingItemListeners();
 
             // Update panel state
-            this.uiState.currentOpenPanel = 'building';
+            this.updatePanelState('building'); // FIX: Use updatePanelState
 
         } catch (error) {
             console.error('❌ Error loading building items:', error);
@@ -1098,7 +1099,7 @@ class UIManager {
                 this.showEnhancedBuildingRequirements(buildingType);
 
                 // Update UI state
-                this.uiState.currentOpenPanel = 'construction';
+                this.updatePanelState('construction'); // FIX: Use updatePanelState
                 this.uiState.selectedBuilding = buildingTypeId;
             }
 
@@ -1268,7 +1269,7 @@ class UIManager {
             this.gameManager.enterBuildMode(buildingTypeId);
 
             // Update UI state
-            this.uiState.currentOpenPanel = 'construction';
+            this.updatePanelState('construction'); // FIX: Use updatePanelState
             this.uiState.selectedBuilding = buildingTypeId;
 
             console.log('🏗️ Entering build mode from mobile modal - panels closed');
@@ -1564,12 +1565,12 @@ class UIManager {
                 console.log(`📊 Resource panel opened: ${panelType}`);
             } else {
                 console.warn(`⚠️ Unknown panel type: ${panelType}`);
-                this.uiState.currentOpenPanel = null;
+                this.updatePanelState(null); // FIX: Use updatePanelState
             }
 
         } catch (error) {
             console.error('❌ Error showing resource panel:', error);
-            this.uiState.currentOpenPanel = null;
+            this.updatePanelState(null); // FIX: Use updatePanelState
         } finally {
             this.uiState.isTransitioning = false;
         }
@@ -1922,6 +1923,12 @@ class UIManager {
             container.className = 'breaking-news-container';
             document.body.appendChild(container);
         }
+
+        // FIX: Remove any existing notifications before showing new one (max 1 at a time)
+        const existingNotifications = container.querySelectorAll('.breaking-news');
+        existingNotifications.forEach(notification => {
+            notification.remove();
+        });
 
         // Create breaking news element
         const breakingNews = document.createElement('div');
@@ -4310,7 +4317,7 @@ class UIManager {
             // Show in details panel
             this.elements.detailsContent.innerHTML = detailsHTML;
             this.elements.detailsPanel.style.display = 'flex';
-            this.uiState.currentOpenPanel = 'terrain';
+            this.updatePanelState('terrain'); // FIX: Use updatePanelState
 
             // Audio feedback
             if (typeof AudioManager !== 'undefined') {
