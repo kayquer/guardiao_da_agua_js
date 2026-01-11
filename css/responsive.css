@@ -427,23 +427,54 @@
         background: linear-gradient(135deg, rgba(255,193,7,0.9) 0%, rgba(255,152,0,0.9) 100%);
     }
     
+    /* ===== MOBILE INFO PANEL OPTIMIZATION - FOCUS ON MISSION OBJECTIVE ===== */
     .info-panel {
-        gap: 1rem;
+        gap: 0.5rem;
         padding: 0.5rem 1rem;
+        display: flex;
+        flex-direction: column;
     }
-    
+
+    /* Hide resource info on mobile to maximize mission display space */
+    .info-panel .resource-info {
+        display: none !important;
+    }
+
+    /* Mission info takes full width */
     .mission-info {
-        flex: 2;
+        flex: 1;
+        width: 100%;
+        max-width: 100%;
     }
-    
+
     .mission-info h4 {
         font-size: 0.9rem;
         margin-bottom: 0.3rem;
     }
-    
+
     .mission-info p {
         font-size: 0.8rem;
         margin-bottom: 0.3rem;
+    }
+
+    /* Mission objective display - maximize space */
+    .mission-objective-display {
+        width: 100% !important;
+        padding: 0.75rem !important;
+        min-height: 60px !important;
+    }
+
+    .mission-objective-display .objective-content {
+        flex: 1;
+    }
+
+    .mission-objective-display .objective-title {
+        font-size: 0.95rem !important;
+        line-height: 1.3;
+    }
+
+    .mission-objective-display .objective-action {
+        font-size: 0.8rem !important;
     }
     
     .progress-text {

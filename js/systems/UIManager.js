@@ -4211,12 +4211,26 @@ class UIManager {
             });
         }
 
-        // Enhanced missions button
+        // Enhanced missions button - TOGGLE FUNCTIONALITY
         const missionsBtn = document.getElementById('btn-missions');
         if (missionsBtn) {
             missionsBtn.addEventListener('click', () => {
                 if (this.gameManager.questSystem) {
-                    this.gameManager.questSystem.openMissionInterface();
+                    const isOpen = this.gameManager.questSystem.missionUI.isOpen;
+
+                    if (isOpen) {
+                        // Close mission interface and left HUD panel
+                        this.gameManager.questSystem.closeMissionInterface();
+                        this.closeMobilePanel('left');
+                        missionsBtn.classList.remove('active');
+                        console.log('🎯 Mission interface closed (toggle)');
+                    } else {
+                        // Open mission interface
+                        this.gameManager.questSystem.openMissionInterface();
+                        missionsBtn.classList.add('active');
+                        console.log('🎯 Mission interface opened (toggle)');
+                    }
+
                     AudioManager.playSound('sfx_click', 0.8);
                 }
             });

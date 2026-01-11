@@ -1638,14 +1638,14 @@ class QuestSystem {
 
     /**
      * Renders the complete mission interface
+     * SIMPLIFIED: No category separation - all missions in priority order
      */
     renderMissionInterface() {
         const detailsContent = document.getElementById('details-content');
         if (!detailsContent) return;
 
-        const categories = Object.keys(this.missionCategories);
-        const currentCategory = this.missionUI.currentCategory;
-        const missions = this.getMissionsByCategory(currentCategory);
+        // Get all missions sorted by priority
+        const missions = this.getAllMissionsSorted();
 
         const content = `
             <div class="mission-interface enhanced">
@@ -1654,30 +1654,9 @@ class QuestSystem {
                     <button class="close-btn" onclick="window.gameManager.questSystem.closeMissionInterface()">✖️</button>
                 </div>
 
-                <div class="mission-categories-simplified">
-                    ${categories.map(cat => {
-                        const category = this.missionCategories[cat];
-                        const isActive = cat === currentCategory;
-                        const missionCount = this.getMissionsByCategory(cat).length;
-
-                        return `
-                            <button class="category-btn-large ${isActive ? 'active' : ''}"
-                                    data-tooltip="${category.name} (${missionCount} missões)"
-                                    onclick="window.gameManager.questSystem.selectCategory('${cat}')">
-                                <div class="category-icon-large">${category.icon}</div>
-                                <div class="category-info">
-                                    <div class="category-name-large">${category.name}</div>
-                                    <div class="category-description-small">${category.description}</div>
-                                    <div class="mission-count-badge">${missionCount} missões</div>
-                                </div>
-                            </button>
-                        `;
-                    }).join('')}
-                </div>
-
                 <div class="mission-content-area">
                     <div class="mission-list-header">
-                        <h4>📋 ${this.missionCategories[currentCategory].name}</h4>
+                        <h4>📋 Todas as Missões</h4>
                         <div class="mission-list-stats">
                             <span class="active-missions">${this.activeQuests.size} ativas</span>
                             <span class="completed-missions">${this.completedQuests.size} completas</span>
@@ -1689,8 +1668,8 @@ class QuestSystem {
                             missions.map(mission => this.renderMissionCard(mission)).join('') :
                             `<div class="no-missions">
                                 <div class="no-missions-icon">📭</div>
-                                <div class="no-missions-text">Nenhuma missão disponível nesta categoria</div>
-                                <div class="no-missions-hint">Explore outras categorias ou complete missões anteriores</div>
+                                <div class="no-missions-text">Nenhuma missão disponível</div>
+                                <div class="no-missions-hint">Complete missões anteriores para desbloquear novas</div>
                             </div>`
                         }
                     </div>
@@ -1717,6 +1696,40 @@ class QuestSystem {
         `;
 
         detailsContent.innerHTML = content;
+    }
+
+    /**
+     * Gets all missions sorted by priority:
+     * 1. Active missions
+     * 2. Available missions
+     * 3. Locked missions
+     * 4. Completed missions
+     */
+    getAllMissionsSorted() {
+        const allMissions = Array.from(this.quests.values());
+
+        return allMissions.sort((a, b) => {
+            // Priority 1: Active missions
+            const aActive = this.activeQuests.has(a.id);
+            const bActive = this.activeQuests.has(b.id);
+            if (aActive && !bActive) return -1;
+            if (!aActive && bActive) return 1;
+
+            // Priority 2: Available missions (can start)
+            const aAvailable = this.canStartMission(a.id) && !this.completedQuests.has(a.id);
+            const bAvailable = this.canStartMission(b.id) && !this.completedQuests.has(b.id);
+            if (aAvailable && !bAvailable) return -1;
+            if (!aAvailable && bAvailable) return 1;
+
+            // Priority 3: Locked missions (prerequisites not met)
+            const aCompleted = this.completedQuests.has(a.id);
+            const bCompleted = this.completedQuests.has(b.id);
+            if (!aCompleted && bCompleted) return -1;
+            if (aCompleted && !bCompleted) return 1;
+
+            // Priority 4: Completed missions last
+            return 0;
+        });
     }
 
     /**
@@ -1868,6 +1881,19 @@ class QuestSystem {
                 <span class="stakeholder-list">${stakeholderNames.join(', ')}</span>
             </div>
         `;
+    }
+
+    /**
+     * Gets the display name for a stakeholder
+     */
+    getStakeholderName(stakeholder) {
+        const stakeholderMap = {
+            'citizens': 'Cidadãos',
+            'environment': 'Meio Ambiente',
+            'business': 'Empresas',
+            'government': 'Governo'
+        };
+        return stakeholderMap[stakeholder] || stakeholder;
     }
 
     /**
@@ -2043,28 +2069,11 @@ class QuestSystem {
         }
 
         const mission = this.currentDisplayMission;
-        const currentObjective = this.getCurrentObjective(mission);
 
-        if (!currentObjective) {
-            // Show mission details
-            this.showMissionDetails(mission.id);
-            return;
-        }
+        // Always show mission details when clicked
+        this.showMissionDetails(mission.id);
 
-        // Handle different objective types
-        if (currentObjective.type === 'build') {
-            // Open building panel for the required building type
-            if (currentObjective.buildingType && window.gameManager.uiManager) {
-                // Try to open the appropriate building category
-                this.openBuildingCategory(currentObjective.buildingType);
-            } else {
-                // Fallback to mission details
-                this.showMissionDetails(mission.id);
-            }
-        } else {
-            // For other types, show mission details
-            this.showMissionDetails(mission.id);
-        }
+        console.log(`🎯 Navigating to mission details: ${mission.title}`);
     }
 
     /**
