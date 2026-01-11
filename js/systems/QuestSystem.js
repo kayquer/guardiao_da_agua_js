@@ -49,6 +49,12 @@ class QuestSystem {
             selectedMission: null
         };
 
+        // FIX #3: Carousel state for info panel mission display
+        this.missionCarousel = {
+            currentIndex: 0,
+            missions: []
+        };
+
         this.initializeQuests();
         
         console.log('✅ QuestSystem inicializado');
@@ -2060,6 +2066,7 @@ class QuestSystem {
 
     /**
      * Handles click on current objective display
+     * FIX #2: Now properly shows the details panel after populating content
      */
     focusOnCurrentObjective() {
         if (!this.currentDisplayMission) {
@@ -2072,6 +2079,11 @@ class QuestSystem {
 
         // Always show mission details when clicked
         this.showMissionDetails(mission.id);
+
+        // FIX #2: Show the mission panel after populating content
+        if (this.gameManager.uiManager) {
+            this.gameManager.uiManager.showMissionPanel();
+        }
 
         console.log(`🎯 Navigating to mission details: ${mission.title}`);
     }
@@ -2131,46 +2143,43 @@ class QuestSystem {
     }
 
     /**
-     * Updates the enhanced mission-info panel in the sidebar
+     * FIX #3: Updates the enhanced mission-info panel with carousel support
+     * Shows ALL active/available missions with navigation
      */
     updateMissionInfoPanel() {
         const currentMissionElement = document.getElementById('current-mission');
         const progressTextElement = document.querySelector('.mission-info .progress-text');
         const objectiveActionElement = document.getElementById('objective-action');
         const objectiveIconElement = document.getElementById('objective-icon');
-        const objectiveStatusElement = document.getElementById('objective-status');
         const missionUrgencyElement = document.getElementById('mission-urgency');
         const progressFillElement = document.getElementById('mission-progress');
+        const missionHeaderElement = document.querySelector('.mission-header h4');
 
         if (!currentMissionElement) return;
 
-        // Find the most relevant active mission to display
-        let displayMission = null;
+        // FIX #3: Get all active/available missions for carousel
+        this.missionCarousel.missions = this.getActiveMissionsForDisplay();
 
-        // Priority 1: Current main quest
-        if (this.currentMainQuest && this.activeQuests.has(this.currentMainQuest)) {
-            displayMission = this.quests.get(this.currentMainQuest);
+        // Ensure carousel index is valid
+        if (this.missionCarousel.currentIndex >= this.missionCarousel.missions.length) {
+            this.missionCarousel.currentIndex = Math.max(0, this.missionCarousel.missions.length - 1);
         }
 
-        // Priority 2: Any active primary mission
-        if (!displayMission) {
-            for (const questId of this.activeQuests) {
-                const quest = this.quests.get(questId);
-                if (quest && quest.type === 'primary') {
-                    displayMission = quest;
-                    break;
-                }
-            }
-        }
-
-        // Priority 3: Any active mission
-        if (!displayMission && this.activeQuests.size > 0) {
-            const firstActiveId = this.activeQuests.values().next().value;
-            displayMission = this.quests.get(firstActiveId);
-        }
+        // Get current mission from carousel
+        const displayMission = this.missionCarousel.missions[this.missionCarousel.currentIndex];
 
         // Update the display
         if (displayMission) {
+            // FIX #3: Update header to show carousel position
+            if (missionHeaderElement && this.missionCarousel.missions.length > 1) {
+                missionHeaderElement.innerHTML = `
+                    Missão Atual
+                    <span style="font-size: 0.8em; opacity: 0.7;">(${this.missionCarousel.currentIndex + 1}/${this.missionCarousel.missions.length})</span>
+                `;
+            } else if (missionHeaderElement) {
+                missionHeaderElement.textContent = 'Missão Atual';
+            }
+
             // Get the most important current objective
             const currentObjective = this.getCurrentObjective(displayMission);
 
@@ -2220,6 +2229,9 @@ class QuestSystem {
 
             // Store current mission for click handler
             this.currentDisplayMission = displayMission;
+
+            // FIX #3: Add carousel navigation if multiple missions
+            this.updateCarouselNavigation();
         } else {
             currentMissionElement.textContent = 'Nenhuma missão ativa';
             if (progressTextElement) {
@@ -2238,7 +2250,131 @@ class QuestSystem {
                 missionUrgencyElement.style.display = 'none';
             }
             this.currentDisplayMission = null;
+
+            // FIX #3: Remove carousel navigation if no missions
+            this.removeCarouselNavigation();
         }
+    }
+
+    /**
+     * FIX #3: Gets all active/available missions for carousel display
+     * Filters out completed and locked missions
+     */
+    getActiveMissionsForDisplay() {
+        const missions = [];
+
+        // Get all active missions
+        for (const questId of this.activeQuests) {
+            const quest = this.quests.get(questId);
+            if (quest) {
+                missions.push(quest);
+            }
+        }
+
+        // If no active missions, get available missions
+        if (missions.length === 0) {
+            for (const [questId, quest] of this.quests) {
+                if (quest.status === 'available' && this.canStartMission(questId)) {
+                    missions.push(quest);
+                }
+            }
+        }
+
+        // Sort by priority: main quests first, then by urgency
+        missions.sort((a, b) => {
+            // Priority 1: Main quests
+            if (a.type === 'primary' && b.type !== 'primary') return -1;
+            if (a.type !== 'primary' && b.type === 'primary') return 1;
+
+            // Priority 2: Urgency
+            const urgencyOrder = { critical: 0, high: 1, medium: 2, low: 3, none: 4 };
+            const aUrgency = urgencyOrder[a.urgency] || 4;
+            const bUrgency = urgencyOrder[b.urgency] || 4;
+            return aUrgency - bUrgency;
+        });
+
+        return missions;
+    }
+
+    /**
+     * FIX #3: Updates carousel navigation buttons
+     */
+    updateCarouselNavigation() {
+        const missionHeader = document.querySelector('.mission-header');
+        if (!missionHeader) return;
+
+        // Remove existing navigation
+        const existingNav = document.getElementById('mission-carousel-nav');
+        if (existingNav) {
+            existingNav.remove();
+        }
+
+        // Only show navigation if there are multiple missions
+        if (this.missionCarousel.missions.length <= 1) return;
+
+        // Create navigation buttons
+        const navContainer = document.createElement('div');
+        navContainer.id = 'mission-carousel-nav';
+        navContainer.style.cssText = 'display: flex; gap: 0.5rem; align-items: center;';
+
+        const prevBtn = document.createElement('button');
+        prevBtn.textContent = '◀';
+        prevBtn.style.cssText = 'background: rgba(0,212,255,0.2); border: 2px solid rgba(0,212,255,0.5); color: #00D4FF; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;';
+        prevBtn.onclick = () => this.navigateCarousel(-1);
+        prevBtn.disabled = this.missionCarousel.currentIndex === 0;
+        if (prevBtn.disabled) {
+            prevBtn.style.opacity = '0.3';
+            prevBtn.style.cursor = 'not-allowed';
+        }
+
+        const nextBtn = document.createElement('button');
+        nextBtn.textContent = '▶';
+        nextBtn.style.cssText = 'background: rgba(0,212,255,0.2); border: 2px solid rgba(0,212,255,0.5); color: #00D4FF; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;';
+        nextBtn.onclick = () => this.navigateCarousel(1);
+        nextBtn.disabled = this.missionCarousel.currentIndex >= this.missionCarousel.missions.length - 1;
+        if (nextBtn.disabled) {
+            nextBtn.style.opacity = '0.3';
+            nextBtn.style.cursor = 'not-allowed';
+        }
+
+        navContainer.appendChild(prevBtn);
+        navContainer.appendChild(nextBtn);
+        missionHeader.appendChild(navContainer);
+
+        console.log(`🎯 Carousel navigation updated: ${this.missionCarousel.currentIndex + 1}/${this.missionCarousel.missions.length}`);
+    }
+
+    /**
+     * FIX #3: Removes carousel navigation buttons
+     */
+    removeCarouselNavigation() {
+        const existingNav = document.getElementById('mission-carousel-nav');
+        if (existingNav) {
+            existingNav.remove();
+        }
+    }
+
+    /**
+     * FIX #3: Navigates the mission carousel
+     * @param {number} direction - -1 for previous, 1 for next
+     */
+    navigateCarousel(direction) {
+        const newIndex = this.missionCarousel.currentIndex + direction;
+
+        // Validate index
+        if (newIndex < 0 || newIndex >= this.missionCarousel.missions.length) {
+            return;
+        }
+
+        this.missionCarousel.currentIndex = newIndex;
+        this.updateMissionInfoPanel();
+
+        // Audio feedback
+        if (typeof AudioManager !== 'undefined') {
+            AudioManager.playSound('sfx_click', 0.5);
+        }
+
+        console.log(`🎯 Carousel navigated to mission ${newIndex + 1}/${this.missionCarousel.missions.length}`);
     }
 
     /**

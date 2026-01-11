@@ -389,6 +389,7 @@
         height: 200px !important; /* Expanded state */
         padding: 0.5rem 1rem !important;
         opacity: 1;
+        z-index: 95 !important; /* FIX #4: Above mobile-toggle (85) and btn-missions (90) */
     }
 
     /* Toggle button for HUD bottom */
@@ -410,7 +411,7 @@
         justify-content: center;
         cursor: pointer;
         transition: all 0.3s ease;
-        z-index: 55;
+        z-index: 100 !important; /* FIX #4: Above expanded hud-bottom (95) to remain clickable */
         box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.2);
     }
 
