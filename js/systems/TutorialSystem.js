@@ -6,16 +6,52 @@
 class TutorialSystem {
     constructor(gameManager) {
         console.log('📚 Inicializando TutorialSystem...');
-        
+
         this.gameManager = gameManager;
         this.currentStep = 0;
         this.isActive = false;
         this.canSkip = true; // Allow skipping for testing
-        
+
         // Tutorial steps with educational content
         this.tutorialSteps = this.createTutorialSteps();
-        
+
+        // FIX #1: Setup event listeners for tutorial navigation buttons
+        this.setupEventListeners();
+
         console.log('✅ TutorialSystem inicializado');
+    }
+
+    /**
+     * FIX #1: Setup event listeners for tutorial control buttons
+     */
+    setupEventListeners() {
+        // Skip button
+        const skipBtn = document.getElementById('tutorial-skip-btn');
+        if (skipBtn) {
+            skipBtn.addEventListener('click', () => {
+                if (confirm('Tem certeza que deseja pular o tutorial?')) {
+                    this.skip();
+                }
+            });
+        }
+
+        // Previous button
+        const prevBtn = document.getElementById('tutorial-prev-btn');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+                this.previous();
+            });
+        }
+
+        // Next button
+        const nextBtn = document.getElementById('tutorial-next-btn');
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+                this.next();
+            });
+        }
+
+        console.log('✅ Tutorial event listeners configured');
     }
     
     /**
@@ -236,25 +272,42 @@ class TutorialSystem {
         const step = this.tutorialSteps[this.currentStep];
         if (!step) return;
 
-        // Update character portrait
+        // FIX #3: Update character portrait with proper fallback
         const portrait = document.getElementById('tutorial-portrait');
         if (portrait) {
-            portrait.src = step.portrait;
+            // Use emoji SVG as fallback immediately (don't wait for error)
+            portrait.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%234a9eff" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="80" text-anchor="middle" dy=".3em"%3E👩‍🔬%3C/text%3E%3C/svg%3E';
             portrait.alt = step.character;
-            // Fallback to placeholder if image doesn't exist
-            portrait.onerror = () => {
-                portrait.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%234a9eff" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="80" text-anchor="middle" dy=".3em"%3E👩‍🔬%3C/text%3E%3C/svg%3E';
+
+            // Try to load actual image if it exists
+            const img = new Image();
+            img.onload = () => {
+                portrait.src = step.portrait;
             };
+            img.onerror = () => {
+                // Keep the emoji fallback
+                console.log(`ℹ️ Using emoji fallback for portrait: ${step.character}`);
+            };
+            img.src = step.portrait;
         }
 
-        // Update background
+        // FIX #3: Update background with solid color fallback
         const background = document.getElementById('tutorial-background');
         if (background) {
-            background.style.backgroundImage = `url('${step.background}')`;
-            // Fallback to gradient if image doesn't exist
-            background.onerror = () => {
-                background.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            // Set gradient fallback immediately
+            background.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            background.style.backgroundColor = '#667eea';
+
+            // Try to load actual background if it exists
+            const img = new Image();
+            img.onload = () => {
+                background.style.backgroundImage = `url('${step.background}')`;
             };
+            img.onerror = () => {
+                // Keep the gradient fallback
+                console.log(`ℹ️ Using gradient fallback for background`);
+            };
+            img.src = step.background;
         }
 
         // Update dialog content

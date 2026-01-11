@@ -1547,14 +1547,10 @@ class GameManager {
         this.selectedBuilding = building;
         this.addSelectionIndicator(building);
         this.refreshInfoPanel();
-        //show hud right and info panel with info about selected building
+
+        // FIX #4: Show building info in details panel (removed showMissionPanel interference)
         this.uiManager.showBuildingSelectionInfo(building);
         this.uiManager.toggleMobilePanel('right');
-        this.uiManager.showMissionPanel();
-        
-
-        
-
 
         console.log(`🏢 Selecionado: ${building.config.name}`);
     }

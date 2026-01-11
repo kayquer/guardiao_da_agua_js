@@ -129,7 +129,9 @@
     margin-top: 1rem;
 }
 
+/* FIX #2: Hide tutorial progress display */
 .tutorial-progress {
+    display: none !important;
     font-family: 'Fredoka', sans-serif;
     font-size: 1rem;
     color: #666;

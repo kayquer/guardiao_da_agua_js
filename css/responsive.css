@@ -599,11 +599,7 @@
         font-size: 1.3rem;
     }
     
-    .tutorial-content {
-        font-size: 0.9rem;
-        max-height: 60vh;
-        overflow-y: auto;
-    }
+    
     
     .tutorial-navigation {
         gap: 1rem;
