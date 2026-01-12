@@ -965,11 +965,17 @@
         color: #fff;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
         transition: all 0.3s ease;
+        cursor: pointer; /* Make it clear these are clickable */
     }
 
     .compact-resource-item:hover {
         background: rgba(255, 255, 255, 0.2);
         transform: scale(1.05);
+    }
+
+    .compact-resource-item:active {
+        transform: scale(0.95);
+        background: rgba(255, 255, 255, 0.25);
     }
 
     .compact-icon {

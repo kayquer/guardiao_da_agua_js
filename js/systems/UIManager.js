@@ -221,6 +221,9 @@ class UIManager {
         // ===== ENHANCED RESOURCE PANEL INTERACTION SYSTEM =====
         this.setupEnhancedResourcePanelInteractions();
 
+        // ===== COMPACT RESOURCE INDICATORS CLICK HANDLERS (MOBILE) =====
+        this.setupCompactResourceClickHandlers();
+
         // ESC key para fechar painéis
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && this.uiState.currentOpenPanel) {
@@ -361,6 +364,54 @@ class UIManager {
     }
 
     /**
+     * Sets up click handlers for compact resource indicators (mobile)
+     */
+    setupCompactResourceClickHandlers() {
+        // Compact resource mapping to panel methods
+        const compactResourceMapping = [
+            { id: 'compact-budget', method: () => this.showBudgetDetailsPanel() },
+            { id: 'compact-water', method: () => this.showWaterDetailsPanel() },
+            { id: 'compact-energy', method: () => this.showEnergyDetailsPanel() },
+            { id: 'compact-population', method: () => this.showPopulationDetailsPanel() }
+        ];
+
+        compactResourceMapping.forEach(({ id, method }) => {
+            const element = document.getElementById(id);
+            if (!element) return;
+
+            // Make it look clickable
+            element.style.cursor = 'pointer';
+
+            // Add click handler
+            const clickHandler = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (this.isOnCooldown('compact-resource')) return;
+                this.setCooldown('compact-resource', this.cooldownManager.defaultCooldown);
+
+                // Call the appropriate panel method
+                method();
+
+                // Ensure the details panel is visible with mobile-active class
+                if (this.elements.detailsPanel) {
+                    this.elements.detailsPanel.classList.add('mobile-active');
+                }
+            };
+
+            element.addEventListener('click', clickHandler);
+
+            // Track the listener for cleanup
+            if (!this.eventListeners.compactResource) {
+                this.eventListeners.compactResource = [];
+            }
+            this.eventListeners.compactResource.push({ element, event: 'click', handler: clickHandler });
+        });
+
+        console.log('✅ Compact resource click handlers initialized');
+    }
+
+    /**
      * Gets the resource mapping configuration
      * @returns {Array} Resource mapping array
      */
@@ -481,6 +532,14 @@ class UIManager {
             element.removeEventListener(event, handler);
         });
         this.eventListeners.resource = [];
+
+        // Also cleanup compact resource listeners
+        if (this.eventListeners.compactResource) {
+            this.eventListeners.compactResource.forEach(({ element, event, handler }) => {
+                element.removeEventListener(event, handler);
+            });
+            this.eventListeners.compactResource = [];
+        }
     }
 
     /**

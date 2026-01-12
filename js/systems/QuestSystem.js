@@ -20,6 +20,14 @@ class QuestSystem {
         this.totalScore = 0;
         this.achievements = new Set();
 
+        // Stakeholder Reputation System
+        this.stakeholderReputation = {
+            citizens: 50,
+            environment: 50,
+            business: 50,
+            government: 50
+        };
+
         // Configurações
         this.maxActiveQuests = 99;
 
