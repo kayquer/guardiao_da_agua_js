@@ -19,9 +19,8 @@ const FEATURE_FLAGS = {
     ],
 
     // Building categories to hide in release version
+    // TASK #3: Removed 'zoning' and 'tourism' to re-enable these categories
     HIDDEN_CATEGORIES: [
-        'zoning',
-        'tourism',
         'infrastructure'
     ],
 
@@ -33,8 +32,9 @@ const FEATURE_FLAGS = {
     },
 
     // Enable/disable features globally
-    ENABLE_ZONING: false,
-    ENABLE_TOURISM: false,
+    // TASK #3: Enabled zoning and tourism features
+    ENABLE_ZONING: true,
+    ENABLE_TOURISM: true,
     ENABLE_INFRASTRUCTURE: false,
     ENABLE_POWER_GRID: false,
     ENABLE_RENTAL_SYSTEM: false,

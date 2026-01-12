@@ -460,6 +460,7 @@ class SaveSystem {
     }
 
     isTutorialCompleted() {
+      return false;//TODO: Remover este return false para produção
         if (!this.storageAvailable) return false;
 
         try {

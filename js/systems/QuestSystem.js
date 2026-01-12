@@ -46,7 +46,8 @@ class QuestSystem {
         this.missionUI = {
             isOpen: false,
             currentCategory: 'primary',
-            selectedMission: null
+            selectedMission: null,
+            currentFilter: 'all' // TASK #1: Filter state (all, active, completed, locked)
         };
 
         // FIX #3: Carousel state for info panel mission display
@@ -1460,30 +1461,96 @@ class QuestSystem {
         this.showChoiceDialog(quest, choice);
     }
 
+    /**
+     * TASK #2: Fixed - Shows choice dialog in details panel
+     */
     showChoiceDialog(quest, choice) {
         if (!this.gameManager.uiManager) return;
+
+        const detailsContent = document.getElementById('details-content');
+        if (!detailsContent) return;
 
         const dialogContent = `
             <div class="choice-dialog">
                 <div class="choice-header">
-                    <h3>${quest.title}</h3>
-                    <p class="choice-question">${choice.question}</p>
+                    <div class="choice-mission-title">
+                        <span class="mission-icon">${quest.missionIcon || '🎯'}</span>
+                        <h3>${quest.title}</h3>
+                    </div>
+                    <p class="choice-question">🎭 ${choice.question}</p>
                 </div>
                 <div class="choice-options">
-                    ${choice.options.map((option, index) => `
-                        <button class="choice-option"
-                                onclick="window.gameManager.questSystem.makeChoice('${quest.id}', '${choice.id}', ${index})">
-                            ${option.text}
-                        </button>
-                    `).join('')}
+                    ${choice.options.map((option, index) => {
+                        const consequences = option.consequences || {};
+                        const consequenceText = this.formatConsequences(consequences);
+
+                        return `
+                            <button class="choice-option"
+                                    onclick="window.gameManager.questSystem.makeChoice('${quest.id}', '${choice.id}', ${index})">
+                                <div class="choice-option-text">${option.text}</div>
+                                ${consequenceText ? `<div class="choice-consequences">${consequenceText}</div>` : ''}
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+                <div class="choice-footer">
+                    <button class="choice-cancel-btn" onclick="window.gameManager.questSystem.closeMissionInterface()">
+                        ❌ Cancelar
+                    </button>
                 </div>
             </div>
         `;
 
-        // TODO: Implement choice dialog UI
-        console.log('Choice Dialog:', dialogContent);
+        detailsContent.innerHTML = dialogContent;
+
+        // Show the details panel
+        this.gameManager.uiManager.showMissionPanel();
+
+        console.log(`🎭 Choice dialog shown for: ${quest.title}`);
     }
 
+    /**
+     * TASK #2: Formats consequences for display
+     */
+    formatConsequences(consequences) {
+        const parts = [];
+
+        if (consequences.budget) {
+            const sign = consequences.budget > 0 ? '+' : '';
+            parts.push(`💰 ${sign}R$ ${consequences.budget}`);
+        }
+
+        if (consequences.reputation) {
+            Object.entries(consequences.reputation).forEach(([stakeholder, value]) => {
+                const sign = value > 0 ? '+' : '';
+                const icon = this.getStakeholderIcon(stakeholder);
+                parts.push(`${icon} ${sign}${value}`);
+            });
+        }
+
+        if (consequences.timeLimit) {
+            parts.push(`⏰ ${consequences.timeLimit}s`);
+        }
+
+        return parts.join(' | ');
+    }
+
+    /**
+     * TASK #2: Gets icon for stakeholder
+     */
+    getStakeholderIcon(stakeholder) {
+        const icons = {
+            citizens: '👥',
+            environment: '🌿',
+            business: '💼',
+            government: '🏛️'
+        };
+        return icons[stakeholder] || '📊';
+    }
+
+    /**
+     * TASK #2: Enhanced - Makes a choice and applies consequences
+     */
     makeChoice(questId, choiceId, optionIndex) {
         const quest = this.quests.get(questId);
         if (!quest) return;
@@ -1493,36 +1560,79 @@ class QuestSystem {
 
         const selectedOption = choice.options[optionIndex];
 
+        // Apply consequences
         this.applyChoiceConsequences(selectedOption.consequences);
 
+        // Remove the choice from the quest
         quest.choices = quest.choices.filter(c => c.id !== choiceId);
 
+        // Show notification
         if (this.gameManager.uiManager) {
             this.gameManager.uiManager.showNotification(
-                `Decisão tomada: ${selectedOption.text}`,
-                'info',
-                4000
+                `✅ Decisão tomada: ${selectedOption.text}`,
+                'success',
+                5000
             );
         }
+
+        // Audio feedback
+        if (typeof AudioManager !== 'undefined') {
+            AudioManager.playSound('sfx_success', 0.8);
+        }
+
+        // Refresh mission interface to show updated mission
+        this.renderMissionInterface();
 
         console.log(`🎯 Escolha feita: ${selectedOption.text}`);
     }
 
+    /**
+     * TASK #2: Enhanced - Applies choice consequences (budget, reputation, etc.)
+     */
     applyChoiceConsequences(consequences) {
         if (!consequences) return;
 
+        // Apply budget changes
         if (consequences.budget && this.gameManager.resourceManager) {
             this.gameManager.resourceManager.resources.budget.current += consequences.budget;
 
             if (consequences.budget !== 0) {
                 const type = consequences.budget > 0 ? 'Ganho' : 'Gasto';
                 const amount = Math.abs(consequences.budget);
-                console.log(`💰 ${type} de orçamento: ${amount}`);
+                console.log(`💰 ${type} de orçamento: R$ ${amount}`);
             }
         }
 
+        // Apply reputation changes
+        if (consequences.reputation) {
+            Object.entries(consequences.reputation).forEach(([stakeholder, value]) => {
+                if (!this.stakeholderReputation[stakeholder]) {
+                    this.stakeholderReputation[stakeholder] = 50; // Default reputation
+                }
+
+                this.stakeholderReputation[stakeholder] += value;
+                this.stakeholderReputation[stakeholder] = Math.max(0, Math.min(100, this.stakeholderReputation[stakeholder]));
+
+                const icon = this.getStakeholderIcon(stakeholder);
+                const sign = value > 0 ? '+' : '';
+                console.log(`${icon} Reputação ${stakeholder}: ${sign}${value} (total: ${this.stakeholderReputation[stakeholder]})`);
+            });
+        }
+
+        // Apply time limit changes
         if (consequences.timeLimit) {
             console.log(`⏰ Limite de tempo alterado: ${consequences.timeLimit}s`);
+        }
+
+        // Apply resource changes
+        if (consequences.resources && this.gameManager.resourceManager) {
+            Object.entries(consequences.resources).forEach(([resource, value]) => {
+                if (resource === 'water') {
+                    this.gameManager.resourceManager.resources.water.current += value;
+                } else if (resource === 'pollution') {
+                    this.gameManager.resourceManager.resources.pollution.current += value;
+                }
+            });
         }
     }
 
@@ -1644,14 +1754,26 @@ class QuestSystem {
 
     /**
      * Renders the complete mission interface
-     * SIMPLIFIED: No category separation - all missions in priority order
+     * TASK #1: Added filter system for missions
      */
     renderMissionInterface() {
         const detailsContent = document.getElementById('details-content');
         if (!detailsContent) return;
 
         // Get all missions sorted by priority
-        const missions = this.getAllMissionsSorted();
+        const allMissions = this.getAllMissionsSorted();
+
+        // TASK #1: Apply filter
+        const missions = this.filterMissions(allMissions, this.missionUI.currentFilter);
+
+        // TASK #1: Count missions by status
+        const activeMissions = allMissions.filter(m => this.activeQuests.has(m.id));
+        const completedMissions = allMissions.filter(m => this.completedQuests.has(m.id));
+        const lockedMissions = allMissions.filter(m =>
+            !this.activeQuests.has(m.id) &&
+            !this.completedQuests.has(m.id) &&
+            !this.canStartMission(m.id)
+        );
 
         const content = `
             <div class="mission-interface enhanced">
@@ -1662,11 +1784,31 @@ class QuestSystem {
 
                 <div class="mission-content-area">
                     <div class="mission-list-header">
-                        <h4>📋 Todas as Missões</h4>
+                        <h4>📋 Missões</h4>
                         <div class="mission-list-stats">
-                            <span class="active-missions">${this.activeQuests.size} ativas</span>
-                            <span class="completed-missions">${this.completedQuests.size} completas</span>
+                            <span class="active-missions">${activeMissions.length} ativas</span>
+                            <span class="completed-missions">${completedMissions.length} completas</span>
                         </div>
+                    </div>
+
+                    <!-- TASK #1: Filter Buttons -->
+                    <div class="mission-filters">
+                        <button class="filter-btn ${this.missionUI.currentFilter === 'all' ? 'active' : ''}"
+                                onclick="window.gameManager.questSystem.setMissionFilter('all')">
+                            📋 Todas (${allMissions.length})
+                        </button>
+                        <button class="filter-btn ${this.missionUI.currentFilter === 'active' ? 'active' : ''}"
+                                onclick="window.gameManager.questSystem.setMissionFilter('active')">
+                            ✅ Ativas (${activeMissions.length})
+                        </button>
+                        <button class="filter-btn ${this.missionUI.currentFilter === 'completed' ? 'active' : ''}"
+                                onclick="window.gameManager.questSystem.setMissionFilter('completed')">
+                            🏆 Concluídas (${completedMissions.length})
+                        </button>
+                        <button class="filter-btn ${this.missionUI.currentFilter === 'locked' ? 'active' : ''}"
+                                onclick="window.gameManager.questSystem.setMissionFilter('locked')">
+                            🔒 Bloqueadas (${lockedMissions.length})
+                        </button>
                     </div>
 
                     <div class="mission-list-enhanced">
@@ -1674,8 +1816,8 @@ class QuestSystem {
                             missions.map(mission => this.renderMissionCard(mission)).join('') :
                             `<div class="no-missions">
                                 <div class="no-missions-icon">📭</div>
-                                <div class="no-missions-text">Nenhuma missão disponível</div>
-                                <div class="no-missions-hint">Complete missões anteriores para desbloquear novas</div>
+                                <div class="no-missions-text">Nenhuma missão nesta categoria</div>
+                                <div class="no-missions-hint">Tente outro filtro para ver mais missões</div>
                             </div>`
                         }
                     </div>
@@ -1736,6 +1878,49 @@ class QuestSystem {
             // Priority 4: Completed missions last
             return 0;
         });
+    }
+
+    /**
+     * TASK #1: Filters missions based on selected filter
+     * @param {Array} missions - Array of missions to filter
+     * @param {string} filter - Filter type ('all', 'active', 'completed', 'locked')
+     * @returns {Array} Filtered missions
+     */
+    filterMissions(missions, filter) {
+        switch (filter) {
+            case 'active':
+                return missions.filter(m => this.activeQuests.has(m.id));
+
+            case 'completed':
+                return missions.filter(m => this.completedQuests.has(m.id));
+
+            case 'locked':
+                return missions.filter(m =>
+                    !this.activeQuests.has(m.id) &&
+                    !this.completedQuests.has(m.id) &&
+                    !this.canStartMission(m.id)
+                );
+
+            case 'all':
+            default:
+                return missions;
+        }
+    }
+
+    /**
+     * TASK #1: Sets the mission filter and re-renders the interface
+     * @param {string} filter - Filter type ('all', 'active', 'completed', 'locked')
+     */
+    setMissionFilter(filter) {
+        this.missionUI.currentFilter = filter;
+        this.renderMissionInterface();
+
+        // Audio feedback
+        if (typeof AudioManager !== 'undefined') {
+            AudioManager.playSound('sfx_click', 0.6);
+        }
+
+        console.log(`🎯 Mission filter set to: ${filter}`);
     }
 
     /**

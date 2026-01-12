@@ -1221,21 +1221,27 @@ class GameManager {
         this.handleResize();
         this.createStarterCity();
 
-        // FIX: Auto-start tutorial if not completed
-        if (this.tutorialSystem && this.saveSystem) {
-            const tutorialCompleted = this.saveSystem.isTutorialCompleted();
-            if (!tutorialCompleted) {
-                console.log('📚 Starting tutorial automatically (first time player)');
-                // Delay tutorial start to allow game to fully initialize
-                setTimeout(() => {
-                    if (this.tutorialSystem) {
-                        this.tutorialSystem.start();
-                    }
-                }, 1000); // 1 second delay
-            } else {
-                console.log('📚 Tutorial already completed, skipping auto-start');
+        // TASK #5: Tutorial auto-start disabled (causing initialization errors)
+        // TODO: Re-enable after fixing SaveSystem initialization timing
+        /*
+        try {
+            if (this.tutorialSystem && this.saveSystem && typeof this.saveSystem.isTutorialCompleted === 'function') {
+                const tutorialCompleted = this.saveSystem.isTutorialCompleted();
+                if (!tutorialCompleted) {
+                    console.log('📚 Starting tutorial automatically (first time player)');
+                    setTimeout(() => {
+                        if (this.tutorialSystem) {
+                            this.tutorialSystem.start();
+                        }
+                    }, 1000);
+                } else {
+                    console.log('📚 Tutorial already completed, skipping auto-start');
+                }
             }
+        } catch (error) {
+            console.warn('⚠️ Could not check tutorial status:', error);
         }
+        */
 
         console.log('✅ Novo jogo iniciado');
         return true;
@@ -1680,7 +1686,7 @@ class GameManager {
             tessellation: 32
         }, this.scene);
         aura.rotation.x = Math.PI / 2; // Rotate to be horizontal
-        aura.position.y = 0.05;
+        aura.position.y = 0.25;
         aura.parent = selectionParent;
 
         const auraMaterial = new BABYLON.StandardMaterial(`selectionAuraMat_${building.id}`, this.scene);

@@ -57,182 +57,166 @@ class TutorialSystem {
     /**
      * Creates all tutorial steps with educational content
      */
-    createTutorialSteps() {
-        return [
-            // Step 1: Introduction
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_1.jpg',
-                title: 'Bem-vindo, Guardião!',
-                text: 'Olá! Eu sou a Pesquisadora Claudia, e você foi escolhido para uma missão muito importante! Você será o responsável por gerenciar os recursos hídricos da nossa cidade. Está pronto para essa aventura?',
-                icon: '👋'
-            },
-            
-            // Step 2: Game Concept
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_2.jpg',
-                title: 'Sua Missão',
-                text: 'Como Guardião da Água, você vai construir estações de tratamento, proteger nascentes, e tomar decisões que afetam toda a população. Cada escolha sua terá consequências reais para a cidade!',
-                icon: '🎯'
-            },
-            
-            // Step 3: Water Resources
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_3.jpg',
-                title: 'Recursos Hídricos',
-                text: 'Os recursos hídricos são todas as fontes de água disponíveis: rios, lagos, água subterrânea e até a chuva! Nossa missão é proteger e usar esses recursos de forma inteligente.',
-                icon: '💧',
-                educationalTopic: 'recursos_hidricos'
-            },
-            
-            // Step 4: Hydrological Cycle
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_4.jpg',
-                title: 'Ciclo Hidrológico',
-                text: 'A água está sempre em movimento! Ela evapora dos rios e oceanos, forma nuvens, cai como chuva, infiltra no solo e volta aos rios. É um ciclo perfeito da natureza!',
-                icon: '🌊',
-                educationalTopic: 'ciclo_hidrologico'
-            },
-            
-            // Step 5: Watershed
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_5.jpg',
-                title: 'Bacia Hidrográfica',
-                text: 'Uma bacia hidrográfica é como uma grande bacia natural onde toda a água da chuva escorre para o mesmo rio principal. Tudo que acontece em uma parte da bacia afeta o resto!',
-                icon: '🏞️',
-                educationalTopic: 'bacia_hidrografica'
-            },
-            
-            // Step 6: Research Centers
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_6.jpg',
-                title: 'Centros de Pesquisa',
-                text: 'Os centros de pesquisa são essenciais! Eles estudam a qualidade da água, desenvolvem novas tecnologias de tratamento e nos ajudam a tomar decisões baseadas em ciência.',
-                icon: '🔬',
-                educationalTopic: 'centros_pesquisa'
-            },
-            
-            // Step 7: Agricultural Impact
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_7.jpg',
-                title: 'Agricultura e Água',
-                text: 'A produção de cana-de-açúcar e a pecuária precisam de muita água. O uso de agrotóxicos pode contaminar rios e lençóis freáticos. Precisamos equilibrar produção e proteção ambiental!',
-                icon: '🌾',
-                educationalTopic: 'agricultura_agua'
-            },
+ createTutorialSteps() {
+    return [
+        // Step 1: Introduction & Responsibility
+        {
+            character: 'Claudia',
+            // Avatar estilo cartoon gerado dinamicamente
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            // Fundo: Imagem tecnológica/global
+            background: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1080',
+            title: 'Precisamos da sua visão, Guardião.',
+            text: 'Olá, eu sou a Pesquisadora Cláudia. A situação dos nossos recursos hídricos chegou a um ponto crítico e precisamos de alguém com capacidade estratégica para assumir o comando. Eu estarei aqui para dar suporte, mas as decisões difíceis? Essas serão suas.',
+            icon: '👋'
+        },
+        
+        // Step 2: Concepts - Resources & Cycle
+        {
+            character: 'Claudia',
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            // Fundo: Chuva/Ciclo da água
+            background: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=1080',
+            title: 'Entendendo o Sistema',
+            text: 'Antes de agir, observe. Nossos **recursos hídricos** não são infinitos. Eles dependem do **ciclo hidrológico**: a chuva cai, infiltra no solo, abastece os rios e evapora novamente. Se quebrarmos um elo desse ciclo, o sistema entra em colapso.',
+            icon: '🔄',
+            educationalTopic: 'ciclo_hidrologico'
+        },
+        
+        // Step 3: Concept - Watershed
+        {
+            character: 'Claudia',
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            // Fundo: Vista aérea de rio sinuoso (Bacia)
+            background: 'https://images.unsplash.com/photo-1504198458649-3128b932f49e?q=80&w=1080',
+            title: 'O Território: A Bacia Hidrográfica',
+            text: 'Imagine a região como uma grande tigela inclinada. Isso é a **Bacia Hidrográfica**. Toda gota de chuva ou poluente que cai nas bordas escorre para o mesmo rio principal no centro. Ou seja: o que você faz no alto do morro impacta quem vive lá embaixo.',
+            icon: '🏞️',
+            educationalTopic: 'bacia_hidrografica'
+        },
+        
+        // Step 4: Research Centers
+        {
+            character: 'Claudia',
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            // Fundo: Laboratório/Microscópio
+            background: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=1080',
+            title: 'Informação é Poder',
+            text: 'Não tome decisões no escuro. Os **Centros de Pesquisa** são seus olhos e ouvidos. Eles monitoram a qualidade da água e indicam onde estão os problemas invisíveis. Sem ciência, estamos apenas adivinhando.',
+            icon: '🔬',
+            educationalTopic: 'centros_pesquisa'
+        },
+        
+        // Step 5: Agriculture Dilemma
+        {
+            character: 'Claudia',
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            // Fundo: Plantação vasta
+            background: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=1080',
+            title: 'O Desafio da Produção',
+            text: 'Aqui temos um dilema: a **produção de cana** e a **pecuária** movem a economia, mas exigem muita água. O risco real? O uso incorreto de **agrotóxicos**. Se eles lavarem para o rio, contaminam tudo. Seu papel é buscar o equilíbrio.',
+            icon: '⚖️',
+            educationalTopic: 'agricultura_agua'
+        },
 
-            // Step 8: Riparian Forest and APP
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_8.jpg',
-                title: 'Mata Ciliar e APP',
-                text: 'A mata ciliar é a vegetação que protege as margens dos rios. As APPs (Áreas de Preservação Permanente) são zonas protegidas por lei. Elas evitam erosão e mantêm a água limpa!',
-                icon: '🌳',
-                educationalTopic: 'mata_ciliar_app'
-            },
+        // Step 6: Riparian Forest & APP
+        {
+            character: 'Téo, a Lontra',
+            // Retrato: Lontra real (Unsplash)
+            portrait: 'https://images.unsplash.com/photo-1598556885318-48a33d94309f?q=80&w=400',
+            // Fundo: Floresta densa e verde
+            background: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1080',
+            title: 'Ei! Proteja minha casa! 🦦',
+            text: 'Oi! A Claudia fala difícil, né? Deixa eu explicar: a **Mata Ciliar** funciona como os cílios dos seus olhos. Ela protege o rio! Essas áreas são **APPs (Áreas de Preservação Permanente)**. Sem elas, a terra cai na água e minha toca desaparece.',
+            icon: '🌳',
+            educationalTopic: 'mata_ciliar_app'
+        },
 
-            // Step 9: Sewage and Contamination
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_9.jpg',
-                title: 'Esgoto e Contaminação',
-                text: 'O despejo de esgoto sem tratamento nos rios é um problema grave! Contamina a água, mata peixes e pode causar doenças. Precisamos construir estações de tratamento!',
-                icon: '🚰',
-                educationalTopic: 'esgoto_contaminacao'
-            },
+        // Step 7: Erosion & Sedimentation
+        {
+            character: 'Téo, a Lontra',
+            portrait: 'https://images.unsplash.com/photo-1598556885318-48a33d94309f?q=80&w=400',
+            // Fundo: Terra seca/Erosão
+            background: 'https://images.unsplash.com/photo-1599940824399-b87987ce0799?q=80&w=1080',
+            title: 'O Rio está sufocando',
+            text: 'Quando tiram as árvores, a chuva leva a terra solta para o rio. Isso é **erosão**. Essa terra se acumula no fundo (**assoreamento**) e o rio fica rasinho. É como tentar nadar em uma piscina cheia de areia. Não dá!',
+            icon: '🧱',
+            educationalTopic: 'erosao_assoreamento'
+        },
 
-            // Step 10: Erosion and Sedimentation
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_10.jpg',
-                title: 'Erosão e Assoreamento',
-                text: 'Quando a chuva leva terra para os rios, isso se chama erosão. O acúmulo de sedimentos no fundo dos rios é o assoreamento. Isso diminui a quantidade de água disponível!',
-                icon: '⛰️',
-                educationalTopic: 'erosao_assoreamento'
-            },
+        // Step 8: Sewage & Contamination Details
+        {
+            character: 'Dr. Sapo',
+            // Retrato: Sapo real vibrante (Unsplash)
+            portrait: 'https://images.unsplash.com/photo-1579389083078-4e7018379f7e?q=80&w=400',
+            // Fundo: Água turva/poluída
+            background: 'https://images.unsplash.com/photo-1573166675921-076ea6b621ce?q=80&w=1080',
+            title: 'Alerta de Toxicidade! ☣️',
+            text: 'Croac! Atenção aos níveis de **esgoto**! O excesso de matéria orgânica consome todo o **oxigênio dissolvido** na água. Além disso, traz **coliformes fecais** e doenças. Sem tratamento de esgoto, a vida aquática — e a minha — acaba.',
+            icon: '🤢',
+            educationalTopic: 'esgoto_contaminacao'
+        },
 
-            // Step 11: Groundwater Protection
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_11.jpg',
-                title: 'Água Subterrânea',
-                text: 'A água subterrânea fica armazenada em aquíferos, como grandes reservatórios naturais. Uma vez contaminada, é muito difícil limpar! Proteger nascentes e evitar poluição é essencial.',
-                icon: '💦',
-                educationalTopic: 'agua_subterranea'
-            },
+        // Step 9: Groundwater & Springs
+        {
+            character: 'Claudia',
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            // Fundo: Caverna ou água subterrânea (atmosfera)
+            background: 'https://images.unsplash.com/photo-1633511090164-b43840ea1607?q=80&w=1080',
+            title: 'O Perigo Invisível',
+            text: 'Cuidado com o que vaza para o solo. **Chorume** de lixões e excesso de **nitrato** podem contaminar a **água subterrânea**. Uma vez poluído, um aquífero pode levar décadas para se recuperar. Proteja as **nascentes** como se fossem tesouros.',
+            icon: '💧',
+            educationalTopic: 'agua_subterranea'
+        },
 
-            // Step 12: Spring and River Protection
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_12.jpg',
-                title: 'Proteção de Nascentes',
-                text: 'As nascentes são o início dos rios! Protegê-las com vegetação nativa e cercas evita que animais e poluentes contaminem a água desde a origem.',
-                icon: '⛲',
-                educationalTopic: 'protecao_nascentes'
-            },
+        // Step 10: Urban Planning (Várzea)
+        {
+            character: 'Claudia',
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            // Fundo: Cidade próxima à água
+            background: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=1080',
+            title: 'A Cidade e o Rio',
+            text: 'O rio precisa de espaço para respirar. A **ocupação desordenada em áreas de várzea** (as margens naturais de inundação) é um erro grave. Se construirmos ali, teremos enchentes constantes. Precisamos planejar onde a cidade cresce.',
+            icon: '🏗️',
+            educationalTopic: 'ocupacao_urbana'
+        },
 
-            // Step 13: Urban Planning
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_13.jpg',
-                title: 'Ocupação Urbana',
-                text: 'A ocupação desordenada em áreas de bacia hidrográfica causa problemas! Construções irregulares perto de rios aumentam enchentes e poluição. Planejamento é fundamental!',
-                icon: '🏘️',
-                educationalTopic: 'ocupacao_urbana'
-            },
+        // Step 11: Green Infrastructure Solutions
+        {
+            character: 'Claudia',
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            // Fundo: Parede verde/Jardim urbano
+            background: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1080',
+            title: 'Tecnologia Verde',
+            text: 'Podemos inovar! **Jardins de chuva**, **tetos verdes** e **parques lineares** ajudam a cidade a absorver a água como uma esponja, evitando enchentes. É a engenharia trabalhando a favor da natureza.',
+            icon: '🌿',
+            educationalTopic: 'infraestrutura_verde'
+        },
 
-            // Step 14: Green Infrastructure
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_14.jpg',
-                title: 'Infraestrutura Verde',
-                text: 'Parques lineares, jardins de chuva, tetos e paredes verdes são soluções modernas! Eles ajudam a absorver água da chuva, reduzem enchentes e deixam a cidade mais bonita!',
-                icon: '🌿',
-                educationalTopic: 'infraestrutura_verde'
-            },
+        // Step 12: Floating Gardens
+        {
+            character: 'Dr. Sapo',
+            portrait: 'https://images.unsplash.com/photo-1579389083078-4e7018379f7e?q=80&w=400',
+            // Fundo: Plantas aquáticas/Vitória Régia
+            background: 'https://images.unsplash.com/photo-1542355554-46329402513f?q=80&w=1080',
+            title: 'Ilhas que Limpam',
+            text: 'Minha solução favorita: **jardins flutuantes**! São ilhas de plantas nativas que flutuam no rio. As raízes filtram poluentes naturalmente. É bonito, eficiente e cria um habitat perfeito para nós!',
+            icon: '🪷',
+            educationalTopic: 'jardins_flutuantes'
+        },
 
-            // Step 15: Floating Gardens
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_15.jpg',
-                title: 'Jardins Flutuantes',
-                text: 'Jardins flutuantes com plantas filtrantes são incríveis! Eles flutuam nos rios, absorvem poluentes e ainda embelezam a paisagem. Tecnologia e natureza trabalhando juntas!',
-                icon: '🪷',
-                educationalTopic: 'jardins_flutuantes'
-            },
-
-            // Step 16: Final Message
-            {
-                character: 'Claudia',
-                portrait: 'assets/images/claudia_portrait.png',
-                background: 'assets/images/tutorial_bg_16.jpg',
-                title: 'Você Está Pronto!',
-                text: 'Agora você conhece os principais desafios da gestão de recursos hídricos! Lembre-se: cada decisão sua afeta a vida de milhares de pessoas. Seja um verdadeiro Guardião da Água! 💪',
-                icon: '🎓'
-            }
-        ];
-    }
+        // Step 13: Conclusion
+        {
+            character: 'Claudia',
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            // Fundo: Luz do sol/Esperança
+            background: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1080',
+            title: 'O Comando é Seu',
+            text: 'Agora você entende a complexidade. Agricultura, cidade, floresta e água... tudo está conectado. Suas escolhas definirão se teremos um futuro sustentável ou um colapso ambiental. Boa sorte, Guardião.',
+            icon: '🎓'
+        }
+    ];
+}
 
     /**
      * Starts the tutorial
