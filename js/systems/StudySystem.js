@@ -42,13 +42,23 @@ class StudySystem {
         try {
             const response = await fetch('data/building-studies.json');
             const content = await response.json();
-            
+
             // Armazenar conteúdo no Map
             Object.entries(content).forEach(([buildingId, studyData]) => {
                 this.studyContent.set(buildingId, studyData);
             });
-            
+
             console.log(`📚 ${this.studyContent.size} módulos de estudo carregados`);
+
+            // Refresh building items in UI after content loads
+            if (this.gameManager && this.gameManager.uiManager) {
+                // Small delay to ensure UI is ready
+                setTimeout(() => {
+                    if (this.gameManager.uiManager.loadBuildingItemsWithStateManagement) {
+                        this.gameManager.uiManager.loadBuildingItemsWithStateManagement();
+                    }
+                }, 100);
+            }
         } catch (error) {
             console.error('❌ Erro ao carregar conteúdo de estudos:', error);
         }
