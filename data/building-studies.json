@@ -1,0 +1,48 @@
+{
+  "water_pump": {
+    "buildingId": "water_pump",
+    "buildingName": "Bomba de Água",
+    "category": "water",
+    "studyTitle": "Sistemas de Bombeamento de Água",
+    "studyIcon": "📚",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Compreender os princípios de extração de água subterrânea",
+      "Identificar impactos ambientais do bombeamento",
+      "Aplicar práticas sustentáveis de gestão hídrica"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Introdução ao Bombeamento de Água",
+        "content": "<h3>O que é uma Bomba de Água?</h3><p>As bombas de água são equipamentos essenciais para a extração de água subterrânea, permitindo o acesso a recursos hídricos armazenados em aquíferos profundos.</p><h4>Componentes Principais:</h4><ul><li><strong>Motor:</strong> Fornece energia para o bombeamento</li><li><strong>Rotor:</strong> Movimenta a água através do sistema</li><li><strong>Tubulação:</strong> Conduz a água até a superfície</li><li><strong>Sistema de Controle:</strong> Regula vazão e pressão</li></ul><p class='highlight'>💡 <strong>Curiosidade:</strong> O Brasil possui um dos maiores reservatórios de água subterrânea do mundo: o Aquífero Guarani, com aproximadamente 1,2 milhão de km²!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "Ciclo Hidrológico e Águas Subterrâneas",
+        "content": "<h3>Como a Água Chega aos Aquíferos?</h3><p>A água subterrânea é parte fundamental do <strong>ciclo hidrológico</strong>:</p><ol><li><strong>Precipitação:</strong> Chuva cai sobre o solo</li><li><strong>Infiltração:</strong> Água penetra no solo através de poros e fissuras</li><li><strong>Percolação:</strong> Água desce até encontrar camadas impermeáveis</li><li><strong>Armazenamento:</strong> Água acumula-se em aquíferos</li><li><strong>Recarga Natural:</strong> Processo contínuo de renovação</li></ol><h4>Tipos de Aquíferos:</h4><p><strong>Aquífero Livre:</strong> Camada superior em contato direto com a atmosfera através do solo</p><p><strong>Aquífero Confinado:</strong> Camada entre rochas impermeáveis, sob pressão</p><p class='warning'>⚠️ <strong>Atenção:</strong> A taxa de recarga natural é lenta. O bombeamento excessivo pode esgotar o aquífero!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Impactos Ambientais do Bombeamento",
+        "content": "<h3>Consequências da Extração Inadequada</h3><h4>Impactos Negativos:</h4><ul><li><strong>Rebaixamento do Lençol Freático:</strong> Redução do nível de água disponível</li><li><strong>Subsidência do Solo:</strong> Afundamento do terreno devido ao vazio deixado pela água</li><li><strong>Intrusão Salina:</strong> Em áreas costeiras, água salgada pode contaminar aquíferos</li><li><strong>Redução de Vazão de Rios:</strong> Rios que dependem de aquíferos podem secar</li><li><strong>Impacto na Vegetação:</strong> Plantas que dependem do lençol freático podem morrer</li></ul><h4>Consumo de Energia:</h4><p>Bombas de água consomem <strong>energia elétrica</strong> significativa. Quanto mais profundo o aquífero, maior o consumo energético.</p><p class='tip'>💚 <strong>Sustentabilidade:</strong> Use bombas apenas quando necessário e combine com sistemas de captação de água da chuva!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Gestão Sustentável de Recursos Hídricos",
+        "content": "<h3>Boas Práticas de Bombeamento</h3><h4>Princípios de Sustentabilidade:</h4><ol><li><strong>Monitoramento Contínuo:</strong> Acompanhe o nível do lençol freático regularmente</li><li><strong>Bombeamento Controlado:</strong> Extraia apenas o necessário, respeitando a taxa de recarga</li><li><strong>Manutenção Preventiva:</strong> Evite vazamentos e desperdícios</li><li><strong>Diversificação de Fontes:</strong> Não dependa exclusivamente de água subterrânea</li><li><strong>Proteção de Áreas de Recarga:</strong> Preserve zonas onde a água infiltra no solo</li></ol><h4>Legislação Brasileira:</h4><p>A <strong>Lei nº 9.433/1997</strong> (Política Nacional de Recursos Hídricos) estabelece que:</p><ul><li>A água é um bem de domínio público</li><li>A gestão deve ser descentralizada e participativa</li><li>O uso prioritário é para consumo humano e dessedentação animal</li></ul><p class='success'>✅ <strong>Certificação:</strong> Você está pronto para usar bombas de água de forma responsável!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": false,
+      "questions": []
+    },
+    "relatedBuildings": ["well", "desalination_plant", "rain_garden"],
+    "relatedConcepts": ["hydrological_cycle", "groundwater_protection", "sustainable_water_management"]
+  }
+}
+

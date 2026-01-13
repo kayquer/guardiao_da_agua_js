@@ -304,6 +304,15 @@ class UIManager {
                 e.preventDefault();
                 e.stopPropagation();
 
+                // ===== STUDY SYSTEM: Handle locked buildings =====
+                if (item.dataset.locked === 'true') {
+                    const buildingType = item.dataset.buildingType;
+                    if (buildingType) {
+                        this.openStudyBook(buildingType);
+                    }
+                    return;
+                }
+
                 // ===== STABILITY FIX: Prevent clicks on disabled items =====
                 if (item.classList.contains('disabled')) return;
 
@@ -1084,21 +1093,37 @@ class UIManager {
         const item = document.createElement('div');
         item.className = 'building-item';
         item.dataset.buildingType = buildingType.id;
-        
+
+        // Check if building is unlocked
+        const isUnlocked = this.gameManager.buildingSystem.isBuildingUnlocked(buildingType.id);
+        const hasStudyContent = this.gameManager.studySystem &&
+                                this.gameManager.studySystem.hasStudyContent(buildingType.id);
+
         // Verificar se pode pagar
-        const canAfford = !this.gameManager.resourceManager || 
+        const canAfford = !this.gameManager.resourceManager ||
                          this.gameManager.resourceManager.canAfford(buildingType.cost);
-        
-        if (!canAfford) {
+
+        if (!isUnlocked) {
+            item.classList.add('locked');
+            item.dataset.locked = 'true';
+        } else if (!canAfford) {
             item.classList.add('disabled');
         }
-        
+
+        // Build the HTML content
+        let iconHTML = `<div class="building-icon">${buildingType.icon}</div>`;
+
+        // Add lock/study icon overlay if locked
+        if (!isUnlocked && hasStudyContent) {
+            iconHTML += `<div class="study-icon">📚</div>`;
+        }
+
         item.innerHTML = `
-            <div class="building-icon">${buildingType.icon}</div>
+            ${iconHTML}
             <div class="building-info">
                 <div class="building-name">${buildingType.name}</div>
-                <div class="building-cost">R$ ${buildingType.cost.toLocaleString()}</div>
-                <div class="building-description">${buildingType.description}</div>
+                <div class="building-cost">${!isUnlocked ? '🔒 Bloqueado' : 'R$ ' + buildingType.cost.toLocaleString()}</div>
+                <div class="building-description">${!isUnlocked && hasStudyContent ? 'Clique para estudar' : buildingType.description}</div>
             </div>
         `;
 
@@ -4448,6 +4473,165 @@ class UIManager {
 
         } catch (error) {
             console.warn('⚠️ Error hiding terrain info:', error);
+        }
+    }
+
+    // ===== STUDY BOOK SYSTEM =====
+    openStudyBook(buildingId) {
+        if (!this.gameManager.studySystem) {
+            console.error('❌ StudySystem not initialized');
+            return;
+        }
+
+        const studyContent = this.gameManager.studySystem.getStudyContent(buildingId);
+        if (!studyContent) {
+            console.warn(`⚠️ No study content for building: ${buildingId}`);
+            return;
+        }
+
+        // Start the study
+        this.gameManager.studySystem.startStudy(buildingId);
+
+        // Create and show the book interface
+        this.showStudyBookInterface(studyContent);
+
+        // Play book opening sound
+        if (this.gameManager.audioManager) {
+            this.gameManager.audioManager.playSound('sfx_ui_select');
+        }
+    }
+
+    showStudyBookInterface(studyContent) {
+        // Create book overlay if it doesn't exist
+        let bookOverlay = document.getElementById('study-book-overlay');
+        if (!bookOverlay) {
+            bookOverlay = document.createElement('div');
+            bookOverlay.id = 'study-book-overlay';
+            bookOverlay.className = 'study-book-overlay';
+            document.body.appendChild(bookOverlay);
+        }
+
+        // Get current page
+        const currentPage = this.gameManager.studySystem.getCurrentPage();
+        const progress = this.gameManager.studySystem.getProgress();
+        const isLastPage = this.gameManager.studySystem.isLastPage();
+
+        // Build book HTML
+        bookOverlay.innerHTML = `
+            <div class="study-book-container">
+                <div class="study-book">
+                    <div class="book-header">
+                        <h2>${studyContent.studyTitle}</h2>
+                        <button class="book-close-btn" onclick="window.gameManager.uiManager.closeStudyBook()">✕</button>
+                    </div>
+
+                    <div class="book-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <span class="progress-text">${progress}% concluído</span>
+                    </div>
+
+                    <div class="book-content">
+                        <div class="page-number">Página ${currentPage.pageNumber} de ${studyContent.pages.length}</div>
+                        <h3 class="page-title">${currentPage.title}</h3>
+                        <div class="page-text">${currentPage.content}</div>
+                    </div>
+
+                    <div class="book-navigation">
+                        <button class="nav-btn prev-btn" ${this.gameManager.studySystem.currentPage === 0 ? 'disabled' : ''}
+                                onclick="window.gameManager.uiManager.previousStudyPage()">
+                            ◀ Anterior
+                        </button>
+
+                        ${isLastPage ?
+                            `<button class="nav-btn complete-btn" onclick="window.gameManager.uiManager.completeStudy()">
+                                ✓ Concluir Estudo
+                            </button>` :
+                            `<button class="nav-btn next-btn" onclick="window.gameManager.uiManager.nextStudyPage()">
+                                Próxima ▶
+                            </button>`
+                        }
+                    </div>
+
+                    <div class="book-info">
+                        <span>⏱️ ${studyContent.estimatedTime}</span>
+                        <span>📚 ${studyContent.category}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Show overlay with animation
+        bookOverlay.classList.add('active');
+
+        // Pause game
+        if (this.gameManager.timeScale > 0) {
+            this.gameManager.previousTimeScale = this.gameManager.timeScale;
+            this.gameManager.setTimeScale(0);
+        }
+    }
+
+    nextStudyPage() {
+        if (this.gameManager.studySystem.nextPage()) {
+            const studyContent = this.gameManager.studySystem.getStudyContent(this.gameManager.studySystem.currentStudy);
+            this.showStudyBookInterface(studyContent);
+
+            // Play page turn sound
+            if (this.gameManager.audioManager) {
+                this.gameManager.audioManager.playSound('sfx_ui_click');
+            }
+        }
+    }
+
+    previousStudyPage() {
+        if (this.gameManager.studySystem.previousPage()) {
+            const studyContent = this.gameManager.studySystem.getStudyContent(this.gameManager.studySystem.currentStudy);
+            this.showStudyBookInterface(studyContent);
+
+            // Play page turn sound
+            if (this.gameManager.audioManager) {
+                this.gameManager.audioManager.playSound('sfx_ui_click');
+            }
+        }
+    }
+
+    completeStudy() {
+        const buildingId = this.gameManager.studySystem.currentStudy;
+        if (buildingId) {
+            this.gameManager.studySystem.completeStudy(buildingId);
+
+            // Play success sound
+            if (this.gameManager.audioManager) {
+                this.gameManager.audioManager.playSound('sfx_ui_success');
+            }
+
+            // Close book
+            this.closeStudyBook();
+
+            // Refresh building items to show unlocked state
+            this.loadBuildingItemsWithStateManagement();
+        }
+    }
+
+    closeStudyBook() {
+        const bookOverlay = document.getElementById('study-book-overlay');
+        if (bookOverlay) {
+            bookOverlay.classList.remove('active');
+            setTimeout(() => {
+                bookOverlay.remove();
+            }, 300);
+        }
+
+        // Resume game
+        if (this.gameManager.previousTimeScale !== undefined) {
+            this.gameManager.setTimeScale(this.gameManager.previousTimeScale);
+            this.gameManager.previousTimeScale = undefined;
+        }
+
+        // Play close sound
+        if (this.gameManager.audioManager) {
+            this.gameManager.audioManager.playSound('sfx_ui_click');
         }
     }
 }

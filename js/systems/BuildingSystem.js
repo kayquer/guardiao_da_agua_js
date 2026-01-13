@@ -1224,9 +1224,18 @@ class BuildingSystem {
         this.buildingTypes.set(id, {
             id,
             ...config,
-            unlocked: true, // Por enquanto todos desbloqueados
             visible: isVisible && isCategoryVisible // Hide based on feature flags
         });
+    }
+
+    // ===== BUILDING UNLOCK STATUS =====
+    isBuildingUnlocked(buildingId) {
+        // Check with StudySystem if available
+        if (this.gameManager && this.gameManager.studySystem) {
+            return this.gameManager.studySystem.isBuildingUnlocked(buildingId);
+        }
+        // Fallback: all buildings unlocked if StudySystem not available
+        return true;
     }
 
     // ===== RESEARCH CENTERS AND UNIVERSITIES: Efficiency bonus system =====

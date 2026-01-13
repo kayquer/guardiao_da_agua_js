@@ -2750,15 +2750,15 @@ class QuestSystem {
                 </div>
 
                 <div class="mission-objectives">
-                    <h4>Objetivos</h4>
-                    ${mission.objectives.map(obj => `
-                        <div class="objective-item">
-                            <span class="objective-icon">${obj.current >= obj.required ? '✅' : '⏳'}</span>
-                            <span class="objective-text">${obj.description}</span>
-                            <span class="objective-progress">${obj.current}/${obj.required}</span>
-                        </div>
-                    `).join('')}
-                </div>
+    <h4>Objetivos</h4>
+    ${mission.objectives.map(obj => `
+        <div class="objective-item">
+            <span class="objective-icon">${obj.current >= obj.required ? '✅' : '⏳'}</span>
+            <span class="objective-text">${obj.description}</span>
+            <span class="objective-progress">Progresso: ${Number(obj.current).toFixed(1)}/${Number(obj.required).toFixed(1)}</span>
+        </div>
+    `).join('')}
+</div>
 
                 <div class="mission-rewards">
                     <h4>Recompensas</h4>

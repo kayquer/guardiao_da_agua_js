@@ -22,6 +22,7 @@ class GameManager {
         this.questSystem = null;
         this.eventSystem = null;
         this.saveSystem = null;
+        this.studySystem = null;
         this.tutorialSystem = null;
         this.tutorialManager = null;
         this.cityLifeSystem = null;
@@ -98,7 +99,7 @@ class GameManager {
 
         const requiredClasses = [
             'GridManager', 'ResourceManager', 'BuildingSystem', 'CityLifeSystem',
-            'UIManager', 'QuestSystem', 'EventSystem', 'SaveSystem', 'TutorialManager'
+            'UIManager', 'QuestSystem', 'EventSystem', 'SaveSystem', 'StudySystem', 'TutorialManager'
         ];
 
         const missingClasses = requiredClasses.filter(className => 
@@ -140,6 +141,7 @@ class GameManager {
             this.questSystem = new QuestSystem(this);
             this.eventSystem = new EventSystem(this);
             this.saveSystem = new SaveSystem();
+            this.studySystem = new StudySystem(this);
             this.tutorialSystem = new TutorialSystem(this);
             this.tutorialManager = new TutorialManager(this);
             
@@ -1412,6 +1414,10 @@ class GameManager {
                 this.questSystem.loadData(saveData.quests);
             }
 
+            if (this.studySystem && saveData.studies) {
+                this.studySystem.loadSaveData(saveData.studies);
+            }
+
             if (this.buildingSystem) {
                 this.buildingSystem.rebuildFromData();
             }
@@ -1962,7 +1968,8 @@ class GameManager {
             resources: this.resourceManager.getSaveData(),
             buildings: this.buildingSystem.getSaveData(),
             quests: this.questSystem.getSaveData(),
-            events: this.eventSystem.getSaveData()
+            events: this.eventSystem.getSaveData(),
+            studies: this.studySystem.getSaveData()
         };
     }
 
