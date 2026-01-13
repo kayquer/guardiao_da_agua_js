@@ -1736,6 +1736,8 @@ class UIManager {
         if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
 
         const budget = this.gameManager.resourceManager.resources.budget;
+        const taxRevenue = this.gameManager.resourceManager.getTaxRevenue();
+        const taxRates = this.gameManager.resourceManager.getTaxRates();
         const buildings = this.gameManager.buildingSystem.getAllBuildings();
 
         let detailsHTML = `
@@ -1761,6 +1763,40 @@ class UIManager {
                             ${budget.income - budget.expenses >= 0 ? '+' : ''}R$ ${this.formatNumber(budget.income - budget.expenses, 0)}/min
                         </span>
                     </div>
+                </div>
+
+                <div class="resource-sources">
+                    <h5>💵 Receitas Tributárias</h5>
+                    <ul>
+                        <li>
+                            <span class="building-icon">👥</span>
+                            <span class="building-name">Impostos Populacionais</span>
+                            <span class="building-production">+R$ ${this.formatNumber(taxRevenue.population, 0)}/min</span>
+                        </li>
+                        <li>
+                            <span class="building-icon">🏬</span>
+                            <span class="building-name">Impostos Comerciais</span>
+                            <span class="building-production">+R$ ${this.formatNumber(taxRevenue.business, 0)}/min</span>
+                        </li>
+                        <li>
+                            <span class="building-icon">🎡</span>
+                            <span class="building-name">Impostos de Turismo</span>
+                            <span class="building-production">+R$ ${this.formatNumber(taxRevenue.tourism, 0)}/min</span>
+                        </li>
+                        <li>
+                            <span class="building-icon">🏛️</span>
+                            <span class="building-name">Receita Base</span>
+                            <span class="building-production">+R$ 1.000/min</span>
+                        </li>
+                        <li style="border-top: 2px solid rgba(0,0,0,0.2); margin-top: 8px; padding-top: 8px;">
+                            <span class="building-icon">📊</span>
+                            <span class="building-name"><strong>Total de Receitas</strong></span>
+                            <span class="building-production"><strong>+R$ ${this.formatNumber(budget.income, 0)}/min</strong></span>
+                        </li>
+                    </ul>
+                    <p style="font-size: 0.85em; color: #666; margin-top: 10px; font-style: italic;">
+                        💡 Multiplicador de Desenvolvimento: ${taxRates.developmentMultiplier.toFixed(2)}x
+                    </p>
                 </div>
 
                 <div class="resource-sources">

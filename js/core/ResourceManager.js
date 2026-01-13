@@ -61,12 +61,28 @@ class ResourceManager {
             pollution: [],
             satisfaction: []
         };
-        
+
+        // Tax Revenue System
+        this.taxRevenue = {
+            population: 0,      // Income tax from citizens
+            business: 0,        // Business tax from commercial buildings
+            tourism: 0,         // Tourism tax from tourism buildings
+            total: 0            // Total tax revenue
+        };
+
+        // Tax rates (per minute)
+        this.taxRates = {
+            perCitizen: 10,           // R$ 10 per citizen per minute
+            perCommercial: 50,        // R$ 50 per commercial building per minute
+            perTourism: 100,          // R$ 100 per tourism building per minute
+            developmentMultiplier: 1.0 // Increases with city development
+        };
+
         // Configurações
         this.updateInterval = 1000; // 1 segundo
         this.lastUpdate = 0;
         this.historyMaxLength = 100;
-        
+
         // Callbacks para mudanças
         this.onResourceChange = new Map();
         
@@ -156,12 +172,71 @@ class ResourceManager {
     
     updateBudget() {
         const budget = this.resources.budget;
-        
+
+        // Calculate tax revenue
+        this.calculateTaxRevenue();
+
         // Receita - Despesas
         const netIncome = budget.income - budget.expenses;
         budget.current = Math.max(0, budget.current + (netIncome / 60)); // Por segundo
     }
-    
+
+    // ===== TAX REVENUE SYSTEM =====
+    calculateTaxRevenue() {
+        if (!this.gameManager || !this.gameManager.buildingSystem) {
+            return;
+        }
+
+        const buildings = this.gameManager.buildingSystem.getAllBuildings();
+        const population = this.resources.population.current;
+
+        // Calculate development multiplier based on city progress
+        const totalBuildings = buildings.length;
+        const satisfactionBonus = this.resources.satisfaction.current / 100;
+        this.taxRates.developmentMultiplier = 1.0 + (totalBuildings * 0.01) + (satisfactionBonus * 0.5);
+
+        // Population tax (income tax from citizens)
+        this.taxRevenue.population = population * this.taxRates.perCitizen * this.taxRates.developmentMultiplier;
+
+        // Business tax (from commercial buildings)
+        const commercialBuildings = buildings.filter(b =>
+            b.type && (
+                b.type.includes('commercial') ||
+                b.type.includes('shop') ||
+                b.type.includes('market') ||
+                b.type.includes('mall')
+            )
+        );
+        this.taxRevenue.business = commercialBuildings.length * this.taxRates.perCommercial * this.taxRates.developmentMultiplier;
+
+        // Tourism tax (from tourism buildings)
+        const tourismBuildings = buildings.filter(b =>
+            b.type && (
+                b.type.includes('tourism') ||
+                b.type.includes('hotel') ||
+                b.type.includes('museum') ||
+                b.type.includes('park') ||
+                b.type.includes('monument')
+            )
+        );
+        this.taxRevenue.tourism = tourismBuildings.length * this.taxRates.perTourism * this.taxRates.developmentMultiplier;
+
+        // Calculate total tax revenue
+        this.taxRevenue.total = this.taxRevenue.population + this.taxRevenue.business + this.taxRevenue.tourism;
+
+        // Update budget income with tax revenue
+        // Base income (1000) + tax revenue
+        this.resources.budget.income = 1000 + this.taxRevenue.total;
+    }
+
+    getTaxRevenue() {
+        return { ...this.taxRevenue };
+    }
+
+    getTaxRates() {
+        return { ...this.taxRates };
+    }
+
     updatePopulation() {
         const population = this.resources.population;
         const water = this.resources.water;
