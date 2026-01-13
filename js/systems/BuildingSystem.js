@@ -12,11 +12,12 @@
  */
 
 class BuildingSystem {
-    constructor(scene, gridManager) {
+    constructor(scene, gridManager, gameManager = null) {
         console.log('🏗️ Inicializando BuildingSystem...');
-        
+
         this.scene = scene;
         this.gridManager = gridManager;
+        this.gameManager = gameManager;
         
         // Edifícios construídos
         this.buildings = new Map();

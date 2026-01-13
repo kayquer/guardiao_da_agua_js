@@ -134,7 +134,7 @@ class GameManager {
             // Inicializar sistemas de jogo
             this.gridManager = new GridManager(this.scene);
             this.resourceManager = new ResourceManager(this);
-            this.buildingSystem = new BuildingSystem(this.scene, this.gridManager);
+            this.buildingSystem = new BuildingSystem(this.scene, this.gridManager, this);
             this.cityLifeSystem = new CityLifeSystem(this.scene, this.gridManager, this.buildingSystem);
             this.uiManager = new UIManager(this);
             this.loanManager = new LoanManager(this);
