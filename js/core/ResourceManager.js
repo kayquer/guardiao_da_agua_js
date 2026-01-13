@@ -183,16 +183,22 @@ class ResourceManager {
 
     // ===== TAX REVENUE SYSTEM =====
     calculateTaxRevenue() {
+        // Defensive checks to prevent errors during initialization
         if (!this.gameManager || !this.gameManager.buildingSystem) {
             return;
         }
 
+        if (!this.resources || !this.resources.population || !this.resources.budget) {
+            return;
+        }
+
         const buildings = this.gameManager.buildingSystem.getAllBuildings();
-        const population = this.resources.population.current;
+        const population = this.resources.population.current || 0;
+        const satisfaction = this.resources.population.satisfaction || 50; // Default to 50 if undefined
 
         // Calculate development multiplier based on city progress
         const totalBuildings = buildings.length;
-        const satisfactionBonus = this.resources.satisfaction.current / 100;
+        const satisfactionBonus = satisfaction / 100;
         this.taxRates.developmentMultiplier = 1.0 + (totalBuildings * 0.01) + (satisfactionBonus * 0.5);
 
         // Population tax (income tax from citizens)
