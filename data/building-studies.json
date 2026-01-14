@@ -3,6 +3,7 @@
     "buildingId": "water_pump",
     "buildingName": "Bomba de Água",
     "category": "water",
+    "difficulty": "básico",
     "studyTitle": "Sistemas de Bombeamento de Água",
     "studyIcon": "📚",
     "estimatedTime": "5 minutos",
@@ -16,7 +17,7 @@
         "pageNumber": 1,
         "title": "Introdução ao Bombeamento de Água",
         "content": "<h3>O que é uma Bomba de Água?</h3><p>As bombas de água são equipamentos essenciais para a extração de água subterrânea, permitindo o acesso a recursos hídricos armazenados em aquíferos profundos.</p><h4>Componentes Principais:</h4><ul><li><strong>Motor:</strong> Fornece energia para o bombeamento</li><li><strong>Rotor:</strong> Movimenta a água através do sistema</li><li><strong>Tubulação:</strong> Conduz a água até a superfície</li><li><strong>Sistema de Controle:</strong> Regula vazão e pressão</li></ul><p class='highlight'>💡 <strong>Curiosidade:</strong> O Brasil possui um dos maiores reservatórios de água subterrânea do mundo: o Aquífero Guarani, com aproximadamente 1,2 milhão de km²!</p>",
-        "image": null
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Water_well_hand_pump.jpg/800px-Water_well_hand_pump.jpg"
       },
       {
         "pageNumber": 2,
@@ -43,6 +44,494 @@
     },
     "relatedBuildings": ["well", "desalination_plant", "rain_garden"],
     "relatedConcepts": ["hydrological_cycle", "groundwater_protection", "sustainable_water_management"]
+  },
+
+  "rain_garden": {
+    "buildingId": "rain_garden",
+    "buildingName": "Jardim de Chuva",
+    "category": "water",
+    "difficulty": "intermediário",
+    "studyTitle": "Infraestrutura Verde: Jardins de Chuva",
+    "studyIcon": "🌧️",
+    "estimatedTime": "6 minutos",
+    "learningObjectives": [
+      "Compreender o conceito de infraestrutura verde urbana",
+      "Identificar os benefícios dos jardins de chuva",
+      "Aplicar princípios de drenagem sustentável"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que são Jardins de Chuva?",
+        "content": "<h3>Infraestrutura Verde Urbana</h3><p>Jardins de chuva são <strong>depressões paisagísticas</strong> projetadas para captar, infiltrar e filtrar água da chuva, reduzindo o escoamento superficial e melhorando a qualidade da água.</p><h4>Características Principais:</h4><ul><li><strong>Depressão Rasa:</strong> 15-30 cm de profundidade</li><li><strong>Solo Permeável:</strong> Mistura especial que facilita infiltração</li><li><strong>Plantas Nativas:</strong> Espécies adaptadas a períodos secos e úmidos</li><li><strong>Camada de Mulch:</strong> Cobertura orgânica que retém umidade</li></ul><p class='highlight'>💡 <strong>Benefício:</strong> Um jardim de chuva pode infiltrar até 30% mais água que um gramado convencional!</p>",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Rain_garden_cross_section.svg/1200px-Rain_garden_cross_section.svg.png"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Como Funcionam os Jardins de Chuva",
+        "content": "<h3>Processo de Filtragem Natural</h3><ol><li><strong>Captação:</strong> Água da chuva é direcionada para o jardim</li><li><strong>Retenção Temporária:</strong> Água fica retida por 24-48 horas</li><li><strong>Infiltração:</strong> Água penetra no solo gradualmente</li><li><strong>Filtragem Biológica:</strong> Raízes e microorganismos removem poluentes</li><li><strong>Recarga de Aquíferos:</strong> Água limpa alcança lençol freático</li></ol><h4>Poluentes Removidos:</h4><p>✅ Sedimentos e partículas suspensas<br>✅ Metais pesados (chumbo, zinco, cobre)<br>✅ Nutrientes em excesso (nitrogênio, fósforo)<br>✅ Óleos e graxas de veículos<br>✅ Bactérias e patógenos</p><p class='tip'>🌱 <strong>Ecologia:</strong> Jardins de chuva também criam habitat para polinizadores e fauna urbana!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Plantas Ideais para Jardins de Chuva",
+        "content": "<h3>Seleção de Espécies Nativas Brasileiras</h3><h4>Plantas para Sol Pleno:</h4><ul><li><strong>Capim-dos-Pampas</strong> (Cortaderia selloana) - Gramínea ornamental</li><li><strong>Lírio-do-Brejo</strong> (Hedychium coronarium) - Flores brancas perfumadas</li><li><strong>Taboa</strong> (Typha domingensis) - Excelente filtradora</li><li><strong>Papiro-Brasileiro</strong> (Cyperus giganteus) - Absorve nutrientes</li></ul><h4>Plantas para Meia-Sombra:</h4><ul><li><strong>Íris-Amarela</strong> (Neomarica longifolia) - Resistente e ornamental</li><li><strong>Copo-de-Leite</strong> (Zantedeschia aethiopica) - Flores vistosas</li><li><strong>Samambaia-Açu</strong> (Dicksonia sellowiana) - Filtragem eficiente</li></ul><p class='warning'>⚠️ <strong>Importante:</strong> Evite plantas invasoras ou que necessitem de muita manutenção!</p>",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Typha_latifolia_02.jpg/800px-Typha_latifolia_02.jpg"
+      },
+      {
+        "pageNumber": 4,
+        "title": "Benefícios Ambientais e Urbanos",
+        "content": "<h3>Impactos Positivos dos Jardins de Chuva</h3><h4>Benefícios Hidrológicos:</h4><ul><li>🌊 Redução de enchentes urbanas em até 50%</li><li>💧 Recarga de aquíferos subterrâneos</li><li>🚰 Melhoria da qualidade da água em rios e lagos</li><li>⛈️ Diminuição da sobrecarga em sistemas de drenagem</li></ul><h4>Benefícios Ambientais:</h4><ul><li>🌿 Aumento da biodiversidade urbana</li><li>🦋 Habitat para polinizadores</li><li>🌡️ Redução de ilhas de calor urbanas</li><li>🌳 Sequestro de carbono atmosférico</li></ul><h4>Benefícios Sociais:</h4><ul><li>🏙️ Embelezamento de espaços urbanos</li><li>📚 Educação ambiental para comunidade</li><li>💰 Redução de custos com infraestrutura cinza</li></ul><p class='success'>✅ <strong>Parabéns!</strong> Você domina os conceitos de infraestrutura verde urbana!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": false,
+      "questions": []
+    },
+    "relatedBuildings": ["water_pump", "floating_garden", "monitoring_station"],
+    "relatedConcepts": ["green_infrastructure", "urban_drainage", "water_quality"]
+  },
+
+  "floating_garden": {
+    "buildingId": "floating_garden",
+    "buildingName": "Jardim Flutuante",
+    "category": "treatment",
+    "difficulty": "intermediário",
+    "studyTitle": "Wetlands Flutuantes: Fitorremediação Aquática",
+    "studyIcon": "🪷",
+    "estimatedTime": "7 minutos",
+    "learningObjectives": [
+      "Compreender o processo de fitorremediação",
+      "Identificar plantas aquáticas filtradoras",
+      "Aplicar técnicas de tratamento natural de água"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Introdução aos Jardins Flutuantes",
+        "content": "<h3>O que são Wetlands Flutuantes?</h3><p>Jardins flutuantes, ou <strong>wetlands flutuantes</strong>, são sistemas de tratamento de água que utilizam plantas aquáticas em plataformas flutuantes para purificar corpos d'água através de processos naturais.</p><h4>Componentes do Sistema:</h4><ul><li><strong>Plataforma Flutuante:</strong> Estrutura de material reciclado ou biodegradável</li><li><strong>Substrato:</strong> Material poroso para fixação de raízes</li><li><strong>Plantas Aquáticas:</strong> Espécies filtradoras e oxigenadoras</li><li><strong>Biofilme Radicular:</strong> Microorganismos que degradam poluentes</li></ul><p class='highlight'>💡 <strong>Inovação:</strong> Tecnologia inspirada em ecossistemas naturais de várzeas e pântanos!</p>",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Constructed_wetland.jpg/1200px-Constructed_wetland.jpg"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Fitorremediação: Plantas que Limpam Água",
+        "content": "<h3>Como as Plantas Purificam a Água?</h3><h4>Mecanismos de Fitorremediação:</h4><ol><li><strong>Fitoextração:</strong> Plantas absorvem metais pesados e nutrientes</li><li><strong>Fitodegradação:</strong> Enzimas vegetais quebram compostos orgânicos</li><li><strong>Rizofiltração:</strong> Raízes filtram partículas e adsorvem poluentes</li><li><strong>Fitovolatilização:</strong> Plantas convertem poluentes em gases menos tóxicos</li><li><strong>Fitoestabilização:</strong> Raízes imobilizam contaminantes no sedimento</li></ol><h4>Plantas Brasileiras Eficientes:</h4><p>🌿 <strong>Aguapé</strong> (Eichhornia crassipes) - Remove nitrogênio e fósforo<br>🌿 <strong>Alface-d'água</strong> (Pistia stratiotes) - Absorve metais pesados<br>🌿 <strong>Salvínia</strong> (Salvinia molesta) - Filtra sedimentos<br>🌿 <strong>Elódea</strong> (Egeria densa) - Oxigena a água</p><p class='tip'>🔬 <strong>Ciência:</strong> Algumas plantas podem remover até 90% dos poluentes em 2-3 semanas!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Aplicações e Benefícios",
+        "content": "<h3>Usos dos Jardins Flutuantes</h3><h4>Aplicações Urbanas:</h4><ul><li>🏞️ Tratamento de lagos urbanos poluídos</li><li>🏭 Polimento de efluentes industriais</li><li>🌊 Recuperação de rios e córregos</li><li>⛲ Melhoria estética de espelhos d'água</li><li>🐟 Criação de habitat para peixes e aves</li></ul><h4>Benefícios Ecológicos:</h4><ul><li>Redução de algas nocivas (eutrofização)</li><li>Aumento de oxigênio dissolvido</li><li>Remoção de até 80% de nitrogênio</li><li>Remoção de até 70% de fósforo</li><li>Captura de metais pesados (Pb, Cd, Hg)</li></ul><h4>Vantagens Econômicas:</h4><p>💰 Custo 50-70% menor que tratamento convencional<br>⚡ Não requer energia elétrica<br>🔧 Manutenção mínima (poda trimestral)<br>♻️ Biomassa pode ser compostada</p>",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Water_hyacinth_flower.jpg/800px-Water_hyacinth_flower.jpg"
+      },
+      {
+        "pageNumber": 4,
+        "title": "Implementação e Manutenção",
+        "content": "<h3>Como Implementar um Jardim Flutuante</h3><h4>Etapas de Instalação:</h4><ol><li><strong>Análise da Água:</strong> Identificar poluentes presentes</li><li><strong>Seleção de Plantas:</strong> Escolher espécies adequadas aos poluentes</li><li><strong>Construção da Plataforma:</strong> Usar materiais recicláveis ou biodegradáveis</li><li><strong>Plantio:</strong> Densidade de 20-30 plantas/m²</li><li><strong>Ancoragem:</strong> Fixar plataforma para evitar deriva</li><li><strong>Monitoramento:</strong> Acompanhar qualidade da água mensalmente</li></ol><h4>Manutenção Necessária:</h4><p>✂️ Poda trimestral da biomassa<br>🔍 Inspeção mensal da estrutura<br>🌱 Replantio de espécies quando necessário<br>📊 Análise de água a cada 3 meses</p><p class='warning'>⚠️ <strong>Atenção:</strong> Aguapé pode se tornar invasivo - controle populacional é essencial!</p><p class='success'>✅ <strong>Excelente!</strong> Você está pronto para implementar soluções baseadas na natureza!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": false,
+      "questions": []
+    },
+    "relatedBuildings": ["rain_garden", "water_quality_monitor", "monitoring_station"],
+    "relatedConcepts": ["phytoremediation", "natural_treatment", "wetland_ecology"]
+  },
+
+  "desalination_plant": {
+    "buildingId": "desalination_plant",
+    "buildingName": "Usina de Dessalinização",
+    "category": "water",
+    "difficulty": "avançado",
+    "studyTitle": "Tecnologias de Dessalinização de Água",
+    "studyIcon": "🏭",
+    "estimatedTime": "10 minutos",
+    "learningObjectives": [
+      "Compreender processos de dessalinização",
+      "Avaliar impactos ambientais e energéticos",
+      "Analisar viabilidade técnica e econômica"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Introdução à Dessalinização",
+        "content": "<h3>O que é Dessalinização?</h3><p>Dessalinização é o processo de <strong>remoção de sais e minerais</strong> da água salgada ou salobra, tornando-a adequada para consumo humano e uso agrícola.</p><h4>Contexto Global:</h4><ul><li>🌍 Mais de 20.000 usinas em operação mundial</li><li>💧 Produção de 95 milhões m³/dia de água potável</li><li>🏜️ Essencial em regiões áridas (Oriente Médio, Austrália)</li><li>🇧🇷 Brasil: potencial em regiões costeiras e semiárido</li></ul><h4>Tipos de Água:</h4><p><strong>Água Salgada:</strong> > 35.000 mg/L de sais (oceanos)<br><strong>Água Salobra:</strong> 1.000-10.000 mg/L (poços do semiárido)<br><strong>Água Potável:</strong> < 500 mg/L de sais</p><p class='highlight'>💡 <strong>Curiosidade:</strong> Israel produz 80% de sua água potável por dessalinização!</p>",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Reverse_osmosis_desalination_plant.jpg/1200px-Reverse_osmosis_desalination_plant.jpg"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Tecnologias de Dessalinização",
+        "content": "<h3>Principais Processos</h3><h4>1. Osmose Reversa (OR) - 65% do mercado</h4><p><strong>Princípio:</strong> Pressão força água através de membranas semipermeáveis, retendo sais.</p><p>✅ Vantagens: Eficiência energética, qualidade da água<br>❌ Desvantagens: Membranas caras, pré-tratamento necessário</p><h4>2. Destilação Multi-Estágio (MSF)</h4><p><strong>Princípio:</strong> Água é aquecida e evaporada em múltiplos estágios sob vácuo.</p><p>✅ Vantagens: Confiável, trata água muito salgada<br>❌ Desvantagens: Alto consumo energético</p><h4>3. Eletrodiálise Reversa (EDR)</h4><p><strong>Princípio:</strong> Campo elétrico remove íons através de membranas seletivas.</p><p>✅ Vantagens: Ideal para água salobra<br>❌ Desvantagens: Limitado a baixas salinidades</p><h4>Comparação de Consumo Energético:</h4><p>⚡ Osmose Reversa: 3-4 kWh/m³<br>⚡ MSF: 10-15 kWh/m³<br>⚡ EDR: 1-2 kWh/m³ (água salobra)</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Impactos Ambientais",
+        "content": "<h3>Desafios Ambientais da Dessalinização</h3><h4>Impactos Negativos:</h4><ul><li>🧂 <strong>Descarte de Salmoura:</strong> Concentrado salino (2x salinidade do mar) afeta vida marinha</li><li>⚡ <strong>Consumo Energético:</strong> Emissões de CO₂ se energia não for renovável</li><li>🐟 <strong>Captação de Água:</strong> Sucção pode capturar organismos marinhos</li><li>🌡️ <strong>Descarga Térmica:</strong> Água quente (MSF) altera temperatura local</li><li>🧪 <strong>Produtos Químicos:</strong> Antiincrustantes e biocidas no pré-tratamento</li></ul><h4>Soluções Sustentáveis:</h4><p>♻️ <strong>Energia Renovável:</strong> Painéis solares ou turbinas eólicas<br>🌊 <strong>Difusores de Salmoura:</strong> Diluição gradual em correntes oceânicas<br>🔬 <strong>Recuperação de Minerais:</strong> Extração de magnésio, lítio, urânio<br>🐠 <strong>Captação Subsuperficial:</strong> Poços de praia evitam sucção de fauna</p><p class='warning'>⚠️ <strong>Crítico:</strong> Dessalinização deve ser última opção após conservação e reúso!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Viabilidade Econômica",
+        "content": "<h3>Custos e Análise Econômica</h3><h4>Custos de Produção (2024):</h4><p>💰 Osmose Reversa (água do mar): R$ 3,50-5,00/m³<br>💰 Osmose Reversa (água salobra): R$ 1,50-2,50/m³<br>💰 MSF: R$ 5,00-8,00/m³</p><h4>Comparação com Outras Fontes:</h4><p>🚰 Água de manancial tratada: R$ 0,80-1,50/m³<br>♻️ Reúso de esgoto tratado: R$ 1,00-2,00/m³<br>🌧️ Captação de chuva: R$ 0,50-1,00/m³</p><h4>Fatores de Viabilidade:</h4><ul><li>📍 Proximidade do mar ou fonte salobra</li><li>⚡ Disponibilidade de energia barata/renovável</li><li>💧 Escassez hídrica severa na região</li><li>👥 Densidade populacional alta</li><li>🏭 Demanda industrial significativa</li></ul><h4>Casos de Sucesso no Brasil:</h4><p>🇧🇷 <strong>Fernando de Noronha/PE:</strong> 100% da água por dessalinização solar<br>🇧🇷 <strong>Semiárido Nordestino:</strong> 5.000+ dessalinizadores de pequeno porte</p><p class='success'>✅ <strong>Preparado para o Quiz!</strong> Teste seus conhecimentos na próxima página!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 5,
+        "title": "Quiz de Certificação",
+        "content": "<h3>🎓 Avaliação de Conhecimentos</h3><p>Responda corretamente às questões para desbloquear a Usina de Dessalinização!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 70,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Qual é o processo de dessalinização mais utilizado mundialmente?",
+          "options": [
+            "Destilação Multi-Estágio (MSF)",
+            "Osmose Reversa (OR)",
+            "Eletrodiálise Reversa (EDR)",
+            "Evaporação Solar"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A Osmose Reversa representa 65% do mercado global de dessalinização devido à sua eficiência energética e qualidade da água produzida."
+        },
+        {
+          "id": 2,
+          "question": "Qual é o principal impacto ambiental da dessalinização?",
+          "options": [
+            "Poluição do ar por gases tóxicos",
+            "Descarte de salmoura concentrada no mar",
+            "Contaminação de aquíferos subterrâneos",
+            "Destruição de florestas costeiras"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O descarte de salmoura (concentrado salino com 2x a salinidade do mar) é o principal impacto, afetando a vida marinha local se não for adequadamente diluído."
+        },
+        {
+          "id": 3,
+          "question": "Qual tecnologia consome MENOS energia para dessalinizar água salobra?",
+          "options": [
+            "Osmose Reversa (3-4 kWh/m³)",
+            "Destilação Multi-Estágio (10-15 kWh/m³)",
+            "Eletrodiálise Reversa (1-2 kWh/m³)",
+            "Todas consomem a mesma energia"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A Eletrodiálise Reversa (EDR) é a mais eficiente para água salobra, consumindo apenas 1-2 kWh/m³, mas é limitada a baixas salinidades."
+        },
+        {
+          "id": 4,
+          "question": "Segundo o conteúdo, qual deve ser a prioridade ANTES de usar dessalinização?",
+          "options": [
+            "Construir mais represas",
+            "Importar água de outros países",
+            "Conservação de água e reúso",
+            "Perfurar mais poços artesianos"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A dessalinização deve ser a última opção devido aos custos e impactos ambientais. Conservação, reúso e outras fontes devem ser priorizadas."
+        },
+        {
+          "id": 5,
+          "question": "Qual região brasileira é pioneira em dessalinização 100% solar?",
+          "options": [
+            "Pantanal Mato-Grossense",
+            "Amazônia Ocidental",
+            "Fernando de Noronha/PE",
+            "Região Metropolitana de São Paulo"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Fernando de Noronha produz 100% de sua água potável através de dessalinização alimentada por energia solar, sendo referência em sustentabilidade."
+        }
+      ]
+    },
+    "relatedBuildings": ["water_pump", "monitoring_station", "water_quality_monitor"],
+    "relatedConcepts": ["reverse_osmosis", "water_scarcity", "renewable_energy"]
+  },
+
+  "monitoring_station": {
+    "buildingId": "monitoring_station",
+    "buildingName": "Estação de Monitoramento",
+    "category": "water",
+    "difficulty": "avançado",
+    "studyTitle": "Sistemas Automatizados de Monitoramento Hídrico",
+    "studyIcon": "📊",
+    "estimatedTime": "12 minutos",
+    "learningObjectives": [
+      "Compreender parâmetros de qualidade da água",
+      "Interpretar dados de monitoramento em tempo real",
+      "Aplicar tecnologias de sensoriamento remoto"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Monitoramento Hídrico Inteligente",
+        "content": "<h3>O que é uma Estação de Monitoramento?</h3><p>Estações de monitoramento são <strong>sistemas automatizados</strong> que coletam, analisam e transmitem dados sobre qualidade e quantidade de água em tempo real, permitindo gestão proativa de recursos hídricos.</p><h4>Componentes Tecnológicos:</h4><ul><li>🔬 <strong>Sensores Multiparamétricos:</strong> pH, turbidez, OD, condutividade</li><li>📡 <strong>Telemetria:</strong> Transmissão de dados via satélite/celular</li><li>☀️ <strong>Energia Solar:</strong> Painéis fotovoltaicos para autonomia</li><li>💾 <strong>Datalogger:</strong> Armazenamento local de dados</li><li>🤖 <strong>IA/Machine Learning:</strong> Detecção de anomalias</li></ul><p class='highlight'>💡 <strong>Inovação:</strong> Estações modernas podem detectar contaminação em menos de 5 minutos!</p>",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Water_quality_monitoring_station.jpg/1200px-Water_quality_monitoring_station.jpg"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Parâmetros de Qualidade da Água",
+        "content": "<h3>Indicadores Físico-Químicos</h3><h4>Parâmetros Físicos:</h4><p>🌡️ <strong>Temperatura:</strong> Afeta solubilidade de gases e metabolismo aquático (ideal: 20-25°C)<br>💧 <strong>Turbidez:</strong> Partículas suspensas (ideal: < 5 NTU)<br>🎨 <strong>Cor:</strong> Substâncias dissolvidas (ideal: < 15 uH)<br>👃 <strong>Odor:</strong> Compostos voláteis (ideal: inodora)</p><h4>Parâmetros Químicos:</h4><p>⚗️ <strong>pH:</strong> Acidez/alcalinidade (ideal: 6,5-8,5)<br>💨 <strong>Oxigênio Dissolvido (OD):</strong> Essencial para vida aquática (ideal: > 5 mg/L)<br>⚡ <strong>Condutividade Elétrica:</strong> Sais dissolvidos (ideal: < 100 µS/cm)<br>🧪 <strong>DBO/DQO:</strong> Matéria orgânica (ideal: DBO < 5 mg/L)</p><h4>Parâmetros Microbiológicos:</h4><p>🦠 <strong>Coliformes Totais:</strong> Indicador de contaminação<br>💩 <strong>E. coli:</strong> Contaminação fecal (ideal: ausência)<br>🧫 <strong>Enterococos:</strong> Poluição recente</p><p class='tip'>📊 <strong>Importante:</strong> Monitoramento contínuo permite identificar tendências e prever problemas!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Tecnologias de Sensoriamento",
+        "content": "<h3>Sensores e Equipamentos Avançados</h3><h4>Sensores Ópticos:</h4><ul><li><strong>Turbidímetro:</strong> Luz dispersa por partículas (0-1000 NTU)</li><li><strong>Colorímetro:</strong> Absorção de luz em comprimentos específicos</li><li><strong>Fluorímetro:</strong> Detecção de clorofila e matéria orgânica</li></ul><h4>Sensores Eletroquímicos:</h4><ul><li><strong>Eletrodo de pH:</strong> Potencial de hidrogênio (0-14)</li><li><strong>Sensor de OD:</strong> Oxigênio dissolvido (0-20 mg/L)</li><li><strong>Sensor de Condutividade:</strong> Íons dissolvidos (0-200 mS/cm)</li><li><strong>ISE (Íon Seletivo):</strong> Nitrato, amônia, cloreto</li></ul><h4>Tecnologias Emergentes:</h4><p>🛰️ <strong>Sensoriamento Remoto:</strong> Satélites monitoram grandes corpos d'água<br>🚁 <strong>Drones Aquáticos:</strong> Coleta de amostras em áreas inacessíveis<br>🧬 <strong>Biosensores:</strong> Detecção de toxinas específicas<br>📱 <strong>IoT:</strong> Rede de sensores conectados em tempo real</p><p class='warning'>⚠️ <strong>Calibração:</strong> Sensores devem ser calibrados mensalmente para garantir precisão!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Gestão de Dados e Alertas",
+        "content": "<h3>Sistemas de Informação Hídrica</h3><h4>Plataformas de Gestão:</h4><ul><li>📊 <strong>Dashboards em Tempo Real:</strong> Visualização de todos os parâmetros</li><li>📈 <strong>Análise de Tendências:</strong> Gráficos históricos e previsões</li><li>🚨 <strong>Sistema de Alertas:</strong> Notificações automáticas de anomalias</li><li>📄 <strong>Relatórios Automatizados:</strong> Conformidade com legislação</li><li>🗺️ <strong>Mapas Interativos:</strong> Geolocalização de estações</li></ul><h4>Inteligência Artificial:</h4><p>🤖 <strong>Detecção de Anomalias:</strong> Algoritmos identificam padrões anormais<br>🔮 <strong>Previsão de Eventos:</strong> ML prevê contaminações e secas<br>🎯 <strong>Otimização:</strong> IA sugere ações corretivas</p><h4>Integração com Outros Sistemas:</h4><p>🏭 Estações de tratamento (ETAs/ETEs)<br>🌧️ Estações meteorológicas<br>🚰 Redes de distribuição<br>📱 Aplicativos para cidadãos</p><p class='success'>✅ <strong>Quase lá!</strong> Prepare-se para o quiz de certificação!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 5,
+        "title": "Quiz de Certificação Avançado",
+        "content": "<h3>🎓 Avaliação Técnica Especializada</h3><p>Demonstre domínio técnico em monitoramento hídrico para desbloquear a Estação de Monitoramento!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 80,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Qual parâmetro indica DIRETAMENTE a presença de matéria orgânica biodegradável na água?",
+          "options": [
+            "pH (potencial hidrogeniônico)",
+            "Turbidez (partículas suspensas)",
+            "DBO - Demanda Bioquímica de Oxigênio",
+            "Condutividade elétrica"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A DBO (Demanda Bioquímica de Oxigênio) mede a quantidade de oxigênio consumida por microorganismos ao degradar matéria orgânica, sendo indicador direto de poluição orgânica."
+        },
+        {
+          "id": 2,
+          "question": "Uma água com pH 4,5 é considerada:",
+          "options": [
+            "Neutra e adequada para consumo",
+            "Ácida e fora do padrão de potabilidade",
+            "Alcalina e ideal para aquicultura",
+            "Básica e corrosiva"
+          ],
+          "correctAnswer": 1,
+          "explanation": "pH 4,5 indica água ácida, abaixo do padrão de potabilidade (6,5-8,5). Água ácida pode corroer tubulações e afetar a saúde."
+        },
+        {
+          "id": 3,
+          "question": "Qual tecnologia permite monitoramento de grandes corpos d'água de forma não invasiva?",
+          "options": [
+            "Sensores eletroquímicos submersos",
+            "Coleta manual de amostras",
+            "Sensoriamento remoto por satélite",
+            "Biosensores de bancada"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Sensoriamento remoto por satélite permite monitorar grandes áreas (lagos, reservatórios, oceanos) sem contato direto, detectando parâmetros como temperatura, clorofila e turbidez."
+        },
+        {
+          "id": 4,
+          "question": "Oxigênio Dissolvido (OD) abaixo de 5 mg/L indica:",
+          "options": [
+            "Água supersaturada e ideal para peixes",
+            "Condições hipóxicas prejudiciais à vida aquática",
+            "Água pura sem contaminação",
+            "Excesso de nutrientes benéficos"
+          ],
+          "correctAnswer": 1,
+          "explanation": "OD < 5 mg/L indica hipóxia (baixo oxigênio), condição estressante para peixes e organismos aquáticos. Pode ser causada por poluição orgânica ou eutrofização."
+        },
+        {
+          "id": 5,
+          "question": "Com que frequência sensores de monitoramento devem ser calibrados?",
+          "options": [
+            "Apenas uma vez, na instalação",
+            "Anualmente, no início do ano",
+            "Mensalmente, para garantir precisão",
+            "Nunca, são auto-calibráveis"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Calibração mensal é essencial para manter a precisão dos sensores, pois fatores como bioincrustação, deriva do sensor e desgaste afetam as medições ao longo do tempo."
+        },
+        {
+          "id": 6,
+          "question": "Qual parâmetro microbiológico indica contaminação fecal RECENTE?",
+          "options": [
+            "Coliformes totais",
+            "Escherichia coli (E. coli)",
+            "Algas cianobactérias",
+            "Protozoários"
+          ],
+          "correctAnswer": 1,
+          "explanation": "E. coli é indicador específico de contaminação fecal recente, pois sobrevive pouco tempo fora do intestino. Sua presença indica risco de patógenos entéricos."
+        }
+      ]
+    },
+    "relatedBuildings": ["water_quality_monitor", "desalination_plant", "floating_garden"],
+    "relatedConcepts": ["water_quality_parameters", "real_time_monitoring", "data_analytics"]
+  },
+
+  "water_quality_monitor": {
+    "buildingId": "water_quality_monitor",
+    "buildingName": "Monitor de Qualidade",
+    "category": "water",
+    "difficulty": "expert",
+    "studyTitle": "Análise Avançada de Qualidade da Água",
+    "studyIcon": "🔍",
+    "estimatedTime": "15 minutos",
+    "learningObjectives": [
+      "Dominar técnicas analíticas de laboratório",
+      "Interpretar resultados complexos de análises",
+      "Aplicar legislação e padrões de qualidade",
+      "Diagnosticar problemas de contaminação"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Análise Laboratorial de Água",
+        "content": "<h3>Laboratório de Qualidade da Água</h3><p>Monitores de qualidade são <strong>laboratórios especializados</strong> equipados com tecnologia de ponta para análises físico-químicas, microbiológicas e toxicológicas, garantindo conformidade com padrões de potabilidade.</p><h4>Equipamentos Essenciais:</h4><ul><li>🔬 <strong>Espectrofotômetro UV-Vis:</strong> Análise de metais e compostos orgânicos</li><li>🧪 <strong>Cromatógrafo (HPLC/GC):</strong> Separação de compostos complexos</li><li>⚗️ <strong>ICP-MS:</strong> Detecção de metais traço (ppb)</li><li>🦠 <strong>Autoclave:</strong> Esterilização de materiais</li><li>🌡️ <strong>Incubadora:</strong> Cultivo de microorganismos</li><li>💧 <strong>Sistema de Água Ultrapura:</strong> Preparo de soluções</li></ul><p class='highlight'>💡 <strong>Precisão:</strong> Equipamentos modernos detectam contaminantes em concentrações de partes por trilhão (ppt)!</p>",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Water_testing_laboratory.jpg/1200px-Water_testing_laboratory.jpg"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Legislação e Padrões de Qualidade",
+        "content": "<h3>Portaria GM/MS Nº 888/2021 - Padrão de Potabilidade</h3><h4>Parâmetros Microbiológicos:</h4><p>🦠 <strong>E. coli:</strong> Ausência em 100 mL<br>🧫 <strong>Coliformes Totais:</strong> Ausência em 100 mL (sistema de distribuição)</p><h4>Parâmetros Químicos Inorgânicos (VMP):</h4><p>☠️ <strong>Arsênio:</strong> 0,01 mg/L<br>☠️ <strong>Chumbo:</strong> 0,01 mg/L<br>☠️ <strong>Mercúrio:</strong> 0,001 mg/L<br>⚠️ <strong>Nitrato:</strong> 10 mg/L (como N)<br>⚠️ <strong>Fluoreto:</strong> 1,5 mg/L</p><h4>Parâmetros Orgânicos:</h4><p>🧪 <strong>Benzeno:</strong> 0,005 mg/L<br>🧪 <strong>Agrotóxicos:</strong> Limites específicos por composto<br>🧪 <strong>Trihalometanos:</strong> 0,1 mg/L</p><h4>Padrão de Radioatividade:</h4><p>☢️ <strong>Alfa total:</strong> 0,5 Bq/L<br>☢️ <strong>Beta total:</strong> 1,0 Bq/L</p><p class='warning'>⚠️ <strong>Legal:</strong> Violação dos padrões pode resultar em multas e interdição do sistema!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Técnicas Analíticas Avançadas",
+        "content": "<h3>Métodos de Análise Instrumental</h3><h4>Espectroscopia:</h4><p><strong>UV-Vis:</strong> Absorção de luz para quantificar compostos coloridos<br><strong>ICP-OES:</strong> Plasma indutivamente acoplado para metais<br><strong>ICP-MS:</strong> Espectrometria de massa para ultra-traços</p><h4>Cromatografia:</h4><p><strong>HPLC:</strong> Separação de compostos não voláteis (pesticidas, fármacos)<br><strong>GC-MS:</strong> Compostos voláteis (THMs, solventes)<br><strong>IC:</strong> Cromatografia iônica (ânions, cátions)</p><h4>Microbiologia:</h4><p><strong>Membrana Filtrante:</strong> Contagem de coliformes<br><strong>Substrato Cromogênico:</strong> Detecção rápida de E. coli<br><strong>PCR:</strong> Identificação molecular de patógenos</p><h4>Bioensaios:</h4><p><strong>Teste de Toxicidade Aguda:</strong> Daphnia magna (48h)<br><strong>Teste de Mutagenicidade:</strong> Ames test<br><strong>Biomonitoramento:</strong> Peixes, algas, bactérias</p><p class='tip'>🔬 <strong>Qualidade:</strong> Laboratórios devem ser acreditados pela ISO/IEC 17025!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Diagnóstico de Contaminação",
+        "content": "<h3>Identificação de Fontes Poluidoras</h3><h4>Contaminação Microbiológica:</h4><p>💩 <strong>Sintomas:</strong> E. coli presente, coliformes elevados<br>🔍 <strong>Fonte:</strong> Esgoto, fossas, dejetos animais<br>💊 <strong>Solução:</strong> Cloração, UV, reparo de vazamentos</p><h4>Contaminação por Nutrientes:</h4><p>🌿 <strong>Sintomas:</strong> Nitrato > 10 mg/L, fosfato elevado, algas<br>🔍 <strong>Fonte:</strong> Fertilizantes agrícolas, esgoto<br>💊 <strong>Solução:</strong> Wetlands, fitorremediação, controle de fontes</p><h4>Contaminação por Metais:</h4><p>⚙️ <strong>Sintomas:</strong> Pb, Cu, Zn acima do VMP<br>🔍 <strong>Fonte:</strong> Tubulações antigas, mineração, indústrias<br>💊 <strong>Solução:</strong> Troca de tubulações, tratamento químico</p><h4>Contaminação Orgânica:</h4><p>🏭 <strong>Sintomas:</strong> DQO alta, odor, cor<br>🔍 <strong>Fonte:</strong> Efluentes industriais, vazamentos<br>💊 <strong>Solução:</strong> Carvão ativado, oxidação avançada</p><p class='success'>✅ <strong>Desafio Final!</strong> Teste seu conhecimento expert no quiz!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 5,
+        "title": "Quiz de Certificação Expert",
+        "content": "<h3>🏆 Avaliação de Especialista em Qualidade da Água</h3><p>Este é o quiz mais desafiador! Demonstre expertise técnica para desbloquear o Monitor de Qualidade!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 85,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Segundo a Portaria GM/MS Nº 888/2021, qual é o Valor Máximo Permitido (VMP) de arsênio em água potável?",
+          "options": [
+            "0,001 mg/L",
+            "0,01 mg/L",
+            "0,1 mg/L",
+            "1,0 mg/L"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O VMP de arsênio é 0,01 mg/L. Arsênio é altamente tóxico e cancerígeno, comum em águas subterrâneas de regiões com mineração ou atividade vulcânica."
+        },
+        {
+          "id": 2,
+          "question": "Qual técnica analítica é MAIS adequada para detectar metais pesados em concentrações de partes por bilhão (ppb)?",
+          "options": [
+            "Espectrofotometria UV-Vis",
+            "Titulação volumétrica",
+            "ICP-MS (Espectrometria de Massa com Plasma)",
+            "Teste colorimétrico de campo"
+          ],
+          "correctAnswer": 2,
+          "explanation": "ICP-MS é a técnica mais sensível para metais traço, detectando concentrações de ppb (partes por bilhão) e até ppt (partes por trilhão)."
+        },
+        {
+          "id": 3,
+          "question": "Uma amostra apresenta nitrato de 15 mg/L. Qual é a interpretação CORRETA?",
+          "options": [
+            "Dentro do padrão, água adequada para consumo",
+            "Acima do VMP (10 mg/L), imprópria para consumo",
+            "Abaixo do limite, necessita fortificação",
+            "Valor ideal para aquicultura"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Nitrato acima de 10 mg/L (como N) viola o padrão de potabilidade. Pode causar metemoglobinemia (síndrome do bebê azul) em lactentes."
+        },
+        {
+          "id": 4,
+          "question": "Qual bioensaio é utilizado para avaliar toxicidade aguda de efluentes?",
+          "options": [
+            "Teste de Ames (mutagenicidade)",
+            "Teste com Daphnia magna (48 horas)",
+            "Teste de DBO (5 dias)",
+            "Teste de coliformes termotolerantes"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O teste com Daphnia magna (microcrustáceo) em 48h é padrão internacional para avaliar toxicidade aguda de efluentes e amostras ambientais."
+        },
+        {
+          "id": 5,
+          "question": "Trihalometanos (THMs) são formados pela reação de cloro com:",
+          "options": [
+            "Metais pesados dissolvidos",
+            "Matéria orgânica natural (ácidos húmicos)",
+            "Bactérias patogênicas",
+            "Sais minerais inorgânicos"
+          ],
+          "correctAnswer": 1,
+          "explanation": "THMs são subprodutos da desinfecção formados quando cloro reage com matéria orgânica natural. São potencialmente cancerígenos, com VMP de 0,1 mg/L."
+        },
+        {
+          "id": 6,
+          "question": "Qual norma internacional certifica a competência técnica de laboratórios de análise?",
+          "options": [
+            "ISO 9001 (Gestão da Qualidade)",
+            "ISO 14001 (Gestão Ambiental)",
+            "ISO/IEC 17025 (Competência de Laboratórios)",
+            "ISO 45001 (Saúde e Segurança)"
+          ],
+          "correctAnswer": 2,
+          "explanation": "ISO/IEC 17025 é a norma específica para acreditação de laboratórios de ensaio e calibração, garantindo competência técnica e confiabilidade dos resultados."
+        },
+        {
+          "id": 7,
+          "question": "Uma água com DQO de 200 mg/L e DBO de 50 mg/L indica:",
+          "options": [
+            "Água potável de excelente qualidade",
+            "Presença de matéria orgânica biodegradável e não biodegradável",
+            "Contaminação exclusivamente microbiológica",
+            "Excesso de oxigênio dissolvido"
+          ],
+          "correctAnswer": 1,
+          "explanation": "DQO > DBO indica presença de matéria orgânica não biodegradável (DQO-DBO). Relação DQO/DBO = 4 sugere efluente industrial com compostos recalcitrantes."
+        },
+        {
+          "id": 8,
+          "question": "Qual é a principal limitação da técnica de cromatografia gasosa (GC)?",
+          "options": [
+            "Não detecta compostos voláteis",
+            "Requer que compostos sejam voláteis ou volatilizáveis",
+            "Não separa misturas complexas",
+            "Tem baixa sensibilidade analítica"
+          ],
+          "correctAnswer": 1,
+          "explanation": "GC requer que compostos sejam voláteis ou possam ser derivatizados para volatilização. Compostos não voláteis (ex: metais, sais) requerem outras técnicas como HPLC ou ICP."
+        }
+      ]
+    },
+    "relatedBuildings": ["monitoring_station", "desalination_plant", "floating_garden"],
+    "relatedConcepts": ["analytical_chemistry", "water_legislation", "laboratory_quality_assurance"]
   }
 }
 
