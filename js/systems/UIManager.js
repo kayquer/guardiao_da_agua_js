@@ -4525,10 +4525,21 @@ class UIManager {
         const progress = this.gameManager.studySystem.getProgress();
         const isLastPage = this.gameManager.studySystem.isLastPage();
 
+        // Check if this is a quiz page
+        const hasQuiz = this.gameManager.studySystem.hasQuiz();
+        const quiz = this.gameManager.studySystem.getQuiz();
+        const isQuizPage = hasQuiz && isLastPage;
+
+        // Generate quiz HTML if this is a quiz page
+        let quizHTML = '';
+        if (isQuizPage && quiz) {
+            quizHTML = this.renderQuizQuestions(quiz);
+        }
+
         // Build book HTML
         bookOverlay.innerHTML = `
             <div class="study-book-container">
-                <div class="study-book">
+                <div class="study-book ${isQuizPage ? 'quiz-page' : ''}">
                     <div class="book-header">
                         <h2>${studyContent.studyTitle}</h2>
                         <button class="book-close-btn" onclick="window.gameManager.uiManager.closeStudyBook()">✕</button>
@@ -4545,6 +4556,7 @@ class UIManager {
                         <div class="page-number">Página ${currentPage.pageNumber} de ${studyContent.pages.length}</div>
                         <h3 class="page-title">${currentPage.title}</h3>
                         <div class="page-text">${currentPage.content}</div>
+                        ${quizHTML}
                     </div>
 
                     <div class="book-navigation">
@@ -4574,11 +4586,94 @@ class UIManager {
         // Show overlay with animation
         bookOverlay.classList.add('active');
 
+        // Setup quiz event listeners if this is a quiz page
+        if (isQuizPage && quiz) {
+            this.setupQuizEventListeners(quiz);
+        }
+
         // Pause game
         if (this.gameManager.timeScale > 0) {
             this.gameManager.previousTimeScale = this.gameManager.timeScale;
             this.gameManager.setTimeScale(0);
         }
+    }
+
+    renderQuizQuestions(quiz) {
+        if (!quiz || !quiz.questions || quiz.questions.length === 0) {
+            return '';
+        }
+
+        let questionsHTML = '<div class="quiz-container">';
+
+        quiz.questions.forEach((question, index) => {
+            const userAnswer = this.gameManager.studySystem.currentQuizAnswers[question.id];
+
+            questionsHTML += `
+                <div class="quiz-question" data-question-id="${question.id}">
+                    <h4 class="question-text">
+                        <span class="question-number">${index + 1}.</span>
+                        ${question.question}
+                    </h4>
+                    <div class="quiz-options">
+            `;
+
+            question.options.forEach((option, optionIndex) => {
+                const isSelected = userAnswer === optionIndex;
+                questionsHTML += `
+                    <label class="quiz-option ${isSelected ? 'selected' : ''}">
+                        <input type="radio"
+                               name="question-${question.id}"
+                               value="${optionIndex}"
+                               ${isSelected ? 'checked' : ''}
+                               data-question-id="${question.id}">
+                        <span class="option-text">${option}</span>
+                    </label>
+                `;
+            });
+
+            questionsHTML += `
+                    </div>
+                </div>
+            `;
+        });
+
+        questionsHTML += `
+            <div class="quiz-info">
+                <p>📊 <strong>Nota mínima para aprovação:</strong> ${quiz.passingScore}%</p>
+                <p>❓ <strong>Total de questões:</strong> ${quiz.questions.length}</p>
+            </div>
+        </div>`;
+
+        return questionsHTML;
+    }
+
+    setupQuizEventListeners(quiz) {
+        // Wait for DOM to be ready
+        setTimeout(() => {
+            const radioButtons = document.querySelectorAll('.quiz-option input[type="radio"]');
+
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const questionId = parseInt(e.target.dataset.questionId);
+                    const selectedOption = parseInt(e.target.value);
+
+                    // Submit answer to StudySystem
+                    this.gameManager.studySystem.submitQuizAnswer(questionId, selectedOption);
+
+                    // Update visual selection
+                    const questionContainer = e.target.closest('.quiz-question');
+                    questionContainer.querySelectorAll('.quiz-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    e.target.closest('.quiz-option').classList.add('selected');
+
+                    // Play selection sound
+                    if (this.gameManager.audioManager) {
+                        this.gameManager.audioManager.playSound('sfx_ui_click');
+                    }
+                });
+            });
+        }, 100);
     }
 
     nextStudyPage() {
@@ -4607,8 +4702,60 @@ class UIManager {
 
     completeStudy() {
         const buildingId = this.gameManager.studySystem.currentStudy;
-        if (buildingId) {
-            this.gameManager.studySystem.completeStudy(buildingId);
+        if (!buildingId) return;
+
+        const studySystem = this.gameManager.studySystem;
+
+        // Check if this study has a quiz
+        if (studySystem.hasQuiz()) {
+            const quiz = studySystem.getQuiz();
+
+            // Validate all questions are answered
+            if (!studySystem.areAllQuestionsAnswered()) {
+                this.showNotification(
+                    '⚠️ Por favor, responda todas as questões antes de concluir!',
+                    'warning',
+                    3000
+                );
+
+                if (this.gameManager.audioManager) {
+                    this.gameManager.audioManager.playSound('sfx_build_error');
+                }
+                return;
+            }
+
+            // Calculate score and check if passed
+            const score = studySystem.calculateQuizScore();
+            const passed = studySystem.isQuizPassed();
+
+            if (!passed) {
+                // Quiz failed - show results and allow retry
+                this.showQuizResults(false, score, quiz.passingScore);
+
+                if (this.gameManager.audioManager) {
+                    this.gameManager.audioManager.playSound('sfx_build_error');
+                }
+                return;
+            }
+
+            // Quiz passed - show success and unlock building
+            this.showQuizResults(true, score, quiz.passingScore);
+            studySystem.completeStudy(buildingId);
+
+            // Play success sound
+            if (this.gameManager.audioManager) {
+                this.gameManager.audioManager.playSound('sfx_ui_success');
+            }
+
+            // Close book after a delay to show results
+            setTimeout(() => {
+                this.closeStudyBook();
+                this.loadBuildingItemsWithStateManagement();
+            }, 2500);
+
+        } else {
+            // No quiz - complete study directly
+            studySystem.completeStudy(buildingId);
 
             // Play success sound
             if (this.gameManager.audioManager) {
@@ -4620,6 +4767,55 @@ class UIManager {
 
             // Refresh building items to show unlocked state
             this.loadBuildingItemsWithStateManagement();
+        }
+    }
+
+    showQuizResults(passed, score, passingScore) {
+        const resultsContainer = document.querySelector('.quiz-container');
+        if (!resultsContainer) return;
+
+        const resultClass = passed ? 'quiz-passed' : 'quiz-failed';
+        const resultIcon = passed ? '🎉' : '❌';
+        const resultTitle = passed ? 'Parabéns! Você foi aprovado!' : 'Não foi dessa vez...';
+        const resultMessage = passed
+            ? `Você acertou ${score}% das questões e desbloqueou este edifício!`
+            : `Você acertou ${score}% das questões. É necessário ${passingScore}% para aprovação. Revise o conteúdo e tente novamente.`;
+
+        const resultsHTML = `
+            <div class="quiz-results ${resultClass}">
+                <div class="results-icon">${resultIcon}</div>
+                <h3>${resultTitle}</h3>
+                <div class="results-score">
+                    <div class="score-circle">
+                        <span class="score-value">${score}%</span>
+                    </div>
+                </div>
+                <p class="results-message">${resultMessage}</p>
+                ${!passed ? '<button class="retry-btn" onclick="window.gameManager.uiManager.retryQuiz()">🔄 Tentar Novamente</button>' : ''}
+            </div>
+        `;
+
+        resultsContainer.innerHTML = resultsHTML;
+    }
+
+    retryQuiz() {
+        // Reset quiz state
+        this.gameManager.studySystem.currentQuizAnswers = {};
+        this.gameManager.studySystem.quizScore = 0;
+
+        // Go back to first page to review content
+        this.gameManager.studySystem.currentPage = 0;
+
+        // Refresh the study interface
+        const studyContent = this.gameManager.studySystem.getStudyContent(
+            this.gameManager.studySystem.currentStudy
+        );
+        this.showStudyBookInterface(studyContent);
+
+        this.showNotification('📚 Revise o conteúdo e tente novamente!', 'info', 3000);
+
+        if (this.gameManager.audioManager) {
+            this.gameManager.audioManager.playSound('sfx_ui_click');
         }
     }
 

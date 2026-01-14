@@ -19,6 +19,11 @@ class StudySystem {
         this.currentStudy = null;
         this.currentPage = 0;
 
+        // Quiz state management
+        this.currentQuizAnswers = {}; // { questionId: selectedOptionIndex }
+        this.quizScore = 0;
+        this.quizCompleted = false;
+
         // Flag para indicar se o conteúdo foi carregado
         this.contentLoaded = false;
 
@@ -123,10 +128,15 @@ class StudySystem {
             console.warn(`⚠️ Conteúdo de estudo não encontrado para: ${buildingId}`);
             return false;
         }
-        
+
         this.currentStudy = buildingId;
         this.currentPage = 0;
-        
+
+        // Reset quiz state
+        this.currentQuizAnswers = {};
+        this.quizScore = 0;
+        this.quizCompleted = false;
+
         console.log(`📖 Iniciando estudo: ${content.studyTitle}`);
         return true;
     }
@@ -214,11 +224,78 @@ class StudySystem {
         }
     }
 
+    // ===== QUIZ MANAGEMENT =====
+    hasQuiz() {
+        if (!this.currentStudy) return false;
+
+        const content = this.getStudyContent(this.currentStudy);
+        return content && content.quiz && content.quiz.enabled === true;
+    }
+
+    getQuiz() {
+        if (!this.currentStudy) return null;
+
+        const content = this.getStudyContent(this.currentStudy);
+        if (!content || !content.quiz || !content.quiz.enabled) return null;
+
+        return content.quiz;
+    }
+
+    submitQuizAnswer(questionId, selectedOptionIndex) {
+        this.currentQuizAnswers[questionId] = selectedOptionIndex;
+        console.log(`📝 Resposta registrada - Questão ${questionId}: Opção ${selectedOptionIndex}`);
+    }
+
+    calculateQuizScore() {
+        const quiz = this.getQuiz();
+        if (!quiz || !quiz.questions) return 0;
+
+        let correctAnswers = 0;
+        const totalQuestions = quiz.questions.length;
+
+        quiz.questions.forEach(question => {
+            const userAnswer = this.currentQuizAnswers[question.id];
+            if (userAnswer === question.correctAnswer) {
+                correctAnswers++;
+            }
+        });
+
+        this.quizScore = Math.round((correctAnswers / totalQuestions) * 100);
+        console.log(`📊 Quiz Score: ${correctAnswers}/${totalQuestions} (${this.quizScore}%)`);
+
+        return this.quizScore;
+    }
+
+    isQuizPassed() {
+        const quiz = this.getQuiz();
+        if (!quiz) return true; // No quiz = auto pass
+
+        const score = this.calculateQuizScore();
+        const passed = score >= quiz.passingScore;
+
+        console.log(`🎓 Quiz ${passed ? 'APROVADO' : 'REPROVADO'}: ${score}% (mínimo: ${quiz.passingScore}%)`);
+
+        return passed;
+    }
+
+    areAllQuestionsAnswered() {
+        const quiz = this.getQuiz();
+        if (!quiz || !quiz.questions) return true;
+
+        const answeredCount = Object.keys(this.currentQuizAnswers).length;
+        const totalQuestions = quiz.questions.length;
+
+        return answeredCount === totalQuestions;
+    }
+
     // ===== RESET =====
     reset() {
         this.unlockedBuildings = new Set(this.defaultUnlockedBuildings);
         this.currentStudy = null;
         this.currentPage = 0;
+        this.currentQuizAnswers = {};
+        this.quizScore = 0;
+        this.quizCompleted = false;
         console.log('🔄 StudySystem resetado');
     }
 }
