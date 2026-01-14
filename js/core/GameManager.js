@@ -127,7 +127,7 @@ class GameManager {
     async initializeSystems() {
         try {
             console.log('🔧 Inicializando sistemas...');
-            
+
             await this.initializeRenderer();
             this.validateDependencies();
 
@@ -144,7 +144,10 @@ class GameManager {
             this.studySystem = new StudySystem(this);
             this.tutorialSystem = new TutorialSystem(this);
             this.tutorialManager = new TutorialManager(this);
-            
+
+            // Aguardar carregamento do conteúdo educacional
+            await this.studySystem.initialize();
+
             this.setupEventListeners();
             this.exposeDebugFunctions();
 

@@ -6,41 +6,52 @@
 class StudySystem {
     constructor(gameManager) {
         console.log('📚 Inicializando StudySystem...');
-        
+
         this.gameManager = gameManager;
-        
+
         // Estado de desbloqueio de edifícios
         this.unlockedBuildings = new Set();
-        
+
         // Conteúdo educacional
         this.studyContent = new Map();
-        
+
         // Estado atual do estudo
         this.currentStudy = null;
         this.currentPage = 0;
-        
+
+        // Flag para indicar se o conteúdo foi carregado
+        this.contentLoaded = false;
+
         // Edifícios desbloqueados por padrão (tutorial/básicos)
         this.defaultUnlockedBuildings = [
             'city_hall',      // Prefeitura (sempre disponível)
             'road',           // Estradas (básico)
             'park'            // Parque (básico)
         ];
-        
+
         // Inicializar edifícios padrão como desbloqueados
         this.defaultUnlockedBuildings.forEach(id => {
             this.unlockedBuildings.add(id);
         });
-        
-        // Carregar conteúdo educacional
-        this.loadStudyContent();
-        
-        console.log('✅ StudySystem inicializado');
+
+        console.log('✅ StudySystem inicializado (aguardando carregamento de conteúdo)');
     }
-    
+
+    // ===== INICIALIZAÇÃO ASSÍNCRONA =====
+    async initialize() {
+        console.log('📚 Carregando conteúdo educacional...');
+        await this.loadStudyContent();
+        console.log('✅ StudySystem totalmente inicializado');
+    }
+
     // ===== CARREGAMENTO DE CONTEÚDO =====
     async loadStudyContent() {
         try {
             const response = await fetch('data/building-studies.json');
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
             const content = await response.json();
 
             // Armazenar conteúdo no Map
@@ -48,6 +59,7 @@ class StudySystem {
                 this.studyContent.set(buildingId, studyData);
             });
 
+            this.contentLoaded = true;
             console.log(`📚 ${this.studyContent.size} módulos de estudo carregados`);
 
             // Refresh building items in UI after content loads
@@ -61,6 +73,8 @@ class StudySystem {
             }
         } catch (error) {
             console.error('❌ Erro ao carregar conteúdo de estudos:', error);
+            console.error('   Detalhes:', error.message);
+            this.contentLoaded = false;
         }
     }
     

@@ -4480,12 +4480,21 @@ class UIManager {
     openStudyBook(buildingId) {
         if (!this.gameManager.studySystem) {
             console.error('❌ StudySystem not initialized');
+            this.showNotification('❌ Sistema de estudos não inicializado', 'error');
+            return;
+        }
+
+        // Check if content is still loading
+        if (!this.gameManager.studySystem.contentLoaded) {
+            console.warn('⏳ Conteúdo educacional ainda carregando...');
+            this.showNotification('⏳ Aguarde, carregando conteúdo educacional...', 'warning');
             return;
         }
 
         const studyContent = this.gameManager.studySystem.getStudyContent(buildingId);
         if (!studyContent) {
             console.warn(`⚠️ No study content for building: ${buildingId}`);
+            this.showNotification('⚠️ Conteúdo educacional não disponível para este edifício', 'warning');
             return;
         }
 
