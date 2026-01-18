@@ -67,6 +67,9 @@ class StudySystem {
             this.contentLoaded = true;
             console.log(`📚 ${this.studyContent.size} módulos de estudo carregados`);
 
+            // Auto-unlock buildings without study content
+            this.unlockBuildingsWithoutStudyContent();
+
             // Refresh building items in UI after content loads
             if (this.gameManager && this.gameManager.uiManager) {
                 // Small delay to ensure UI is ready
@@ -85,11 +88,47 @@ class StudySystem {
     
     // ===== VERIFICAÇÃO DE DESBLOQUEIO =====
     isBuildingUnlocked(buildingId) {
-        return this.unlockedBuildings.has(buildingId);
+        // If building is already unlocked, return true
+        if (this.unlockedBuildings.has(buildingId)) {
+            return true;
+        }
+
+        // If content is loaded and building has no study content, auto-unlock it
+        if (this.contentLoaded && !this.hasStudyContent(buildingId)) {
+            return true;
+        }
+
+        return false;
     }
-    
+
     hasStudyContent(buildingId) {
         return this.studyContent.has(buildingId);
+    }
+
+    // Auto-unlock all buildings that don't have study content
+    unlockBuildingsWithoutStudyContent() {
+        if (!this.gameManager || !this.gameManager.buildingSystem) {
+            console.warn('⚠️ BuildingSystem not available for auto-unlock');
+            return;
+        }
+
+        const allBuildingTypes = this.gameManager.buildingSystem.buildingTypes;
+        let unlockedCount = 0;
+
+        allBuildingTypes.forEach((buildingType, buildingId) => {
+            // Skip if already unlocked
+            if (this.unlockedBuildings.has(buildingId)) {
+                return;
+            }
+
+            // Auto-unlock if no study content exists
+            if (!this.hasStudyContent(buildingId)) {
+                this.unlockedBuildings.add(buildingId);
+                unlockedCount++;
+            }
+        });
+
+        console.log(`🔓 Auto-unlocked ${unlockedCount} buildings without study content`);
     }
     
     // ===== DESBLOQUEIO DE EDIFÍCIOS =====

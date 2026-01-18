@@ -1226,27 +1226,27 @@ class GameManager {
         this.handleResize();
         this.createStarterCity();
 
-        // TASK #5: Tutorial auto-start disabled (causing initialization errors)
-        // TODO: Re-enable after fixing SaveSystem initialization timing
-        /*
+        // FIX: Tutorial auto-start re-enabled with proper error handling
         try {
             if (this.tutorialSystem && this.saveSystem && typeof this.saveSystem.isTutorialCompleted === 'function') {
                 const tutorialCompleted = this.saveSystem.isTutorialCompleted();
                 if (!tutorialCompleted) {
                     console.log('📚 Starting tutorial automatically (first time player)');
+                    // Delay tutorial start to allow game to fully initialize
                     setTimeout(() => {
                         if (this.tutorialSystem) {
                             this.tutorialSystem.start();
                         }
-                    }, 1000);
+                    }, 2000); // 2 second delay for full initialization
                 } else {
                     console.log('📚 Tutorial already completed, skipping auto-start');
                 }
+            } else {
+                console.warn('⚠️ Tutorial system or save system not available for auto-start');
             }
         } catch (error) {
             console.warn('⚠️ Could not check tutorial status:', error);
         }
-        */
 
         console.log('✅ Novo jogo iniciado');
         return true;

@@ -1,0 +1,14 @@
+# Blender 4.3.0 MTL File: 'frog-icon-001.blend'
+# www.blender.org
+
+newmtl Frog
+Ka 0.400000 0.400000 0.400000
+Kd 0.251763 0.500000 0.243066
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Ns textures/Frog_Roughness.png
+map_refl textures/Frog_Metalness.png
+map_Bump -bm 1.000000 textures/Frog_Normal.png

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste 3D - Girl Reading</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+        }
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            max-width: 300px;
+        }
+        #info h3 {
+            margin: 0 0 10px 0;
+            color: #4ecdc4;
+        }
+        #console {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #0f0;
+            padding: 10px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin: 2px 0;
+        }
+        .error { color: #ff6b6b; }
+        .success { color: #51cf66; }
+        .info { color: #4ecdc4; }
+    </style>
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    
+    <div id="info">
+        <h3>🎨 Teste 3D Model Loader</h3>
+        <p><strong>Modelo:</strong> girl-reading-a-book-icon.obj</p>
+        <p><strong>Texturas:</strong> PBR (Color, Normal, Roughness, AO)</p>
+        <p><strong>Controles:</strong></p>
+        <ul style="margin: 5px 0; padding-left: 20px;">
+            <li>Mouse: Rotacionar</li>
+            <li>Scroll: Zoom</li>
+        </ul>
+    </div>
+
+    <div id="console">
+        <div class="log-entry info">📊 Aguardando carregamento...</div>
+    </div>
+
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+
+    <script>
+        const consoleDiv = document.getElementById('console');
+        
+        function addLog(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = message;
+            consoleDiv.appendChild(entry);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log(message);
+        }
+
+        const canvas = document.getElementById('renderCanvas');
+        const engine = new BABYLON.Engine(canvas, true, {
+            preserveDrawingBuffer: true,
+            stencil: true
+        });
+
+        const createScene = async () => {
+            const scene = new BABYLON.Scene(engine);
+            scene.clearColor = new BABYLON.Color4(0.2, 0.3, 0.4, 1.0);
+
+            const camera = new BABYLON.ArcRotateCamera(
+                'camera',
+                Math.PI / 2,
+                Math.PI / 2.5,
+                5,
+                new BABYLON.Vector3(0, 0, 0),
+                scene
+            );
+            camera.lowerRadiusLimit = 2;
+            camera.upperRadiusLimit = 10;
+            camera.attachControl(canvas, true);
+
+            const light1 = new BABYLON.HemisphericLight(
+                'light1',
+                new BABYLON.Vector3(0, 1, 0),
+                scene
+            );
+            light1.intensity = 0.7;
+
+            const light2 = new BABYLON.DirectionalLight(
+                'light2',
+                new BABYLON.Vector3(-1, -2, -1),
+                scene
+            );
+            light2.intensity = 0.5;
+
+            addLog('🌟 Cena criada com sucesso', 'success');
+
+            try {
+                addLog('📦 Carregando modelo OBJ...', 'info');
+                
+                const result = await BABYLON.SceneLoader.ImportMeshAsync(
+                    '',
+                    'models/Characters/girl-reading-a-book-icon-obj/',
+                    'girl-reading-a-book-icon.obj',
+                    scene
+                );
+
+                addLog(`✅ Carregado ${result.meshes.length} meshes`, 'success');
+
+                const parentModel = new BABYLON.TransformNode('characterModel', scene);
+
+                result.meshes.forEach(mesh => {
+                    if (mesh.parent === null) {
+                        mesh.parent = parentModel;
+                    }
+                });
+
+                const meshes = result.meshes.filter(m => m.name !== '__root__');
+                
+                if (meshes.length > 0) {
+                    let min = new BABYLON.Vector3(Infinity, Infinity, Infinity);
+                    let max = new BABYLON.Vector3(-Infinity, -Infinity, -Infinity);
+
+                    meshes.forEach(mesh => {
+                        mesh.computeWorldMatrix(true);
+                        const boundingInfo = mesh.getBoundingInfo();
+                        const meshMin = boundingInfo.boundingBox.minimumWorld;
+                        const meshMax = boundingInfo.boundingBox.maximumWorld;
+
+                        min = BABYLON.Vector3.Minimize(min, meshMin);
+                        max = BABYLON.Vector3.Maximize(max, meshMax);
+                    });
+
+                    const center = BABYLON.Vector3.Center(min, max);
+                    const size = max.subtract(min);
+                    const maxDimension = Math.max(size.x, size.y, size.z);
+
+                    addLog(`📐 Tamanho: ${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}`, 'info');
+                    addLog(`📍 Centro: ${center.x.toFixed(2)}, ${center.y.toFixed(2)}, ${center.z.toFixed(2)}`, 'info');
+
+                    const targetSize = 3;
+                    const scale = targetSize / maxDimension;
+                    parentModel.scaling = new BABYLON.Vector3(scale, scale, scale);
+
+                    const scaledCenter = center.scale(scale);
+                    parentModel.position = scaledCenter.negate();
+                    
+                    camera.target = new BABYLON.Vector3(0, 0, 0);
+                    camera.radius = targetSize * 2;
+
+                    addLog(`✨ Auto-escala: ${scale.toFixed(4)}x`, 'success');
+
+                    addLog('🎨 Aplicando texturas PBR...', 'info');
+                    
+                    const texturePath = 'models/Characters/girl-reading-a-book-icon-obj/textures/';
+                    const texturePrefix = 'girl-reading-a-book-icon-001-';
+
+                    const pbr = new BABYLON.PBRMaterial('girlPBR', scene);
+
+                    pbr.albedoTexture = new BABYLON.Texture(
+                        texturePath + texturePrefix + 'col-metalness-4k.png',
+                        scene
+                    );
+
+                    pbr.bumpTexture = new BABYLON.Texture(
+                        texturePath + texturePrefix + 'nrm-metalness-4k.png',
+                        scene
+                    );
+
+                    pbr.metallicTexture = new BABYLON.Texture(
+                        texturePath + texturePrefix + 'roughness-metalness-4k.png',
+                        scene
+                    );
+                    pbr.useRoughnessFromMetallicTextureAlpha = false;
+                    pbr.useRoughnessFromMetallicTextureGreen = true;
+                    pbr.useMetallnessFromMetallicTextureBlue = true;
+
+                    pbr.ambientTexture = new BABYLON.Texture(
+                        texturePath + texturePrefix + 'ao-metalness-4k.png',
+                        scene
+                    );
+
+                    meshes.forEach(mesh => {
+                        if (mesh.material) {
+                            mesh.material = pbr;
+                        }
+                    });
+
+                    addLog('✅ Texturas PBR aplicadas com sucesso!', 'success');
+
+                    // IDENTIFY MESH PARTS FOR ANIMATION
+                    const meshParts = identifyMeshParts(meshes);
+                    
+                    // START ANIMATIONS
+                    startAnimations(meshParts, parentModel, scene);
+
+                    addLog('🎉 Modelo carregado e animado!', 'success');
+                }
+
+            } catch (error) {
+                addLog(`❌ Erro: ${error.message}`, 'error');
+                console.error(error);
+            }
+
+            return scene;
+        };
+
+        createScene().then(scene => {
+            engine.runRenderLoop(() => {
+                scene.render();
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            engine.resize();
+        });
+
+        // ANIMATION FUNCTIONS
+        function identifyMeshParts(meshes) {
+            addLog('🔍 Identificando partes do modelo...', 'info');
+            
+            const parts = {
+                eyes: [],
+                hair: [],
+                arms: [],
+                body: [],
+                head: [],
+                all: meshes
+            };
+
+            meshes.forEach(mesh => {
+                const name = mesh.name.toLowerCase();
+                
+                if (name.includes('eye') || name.includes('olho')) {
+                    parts.eyes.push(mesh);
+                    addLog(`👁️ Olhos: ${mesh.name}`, 'success');
+                }
+                if (name.includes('hair') || name.includes('cabelo') || name.includes('pelo')) {
+                    parts.hair.push(mesh);
+                    addLog(`💇 Cabelo: ${mesh.name}`, 'success');
+                }
+                if (name.includes('arm') || name.includes('braco') || name.includes('braço') || 
+                    name.includes('hand') || name.includes('mao')) {
+                    parts.arms.push(mesh);
+                    addLog(`💪 Braço: ${mesh.name}`, 'success');
+                }
+                if (name.includes('head') || name.includes('cabeca') || name.includes('cabeça')) {
+                    parts.head.push(mesh);
+                    addLog(`🗣️ Cabeça: ${mesh.name}`, 'success');
+                }
+                if (name.includes('body') || name.includes('torso') || name.includes('corpo')) {
+                    parts.body.push(mesh);
+                    addLog(`🫀 Corpo: ${mesh.name}`, 'success');
+                }
+            });
+
+            // Auto-detect hair if not found
+            if (parts.hair.length === 0) {
+                const topMeshes = meshes.filter(m => {
+                    const pos = m.getBoundingInfo().boundingBox.centerWorld;
+                    return pos.y > 0;
+                });
+                parts.hair = topMeshes.slice(0, Math.min(5, topMeshes.length));
+                addLog(`💇 Auto-detectado ${parts.hair.length} meshes de cabelo`, 'info');
+            }
+
+            return parts;
+        }
+
+        function startAnimations(meshParts, parentModel, scene) {
+            addLog('🎬 Iniciando animações procedurais...', 'info');
+            
+            let time = 0;
+            
+            scene.registerBeforeRender(() => {
+                const deltaTime = 0.01667; // ~60fps
+                time += deltaTime;
+
+                // BREATHING
+                const breathCycle = 4.0;
+                const breathAmount = 0.015;
+                const breathPhase = Math.sin(time * Math.PI * 2 / breathCycle);
+                const breathScale = 1.0 + breathPhase * breathAmount;
+
+                meshParts.body.forEach(mesh => {
+                    if (!mesh.metadata) mesh.metadata = {};
+                    if (!mesh.metadata.originalScaling) {
+                        mesh.metadata.originalScaling = mesh.scaling.clone();
+                    }
+                    mesh.scaling.y = mesh.metadata.originalScaling.y * breathScale;
+                });
+
+                // EYE BLINK
+                const blinkInterval = 3.5;
+                const blinkDuration = 0.15;
+                const blinkCycle = time % blinkInterval;
+                
+                if (blinkCycle < blinkDuration) {
+                    const blinkPhase = blinkCycle / blinkDuration;
+                    const blinkAmount = Math.sin(blinkPhase * Math.PI);
+                    const eyeScale = 1.0 - blinkAmount * 0.9;
+                    
+                    meshParts.eyes.forEach(mesh => {
+                        if (!mesh.metadata) mesh.metadata = {};
+                        if (!mesh.metadata.originalScaling) {
+                            mesh.metadata.originalScaling = mesh.scaling.clone();
+                        }
+                        mesh.scaling.y = mesh.metadata.originalScaling.y * eyeScale;
+                    });
+                } else {
+                    meshParts.eyes.forEach(mesh => {
+                        if (mesh.metadata && mesh.metadata.originalScaling) {
+                            mesh.scaling.y = mesh.metadata.originalScaling.y;
+                        }
+                    });
+                }
+
+                // HAIR WAVE
+                const waveSpeed = 0.8;
+                const waveAmplitude = 0.02;
+                
+                meshParts.hair.forEach((mesh, index) => {
+                    if (!mesh.metadata) mesh.metadata = {};
+                    if (!mesh.metadata.originalPosition) {
+                        mesh.metadata.originalPosition = mesh.position.clone();
+                        mesh.metadata.hairPhaseOffset = index * 0.3;
+                    }
+
+                    const phase = time * waveSpeed + mesh.metadata.hairPhaseOffset;
+                    const wave = Math.sin(phase) * waveAmplitude;
+                    const wave2 = Math.cos(phase * 1.3) * waveAmplitude * 0.5;
+                    
+                    mesh.position.x = mesh.metadata.originalPosition.x + wave;
+                    mesh.position.z = mesh.metadata.originalPosition.z + wave2;
+                });
+
+                // IDLE SWAY
+                const swaySpeed = 0.5;
+                const swayAmount = 0.008;
+                const swayX = Math.sin(time * swaySpeed) * swayAmount;
+                const swayZ = Math.cos(time * swaySpeed * 0.7) * swayAmount * 0.5;
+                
+                if (!parentModel.metadata) {
+                    parentModel.metadata = {
+                        originalRotation: parentModel.rotation.clone()
+                    };
+                }
+                
+                parentModel.rotation.z = parentModel.metadata.originalRotation.z + swayX;
+                parentModel.rotation.x = parentModel.metadata.originalRotation.x + swayZ;
+            });
+
+            addLog('✅ Animações ativas: piscar, respirar, cabelo, idle', 'success');
+        }
+    </script>
+</body>
+</html>

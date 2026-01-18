@@ -1137,7 +1137,7 @@
     background: rgba(0, 0, 0, 0.85);
     z-index: 10000;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     opacity: 0;
     pointer-events: none;
@@ -1152,7 +1152,7 @@
 .study-book-container {
     width: 90%;
     max-width: 800px;
-    max-height: 90vh;
+    max-height: 95vh;
     animation: bookOpen 0.5s ease;
 }
 
@@ -1416,9 +1416,7 @@
         font-size: 0.95rem;
     }
 
-    .book-navigation {
-        flex-direction: column;
-    }
+    
 
     .nav-btn {
         width: 100%;

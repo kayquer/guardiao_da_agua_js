@@ -12,6 +12,22 @@ class TutorialSystem {
         this.isActive = false;
         this.canSkip = true; // Allow skipping for testing
 
+        // 3D Portrait System
+        this.portraitEngine = null;
+        this.portraitScene = null;
+        this.portraitCamera = null;
+        this.portraitModel = null;
+        this.use3DPortrait = true; // Enable 3D portraits
+        
+        // Animation system
+        this.animationData = {
+            time: 0,
+            blinkTimer: 0,
+            breathTimer: 0,
+            hairWaveOffset: 0,
+            meshParts: {} // Store references to specific body parts
+        }
+
         // Tutorial steps with educational content
         this.tutorialSteps = this.createTutorialSteps();
 
@@ -53,7 +69,464 @@ class TutorialSystem {
 
         console.log('✅ Tutorial event listeners configured');
     }
-    
+
+    /**
+     * Initialize 3D portrait system
+     */
+    async initialize3DPortrait() {
+        const canvas = document.getElementById('tutorial-portrait-canvas');
+        if (!canvas) {
+            console.warn('⚠️ Tutorial portrait canvas not found');
+            return false;
+        }
+
+        try {
+            // Create Babylon.js engine for portrait
+            this.portraitEngine = new BABYLON.Engine(canvas, true, {
+                preserveDrawingBuffer: true,
+                stencil: true
+            });
+
+            // Create scene
+            this.portraitScene = new BABYLON.Scene(this.portraitEngine);
+            this.portraitScene.clearColor = new BABYLON.Color4(0.4, 0.62, 1.0, 1.0); // Sky blue background
+
+            // Create camera
+            this.portraitCamera = new BABYLON.ArcRotateCamera(
+                'portraitCamera',
+                Math.PI / 2, // Alpha (horizontal rotation)
+                Math.PI / 2.5, // Beta (vertical rotation)
+                3, // Radius
+                new BABYLON.Vector3(0, 1, 0), // Target
+                this.portraitScene
+            );
+            this.portraitCamera.lowerRadiusLimit = 2;
+            this.portraitCamera.upperRadiusLimit = 5;
+            this.portraitCamera.attachControl(canvas, false);
+
+            // Add lighting
+            const light1 = new BABYLON.HemisphericLight(
+                'portraitLight1',
+                new BABYLON.Vector3(0, 1, 0),
+                this.portraitScene
+            );
+            light1.intensity = 0.7;
+
+            const light2 = new BABYLON.DirectionalLight(
+                'portraitLight2',
+                new BABYLON.Vector3(-1, -2, -1),
+                this.portraitScene
+            );
+            light2.intensity = 0.5;
+
+            // Start render loop
+            this.portraitEngine.runRenderLoop(() => {
+                if (this.portraitScene) {
+                    this.portraitScene.render();
+                }
+            });
+
+            // Handle resize
+            window.addEventListener('resize', () => {
+                if (this.portraitEngine) {
+                    this.portraitEngine.resize();
+                }
+            });
+
+            console.log('✅ 3D Portrait system initialized');
+            return true;
+        } catch (error) {
+            console.error('❌ Error initializing 3D portrait:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Load 3D character model with auto-positioning and PBR textures
+     */
+    async load3DCharacter(modelPath) {
+        if (!this.portraitScene) {
+            console.warn('⚠️ Portrait scene not initialized');
+            return false;
+        }
+
+        try {
+            // Remove existing model
+            if (this.portraitModel) {
+                this.portraitModel.dispose();
+                this.portraitModel = null;
+            }
+
+            console.log('📦 Loading OBJ model...');
+
+            // Load OBJ model
+            const result = await BABYLON.SceneLoader.ImportMeshAsync(
+                '',
+                'models/Characters/girl-reading-a-book-icon-obj/',
+                'girl-reading-a-book-icon.obj',
+                this.portraitScene
+            );
+
+            if (result.meshes && result.meshes.length > 0) {
+                console.log(`✅ Loaded ${result.meshes.length} meshes`);
+
+                // Create parent mesh for the model
+                this.portraitModel = new BABYLON.TransformNode('characterModel', this.portraitScene);
+
+                // Parent all loaded meshes
+                result.meshes.forEach(mesh => {
+                    if (mesh.parent === null) {
+                        mesh.parent = this.portraitModel;
+                    }
+                });
+
+                // AUTO-CALCULATE BOUNDING BOX AND POSITION
+                const meshes = result.meshes.filter(m => m.name !== '__root__');
+                if (meshes.length > 0) {
+                    // Calculate total bounding box
+                    let min = new BABYLON.Vector3(Infinity, Infinity, Infinity);
+                    let max = new BABYLON.Vector3(-Infinity, -Infinity, -Infinity);
+
+                    meshes.forEach(mesh => {
+                        mesh.computeWorldMatrix(true);
+                        const boundingInfo = mesh.getBoundingInfo();
+                        const meshMin = boundingInfo.boundingBox.minimumWorld;
+                        const meshMax = boundingInfo.boundingBox.maximumWorld;
+
+                        min = BABYLON.Vector3.Minimize(min, meshMin);
+                        max = BABYLON.Vector3.Maximize(max, meshMax);
+                    });
+
+                    // Calculate center and size
+                    const center = BABYLON.Vector3.Center(min, max);
+                    const size = max.subtract(min);
+                    const maxDimension = Math.max(size.x, size.y, size.z);
+
+                    console.log(`📐 Model bounds - Size: ${size.toString()}, Center: ${center.toString()}`);
+
+                    // Auto-scale to fit in camera view (target size ~2 units)
+                    const targetSize = 2;
+                    const scale = targetSize / maxDimension;
+                    this.portraitModel.scaling = new BABYLON.Vector3(scale, scale, scale);
+
+                    // Center the model
+                    const scaledCenter = center.scale(scale);
+                    this.portraitModel.position = scaledCenter.negate();
+                    
+                    // Adjust camera to look at model
+                    this.portraitCamera.target = new BABYLON.Vector3(0, 0, 0);
+                    this.portraitCamera.radius = targetSize * 2;
+
+                    console.log(`✅ Auto-scaled: ${scale.toFixed(4)}x, Position: ${this.portraitModel.position.toString()}`);
+                }
+
+                // APPLY PBR TEXTURES
+                await this.applyPBRTextures(meshes);
+
+                // IDENTIFY AND STORE MESH PARTS
+                this.identifyMeshParts(meshes);
+
+                // START PROCEDURAL ANIMATIONS
+                this.startProceduralAnimations();
+
+                console.log('✅ 3D character model loaded and positioned successfully');
+                return true;
+            }
+        } catch (error) {
+            console.error('❌ Error loading 3D character:', error);
+            console.error(error.stack);
+            return false;
+        }
+
+        return false;
+    }
+
+    /**
+     * Apply PBR textures to meshes
+     */
+    async applyPBRTextures(meshes) {
+        const texturePath = 'models/Characters/girl-reading-a-book-icon-obj/textures/';
+        const texturePrefix = 'girl-reading-a-book-icon-001-';
+
+        console.log('🎨 Applying PBR textures...');
+
+        try {
+            // Create PBR material
+            const pbr = new BABYLON.PBRMaterial('girlPBR', this.portraitScene);
+
+            // Load textures
+            const colorTexture = new BABYLON.Texture(
+                texturePath + texturePrefix + 'col-metalness-4k.png',
+                this.portraitScene
+            );
+            pbr.albedoTexture = colorTexture;
+
+            const normalTexture = new BABYLON.Texture(
+                texturePath + texturePrefix + 'nrm-metalness-4k.png',
+                this.portraitScene
+            );
+            pbr.bumpTexture = normalTexture;
+
+            const roughnessTexture = new BABYLON.Texture(
+                texturePath + texturePrefix + 'roughness-metalness-4k.png',
+                this.portraitScene
+            );
+            pbr.metallicTexture = roughnessTexture;
+            pbr.useRoughnessFromMetallicTextureAlpha = false;
+            pbr.useRoughnessFromMetallicTextureGreen = true;
+            pbr.useMetallnessFromMetallicTextureBlue = true;
+
+            const aoTexture = new BABYLON.Texture(
+                texturePath + texturePrefix + 'ao-metalness-4k.png',
+                this.portraitScene
+            );
+            pbr.ambientTexture = aoTexture;
+
+            // Apply material to all meshes
+            meshes.forEach(mesh => {
+                if (mesh.material) {
+                    mesh.material = pbr;
+                }
+            });
+
+            console.log('✅ PBR textures applied successfully');
+        } catch (error) {
+            console.warn('⚠️ Error loading textures, using default material:', error);
+            
+            // Fallback to simple material
+            const fallbackMat = new BABYLON.StandardMaterial('girlFallback', this.portraitScene);
+            fallbackMat.diffuseColor = new BABYLON.Color3(0.9, 0.8, 0.7);
+            meshes.forEach(mesh => {
+                if (mesh.material) {
+                    mesh.material = fallbackMat;
+                }
+            });
+        }
+    }
+
+    /**
+     * Identify mesh parts for animation
+     */
+    identifyMeshParts(meshes) {
+        console.log('🔍 Identifying mesh parts for animation...');
+        
+        this.animationData.meshParts = {
+            eyes: [],
+            hair: [],
+            arms: [],
+            body: [],
+            head: [],
+            all: meshes
+        };
+
+        meshes.forEach(mesh => {
+            const name = mesh.name.toLowerCase();
+            
+            // Identify eyes
+            if (name.includes('eye') || name.includes('olho')) {
+                this.animationData.meshParts.eyes.push(mesh);
+                console.log(`👁️ Found eye mesh: ${mesh.name}`);
+            }
+            
+            // Identify hair
+            if (name.includes('hair') || name.includes('cabelo') || name.includes('pelo')) {
+                this.animationData.meshParts.hair.push(mesh);
+                console.log(`💇 Found hair mesh: ${mesh.name}`);
+            }
+            
+            // Identify arms
+            if (name.includes('arm') || name.includes('braco') || name.includes('braço') || 
+                name.includes('hand') || name.includes('mao') || name.includes('mão')) {
+                this.animationData.meshParts.arms.push(mesh);
+                console.log(`💪 Found arm mesh: ${mesh.name}`);
+            }
+            
+            // Identify head
+            if (name.includes('head') || name.includes('cabeca') || name.includes('cabeça')) {
+                this.animationData.meshParts.head.push(mesh);
+                console.log(`🗣️ Found head mesh: ${mesh.name}`);
+            }
+            
+            // Identify body
+            if (name.includes('body') || name.includes('torso') || name.includes('corpo') ||
+                name.includes('chest') || name.includes('peito')) {
+                this.animationData.meshParts.body.push(mesh);
+                console.log(`🫀 Found body mesh: ${mesh.name}`);
+            }
+        });
+
+        // If no specific parts found, use general approach
+        if (this.animationData.meshParts.hair.length === 0) {
+            // Assume top meshes are hair (heuristic)
+            const topMeshes = meshes.filter(m => {
+                const pos = m.getBoundingInfo().boundingBox.centerWorld;
+                return pos.y > 0; // Upper half
+            });
+            this.animationData.meshParts.hair = topMeshes.slice(0, Math.min(5, topMeshes.length));
+            console.log(`💇 Auto-detected ${this.animationData.meshParts.hair.length} hair meshes`);
+        }
+
+        console.log(`✅ Mesh identification complete`);
+    }
+
+    /**
+     * Start procedural animations
+     */
+    startProceduralAnimations() {
+        console.log('🎬 Starting procedural animations...');
+        
+        const deltaTimeMs = 16.67; // Assume 60fps
+        
+        this.portraitScene.registerBeforeRender(() => {
+            if (!this.portraitModel) return;
+
+            const deltaTime = deltaTimeMs / 1000; // Convert to seconds
+            this.animationData.time += deltaTime;
+
+            // BREATHING ANIMATION - Subtle body expansion
+            this.animateBreathing(this.animationData.time);
+
+            // EYE BLINKING - Periodic blink
+            this.animateEyeBlink(this.animationData.time);
+
+            // HAIR WAVE - Gentle hair movement
+            this.animateHairWave(this.animationData.time);
+
+            // IDLE MOVEMENT - Slight body sway
+            this.animateIdleMovement(this.animationData.time);
+        });
+
+        console.log('✅ Procedural animations started');
+    }
+
+    /**
+     * Animate breathing
+     */
+    animateBreathing(time) {
+        const breathCycle = 4.0; // 4 seconds per breath
+        const breathAmount = 0.015; // 1.5% scale change
+        
+        const breathPhase = Math.sin(time * Math.PI * 2 / breathCycle);
+        const scale = 1.0 + breathPhase * breathAmount;
+
+        this.animationData.meshParts.body.forEach(mesh => {
+            if (mesh.metadata && mesh.metadata.originalScaling) {
+                mesh.scaling.y = mesh.metadata.originalScaling.y * scale;
+                mesh.scaling.z = mesh.metadata.originalScaling.z * (1.0 + breathPhase * breathAmount * 0.5);
+            } else {
+                // Store original scaling on first run
+                if (!mesh.metadata) mesh.metadata = {};
+                mesh.metadata.originalScaling = mesh.scaling.clone();
+            }
+        });
+    }
+
+    /**
+     * Animate eye blinking
+     */
+    animateEyeBlink(time) {
+        // Blink every 3-5 seconds randomly
+        const blinkInterval = 3.5;
+        const blinkDuration = 0.15; // 150ms blink
+        
+        const blinkCycle = time % blinkInterval;
+        
+        if (blinkCycle < blinkDuration) {
+            // Blink is happening
+            const blinkPhase = blinkCycle / blinkDuration;
+            // Create smooth blink curve
+            const blinkAmount = Math.sin(blinkPhase * Math.PI);
+            const eyeScale = 1.0 - blinkAmount * 0.9; // Close 90%
+            
+            this.animationData.meshParts.eyes.forEach(mesh => {
+                if (!mesh.metadata) mesh.metadata = {};
+                if (!mesh.metadata.originalScaling) {
+                    mesh.metadata.originalScaling = mesh.scaling.clone();
+                }
+                mesh.scaling.y = mesh.metadata.originalScaling.y * eyeScale;
+            });
+        } else {
+            // Eyes open
+            this.animationData.meshParts.eyes.forEach(mesh => {
+                if (mesh.metadata && mesh.metadata.originalScaling) {
+                    mesh.scaling.y = mesh.metadata.originalScaling.y;
+                }
+            });
+        }
+    }
+
+    /**
+     * Animate hair wave
+     */
+    animateHairWave(time) {
+        const waveSpeed = 0.8;
+        const waveAmplitude = 0.02;
+        
+        this.animationData.meshParts.hair.forEach((mesh, index) => {
+            if (!mesh.metadata) mesh.metadata = {};
+            if (!mesh.metadata.originalPosition) {
+                mesh.metadata.originalPosition = mesh.position.clone();
+                mesh.metadata.hairPhaseOffset = index * 0.3; // Offset each hair mesh
+            }
+
+            const phase = time * waveSpeed + mesh.metadata.hairPhaseOffset;
+            const wave = Math.sin(phase) * waveAmplitude;
+            const wave2 = Math.cos(phase * 1.3) * waveAmplitude * 0.5;
+            
+            mesh.position.x = mesh.metadata.originalPosition.x + wave;
+            mesh.position.z = mesh.metadata.originalPosition.z + wave2;
+        });
+    }
+
+    /**
+     * Animate idle movement
+     */
+    animateIdleMovement(time) {
+        const swaySpeed = 0.5;
+        const swayAmount = 0.008; // Small sway
+        
+        const swayX = Math.sin(time * swaySpeed) * swayAmount;
+        const swayZ = Math.cos(time * swaySpeed * 0.7) * swayAmount * 0.5;
+        
+        if (this.portraitModel) {
+            if (!this.portraitModel.metadata) {
+                this.portraitModel.metadata = {
+                    originalRotation: this.portraitModel.rotation.clone()
+                };
+            }
+            
+            this.portraitModel.rotation.z = this.portraitModel.metadata.originalRotation.z + swayX;
+            this.portraitModel.rotation.x = this.portraitModel.metadata.originalRotation.x + swayZ;
+        }
+    }
+
+    /**
+     * Dispose 3D portrait system
+     */
+    dispose3DPortrait() {
+        if (this.portraitModel) {
+            this.portraitModel.dispose();
+            this.portraitModel = null;
+        }
+        if (this.portraitScene) {
+            this.portraitScene.dispose();
+            this.portraitScene = null;
+        }
+        if (this.portraitEngine) {
+            this.portraitEngine.dispose();
+            this.portraitEngine = null;
+        }
+        
+        // Reset animation data
+        this.animationData = {
+            time: 0,
+            blinkTimer: 0,
+            breathTimer: 0,
+            hairWaveOffset: 0,
+            meshParts: {}
+        };
+    }
+
     /**
      * Creates all tutorial steps with educational content
      */
@@ -221,10 +694,23 @@ class TutorialSystem {
     /**
      * Starts the tutorial
      */
-    start() {
+    async start() {
         this.isActive = true;
         this.currentStep = 0;
         this.showTutorialUI();
+
+        // Initialize 3D portrait if enabled
+        if (this.use3DPortrait) {
+            const initialized = await this.initialize3DPortrait();
+            if (initialized) {
+                // Load the 3D character model
+                await this.load3DCharacter();
+            } else {
+                console.warn('⚠️ Falling back to 2D portraits');
+                this.use3DPortrait = false;
+            }
+        }
+
         this.renderCurrentStep();
         console.log('📚 Tutorial iniciado');
     }
@@ -256,23 +742,41 @@ class TutorialSystem {
         const step = this.tutorialSteps[this.currentStep];
         if (!step) return;
 
-        // FIX #3: Update character portrait with proper fallback
+        // Handle portrait display (3D or 2D)
         const portrait = document.getElementById('tutorial-portrait');
-        if (portrait) {
-            // Use emoji SVG as fallback immediately (don't wait for error)
-            portrait.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%234a9eff" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="80" text-anchor="middle" dy=".3em"%3E👩‍🔬%3C/text%3E%3C/svg%3E';
-            portrait.alt = step.character;
+        const portraitCanvas = document.getElementById('tutorial-portrait-canvas');
 
-            // Try to load actual image if it exists
-            const img = new Image();
-            img.onload = () => {
-                portrait.src = step.portrait;
-            };
-            img.onerror = () => {
-                // Keep the emoji fallback
-                console.log(`ℹ️ Using emoji fallback for portrait: ${step.character}`);
-            };
-            img.src = step.portrait;
+        if (this.use3DPortrait && this.portraitScene && step.character === 'Claudia') {
+            // Show 3D portrait for Claudia
+            if (portraitCanvas) {
+                portraitCanvas.style.display = 'block';
+            }
+            if (portrait) {
+                portrait.style.display = 'none';
+            }
+        } else {
+            // Show 2D portrait for other characters
+            if (portraitCanvas) {
+                portraitCanvas.style.display = 'none';
+            }
+            if (portrait) {
+                portrait.style.display = 'block';
+
+                // Use emoji SVG as fallback immediately (don't wait for error)
+                portrait.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%234a9eff" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="80" text-anchor="middle" dy=".3em"%3E👩‍🔬%3C/text%3E%3C/svg%3E';
+                portrait.alt = step.character;
+
+                // Try to load actual image if it exists
+                const img = new Image();
+                img.onload = () => {
+                    portrait.src = step.portrait;
+                };
+                img.onerror = () => {
+                    // Keep the emoji fallback
+                    console.log(`ℹ️ Using emoji fallback for portrait: ${step.character}`);
+                };
+                img.src = step.portrait;
+            }
         }
 
         // FIX #3: Update background with solid color fallback
@@ -378,6 +882,9 @@ class TutorialSystem {
     complete() {
         this.isActive = false;
         this.hideTutorialUI();
+
+        // Dispose 3D portrait system
+        this.dispose3DPortrait();
 
         // Mark tutorial as completed in save data
         if (this.gameManager.saveSystem) {

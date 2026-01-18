@@ -4555,6 +4555,7 @@ class UIManager {
                     <div class="book-content">
                         <div class="page-number">Página ${currentPage.pageNumber} de ${studyContent.pages.length}</div>
                         <h3 class="page-title">${currentPage.title}</h3>
+                        ${currentPage.image ? `<div class="page-image"><img src="${currentPage.image}" alt="${currentPage.title}" onerror="this.parentElement.style.display='none'"></div>` : ''}
                         <div class="page-text">${currentPage.content}</div>
                         ${quizHTML}
                     </div>

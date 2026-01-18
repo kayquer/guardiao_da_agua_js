@@ -2863,6 +2863,22 @@
     margin-bottom: 1rem;
 }
 
+.page-image {
+    width: 100%;
+    max-width: 600px;
+    margin: 1.5rem auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.page-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+}
+
 .page-text {
     color: #333;
     line-height: 1.8;

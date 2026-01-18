@@ -446,30 +446,16 @@ class SaveSystem {
     }
 
     // ===== TUTORIAL COMPLETION TRACKING =====
+    // Tutorial persistence disabled - tutorial always shows on game start
     setTutorialCompleted(completed = true) {
-        if (!this.storageAvailable) return false;
-
-        try {
-            localStorage.setItem('guardiao_agua_tutorial_completed', completed ? 'true' : 'false');
-            console.log(`📚 Tutorial completion status set to: ${completed}`);
-            return true;
-        } catch (error) {
-            console.error('❌ Error saving tutorial completion status:', error);
-            return false;
-        }
+        // No-op: Tutorial completion is not persisted
+        console.log(`📚 Tutorial completion not persisted (always shows on start)`);
+        return true;
     }
 
     isTutorialCompleted() {
-      return false;//TODO: Remover este return false para produção
-        if (!this.storageAvailable) return false;
-
-        try {
-            const completed = localStorage.getItem('guardiao_agua_tutorial_completed');
-            return completed === 'true';
-        } catch (error) {
-            console.error('❌ Error checking tutorial completion status:', error);
-            return false;
-        }
+        // Always return false so tutorial shows every time
+        return false;
     }
 }
 
