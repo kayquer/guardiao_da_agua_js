@@ -393,17 +393,19 @@
     <div id="tutorial-container">
         <div id="tutorial-background"></div>
         <div class="tutorial-content">
-            <!-- Character Portrait -->
+            
+
+            <!-- Dialog Box -->
+            <div class="tutorial-dialog-box">
+              
+                <div class="tutorial-dialog">
+                  <!-- Character Portrait -->
             <div class="tutorial-portrait-container">
                 <!-- 3D Model Canvas (for 3D characters) -->
                 <canvas id="tutorial-portrait-canvas" style="display: none;"></canvas>
                 <!-- 2D Image (fallback for non-3D characters) -->
                 <img id="tutorial-portrait" src="" alt="Pesquisadora Claudia">
             </div>
-
-            <!-- Dialog Box -->
-            <div class="tutorial-dialog-box">
-                <div class="tutorial-dialog">
                     <div class="tutorial-character-name" id="tutorial-character-name">Pesquisadora Claudia</div>
 
                     <div class="tutorial-dialog-header">
@@ -421,6 +423,45 @@
                             <button id="tutorial-skip-btn" class="tutorial-btn">Pular Tutorial</button>
                             <button id="tutorial-prev-btn" class="tutorial-btn" disabled>Anterior</button>
                             <button id="tutorial-next-btn" class="tutorial-btn">Próximo</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== GAME OVER SYSTEM ===== -->
+    <div id="gameover-container" style="display: none;">
+        <div id="gameover-background"></div>
+        <div class="tutorial-content">
+
+            <!-- Dialog Box (reuse tutorial styling) -->
+            <div class="tutorial-dialog-box">
+
+                <div class="tutorial-dialog">
+                    <!-- Character Portrait -->
+                    <div class="tutorial-portrait-container">
+                        <!-- 3D Model Canvas (for 3D characters) -->
+                        <canvas id="gameover-portrait-canvas" style="display: none;"></canvas>
+                        <!-- 2D Image (fallback for non-3D characters) -->
+                        <img id="gameover-portrait" src="" alt="Pesquisadora Claudia">
+                    </div>
+                    <div class="tutorial-character-name" id="gameover-character-name">Pesquisadora Claudia</div>
+
+                    <div class="tutorial-dialog-header">
+                        <span id="gameover-icon">💀</span>
+                        <h2 id="gameover-title">Fim de Jogo</h2>
+                    </div>
+
+                    <div id="gameover-text" style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                        <p>O jogo terminou.</p>
+                    </div>
+
+                    <div class="tutorial-controls">
+                        <div class="tutorial-buttons" style="justify-content: center;">
+                            <button id="gameover-menu-btn" class="tutorial-btn" onclick="window.gameManager?.gameOverSystem?.returnToMainMenu()">
+                                🏠 Voltar ao Menu Principal
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -452,7 +493,7 @@
     <script src="js/systems/SaveSystem.js"></script>
     <script src="js/systems/StudySystem.js"></script>
     <script src="js/systems/TutorialSystem.js"></script>
-    <script src="js/systems/TutorialManager.js"></script>
+    <script src="js/systems/GameOverSystem.js"></script>
     <script src="js/systems/SettingsManager.js"></script>
 
     <!-- Main initialization -->

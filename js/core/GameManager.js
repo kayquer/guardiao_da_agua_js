@@ -24,8 +24,8 @@ class GameManager {
         this.saveSystem = null;
         this.studySystem = null;
         this.tutorialSystem = null;
-        this.tutorialManager = null;
         this.cityLifeSystem = null;
+        this.gameOverSystem = null;
 
         // Renderização 3D
         this.engine = null;
@@ -99,7 +99,7 @@ class GameManager {
 
         const requiredClasses = [
             'GridManager', 'ResourceManager', 'BuildingSystem', 'CityLifeSystem',
-            'UIManager', 'QuestSystem', 'EventSystem', 'SaveSystem', 'StudySystem', 'TutorialManager'
+            'UIManager', 'QuestSystem', 'EventSystem', 'SaveSystem', 'StudySystem', 'TutorialSystem'
         ];
 
         const missingClasses = requiredClasses.filter(className => 
@@ -143,7 +143,7 @@ class GameManager {
             this.saveSystem = new SaveSystem();
             this.studySystem = new StudySystem(this);
             this.tutorialSystem = new TutorialSystem(this);
-            this.tutorialManager = new TutorialManager(this);
+            this.gameOverSystem = new GameOverSystem(this);
 
             // Aguardar carregamento do conteúdo educacional
             await this.studySystem.initialize();
@@ -691,6 +691,10 @@ class GameManager {
         
         if (this.eventSystem) {
             this.eventSystem.update(deltaTime * this.timeScale);
+        }
+
+        if (this.gameOverSystem) {
+            this.gameOverSystem.update(deltaTime * this.timeScale);
         }
 
         if (this.loanManager) {
