@@ -476,11 +476,9 @@ class SettingsManager {
                 console.log(`🎮 Dificuldade definida: ${this.settings.gameplay.difficulty} (${difficultyMultiplier}x)`);
             }
 
-            // Dicas do tutorial
-            if (window.gameManager && window.gameManager.tutorialManager) {
-                window.gameManager.tutorialManager.showHints = this.settings.gameplay.tutorialHints;
-                console.log(`💡 Dicas do tutorial: ${this.settings.gameplay.tutorialHints ? 'ativadas' : 'desativadas'}`);
-            }
+            // Dicas do tutorial - removida dependência do TutorialManager obsoleto
+            // As configurações de tutorial agora são gerenciadas pelo TutorialSystem
+            console.log(`💡 Dicas do tutorial: ${this.settings.gameplay.tutorialHints ? 'ativadas' : 'desativadas'}`);
 
             console.log('✅ Configurações de gameplay aplicadas');
         } catch (error) {

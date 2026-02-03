@@ -30,7 +30,7 @@ guardiao_da_agua_js/
 │   │   ├── QuestSystem.js
 │   │   ├── EventSystem.js
 │   │   ├── SaveSystem.js
-│   │   ├── TutorialManager.js
+│   │   ├── TutorialSystem.js
 │   │   ├── CityLifeSystem.js
 │   │   ├── LoanManager.js
 │   │   ├── SettingsManager.js

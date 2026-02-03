@@ -17,6 +17,7 @@ class TutorialSystem {
         this.portraitScene = null;
         this.portraitCamera = null;
         this.portraitModel = null;
+        this.currentCharacter = null; // Track current loaded character
         this.use3DPortrait = true; // Enable 3D portraits
         
         // Animation system
@@ -89,7 +90,7 @@ class TutorialSystem {
 
             // Create scene
             this.portraitScene = new BABYLON.Scene(this.portraitEngine);
-            this.portraitScene.clearColor = new BABYLON.Color4(0.4, 0.62, 1.0, 1.0); // Sky blue background
+            this.portraitScene.clearColor = new BABYLON.Color4(0, 0, 0, 0); // Transparent background
 
             // Create camera
             this.portraitCamera = new BABYLON.ArcRotateCamera(
@@ -104,20 +105,42 @@ class TutorialSystem {
             this.portraitCamera.upperRadiusLimit = 5;
             this.portraitCamera.attachControl(canvas, false);
 
-            // Add lighting
+            // Add lighting optimized for PBR materials
             const light1 = new BABYLON.HemisphericLight(
                 'portraitLight1',
                 new BABYLON.Vector3(0, 1, 0),
                 this.portraitScene
             );
-            light1.intensity = 0.7;
+            light1.intensity = 1.2;
+            light1.diffuse = new BABYLON.Color3(1, 1, 1);
+            light1.specular = new BABYLON.Color3(1, 1, 1);
+            light1.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
 
             const light2 = new BABYLON.DirectionalLight(
                 'portraitLight2',
                 new BABYLON.Vector3(-1, -2, -1),
                 this.portraitScene
             );
-            light2.intensity = 0.5;
+            light2.intensity = 0.8;
+            light2.diffuse = new BABYLON.Color3(1, 0.95, 0.9);
+            light2.specular = new BABYLON.Color3(0.8, 0.8, 0.8);
+
+            // Add fill light for better 3D appearance
+            const light3 = new BABYLON.DirectionalLight(
+                'portraitLight3',
+                new BABYLON.Vector3(1, 0, 1),
+                this.portraitScene
+            );
+            light3.intensity = 0.3;
+            light3.diffuse = new BABYLON.Color3(0.8, 0.9, 1.0);
+            
+            // Create environment for PBR reflections
+            const hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
+                "https://assets.babylonjs.com/environments/environmentSpecular.env",
+                this.portraitScene
+            );
+            this.portraitScene.environmentTexture = hdrTexture;
+            this.portraitScene.environmentIntensity = 0.5;
 
             // Start render loop
             this.portraitEngine.runRenderLoop(() => {
@@ -144,7 +167,7 @@ class TutorialSystem {
     /**
      * Load 3D character model with auto-positioning and PBR textures
      */
-    async load3DCharacter(modelPath) {
+    async load3DCharacter(characterName = 'Claudia') {
         if (!this.portraitScene) {
             console.warn('⚠️ Portrait scene not initialized');
             return false;
@@ -157,18 +180,50 @@ class TutorialSystem {
                 this.portraitModel = null;
             }
 
-            console.log('📦 Loading OBJ model...');
+            console.log(`📦 Loading ${characterName} OBJ model...`);
+
+            // Determine model path based on character
+            let modelFolder, modelFile, texturePath, texturePrefix;
+            
+            switch(characterName.toLowerCase()) {
+                case 'gil, o lambari':
+                case 'gil':
+                case 'fish':
+                    modelFolder = 'models/Characters/fish-icon/';
+                    modelFile = 'fish-icon.obj';
+                    texturePath = 'models/Characters/fish-icon/textures/';
+                    texturePrefix = 'fish-icon-003-';
+                    break;
+                case 'dr. sapo':
+                case 'sapo':
+                case 'frog':
+                    modelFolder = 'models/Characters/frog-icon-obj/';
+                    modelFile = 'frog-icon.obj';
+                    texturePath = 'models/Characters/frog-icon-obj/textures/';
+                    texturePrefix = 'frog-icon-001-';
+                    break;
+                default: // Claudia
+                    modelFolder = 'models/Characters/girl-reading-a-book-icon-obj/';
+                    modelFile = 'girl-reading-a-book-icon.obj';
+                    texturePath = 'models/Characters/girl-reading-a-book-icon-obj/textures/';
+                    texturePrefix = 'girl-reading-a-book-icon-001-';
+            }
 
             // Load OBJ model
             const result = await BABYLON.SceneLoader.ImportMeshAsync(
                 '',
-                'models/Characters/girl-reading-a-book-icon-obj/',
-                'girl-reading-a-book-icon.obj',
+                modelFolder,
+                modelFile,
                 this.portraitScene
             );
 
             if (result.meshes && result.meshes.length > 0) {
-                console.log(`✅ Loaded ${result.meshes.length} meshes`);
+                console.log(`✅ Loaded ${result.meshes.length} meshes for ${characterName}`);
+                
+                // Log all mesh names for debugging
+                result.meshes.forEach((mesh, idx) => {
+                    console.log(`  Mesh ${idx}: ${mesh.name} (material: ${mesh.material ? mesh.material.name : 'none'})`);
+                });
 
                 // Create parent mesh for the model
                 this.portraitModel = new BABYLON.TransformNode('characterModel', this.portraitScene);
@@ -181,7 +236,9 @@ class TutorialSystem {
                 });
 
                 // AUTO-CALCULATE BOUNDING BOX AND POSITION
-                const meshes = result.meshes.filter(m => m.name !== '__root__');
+                const meshes = result.meshes.filter(m => m.name !== '__root__' && m instanceof BABYLON.Mesh);
+                console.log(`📊 Filtered to ${meshes.length} renderable meshes`);
+                
                 if (meshes.length > 0) {
                     // Calculate total bounding box
                     let min = new BABYLON.Vector3(Infinity, Infinity, Infinity);
@@ -221,7 +278,7 @@ class TutorialSystem {
                 }
 
                 // APPLY PBR TEXTURES
-                await this.applyPBRTextures(meshes);
+                await this.applyPBRTextures(meshes, texturePath, texturePrefix);
 
                 // IDENTIFY AND STORE MESH PARTS
                 this.identifyMeshParts(meshes);
@@ -244,29 +301,42 @@ class TutorialSystem {
     /**
      * Apply PBR textures to meshes
      */
-    async applyPBRTextures(meshes) {
-        const texturePath = 'models/Characters/girl-reading-a-book-icon-obj/textures/';
-        const texturePrefix = 'girl-reading-a-book-icon-001-';
-
+    async applyPBRTextures(meshes, texturePath, texturePrefix) {
         console.log('🎨 Applying PBR textures...');
+        console.log(`📁 Texture path: ${texturePath}`);
+        console.log(`🏷️ Texture prefix: ${texturePrefix}`);
 
         try {
-            // Create PBR material
-            const pbr = new BABYLON.PBRMaterial('girlPBR', this.portraitScene);
+            // Dispose old materials
+            meshes.forEach(mesh => {
+                if (mesh.material) {
+                    mesh.material.dispose();
+                    mesh.material = null;
+                }
+            });
 
-            // Load textures
+            // Create PBR material
+            const pbr = new BABYLON.PBRMaterial('characterPBR', this.portraitScene);
+
+            // Load albedo/color texture
             const colorTexture = new BABYLON.Texture(
                 texturePath + texturePrefix + 'col-metalness-4k.png',
                 this.portraitScene
             );
             pbr.albedoTexture = colorTexture;
+            console.log('✅ Loaded albedo texture');
 
+            // Load normal texture
             const normalTexture = new BABYLON.Texture(
                 texturePath + texturePrefix + 'nrm-metalness-4k.png',
                 this.portraitScene
             );
             pbr.bumpTexture = normalTexture;
+            pbr.invertNormalMapX = false;
+            pbr.invertNormalMapY = false;
+            console.log('✅ Loaded normal texture');
 
+            // Load roughness/metallic texture
             const roughnessTexture = new BABYLON.Texture(
                 texturePath + texturePrefix + 'roughness-metalness-4k.png',
                 this.portraitScene
@@ -274,33 +344,48 @@ class TutorialSystem {
             pbr.metallicTexture = roughnessTexture;
             pbr.useRoughnessFromMetallicTextureAlpha = false;
             pbr.useRoughnessFromMetallicTextureGreen = true;
-            pbr.useMetallnessFromMetallicTextureBlue = true;
+            pbr.useMetallnessFromMetallicTextureBlue = false;
+            pbr.metallic = 0.0;
+            pbr.roughness = 1.0;
+            console.log('✅ Loaded roughness texture');
 
+            // Load ambient occlusion texture
             const aoTexture = new BABYLON.Texture(
                 texturePath + texturePrefix + 'ao-metalness-4k.png',
                 this.portraitScene
             );
             pbr.ambientTexture = aoTexture;
+            pbr.ambientTextureStrength = 1.0;
+            console.log('✅ Loaded AO texture');
 
-            // Apply material to all meshes
+            // Configure PBR settings
+            pbr.directIntensity = 1.0;
+            pbr.environmentIntensity = 1.0;
+            pbr.specularIntensity = 0.5;
+            pbr.albedoColor = new BABYLON.Color3(1, 1, 1);
+
+            // Apply material to all meshes (including root meshes)
+            let appliedCount = 0;
             meshes.forEach(mesh => {
-                if (mesh.material) {
-                    mesh.material = pbr;
-                }
+                mesh.material = pbr;
+                appliedCount++;
             });
 
-            console.log('✅ PBR textures applied successfully');
+            console.log(`✅ PBR material applied to ${appliedCount} meshes`);
         } catch (error) {
-            console.warn('⚠️ Error loading textures, using default material:', error);
+            console.error('❌ Error loading textures:', error);
+            console.error(error.stack);
             
-            // Fallback to simple material
-            const fallbackMat = new BABYLON.StandardMaterial('girlFallback', this.portraitScene);
+            // Fallback to simple material with distinct color
+            const fallbackMat = new BABYLON.StandardMaterial('characterFallback', this.portraitScene);
             fallbackMat.diffuseColor = new BABYLON.Color3(0.9, 0.8, 0.7);
+            fallbackMat.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+            
             meshes.forEach(mesh => {
-                if (mesh.material) {
-                    mesh.material = fallbackMat;
-                }
+                mesh.material = fallbackMat;
             });
+            
+            console.log('⚠️ Using fallback material');
         }
     }
 
@@ -535,12 +620,10 @@ class TutorialSystem {
         // Step 1: Introduction & Responsibility
         {
             character: 'Claudia',
-            // Avatar estilo cartoon gerado dinamicamente
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            // Fundo: Imagem tecnológica/global
             background: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1080',
-            title: 'Precisamos da sua visão, Guardião.',
-            text: 'Olá, eu sou a Pesquisadora Cláudia. A situação dos nossos recursos hídricos chegou a um ponto crítico e precisamos de alguém com capacidade estratégica para assumir o comando. Eu estarei aqui para dar suporte, mas as decisões difíceis? Essas serão suas.',
+            title: 'Precisamos da sua ajuda, Guardião.',
+            text: 'Olá, eu sou a Pesquisadora Cláudia. A situação dos nossos recursos hídricos chegou a um ponto crítico. <img src="https://images.unsplash.com/photo-1573166675921-076ea6b621ce?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Eu estarei aqui para dar suporte técnico, mas as decisões estratégicas serão suas. Vamos começar entendendo o fluxo da vida?',
             icon: '👋'
         },
         
@@ -548,10 +631,9 @@ class TutorialSystem {
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            // Fundo: Chuva/Ciclo da água
             background: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=1080',
-            title: 'Entendendo o Sistema',
-            text: 'Antes de agir, observe. Nossos **recursos hídricos** não são infinitos. Eles dependem do **ciclo hidrológico**: a chuva cai, infiltra no solo, abastece os rios e evapora novamente. Se quebrarmos um elo desse ciclo, o sistema entra em colapso.',
+            title: 'O Motor da Vida',
+            text: 'Tudo depende do <b>ciclo hidrológico</b>. A água evapora, forma nuvens e retorna como chuva para abastecer nossos rios. <img src="https://images.unsplash.com/photo-1534274988757-a28bf1f539cf?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Se quebrarmos um elo desse ciclo, o sistema entra em colapso. Mas onde exatamente essa água se concentra?',
             icon: '🔄',
             educationalTopic: 'ciclo_hidrologico'
         },
@@ -560,10 +642,9 @@ class TutorialSystem {
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            // Fundo: Vista aérea de rio sinuoso (Bacia)
             background: 'https://images.unsplash.com/photo-1504198458649-3128b932f49e?q=80&w=1080',
             title: 'O Território: A Bacia Hidrográfica',
-            text: 'Imagine a região como uma grande tigela inclinada. Isso é a **Bacia Hidrográfica**. Toda gota de chuva ou poluente que cai nas bordas escorre para o mesmo rio principal no centro. Ou seja: o que você faz no alto do morro impacta quem vive lá embaixo.',
+            text: 'Imagine a região como uma grande tigela. Isso é a <b>Bacia Hidrográfica</b>. <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Toda gota que cai nas bordas escorre para o mesmo rio principal. O que você faz no alto do morro impacta quem vive lá embaixo.',
             icon: '🏞️',
             educationalTopic: 'bacia_hidrografica'
         },
@@ -572,10 +653,9 @@ class TutorialSystem {
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            // Fundo: Laboratório/Microscópio
             background: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=1080',
-            title: 'Informação é Poder',
-            text: 'Não tome decisões no escuro. Os **Centros de Pesquisa** são seus olhos e ouvidos. Eles monitoram a qualidade da água e indicam onde estão os problemas invisíveis. Sem ciência, estamos apenas adivinhando.',
+            title: 'Ciência como Bússola',
+            text: 'Os <b>Centros de Pesquisa</b> são seus olhos. Eles monitoram a qualidade da água e indicam problemas invisíveis. <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Sem ciência, estamos apenas adivinhando, especialmente diante dos desafios da agricultura.',
             icon: '🔬',
             educationalTopic: 'centros_pesquisa'
         },
@@ -584,35 +664,31 @@ class TutorialSystem {
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            // Fundo: Plantação vasta
             background: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=1080',
             title: 'O Desafio da Produção',
-            text: 'Aqui temos um dilema: a **produção de cana** e a **pecuária** movem a economia, mas exigem muita água. O risco real? O uso incorreto de **agrotóxicos**. Se eles lavarem para o rio, contaminam tudo. Seu papel é buscar o equilíbrio.',
+            text: 'A <b>produção de cana</b> e a <b>pecuária</b> movem a economia, mas exigem muita água e cuidado com <b>agrotóxicos</b>. <img src="https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Seu papel é buscar o equilíbrio. E por falar em equilíbrio, veja quem depende diretamente da pureza desse rio...',
             icon: '⚖️',
             educationalTopic: 'agricultura_agua'
         },
 
-        // Step 6: Riparian Forest & APP
+        // Step 6: Riparian Forest & APP (Gil o Peixe)
         {
-            character: 'Téo, a Lontra',
-            // Retrato: Lontra real (Unsplash)
-            portrait: 'https://images.unsplash.com/photo-1598556885318-48a33d94309f?q=80&w=400',
-            // Fundo: Floresta densa e verde
+            character: 'Gil, o Lambari',
+            portrait: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400',
             background: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1080',
-            title: 'Ei! Proteja minha casa! 🦦',
-            text: 'Oi! A Claudia fala difícil, né? Deixa eu explicar: a **Mata Ciliar** funciona como os cílios dos seus olhos. Ela protege o rio! Essas áreas são **APPs (Áreas de Preservação Permanente)**. Sem elas, a terra cai na água e minha toca desaparece.',
-            icon: '🌳',
+            title: 'Glub! Preciso de sombra!',
+            text: 'Oi! Eu sou o Gil. Para nós, peixes, a <b>Mata Ciliar</b> é vital! <img src="https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Ela funciona como os cílios do rio, protegendo a água do sol forte e mantendo a temperatura fresca para nossos ovos nas <b>APPs</b>.',
+            icon: '🐟',
             educationalTopic: 'mata_ciliar_app'
         },
 
-        // Step 7: Erosion & Sedimentation
+        // Step 7: Erosion & Sedimentation (Gil o Peixe)
         {
-            character: 'Téo, a Lontra',
-            portrait: 'https://images.unsplash.com/photo-1598556885318-48a33d94309f?q=80&w=400',
-            // Fundo: Terra seca/Erosão
+            character: 'Gil, o Lambari',
+            portrait: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400',
             background: 'https://images.unsplash.com/photo-1599940824399-b87987ce0799?q=80&w=1080',
-            title: 'O Rio está sufocando',
-            text: 'Quando tiram as árvores, a chuva leva a terra solta para o rio. Isso é **erosão**. Essa terra se acumula no fundo (**assoreamento**) e o rio fica rasinho. É como tentar nadar em uma piscina cheia de areia. Não dá!',
+            title: 'Minhas brânquias ardem!',
+            text: 'Quando tiram as árvores, a terra cai no rio. Isso é <b>erosão</b> e causa o <b>assoreamento</b>. <img src="https://images.unsplash.com/photo-1463123081488-729f65199f0e?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> O rio fica raso e barrento. É horrível respirar com lama nas brânquias! Mas o Dr. Sapo tem um alerta ainda mais grave...',
             icon: '🧱',
             educationalTopic: 'erosao_assoreamento'
         },
@@ -620,12 +696,10 @@ class TutorialSystem {
         // Step 8: Sewage & Contamination Details
         {
             character: 'Dr. Sapo',
-            // Retrato: Sapo real vibrante (Unsplash)
-            portrait: 'https://images.unsplash.com/photo-1579389083078-4e7018379f7e?q=80&w=400',
-            // Fundo: Água turva/poluída
+            portrait: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=400',
             background: 'https://images.unsplash.com/photo-1573166675921-076ea6b621ce?q=80&w=1080',
             title: 'Alerta de Toxicidade! ☣️',
-            text: 'Croac! Atenção aos níveis de **esgoto**! O excesso de matéria orgânica consome todo o **oxigênio dissolvido** na água. Além disso, traz **coliformes fecais** e doenças. Sem tratamento de esgoto, a vida aquática — e a minha — acaba.',
+            text: 'Croac! Cuidado com o <b>esgoto</b>! Ele consome o <b>oxigênio dissolvido</b> que o Gil usa para respirar. <img src="https://images.unsplash.com/photo-1535025639604-9a804c092faa?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Sem tratamento, a água vira um veneno para todos nós. E não é só o que vemos na superfície que corre perigo...',
             icon: '🤢',
             educationalTopic: 'esgoto_contaminacao'
         },
@@ -634,10 +708,9 @@ class TutorialSystem {
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            // Fundo: Caverna ou água subterrânea (atmosfera)
             background: 'https://images.unsplash.com/photo-1633511090164-b43840ea1607?q=80&w=1080',
             title: 'O Perigo Invisível',
-            text: 'Cuidado com o que vaza para o solo. **Chorume** de lixões e excesso de **nitrato** podem contaminar a **água subterrânea**. Uma vez poluído, um aquífero pode levar décadas para se recuperar. Proteja as **nascentes** como se fossem tesouros.',
+            text: 'O que vaza no solo, como o <b>chorume</b>, contamina a <b>água subterrânea</b>. <img src="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Um aquífero poluído leva décadas para se recuperar. Proteja as <b>nascentes</b> como tesouros escondidos.',
             icon: '💧',
             educationalTopic: 'agua_subterranea'
         },
@@ -646,10 +719,9 @@ class TutorialSystem {
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            // Fundo: Cidade próxima à água
             background: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=1080',
             title: 'A Cidade e o Rio',
-            text: 'O rio precisa de espaço para respirar. A **ocupação desordenada em áreas de várzea** (as margens naturais de inundação) é um erro grave. Se construirmos ali, teremos enchentes constantes. Precisamos planejar onde a cidade cresce.',
+            text: 'O rio precisa de espaço. Construir em <b>áreas de várzea</b> é um erro que gera enchentes. <img src="https://images.unsplash.com/photo-1545048702-793e24bb1c33?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Precisamos planejar o crescimento urbano respeitando os limites da natureza.',
             icon: '🏗️',
             educationalTopic: 'ocupacao_urbana'
         },
@@ -658,10 +730,9 @@ class TutorialSystem {
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            // Fundo: Parede verde/Jardim urbano
             background: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1080',
             title: 'Tecnologia Verde',
-            text: 'Podemos inovar! **Jardins de chuva**, **tetos verdes** e **parques lineares** ajudam a cidade a absorver a água como uma esponja, evitando enchentes. É a engenharia trabalhando a favor da natureza.',
+            text: 'Podemos inovar com <b>jardins de chuva</b> e <b>tetos verdes</b> para absorver a água. <img src="https://images.unsplash.com/photo-1536147116438-62679a5e01f2?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> É a engenharia trabalhando como uma esponja natural para a cidade.',
             icon: '🌿',
             educationalTopic: 'infraestrutura_verde'
         },
@@ -669,11 +740,10 @@ class TutorialSystem {
         // Step 12: Floating Gardens
         {
             character: 'Dr. Sapo',
-            portrait: 'https://images.unsplash.com/photo-1579389083078-4e7018379f7e?q=80&w=400',
-            // Fundo: Plantas aquáticas/Vitória Régia
+            portrait: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=400',
             background: 'https://images.unsplash.com/photo-1542355554-46329402513f?q=80&w=1080',
             title: 'Ilhas que Limpam',
-            text: 'Minha solução favorita: **jardins flutuantes**! São ilhas de plantas nativas que flutuam no rio. As raízes filtram poluentes naturalmente. É bonito, eficiente e cria um habitat perfeito para nós!',
+            text: 'Minha solução favorita: <b>jardins flutuantes</b>! <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> As raízes dessas plantas filtram poluentes e criam um habitat perfeito para o Gil e para mim!',
             icon: '🪷',
             educationalTopic: 'jardins_flutuantes'
         },
@@ -682,10 +752,9 @@ class TutorialSystem {
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            // Fundo: Luz do sol/Esperança
             background: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1080',
             title: 'O Comando é Seu',
-            text: 'Agora você entende a complexidade. Agricultura, cidade, floresta e água... tudo está conectado. Suas escolhas definirão se teremos um futuro sustentável ou um colapso ambiental. Boa sorte, Guardião.',
+            text: 'Agora você entende a conexão entre tudo. Agricultura, cidade, floresta e água. <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Suas escolhas definirão nosso futuro. Boa sorte, Guardião.',
             icon: '🎓'
         }
     ];
@@ -738,21 +807,52 @@ class TutorialSystem {
     /**
      * Renders the current tutorial step
      */
-    renderCurrentStep() {
+    async renderCurrentStep() {
         const step = this.tutorialSteps[this.currentStep];
         if (!step) return;
 
         // Handle portrait display (3D or 2D)
         const portrait = document.getElementById('tutorial-portrait');
         const portraitCanvas = document.getElementById('tutorial-portrait-canvas');
+        const portraitContainer = document.querySelector('.tutorial-portrait-container');
 
-        if (this.use3DPortrait && this.portraitScene && step.character === 'Claudia') {
-            // Show 3D portrait for Claudia
+        // Characters with 3D models
+        const has3DModel = ['Claudia', 'Gil, o Lambari', 'Dr. Sapo'].includes(step.character);
+
+        if (this.use3DPortrait && this.portraitScene && has3DModel) {
+            // Show 3D portrait for characters with models
             if (portraitCanvas) {
                 portraitCanvas.style.display = 'block';
             }
             if (portrait) {
                 portrait.style.display = 'none';
+            }
+
+            // Load the appropriate character model if not already loaded or if character changed
+            if (!this.currentCharacter || this.currentCharacter !== step.character) {
+                await this.load3DCharacter(step.character);
+                this.currentCharacter = step.character;
+            }
+
+            // Set character-specific background for portrait container
+            if (portraitContainer) {
+                switch(step.character) {
+                    case 'Claudia':
+                        portraitContainer.style.backgroundImage = 'linear-gradient(135deg, rgba(101, 84, 192, 0.15) 0%, rgba(74, 47, 189, 0.15) 100%), url("https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=400&h=400&fit=crop")';
+                        portraitContainer.style.backgroundSize = 'cover';
+                        portraitContainer.style.backgroundPosition = 'center';
+                        break;
+                    case 'Gil, o Lambari':
+                        portraitContainer.style.backgroundImage = 'linear-gradient(135deg, rgba(0, 119, 182, 0.3) 0%, rgba(0, 180, 216, 0.3) 100%), url("https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=400&h=400&fit=crop")';
+                        portraitContainer.style.backgroundSize = 'cover';
+                        portraitContainer.style.backgroundPosition = 'center';
+                        break;
+                    case 'Dr. Sapo':
+                        portraitContainer.style.backgroundImage = 'linear-gradient(135deg, rgba(46, 125, 50, 0.3) 0%, rgba(27, 94, 32, 0.3) 100%), url("https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=400&h=400&fit=crop")';
+                        portraitContainer.style.backgroundSize = 'cover';
+                        portraitContainer.style.backgroundPosition = 'center';
+                        break;
+                }
             }
         } else {
             // Show 2D portrait for other characters
@@ -776,6 +876,11 @@ class TutorialSystem {
                     console.log(`ℹ️ Using emoji fallback for portrait: ${step.character}`);
                 };
                 img.src = step.portrait;
+            }
+
+            // Remove background for 2D portraits
+            if (portraitContainer) {
+                portraitContainer.style.backgroundImage = 'none';
             }
         }
 
@@ -806,7 +911,7 @@ class TutorialSystem {
         if (title) title.textContent = step.title;
 
         const text = document.getElementById('tutorial-text');
-        if (text) text.textContent = step.text;
+        if (text) text.innerHTML = step.text;
 
         const character = document.getElementById('tutorial-character-name');
         if (character) character.textContent = step.character;
@@ -904,3 +1009,6 @@ class TutorialSystem {
     }
 }
 
+// Exportar para escopo global
+window.TutorialSystem = TutorialSystem;
+console.log('📚 TutorialSystem carregado e exportado para window.TutorialSystem');

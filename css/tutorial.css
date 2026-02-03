@@ -47,6 +47,12 @@
     justify-content: center;
     align-items: center;
     margin-bottom: 1rem;
+    padding: 20px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-image 0.5s ease;
 }
 
 #tutorial-portrait {
@@ -61,20 +67,17 @@
 
 /* 3D Portrait Canvas */
 #tutorial-portrait-canvas {
-    
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    width: 200px;
     height: 200px;
-    width: 100%;
-
+    border-radius: 50%;
+    
+    outline: none;
+    border: none;
 }
 
 /* ===== DIALOG BOX ===== */
 .tutorial-dialog-box {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+    overflow: auto;
     padding-bottom: 2rem;
 }
 
@@ -244,9 +247,18 @@
         padding: 1rem;
     }
 
+    .tutorial-portrait-container {
+        padding: 15px;
+    }
+
     #tutorial-portrait {
         width: 100px;
         height: 100px;
+    }
+
+    #tutorial-portrait-canvas {
+        width: 150px;
+        height: 150px;
     }
 
     .tutorial-dialog {
@@ -297,11 +309,17 @@
 @media screen and (max-width: 768px) and (orientation: landscape) {
     .tutorial-portrait-container {
         margin-bottom: 0.5rem;
+        padding: 10px;
     }
 
     #tutorial-portrait {
         width: 80px;
         height: 80px;
+    }
+
+    #tutorial-portrait-canvas {
+        width: 120px;
+        height: 120px;
     }
 
     .tutorial-dialog {

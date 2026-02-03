@@ -677,7 +677,7 @@ class UIManager {
         const hudTop = document.querySelector('.hud-top');
         if (hudTop) {
             hudTop.appendChild(resourceToggle);
-            hudTop.appendChild(controlToggle);
+            //hudTop.appendChild(controlToggle);
         }
 
         // Store references for later updates
