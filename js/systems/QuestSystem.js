@@ -2153,7 +2153,19 @@ class QuestSystem {
 
         if (objective.type === 'build') {
             if (remaining > 0) {
-                return `Construa ${remaining} ${objective.buildingType || 'edifício(s)'}`;
+                // Get the specific building name from BuildingSystem
+                let buildingName = 'edifício(s)';
+                if (objective.target && this.gameManager && this.gameManager.buildingSystem) {
+                    const buildingType = this.gameManager.buildingSystem.buildingTypes.get(objective.target);
+                    if (buildingType && buildingType.name) {
+                        buildingName = buildingType.name;
+                        // Add plural 's' if needed (only for buildings that don't already end with 's')
+                        if (remaining > 1 && !buildingName.endsWith('s')) {
+                            buildingName += 's';
+                        }
+                    }
+                }
+                return `Construa ${remaining} ${buildingName}`;
             } else {
                 return `✅ ${objective.description}`;
             }
