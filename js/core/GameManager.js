@@ -1357,28 +1357,35 @@ class GameManager {
             const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
             console.log(`📷 Centralizando câmera na Prefeitura em (${gridX}, ${gridZ})`);
 
-            const targetPosition = new BABYLON.Vector3(worldPos.x, 0, worldPos.z);
-            const beforeState = this.getCameraState();
-
-            this.camera.setTarget(targetPosition);
-            this.camera.radius = 25;
-
-            this.validateCameraPositionChange('centerCameraOnCityHall', beforeState);
-
-            if (this.isometricAngles &&
-                this.validate(this.isometricAngles.alpha, 'number', {absMax: 10}) &&
-                this.validate(this.isometricAngles.beta, 'number', {absMax: 10})) {
-
-                this.camera.alpha = this.isometricAngles.alpha;
-                this.camera.beta = this.isometricAngles.beta;
+            // Use SimCityCameraControls for smooth camera transition if available
+            if (this.cameraControls && typeof this.cameraControls.centerCameraOn === 'function') {
+                this.cameraControls.centerCameraOn(worldPos.x, worldPos.z, 25);
+                console.log('✅ Câmera centralizada com transição suave');
             } else {
-                console.warn('⚠️ Ângulos corrompidos, usando valores seguros');
-                this.camera.alpha = -Math.PI / 4;
-                this.camera.beta = Math.PI / 3.5;
-                this.isometricAngles = { alpha: -Math.PI / 4, beta: Math.PI / 3.5 };
+                // Fallback to direct camera positioning
+                const targetPosition = new BABYLON.Vector3(worldPos.x, 0, worldPos.z);
+                const beforeState = this.getCameraState();
+
+                this.camera.setTarget(targetPosition);
+                this.camera.radius = 25;
+
+                this.validateCameraPositionChange('centerCameraOnCityHall', beforeState);
+
+                if (this.isometricAngles &&
+                    this.validate(this.isometricAngles.alpha, 'number', {absMax: 10}) &&
+                    this.validate(this.isometricAngles.beta, 'number', {absMax: 10})) {
+
+                    this.camera.alpha = this.isometricAngles.alpha;
+                    this.camera.beta = this.isometricAngles.beta;
+                } else {
+                    console.warn('⚠️ Ângulos corrompidos, usando valores seguros');
+                    this.camera.alpha = -Math.PI / 4;
+                    this.camera.beta = Math.PI / 3.5;
+                    this.isometricAngles = { alpha: -Math.PI / 4, beta: Math.PI / 3.5 };
+                }
+
+                console.log('✅ Câmera centralizada (fallback direto)');
             }
-            
-            console.log('✅ Câmera centralizada');
 
         } catch (error) {
             console.error('❌ Erro ao centralizar câmera:', error);

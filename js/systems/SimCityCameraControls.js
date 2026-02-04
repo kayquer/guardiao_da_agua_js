@@ -636,10 +636,27 @@ class SimCityCameraControls {
         this.targetAlpha = -Math.PI / 4;
         this.targetRadius = 30;
         this.camera.beta = Math.PI / 3.5;
-        
+
         console.log('📷 Camera reset to default position');
     }
-    
+
+    /**
+     * Center camera on a specific world position with smooth transition
+     * @param {number} worldX - World X coordinate
+     * @param {number} worldZ - World Z coordinate
+     * @param {number} radius - Optional camera distance (default: 25)
+     */
+    centerCameraOn(worldX, worldZ, radius = 25) {
+        // Set target position for smooth transition
+        this.targetPosition.set(worldX, 0, worldZ);
+        this.targetRadius = radius;
+
+        // Enforce bounds
+        this.enforceTargetBounds();
+
+        console.log(`📷 Camera centering on position (${worldX.toFixed(1)}, ${worldZ.toFixed(1)}) with radius ${radius}`);
+    }
+
     // ===== CONFIGURATION METHODS =====
     
     setSensitivity(pan, rotate, zoom) {
