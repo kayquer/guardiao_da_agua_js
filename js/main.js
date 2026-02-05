@@ -170,12 +170,12 @@ function updateLoadingProgress(percentage) {
 function initializeMenuSystem() {
     // Botões do menu principal
     document.getElementById('btn-new-game').addEventListener('click', startNewGame);
-    document.getElementById('btn-continue').addEventListener('click', continueGame);
+    //document.getElementById('btn-continue').addEventListener('click', continueGame);
     document.getElementById('btn-about').addEventListener('click', showAbout);
     
     // Verificar se há save game
     if (SaveSystem.hasSaveData()) {
-        document.getElementById('btn-continue').disabled = false;
+        //document.getElementById('btn-continue').disabled = false;
     }
 }
 

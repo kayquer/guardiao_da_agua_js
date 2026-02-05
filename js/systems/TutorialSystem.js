@@ -621,140 +621,234 @@ class TutorialSystem {
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            background: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1080',
-            title: 'Precisamos da sua ajuda, Guardião.',
-            text: 'Olá, eu sou a Pesquisadora Cláudia. A situação dos nossos recursos hídricos chegou a um ponto crítico. <img src="https://images.unsplash.com/photo-1573166675921-076ea6b621ce?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Eu estarei aqui para dar suporte técnico, mas as decisões estratégicas serão suas. Vamos começar entendendo o fluxo da vida?',
+            background: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=1080',
+            title: 'Bem-vindo, Guardião da Água!',
+            text: 'Olá! Eu sou a Pesquisadora Cláudia, e tenho uma missão muito importante para você. Nossa cidade está enfrentando uma crise nos recursos hídricos - a água que usamos para beber, tomar banho e regar as plantações está em risco! <img src="https://images.pexels.com/photos/1481105/pexels-photo-1481105.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Você foi escolhido como o novo <b>Guardião da Água</b>. Eu vou te ensinar tudo sobre como proteger nosso bem mais precioso. Vamos juntos nessa jornada de aprendizado e descoberta?',
             icon: '👋'
         },
-        
-        // Step 2: Concepts - Resources & Cycle
+
+        // Step 2: Hidrosfera - Concepts & References
+        {
+            character: 'Claudia',
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            background: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=1080',
+            title: 'A Hidrosfera: Toda a Água do Planeta',
+            text: 'Primeiro, vamos entender o que é a <b>hidrosfera</b>. Segundo Oliveira e Santos (2017), a hidrosfera é toda a água presente na superfície e no subsolo do nosso planeta Terra! <img src="UI/JPG/ciclo_agua.jpg" style="width:100%; border-radius:8px; margin:10px 0;"/> Ela está distribuída em três formas: <b>sólida</b> (como gelo nas geleiras), <b>líquida</b> (nos oceanos, rios e lagos) e <b>gasosa</b> (nas nuvens). A água está sempre em movimento - ela nunca para! Esse movimento pode ser rápido, como uma chuva, ou muito lento, demorando até milhões de anos para acontecer.',
+            icon: '🌍',
+            educationalTopic: 'hidrosfera'
+        },
+
+        // Step 3: Concepts - Hydrological Cycle & References
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=1080',
-            title: 'O Motor da Vida',
-            text: 'Tudo depende do <b>ciclo hidrológico</b>. A água evapora, forma nuvens e retorna como chuva para abastecer nossos rios. <img src="https://images.unsplash.com/photo-1534274988757-a28bf1f539cf?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Se quebrarmos um elo desse ciclo, o sistema entra em colapso. Mas onde exatamente essa água se concentra?',
+            title: 'O Ciclo Hidrológico: O Motor da Vida',
+            text: 'Agora vem a parte mais legal! Garcez e Alvarez (1988) explicam que o <b>ciclo hidrológico</b> é como um jogo de transformações mágicas da água. <img src="https://images.pexels.com/photos/531756/pexels-photo-531756.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Imagine: o Sol aquece a água dos rios e ela <b>evapora</b> (vira vapor e sobe). Lá em cima, ela se junta em <b>nuvens</b>. Quando as nuvens ficam pesadas, a água cai como <b>chuva</b>. A chuva abastece os rios, e o ciclo recomeça! Este ciclo tem duas fases principais: a <b>fase atmosférica</b> (o que acontece no céu) e a <b>fase terrestre</b> (o que acontece no solo). Se quebrarmos qualquer parte desse ciclo, toda a natureza sofre.',
             icon: '🔄',
             educationalTopic: 'ciclo_hidrologico'
         },
-        
-        // Step 3: Concept - Watershed
+
+        // Step 4: Concept - Watershed & References
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            background: 'https://images.unsplash.com/photo-1504198458649-3128b932f49e?q=80&w=1080',
-            title: 'O Território: A Bacia Hidrográfica',
-            text: 'Imagine a região como uma grande tigela. Isso é a <b>Bacia Hidrográfica</b>. <img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Toda gota que cai nas bordas escorre para o mesmo rio principal. O que você faz no alto do morro impacta quem vive lá embaixo.',
+            background: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1080',
+            title: 'A Bacia Hidrográfica: Como uma Grande Tigela',
+            text: 'Vou te contar um segredo da natureza! Christofoletti (1974) descobriu que uma <b>bacia hidrográfica</b> funciona como uma tigela gigante. <img src="https://images.pexels.com/photos/414171/pexels-photo-414171.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Imagine: todos os riozinhos pequenos (chamados de <b>afluentes</b>) se juntam e formam um rio maior (o <b>rio principal</b>). Toda água da chuva que cai nessa "tigela" vai escorrer para o mesmo lugar! Santos (2007) complementa dizendo que precisamos entender as <b>nascentes</b> (onde o rio nasce), os <b>divisores de água</b> (as "bordas da tigela") e a <b>foz</b> (onde o rio termina). O mais importante: se alguém polui a água lá em cima da "tigela", quem mora lá embaixo vai receber água suja!',
             icon: '🏞️',
             educationalTopic: 'bacia_hidrografica'
         },
-        
-        // Step 4: Research Centers
+
+        // Step 5: Water Resources Management & References
+        {
+            character: 'Claudia',
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            background: 'https://images.unsplash.com/photo-1497515114629-f71d768fd07c?q=80&w=1080',
+            title: 'Recursos Hídricos: Água para Todos',
+            text: 'Bordalo (2017) nos alerta: a água não pode ser tratada como uma mercadoria para ser vendida ao melhor preço! <img src="https://images.pexels.com/photos/1391498/pexels-photo-1391498.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Os <b>recursos hídricos</b> são o conjunto de toda água disponível para usarmos. Mas existem muitos desafios: o governo precisa garantir água para as pessoas beberem, para as fábricas trabalharem, para a agricultura produzir alimentos. Às vezes esses interesses entram em conflito. Por isso, a água deve ser vista como <b>fonte de vida e sobrevivência</b>, com acesso garantido para todos em condições de <b>segurança hídrica</b>. Seu papel como Guardião é equilibrar essas necessidades!',
+            icon: '⚖️',
+            educationalTopic: 'recursos_hidricos'
+        },
+
+        // Step 6: Research Centers
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=1080',
-            title: 'Ciência como Bússola',
-            text: 'Os <b>Centros de Pesquisa</b> são seus olhos. Eles monitoram a qualidade da água e indicam problemas invisíveis. <img src="https://images.unsplash.com/photo-1576086213369-97a306d36557?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Sem ciência, estamos apenas adivinhando, especialmente diante dos desafios da agricultura.',
+            title: 'Centros de Pesquisa: Nossos Olhos Científicos',
+            text: 'Como cientista, eu trabalho em um <b>Centro de Pesquisa</b>! Aqui usamos microscópios e equipamentos especiais para descobrir coisas invisíveis. <img src="https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Medimos a <b>qualidade da água</b>: se tem bactérias perigosas, se está muito quente, se tem produtos químicos ruins. É como fazer um check-up de saúde na água! Sem a ciência, estaríamos apenas "chutando" e não sabendo o que fazer. Os Centros de Pesquisa são seus melhores aliados nessa missão.',
             icon: '🔬',
             educationalTopic: 'centros_pesquisa'
         },
-        
-        // Step 5: Agriculture Dilemma
+
+        // Step 7: Agriculture Dilemma
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=1080',
-            title: 'O Desafio da Produção',
-            text: 'A <b>produção de cana</b> e a <b>pecuária</b> movem a economia, mas exigem muita água e cuidado com <b>agrotóxicos</b>. <img src="https://images.unsplash.com/photo-1592982537447-7440770cbfc9?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Seu papel é buscar o equilíbrio. E por falar em equilíbrio, veja quem depende diretamente da pureza desse rio...',
-            icon: '⚖️',
+            title: 'Agricultura: Produzir Alimentos sem Destruir',
+            text: 'A <b>agricultura</b> é super importante - ela produz a comida que comemos! Mas também precisa de muita, muita água. <img src="/UI/JPG/cana_de_acucar.jpg" style="width:100%; border-radius:8px; margin:10px 0;"/> A plantação de <b>cana-de-açúcar</b> e a <b>pecuária</b> (criação de gado) movimentam a economia da região. Mas temos que ter cuidado! Os <b>agrotóxicos</b> (venenos usados para matar insetos) podem escorrer para os rios. O gado pode sujar a água com seus dejetos. Seu desafio é encontrar o equilíbrio: produzir alimentos SEM destruir a natureza. Agora vou te apresentar alguém que sofre muito quando erramos nesse equilíbrio...',
+            icon: '🌾',
             educationalTopic: 'agricultura_agua'
         },
 
-        // Step 6: Riparian Forest & APP (Gil o Peixe)
+        // Step 8: Riparian Forest & APP (Gil the Fish)
         {
             character: 'Gil, o Lambari',
             portrait: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400',
-            background: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1080',
-            title: 'Glub! Preciso de sombra!',
-            text: 'Oi! Eu sou o Gil. Para nós, peixes, a <b>Mata Ciliar</b> é vital! <img src="https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Ela funciona como os cílios do rio, protegendo a água do sol forte e mantendo a temperatura fresca para nossos ovos nas <b>APPs</b>.',
+            background: 'https://images.unsplash.com/photo-1535591273668-578e31182c4f?q=80&w=1080',
+            title: 'Glub glub! Prazer, sou o Gil!',
+            text: 'Oi, Guardião! Eu sou o Gil, o Lambari mais esperto desse rio! Vou te contar um segredo: a <b>Mata Ciliar</b> é a nossa salvação! <img src="https://images.pexels.com/photos/35047478/pexels-photo-35047478.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Sabe por quê ela se chama "ciliar"? Porque funciona como os cílios dos seus olhos - protege! As árvores nas margens fazem sombra e mantêm a água fresquinha (eu odeio água quente!). Elas também seguram a terra para não cair no rio. As <b>APPs</b> (Áreas de Preservação Permanente) são zonas especiais onde NINGUÉM pode construir ou cortar árvores. É lei! Ali eu coloco meus ovinhos e eles ficam protegidos.',
             icon: '🐟',
             educationalTopic: 'mata_ciliar_app'
         },
 
-        // Step 7: Erosion & Sedimentation (Gil o Peixe)
+        // Step 9: Erosion & Sedimentation (Gil the Fish)
         {
             character: 'Gil, o Lambari',
             portrait: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400',
             background: 'https://images.unsplash.com/photo-1599940824399-b87987ce0799?q=80&w=1080',
-            title: 'Minhas brânquias ardem!',
-            text: 'Quando tiram as árvores, a terra cai no rio. Isso é <b>erosão</b> e causa o <b>assoreamento</b>. <img src="https://images.unsplash.com/photo-1463123081488-729f65199f0e?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> O rio fica raso e barrento. É horrível respirar com lama nas brânquias! Mas o Dr. Sapo tem um alerta ainda mais grave...',
+            title: 'Socorro! Não consigo respirar!',
+            text: 'Glub... glub... quando os humanos cortam as árvores da Mata Ciliar, acontece um desastre! A chuva cai e arrasta toda a terra solta para dentro do rio. Isso é a <b>erosão</b>! <img src="UI/JPG/erosao.jpg" style="width:100%; border-radius:8px; margin:10px 0;"/> Aí começa o <b>assoreamento</b>: o rio fica cheio de terra, lama e areia. Ele fica raso, a água fica toda barrenta e escura. Minhas brânquias (meu "nariz" de peixe) ficam entupidas de barro - é horrível! Não consigo respirar direito. Muitos dos meus amigos peixes morrem por causa disso. Por favor, proteja nossas árvores! Mas tem coisa pior... o Dr. Sapo vai te explicar.',
             icon: '🧱',
             educationalTopic: 'erosao_assoreamento'
         },
 
-        // Step 8: Sewage & Contamination Details
+        // Step 10: Sewage & Contamination Details
         {
             character: 'Dr. Sapo',
             portrait: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=400',
-            background: 'https://images.unsplash.com/photo-1573166675921-076ea6b621ce?q=80&w=1080',
-            title: 'Alerta de Toxicidade! ☣️',
-            text: 'Croac! Cuidado com o <b>esgoto</b>! Ele consome o <b>oxigênio dissolvido</b> que o Gil usa para respirar. <img src="https://images.unsplash.com/photo-1535025639604-9a804c092faa?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Sem tratamento, a água vira um veneno para todos nós. E não é só o que vemos na superfície que corre perigo...',
+            background: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?q=80&w=1080',
+            title: 'Dr. Sapo e o Perigo Invisível! ☣️',
+            text: 'Croac croac! Sou o Dr. Sapo, especialista em poluição aquática. Tenho um alerta URGENTE: cuidado com o <b>esgoto</b>! <img src="https://images.pexels.com/photos/15060366/pexels-photo-15060366.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Quando casas e fábricas jogam esgoto sem tratar no rio, as bactérias do cocô começam a comer todo o <b>oxigênio dissolvido</b> da água. É o oxigênio que o Gil usa para respirar! Sem oxigênio, os peixes morrem asfixiados. O esgoto também traz doenças terríveis para os humanos: diarreia, hepatite, leptospirose. A água limpa vira VENENO! Por isso precisamos de <b>estações de tratamento de esgoto</b>. Elas limpam a água suja antes de devolver ao rio.',
             icon: '🤢',
             educationalTopic: 'esgoto_contaminacao'
         },
 
-        // Step 9: Groundwater & Springs
+        // Step 11: Groundwater & Springs
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1633511090164-b43840ea1607?q=80&w=1080',
-            title: 'O Perigo Invisível',
-            text: 'O que vaza no solo, como o <b>chorume</b>, contamina a <b>água subterrânea</b>. <img src="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Um aquífero poluído leva décadas para se recuperar. Proteja as <b>nascentes</b> como tesouros escondidos.',
+            title: 'A Água Subterrânea: O Tesouro Escondido',
+            text: 'Guardião, vou te mostrar um perigo invisível! Debaixo da terra existe um mundo de água: os <b>aquíferos</b> e <b>lençóis freáticos</b>. <img src="UI/JPG/agua_subterranea.png" style="width:100%; border-radius:8px; margin:10px 0;"/> É como um rio subterrâneo gigante que alimenta poços e nascentes. Mas quando vazam produtos perigosos no solo - como <b>chorume</b> de lixões, gasolina de postos ou agrotóxicos - eles infiltram e contaminam essa água escondida. O pior: um aquífero poluído pode levar 50, 100 ou até 200 anos para se limpar naturalmente! Proteja as <b>nascentes</b> como se fossem tesouros raros, porque elas alimentam os rios que vemos na superfície.',
             icon: '💧',
             educationalTopic: 'agua_subterranea'
         },
 
-        // Step 10: Urban Planning (Várzea)
+        // Step 12: Urban Planning (Várzea)
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            background: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=1080',
-            title: 'A Cidade e o Rio',
-            text: 'O rio precisa de espaço. Construir em <b>áreas de várzea</b> é um erro que gera enchentes. <img src="https://images.unsplash.com/photo-1545048702-793e24bb1c33?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Precisamos planejar o crescimento urbano respeitando os limites da natureza.',
+            background: 'https://images.unsplash.com/photo-1547619292-240402b5ae5d?q=80&w=1080',
+            title: 'Cidades Inteligentes: Respeitar o Rio',
+            text: 'Sabe o que acontece quando a cidade cresce de forma errada? Enchentes! Os rios precisam de espaço para "respirar". <img src="https://images.pexels.com/photos/2418664/pexels-photo-2418664.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> As <b>áreas de várzea</b> são como uma "zona de segurança" do rio - quando chove muito, ele precisa desse espaço extra para a água se espalhar. Mas algumas pessoas constroem casas bem ali! Resultado: quando vem a enchente, as casas ficam debaixo d\'água. Além disso, o asfalto e concreto das cidades não deixam a água da chuva penetrar no solo. Precisamos de um <b>planejamento urbano inteligente</b> que respeite os limites da natureza.',
             icon: '🏗️',
             educationalTopic: 'ocupacao_urbana'
         },
 
-        // Step 11: Green Infrastructure Solutions
+        // Step 13: Green Infrastructure Solutions
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1080',
-            title: 'Tecnologia Verde',
-            text: 'Podemos inovar com <b>jardins de chuva</b> e <b>tetos verdes</b> para absorver a água. <img src="https://images.unsplash.com/photo-1536147116438-62679a5e01f2?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> É a engenharia trabalhando como uma esponja natural para a cidade.',
+            title: 'Soluções Verdes: Tecnologia a Favor da Natureza',
+            text: 'Agora vou te mostrar soluções incríveis! A <b>infraestrutura verde</b> usa a própria natureza como tecnologia. <img src="https://images.pexels.com/photos/1105019/pexels-photo-1105019.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Os <b>jardins de chuva</b> são canteiros especiais que absorvem a água como uma esponja gigante. Os <b>tetos verdes</b> (telhados cobertos de plantas) também retêm água e deixam a cidade mais fresca. <b>Pavimentos permeáveis</b> são como calçadas com furinhos que deixam a água passar. É a engenharia imitando a natureza! Essas soluções evitam enchentes e ainda deixam a cidade mais bonita.',
             icon: '🌿',
             educationalTopic: 'infraestrutura_verde'
         },
 
-        // Step 12: Floating Gardens
+        // Step 14: Floating Gardens
         {
             character: 'Dr. Sapo',
             portrait: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=400',
             background: 'https://images.unsplash.com/photo-1542355554-46329402513f?q=80&w=1080',
-            title: 'Ilhas que Limpam',
-            text: 'Minha solução favorita: <b>jardins flutuantes</b>! <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> As raízes dessas plantas filtram poluentes e criam um habitat perfeito para o Gil e para mim!',
+            title: 'Jardins Flutuantes: Ilhas Mágicas que Limpam',
+            text: 'Croac! Essa é minha invenção favorita: <b>jardins flutuantes</b>! São como ilhas de plantas que boiam na água do rio. <img src="https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> As raízes dessas plantas penduradas na água funcionam como filtros naturais - elas "comem" os poluentes e deixam a água mais limpa! Além disso, criam um habitat perfeito: o Gil coloca seus ovos ali embaixo, eu pulo de planta em planta caçando insetos, e até passarinhos fazem ninhos. É ecologia, beleza e limpeza, tudo junto! Uma solução genial que a natureza nos ensinou.',
             icon: '🪷',
             educationalTopic: 'jardins_flutuantes'
         },
 
-        // Step 13: Conclusion
+        // NOVOS STEPS: Tutorial de Mecânicas do Jogo
+
+        // Step 15: Game Introduction
+        {
+            character: 'Claudia',
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            background: 'https://images.unsplash.com/photo-1498036882173-b41c28a8ba34?q=80&w=1080',
+            title: 'Agora Vamos Aprender a Jogar!',
+            text: 'Muito bem, Guardião! Você aprendeu toda a teoria sobre água e natureza. Agora vou te ensinar como usar este simulador! <img src="https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Pense neste jogo como uma cidade de verdade que você vai gerenciar. Você vai construir prédios, proteger o rio e tomar decisões importantes. Cada escolha sua afeta a saúde da água e a felicidade dos moradores. Nas próximas telas, vou te explicar cada parte do jogo para você virar um mestre!',
+            icon: '🎮'
+        },
+
+        // Step 16: Camera Movement
+        {
+            character: 'Gil, o Lambari',
+            portrait: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400',
+            background: 'https://images.unsplash.com/photo-1498036882173-b41c28a8ba34?q=80&w=1080',
+            title: 'Movendo a Câmera: Explore a Cidade!',
+            text: 'Glub glub! Primeiro você precisa aprender a "nadar" pela cidade! Use as <b>setas do teclado</b> (↑ ↓ ← →) ou <b>arraste com o mouse</b> para mover a câmera. <img src="https://images.pexels.com/photos/1229861/pexels-photo-1229861.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Quer ver de perto? Use a <b>roda do mouse</b> ou <b>Zoom +/-</b> para aproximar e afastar. Você pode girar a câmera segurando o <b>botão direito do mouse</b> e movendo. Pratique bastante para conhecer cada cantinho da cidade - desde as nascentes lá no alto até a foz do rio!',
+            icon: '📹'
+        },
+
+        // Step 17: Building Selection
+        {
+            character: 'Claudia',
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            background: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1080',
+            title: 'Construindo: Escolha com Sabedoria!',
+            text: 'No canto da tela você vai ver o <b>Menu de Construções</b>. Clique nele para ver todas as opções disponíveis! <img src="https://images.pexels.com/photos/1094767/pexels-photo-1094767.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Cada construção tem um propósito: 🏭 <b>Estação de Tratamento</b> limpa esgoto, 🌳 <b>Mata Ciliar</b> protege o rio, 🔬 <b>Centro de Pesquisa</b> monitora a qualidade da água. Para construir, <b>clique na construção desejada</b>, depois <b>clique no mapa</b> onde quer colocar. Mas cuidado! Cada construção custa dinheiro e recursos. Escolha com sabedoria!',
+            icon: '🏗️'
+        },
+
+        // Step 18: Game Logic
+        {
+            character: 'Dr. Sapo',
+            portrait: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=400',
+            background: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1080',
+            title: 'Como o Jogo Funciona: Causa e Efeito!',
+            text: 'Croac! Vou explicar a lógica do jogo de um jeito fácil. Imagine que a cidade é um organismo vivo: <img src="https://images.pexels.com/photos/1166644/pexels-photo-1166644.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> ✅ Se você PLANTAR mata ciliar → Qualidade da água MELHORA ↑<br>❌ Se FALTAR tratamento de esgoto → Poluição AUMENTA ↑<br>✅ Se construir jardins de chuva → Enchentes DIMINUEM ↓<br>❌ Se usar muitos agrotóxicos → Peixes MORREM ↓<br>Cada ação tem uma reação! Observe os <b>indicadores coloridos</b> na tela: verde = bom, amarelo = atenção, vermelho = perigo! Pense antes de agir.',
+            icon: '⚙️'
+        },
+
+        // Step 19: Missions Menu
+        {
+            character: 'Claudia',
+            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
+            background: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1080',
+            title: 'Menu de Missões: Seus Objetivos!',
+            text: 'Procure o ícone 📋 <b>Missões</b> na interface. Ali você verá todos os seus desafios! <img src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> As missões são divididas em categorias:<br>🎯 <b>Principais</b>: Objetivos obrigatórios para progredir<br>⭐ <b>Secundárias</b>: Desafios opcionais que dão recompensas<br>📚 <b>Educacionais</b>: Aprenda mais sobre ciência da água<br>Clique em cada missão para ver detalhes, recompensas e dicas. Complete missões para ganhar <b>pontos, dinheiro</b> e <b>desbloquear novas construções</b>!',
+            icon: '📋'
+        },
+
+        // Step 20: Resources & Progression
+        {
+            character: 'Gil, o Lambari',
+            portrait: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400',
+            background: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1080',
+            title: 'Recursos e Progressão: Cresça Devagar!',
+            text: 'Glub! No topo da tela você vê seus <b>recursos</b>: 💰 Dinheiro, ⚡ Energia, 👥 População. <img src="https://images.pexels.com/photos/259027/pexels-photo-259027.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> A <b>progressão do jogo</b> funciona assim:<br>1️⃣ Complete missões → Ganhe recompensas<br>2️⃣ Use dinheiro para construir → Melhore a cidade<br>3️⃣ Melhore indicadores → Desbloqueie níveis<br>4️⃣ Níveis novos → Novas construções e desafios<br>Não gaste todo seu dinheiro de uma vez! Economize para emergências. A cidade cresce aos poucos, como uma plantinha que você cuida todos os dias.',
+            icon: '📈'
+        },
+
+        // Step 21: Tips & Strategy
+        {
+            character: 'Dr. Sapo',
+            portrait: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=400',
+            background: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1080',
+            title: 'Dicas Estratégicas do Dr. Sapo!',
+            text: 'Croac! Anote essas <b>dicas de ouro</b> para ter sucesso:<br>🔍 <b>Priorize a Pesquisa</b>: Construa Centros de Pesquisa cedo para identificar problemas<br>🌳 <b>Proteja Primeiro</b>: Mata Ciliar previne problemas futuros<br>💧 <b>Trate o Esgoto</b>: Sempre antes de expandir a população<br>⚖️ <b>Balance Economia e Ecologia</b>: Não sacrifique a natureza pelo lucro rápido<br>📊 <b>Monitore Constantemente</b>: Fique de olho nos indicadores<br><img src="https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Lembre-se: prevenção é mais barato que correção! Um problema pequeno hoje vira crise amanhã.',
+            icon: '💡'
+        },
+
+        // Step 22: Final Conclusion
         {
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1080',
-            title: 'O Comando é Seu',
-            text: 'Agora você entende a conexão entre tudo. Agricultura, cidade, floresta e água. <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Suas escolhas definirão nosso futuro. Boa sorte, Guardião.',
+            title: 'Você Está Pronto, Guardião!',
+            text: 'Parabéns! Agora você sabe tudo: desde o ciclo hidrológico e as bacias hidrográficas até como jogar e gerenciar a cidade. <img src="https://images.pexels.com/photos/1438072/pexels-photo-1438072.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Você entende que a água conecta tudo: agricultura, cidade, floresta e vida selvagem. Como disse Bordalo (2017), a água é fonte de vida e deve ser acessível para todos. Gil, Dr. Sapo e eu estaremos aqui para te ajudar durante sua jornada. Suas escolhas definirão o futuro desta cidade e de todos os seres que dependem da água. <b>Boa sorte, Guardião da Água!</b> 🌊',
             icon: '🎓'
         }
     ];
