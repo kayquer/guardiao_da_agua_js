@@ -677,7 +677,7 @@
     }
     
     .building-item {
-        padding: 1.2rem;
+        padding: 0px 10px;
     }
     
     .building-icon {
@@ -1093,7 +1093,7 @@
 /* Locked building item styles */
 .building-item.locked {
     position: relative;
-    opacity: 0.7;
+    filter: grayscale(0.7);
     cursor: pointer;
 }
 
@@ -1420,5 +1420,33 @@
 
     .nav-btn {
         width: 100%;
+    }
+}
+
+/* ===== DESKTOP: Building categories accordion ===== */
+@media screen and (min-width: 769px) {
+    .building-categories {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        margin-bottom: 0;
+    }
+
+    .category-btn {
+        min-width: unset;
+        width: 100%;
+        text-align: left;
+    }
+
+    /* Items drawer — hidden by default, shown when .accordion-open is added by JS */
+    #building-items {
+        display: none;
+
+        overflow: visible;
+        margin: 0.4rem 0 0.2rem 0;
+        border-radius: 16px;
+    }
+
+    #building-items.accordion-open {
+        display: flex;
     }
 }

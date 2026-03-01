@@ -119,8 +119,39 @@ class SimCityCameraControls {
     }
     
     setupMouseControls() {
-        // Mouse down - start drag/rotation
-        this.boundHandlers.mousedown = (event) => {
+        // Document-level handlers attached during active drag/rotation so the
+        // operation continues even when the cursor leaves the canvas (e.g. moves
+        // over HUD elements). They are removed as soon as the pointer is released.
+        // Uses pointer events (pointerdown/pointermove/pointerup) instead of mouse
+        // events because Babylon.js registers internal pointerdown handlers on the
+        // canvas that may call preventDefault(), which suppresses mousedown in modern
+        // browsers. Pointer events fire before the browser generates mouse events so
+        // they are never suppressed.
+        this.boundHandlers.documentPointermove = (event) => {
+            if (this.isActivelyPlacingBuilding()) return;
+            if (this.isDragging) {
+                this.handlePan(event);
+            } else if (this.isRotating) {
+                this.handleRotation(event);
+            }
+        };
+
+        this.boundHandlers.documentPointerup = () => {
+            if (this.isDragging) {
+                console.log('🖱️ Mouse drag ended');
+            }
+            if (this.isRotating) {
+                console.log('🖱️ Mouse rotation ended');
+            }
+            this.isDragging = false;
+            this.isRotating = false;
+            this.canvas.style.cursor = 'default';
+            document.removeEventListener('pointermove', this.boundHandlers.documentPointermove);
+            document.removeEventListener('pointerup', this.boundHandlers.documentPointerup);
+        };
+
+        // Pointer down - start drag/rotation
+        this.boundHandlers.pointerdown = (event) => {
             if (this.isActivelyPlacingBuilding()) {
                 console.log('🏗️ Camera controls blocked - actively placing building');
                 return;
@@ -142,63 +173,56 @@ class SimCityCameraControls {
             }
 
             this.lastPointerPosition = { x: event.clientX, y: event.clientY };
-            
+
+            // Attach document-level listeners so drag continues off-canvas
+            if (this.isDragging || this.isRotating) {
+                document.addEventListener('pointermove', this.boundHandlers.documentPointermove);
+                document.addEventListener('pointerup', this.boundHandlers.documentPointerup);
+            }
+
             // Prevent default for middle mouse to avoid scrolling
             if (event.button === 1) {
                 event.preventDefault();
             }
         };
 
-        // Mouse move - execute drag/rotation and edge panning
-        this.boundHandlers.mousemove = (event) => {
+        // Canvas pointermove - used only for edge panning (drag is handled by document listener)
+        this.boundHandlers.pointermove = (event) => {
             if (this.isActivelyPlacingBuilding()) {
                 return;
             }
 
-            if (this.isDragging) {
-                this.handlePan(event);
-            } else if (this.isRotating) {
-                this.handleRotation(event);
-            }
-            
             // Edge panning (when not dragging/rotating)
             if (!this.isDragging && !this.isRotating && this.config.edgePanEnabled) {
                 this.handleEdgePanning(event);
             }
         };
 
-        // Mouse up - stop drag/rotation
-        this.boundHandlers.mouseup = () => {
-            if (this.isDragging) {
-                console.log('🖱️ Mouse drag ended');
-            }
-            if (this.isRotating) {
-                console.log('🖱️ Mouse rotation ended');
-            }
-
+        // Pointer up on canvas (fallback — primary handler is documentPointerup)
+        this.boundHandlers.pointerup = () => {
             this.isDragging = false;
             this.isRotating = false;
             this.canvas.style.cursor = 'default';
         };
 
-        // Mouse leave - stop all interactions
-        this.boundHandlers.mouseleave = () => {
-            this.isDragging = false;
-            this.isRotating = false;
-            this.canvas.style.cursor = 'default';
+        // Pointer leave - only reset if not in an active drag tracked by document
+        this.boundHandlers.pointerleave = () => {
+            if (!this.isDragging && !this.isRotating) {
+                this.canvas.style.cursor = 'default';
+            }
         };
-        
+
         // Mouse wheel - zoom
         this.boundHandlers.wheel = (event) => {
             this.handleZoom(event);
             event.preventDefault();
         };
-        
-        // Add all mouse event listeners
-        this.canvas.addEventListener('mousedown', this.boundHandlers.mousedown);
-        this.canvas.addEventListener('mousemove', this.boundHandlers.mousemove);
-        this.canvas.addEventListener('mouseup', this.boundHandlers.mouseup);
-        this.canvas.addEventListener('mouseleave', this.boundHandlers.mouseleave);
+
+        // Add all pointer event listeners
+        this.canvas.addEventListener('pointerdown', this.boundHandlers.pointerdown);
+        this.canvas.addEventListener('pointermove', this.boundHandlers.pointermove);
+        this.canvas.addEventListener('pointerup', this.boundHandlers.pointerup);
+        this.canvas.addEventListener('pointerleave', this.boundHandlers.pointerleave);
         this.canvas.addEventListener('wheel', this.boundHandlers.wheel, { passive: false });
     }
     
@@ -699,10 +723,10 @@ class SimCityCameraControls {
         }
         
         // Remove all canvas event listeners
-        this.canvas.removeEventListener('mousedown', this.boundHandlers.mousedown);
-        this.canvas.removeEventListener('mousemove', this.boundHandlers.mousemove);
-        this.canvas.removeEventListener('mouseup', this.boundHandlers.mouseup);
-        this.canvas.removeEventListener('mouseleave', this.boundHandlers.mouseleave);
+        this.canvas.removeEventListener('pointerdown', this.boundHandlers.pointerdown);
+        this.canvas.removeEventListener('pointermove', this.boundHandlers.pointermove);
+        this.canvas.removeEventListener('pointerup', this.boundHandlers.pointerup);
+        this.canvas.removeEventListener('pointerleave', this.boundHandlers.pointerleave);
         this.canvas.removeEventListener('wheel', this.boundHandlers.wheel);
         this.canvas.removeEventListener('touchstart', this.boundHandlers.touchstart);
         this.canvas.removeEventListener('touchmove', this.boundHandlers.touchmove);
@@ -710,10 +734,12 @@ class SimCityCameraControls {
         this.canvas.removeEventListener('touchcancel', this.boundHandlers.touchcancel);
         this.canvas.removeEventListener('contextmenu', this.boundHandlers.contextmenu);
         this.canvas.removeEventListener('mousedown', this.boundHandlers.mousedownFocus);
-        
+
         // Remove document event listeners
         document.removeEventListener('keydown', this.boundHandlers.keydown);
         document.removeEventListener('keyup', this.boundHandlers.keyup);
+        document.removeEventListener('pointermove', this.boundHandlers.documentPointermove);
+        document.removeEventListener('pointerup', this.boundHandlers.documentPointerup);
         
         // Clear bound handlers
         this.boundHandlers = {};

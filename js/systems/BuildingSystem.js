@@ -1510,18 +1510,6 @@ class BuildingSystem {
             return null;
         }
 
-        // Verificar se atingiu o limite de construções simultâneas
-        if (this.constructionQueue.size >= this.maxSimultaneousConstructions) {
-            // Verificar se há construções travadas antes de bloquear
-            this.validateConstructionState();
-
-            if (this.constructionQueue.size >= this.maxSimultaneousConstructions) {
-                this.showNotification(`⚠️ Máximo de ${this.maxSimultaneousConstructions} construções simultâneas atingido`, 'warning');
-                console.warn(`⚠️ Máximo de ${this.maxSimultaneousConstructions} construções simultâneas atingido - aguarde a conclusão de uma construção`);
-                return null;
-            }
-        }
-
         const buildingType = this.buildingTypes.get(buildingTypeId);
         if (!buildingType) {
             console.error(`❌ Tipo de edifício não encontrado: ${buildingTypeId}`);
@@ -1535,7 +1523,7 @@ class BuildingSystem {
             console.warn(`⚠️ Não é possível construir: ${canPlace.reason}`);
             return null;
         }
-        
+
         // ===== RESEARCH CENTERS AND UNIVERSITIES: Apply cost reduction =====
         const actualCost = this.calculateConstructionCostWithBonuses(buildingTypeId, gridX, gridZ);
 
@@ -1544,6 +1532,20 @@ class BuildingSystem {
             if (!gameManager.resourceManager.canAfford(actualCost)) {
                 this.showNotification(`Orçamento insuficiente! Custo: R$ ${actualCost.toLocaleString()}`, 'error');
                 console.warn(`⚠️ Orçamento insuficiente: R$ ${actualCost} (original: R$ ${buildingType.cost}, disponível: R$ ${gameManager.resourceManager.resources.budget.current})`);
+                return null;
+            }
+        }
+
+        // Verificar se atingiu o limite de construções simultâneas
+        // (verificado depois de canPlaceBuilding e budget para que o aviso só apareça
+        // quando o local e o orçamento estão corretos, mas a fila está cheia)
+        if (this.constructionQueue.size >= this.maxSimultaneousConstructions) {
+            // Verificar se há construções travadas antes de bloquear
+            this.validateConstructionState();
+
+            if (this.constructionQueue.size >= this.maxSimultaneousConstructions) {
+                this.showNotification(`⚠️ Máximo de ${this.maxSimultaneousConstructions} construções simultâneas atingido`, 'warning');
+                console.warn(`⚠️ Máximo de ${this.maxSimultaneousConstructions} construções simultâneas atingido - aguarde a conclusão de uma construção`);
                 return null;
             }
         }

@@ -51,7 +51,7 @@ class UIManager {
         
         // ===== ENHANCED UI STATE MANAGEMENT =====
         this.uiState = {
-            currentCategory: 'water',
+            currentCategory: null,
             selectedBuilding: null,
             currentOpenPanel: null,
             isTransitioning: false
@@ -979,7 +979,23 @@ class UIManager {
     // ===== CONSTRUÇÃO =====
     selectCategory(category) {
         // ===== ENHANCED CATEGORY SELECTION WITH STATE MANAGEMENT =====
-        if (!category || this.uiState.currentCategory === category) return;
+        if (!category) return;
+
+        const itemsEl = this.elements.buildingItems;
+
+        // Desktop accordion: clicking the active category toggles it closed
+        if (!this.isMobile && this.uiState.currentCategory === category) {
+            if (itemsEl && itemsEl.classList.contains('accordion-open')) {
+                itemsEl.classList.remove('accordion-open');
+            }
+            this.updateCategoryButtonStates(null);
+            this.uiState.currentCategory = null;
+            this.currentCategory = null;
+            return;
+        }
+
+        // Mobile: ignore repeated selection of the same category
+        if (this.isMobile && this.uiState.currentCategory === category) return;
 
         // ===== STATE TRANSITION MANAGEMENT =====
         if (this.uiState.isTransitioning) {
@@ -1007,6 +1023,15 @@ class UIManager {
 
             // ===== ENHANCED BUILDING ITEMS LOADING =====
             this.loadBuildingItemsWithStateManagement();
+
+            // Desktop accordion: move items panel to right after the active button
+            if (!this.isMobile && itemsEl) {
+                const activeBtn = document.querySelector(`.category-btn[data-category="${category}"]`);
+                if (activeBtn) {
+                    activeBtn.insertAdjacentElement('afterend', itemsEl);
+                }
+                itemsEl.classList.add('accordion-open');
+            }
 
             // ===== PANEL STATE MANAGEMENT =====
             if (this.uiState.currentOpenPanel === 'construction') {
@@ -2381,12 +2406,37 @@ class UIManager {
                 this.hideHelpModal();
             }
         });
+
+        // Device selector toggle
+        const showDeviceControls = (device) => {
+            const desktopGroup = document.getElementById('controls-desktop');
+            const mobileGroup = document.getElementById('controls-mobile');
+            const desktopBtn = document.getElementById('device-desktop');
+            const mobileBtn = document.getElementById('device-mobile');
+            if (desktopGroup) desktopGroup.style.display = device === 'desktop' ? 'block' : 'none';
+            if (mobileGroup) mobileGroup.style.display = device === 'mobile' ? 'block' : 'none';
+            if (desktopBtn) desktopBtn.classList.toggle('active', device === 'desktop');
+            if (mobileBtn) mobileBtn.classList.toggle('active', device === 'mobile');
+        };
+
+        const desktopBtn = document.getElementById('device-desktop');
+        const mobileBtn = document.getElementById('device-mobile');
+        desktopBtn?.addEventListener('click', () => showDeviceControls('desktop'));
+        mobileBtn?.addEventListener('click', () => showDeviceControls('mobile'));
+
+        // Store for use in showHelpModal
+        this._showDeviceControls = showDeviceControls;
     }
 
     showHelpModal() {
         const modal = document.getElementById('controls-modal');
         if (modal) {
             modal.style.display = 'flex';
+            // Auto-detect device and pre-select the matching tab
+            const isMobileDevice = this.isMobile || ('ontouchstart' in window && window.innerWidth <= 900);
+            if (this._showDeviceControls) {
+                this._showDeviceControls(isMobileDevice ? 'mobile' : 'desktop');
+            }
             console.log('📖 Modal de controles aberto');
         }
     }
@@ -4578,7 +4628,7 @@ class UIManager {
 
                     <div class="book-info">
                         <span>⏱️ ${studyContent.estimatedTime}</span>
-                        <span>📚 ${studyContent.category}</span>
+                        
                     </div>
                 </div>
             </div>

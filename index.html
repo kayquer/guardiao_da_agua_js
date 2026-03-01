@@ -127,10 +127,10 @@
                 <!-- Botões de Controle -->
                 <div class="control-buttons">
                     <button id="btn-pause" class="control-btn">⏸️</button>
-                    <button id="btn-speed-1x" class="control-btn active">1x</button>
-                    <button id="btn-speed-2x" class="control-btn">2x</button>
-                    <button id="btn-speed-3x" class="control-btn">3x</button>
-                    <button id="btn-loans" class="control-btn loans-btn" title="Empréstimos" onclick="window.gameManager.uiManager.showLoanInterface()">🏦</button>
+                    <button style="display: none;" id="btn-speed-1x" class="control-btn active">1x</button>
+                    <button style="display: none;" id="btn-speed-2x" class="control-btn">2x</button>
+                    <button style="display: none;" id="btn-speed-3x" class="control-btn">3x</button>
+                    <button style="display: none;" id="btn-loans" class="control-btn loans-btn" title="Empréstimos" onclick="window.gameManager.uiManager.showLoanInterface()">🏦</button>
                     <button id="btn-missions" class="control-btn missions-btn" title="Missões">🎯</button>
                     <button id="btn-help" class="control-btn help-btn" title="Controles">❓</button>
                 </div>
@@ -341,25 +341,61 @@
                 <button id="close-controls-modal" class="close-btn">✕</button>
             </div>
             <div class="modal-body">
-                <div class="controls-section">
-                    <h3>🖱️ Controles da Câmera</h3>
-                    <ul>
-                        <li><strong>Rotacionar:</strong> Clique e arraste com o mouse</li>
-                        <li><strong>Zoom:</strong> Roda do mouse para aproximar/afastar</li>
-                        <li><strong>Mover:</strong> Clique do meio + arrastar (ou Shift + clique)</li>
-                    </ul>
+                <!-- Device selector -->
+                <div class="device-selector">
+                    <p>Você está jogando em:</p>
+                    <div class="device-buttons">
+                        <button id="device-desktop" class="device-btn active">🖥️ Computador</button>
+                        <button id="device-mobile" class="device-btn">📱 Celular</button>
+                    </div>
                 </div>
 
-                <div class="controls-section">
-                    <h3>🏗️ Construção</h3>
-                    <ul>
-                        <li><strong>Selecionar edifício:</strong> Clique na categoria e tipo desejado</li>
-                        <li><strong>Visualizar posição:</strong> Mova o mouse sobre o terreno</li>
-                        <li><strong>Construir:</strong> Clique esquerdo na posição desejada</li>
-                        <li><strong>Cancelar:</strong> Pressione ESC ou clique fora da área</li>
-                    </ul>
+                <!-- Desktop controls -->
+                <div id="controls-desktop" class="controls-group">
+                    <div class="controls-section">
+                        <h3>🖱️ Câmera (PC)</h3>
+                        <ul>
+                            <li><strong>Mover câmera:</strong> Clique esquerdo + arrastar</li>
+                            <li><strong>Rotacionar:</strong> Botão direito + arrastar</li>
+                            <li><strong>Zoom:</strong> Roda do mouse</li>
+                            <li><strong>Mover (teclado):</strong> W / A / S / D ou setas</li>
+                            <li><strong>Rotacionar (teclado):</strong> Q / E</li>
+                            <li><strong>Resetar câmera:</strong> R</li>
+                        </ul>
+                    </div>
+                    <div class="controls-section">
+                        <h3>🏗️ Construção (PC)</h3>
+                        <ul>
+                            <li><strong>Selecionar categoria:</strong> Clique no botão da categoria</li>
+                            <li><strong>Selecionar edifício:</strong> Clique no item da lista</li>
+                            <li><strong>Construir:</strong> Clique esquerdo na posição desejada</li>
+                            <li><strong>Cancelar:</strong> ESC ou clique direito</li>
+                        </ul>
+                    </div>
                 </div>
 
+                <!-- Mobile controls (hidden by default, shown when device-mobile is selected) -->
+                <div id="controls-mobile" class="controls-group" style="display: none;">
+                    <div class="controls-section">
+                        <h3>👆 Câmera (Celular)</h3>
+                        <ul>
+                            <li><strong>Mover câmera:</strong> Toque e arraste</li>
+                            <li><strong>Zoom:</strong> Pinça com dois dedos</li>
+                            <li><strong>Rotacionar:</strong> Dois dedos em movimento de torção</li>
+                        </ul>
+                    </div>
+                    <div class="controls-section">
+                        <h3>🏗️ Construção (Celular)</h3>
+                        <ul>
+                            <li><strong>Selecionar categoria:</strong> Toque no botão da categoria</li>
+                            <li><strong>Selecionar edifício:</strong> Toque no item</li>
+                            <li><strong>Construir:</strong> Toque na posição desejada</li>
+                            <li><strong>Cancelar:</strong> Toque fora da área</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Common controls -->
                 <div class="controls-section">
                     <h3>⏱️ Controles de Tempo</h3>
                     <ul>
@@ -372,7 +408,6 @@
                 <div class="controls-section">
                     <h3>ℹ️ Informações</h3>
                     <ul>
-                        <li><strong>Hover:</strong> Passe o mouse sobre edifícios para ver detalhes</li>
                         <li><strong>Recursos:</strong> Monitore água, população, orçamento e poluição</li>
                         <li><strong>Missões:</strong> Acompanhe objetivos na parte inferior</li>
                     </ul>

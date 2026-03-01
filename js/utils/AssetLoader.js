@@ -24,9 +24,6 @@ class AssetLoader {
             // Lista de assets para carregar
             const assetList = [
                 // Sprites
-                { type: 'image', key: 'buildings', path: 'Sprites/SUNNYSIDE_WORLD_BUILDINGS_V0.01.png' },
-                { type: 'image', key: 'tileset', path: 'Sprites/SUNNYSIDE_WORLD_ASSETS_V0.2/TILESET/SunnysideWorld_Tileset_V0.1.png' },
-                { type: 'image', key: 'ui_elements', path: 'Sprites/SUNNYSIDEWORLD_UI_V1.0/PNG/Blue/Default/button_square_header_large_square_screws.png' },
                 
                 // ===== BACKGROUND MUSIC (Legacy) =====
                 { type: 'audio', key: 'bgm_main', path: 'Sounds/BGM/TownTheme.mp3', optional: true },

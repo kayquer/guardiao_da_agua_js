@@ -666,7 +666,7 @@ class TutorialSystem {
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1497515114629-f71d768fd07c?q=80&w=1080',
             title: 'Recursos Hídricos: Água para Todos',
-            text: 'Bordalo (2017) nos alerta: a água não pode ser tratada como uma mercadoria para ser vendida ao melhor preço! <img src="https://images.pexels.com/photos/1391498/pexels-photo-1391498.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Os <b>recursos hídricos</b> são o conjunto de toda água disponível para usarmos. Mas existem muitos desafios: o governo precisa garantir água para as pessoas beberem, para as fábricas trabalharem, para a agricultura produzir alimentos. Às vezes esses interesses entram em conflito. Por isso, a água deve ser vista como <b>fonte de vida e sobrevivência</b>, com acesso garantido para todos em condições de <b>segurança hídrica</b>. Seu papel como Guardião é equilibrar essas necessidades!',
+            text: 'Bordalo (2017) nos alerta: a água não pode ser tratada como uma mercadoria para ser vendida ao melhor preço! <img src="UI/JPG/agua_de_todos.jpg" style="width:100%; border-radius:8px; margin:10px 0;"/> Os <b>recursos hídricos</b> são o conjunto de toda água disponível para usarmos. Mas existem muitos desafios: o governo precisa garantir água para as pessoas beberem, para as fábricas trabalharem, para a agricultura produzir alimentos. Às vezes esses interesses entram em conflito. Por isso, a água deve ser vista como <b>fonte de vida e sobrevivência</b>, com acesso garantido para todos em condições de <b>segurança hídrica</b>. Seu papel como Guardião é equilibrar essas necessidades!',
             icon: '⚖️',
             educationalTopic: 'recursos_hidricos'
         },
@@ -860,6 +860,15 @@ class TutorialSystem {
     async start() {
         this.isActive = true;
         this.currentStep = 0;
+
+        // Freeze game time so resources don't deplete and events don't trigger
+        // while the tutorial dialog is visible. Construction still completes in
+        // real time (uses Date.now()), so the starter city will be ready when
+        // the player finishes the tutorial.
+        if (this.gameManager) {
+            this.gameManager.timeScale = 0;
+        }
+
         this.showTutorialUI();
 
         // Initialize 3D portrait if enabled
@@ -1081,6 +1090,11 @@ class TutorialSystem {
     complete() {
         this.isActive = false;
         this.hideTutorialUI();
+
+        // Restore normal game time now that the tutorial is over
+        if (this.gameManager) {
+            this.gameManager.timeScale = 1;
+        }
 
         // Dispose 3D portrait system
         this.dispose3DPortrait();
