@@ -1199,6 +1199,7 @@
       "passingScore": 50,
       "questions": [
         {
+          "id": 1,
           "question": "Qual parâmetro indica a presença de contaminação por esgoto na água?",
           "options": [
             "Turbidez",
@@ -1210,6 +1211,7 @@
           "explanation": "Coliformes são bactérias encontradas no intestino de humanos e animais. Quando detectadas na água, indicam contaminação por esgoto."
         },
         {
+          "id": 2,
           "question": "Qual porcentagem da água doce do planeta está no Brasil?",
           "options": [
             "5%",
@@ -1221,6 +1223,7 @@
           "explanation": "O Brasil possui cerca de 12% de toda a água doce disponível no planeta, sendo um dos países mais ricos em recursos hídricos."
         },
         {
+          "id": 3,
           "question": "O que é osmose reversa?",
           "options": [
             "Um tipo de bomba de água",
@@ -1232,6 +1235,7 @@
           "explanation": "A osmose reversa usa membranas superfinas que permitem apenas a passagem de moléculas de água, removendo contaminantes, vírus e bactérias."
         },
         {
+          "id": 4,
           "question": "Qual instituição brasileira monitora rios e reservatórios com mais de 4.500 estações?",
           "options": [
             "Embrapa",
@@ -1354,6 +1358,7 @@
       "passingScore": 50,
       "questions": [
         {
+          "id": 1,
           "question": "Quanto um muro verde pode reduzir a temperatura interna de um prédio?",
           "options": [
             "Até 1°C",
@@ -1365,6 +1370,7 @@
           "explanation": "Muros verdes funcionam como isolamento térmico natural, podendo reduzir a temperatura interna em até 5°C no verão."
         },
         {
+          "id": 2,
           "question": "Qual destes NÃO é um benefício dos muros verdes?",
           "options": [
             "Purificação do ar",
@@ -1376,6 +1382,7 @@
           "explanation": "Muros verdes não geram energia elétrica. Seus benefícios incluem purificação do ar, isolamento térmico e acústico, e absorção de água da chuva."
         },
         {
+          "id": 3,
           "question": "O que é uma 'fachada verde'?",
           "options": [
             "Uma parede pintada de verde",
@@ -1443,6 +1450,7 @@
       "passingScore": 50,
       "questions": [
         {
+          "id": 1,
           "question": "Quanto da água da chuva um telhado verde pode absorver?",
           "options": [
             "10% a 20%",
@@ -1454,6 +1462,7 @@
           "explanation": "Telhados verdes podem reter entre 50% e 90% da água da chuva, dependendo do tipo de substrato e vegetação, liberando-a lentamente por evaporação."
         },
         {
+          "id": 2,
           "question": "O que são 'ilhas de calor urbanas'?",
           "options": [
             "Ilhas no mar que são mais quentes",
@@ -1465,6 +1474,7 @@
           "explanation": "Ilhas de calor urbanas são áreas nas cidades onde a temperatura é significativamente mais alta que nas regiões ao redor, devido à concentração de concreto, asfalto e edifícios."
         },
         {
+          "id": 3,
           "question": "Qual povo antigo já usava telhados verdes há mais de 1.000 anos?",
           "options": [
             "Egípcios",
@@ -1532,6 +1542,7 @@
       "passingScore": 50,
       "questions": [
         {
+          "id": 1,
           "question": "Qual região do Brasil concentra cerca de 85% da energia eólica do país?",
           "options": [
             "Sudeste",
@@ -1543,6 +1554,7 @@
           "explanation": "O Nordeste concentra cerca de 85% da capacidade de energia eólica do Brasil, graças aos ventos constantes e fortes da região."
         },
         {
+          "id": 2,
           "question": "O que acontece quando o vento para de soprar em um parque eólico?",
           "options": [
             "As turbinas usam energia reserva para continuar girando",
@@ -1554,6 +1566,7 @@
           "explanation": "A energia eólica é intermitente: quando o vento para, a geração diminui ou cessa. Por isso, é importante ter fontes complementares de energia."
         },
         {
+          "id": 3,
           "question": "Qual destes é um benefício econômico da energia eólica para agricultores?",
           "options": [
             "As turbinas irrigam as plantações",
@@ -1565,6 +1578,7 @@
           "explanation": "Agricultores podem alugar parte de suas terras para a instalação de turbinas eólicas e continuar cultivando normalmente entre as torres, gerando renda extra."
         },
         {
+          "id": 4,
           "question": "O que é energia eólica 'offshore'?",
           "options": [
             "Energia eólica gerada em montanhas",
@@ -1631,6 +1645,7 @@
       "passingScore": 50,
       "questions": [
         {
+          "id": 1,
           "question": "Qual material é usado nas células fotovoltaicas para converter luz em eletricidade?",
           "options": [
             "Cobre",
@@ -1642,6 +1657,7 @@
           "explanation": "O silício é o principal material usado nas células fotovoltaicas. Quando os fótons de luz atingem os átomos de silício, elétrons são liberados, criando corrente elétrica."
         },
         {
+          "id": 2,
           "question": "Quanto a energia solar cresceu no Brasil entre 2017 e 2023?",
           "options": [
             "100%",
@@ -1653,6 +1669,7 @@
           "explanation": "A energia solar teve um crescimento explosivo no Brasil, ultrapassando 5.000% entre 2017 e 2023, impulsionada pela queda nos preços dos painéis e incentivos governamentais."
         },
         {
+          "id": 3,
           "question": "Os painéis solares funcionam em dias nublados?",
           "options": [
             "Não, precisam de sol direto para funcionar",
@@ -1664,6 +1681,7 @@
           "explanation": "Painéis solares funcionam em dias nublados pois captam a radiação solar difusa, mas produzem menos energia do que em dias de sol pleno."
         },
         {
+          "id": 4,
           "question": "O que é um sistema 'agrivoltaico'?",
           "options": [
             "Painéis solares em aviões agrícolas",
@@ -1736,6 +1754,7 @@
       "passingScore": 50,
       "questions": [
         {
+          "id": 1,
           "question": "Qual porcentagem da eletricidade brasileira vem de hidrelétricas?",
           "options": [
             "Cerca de 30%",
@@ -1747,6 +1766,7 @@
           "explanation": "Aproximadamente 60% de toda a eletricidade consumida no Brasil é gerada por usinas hidrelétricas, tornando o país muito dependente dessa fonte."
         },
         {
+          "id": 2,
           "question": "Qual destas é a maior usina hidrelétrica 100% brasileira?",
           "options": [
             "Itaipu",
@@ -1758,6 +1778,7 @@
           "explanation": "Belo Monte, no Rio Xingu (Pará), é a maior usina hidrelétrica 100% brasileira, com capacidade de 11.233 MW. Itaipu é binacional (Brasil-Paraguai)."
         },
         {
+          "id": 3,
           "question": "O que é o 'nexo água-energia'?",
           "options": [
             "Um tipo de turbina",
@@ -1769,6 +1790,7 @@
           "explanation": "O nexo água-energia é a relação de interdependência: precisamos de água para gerar energia (hidrelétricas) e de energia para tratar e distribuir água (bombas, estações de tratamento)."
         },
         {
+          "id": 4,
           "question": "Qual impacto ambiental é causado pela decomposição de matéria orgânica nos reservatórios?",
           "options": [
             "Poluição por plástico",
@@ -1780,6 +1802,7 @@
           "explanation": "Quando florestas e vegetação são submersas pelos reservatórios, a matéria orgânica se decompõe e libera metano, um potente gás de efeito estufa."
         },
         {
+          "id": 5,
           "question": "O que são Pequenas Centrais Hidrelétricas (PCHs)?",
           "options": [
             "Usinas nucleares pequenas",

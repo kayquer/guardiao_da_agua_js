@@ -4704,10 +4704,11 @@ class UIManager {
         let questionsHTML = '<div class="quiz-container">';
 
         quiz.questions.forEach((question, index) => {
-            const userAnswer = this.gameManager.studySystem.currentQuizAnswers[question.id];
+            const questionId = question.id ?? index;
+            const userAnswer = this.gameManager.studySystem.currentQuizAnswers[questionId];
 
             questionsHTML += `
-                <div class="quiz-question" data-question-id="${question.id}">
+                <div class="quiz-question" data-question-id="${questionId}">
                     <h4 class="question-text">
                         <span class="question-number">${index + 1}.</span>
                         ${question.question}
@@ -4720,10 +4721,10 @@ class UIManager {
                 questionsHTML += `
                     <label class="quiz-option ${isSelected ? 'selected' : ''}">
                         <input type="radio"
-                               name="quiz-${this.gameManager.studySystem.currentStudy}-q${question.id}"
+                               name="quiz-${this.gameManager.studySystem.currentStudy}-q${questionId}"
                                value="${optionIndex}"
                                ${isSelected ? 'checked' : ''}
-                               data-question-id="${question.id}">
+                               data-question-id="${questionId}">
                         <span class="option-text">${option}</span>
                     </label>
                 `;

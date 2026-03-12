@@ -292,8 +292,8 @@ class StudySystem {
         let correctAnswers = 0;
         const totalQuestions = quiz.questions.length;
 
-        quiz.questions.forEach(question => {
-            const userAnswer = this.currentQuizAnswers[question.id];
+        quiz.questions.forEach((question, index) => {
+            const userAnswer = this.currentQuizAnswers[question.id ?? index];
             if (userAnswer === question.correctAnswer) {
                 correctAnswers++;
             }
