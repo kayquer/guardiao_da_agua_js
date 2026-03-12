@@ -4,6 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
+### Prerequisites
+
+- **Python 3** — required for `npm start` (uses `python -m http.server`)
+- **Node.js >= 16** — required for Playwright tests
+- Run `npm install` before first use to install Playwright dev dependency
+
 ### Development
 ```bash
 npm start          # Start Python HTTP server at http://localhost:3000
@@ -77,5 +83,23 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 - **Dual Babylon.js scenes**: `TutorialSystem` creates a second Babylon.js scene for rendering 3D character portraits independently from the main game scene.
 - **Mobile/desktop branching**: `UIManager.isMobile = window.innerWidth <= 768` set at construction and on resize. Many methods early-return with `if (this.isMobile) return` or `if (!this.isMobile) return`.
 - **Cooldown system**: `UIManager.cooldownManager` prevents double-triggers. Use `this.isOnCooldown('key')` / `this.setCooldown('key', ms)` when adding new click handlers.
-- **Building categories (desktop)**: Accordion pattern — `selectCategory()` moves `#building-items` via `insertAdjacentElement('afterend', ...)` to appear inline below the clicked button. Toggling the same category closes it. `uiState.currentCategory` initialises as `null` so the first call always opens.
+- **Building categories (desktop & mobile)**: Accordion pattern works on both platforms — `selectCategory()` moves `#building-items` via `insertAdjacentElement('afterend', ...)` below the clicked button. Toggling the same category closes it.
 - **Camera input mapping** (SimCityCameraControls): left-click drag = pan (tracked at `document` level so dragging off-canvas works); right/middle drag = rotate; scroll wheel = zoom; WASD/arrows = keyboard pan; Q/E = keyboard rotate; R = reset.
+- **Mouse drag threshold**: `pendingDrag`/`mouseHasMoved` in SimCityCameraControls prevents micro-movements during clicks from triggering camera pan. Mirrors touch's `touchMoveThreshold`/`touchHasMoved`.
+- **Building selection (dual path)**: Desktop uses `scene.pick()` + `metadata.buildingId` in `GameManager.handleBuildingSelection()`. Mobile uses `scene.pick()` + `metadata.buildingId` in UIManager's `touchend` handler. Both rely on `mesh.metadata.buildingId` set by `BuildingSystem.placeBuilding()`.
+- **Mesh metadata**: Every building mesh gets `metadata.buildingId` in `BuildingSystem.placeBuilding()`. `replaceBuildingMesh()` copies metadata to new meshes. This metadata is the primary way buildings are identified on click/tap.
+- **Canvas must remain 100% viewport**: Do not resize `#game-canvas` based on HUD panel dimensions — HUD panels are designed as overlays. Changing canvas size breaks Babylon.js rendering and layout.
+- **hud-right visibility (desktop)**: Hidden by default (`display: none`). Shown via `showHudRight()` when building/terrain info is displayed, hidden via `hideHudRight()` when panels close.
+- **hud-right visibility (mobile)**: Uses `transform: translateX(100%)` to hide off-screen and `.active` class to slide in. Mobile CSS must override `display: none` from base CSS or the panel stays invisible regardless of transform.
+- **Panel show/hide must use centralized methods**: Always call `showHudRight()`/`hideHudRight()` instead of manually toggling `.hud-right` display or classes. Methods like `showMissionPanel()` must go through these to work on both platforms.
+
+## Gotchas
+
+- **No ES modules**: All JS files use plain `<script>` tags — no `import`/`export`. Order of `<script>` tags in `index.html` matters.
+- **Dev server required for tests**: Playwright tests expect the server running on `localhost:3000`. Start it with `npm start` before running `npm test`.
+- **No linter/formatter**: There is no ESLint or Prettier configured. Follow existing code style (camelCase methods, PascalCase classes).
+- **pointer-events on HUD**: `.hud` has `pointer-events: none` with `.hud > *` re-enabling via `auto`. This works for nested elements (inherited), but elements appended to `document.body` (like `.mobile-toggle`) must have their own `z-index` and are unaffected.
+- **`display: none` vs transform visibility**: Mobile panels use CSS transforms for show/hide animations, but if the base CSS sets `display: none`, the transform has no visual effect. Always ensure mobile CSS overrides `display` for transform-animated panels.
+- **Mesh metadata must be preserved**: When replacing/merging building meshes, always copy `metadata` from old to new mesh or buildings become unselectable.
+- **building-studies.json format**: Each entry needs `buildingId`, `buildingName`, `category`, `difficulty`, `studyTitle`, `studyIcon`, `estimatedTime`, `learningObjectives`, `pages` (array of `{pageNumber, title, content (HTML string), image}`), `quiz`, `relatedBuildings`, `relatedConcepts`. Target audience: teenagers 11-14. Validate JSON with `node -e "JSON.parse(require('fs').readFileSync('data/building-studies.json','utf8'))"`.
+- **IDE diagnostics for AudioManager**: `AudioManager` hints ("Não foi possível encontrar o nome") are false positives — it's a global loaded via `<script>` tag, not an import.

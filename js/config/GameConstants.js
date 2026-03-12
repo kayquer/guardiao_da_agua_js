@@ -74,10 +74,10 @@ const CAMERA = {
     
     // Camera bounds (world coordinates)
     BOUNDS: {
-        MIN_X: -30,
-        MAX_X: 70,
-        MIN_Z: -30,
-        MAX_Z: 70
+        MIN_X: -60,
+        MAX_X: 100,
+        MIN_Z: -60,
+        MAX_Z: 100
     },
     
     // Animation settings

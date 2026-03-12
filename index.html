@@ -126,7 +126,7 @@
                 
                 <!-- Botões de Controle -->
                 <div class="control-buttons">
-                    <button id="btn-pause" class="control-btn">⏸️</button>
+                    <button style="display: none;" id="btn-pause" class="control-btn">⏸️</button>
                     <button style="display: none;" id="btn-speed-1x" class="control-btn active">1x</button>
                     <button style="display: none;" id="btn-speed-2x" class="control-btn">2x</button>
                     <button style="display: none;" id="btn-speed-3x" class="control-btn">3x</button>
@@ -333,84 +333,190 @@
         </div>
     </div>
 
-    <!-- Modal de Controles -->
+    <!-- Modal de Ajuda -->
     <div id="controls-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>🎮 Controles do Jogo</h2>
+                <h2>📖 Central de Ajuda</h2>
                 <button id="close-controls-modal" class="close-btn">✕</button>
             </div>
+
+            <!-- Tab navigation -->
+            <div class="help-tabs">
+                <button class="help-tab active" data-tab="controls">🎮 Controles</button>
+                <button class="help-tab" data-tab="faq">❓ Dúvidas Frequentes</button>
+            </div>
+
             <div class="modal-body">
-                <!-- Device selector -->
-                <div class="device-selector">
-                    <p>Você está jogando em:</p>
-                    <div class="device-buttons">
-                        <button id="device-desktop" class="device-btn active">🖥️ Computador</button>
-                        <button id="device-mobile" class="device-btn">📱 Celular</button>
+                <!-- ===== TAB: CONTROLES ===== -->
+                <div id="help-tab-controls" class="help-tab-content active">
+                    <!-- Device selector -->
+                    <div class="device-selector">
+                        <p>Você está jogando em:</p>
+                        <div class="device-buttons">
+                            <button id="device-desktop" class="device-btn active">🖥️ Computador</button>
+                            <button id="device-mobile" class="device-btn">📱 Celular</button>
+                        </div>
+                    </div>
+
+                    <!-- Desktop controls -->
+                    <div id="controls-desktop" class="controls-group">
+                        <div class="controls-section">
+                            <h3>🖱️ Câmera (PC)</h3>
+                            <ul>
+                                <li><strong>Mover câmera:</strong> Clique esquerdo + arrastar</li>
+                                <li><strong>Rotacionar:</strong> Botão direito + arrastar</li>
+                                <li><strong>Zoom:</strong> Roda do mouse</li>
+                                <li><strong>Mover (teclado):</strong> W / A / S / D ou setas</li>
+                                <li><strong>Rotacionar (teclado):</strong> Q / E</li>
+                                <li><strong>Resetar câmera:</strong> R</li>
+                            </ul>
+                        </div>
+                        <div class="controls-section">
+                            <h3>🏗️ Construção (PC)</h3>
+                            <ul>
+                                <li><strong>Selecionar categoria:</strong> Clique no botão da categoria</li>
+                                <li><strong>Selecionar edifício:</strong> Clique no item da lista</li>
+                                <li><strong>Construir:</strong> Clique esquerdo na posição desejada</li>
+                                <li><strong>Cancelar:</strong> ESC ou clique direito</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Mobile controls -->
+                    <div id="controls-mobile" class="controls-group" style="display: none;">
+                        <div class="controls-section">
+                            <h3>👆 Câmera (Celular)</h3>
+                            <ul>
+                                <li><strong>Mover câmera:</strong> Toque e arraste</li>
+                                <li><strong>Zoom:</strong> Pinça com dois dedos</li>
+                                <li><strong>Rotacionar:</strong> Dois dedos em movimento de torção</li>
+                            </ul>
+                        </div>
+                        <div class="controls-section">
+                            <h3>🏗️ Construção (Celular)</h3>
+                            <ul>
+                                <li><strong>Selecionar categoria:</strong> Toque no botão da categoria</li>
+                                <li><strong>Selecionar edifício:</strong> Toque no item</li>
+                                <li><strong>Construir:</strong> Toque na posição desejada</li>
+                                <li><strong>Cancelar:</strong> Toque fora da área</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Common controls -->
+                    <div class="controls-section">
+                        <h3>⏱️ Controles de Tempo</h3>
+                        <ul>
+                            <li><strong>Pausar/Continuar:</strong> Botão ⏸️</li>
+                            <li><strong>Velocidade:</strong> Botões 1x, 2x, 3x</li>
+                            <li><strong>Relógio:</strong> Mostra data e hora do jogo</li>
+                        </ul>
+                    </div>
+
+                    <div class="controls-section">
+                        <h3>ℹ️ Informações</h3>
+                        <ul>
+                            <li><strong>Recursos:</strong> Monitore água, população, orçamento e poluição</li>
+                            <li><strong>Missões:</strong> Acompanhe objetivos na parte inferior</li>
+                        </ul>
                     </div>
                 </div>
 
-                <!-- Desktop controls -->
-                <div id="controls-desktop" class="controls-group">
-                    <div class="controls-section">
-                        <h3>🖱️ Câmera (PC)</h3>
-                        <ul>
-                            <li><strong>Mover câmera:</strong> Clique esquerdo + arrastar</li>
-                            <li><strong>Rotacionar:</strong> Botão direito + arrastar</li>
-                            <li><strong>Zoom:</strong> Roda do mouse</li>
-                            <li><strong>Mover (teclado):</strong> W / A / S / D ou setas</li>
-                            <li><strong>Rotacionar (teclado):</strong> Q / E</li>
-                            <li><strong>Resetar câmera:</strong> R</li>
-                        </ul>
-                    </div>
-                    <div class="controls-section">
-                        <h3>🏗️ Construção (PC)</h3>
-                        <ul>
-                            <li><strong>Selecionar categoria:</strong> Clique no botão da categoria</li>
-                            <li><strong>Selecionar edifício:</strong> Clique no item da lista</li>
-                            <li><strong>Construir:</strong> Clique esquerdo na posição desejada</li>
-                            <li><strong>Cancelar:</strong> ESC ou clique direito</li>
-                        </ul>
-                    </div>
-                </div>
+                <!-- ===== TAB: FAQ ===== -->
+                <div id="help-tab-faq" class="help-tab-content">
 
-                <!-- Mobile controls (hidden by default, shown when device-mobile is selected) -->
-                <div id="controls-mobile" class="controls-group" style="display: none;">
-                    <div class="controls-section">
-                        <h3>👆 Câmera (Celular)</h3>
-                        <ul>
-                            <li><strong>Mover câmera:</strong> Toque e arraste</li>
-                            <li><strong>Zoom:</strong> Pinça com dois dedos</li>
-                            <li><strong>Rotacionar:</strong> Dois dedos em movimento de torção</li>
-                        </ul>
+                    <!-- FAQ: Energia -->
+                    <div class="faq-category">
+                        <h3>⚡ Energia Elétrica</h3>
+                        <div class="faq-item">
+                            <button class="faq-question">Fiquei sem energia, o que fazer?</button>
+                            <div class="faq-answer">
+                                <p>Construa novas usinas de energia para aumentar a geração. Verifique se suas usinas existentes estão ativas e com boa eficiência. Cada edifício consome energia, então o consumo cresce junto com a cidade.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <button class="faq-question">Como gerar energia elétrica?</button>
+                            <div class="faq-answer">
+                                <p>Construa usinas de energia na categoria de construção correspondente. Existem diferentes tipos de usinas com diferentes capacidades de geração e custos de manutenção.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <button class="faq-question">Como gerar energia limpa?</button>
+                            <div class="faq-answer">
+                                <p>Priorize usinas que não geram poluição, como energia solar ou eólica. Elas são mais caras inicialmente, mas não aumentam os níveis de poluição da cidade e são sustentáveis a longo prazo.</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="controls-section">
-                        <h3>🏗️ Construção (Celular)</h3>
-                        <ul>
-                            <li><strong>Selecionar categoria:</strong> Toque no botão da categoria</li>
-                            <li><strong>Selecionar edifício:</strong> Toque no item</li>
-                            <li><strong>Construir:</strong> Toque na posição desejada</li>
-                            <li><strong>Cancelar:</strong> Toque fora da área</li>
-                        </ul>
+
+                    <!-- FAQ: Água -->
+                    <div class="faq-category">
+                        <h3>💧 Água</h3>
+                        <div class="faq-item">
+                            <button class="faq-question">Como aumentar o abastecimento de água?</button>
+                            <div class="faq-answer">
+                                <p>Construa poços, estações de bombeamento ou dessalinizadores. Cada tipo tem diferentes capacidades de produção. Posicione-os próximos a fontes de água para maior eficiência.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <button class="faq-question">O que fazer quando a água acaba?</button>
+                            <div class="faq-answer">
+                                <p>Construa rapidamente novas instalações de captação de água. Verifique se instalações existentes estão ativas. Considere também construir tanques de armazenamento para ter reservas em momentos de escassez.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <button class="faq-question">Como reduzir o desperdício de água?</button>
+                            <div class="faq-answer">
+                                <p>Construa estações de tratamento de água para reciclar e reutilizar a água. Mantenha suas instalações com boa eficiência e evite construir edifícios com alto consumo sem ter produção suficiente.</p>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Common controls -->
-                <div class="controls-section">
-                    <h3>⏱️ Controles de Tempo</h3>
-                    <ul>
-                        <li><strong>Pausar/Continuar:</strong> Botão ⏸️</li>
-                        <li><strong>Velocidade:</strong> Botões 1x, 2x, 3x</li>
-                        <li><strong>Relógio:</strong> Mostra data e hora do jogo</li>
-                    </ul>
-                </div>
+                    <!-- FAQ: Dinheiro -->
+                    <div class="faq-category">
+                        <h3>💰 Orçamento</h3>
+                        <div class="faq-item">
+                            <button class="faq-question">Como ganhar mais dinheiro?</button>
+                            <div class="faq-answer">
+                                <p>Construa edifícios residenciais e comerciais que geram receita. Aumente a população da cidade para ter mais arrecadação. Complete missões para receber recompensas em dinheiro.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <button class="faq-question">O que fazer quando o orçamento fica negativo?</button>
+                            <div class="faq-answer">
+                                <p>Reduza gastos desativando ou demolindo edifícios desnecessários. Considere pegar um empréstimo para cobrir despesas temporárias. Foque em construir edifícios que gerem receita para equilibrar as contas.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <button class="faq-question">Como funcionam os empréstimos?</button>
+                            <div class="faq-answer">
+                                <p>Empréstimos fornecem dinheiro imediato, mas você precisará pagar juros. Use-os estrategicamente para investir em infraestrutura que gere retorno. Cuidado para não acumular dívidas excessivas.</p>
+                            </div>
+                        </div>
+                    </div>
 
-                <div class="controls-section">
-                    <h3>ℹ️ Informações</h3>
-                    <ul>
-                        <li><strong>Recursos:</strong> Monitore água, população, orçamento e poluição</li>
-                        <li><strong>Missões:</strong> Acompanhe objetivos na parte inferior</li>
-                    </ul>
+                    <!-- FAQ: Poluição -->
+                    <div class="faq-category">
+                        <h3>🏭 Poluição</h3>
+                        <div class="faq-item">
+                            <button class="faq-question">Como reduzir a poluição?</button>
+                            <div class="faq-answer">
+                                <p>Substitua usinas poluentes por fontes de energia limpa. Construa estações de tratamento de esgoto e resíduos. Evite concentrar edifícios industriais em uma mesma área.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <button class="faq-question">Quais construções poluem mais?</button>
+                            <div class="faq-answer">
+                                <p>Usinas de energia baseadas em combustíveis fósseis são as maiores fontes de poluição. Edifícios industriais e estações de tratamento sem tecnologia moderna também contribuem. Verifique os stats de cada edifício antes de construir.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <button class="faq-question">Como tornar a cidade mais sustentável?</button>
+                            <div class="faq-answer">
+                                <p>Invista em energia renovável, tratamento de água eficiente e reciclagem. Mantenha o equilíbrio entre crescimento e impacto ambiental. Uma cidade sustentável gera mais satisfação na população e completa missões mais facilmente.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

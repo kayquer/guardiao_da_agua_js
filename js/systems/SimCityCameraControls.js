@@ -29,6 +29,12 @@ class SimCityCameraControls {
         this.touchStartTime = 0;
         this.touchMoveThreshold = 10; // pixels - minimum movement to consider it a drag
         this.touchHasMoved = false;
+
+        // Mouse drag threshold (same concept as touch)
+        this.mouseMoveThreshold = 5; // pixels - minimum movement to start dragging
+        this.mouseHasMoved = false;
+        this.mouseStartPosition = { x: 0, y: 0 };
+        this.pendingDrag = false; // true between pointerdown and threshold exceeded
         
         // Configuration
         this.config = {
@@ -40,7 +46,7 @@ class SimCityCameraControls {
             smoothing: 0.15,
             
             // Camera bounds
-            bounds: { minX: -50, maxX: 50, minZ: -50, maxZ: 50 },
+            bounds: { minX: -60, maxX: 100, minZ: -60, maxZ: 100 },
             zoomLimits: { min: 10, max: 80 },
             
             // Touch settings
@@ -129,6 +135,20 @@ class SimCityCameraControls {
         // they are never suppressed.
         this.boundHandlers.documentPointermove = (event) => {
             if (this.isActivelyPlacingBuilding()) return;
+
+            // Check mouse drag threshold before activating drag
+            if (this.pendingDrag && !this.isDragging) {
+                const deltaX = Math.abs(event.clientX - this.mouseStartPosition.x);
+                const deltaY = Math.abs(event.clientY - this.mouseStartPosition.y);
+                const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                if (totalMovement > this.mouseMoveThreshold) {
+                    this.isDragging = true;
+                    this.mouseHasMoved = true;
+                    this.pendingDrag = false;
+                    this.canvas.style.cursor = 'grabbing';
+                }
+            }
+
             if (this.isDragging) {
                 this.handlePan(event);
             } else if (this.isRotating) {
@@ -145,6 +165,7 @@ class SimCityCameraControls {
             }
             this.isDragging = false;
             this.isRotating = false;
+            this.pendingDrag = false;
             this.canvas.style.cursor = 'default';
             document.removeEventListener('pointermove', this.boundHandlers.documentPointermove);
             document.removeEventListener('pointerup', this.boundHandlers.documentPointerup);
@@ -157,10 +178,10 @@ class SimCityCameraControls {
                 return;
             }
 
-            if (event.button === 0) { // Left button - pan
-                this.isDragging = true;
-                this.canvas.style.cursor = 'grabbing';
-                console.log('🖱️ Mouse drag started');
+            if (event.button === 0) { // Left button - pan (deferred until threshold)
+                this.pendingDrag = true;
+                this.mouseHasMoved = false;
+                this.mouseStartPosition = { x: event.clientX, y: event.clientY };
             } else if (event.button === 1) { // Middle button - rotation
                 this.isRotating = true;
                 this.canvas.style.cursor = 'grab';
@@ -175,7 +196,7 @@ class SimCityCameraControls {
             this.lastPointerPosition = { x: event.clientX, y: event.clientY };
 
             // Attach document-level listeners so drag continues off-canvas
-            if (this.isDragging || this.isRotating) {
+            if (this.pendingDrag || this.isDragging || this.isRotating) {
                 document.addEventListener('pointermove', this.boundHandlers.documentPointermove);
                 document.addEventListener('pointerup', this.boundHandlers.documentPointerup);
             }

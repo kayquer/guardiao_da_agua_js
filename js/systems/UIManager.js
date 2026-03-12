@@ -160,7 +160,9 @@ class UIManager {
             const hudRight = document.querySelector('.hud-right');
             if (!hudRight) return;
 
-            // Show the panel
+            // Show the panel - desktop uses display, mobile uses transform
+            hudRight.style.display = 'flex';
+            this.showHudRight();
             this.mobilePanelsVisible.right = true;
             hudRight.classList.add('active');
 
@@ -184,6 +186,14 @@ class UIManager {
             this.gameManager.questSystem.updateMissionProgressDisplay();
             this.gameManager.questSystem.closeMissionInterface();
 
+            // Hide the right panel
+            this.hideHudRight();
+            const hudRight = document.querySelector('.hud-right');
+            if (hudRight) hudRight.classList.remove('active');
+            this.mobilePanelsVisible.right = false;
+            if (this.mobileToggleButtons && this.mobileToggleButtons.right) {
+                this.mobileToggleButtons.right.classList.remove('active');
+            }
         }
     }
     
@@ -523,8 +533,8 @@ class UIManager {
 
             // Small delay to ensure clean transition
             setTimeout(() => {
-                this.showResourcePanel(resourceType);
                 this.uiState.isTransitioning = false;
+                this.showResourcePanel(resourceType);
             }, 50);
 
         } catch (error) {
@@ -983,8 +993,8 @@ class UIManager {
 
         const itemsEl = this.elements.buildingItems;
 
-        // Desktop accordion: clicking the active category toggles it closed
-        if (!this.isMobile && this.uiState.currentCategory === category) {
+        // Accordion: clicking the active category toggles it closed (desktop & mobile)
+        if (this.uiState.currentCategory === category) {
             if (itemsEl && itemsEl.classList.contains('accordion-open')) {
                 itemsEl.classList.remove('accordion-open');
             }
@@ -993,9 +1003,6 @@ class UIManager {
             this.currentCategory = null;
             return;
         }
-
-        // Mobile: ignore repeated selection of the same category
-        if (this.isMobile && this.uiState.currentCategory === category) return;
 
         // ===== STATE TRANSITION MANAGEMENT =====
         if (this.uiState.isTransitioning) {
@@ -1024,8 +1031,8 @@ class UIManager {
             // ===== ENHANCED BUILDING ITEMS LOADING =====
             this.loadBuildingItemsWithStateManagement();
 
-            // Desktop accordion: move items panel to right after the active button
-            if (!this.isMobile && itemsEl) {
+            // Accordion: move items panel to right after the active button (desktop & mobile)
+            if (itemsEl) {
                 const activeBtn = document.querySelector(`.category-btn[data-category="${category}"]`);
                 if (activeBtn) {
                     activeBtn.insertAdjacentElement('afterend', itemsEl);
@@ -1657,6 +1664,9 @@ class UIManager {
             if (this.elements.detailsPanel) {
                 this.elements.detailsPanel.style.display = 'flex';
             }
+
+            // ===== FIX: Show hud-right container (desktop) =====
+            this.showHudRight();
 
             // ===== ENHANCED PANEL ROUTING =====
             const panelMethods = {
@@ -2426,6 +2436,26 @@ class UIManager {
 
         // Store for use in showHelpModal
         this._showDeviceControls = showDeviceControls;
+
+        // Help tab switching
+        document.querySelectorAll('.help-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                document.querySelectorAll('.help-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.help-tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                const content = document.getElementById(`help-tab-${tabId}`);
+                if (content) content.classList.add('active');
+            });
+        });
+
+        // FAQ accordion
+        document.querySelectorAll('.faq-question').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const item = btn.closest('.faq-item');
+                if (item) item.classList.toggle('open');
+            });
+        });
     }
 
     showHelpModal() {
@@ -2651,6 +2681,19 @@ class UIManager {
         console.log('🗑️ UIManager disposed');
     }
 
+    // ===== HUD-RIGHT VISIBILITY (desktop) =====
+    showHudRight() {
+        if (this.isMobile) return;
+        const hudRight = document.querySelector('.hud-right');
+        if (hudRight) hudRight.style.display = 'flex';
+    }
+
+    hideHudRight() {
+        if (this.isMobile) return;
+        const hudRight = document.querySelector('.hud-right');
+        if (hudRight) hudRight.style.display = 'none';
+    }
+
     // ===== INFORMAÇÕES DE SELEÇÃO DE EDIFÍCIOS =====
     showBuildingSelectionInfo(building) {
         if (!building) return;
@@ -2712,6 +2755,7 @@ class UIManager {
         detailsContent.innerHTML = content;
         detailsPanel.style.display = 'flex';
         this.updatePanelState('selection');
+        this.showHudRight();
 
         // ===== FIX: Add proper event listener for deselect button (mobile-friendly) =====
         const deselectBtn = detailsContent.querySelector('.deselect-btn');
@@ -2748,6 +2792,7 @@ class UIManager {
         if (detailsPanel && this.uiState.currentOpenPanel === 'selection') {
             detailsPanel.style.display = 'none';
             this.updatePanelState(null);
+            this.hideHudRight();
         }
 
         // Clear selection counter badge
@@ -2812,11 +2857,11 @@ class UIManager {
         }
 
         // Botão de reciclagem
-        actions += `
+        /*actions += `
             <button class="action-btn recycle-btn" onclick="window.gameManager.recycleBuildingWithConfirmation('${building.id}')">
                 ♻️ Reciclar Edifício
             </button>
-        `;
+        `;*/
 
         return actions;
     }
@@ -4488,6 +4533,7 @@ class UIManager {
             this.elements.detailsContent.innerHTML = detailsHTML;
             this.elements.detailsPanel.style.display = 'flex';
             this.updatePanelState('terrain'); // FIX: Use updatePanelState
+            this.showHudRight();
 
             // Audio feedback
             if (typeof AudioManager !== 'undefined') {
@@ -4512,6 +4558,7 @@ class UIManager {
             // Hide details panel if it was showing terrain info
             if (this.elements.detailsPanel && this.uiState.currentOpenPanel === 'terrain') {
                 this.elements.detailsPanel.style.display = 'none';
+                this.hideHudRight();
             }
 
             // Clear panel state
@@ -4673,7 +4720,7 @@ class UIManager {
                 questionsHTML += `
                     <label class="quiz-option ${isSelected ? 'selected' : ''}">
                         <input type="radio"
-                               name="question-${question.id}"
+                               name="quiz-${this.gameManager.studySystem.currentStudy}-q${question.id}"
                                value="${optionIndex}"
                                ${isSelected ? 'checked' : ''}
                                data-question-id="${question.id}">
@@ -4701,7 +4748,9 @@ class UIManager {
     setupQuizEventListeners(quiz) {
         // Wait for DOM to be ready
         setTimeout(() => {
-            const radioButtons = document.querySelectorAll('.quiz-option input[type="radio"]');
+            const bookOverlay = document.getElementById('study-book-overlay');
+            if (!bookOverlay) return;
+            const radioButtons = bookOverlay.querySelectorAll('.quiz-option input[type="radio"]');
 
             radioButtons.forEach(radio => {
                 radio.addEventListener('change', (e) => {
@@ -4772,6 +4821,34 @@ class UIManager {
                 if (this.gameManager.audioManager) {
                     this.gameManager.audioManager.playSound('sfx_build_error');
                 }
+
+                // Scroll to quiz section
+                const quizContainer = document.querySelector('.quiz-container');
+                if (quizContainer) {
+                    quizContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    // Add warning message at top of quiz
+                    const existingWarning = document.querySelector('.quiz-warning-message');
+                    if (existingWarning) existingWarning.remove();
+                    const warningDiv = document.createElement('div');
+                    warningDiv.className = 'quiz-warning-message';
+                    warningDiv.innerHTML = '⚠️ Responda todas as questões antes de concluir o estudo!';
+                    quizContainer.insertBefore(warningDiv, quizContainer.firstChild);
+                }
+
+                // Highlight unanswered questions
+                const answers = studySystem.currentQuizAnswers;
+                document.querySelectorAll('.quiz-question').forEach(q => {
+                    const qId = parseInt(q.dataset.questionId);
+                    q.classList.toggle('unanswered', answers[qId] === undefined);
+                });
+
+                // Update book-info with warning
+                const bookInfo = document.querySelector('.book-info');
+                if (bookInfo) {
+                    bookInfo.innerHTML = '<span style="color: #FF9800;">⚠️ Responda o quiz para concluir</span>';
+                }
+
                 return;
             }
 

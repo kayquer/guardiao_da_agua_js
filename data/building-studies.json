@@ -42,10 +42,17 @@
       "enabled": false,
       "questions": []
     },
-    "relatedBuildings": ["well", "desalination_plant", "rain_garden"],
-    "relatedConcepts": ["hydrological_cycle", "groundwater_protection", "sustainable_water_management"]
+    "relatedBuildings": [
+      "well",
+      "desalination_plant",
+      "rain_garden"
+    ],
+    "relatedConcepts": [
+      "hydrological_cycle",
+      "groundwater_protection",
+      "sustainable_water_management"
+    ]
   },
-
   "rain_garden": {
     "buildingId": "rain_garden",
     "buildingName": "Jardim de Chuva",
@@ -89,10 +96,17 @@
       "enabled": false,
       "questions": []
     },
-    "relatedBuildings": ["water_pump", "floating_garden", "monitoring_station"],
-    "relatedConcepts": ["green_infrastructure", "urban_drainage", "water_quality"]
+    "relatedBuildings": [
+      "water_pump",
+      "floating_garden",
+      "monitoring_station"
+    ],
+    "relatedConcepts": [
+      "green_infrastructure",
+      "urban_drainage",
+      "water_quality"
+    ]
   },
-
   "floating_garden": {
     "buildingId": "floating_garden",
     "buildingName": "Jardim Flutuante",
@@ -136,10 +150,17 @@
       "enabled": false,
       "questions": []
     },
-    "relatedBuildings": ["rain_garden", "water_quality_monitor", "monitoring_station"],
-    "relatedConcepts": ["phytoremediation", "natural_treatment", "wetland_ecology"]
+    "relatedBuildings": [
+      "rain_garden",
+      "water_quality_monitor",
+      "monitoring_station"
+    ],
+    "relatedConcepts": [
+      "phytoremediation",
+      "natural_treatment",
+      "wetland_ecology"
+    ]
   },
-
   "desalination_plant": {
     "buildingId": "desalination_plant",
     "buildingName": "Usina de Dessalinização",
@@ -251,10 +272,17 @@
         }
       ]
     },
-    "relatedBuildings": ["water_pump", "monitoring_station", "water_quality_monitor"],
-    "relatedConcepts": ["reverse_osmosis", "water_scarcity", "renewable_energy"]
+    "relatedBuildings": [
+      "water_pump",
+      "monitoring_station",
+      "water_quality_monitor"
+    ],
+    "relatedConcepts": [
+      "reverse_osmosis",
+      "water_scarcity",
+      "renewable_energy"
+    ]
   },
-
   "monitoring_station": {
     "buildingId": "monitoring_station",
     "buildingName": "Estação de Monitoramento",
@@ -378,10 +406,17 @@
         }
       ]
     },
-    "relatedBuildings": ["water_quality_monitor", "desalination_plant", "floating_garden"],
-    "relatedConcepts": ["water_quality_parameters", "real_time_monitoring", "data_analytics"]
+    "relatedBuildings": [
+      "water_quality_monitor",
+      "desalination_plant",
+      "floating_garden"
+    ],
+    "relatedConcepts": [
+      "water_quality_parameters",
+      "real_time_monitoring",
+      "data_analytics"
+    ]
   },
-
   "water_quality_monitor": {
     "buildingId": "water_quality_monitor",
     "buildingName": "Monitor de Qualidade",
@@ -530,8 +565,1242 @@
         }
       ]
     },
-    "relatedBuildings": ["monitoring_station", "desalination_plant", "floating_garden"],
-    "relatedConcepts": ["analytical_chemistry", "water_legislation", "laboratory_quality_assurance"]
+    "relatedBuildings": [
+      "monitoring_station",
+      "desalination_plant",
+      "floating_garden"
+    ],
+    "relatedConcepts": [
+      "analytical_chemistry",
+      "water_legislation",
+      "laboratory_quality_assurance"
+    ]
+  },
+  "water_well": {
+    "buildingId": "water_well",
+    "buildingName": "Poço Artesiano",
+    "category": "water",
+    "difficulty": "básico",
+    "studyTitle": "Poços Artesianos e Águas Subterrâneas",
+    "studyIcon": "💧",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender como funciona um poço artesiano",
+      "Conhecer o ciclo da água subterrânea",
+      "Descobrir curiosidades sobre o Aquífero Guarani"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que é um Poço Artesiano?",
+        "content": "<h3>Água que Vem das Profundezas!</h3><p>Um poço artesiano é uma perfuração feita no solo para alcançar a <strong>água subterrânea</strong> — aquela que fica armazenada em camadas de rocha e areia, bem abaixo dos nossos pés!</p><h4>Como funciona?</h4><ul><li><strong>Perfuração:</strong> Máquinas especiais furam o solo até encontrar uma camada com água</li><li><strong>Revestimento:</strong> Tubos de aço ou plástico protegem o poço de desmoronamentos</li><li><strong>Bombeamento:</strong> Uma bomba elétrica puxa a água até a superfície</li><li><strong>Filtragem:</strong> Filtros impedem que areia e pedrinhas subam junto com a água</li></ul><p class='highlight'>💡 <strong>Você sabia?</strong> O nome \"artesiano\" vem da região de Artois, na França, onde esse tipo de poço foi usado pela primeira vez na Idade Média!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "De Onde Vem a Água Subterrânea?",
+        "content": "<h3>A Viagem da Água Até o Fundo da Terra</h3><p>A água da chuva não desaparece quando cai no chão! Ela faz uma viagem incrível:</p><ol><li><strong>Chuva:</strong> A água cai sobre o solo, as florestas e os campos</li><li><strong>Infiltração:</strong> Parte dessa água penetra no solo, passando por grãos de areia e rachaduras nas rochas</li><li><strong>Descida lenta:</strong> A água vai descendo cada vez mais fundo, como uma esponja gigante</li><li><strong>Aquífero:</strong> A água se acumula em camadas de rocha porosa, formando reservatórios naturais subterrâneos</li></ol><h4>Tipos de Aquíferos:</h4><p><strong>Aquífero Livre:</strong> Está mais perto da superfície e recebe água da chuva diretamente. É como um balde aberto!</p><p><strong>Aquífero Confinado:</strong> Fica entre duas camadas de rocha impermeável, sob pressão. É como uma garrafa de água fechada — quando você fura, a água sobe sozinha!</p><p class='tip'>🌧️ <strong>Curiosidade:</strong> A água que você bebe de um poço artesiano pode ter caído como chuva há centenas ou até milhares de anos!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "O Aquífero Guarani: Nosso Tesouro Subterrâneo",
+        "content": "<h3>O Gigante da América do Sul</h3><p>Debaixo dos nossos pés existe um dos maiores reservatórios de água doce do planeta: o <strong>Aquífero Guarani</strong>!</p><h4>Números Impressionantes:</h4><ul><li>🌎 Área total: <strong>1,2 milhão de km²</strong> — maior que muitos países!</li><li>🇧🇷 Presente em <strong>8 estados brasileiros</strong> (SP, PR, RS, SC, MS, MG, GO e MT)</li><li>🌍 Se estende por 4 países: Brasil, Argentina, Paraguai e Uruguai</li><li>💧 Volume estimado: <strong>37 mil km³ de água</strong> — suficiente para abastecer toda a humanidade por 200 anos!</li><li>🌡️ Em algumas regiões, a água sai naturalmente <strong>quente</strong> (até 65°C), usada em termas e spas</li></ul><h4>Curiosidades sobre o Aquífero Guarani:</h4><p>O nome homenageia o povo indígena <strong>Guarani</strong>, que habitava a região. Em Ribeirão Preto (SP), quase 100% da água da cidade vem do Aquífero Guarani!</p><p class='warning'>⚠️ <strong>Atenção:</strong> A recarga do aquífero é muito lenta. Se usarmos mais água do que a natureza repõe, ele pode diminuir. Precisamos proteger as áreas de recarga!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Cuidando da Nossa Água Subterrânea",
+        "content": "<h3>Proteção é Responsabilidade de Todos!</h3><p>A água subterrânea é um recurso precioso, mas pode ser contaminada se não cuidarmos bem do solo.</p><h4>O que pode contaminar a água subterrânea?</h4><ul><li>🚫 Lixões e aterros sem proteção</li><li>🏭 Produtos químicos de fábricas e indústrias</li><li>🌾 Uso excessivo de agrotóxicos na agricultura</li><li>🚽 Fossas mal construídas</li><li>⛽ Vazamentos de postos de gasolina</li></ul><h4>Como proteger:</h4><ul><li>✅ Preservar a vegetação nativa, especialmente perto de nascentes</li><li>✅ Descartar lixo e produtos químicos corretamente</li><li>✅ Usar poços artesianos apenas com autorização e acompanhamento técnico</li><li>✅ Apoiar a criação de áreas de proteção ambiental</li></ul><p class='highlight'>💡 <strong>Dica para o jogo:</strong> Construir poços artesianos perto de áreas verdes ajuda a manter a qualidade da água! Evite colocá-los perto de zonas industriais.</p><p class='success'>✅ <strong>Parabéns!</strong> Agora você sabe de onde vem a água subterrânea e como protegê-la!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": false,
+      "questions": []
+    },
+    "relatedBuildings": [
+      "water_pump",
+      "water_tank",
+      "water_tower"
+    ],
+    "relatedConcepts": [
+      "groundwater",
+      "aquifer_guarani",
+      "water_infiltration"
+    ]
+  },
+  "filter_station": {
+    "buildingId": "filter_station",
+    "buildingName": "Estação de Filtros",
+    "category": "treatment",
+    "difficulty": "intermediário",
+    "studyTitle": "Filtração de Água: Tecnologias e Processos",
+    "studyIcon": "🔬",
+    "estimatedTime": "7 minutos",
+    "learningObjectives": [
+      "Compreender os diferentes tipos de filtração de água",
+      "Entender como filtros de areia e carvão ativado funcionam",
+      "Conhecer tecnologias modernas de filtração por membranas"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "A Arte de Filtrar Água",
+        "content": "<h3>Por que Precisamos Filtrar a Água?</h3><p>Mesmo a água que parece limpinha pode conter <strong>impurezas invisíveis</strong> — partículas de terra, bactérias e substâncias químicas que podem fazer mal à saúde. A filtração é uma das etapas mais importantes do tratamento de água!</p><h4>O que a filtração remove?</h4><ul><li>🟤 <strong>Partículas sólidas:</strong> Areia, argila, restos de plantas</li><li>🦠 <strong>Microorganismos:</strong> Bactérias, vírus e parasitas</li><li>🧪 <strong>Substâncias químicas:</strong> Cloro residual, pesticidas, metais</li><li>🎨 <strong>Cor e odor:</strong> Compostos que dão gosto ou cheiro ruim</li></ul><p class='highlight'>💡 <strong>Você sabia?</strong> Os antigos egípcios já filtravam água há mais de 3.500 anos! Eles usavam areia e cascalho para limpar a água do Rio Nilo.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "Filtros de Areia e Cascalho",
+        "content": "<h3>A Filtragem Mais Antiga do Mundo</h3><p>Os <strong>filtros de areia</strong> são usados até hoje nas estações de tratamento de água. Eles imitam o que a natureza faz quando a chuva passa pelo solo!</p><h4>Como funciona um filtro de areia:</h4><ol><li><strong>Camada de cascalho grosso:</strong> Retém partículas grandes</li><li><strong>Camada de cascalho fino:</strong> Captura partículas médias</li><li><strong>Camada de areia grossa:</strong> Filtra partículas pequenas</li><li><strong>Camada de areia fina:</strong> Remove partículas muito pequenas e bactérias</li></ol><h4>Tipos de filtros de areia:</h4><p><strong>Filtro lento:</strong> A água passa devagar (0,1 m/hora). Uma camada de bactérias boas chamada <strong>schmutzdecke</strong> (palavra alemã que significa \"camada de sujeira\") se forma na superfície e ajuda a limpar a água naturalmente!</p><p><strong>Filtro rápido:</strong> A água passa mais rápido (5-15 m/hora). É usado nas grandes estações de tratamento e precisa ser lavado com água de trás para frente periodicamente.</p><p class='tip'>🌱 <strong>Experiência legal:</strong> Você pode fazer um mini filtro de areia em casa com uma garrafa PET cortada, pedrinhas, areia e algodão!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Carvão Ativado: O Super Filtro",
+        "content": "<h3>O Material que Atrai Impurezas</h3><p>O <strong>carvão ativado</strong> é um material incrível: ele é tão poroso que uma colher de sopa tem a mesma área de superfície de um campo de futebol!</p><h4>Como o carvão ativado funciona:</h4><p>O processo se chama <strong>adsorção</strong> (com \"d\", não \"b\"!). As impurezas grudam na superfície do carvão como um ímã, ficando presas nos milhões de microporos.</p><h4>O que o carvão ativado remove:</h4><ul><li>👃 <strong>Odor e sabor:</strong> Elimina gosto de cloro e cheiros ruins</li><li>🧪 <strong>Pesticidas e herbicidas:</strong> Captura agrotóxicos dissolvidos</li><li>💊 <strong>Medicamentos:</strong> Remove resíduos de remédios na água</li><li>🎨 <strong>Cor:</strong> Retira a coloração amarelada</li></ul><p class='highlight'>💡 <strong>Você sabia?</strong> O carvão ativado é feito a partir de casca de coco, madeira ou ossos de animais! No Brasil, a casca de coco de babaçu é muito usada. Ele também é usado em hospitais para tratar envenenamentos — o carvão \"prende\" o veneno no estômago!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Membranas: A Tecnologia do Futuro",
+        "content": "<h3>Filtros Ultra Modernos</h3><p>As <strong>membranas de filtração</strong> são como peneiras microscópicas que conseguem separar até vírus e moléculas individuais!</p><h4>Tipos de membranas (do maior para o menor poro):</h4><ul><li>🔵 <strong>Microfiltração (MF):</strong> Remove bactérias e partículas (poros de 0,1 μm)</li><li>🟢 <strong>Ultrafiltração (UF):</strong> Remove vírus e proteínas (poros de 0,01 μm)</li><li>🟡 <strong>Nanofiltração (NF):</strong> Remove minerais e compostos orgânicos</li><li>🔴 <strong>Osmose Reversa (OR):</strong> Remove praticamente TUDO, até sal! (poros de 0,0001 μm)</li></ul><h4>Exemplos no mundo real:</h4><p>🇸🇬 <strong>Singapura</strong> transforma esgoto tratado em água potável usando membranas — o programa se chama NEWater!</p><p>🇧🇷 No <strong>Brasil</strong>, membranas são cada vez mais usadas em indústrias e em cidades do semiárido nordestino para dessalinizar água de poços.</p><p class='success'>✅ <strong>Excelente!</strong> Agora teste seus conhecimentos no quiz!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Qual é a função principal da filtração no tratamento de água?",
+          "options": [
+            "Adicionar cloro para matar bactérias",
+            "Remover partículas, microorganismos e impurezas da água",
+            "Aquecer a água para torná-la potável",
+            "Adicionar flúor para proteger os dentes"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A filtração serve para remover partículas sólidas, microorganismos e impurezas da água, sendo uma das etapas mais importantes do tratamento."
+        },
+        {
+          "id": 2,
+          "question": "O que é a 'schmutzdecke' em um filtro lento de areia?",
+          "options": [
+            "Uma camada de produtos químicos adicionados ao filtro",
+            "O nome do inventor do filtro de areia",
+            "Uma camada biológica de bactérias boas que ajuda a limpar a água",
+            "Um tipo de areia especial importada da Alemanha"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A schmutzdecke é uma camada biológica formada por bactérias benéficas na superfície dos filtros lentos de areia. Ela ajuda a degradar matéria orgânica e eliminar patógenos."
+        },
+        {
+          "id": 3,
+          "question": "Como o carvão ativado consegue remover impurezas da água?",
+          "options": [
+            "Ele aquece a água e evapora as impurezas",
+            "As impurezas grudam na superfície porosa do carvão (adsorção)",
+            "Ele adiciona produtos químicos que neutralizam as impurezas",
+            "Ele congela a água e separa o gelo puro"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O carvão ativado funciona por adsorção: as impurezas ficam presas nos milhões de microporos da sua superfície, como um ímã atraindo partículas."
+        },
+        {
+          "id": 4,
+          "question": "Qual tipo de membrana consegue remover até o sal da água?",
+          "options": [
+            "Microfiltração",
+            "Ultrafiltração",
+            "Osmose Reversa",
+            "Filtro de areia rápido"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A Osmose Reversa possui os menores poros (0,0001 μm) e consegue remover praticamente tudo da água, inclusive sais dissolvidos. É usada na dessalinização."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "treatment_plant",
+      "water_pump",
+      "water_quality_monitor"
+    ],
+    "relatedConcepts": [
+      "water_filtration",
+      "activated_carbon",
+      "membrane_technology"
+    ]
+  },
+  "treatment_plant": {
+    "buildingId": "treatment_plant",
+    "buildingName": "Estação de Tratamento",
+    "category": "treatment",
+    "difficulty": "intermediário",
+    "studyTitle": "Estação de Tratamento de Água (ETA)",
+    "studyIcon": "🏗️",
+    "estimatedTime": "8 minutos",
+    "learningObjectives": [
+      "Conhecer as etapas do tratamento de água em uma ETA",
+      "Entender a importância do tratamento para a saúde pública",
+      "Identificar os processos de coagulação, floculação, decantação e desinfecção"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que é uma ETA?",
+        "content": "<h3>A Fábrica de Água Limpa</h3><p>A <strong>ETA (Estação de Tratamento de Água)</strong> é como uma fábrica que transforma a água bruta dos rios, lagos e represas em água potável — segura para beber, cozinhar e tomar banho!</p><h4>Por que precisamos de ETAs?</h4><p>A água dos rios pode parecer limpa, mas carrega muitas coisas que não conseguimos ver:</p><ul><li>🦠 <strong>Bactérias e vírus</strong> que causam doenças como diarreia e hepatite</li><li>🟤 <strong>Partículas de terra</strong> (argila, areia) que deixam a água turva</li><li>🌿 <strong>Restos de plantas e algas</strong> que dão gosto e cor à água</li><li>🧪 <strong>Substâncias químicas</strong> de fazendas e cidades</li></ul><h4>Números impressionantes:</h4><p>Uma ETA grande pode tratar até <strong>33 mil litros de água por segundo</strong> — isso é suficiente para encher uma piscina olímpica em menos de 2 minutos!</p><p class='highlight'>💡 <strong>Você sabia?</strong> A ETA Guaraú, em São Paulo, é uma das maiores do mundo! Ela abastece cerca de 8 milhões de pessoas!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "Etapas do Tratamento: Parte 1",
+        "content": "<h3>Os Primeiros Passos da Limpeza</h3><h4>1. Captação</h4><p>A água é retirada do rio ou represa por bombas enormes e levada até a ETA por tubulações. Grades metálicas impedem que galhos, folhas e lixo entrem no sistema.</p><h4>2. Coagulação</h4><p>Um produto químico chamado <strong>sulfato de alumínio</strong> é adicionado à água. Ele age como um \"ímã de sujeira\": faz com que as partículas pequenas se juntem e formem grumos maiores. A água é agitada rapidamente para misturar bem o produto.</p><h4>3. Floculação</h4><p>Agora a água é agitada <strong>lentamente</strong> em tanques especiais. Os grumos da coagulação vão se juntando e ficando cada vez maiores, formando <strong>flocos</strong> — parecidos com flocos de algodão sujo!</p><p class='tip'>🔬 <strong>Experiência mental:</strong> Imagine jogar purpurina em um copo de água e depois adicionar cola. A cola faz a purpurina se juntar em bolinhas maiores — é mais ou menos assim que a coagulação funciona!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Etapas do Tratamento: Parte 2",
+        "content": "<h3>Separando a Sujeira da Água</h3><h4>4. Decantação</h4><p>A água com os flocos entra em tanques enormes e <strong>fica parada</strong>. Como os flocos são mais pesados que a água, eles vão afundando lentamente e se acumulam no fundo do tanque, formando uma camada de lodo. A água mais limpa fica por cima!</p><h4>5. Filtração</h4><p>A água passa por camadas de <strong>areia, cascalho e carvão ativado</strong>. Essas camadas capturam as partículas que ainda restaram após a decantação. É como passar a água por uma peneira super fina!</p><h4>6. Desinfecção</h4><p>Aqui entra o famoso <strong>cloro</strong>! Ele é adicionado para matar bactérias e vírus que sobreviveram às etapas anteriores. Uma pequena quantidade de cloro continua na água para protegê-la durante a viagem pelos canos até a sua casa.</p><h4>7. Fluoretação</h4><p>Por último, adiciona-se <strong>flúor</strong> na água. O flúor ajuda a prevenir cáries nos dentes — por isso no Brasil a água tratada tem flúor desde 1974!</p><p class='warning'>⚠️ <strong>Importante:</strong> O gosto de cloro na água é sinal de que ela foi tratada! Se quiser diminuir o gosto, deixe a água descansar em uma jarra aberta por 30 minutos.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Tratamento e Saúde Pública",
+        "content": "<h3>Água Tratada Salva Vidas!</h3><p>O tratamento de água é uma das maiores conquistas da <strong>saúde pública</strong>. Antes das ETAs, milhões de pessoas morriam de doenças transmitidas pela água contaminada.</p><h4>Doenças evitadas pelo tratamento:</h4><ul><li>💊 <strong>Cólera:</strong> Causada pela bactéria Vibrio cholerae</li><li>🤒 <strong>Febre tifoide:</strong> Causada pela Salmonella typhi</li><li>🤢 <strong>Diarreia:</strong> Causada por diversos vírus e bactérias</li><li>🦠 <strong>Hepatite A:</strong> Vírus transmitido por água contaminada</li><li>🪱 <strong>Verminoses:</strong> Parasitas como giárdia e ameba</li></ul><h4>O desafio do Brasil:</h4><p>Cerca de <strong>35 milhões de brasileiros</strong> ainda não têm acesso a água tratada! O saneamento básico é um direito garantido por lei, mas que ainda precisa chegar a todos.</p><p class='highlight'>💡 <strong>Curiosidade:</strong> Segundo a OMS, cada R$ 1 investido em saneamento básico economiza R$ 4 em saúde pública. Ou seja, tratar água é também um ótimo investimento!</p><p class='success'>✅ <strong>Muito bem!</strong> Hora de testar o que você aprendeu no quiz!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Qual é a ordem correta das etapas de tratamento de água em uma ETA?",
+          "options": [
+            "Filtração → Coagulação → Decantação → Desinfecção",
+            "Coagulação → Floculação → Decantação → Filtração → Desinfecção",
+            "Desinfecção → Filtração → Decantação → Coagulação",
+            "Decantação → Floculação → Filtração → Coagulação"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A sequência correta é: Coagulação (juntar partículas), Floculação (formar flocos), Decantação (flocos afundam), Filtração (remover o que sobrou) e Desinfecção (matar germes)."
+        },
+        {
+          "id": 2,
+          "question": "Qual produto químico é adicionado na etapa de coagulação?",
+          "options": [
+            "Cloro",
+            "Flúor",
+            "Sulfato de alumínio",
+            "Bicarbonato de sódio"
+          ],
+          "correctAnswer": 2,
+          "explanation": "O sulfato de alumínio é o coagulante mais usado no Brasil. Ele faz com que as partículas pequenas de sujeira se juntem formando flocos maiores."
+        },
+        {
+          "id": 3,
+          "question": "Por que se adiciona cloro na água tratada?",
+          "options": [
+            "Para dar sabor à água",
+            "Para deixar a água mais transparente",
+            "Para matar bactérias e vírus e proteger a água nos canos",
+            "Para adicionar minerais importantes"
+          ],
+          "correctAnswer": 2,
+          "explanation": "O cloro é um desinfetante que elimina bactérias e vírus. Uma pequena quantidade permanece na água para protegê-la durante o transporte até as residências."
+        },
+        {
+          "id": 4,
+          "question": "Quantos brasileiros ainda NÃO têm acesso a água tratada, segundo o texto?",
+          "options": [
+            "Cerca de 5 milhões",
+            "Cerca de 15 milhões",
+            "Cerca de 35 milhões",
+            "Cerca de 100 milhões"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Cerca de 35 milhões de brasileiros ainda não têm acesso a água tratada. O saneamento básico é um direito que precisa ser universalizado no país."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "filter_station",
+      "water_pump",
+      "water_quality_monitor"
+    ],
+    "relatedConcepts": [
+      "water_treatment",
+      "public_health",
+      "coagulation_flocculation"
+    ]
+  },
+  "water_tank": {
+    "buildingId": "water_tank",
+    "buildingName": "Reservatório",
+    "category": "storage",
+    "difficulty": "básico",
+    "studyTitle": "Reservatórios de Água: Estoque para a Cidade",
+    "studyIcon": "🏛️",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender por que cidades precisam de reservatórios",
+      "Conhecer como a gravidade ajuda na distribuição de água",
+      "Compreender a importância de reservas para emergências"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que são Reservatórios de Água?",
+        "content": "<h3>O Estoque de Água da Cidade</h3><p>Imagine se o supermercado só trouxesse comida na hora em que você quisesse comer — seria um caos, não? Com a água é parecido! Os <strong>reservatórios</strong> são grandes tanques que armazenam água tratada para que ela esteja sempre disponível quando você abrir a torneira.</p><h4>Tipos de reservatórios:</h4><ul><li>🏔️ <strong>Reservatório elevado:</strong> Construído em lugares altos ou em torres. A gravidade empurra a água até as casas!</li><li>🏗️ <strong>Reservatório apoiado:</strong> Tanque grande no nível do solo, comum em estações de tratamento</li><li>⛏️ <strong>Reservatório enterrado:</strong> Construído abaixo do solo, protegido do calor e de contaminação</li></ul><h4>Tamanhos:</h4><p>Reservatórios podem ser <strong>pequenos</strong> (500 litros, como a caixa d'água da sua casa) ou <strong>enormes</strong> (milhões de litros, para abastecer bairros inteiros)!</p><p class='highlight'>💡 <strong>Você sabia?</strong> O maior reservatório de água tratada do Brasil fica em São Paulo e armazena 900 milhões de litros — o suficiente para encher 360 piscinas olímpicas!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "A Mágica da Gravidade",
+        "content": "<h3>Água que Desce Sozinha!</h3><p>Você já percebeu que a água sempre desce? Isso é a <strong>gravidade</strong> em ação! Os engenheiros usam essa força da natureza para distribuir água sem gastar tanta energia.</p><h4>Como funciona a distribuição por gravidade:</h4><ol><li><strong>Bombeamento para o alto:</strong> Bombas empurram a água até o reservatório elevado</li><li><strong>Armazenamento:</strong> A água fica guardada no tanque elevado</li><li><strong>Distribuição natural:</strong> Quando você abre a torneira, a gravidade puxa a água dos canos para baixo, até sua casa</li><li><strong>Pressão constante:</strong> Quanto mais alto o reservatório, maior a pressão na torneira!</li></ol><h4>Vantagens da distribuição por gravidade:</h4><ul><li>⚡ <strong>Economia de energia:</strong> Não precisa de bombas funcionando o tempo todo</li><li>💡 <strong>Funciona sem luz:</strong> Se acabar a energia, a água continua chegando (até o tanque esvaziar)</li><li>💰 <strong>Menor custo:</strong> Menos equipamentos elétricos para manter</li></ul><p class='tip'>🧪 <strong>Experiência em casa:</strong> Coloque uma garrafa de água em cima de uma mesa e fure a tampa. A água vai sair pelo furo com pressão — é a gravidade trabalhando!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Reservas para Emergências",
+        "content": "<h3>Preparados para o Inesperado</h3><p>Reservatórios não servem apenas para o dia a dia. Eles são fundamentais para <strong>situações de emergência</strong>!</p><h4>Quando os reservatórios salvam o dia:</h4><ul><li>⚡ <strong>Falta de energia:</strong> Se a bomba parar, o reservatório continua fornecendo água</li><li>🔧 <strong>Manutenção:</strong> Enquanto consertam um cano, o reservatório mantém o abastecimento</li><li>🏥 <strong>Incêndios:</strong> Bombeiros precisam de muita água rapidamente — os reservatórios garantem essa pressão</li><li>☀️ <strong>Seca ou estiagem:</strong> Reservas ajudam a manter o abastecimento por mais tempo</li><li>🌊 <strong>Enchentes:</strong> Se a captação é prejudicada, a reserva abastece a cidade temporariamente</li></ul><h4>Regra de ouro:</h4><p>As cidades costumam manter água <strong>suficiente para 24 a 48 horas</strong> de consumo normal armazenada em reservatórios. Isso dá tempo para resolver qualquer problema!</p><p class='warning'>⚠️ <strong>Cuidado:</strong> Em época de seca, economizar água é fundamental para que os reservatórios não fiquem vazios!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Reservatórios no Jogo e na Vida Real",
+        "content": "<h3>Estratégia de Abastecimento</h3><p>Tanto no jogo quanto na vida real, a <strong>localização</strong> dos reservatórios faz toda a diferença!</p><h4>Dicas estratégicas:</h4><ul><li>📍 <strong>Posição elevada:</strong> Coloque reservatórios em pontos altos do terreno para aproveitar a gravidade</li><li>🏘️ <strong>Perto dos consumidores:</strong> Quanto mais perto das casas, melhor a pressão da água</li><li>🔗 <strong>Conectado à rede:</strong> O reservatório precisa estar ligado às estações de tratamento e à rede de distribuição</li><li>🛡️ <strong>Protegido:</strong> Reservatórios devem ficar longe de fontes de poluição</li></ul><h4>Curiosidades pelo mundo:</h4><p>🗽 <strong>Nova York:</strong> Tem mais de 10.000 caixas d'água de madeira nos telhados dos prédios — uma tradição de mais de 100 anos!</p><p>🇳🇦 <strong>Namíbia:</strong> Windhoek foi a primeira cidade do mundo a transformar esgoto tratado em água potável, armazenando em reservatórios especiais.</p><p class='success'>✅ <strong>Parabéns!</strong> Você entendeu como os reservatórios mantêm nossas cidades abastecidas!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": false,
+      "questions": []
+    },
+    "relatedBuildings": [
+      "water_tower",
+      "water_pump",
+      "treatment_plant"
+    ],
+    "relatedConcepts": [
+      "water_storage",
+      "gravity_distribution",
+      "emergency_supply"
+    ]
+  },
+  "water_tower": {
+    "buildingId": "water_tower",
+    "buildingName": "Caixa d'Água",
+    "category": "storage",
+    "difficulty": "básico",
+    "studyTitle": "Caixas d'Água: Funcionamento e Manutenção",
+    "studyIcon": "🗼",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender como funcionam as caixas d'água e torres",
+      "Aprender sobre manutenção e limpeza adequadas",
+      "Conhecer curiosidades sobre torres d'água famosas"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Torres e Caixas d'Água",
+        "content": "<h3>As Guardiãs da Água nas Alturas</h3><p>As <strong>caixas d'água</strong> e <strong>torres d'água</strong> são estruturas elevadas que armazenam água e usam a força da <strong>gravidade</strong> para distribuí-la. Elas são como guardiãs silenciosas que garantem que a água chegue à sua torneira com pressão!</p><h4>Diferença entre caixa d'água e torre:</h4><ul><li>🏠 <strong>Caixa d'água residencial:</strong> Fica no telhado da casa ou prédio (500 a 2.000 litros)</li><li>🗼 <strong>Torre d'água (castelo d'água):</strong> Estrutura alta que abastece bairros inteiros (50.000 a 1.000.000+ litros)</li></ul><h4>Materiais mais comuns:</h4><ul><li>🟦 <strong>Polietileno (plástico):</strong> Leve, barato, mais usado em casas</li><li>⬜ <strong>Fibra de vidro:</strong> Resistente, não enferruja</li><li>⚪ <strong>Concreto armado:</strong> Para grandes torres e reservatórios</li><li>🟤 <strong>Aço inoxidável:</strong> Durável, usado em indústrias</li></ul><p class='highlight'>💡 <strong>Você sabia?</strong> A palavra \"castelo d'água\" vem do francês \"château d'eau\" porque as primeiras torres tinham formato de castelo medieval!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "Como a Gravidade Faz a Mágica",
+        "content": "<h3>A Física por Trás da Torneira</h3><p>Já se perguntou como a água sai da torneira sem precisar de motor? A resposta é a <strong>pressão hidrostática</strong> — uma palavra difícil para algo simples!</p><h4>Explicando de forma fácil:</h4><ol><li>A água é bombeada para cima, até a caixa d'água no telhado</li><li>A caixa d'água fica cheia lá em cima, parada</li><li>Quando você abre a torneira, a <strong>gravidade puxa a água para baixo</strong></li><li>Quanto mais alto a caixa d'água, mais forte a pressão na torneira!</li></ol><h4>A conta da pressão:</h4><p>Para cada <strong>10 metros de altura</strong>, a pressão aumenta 1 kgf/cm² (ou ~1 bar). Por isso:</p><ul><li>🏠 Caixa d'água no telhado (3m): pressão fraquinha</li><li>🏢 Prédio de 10 andares (30m): pressão boa</li><li>🗼 Torre d'água de 40m: pressão excelente!</li></ul><p class='tip'>🚿 <strong>Dica prática:</strong> Se o chuveiro está com pouca pressão, pode ser porque a caixa d'água está muito baixa em relação ao banheiro. Um pressurizador pode resolver!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Limpeza e Manutenção",
+        "content": "<h3>Caixa d'Água Limpa = Saúde!</h3><p>De nada adianta a água ser tratada na ETA se a caixa d'água da sua casa estiver suja! A <strong>manutenção</strong> é super importante.</p><h4>Quando limpar:</h4><p>A recomendação é limpar a caixa d'água <strong>a cada 6 meses</strong>, no máximo. Muita gente esquece e a água fica contaminada!</p><h4>Passo a passo da limpeza:</h4><ol><li>🚱 Feche o registro de entrada de água</li><li>🪣 Esvazie a caixa usando a água para limpeza (não desperdice!)</li><li>🧹 Esfregue as paredes e o fundo com escova e pano (NUNCA use sabão ou detergente!)</li><li>🚰 Enxágue bem e retire toda a sujeira</li><li>🧪 Prepare uma solução: 1 litro de água sanitária para cada 1.000 litros de capacidade</li><li>🖌️ Passe essa solução nas paredes e no fundo com um pano</li><li>⏰ Deixe agir por 2 horas</li><li>🚿 Abra todas as torneiras para a solução limpar também os canos</li><li>✅ Encha a caixa novamente e pronto!</li></ol><p class='warning'>⚠️ <strong>Importante:</strong> Mantenha a tampa da caixa d'água sempre fechada! Isso evita que entrem insetos, animais e sujeira. O mosquito da dengue adora água parada!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Torres d'Água Famosas pelo Mundo",
+        "content": "<h3>Arquitetura e Engenharia Impressionantes</h3><p>Torres d'água não precisam ser sem graça! Pelo mundo, muitas se tornaram <strong>pontos turísticos</strong> e obras de arte.</p><h4>Torres famosas:</h4><ul><li>🇸🇪 <strong>Svampen (Suécia):</strong> Tem formato de cogumelo gigante e um restaurante no topo com vista panorâmica!</li><li>🇺🇸 <strong>Peachoid (EUA):</strong> Uma torre em forma de pêssego gigante na Carolina do Sul. Ela apareceu na série House of Cards!</li><li>🇰🇼 <strong>Torres do Kuwait:</strong> Três torres futuristas que são símbolo do país. A maior tem 187 metros e um restaurante giratório!</li><li>🇧🇷 <strong>Caixa d'Água de Olinda (PE):</strong> Construída em 1934, é patrimônio histórico e mirante com vista linda do Recife!</li><li>🇿🇦 <strong>Orlando Towers (África do Sul):</strong> Torres de resfriamento transformadas em centro de bungee jumping!</li></ul><h4>O futuro das torres d'água:</h4><p>Hoje, muitas cidades estão transformando torres antigas em <strong>museus, cafés e mirantes</strong>, preservando a história e dando novos usos a essas estruturas incríveis.</p><p class='success'>✅ <strong>Parabéns!</strong> Agora você é um especialista em caixas d'água e torres!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": false,
+      "questions": []
+    },
+    "relatedBuildings": [
+      "water_tank",
+      "water_pump",
+      "treatment_plant"
+    ],
+    "relatedConcepts": [
+      "water_pressure",
+      "gravity_distribution",
+      "water_maintenance"
+    ]
+  },
+  "research_center": {
+    "buildingId": "research_center",
+    "buildingName": "Centro de Pesquisa",
+    "category": "public",
+    "difficulty": "intermediário",
+    "studyTitle": "Ciência e Tecnologia a Serviço da Água",
+    "studyIcon": "🔬",
+    "estimatedTime": "7 minutos",
+    "learningObjectives": [
+      "Entender como a pesquisa científica ajuda a resolver problemas hídricos",
+      "Conhecer tecnologias inovadoras para tratamento e conservação de água",
+      "Valorizar o papel da ciência no desenvolvimento sustentável"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que Faz um Centro de Pesquisa?",
+        "content": "<h3>Onde Nascem as Soluções!</h3><p>Um <strong>centro de pesquisa</strong> é um lugar onde cientistas e engenheiros trabalham para resolver problemas do mundo real. No caso da água, eles investigam formas de <strong>tratar, economizar e proteger</strong> esse recurso tão precioso!</p><h4>Atividades de um centro de pesquisa hídrica:</h4><ul><li>🔬 <strong>Análise de qualidade:</strong> Testar água de rios, poços e torneiras</li><li>🧪 <strong>Desenvolver novos tratamentos:</strong> Criar formas mais baratas e eficientes de limpar a água</li><li>📊 <strong>Monitoramento ambiental:</strong> Acompanhar a saúde dos rios e aquíferos</li><li>🤖 <strong>Automação:</strong> Criar sensores e robôs que monitoram a água automaticamente</li><li>📚 <strong>Educação:</strong> Formar novos cientistas e compartilhar conhecimento</li></ul><p class='highlight'>💡 <strong>Você sabia?</strong> O Brasil tem centros de pesquisa em água reconhecidos mundialmente! A EMBRAPA, a FIOCRUZ e universidades como USP e UNICAMP fazem pesquisas que ajudam milhões de pessoas!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "Tecnologias Inovadoras",
+        "content": "<h3>Invenções que Mudam o Mundo</h3><p>Cientistas brasileiros e de todo o mundo estão criando tecnologias incríveis para resolver os problemas de água!</p><h4>Inovações impressionantes:</h4><ul><li>☀️ <strong>Dessalinização solar:</strong> Usar a energia do sol para transformar água salgada em potável, sem gastar eletricidade!</li><li>🧫 <strong>Bactérias limpas:</strong> Cientistas descobriram bactérias que \"comem\" poluentes e limpam a água naturalmente</li><li>📱 <strong>Sensor no celular:</strong> Aplicativos que usam a câmera do celular para testar qualidade da água em segundos</li><li>🌿 <strong>Biomimética:</strong> Copiar a natureza para criar filtros inspirados em plantas e animais</li><li>💧 <strong>Captação de neblina:</strong> Redes especiais que capturam gotículas de nevoeiro e transformam em água potável</li></ul><h4>Exemplo brasileiro:</h4><p>Pesquisadores da UFMG criaram um filtro de baixo custo usando <strong>sementes de moringa</strong> — uma planta que limpa a água turva em minutos! Essa tecnologia já é usada em comunidades rurais da África.</p><p class='tip'>🌟 <strong>Inspiração:</strong> Muitas dessas invenções foram criadas por jovens pesquisadores! A ciência está aberta a todos que têm curiosidade e vontade de aprender.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "O Método Científico na Prática",
+        "content": "<h3>Como os Cientistas Resolvem Problemas</h3><p>Os pesquisadores seguem um caminho organizado chamado <strong>método científico</strong>. Veja como funciona na prática:</p><h4>Exemplo: \"A água do rio X está suja. O que fazer?\"</h4><ol><li>🤔 <strong>Observação:</strong> O rio está com cor estranha e peixes morrendo</li><li>❓ <strong>Pergunta:</strong> O que está causando a poluição?</li><li>💭 <strong>Hipótese:</strong> Talvez seja esgoto de uma fábrica próxima</li><li>🧪 <strong>Experimento:</strong> Coletar amostras de água em vários pontos e analisar no laboratório</li><li>📊 <strong>Análise:</strong> Os resultados mostram metais pesados vindos da fábrica</li><li>✅ <strong>Conclusão:</strong> A fábrica está poluindo o rio e precisa tratar seus efluentes</li><li>📝 <strong>Publicação:</strong> Compartilhar os resultados para que outros cientistas e a comunidade saibam</li></ol><h4>Por que isso importa para você?</h4><p>O método científico não é só para laboratórios! Você pode usar esse jeito de pensar para resolver problemas do dia a dia: observar, perguntar, testar e concluir.</p><p class='highlight'>💡 <strong>Carreira:</strong> Se você gosta de ciência e meio ambiente, pode se tornar um pesquisador! O Brasil precisa de mais cientistas trabalhando com água.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Ciência Cidadã e Você",
+        "content": "<h3>Todo Mundo Pode Fazer Ciência!</h3><p>Você não precisa ser um cientista profissional para ajudar a pesquisa sobre água. Existe um conceito chamado <strong>ciência cidadã</strong>, onde pessoas comuns contribuem para pesquisas importantes!</p><h4>Como participar:</h4><ul><li>📱 <strong>Apps de monitoramento:</strong> Alguns aplicativos permitem que você registre a qualidade de rios e lagos da sua região</li><li>📸 <strong>Fotografia:</strong> Fotografar e reportar problemas ambientais como poluição de rios</li><li>🌧️ <strong>Pluviômetro caseiro:</strong> Medir a chuva na sua casa e enviar dados para pesquisadores</li><li>🏫 <strong>Feiras de ciência:</strong> Desenvolver projetos sobre água na escola</li></ul><h4>Projetos de ciência cidadã no Brasil:</h4><p>🌊 <strong>Rios e Ruas:</strong> Projeto que mapeia rios escondidos debaixo das cidades</p><p>💧 <strong>Observando os Rios:</strong> Voluntários monitoram a qualidade da água em comunidades</p><p class='success'>✅ <strong>Parabéns!</strong> Agora teste seus conhecimentos sobre pesquisa e tecnologia no quiz!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "O que é ciência cidadã?",
+          "options": [
+            "Ciência feita apenas por cidadãos com diploma universitário",
+            "Participação de pessoas comuns em pesquisas científicas",
+            "Um tipo de ciência que não usa laboratórios",
+            "Ciência ensinada apenas em escolas públicas"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Ciência cidadã é quando pessoas comuns contribuem com dados e observações para projetos de pesquisa, ajudando cientistas a monitorar o meio ambiente."
+        },
+        {
+          "id": 2,
+          "question": "Qual invenção brasileira usa sementes de uma planta para limpar água turva?",
+          "options": [
+            "Filtro de carvão ativado de coco",
+            "Filtro de sementes de moringa",
+            "Filtro de casca de arroz",
+            "Filtro de argila de barro"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Pesquisadores da UFMG criaram um filtro de baixo custo usando sementes de moringa, que conseguem limpar água turva rapidamente. Essa tecnologia já é usada em comunidades rurais da África."
+        },
+        {
+          "id": 3,
+          "question": "Qual é a ordem correta das etapas do método científico?",
+          "options": [
+            "Conclusão → Experimento → Pergunta → Observação",
+            "Observação → Pergunta → Hipótese → Experimento → Conclusão",
+            "Hipótese → Observação → Conclusão → Experimento",
+            "Experimento → Hipótese → Pergunta → Publicação"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O método científico segue a ordem: Observação, Pergunta, Hipótese, Experimento, Análise, Conclusão e Publicação. É um caminho organizado para resolver problemas."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "university",
+      "monitoring_station",
+      "water_quality_monitor"
+    ],
+    "relatedConcepts": [
+      "scientific_method",
+      "water_technology",
+      "citizen_science"
+    ]
+  },
+  "university": {
+    "buildingId": "university",
+    "buildingName": "Universidade",
+    "category": "public",
+    "difficulty": "avançado",
+    "studyTitle": "Universidades e o Futuro da Água",
+    "studyIcon": "🎓",
+    "estimatedTime": "10 minutos",
+    "learningObjectives": [
+      "Conhecer o papel das universidades na pesquisa sobre recursos hídricos",
+      "Explorar carreiras ligadas à água e ao meio ambiente",
+      "Entender como universidades desenvolvem soluções para problemas hídricos",
+      "Valorizar a educação como ferramenta de transformação"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "As Universidades e a Água",
+        "content": "<h3>Formando os Guardiões do Futuro</h3><p>As <strong>universidades</strong> são muito mais do que lugares para estudar! Elas são centros de <strong>pesquisa, inovação e formação de profissionais</strong> que trabalham para garantir água limpa para todos.</p><h4>O que as universidades fazem pela água:</h4><ul><li>📚 <strong>Ensino:</strong> Formam engenheiros, biólogos, químicos e outros profissionais que cuidam da água</li><li>🔬 <strong>Pesquisa:</strong> Investigam novas formas de tratar, distribuir e economizar água</li><li>🤝 <strong>Extensão:</strong> Levam conhecimento para comunidades que precisam</li><li>🏛️ <strong>Políticas públicas:</strong> Ajudam governos a criar leis e planos de gestão da água</li></ul><h4>Universidades brasileiras referência em água:</h4><p>🇧🇷 <strong>USP:</strong> Possui o Centro Internacional de Referência em Reúso de Água (CIRRA)<br>🇧🇷 <strong>UNICAMP:</strong> Laboratório de Hidráulica Computacional renomado mundialmente<br>🇧🇷 <strong>UFRJ:</strong> Pesquisas em tratamento de água e saneamento<br>🇧🇷 <strong>UFMG:</strong> Programa de pós-graduação em Saneamento, Meio Ambiente e Recursos Hídricos</p><p class='highlight'>💡 <strong>Você sabia?</strong> Muitas universidades públicas brasileiras oferecem cursos gratuitos e de alta qualidade! O Brasil investe em educação pública para formar profissionais que cuidam do nosso país.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "Carreiras na Área de Água",
+        "content": "<h3>Profissões para Quem Ama a Natureza</h3><p>Se você se preocupa com o meio ambiente e gosta de resolver problemas, existem muitas <strong>carreiras incríveis</strong> ligadas à água!</p><h4>Profissões e o que fazem:</h4><ul><li>🏗️ <strong>Engenheiro(a) Ambiental:</strong> Projeta sistemas de tratamento de água e esgoto, avalia impactos ambientais</li><li>🧪 <strong>Engenheiro(a) Químico(a):</strong> Desenvolve processos de purificação e dessalinização de água</li><li>🐟 <strong>Biólogo(a):</strong> Estuda ecossistemas aquáticos, monitora vida nos rios e oceanos</li><li>🌍 <strong>Geólogo(a)/Hidrogeólogo(a):</strong> Encontra e protege fontes de água subterrânea</li><li>📊 <strong>Oceanógrafo(a):</strong> Estuda os mares e sua relação com o clima</li><li>⚖️ <strong>Gestor(a) de Recursos Hídricos:</strong> Administra o uso da água em bacias hidrográficas</li><li>👩‍🔬 <strong>Químico(a) Analítico:</strong> Analisa a qualidade da água em laboratórios</li><li>📐 <strong>Engenheiro(a) Civil:</strong> Projeta barragens, canais e sistemas de distribuição</li></ul><p class='tip'>🎯 <strong>Dica de carreira:</strong> Muitas dessas profissões estão em alta demanda! O mundo precisa cada vez mais de pessoas qualificadas para cuidar dos recursos hídricos.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Pesquisas que Mudam o Mundo",
+        "content": "<h3>Descobertas Feitas nas Universidades</h3><p>Muitas soluções que usamos hoje no tratamento de água nasceram dentro de universidades. Conheça algumas pesquisas incríveis!</p><h4>Pesquisas brasileiras de destaque:</h4><ul><li>🧬 <strong>UFSC - Reator UASB:</strong> Pesquisadores brasileiros ajudaram a desenvolver esse sistema de tratamento de esgoto que é usado no mundo inteiro! Ele usa bactérias para degradar matéria orgânica e produzir biogás</li><li>🌱 <strong>EMBRAPA - Irrigação inteligente:</strong> Sensores no solo avisam exatamente quando e quanto irrigar, economizando até 40% de água na agricultura</li><li>💧 <strong>INPA - Água na Amazônia:</strong> Pesquisas mostram como a floresta amazônica produz \"rios voadores\" que levam chuva para o restante do Brasil</li><li>🏙️ <strong>IPT/SP - Drenagem urbana:</strong> Modelos computacionais que preveem enchentes e ajudam as cidades a se preparar</li></ul><h4>Pesquisas internacionais:</h4><p>🇮🇱 <strong>Technion (Israel):</strong> Desenvolveu membranas de grafeno que filtram água com 99% de eficiência</p><p>🇳🇱 <strong>TU Delft (Holanda):</strong> Criou sistemas de coleta de água da chuva para países em desenvolvimento</p><p class='highlight'>💡 <strong>Inspiração:</strong> Todas essas pesquisas começaram com uma pergunta simples: \"Como podemos fazer melhor?\" Você também pode fazer perguntas assim!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Educação Ambiental e Cidadania",
+        "content": "<h3>Conhecimento que Transforma</h3><p>As universidades não ficam trancadas em seus laboratórios! Elas também trabalham com as <strong>comunidades</strong> para espalhar conhecimento sobre água e meio ambiente.</p><h4>Projetos de extensão universitária:</h4><ul><li>🏫 <strong>Programas escolares:</strong> Universitários visitam escolas para ensinar sobre água e saneamento</li><li>🏘️ <strong>Comunidades rurais:</strong> Ajudam a construir sistemas simples de tratamento de água</li><li>📻 <strong>Comunicação:</strong> Criam podcasts, vídeos e materiais educativos sobre meio ambiente</li><li>🗺️ <strong>Mapeamento participativo:</strong> Trabalham com moradores para identificar problemas de saneamento</li></ul><h4>O Objetivo de Desenvolvimento Sustentável #6:</h4><p>A ONU definiu como meta global: <strong>\"Água potável e saneamento para todos até 2030\"</strong>. As universidades são fundamentais para alcançar esse objetivo!</p><h4>Como a educação faz diferença:</h4><p>Estudos mostram que para cada ano a mais de educação, uma pessoa economiza em média <strong>5% mais água</strong> no dia a dia. Pessoas mais educadas tomam decisões melhores sobre uso e proteção dos recursos naturais.</p><p class='warning'>⚠️ <strong>Reflexão:</strong> Ao jogar Guardião da Água, você já está aprendendo sobre recursos hídricos! Compartilhe o que aprendeu com seus amigos e familiares.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 5,
+        "title": "Seu Futuro Começa Agora!",
+        "content": "<h3>De Estudante a Guardião da Água</h3><p>Você não precisa esperar até a universidade para fazer a diferença! Existem muitas formas de começar <strong>agora</strong>!</p><h4>O que você pode fazer hoje:</h4><ul><li>📖 <strong>Estudar:</strong> Preste atenção nas aulas de ciências, geografia e biologia — elas estão cheias de conteúdo sobre água!</li><li>🔍 <strong>Pesquisar:</strong> Use a internet para aprender mais sobre problemas hídricos na sua região</li><li>📝 <strong>Participar:</strong> Feiras de ciências, olimpíadas de meio ambiente, grêmio estudantil</li><li>🌱 <strong>Agir:</strong> Economize água, não jogue lixo em rios, plante árvores</li><li>📢 <strong>Inspirar:</strong> Fale sobre meio ambiente com amigos e família</li></ul><h4>Caminhos para chegar à universidade:</h4><p>🎓 <strong>ENEM:</strong> A principal porta de entrada para universidades públicas no Brasil<br>📋 <strong>SISU:</strong> Sistema que usa a nota do ENEM para entrar em universidades federais e estaduais<br>💰 <strong>PROUNI:</strong> Bolsas de estudo em universidades particulares<br>🏦 <strong>FIES:</strong> Financiamento estudantil para quem precisa</p><p class='success'>✅ <strong>Parabéns!</strong> Você completou o estudo sobre universidades. Teste seus conhecimentos no quiz final!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Quais são os três pilares de atuação de uma universidade?",
+          "options": [
+            "Lucro, Marketing e Vendas",
+            "Ensino, Pesquisa e Extensão",
+            "Esporte, Cultura e Lazer",
+            "Construção, Reforma e Demolição"
+          ],
+          "correctAnswer": 1,
+          "explanation": "As universidades atuam em três pilares: Ensino (formação de profissionais), Pesquisa (criação de conhecimento) e Extensão (levar conhecimento para a comunidade)."
+        },
+        {
+          "id": 2,
+          "question": "Qual profissional é responsável por encontrar e proteger fontes de água subterrânea?",
+          "options": [
+            "Oceanógrafo",
+            "Biólogo marinho",
+            "Hidrogeólogo",
+            "Meteorologista"
+          ],
+          "correctAnswer": 2,
+          "explanation": "O hidrogeólogo é o profissional especializado em águas subterrâneas. Ele estuda aquíferos, localiza fontes de água e desenvolve estratégias para protegê-las."
+        },
+        {
+          "id": 3,
+          "question": "Qual é o Objetivo de Desenvolvimento Sustentável #6 da ONU?",
+          "options": [
+            "Energia limpa e acessível para todos",
+            "Água potável e saneamento para todos até 2030",
+            "Fome zero e agricultura sustentável",
+            "Educação de qualidade e inclusiva"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O ODS #6 da ONU busca garantir disponibilidade e gestão sustentável da água e saneamento para todos até 2030. As universidades são fundamentais para alcançar essa meta."
+        },
+        {
+          "id": 4,
+          "question": "O que são 'rios voadores' estudados por pesquisadores do INPA?",
+          "options": [
+            "Rios que ficam em montanhas muito altas",
+            "Correntes de umidade que a floresta amazônica envia para outras regiões do Brasil",
+            "Rios subterrâneos que correm em alta velocidade",
+            "Rios artificiais construídos com tecnologia espacial"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Rios voadores são massas de ar carregadas de umidade que a floresta amazônica produz através da transpiração das árvores. Esses 'rios' transportam chuva para o Centro-Oeste, Sudeste e Sul do Brasil."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "research_center",
+      "monitoring_station",
+      "water_quality_monitor"
+    ],
+    "relatedConcepts": [
+      "higher_education",
+      "water_careers",
+      "sustainable_development_goals"
+    ]
+  },
+  "water_research_center": {
+    "buildingId": "water_research_center",
+    "buildingName": "Centro de Pesquisas Hídricas",
+    "category": "public",
+    "difficulty": "avançado",
+    "studyTitle": "Ciência e Tecnologia a Serviço da Água",
+    "studyIcon": "🔬",
+    "estimatedTime": "10 minutos",
+    "learningObjectives": [
+      "Entender como cientistas estudam a qualidade da água",
+      "Conhecer tecnologias modernas de tratamento hídrico",
+      "Descobrir projetos de pesquisa sobre água no Brasil"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que é um Centro de Pesquisas Hídricas?",
+        "content": "<h3>A Ciência por Trás da Água</h3><p>Um Centro de Pesquisas Hídricas é um laboratório especializado onde cientistas estudam tudo sobre a água: sua <strong>qualidade</strong>, formas de <strong>tratamento</strong>, <strong>preservação</strong> e novas tecnologias para garantir que todos tenham acesso a água limpa.</p><h4>O que fazem os pesquisadores?</h4><ul><li><strong>Analisam amostras</strong> de rios, lagos e aquíferos para identificar poluentes</li><li><strong>Desenvolvem filtros</strong> e processos de purificação mais eficientes</li><li><strong>Monitoram ecossistemas aquáticos</strong> para proteger a biodiversidade</li><li><strong>Criam soluções</strong> para regiões com escassez de água</li></ul><p class='highlight'>💡 <strong>Você sabia?</strong> O Brasil tem cerca de 12% de toda a água doce do planeta, mas a distribuição é desigual: a Amazônia tem 80% da água, enquanto o Nordeste enfrenta secas frequentes!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "Como se Analisa a Qualidade da Água?",
+        "content": "<h3>Detetives da Água</h3><p>Os cientistas usam diversos <strong>parâmetros</strong> para avaliar se a água é segura. É como um check-up médico, mas para a água!</p><h4>Principais Análises:</h4><ol><li><strong>pH:</strong> Mede se a água é ácida ou básica. A faixa ideal é entre 6,0 e 9,5</li><li><strong>Turbidez:</strong> Indica a quantidade de partículas suspensas — quanto mais turva, mais contaminada</li><li><strong>Oxigênio Dissolvido:</strong> Essencial para peixes e organismos aquáticos sobreviverem</li><li><strong>Coliformes:</strong> Bactérias que indicam contaminação por esgoto</li><li><strong>Metais Pesados:</strong> Substâncias tóxicas como chumbo e mercúrio</li></ol><p class='tip'>🔍 <strong>Curiosidade:</strong> Existem sensores modernos que podem analisar a água em tempo real e enviar os dados direto para o celular do pesquisador!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Tecnologias Modernas de Tratamento",
+        "content": "<h3>Inovações que Estão Mudando o Jogo</h3><p>Os centros de pesquisa desenvolvem tecnologias incríveis para tratar a água de formas cada vez mais eficientes e sustentáveis.</p><h4>Tecnologias de Ponta:</h4><ul><li><strong>Osmose Reversa:</strong> Usa membranas superfinas para filtrar até vírus e bactérias. É como uma peneira com buracos tão pequenos que só a água pura passa!</li><li><strong>Tratamento com UV:</strong> Luz ultravioleta elimina microorganismos sem usar produtos químicos</li><li><strong>Biofiltragem:</strong> Usa plantas e microorganismos para limpar a água naturalmente</li><li><strong>Nanotecnologia:</strong> Partículas minúsculas que capturam poluentes — tecnologia do futuro!</li></ul><p class='highlight'>💡 <strong>Você sabia?</strong> A Estação Espacial Internacional recicla até a urina dos astronautas em água potável usando tecnologia avançada de filtração!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Pesquisa Hídrica no Brasil",
+        "content": "<h3>O Brasil na Vanguarda</h3><p>O Brasil possui importantes centros de pesquisa dedicados à água e ao meio ambiente.</p><h4>Projetos e Instituições Brasileiras:</h4><ul><li><strong>ANA (Agência Nacional de Águas):</strong> Monitora todos os rios e reservatórios do país com mais de 4.500 estações de monitoramento</li><li><strong>INPA (Instituto Nacional de Pesquisas da Amazônia):</strong> Estuda os rios amazônicos e sua biodiversidade</li><li><strong>Embrapa:</strong> Desenvolve tecnologias de irrigação eficiente para a agricultura</li><li><strong>Projeto Olho n'Água:</strong> Usa drones e satélites para monitorar a qualidade da água em tempo real</li></ul><p class='tip'>🌎 <strong>Impacto real:</strong> Pesquisadores brasileiros desenvolveram um filtro de cerâmica com prata coloidal que purifica água e custa menos de R$50 — levando água limpa a comunidades rurais!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 5,
+        "title": "O Futuro da Pesquisa Hídrica",
+        "content": "<h3>Para Onde Vamos?</h3><p>O futuro da pesquisa sobre água é cheio de possibilidades empolgantes!</p><h4>Tendências Futuras:</h4><ul><li><strong>Inteligência Artificial:</strong> Algoritmos que preveem enchentes e secas com antecedência</li><li><strong>Dessalinização Sustentável:</strong> Transformar água do mar em água potável usando energia solar</li><li><strong>Reúso de Água:</strong> Tratar e reutilizar água várias vezes antes de devolvê-la à natureza</li><li><strong>Cidades Esponja:</strong> Cidades projetadas para absorver água da chuva e evitar enchentes</li></ul><h4>Como Você Pode Ajudar?</h4><p>Não precisa ser cientista para fazer a diferença! Economize água, não jogue lixo em rios, e quem sabe um dia você se torne um pesquisador hídrico?</p><p class='success'>✅ <strong>Parabéns!</strong> Agora você conhece o fascinante mundo da pesquisa hídrica!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "question": "Qual parâmetro indica a presença de contaminação por esgoto na água?",
+          "options": [
+            "Turbidez",
+            "pH",
+            "Coliformes",
+            "Oxigênio dissolvido"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Coliformes são bactérias encontradas no intestino de humanos e animais. Quando detectadas na água, indicam contaminação por esgoto."
+        },
+        {
+          "question": "Qual porcentagem da água doce do planeta está no Brasil?",
+          "options": [
+            "5%",
+            "8%",
+            "12%",
+            "20%"
+          ],
+          "correctAnswer": 2,
+          "explanation": "O Brasil possui cerca de 12% de toda a água doce disponível no planeta, sendo um dos países mais ricos em recursos hídricos."
+        },
+        {
+          "question": "O que é osmose reversa?",
+          "options": [
+            "Um tipo de bomba de água",
+            "Um processo que usa membranas para filtrar a água",
+            "Uma técnica de irrigação",
+            "Um método de captação de chuva"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A osmose reversa usa membranas superfinas que permitem apenas a passagem de moléculas de água, removendo contaminantes, vírus e bactérias."
+        },
+        {
+          "question": "Qual instituição brasileira monitora rios e reservatórios com mais de 4.500 estações?",
+          "options": [
+            "Embrapa",
+            "INPA",
+            "ANA",
+            "IBAMA"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A ANA (Agência Nacional de Águas e Saneamento Básico) é responsável pelo monitoramento dos recursos hídricos no Brasil."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "water_treatment",
+      "desalination_plant",
+      "rain_garden"
+    ],
+    "relatedConcepts": [
+      "water_quality",
+      "water_treatment_technology",
+      "scientific_research"
+    ]
+  },
+  "linear_park": {
+    "buildingId": "linear_park",
+    "buildingName": "Parque Linear",
+    "category": "public",
+    "difficulty": "básico",
+    "studyTitle": "Parques Lineares: Protegendo Rios e Pessoas",
+    "studyIcon": "🌳",
+    "estimatedTime": "6 minutos",
+    "learningObjectives": [
+      "Entender o que são parques lineares e por que são importantes",
+      "Conhecer como eles protegem rios e córregos",
+      "Descobrir exemplos de parques lineares no Brasil"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que é um Parque Linear?",
+        "content": "<h3>Corredores Verdes ao Longo da Água</h3><p>Parques lineares são <strong>faixas de área verde</strong> construídas ao longo de rios, córregos e cursos d'água. Diferente de uma praça quadrada, eles são compridos e estreitos, acompanhando o caminho da água.</p><h4>Para que servem?</h4><ul><li><strong>Proteger rios e córregos:</strong> Criam uma barreira natural contra poluição e ocupação irregular</li><li><strong>Prevenir enchentes:</strong> Permitem que a água se espalhe em áreas verdes em vez de inundar casas</li><li><strong>Lazer e esporte:</strong> Oferecem ciclovias, pistas de caminhada e áreas de convivência</li><li><strong>Conectar a cidade:</strong> Funcionam como corredores ecológicos ligando diferentes bairros</li></ul><p class='highlight'>💡 <strong>Você sabia?</strong> Muitos rios em cidades brasileiras foram canalizados (colocados em tubos debaixo do chão). Os parques lineares ajudam a trazer esses rios de volta à paisagem!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "Como Parques Lineares Protegem a Água",
+        "content": "<h3>Guardians dos Rios</h3><p>Os parques lineares são verdadeiros <strong>guardiões dos corpos d'água</strong>. Veja como eles ajudam:</p><h4>Proteção Natural:</h4><ol><li><strong>Mata Ciliar:</strong> As árvores plantadas nas margens seguram o solo, evitando erosão e assoreamento dos rios</li><li><strong>Filtragem:</strong> A vegetação filtra poluentes antes que cheguem à água</li><li><strong>Áreas de Inundação:</strong> Em chuvas fortes, a água transborda para áreas verdes em vez de ruas e casas</li><li><strong>Recarga de Aquíferos:</strong> O solo permeável permite que a água da chuva infiltre e recarregue o lençol freático</li></ol><p class='warning'>⚠️ <strong>Problema real:</strong> Quando construímos casas e prédios muito perto dos rios, removemos a vegetação protetora. Resultado? Enchentes, poluição e destruição!</p><p class='tip'>🌿 <strong>Solução:</strong> O Código Florestal brasileiro exige que se preserve uma faixa de vegetação ao redor de todos os rios — é a chamada Área de Preservação Permanente (APP)!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Parques Lineares Famosos no Brasil",
+        "content": "<h3>Exemplos que Inspiram</h3><p>O Brasil tem vários parques lineares incríveis. Conheça alguns!</p><h4>Destaques:</h4><ul><li><strong>Parque Linear do Pinheiros (SP):</strong> Ao longo do Rio Pinheiros, com ciclovia de 21 km, conectando diversos bairros de São Paulo</li><li><strong>Parque Linear do Tietê (SP):</strong> Um dos maiores do mundo, com mais de 70 km planejados ao longo do Rio Tietê</li><li><strong>Parque Linear da Sabesp (SP):</strong> Recuperou áreas degradadas e transformou córregos poluídos em espaços de lazer</li><li><strong>Parque Madureira (RJ):</strong> Um parque linear de 109 mil m² que revitalizou um bairro inteiro do Rio de Janeiro</li><li><strong>Parque Linear do Ribeirão das Pedras (Campinas):</strong> Exemplo de como proteger nascentes e córregos urbanos</li></ul><p class='highlight'>💡 <strong>Curiosidade:</strong> O Parque Madureira, no Rio de Janeiro, reduziu a temperatura local em até 4°C! Isso porque áreas verdes absorvem calor e liberam umidade.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "A Importância para a Comunidade",
+        "content": "<h3>Mais que Verde: Qualidade de Vida!</h3><p>Parques lineares não são bons apenas para o meio ambiente — eles transformam a vida das pessoas!</p><h4>Benefícios para a Comunidade:</h4><ul><li><strong>Saúde:</strong> Espaço para caminhar, correr e pedalar, reduzindo o sedentarismo</li><li><strong>Saúde Mental:</strong> Contato com a natureza reduz estresse e ansiedade</li><li><strong>Segurança:</strong> Áreas iluminadas e movimentadas são mais seguras que terrenos abandonados</li><li><strong>Valorização:</strong> Imóveis perto de parques valem até 20% mais</li><li><strong>Educação Ambiental:</strong> Escolas podem usar o parque como sala de aula ao ar livre</li></ul><h4>Como Funciona no Jogo:</h4><p>No Guardião da Água, construir parques lineares ao longo dos rios <strong>reduz a poluição</strong>, <strong>previne enchentes</strong> e <strong>aumenta a satisfação</strong> da população. É um investimento que vale a pena!</p><p class='success'>✅ <strong>Missão cumprida!</strong> Agora você entende por que parques lineares são essenciais para cidades sustentáveis!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": false,
+      "passingScore": 50,
+      "questions": []
+    },
+    "relatedBuildings": [
+      "park",
+      "rain_garden",
+      "bioswale"
+    ],
+    "relatedConcepts": [
+      "riparian_protection",
+      "flood_prevention",
+      "urban_green_spaces"
+    ]
+  },
+  "green_wall": {
+    "buildingId": "green_wall",
+    "buildingName": "Muro Verde",
+    "category": "public",
+    "difficulty": "intermediário",
+    "studyTitle": "Muros Verdes: Jardins Verticais nas Cidades",
+    "studyIcon": "🌿",
+    "estimatedTime": "7 minutos",
+    "learningObjectives": [
+      "Compreender o que são muros verdes e como funcionam",
+      "Identificar os benefícios ambientais dos jardins verticais",
+      "Conhecer exemplos reais de muros verdes no mundo"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que é um Muro Verde?",
+        "content": "<h3>Jardins que Sobem pelas Paredes!</h3><p>Um muro verde (ou <strong>jardim vertical</strong>) é uma parede coberta por plantas vivas. Em vez de um muro cinza de concreto, imagine uma parede inteira cheia de folhas, flores e vida!</p><h4>Como Funcionam?</h4><ul><li><strong>Estrutura de suporte:</strong> Uma grade ou painel é fixado na parede</li><li><strong>Substrato:</strong> Material onde as plantas fixam suas raízes (feltro, fibra de coco ou vasos)</li><li><strong>Irrigação:</strong> Sistema de gotejamento que distribui água para todas as plantas</li><li><strong>Plantas:</strong> Espécies escolhidas por resistência e capacidade de crescer na vertical</li></ul><p class='highlight'>💡 <strong>Você sabia?</strong> O maior jardim vertical do mundo fica em Bogotá, na Colômbia, com mais de 115.000 plantas cobrindo 3.100 m² de parede! É do tamanho de meio campo de futebol!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "Benefícios Ambientais dos Muros Verdes",
+        "content": "<h3>Superpoderes Verdes</h3><p>Muros verdes fazem muito mais do que enfeitar — eles têm verdadeiros <strong>superpoderes ambientais</strong>!</p><h4>Benefícios Comprovados:</h4><ul><li><strong>Isolamento Térmico:</strong> Reduzem a temperatura interna do prédio em até 5°C no verão, economizando ar-condicionado</li><li><strong>Purificação do Ar:</strong> As plantas absorvem CO₂ e liberam oxigênio. Um muro verde de 1 m² filtra cerca de 130 gramas de poeira por ano!</li><li><strong>Absorção de Água da Chuva:</strong> O substrato retém parte da água, reduzindo o escoamento para bueiros</li><li><strong>Isolamento Acústico:</strong> Reduzem o barulho externo em até 10 decibéis</li><li><strong>Biodiversidade:</strong> Atraem borboletas, abelhas e pássaros para a cidade</li></ul><p class='tip'>🌡️ <strong>Impacto real:</strong> Cidades com muitos prédios e asfalto sofrem com \"ilhas de calor\" — áreas até 10°C mais quentes que o entorno. Muros verdes ajudam a combater esse efeito!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Tipos de Muros Verdes",
+        "content": "<h3>Cada Parede, uma Solução</h3><p>Existem diferentes tipos de muros verdes, cada um com suas vantagens:</p><h4>Principais Tipos:</h4><ul><li><strong>Parede Viva (Living Wall):</strong> Plantas crescem diretamente em painéis fixados na parede, com irrigação automática. É o sistema mais sofisticado!</li><li><strong>Fachada Verde:</strong> Plantas trepadeiras (como hera e jasmim) sobem naturalmente pela parede. É o sistema mais simples e barato!</li><li><strong>Vasos Modulares:</strong> Vasos encaixáveis fixados na parede, fáceis de manter e trocar</li><li><strong>Feltro Hidropônico:</strong> Plantas crescem em camadas de feltro encharcado com solução nutritiva</li></ul><h4>Plantas Comuns em Muros Verdes no Brasil:</h4><p>🌱 Samambaia | 🌺 Bromélia | 🌿 Peperômia | 🍀 Columeia | 🌸 Lambari-Roxo</p><p class='warning'>⚠️ <strong>Atenção:</strong> Muros verdes precisam de manutenção regular — irrigação, poda e substituição de plantas. Sem cuidado, podem se tornar um problema!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Muros Verdes pelo Mundo e no Brasil",
+        "content": "<h3>Inspirações de Todo Canto</h3><h4>Exemplos Incríveis:</h4><ul><li><strong>Musée du Quai Branly (Paris):</strong> Um dos jardins verticais mais famosos, criado pelo botânico Patrick Blanc, com 15.000 plantas de 150 espécies</li><li><strong>Edifício Harmonia 57 (São Paulo):</strong> Prédio coberto de vegetação que se tornou símbolo de arquitetura sustentável na capital paulista</li><li><strong>CaixaForum (Madri):</strong> Parede verde de 24 metros de altura com 15.000 plantas</li><li><strong>Shopping Eldorado (São Paulo):</strong> Possui um dos maiores jardins verticais internos do Brasil</li></ul><h4>Faça Você Mesmo!</h4><p>Você pode criar um mini muro verde em casa! Basta usar garrafas PET cortadas ao meio, presas a uma parede ou grade, com terra e plantinhas resistentes como suculentas ou temperos.</p><p class='success'>✅ <strong>Parabéns!</strong> Agora você sabe como muros verdes transformam cidades de concreto em espaços mais vivos e saudáveis!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "question": "Quanto um muro verde pode reduzir a temperatura interna de um prédio?",
+          "options": [
+            "Até 1°C",
+            "Até 3°C",
+            "Até 5°C",
+            "Até 10°C"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Muros verdes funcionam como isolamento térmico natural, podendo reduzir a temperatura interna em até 5°C no verão."
+        },
+        {
+          "question": "Qual destes NÃO é um benefício dos muros verdes?",
+          "options": [
+            "Purificação do ar",
+            "Isolamento acústico",
+            "Geração de energia elétrica",
+            "Absorção de água da chuva"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Muros verdes não geram energia elétrica. Seus benefícios incluem purificação do ar, isolamento térmico e acústico, e absorção de água da chuva."
+        },
+        {
+          "question": "O que é uma 'fachada verde'?",
+          "options": [
+            "Uma parede pintada de verde",
+            "Plantas trepadeiras que sobem naturalmente pela parede",
+            "Um tipo de tinta ecológica",
+            "Um sistema de energia solar em paredes"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A fachada verde é o sistema mais simples de muro verde, onde plantas trepadeiras como hera e jasmim sobem naturalmente pela superfície da parede."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "green_roof",
+      "park",
+      "linear_park"
+    ],
+    "relatedConcepts": [
+      "urban_heat_island",
+      "vertical_gardens",
+      "green_infrastructure"
+    ]
+  },
+  "green_roof": {
+    "buildingId": "green_roof",
+    "buildingName": "Telhado Verde",
+    "category": "public",
+    "difficulty": "intermediário",
+    "studyTitle": "Telhados Verdes: Quando o Jardim Sobe ao Topo",
+    "studyIcon": "🏡",
+    "estimatedTime": "7 minutos",
+    "learningObjectives": [
+      "Entender como funcionam os telhados verdes",
+      "Conhecer seus benefícios contra ilhas de calor e enchentes",
+      "Descobrir exemplos de telhados verdes no Brasil e no mundo"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que é um Telhado Verde?",
+        "content": "<h3>Um Jardim no Topo do Prédio!</h3><p>Telhados verdes são <strong>coberturas de edifícios total ou parcialmente cobertas por vegetação</strong>. Em vez de telhas ou lajes expostas ao sol, imagine um gramado, um jardim ou até uma horta no topo do prédio!</p><h4>Camadas de um Telhado Verde:</h4><ol><li><strong>Impermeabilização:</strong> Camada que protege a laje contra infiltração de água</li><li><strong>Barreira anti-raízes:</strong> Impede que as raízes danifiquem a estrutura</li><li><strong>Drenagem:</strong> Camada que escoa o excesso de água</li><li><strong>Substrato:</strong> Terra leve e especial onde as plantas crescem</li><li><strong>Vegetação:</strong> Plantas resistentes ao sol e ao vento</li></ol><p class='highlight'>💡 <strong>Você sabia?</strong> Os telhados verdes não são uma invenção moderna! Os Vikings já usavam grama nos telhados de suas casas há mais de 1.000 anos para se proteger do frio na Escandinávia!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "Combatendo as Ilhas de Calor",
+        "content": "<h3>Por que as Cidades São Tão Quentes?</h3><p>Nas grandes cidades, o asfalto, o concreto e os prédios absorvem o calor do sol e o irradiam de volta, criando as chamadas <strong>ilhas de calor urbanas</strong>. A temperatura pode ser até 10°C maior que em áreas com vegetação!</p><h4>Como o Telhado Verde Ajuda?</h4><ul><li><strong>Esfriamento por evapotranspiração:</strong> As plantas liberam umidade, refrescando o ar ao redor — como um ar-condicionado natural!</li><li><strong>Reflexão solar:</strong> Plantas refletem mais luz solar que superfícies escuras como asfalto</li><li><strong>Isolamento térmico:</strong> Reduz a necessidade de ar-condicionado em até 25%</li><li><strong>Resfriamento noturno:</strong> Enquanto o concreto fica quente à noite, o telhado verde esfria rapidamente</li></ul><p class='tip'>🌡️ <strong>Dado impressionante:</strong> Um estudo em Toronto, no Canadá, mostrou que se todos os prédios da cidade tivessem telhados verdes, a temperatura urbana cairia 2°C!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Telhados Verdes e a Água da Chuva",
+        "content": "<h3>Esponjas Urbanas</h3><p>Uma das maiores vantagens dos telhados verdes é a capacidade de <strong>absorver água da chuva</strong>, funcionando como verdadeiras esponjas urbanas!</p><h4>Como Funciona:</h4><ul><li><strong>Absorção:</strong> O substrato e as plantas retêm de 50% a 90% da água da chuva</li><li><strong>Liberação lenta:</strong> A água é liberada gradualmente por evaporação, em vez de escorrer toda de uma vez para os bueiros</li><li><strong>Filtragem natural:</strong> A vegetação filtra poluentes da água antes de liberá-la</li></ul><h4>Impacto na Cidade:</h4><p>Em chuvas fortes, os bueiros ficam sobrecarregados e causam enchentes. Se muitos prédios tivessem telhados verdes, a quantidade de água chegando aos bueiros seria <strong>muito menor</strong>, reduzindo alagamentos!</p><p class='warning'>⚠️ <strong>Atenção:</strong> Para instalar um telhado verde, é preciso verificar se a estrutura do prédio aguenta o peso extra do solo e das plantas (cerca de 60 a 150 kg por m²)!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Exemplos no Brasil e no Mundo",
+        "content": "<h3>Telhados Verdes em Ação</h3><h4>No Brasil:</h4><ul><li><strong>Prefeitura de São Paulo:</strong> A lei municipal incentiva telhados verdes em novos edifícios comerciais</li><li><strong>Escola em Florianópolis:</strong> Projeto modelo de telhado verde com horta comunitária</li><li><strong>Hospital Albert Einstein (SP):</strong> Possui um dos maiores telhados verdes de hospitais no Brasil</li><li><strong>Recife:</strong> Lei municipal obriga prédios com mais de 4 andares a ter telhado verde</li></ul><h4>No Mundo:</h4><ul><li><strong>Copenhague (Dinamarca):</strong> Desde 2010, todos os novos edifícios com telhado plano devem ter cobertura verde</li><li><strong>Chicago (EUA):</strong> A prefeitura tem um telhado verde de 2.000 m² que economiza US$ 100 mil por ano em energia</li><li><strong>Singapura:</strong> Líder mundial, com mais de 100 hectares de telhados e fachadas verdes</li></ul><p class='success'>✅ <strong>Conclusão:</strong> Telhados verdes são uma solução inteligente, bonita e eficaz para tornar as cidades mais frescas, menos inundáveis e mais agradáveis!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "question": "Quanto da água da chuva um telhado verde pode absorver?",
+          "options": [
+            "10% a 20%",
+            "20% a 40%",
+            "50% a 90%",
+            "100%"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Telhados verdes podem reter entre 50% e 90% da água da chuva, dependendo do tipo de substrato e vegetação, liberando-a lentamente por evaporação."
+        },
+        {
+          "question": "O que são 'ilhas de calor urbanas'?",
+          "options": [
+            "Ilhas no mar que são mais quentes",
+            "Áreas da cidade que são mais quentes que o entorno por causa do concreto e asfalto",
+            "Parques que geram calor",
+            "Prédios com aquecimento central"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Ilhas de calor urbanas são áreas nas cidades onde a temperatura é significativamente mais alta que nas regiões ao redor, devido à concentração de concreto, asfalto e edifícios."
+        },
+        {
+          "question": "Qual povo antigo já usava telhados verdes há mais de 1.000 anos?",
+          "options": [
+            "Egípcios",
+            "Romanos",
+            "Vikings",
+            "Maias"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Os Vikings usavam grama e turfa nos telhados de suas casas na Escandinávia para isolamento térmico contra o frio intenso."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "green_wall",
+      "rain_garden",
+      "park"
+    ],
+    "relatedConcepts": [
+      "urban_heat_island",
+      "stormwater_management",
+      "green_infrastructure"
+    ]
+  },
+  "wind_farm": {
+    "buildingId": "wind_farm",
+    "buildingName": "Parque Eólico",
+    "category": "energy",
+    "difficulty": "intermediário",
+    "studyTitle": "Energia Eólica: O Poder do Vento",
+    "studyIcon": "💨",
+    "estimatedTime": "7 minutos",
+    "learningObjectives": [
+      "Compreender como turbinas eólicas transformam vento em eletricidade",
+      "Conhecer o papel do Brasil na energia eólica mundial",
+      "Avaliar benefícios e desafios da energia eólica"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que é Energia Eólica?",
+        "content": "<h3>Eletricidade que Vem do Vento!</h3><p>Energia eólica é a <strong>eletricidade gerada a partir do vento</strong>. Parece mágica, mas é pura ciência! O vento gira as pás de uma turbina, que aciona um gerador e produz eletricidade.</p><h4>Como Funciona uma Turbina Eólica:</h4><ol><li><strong>O vento sopra</strong> e empurra as pás da turbina (que podem ter até 80 metros cada!)</li><li><strong>As pás giram</strong> um eixo conectado a uma caixa de engrenagens</li><li><strong>A caixa de engrenagens</strong> aumenta a velocidade de rotação</li><li><strong>O gerador</strong> converte o movimento em eletricidade</li><li><strong>Um transformador</strong> ajusta a voltagem para enviar à rede elétrica</li></ol><p class='highlight'>💡 <strong>Você sabia?</strong> Uma única turbina eólica grande pode gerar energia suficiente para abastecer cerca de 1.500 casas! E o \"combustível\" (o vento) é totalmente gratuito!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "O Brasil e a Energia Eólica",
+        "content": "<h3>Um Gigante dos Ventos</h3><p>O Brasil é um dos <strong>maiores produtores de energia eólica do mundo</strong> e o maior da América Latina!</p><h4>Números Impressionantes:</h4><ul><li><strong>Capacidade instalada:</strong> Mais de 28 GW (gigawatts) — o suficiente para abastecer cerca de 35 milhões de residências</li><li><strong>Ranking mundial:</strong> 6º maior produtor de energia eólica do planeta</li><li><strong>Parques eólicos:</strong> Mais de 900 espalhados pelo país</li></ul><h4>O Nordeste é a Estrela:</h4><p>A região Nordeste concentra cerca de <strong>85% de toda a energia eólica</strong> do Brasil! Os estados que mais produzem são:</p><ul><li>🥇 <strong>Bahia:</strong> Líder absoluta, com a maior capacidade instalada</li><li>🥈 <strong>Rio Grande do Norte:</strong> Segundo maior produtor</li><li>🥉 <strong>Piauí:</strong> Crescimento acelerado nos últimos anos</li></ul><p class='tip'>🌬️ <strong>Vantagem brasileira:</strong> Os ventos no Nordeste são muito constantes e previsíveis, soprando mais forte justamente nos meses de menor chuva — quando as hidrelétricas produzem menos!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Benefícios da Energia Eólica",
+        "content": "<h3>Por que o Vento é uma Ótima Escolha?</h3><h4>Vantagens Ambientais:</h4><ul><li><strong>Zero emissão de CO₂</strong> durante a operação — não contribui para o aquecimento global</li><li><strong>Sem poluição do ar</strong> — diferente de usinas que queimam carvão ou gás</li><li><strong>Sem consumo de água</strong> — não precisa de água para funcionar (diferente de termelétricas)</li><li><strong>Fonte renovável:</strong> O vento nunca acaba!</li></ul><h4>Vantagens Econômicas:</h4><ul><li><strong>Combustível grátis:</strong> O vento não tem custo</li><li><strong>Geração de empregos:</strong> O setor eólico emprega mais de 300 mil pessoas no Brasil</li><li><strong>Renda para agricultores:</strong> Torres eólicas podem ser instaladas em fazendas, e o agricultor recebe aluguel pelo terreno enquanto continua plantando normalmente entre as torres</li></ul><p class='highlight'>💡 <strong>Curiosidade:</strong> O espaço entre as turbinas pode ser usado para agricultura e criação de animais! Vacas pastando entre turbinas eólicas gigantes é uma cena comum no Nordeste brasileiro.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Desafios e o Futuro do Vento",
+        "content": "<h3>Nem Tudo São Flores (ou Ventos)</h3><p>Apesar de todas as vantagens, a energia eólica também tem desafios:</p><h4>Desafios:</h4><ul><li><strong>Intermitência:</strong> Quando o vento para, a geração cai. Por isso, é importante ter outras fontes de energia complementares</li><li><strong>Impacto em aves:</strong> Pássaros e morcegos podem colidir com as pás. Novas tecnologias estão sendo desenvolvidas para reduzir esse problema</li><li><strong>Barulho:</strong> Turbinas fazem ruído, por isso devem ficar longe de áreas residenciais</li><li><strong>Paisagem:</strong> Algumas pessoas acham que as turbinas alteram a beleza da paisagem</li></ul><h4>O Futuro:</h4><ul><li><strong>Eólica Offshore:</strong> Turbinas no mar, onde os ventos são ainda mais fortes e constantes. O Brasil está começando a explorar essa possibilidade!</li><li><strong>Turbinas maiores:</strong> Quanto maior a turbina, mais energia gera. As mais modernas têm pás de 107 metros — maiores que um campo de futebol!</li><li><strong>Armazenamento:</strong> Baterias gigantes para guardar a energia gerada pelo vento para quando ele parar</li></ul><p class='success'>✅ <strong>Conclusão:</strong> A energia eólica é uma das fontes mais limpas e promissoras para o futuro energético do Brasil e do mundo!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "question": "Qual região do Brasil concentra cerca de 85% da energia eólica do país?",
+          "options": [
+            "Sudeste",
+            "Sul",
+            "Nordeste",
+            "Norte"
+          ],
+          "correctAnswer": 2,
+          "explanation": "O Nordeste concentra cerca de 85% da capacidade de energia eólica do Brasil, graças aos ventos constantes e fortes da região."
+        },
+        {
+          "question": "O que acontece quando o vento para de soprar em um parque eólico?",
+          "options": [
+            "As turbinas usam energia reserva para continuar girando",
+            "A geração de eletricidade cai ou para",
+            "As turbinas trocam para energia solar automaticamente",
+            "Nada muda, pois a energia fica armazenada"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A energia eólica é intermitente: quando o vento para, a geração diminui ou cessa. Por isso, é importante ter fontes complementares de energia."
+        },
+        {
+          "question": "Qual destes é um benefício econômico da energia eólica para agricultores?",
+          "options": [
+            "As turbinas irrigam as plantações",
+            "Agricultores recebem aluguel pelo terreno onde as torres são instaladas",
+            "O vento das turbinas ajuda a espalhar sementes",
+            "As turbinas espantam pragas das lavouras"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Agricultores podem alugar parte de suas terras para a instalação de turbinas eólicas e continuar cultivando normalmente entre as torres, gerando renda extra."
+        },
+        {
+          "question": "O que é energia eólica 'offshore'?",
+          "options": [
+            "Energia eólica gerada em montanhas",
+            "Energia eólica gerada no mar",
+            "Energia eólica gerada no deserto",
+            "Energia eólica gerada em outros países"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Eólica offshore refere-se a parques eólicos instalados no mar, onde os ventos são geralmente mais fortes e constantes do que em terra."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "solar_farm",
+      "hydroelectric_plant"
+    ],
+    "relatedConcepts": [
+      "renewable_energy",
+      "wind_power",
+      "clean_energy"
+    ]
+  },
+  "solar_farm": {
+    "buildingId": "solar_farm",
+    "buildingName": "Fazenda Solar",
+    "category": "energy",
+    "difficulty": "intermediário",
+    "studyTitle": "Energia Solar: A Força do Sol",
+    "studyIcon": "☀️",
+    "estimatedTime": "7 minutos",
+    "learningObjectives": [
+      "Entender como painéis solares transformam luz em eletricidade",
+      "Conhecer o potencial solar do Brasil",
+      "Avaliar os benefícios da energia solar como fonte limpa"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que é Energia Solar?",
+        "content": "<h3>Eletricidade Direto do Sol!</h3><p>Energia solar é a <strong>eletricidade gerada a partir da luz do sol</strong>. Os painéis solares (também chamados de painéis fotovoltaicos) captam a luz solar e a transformam diretamente em energia elétrica!</p><h4>Como Funciona um Painel Solar:</h4><ol><li><strong>Fótons (partículas de luz)</strong> do sol atingem as células fotovoltaicas do painel</li><li><strong>Os fótons</strong> colidem com átomos de silício, liberando elétrons</li><li><strong>Os elétrons livres</strong> se movem em uma direção, criando uma corrente elétrica</li><li><strong>Um inversor</strong> transforma a corrente contínua em corrente alternada (a que usamos em casa)</li><li><strong>A eletricidade</strong> é enviada para a rede ou usada diretamente</li></ol><p class='highlight'>💡 <strong>Você sabia?</strong> A quantidade de energia solar que atinge a Terra em apenas 1 hora seria suficiente para abastecer o mundo inteiro por um ano! O desafio é captar e armazenar essa energia.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "O Potencial Solar do Brasil",
+        "content": "<h3>O País do Sol</h3><p>O Brasil é privilegiado quando se trata de energia solar. Nosso país recebe <strong>radiação solar intensa durante a maior parte do ano</strong>, muito mais que países europeus que já usam bastante energia solar!</p><h4>Dados Impressionantes:</h4><ul><li><strong>Irradiação solar:</strong> O Brasil recebe entre 1.500 e 2.400 kWh/m² por ano — um dos melhores índices do mundo!</li><li><strong>Região mais ensolarada:</strong> O semiárido nordestino tem irradiação comparável ao Deserto do Saara</li><li><strong>Crescimento:</strong> A energia solar cresceu mais de 5.000% no Brasil entre 2017 e 2023!</li><li><strong>Geração distribuída:</strong> Mais de 2 milhões de residências e empresas já produzem sua própria energia solar</li></ul><h4>Maiores Usinas Solares do Brasil:</h4><ul><li><strong>São Gonçalo (Piauí):</strong> Uma das maiores da América Latina, com 608 MW de potência</li><li><strong>Janaúba (Minas Gerais):</strong> Complexo solar com capacidade de 1.200 MW</li></ul><p class='tip'>☀️ <strong>Comparação:</strong> A região menos ensolarada do Brasil ainda recebe mais sol do que a região mais ensolarada da Alemanha, que é um dos líderes mundiais em energia solar!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Benefícios da Energia Solar",
+        "content": "<h3>Por que Apostar no Sol?</h3><h4>Benefícios Ambientais:</h4><ul><li><strong>Energia 100% limpa:</strong> Não emite gases poluentes nem CO₂ durante a operação</li><li><strong>Sem barulho:</strong> Painéis solares são totalmente silenciosos</li><li><strong>Sem consumo de água:</strong> Diferente de hidrelétricas e termelétricas</li><li><strong>Fonte inesgotável:</strong> O sol vai brilhar por mais 5 bilhões de anos!</li></ul><h4>Benefícios Econômicos:</h4><ul><li><strong>Conta de luz menor:</strong> Quem instala painéis em casa pode reduzir a conta em até 95%</li><li><strong>Retorno do investimento:</strong> O sistema se paga em 3 a 6 anos e dura mais de 25 anos</li><li><strong>Valorização do imóvel:</strong> Casas com energia solar valem mais no mercado</li><li><strong>Geração de empregos:</strong> O setor solar já emprega mais de 1 milhão de pessoas no Brasil</li></ul><p class='highlight'>💡 <strong>Curiosidade:</strong> Painéis solares funcionam mesmo em dias nublados! Eles captam a radiação solar difusa, embora produzam menos energia do que em dias de sol pleno.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Fazendas Solares e o Futuro",
+        "content": "<h3>O que é uma Fazenda Solar?</h3><p>Uma fazenda solar é uma <strong>grande área coberta por milhares de painéis solares</strong>, projetada para gerar eletricidade em larga escala e enviar para a rede elétrica.</p><h4>Características:</h4><ul><li><strong>Tamanho:</strong> Podem ocupar centenas de hectares (equivalente a centenas de campos de futebol!)</li><li><strong>Painéis rastreadores:</strong> Alguns painéis giram automaticamente para acompanhar o sol durante o dia, gerando até 25% mais energia</li><li><strong>Agrivoltaico:</strong> Sistema que combina painéis solares com agricultura — os painéis fazem sombra para certas culturas e os agricultores ganham com energia e plantação</li></ul><h4>Desafios e Soluções:</h4><ul><li><strong>Armazenamento:</strong> Baterias cada vez mais baratas para guardar energia para a noite</li><li><strong>Reciclagem:</strong> Novas tecnologias para reciclar painéis antigos</li><li><strong>Uso do solo:</strong> Combinar geração de energia com outras atividades (agrivoltaico)</li></ul><p class='success'>✅ <strong>Conclusão:</strong> A energia solar é uma das maiores apostas para um futuro energético limpo, e o Brasil tem tudo para ser um líder mundial nessa área!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "question": "Qual material é usado nas células fotovoltaicas para converter luz em eletricidade?",
+          "options": [
+            "Cobre",
+            "Ferro",
+            "Silício",
+            "Alumínio"
+          ],
+          "correctAnswer": 2,
+          "explanation": "O silício é o principal material usado nas células fotovoltaicas. Quando os fótons de luz atingem os átomos de silício, elétrons são liberados, criando corrente elétrica."
+        },
+        {
+          "question": "Quanto a energia solar cresceu no Brasil entre 2017 e 2023?",
+          "options": [
+            "100%",
+            "500%",
+            "1.000%",
+            "Mais de 5.000%"
+          ],
+          "correctAnswer": 3,
+          "explanation": "A energia solar teve um crescimento explosivo no Brasil, ultrapassando 5.000% entre 2017 e 2023, impulsionada pela queda nos preços dos painéis e incentivos governamentais."
+        },
+        {
+          "question": "Os painéis solares funcionam em dias nublados?",
+          "options": [
+            "Não, precisam de sol direto para funcionar",
+            "Sim, mas geram menos energia",
+            "Sim, e geram a mesma quantidade de energia",
+            "Só funcionam se a temperatura estiver acima de 30°C"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Painéis solares funcionam em dias nublados pois captam a radiação solar difusa, mas produzem menos energia do que em dias de sol pleno."
+        },
+        {
+          "question": "O que é um sistema 'agrivoltaico'?",
+          "options": [
+            "Painéis solares em aviões agrícolas",
+            "Combinação de painéis solares com agricultura no mesmo terreno",
+            "Uso de energia solar apenas para irrigação",
+            "Painéis solares feitos de materiais orgânicos"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O sistema agrivoltaico combina geração de energia solar com agricultura, instalando painéis elevados que fazem sombra parcial para certas culturas, permitindo duplo uso do terreno."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "wind_farm",
+      "hydroelectric_plant"
+    ],
+    "relatedConcepts": [
+      "renewable_energy",
+      "solar_power",
+      "photovoltaic_technology"
+    ]
+  },
+  "hydroelectric_plant": {
+    "buildingId": "hydroelectric_plant",
+    "buildingName": "Usina Hidrelétrica",
+    "category": "energy",
+    "difficulty": "avançado",
+    "studyTitle": "Energia Hidrelétrica: O Poder da Água em Movimento",
+    "studyIcon": "🌊",
+    "estimatedTime": "10 minutos",
+    "learningObjectives": [
+      "Entender como barragens geram eletricidade a partir da água",
+      "Conhecer as grandes hidrelétricas brasileiras como Itaipu e Belo Monte",
+      "Avaliar os impactos ambientais e a relação entre água e energia"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que é uma Usina Hidrelétrica?",
+        "content": "<h3>Transformando Água em Eletricidade</h3><p>Uma usina hidrelétrica gera eletricidade usando a <strong>força da água em movimento</strong>. Quando a água cai de uma altura (como em uma barragem), ela gira turbinas que acionam geradores elétricos.</p><h4>Como Funciona:</h4><ol><li><strong>Represamento:</strong> Uma barragem represa o rio, criando um grande reservatório (lago artificial)</li><li><strong>Queda d'água:</strong> A água é liberada por condutos, caindo de grande altura</li><li><strong>Turbinas:</strong> A força da água em queda gira turbinas gigantes</li><li><strong>Gerador:</strong> As turbinas giram o eixo do gerador, produzindo eletricidade</li><li><strong>Transmissão:</strong> A energia é enviada por linhas de transmissão para cidades e indústrias</li></ol><p class='highlight'>💡 <strong>Você sabia?</strong> A palavra \"hidrelétrica\" vem do grego: \"hydro\" (água) + \"elektron\" (âmbar, que gerava eletricidade estática). Literalmente, \"eletricidade da água\"!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 2,
+        "title": "O Brasil: Potência Hidrelétrica",
+        "content": "<h3>O País das Grandes Barragens</h3><p>O Brasil é o <strong>segundo maior produtor de energia hidrelétrica do mundo</strong> (atrás apenas da China) e a maior parte da nossa eletricidade vem da água!</p><h4>Números do Brasil:</h4><ul><li><strong>Participação:</strong> Cerca de 60% de toda eletricidade brasileira vem de hidrelétricas</li><li><strong>Quantidade:</strong> Mais de 200 usinas hidrelétricas em operação</li><li><strong>Capacidade:</strong> Mais de 110 GW instalados</li></ul><h4>Gigantes Brasileiras:</h4><ul><li><strong>Itaipu (PR/Paraguai):</strong> Foi a maior do mundo por décadas! Gera energia para 15% do consumo do Brasil e 86% do Paraguai. Sua barragem tem 196 metros de altura!</li><li><strong>Belo Monte (PA):</strong> No Rio Xingu, é a maior usina 100% brasileira, com capacidade de 11.233 MW</li><li><strong>Tucuruí (PA):</strong> No Rio Tocantins, foi a primeira grande hidrelétrica da Amazônia</li></ul><p class='tip'>⚡ <strong>Comparação:</strong> Itaipu sozinha gera energia suficiente para abastecer duas cidades do tamanho de São Paulo!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Impactos Ambientais das Hidrelétricas",
+        "content": "<h3>O Outro Lado da Moeda</h3><p>Apesar de ser uma energia renovável, as hidrelétricas causam <strong>impactos ambientais significativos</strong> que precisamos conhecer.</p><h4>Impactos Negativos:</h4><ul><li><strong>Alagamento de áreas:</strong> Reservatórios inundam florestas, terras agrícolas e até cidades inteiras. O reservatório de Itaipu, por exemplo, cobriu as Sete Quedas, uma das maiores cachoeiras do mundo!</li><li><strong>Deslocamento de populações:</strong> Comunidades ribeirinhas e indígenas precisam abandonar suas terras. Belo Monte deslocou mais de 20 mil pessoas</li><li><strong>Impacto na fauna:</strong> Barragens bloqueiam a migração de peixes e alteram ecossistemas aquáticos</li><li><strong>Emissão de metano:</strong> Matéria orgânica submersa nos reservatórios se decompõe e libera metano, um gás de efeito estufa</li><li><strong>Alteração do regime dos rios:</strong> A vazão natural do rio é modificada, afetando comunidades e ecossistemas a jusante</li></ul><p class='warning'>⚠️ <strong>Polêmica:</strong> A construção de Belo Monte gerou intenso debate no Brasil, com protestos de comunidades indígenas, ambientalistas e cientistas.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "O Nexo Água-Energia",
+        "content": "<h3>Água e Energia: Uma Relação Inseparável</h3><p>Existe uma relação profunda entre água e energia chamada <strong>nexo água-energia</strong>: precisamos de água para gerar energia, e precisamos de energia para tratar e distribuir água!</p><h4>Água para Energia:</h4><ul><li>Hidrelétricas precisam de <strong>rios com boa vazão</strong> para funcionar</li><li>Em períodos de seca, os reservatórios baixam e a geração de energia cai</li><li>O Brasil enfrentou crises energéticas em 2001 e 2021 por falta de chuva</li></ul><h4>Energia para Água:</h4><ul><li>Bombas elétricas para <strong>captar e distribuir</strong> água tratada</li><li>Estações de tratamento de água e esgoto <strong>consomem muita energia</strong></li><li>Dessalinização de água do mar é um processo <strong>intensivo em energia</strong></li></ul><p class='tip'>💧 <strong>Reflexão:</strong> Quando você economiza água, também economiza energia. E quando economiza energia, também economiza água. Tudo está conectado!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 5,
+        "title": "O Futuro da Energia Hidrelétrica",
+        "content": "<h3>Adaptando-se aos Novos Tempos</h3><p>O Brasil está mudando sua estratégia energética, buscando <strong>diversificar</strong> as fontes de energia.</p><h4>Tendências Atuais:</h4><ul><li><strong>Pequenas Centrais Hidrelétricas (PCHs):</strong> Usinas menores, com menos impacto ambiental, aproveitando pequenas quedas d'água</li><li><strong>Fio d'água:</strong> Usinas sem grandes reservatórios, que usam apenas a correnteza natural do rio (como Belo Monte)</li><li><strong>Repotenciação:</strong> Modernizar usinas antigas com turbinas mais eficientes, gerando mais energia sem construir novas barragens</li><li><strong>Complementaridade:</strong> Combinar hidrelétricas com solar e eólica — quando chove menos (e os reservatórios baixam), geralmente há mais sol e vento!</li></ul><h4>A Matriz Energética Ideal:</h4><p>O futuro não é escolher UMA fonte de energia, mas <strong>combinar várias</strong>: hidrelétrica, solar, eólica, biomassa. Assim, quando uma falha, as outras compensam.</p><p class='success'>✅ <strong>Parabéns!</strong> Agora você entende como a água gera eletricidade e os desafios de equilibrar desenvolvimento energético com preservação ambiental!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "question": "Qual porcentagem da eletricidade brasileira vem de hidrelétricas?",
+          "options": [
+            "Cerca de 30%",
+            "Cerca de 45%",
+            "Cerca de 60%",
+            "Cerca de 80%"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Aproximadamente 60% de toda a eletricidade consumida no Brasil é gerada por usinas hidrelétricas, tornando o país muito dependente dessa fonte."
+        },
+        {
+          "question": "Qual destas é a maior usina hidrelétrica 100% brasileira?",
+          "options": [
+            "Itaipu",
+            "Belo Monte",
+            "Tucuruí",
+            "Furnas"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Belo Monte, no Rio Xingu (Pará), é a maior usina hidrelétrica 100% brasileira, com capacidade de 11.233 MW. Itaipu é binacional (Brasil-Paraguai)."
+        },
+        {
+          "question": "O que é o 'nexo água-energia'?",
+          "options": [
+            "Um tipo de turbina",
+            "A relação de interdependência entre água e energia",
+            "Uma lei ambiental",
+            "Um rio que gera muita energia"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O nexo água-energia é a relação de interdependência: precisamos de água para gerar energia (hidrelétricas) e de energia para tratar e distribuir água (bombas, estações de tratamento)."
+        },
+        {
+          "question": "Qual impacto ambiental é causado pela decomposição de matéria orgânica nos reservatórios?",
+          "options": [
+            "Poluição por plástico",
+            "Emissão de metano",
+            "Chuva ácida",
+            "Erosão costeira"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Quando florestas e vegetação são submersas pelos reservatórios, a matéria orgânica se decompõe e libera metano, um potente gás de efeito estufa."
+        },
+        {
+          "question": "O que são Pequenas Centrais Hidrelétricas (PCHs)?",
+          "options": [
+            "Usinas nucleares pequenas",
+            "Usinas hidrelétricas menores, com menos impacto ambiental",
+            "Painéis solares instalados em rios",
+            "Turbinas eólicas movidas a água"
+          ],
+          "correctAnswer": 1,
+          "explanation": "PCHs são usinas hidrelétricas de menor porte que aproveitam pequenas quedas d'água, causando menos impacto ambiental que as grandes hidrelétricas."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "wind_farm",
+      "solar_farm",
+      "water_pump"
+    ],
+    "relatedConcepts": [
+      "hydroelectric_power",
+      "water_energy_nexus",
+      "renewable_energy"
+    ]
   }
 }
-

@@ -1446,7 +1446,7 @@ class BuildingSystem {
         // Verificar requisitos de terreno
         if (buildingType.requirements) {
             const terrainType = this.gridManager.getTerrainType(gridX, gridZ);
-            console.log(`🔍 Verificando terreno em (${gridX}, ${gridZ}): tipo='${terrainType}', requerido=${JSON.stringify(buildingType.requirements.terrain)}`);
+            //console.log(`🔍 Verificando terreno em (${gridX}, ${gridZ}): tipo='${terrainType}', requerido=${JSON.stringify(buildingType.requirements.terrain)}`);
 
             if (buildingType.requirements.terrain &&
                 !buildingType.requirements.terrain.includes(terrainType)) {
@@ -1459,7 +1459,7 @@ class BuildingSystem {
                 const currentTerrainName = terrainNames[terrainType] || terrainType;
                 const requiredTerrainNames = buildingType.requirements.terrain.map(t => terrainNames[t] || t).join(', ');
 
-                console.warn(`❌ Terreno inadequado: '${terrainType}' não está em ${JSON.stringify(buildingType.requirements.terrain)}`);
+                //console.warn(`❌ Terreno inadequado: '${terrainType}' não está em ${JSON.stringify(buildingType.requirements.terrain)}`);
                 return {
                     canPlace: false,
                     reason: `Você não pode construir ${buildingType.name} em ${currentTerrainName}. Requer: ${requiredTerrainNames}`,
@@ -2294,6 +2294,10 @@ class BuildingSystem {
             for (const [buildingId, buildingData] of this.buildings.entries()) {
                 if (buildingData.mesh === oldMesh) {
                     buildingData.mesh = newMesh;
+                    // Preserve metadata on new mesh for building selection
+                    if (oldMesh.metadata) {
+                        newMesh.metadata = Object.assign(newMesh.metadata || {}, oldMesh.metadata);
+                    }
                     console.log(`🔄 Mesh substituído para edifício ${buildingId}`);
                     break;
                 }
