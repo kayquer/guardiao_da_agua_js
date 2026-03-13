@@ -324,7 +324,10 @@ class UIManager {
                 }
 
                 // ===== STABILITY FIX: Prevent clicks on disabled items =====
-                if (item.classList.contains('disabled')) return;
+                if (item.classList.contains('disabled')) {
+                    this.showBudgetInsufficientNotification();
+                    return;
+                }
 
                 if (this.isOnCooldown('building')) return;
                 this.setCooldown('building', 300);
@@ -2477,6 +2480,73 @@ class UIManager {
             modal.style.display = 'none';
             console.log('📖 Modal de controles fechado');
         }
+    }
+
+    showBudgetInsufficientNotification() {
+        if (this.isOnCooldown('budget-tooltip')) return;
+        this.setCooldown('budget-tooltip', 2000);
+
+        if (this.isMobile) {
+            this.showBreakingNews('💰 Sem orçamento suficiente!', 'warning', 4000);
+            // Show a second notification with the tip after a brief delay
+            setTimeout(() => {
+                this.showBreakingNews('💡 Toque no botão de ajuda (❓) para saber como ganhar mais dinheiro!', 'info', 5000);
+            }, 1500);
+            return;
+        }
+
+        // Desktop: show clickable notification
+        const notification = document.createElement('div');
+        notification.className = 'notification warning';
+        notification.innerHTML = `
+            💰 Sem orçamento suficiente!
+            <a href="#" class="notification-link" style="display:block;margin-top:4px;color:#fff;text-decoration:underline;font-weight:700;cursor:pointer;">
+                Clique aqui para saber como ganhar mais dinheiro
+            </a>
+            <button class="notification-close">✕</button>
+        `;
+
+        const link = notification.querySelector('.notification-link');
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.removeNotification(notification, true);
+            this.openHelpFAQBudget();
+        });
+
+        if (this.elements.notifications) {
+            this.elements.notifications.appendChild(notification);
+        }
+
+        setTimeout(() => {
+            this.removeNotification(notification);
+        }, 6000);
+
+        this.limitNotifications();
+    }
+
+    openHelpFAQBudget() {
+        // Open help modal
+        this.showHelpModal();
+
+        // Switch to FAQ tab
+        const faqTab = document.querySelector('.help-tab[data-tab="faq"]');
+        if (faqTab) {
+            faqTab.click();
+        }
+
+        // Scroll to budget section
+        setTimeout(() => {
+            const budgetSection = document.getElementById('faq-category-orcamento');
+            if (budgetSection) {
+                budgetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Briefly highlight the section
+                budgetSection.style.transition = 'background-color 0.3s ease';
+                budgetSection.style.backgroundColor = 'rgba(255, 215, 0, 0.3)';
+                setTimeout(() => {
+                    budgetSection.style.backgroundColor = '';
+                }, 2000);
+            }
+        }, 300);
     }
 
     showPopulationDetailsPanel() {

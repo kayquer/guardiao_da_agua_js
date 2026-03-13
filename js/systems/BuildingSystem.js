@@ -1643,6 +1643,14 @@ class BuildingSystem {
         // Mostrar notificação de sucesso
         this.showNotification(`${buildingType.name} construído com sucesso!`, 'success');
 
+        // Verificar balanço de energia após construção
+        if (buildingType.powerConsumption && window.gameManager && gameManager.resourceManager) {
+            const electricity = gameManager.resourceManager.getElectricity();
+            if (electricity.consumption > electricity.generation) {
+                this.showEnergyShortageNotification(electricity);
+            }
+        }
+
         console.log(`🏗️ Edifício construído: ${buildingType.name} em (${gridX}, ${gridZ})`);
         return buildingData;
     }
@@ -4277,6 +4285,22 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
             // Fallback para console se UI não estiver disponível
             const prefix = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️';
             console.log(`${prefix} ${message}`);
+        }
+    }
+
+    showEnergyShortageNotification(electricity) {
+        // Cooldown de 30s para não spammar
+        const now = Date.now();
+        if (this._energyWarningCooldown && now < this._energyWarningCooldown) return;
+        this._energyWarningCooldown = now + 30000;
+
+        const efficiencyPercent = Math.round((electricity.efficiency || 0) * 100);
+        const message = `⚡ Energia insuficiente! Seus edifícios estão operando a ${efficiencyPercent}% de eficiência. Construa usinas de energia como Hidrelétrica, Painéis Solares ou Turbinas Eólicas para suprir a demanda.`;
+
+        if (window.gameManager && window.gameManager.uiManager && window.gameManager.uiManager.showNotification) {
+            window.gameManager.uiManager.showNotification(message, 'warning', 8000);
+        } else {
+            this.showNotification(message, 'warning');
         }
     }
 

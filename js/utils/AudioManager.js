@@ -810,31 +810,32 @@ class AudioManager {
     }
     
     // ===== MÚSICA =====
-    playMusic(key, fadeIn = true) {
+    playMusic(key, fadeIn = true, volumeMultiplier = 1.0) {
         if (!this.enabled) return;
-        
+
         const music = this.music.get(key);
         if (!music) {
             console.warn(`⚠️ Música não encontrada: ${key}`);
             return;
         }
-        
+
         // Parar música atual
         if (this.currentMusic) {
             this.stopMusic(fadeIn);
         }
-        
+
         try {
             this.currentMusic = music;
-            music.setVolume(fadeIn ? 0 : this.musicVolume * this.masterVolume);
+            this.currentMusicVolumeMultiplier = volumeMultiplier;
+            music.setVolume(fadeIn ? 0 : this.musicVolume * this.masterVolume * volumeMultiplier);
             music.play();
-            
+
             if (fadeIn) {
                 this.fadeInMusic();
             }
-            
-            console.log(`🎵 Reproduzindo música: ${key}`);
-            
+
+            console.log(`🎵 Reproduzindo música: ${key} (volume: ${Math.round(volumeMultiplier * 100)}%)`);
+
         } catch (error) {
             console.error(`❌ Erro ao reproduzir música ${key}:`, error);
         }
@@ -856,8 +857,9 @@ class AudioManager {
     
     fadeInMusic() {
         if (!this.currentMusic) return;
-        
-        const targetVolume = this.musicVolume * this.masterVolume;
+
+        const multiplier = this.currentMusicVolumeMultiplier || 1.0;
+        const targetVolume = this.musicVolume * this.masterVolume * multiplier;
         const steps = 20;
         const stepTime = this.fadeTime / steps;
         const volumeStep = targetVolume / steps;
@@ -1016,6 +1018,7 @@ class AudioManager {
     playResourceLow() { this.playSound('sfx_resource_low', 0.7); }
 
     // Enhanced Background Music Control (Legacy)
+    playMenuMusic() { this.playMusic('bgm_menu'); }
     playMainMusic() { this.playMusic('bgm_main'); }
     playWavesMusic() { this.playMusic('bgm_waves'); }
     playWhispersMusic() { this.playMusic('bgm_whispers'); }

@@ -252,6 +252,15 @@ function showScreen(screenId) {
         currentScreen = screenId;
         console.log(`📺 Tela ativa: ${screenId}`);
     }
+
+    // BGM por tela
+    if (typeof AudioManager !== 'undefined' && AudioManager.playMusic) {
+        if (screenId === 'main-menu' || screenId === 'loading-screen') {
+            AudioManager.playMusic('bgm_menu');
+        } else if (screenId === 'game-screen') {
+            AudioManager.playMusic('bgm_gameplay', true, 0.3);
+        }
+    }
 }
 
 // ===== AÇÕES DO MENU =====

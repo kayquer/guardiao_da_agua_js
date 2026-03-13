@@ -30,6 +30,8 @@ class AssetLoader {
                 { type: 'audio', key: 'bgm_caketown', path: 'Sounds/BGM/Caketown 1.mp3', optional: true },
                 { type: 'audio', key: 'bgm_waves', path: 'Sounds/BGM/Waves of Destiny ext v2.mp3', optional: true },
                 { type: 'audio', key: 'bgm_whispers', path: 'Sounds/BGM/Whispers of the Deep ext v1.mp3', optional: true },
+                { type: 'audio', key: 'bgm_menu', path: 'Sounds/BGM/Green Future - Menu Theme Lively.mp3', optional: true },
+                { type: 'audio', key: 'bgm_gameplay', path: 'Sounds/BGM/Green City - Gameplay Ambient.mp3', optional: true },
 
                 // ===== RSE SOUNDFX COLLECTION =====
                 // Core RSE SoundFX Effects
