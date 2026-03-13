@@ -25,11 +25,7 @@ class AssetLoader {
             const assetList = [
                 // Sprites
                 
-                // ===== BACKGROUND MUSIC (Legacy) =====
-                { type: 'audio', key: 'bgm_main', path: 'Sounds/BGM/TownTheme.mp3', optional: true },
-                { type: 'audio', key: 'bgm_caketown', path: 'Sounds/BGM/Caketown 1.mp3', optional: true },
-                { type: 'audio', key: 'bgm_waves', path: 'Sounds/BGM/Waves of Destiny ext v2.mp3', optional: true },
-                { type: 'audio', key: 'bgm_whispers', path: 'Sounds/BGM/Whispers of the Deep ext v1.mp3', optional: true },
+                // ===== BACKGROUND MUSIC =====
                 { type: 'audio', key: 'bgm_menu', path: 'Sounds/BGM/green-future-menu-theme-lively.mp3', optional: true },
                 { type: 'audio', key: 'bgm_gameplay', path: 'Sounds/BGM/green-city-gameplay-ambient.mp3', optional: true },
 

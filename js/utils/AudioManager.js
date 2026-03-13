@@ -62,8 +62,8 @@ class AudioManager {
 
         // Lista de sons para carregar (RSE SoundFX)
         const soundKeys = [
-            // Background Music (Legacy)
-            'bgm_main', 'bgm_caketown', 'bgm_waves', 'bgm_whispers',
+            // Background Music
+            'bgm_menu', 'bgm_gameplay',
 
             // RSE SoundFX Effects
             'sfx_click1', 'sfx_beep1', 'sfx_bling1', 'sfx_error1', 'sfx_chime1',
@@ -1017,11 +1017,9 @@ class AudioManager {
     playWarningAlert() { this.playSound('sfx_warning_alert', 0.8); }
     playResourceLow() { this.playSound('sfx_resource_low', 0.7); }
 
-    // Enhanced Background Music Control (Legacy)
+    // Background Music Control
     playMenuMusic() { this.playMusic('bgm_menu'); }
-    playMainMusic() { this.playMusic('bgm_main'); }
-    playWavesMusic() { this.playMusic('bgm_waves'); }
-    playWhispersMusic() { this.playMusic('bgm_whispers'); }
+    playGameplayMusic() { this.playMusic('bgm_gameplay', true, 0.3); }
 
     // Smart Audio Selection (fallback system)
     playSmartUISound(action) {
