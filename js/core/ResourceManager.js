@@ -471,9 +471,51 @@ class ResourceManager {
         return this.resources.population.satisfaction < 30;
     }
     
+    checkWaterThresholds() {
+        const water = this.resources.water;
+        if (water.max <= 0) return;
+
+        const percent = (water.current / water.max) * 100;
+        const thresholds = [50, 25, 10, 5];
+
+        for (const threshold of thresholds) {
+            if (percent <= threshold && (this._lastWaterThreshold === undefined || this._lastWaterThreshold > threshold)) {
+                this._lastWaterThreshold = threshold;
+
+                const messages = {
+                    50: 'O nível de água caiu para 50%. Fique atento ao consumo da sua cidade.',
+                    25: 'Alerta! Apenas 25% da água restante. Considere construir novas fontes de captação.',
+                    10: 'Situação crítica! Apenas 10% de água restante. Ação imediata necessária!',
+                    5: 'EMERGÊNCIA! Apenas 5% de água! Sua cidade está prestes a entrar em colapso!'
+                };
+
+                const severity = threshold <= 10 ? 'error' : 'warning';
+                const uiManager = this.gameManager?.uiManager;
+                if (uiManager && uiManager.showCentralAlert) {
+                    const currentWater = Math.round(water.current);
+                    const maxWater = Math.round(water.max);
+                    uiManager.showCentralAlert(
+                        'Nível de Água Baixo',
+                        messages[threshold],
+                        severity,
+                        `Reserva atual: ${currentWater} / ${maxWater} litros (${Math.round(percent)}%)`
+                    );
+                }
+                break;
+            }
+        }
+
+        // Reset threshold tracking when water recovers
+        if (percent > 50) {
+            this._lastWaterThreshold = undefined;
+        }
+    }
+
     checkCriticalLevels() {
         const criticalEvents = [];
-        
+
+        this.checkWaterThresholds();
+
         if (this.hasWaterShortage()) {
             criticalEvents.push({
                 type: 'water_shortage',

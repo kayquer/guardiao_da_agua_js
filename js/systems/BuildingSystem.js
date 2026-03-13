@@ -4295,12 +4295,20 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
         this._energyWarningCooldown = now + 30000;
 
         const efficiencyPercent = Math.round((electricity.efficiency || 0) * 100);
-        const message = `⚡ Energia insuficiente! Seus edifícios estão operando a ${efficiencyPercent}% de eficiência. Construa usinas de energia como Hidrelétrica, Painéis Solares ou Turbinas Eólicas para suprir a demanda.`;
+        const generation = Math.round(electricity.generation || 0);
+        const consumption = Math.round(electricity.consumption || 0);
+        const deficit = consumption - generation;
 
-        if (window.gameManager && window.gameManager.uiManager && window.gameManager.uiManager.showNotification) {
-            window.gameManager.uiManager.showNotification(message, 'warning', 8000);
+        const uiManager = window.gameManager?.uiManager;
+        if (uiManager && uiManager.showCentralAlert) {
+            uiManager.showCentralAlert(
+                'Energia Insuficiente',
+                `Seus edifícios estão operando a apenas ${efficiencyPercent}% de eficiência por falta de energia.`,
+                'warning',
+                `Geração atual: ${generation} kW | Consumo: ${consumption} kW | Déficit: ${deficit} kW\n\nConstrua usinas de energia (Hidrelétrica, Painéis Solares ou Turbinas Eólicas) para suprir a demanda.`
+            );
         } else {
-            this.showNotification(message, 'warning');
+            this.showNotification(`Energia insuficiente! Eficiência: ${efficiencyPercent}%`, 'warning');
         }
     }
 

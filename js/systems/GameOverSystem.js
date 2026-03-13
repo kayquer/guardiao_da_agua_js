@@ -333,6 +333,11 @@ class GameOverSystem {
                     this.portraitCamera.radius = 4;
                 }
 
+                // Apply PBR textures
+                const texturePath = 'models/Characters/girl-reading-a-book-icon-obj/textures/';
+                const texturePrefix = 'girl-reading-a-book-icon-001-';
+                await this.applyPBRTextures(meshes, texturePath, texturePrefix);
+
                 return true;
             }
         } catch (error) {
@@ -341,6 +346,74 @@ class GameOverSystem {
         }
 
         return false;
+    }
+
+    /**
+     * Apply PBR textures to meshes (same as TutorialSystem)
+     */
+    async applyPBRTextures(meshes, texturePath, texturePrefix) {
+        try {
+            meshes.forEach(mesh => {
+                if (mesh.material) {
+                    mesh.material.dispose();
+                    mesh.material = null;
+                }
+            });
+
+            const pbr = new BABYLON.PBRMaterial('characterPBR', this.portraitScene);
+
+            pbr.albedoTexture = new BABYLON.Texture(
+                texturePath + texturePrefix + 'col-metalness-4k.png',
+                this.portraitScene
+            );
+
+            const normalTexture = new BABYLON.Texture(
+                texturePath + texturePrefix + 'nrm-metalness-4k.png',
+                this.portraitScene
+            );
+            pbr.bumpTexture = normalTexture;
+            pbr.invertNormalMapX = false;
+            pbr.invertNormalMapY = false;
+
+            const roughnessTexture = new BABYLON.Texture(
+                texturePath + texturePrefix + 'roughness-metalness-4k.png',
+                this.portraitScene
+            );
+            pbr.metallicTexture = roughnessTexture;
+            pbr.useRoughnessFromMetallicTextureAlpha = false;
+            pbr.useRoughnessFromMetallicTextureGreen = true;
+            pbr.useMetallnessFromMetallicTextureBlue = false;
+            pbr.metallic = 0.0;
+            pbr.roughness = 1.0;
+
+            const aoTexture = new BABYLON.Texture(
+                texturePath + texturePrefix + 'ao-metalness-4k.png',
+                this.portraitScene
+            );
+            pbr.ambientTexture = aoTexture;
+            pbr.ambientTextureStrength = 1.0;
+
+            pbr.directIntensity = 1.0;
+            pbr.environmentIntensity = 1.0;
+            pbr.specularIntensity = 0.5;
+            pbr.albedoColor = new BABYLON.Color3(1, 1, 1);
+
+            meshes.forEach(mesh => {
+                mesh.material = pbr;
+            });
+
+            console.log(`✅ PBR textures applied to ${meshes.length} meshes (game over)`);
+        } catch (error) {
+            console.error('❌ Error loading game over textures:', error);
+
+            const fallbackMat = new BABYLON.StandardMaterial('characterFallback', this.portraitScene);
+            fallbackMat.diffuseColor = new BABYLON.Color3(0.9, 0.8, 0.7);
+            fallbackMat.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2);
+
+            meshes.forEach(mesh => {
+                mesh.material = fallbackMat;
+            });
+        }
     }
 
     /**

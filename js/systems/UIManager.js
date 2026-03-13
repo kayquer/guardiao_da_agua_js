@@ -2043,6 +2043,47 @@ class UIManager {
         this.elements.detailsContent.innerHTML = detailsHTML;
     }
 
+    // ===== ALERTA CENTRAL (MODAL) =====
+    showCentralAlert(title, message, type = 'warning', details = '') {
+        // Cooldown de 30s para não spammar
+        if (this.isOnCooldown('central-alert')) {
+            this.showNotification(message, type, 6000);
+            return;
+        }
+        this.setCooldown('central-alert', 30000);
+
+        // Remover alerta anterior se existir
+        const existing = document.querySelector('.central-alert-overlay');
+        if (existing) existing.remove();
+
+        const icons = {
+            warning: '\u26A0\uFE0F',
+            error: '\u274C',
+            info: '\u2139\uFE0F',
+            success: '\u2705'
+        };
+
+        const overlay = document.createElement('div');
+        overlay.className = 'central-alert-overlay';
+        overlay.innerHTML = `
+            <div class="central-alert-card ${type}">
+                <div class="central-alert-icon">${icons[type] || icons.warning}</div>
+                <div class="central-alert-title">${title}</div>
+                <div class="central-alert-message">${message}</div>
+                ${details ? `<div class="central-alert-details">${details}</div>` : ''}
+                <button class="central-alert-btn">Entendi</button>
+            </div>
+        `;
+
+        const closeAlert = () => overlay.remove();
+        overlay.querySelector('.central-alert-btn').addEventListener('click', closeAlert);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeAlert();
+        });
+
+        document.body.appendChild(overlay);
+    }
+
     // ===== NOTIFICAÇÕES =====
     showNotification(message, type = 'info', duration = 5000) {
         // ===== BREAKING NEWS SYSTEM FOR MOBILE =====
@@ -2486,42 +2527,15 @@ class UIManager {
         if (this.isOnCooldown('budget-tooltip')) return;
         this.setCooldown('budget-tooltip', 2000);
 
-        if (this.isMobile) {
-            this.showBreakingNews('💰 Sem orçamento suficiente!', 'warning', 4000);
-            // Show a second notification with the tip after a brief delay
-            setTimeout(() => {
-                this.showBreakingNews('💡 Toque no botão de ajuda (❓) para saber como ganhar mais dinheiro!', 'info', 5000);
-            }, 1500);
-            return;
-        }
+        const budget = this.gameManager?.resourceManager?.getResource('budget');
+        const currentBudget = budget ? `R$ ${Math.floor(budget.current).toLocaleString('pt-BR')}` : 'insuficiente';
 
-        // Desktop: show clickable notification
-        const notification = document.createElement('div');
-        notification.className = 'notification warning';
-        notification.innerHTML = `
-            💰 Sem orçamento suficiente!
-            <a href="#" class="notification-link" style="display:block;margin-top:4px;color:#fff;text-decoration:underline;font-weight:700;cursor:pointer;">
-                Clique aqui para saber como ganhar mais dinheiro
-            </a>
-            <button class="notification-close">✕</button>
-        `;
-
-        const link = notification.querySelector('.notification-link');
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.removeNotification(notification, true);
-            this.openHelpFAQBudget();
-        });
-
-        if (this.elements.notifications) {
-            this.elements.notifications.appendChild(notification);
-        }
-
-        setTimeout(() => {
-            this.removeNotification(notification);
-        }, 6000);
-
-        this.limitNotifications();
+        this.showCentralAlert(
+            'Sem Dinheiro Suficiente',
+            'Seu saldo atual (' + currentBudget + ') não é suficiente para essa construção.',
+            'warning',
+            'Dica: Aumente a população e construa edifícios comerciais para gerar mais receita. Verifique a seção de ajuda para mais informações.'
+        );
     }
 
     openHelpFAQBudget() {

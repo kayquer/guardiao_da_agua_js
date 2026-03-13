@@ -824,34 +824,72 @@ class AudioManager {
             this.stopMusic(fadeIn);
         }
 
-        try {
-            this.currentMusic = music;
-            this.currentMusicVolumeMultiplier = volumeMultiplier;
-            music.setVolume(fadeIn ? 0 : this.musicVolume * this.masterVolume * volumeMultiplier);
-            music.play();
+        this.currentMusic = music;
+        this.currentMusicKey = key;
+        this.currentMusicVolumeMultiplier = volumeMultiplier;
+        music.setVolume(fadeIn ? 0 : this.musicVolume * this.masterVolume * volumeMultiplier);
 
-            if (fadeIn) {
-                this.fadeInMusic();
-            }
-
-            console.log(`🎵 Reproduzindo música: ${key} (volume: ${Math.round(volumeMultiplier * 100)}%)`);
-
-        } catch (error) {
-            console.error(`❌ Erro ao reproduzir música ${key}:`, error);
+        const playPromise = music.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch((error) => {
+                if (error.name === 'NotAllowedError') {
+                    console.warn('⚠️ Autoplay bloqueado pelo navegador. Aguardando interação do usuário...');
+                    this._pendingMusicKey = key;
+                    this._pendingMusicFadeIn = fadeIn;
+                    this._pendingMusicVolume = volumeMultiplier;
+                    this._setupAutoplayResume();
+                } else {
+                    console.error(`❌ Erro ao reproduzir música ${key}:`, error);
+                }
+            });
         }
+
+        if (fadeIn) {
+            this.fadeInMusic();
+        }
+
+        console.log(`🎵 Reproduzindo música: ${key} (volume: ${Math.round(volumeMultiplier * 100)}%)`);
     }
-    
+
+    _setupAutoplayResume() {
+        if (this._autoplayListenerAdded) return;
+        this._autoplayListenerAdded = true;
+
+        const resumeAudio = () => {
+            if (this._pendingMusicKey) {
+                const key = this._pendingMusicKey;
+                const fadeIn = this._pendingMusicFadeIn;
+                const vol = this._pendingMusicVolume;
+                this._pendingMusicKey = null;
+                this.playMusic(key, fadeIn, vol);
+            }
+            document.removeEventListener('click', resumeAudio);
+            document.removeEventListener('touchstart', resumeAudio);
+            document.removeEventListener('keydown', resumeAudio);
+            this._autoplayListenerAdded = false;
+        };
+
+        document.addEventListener('click', resumeAudio, { once: false });
+        document.addEventListener('touchstart', resumeAudio, { once: false });
+        document.addEventListener('keydown', resumeAudio, { once: false });
+    }
+
     stopMusic(fadeOut = true) {
         if (!this.currentMusic) return;
-        
+        const musicToStop = this.currentMusic;
+        this.currentMusic = null;
+
+        if (this.musicFadeInterval) {
+            clearInterval(this.musicFadeInterval);
+            this.musicFadeInterval = null;
+        }
+
         if (fadeOut) {
             this.fadeOutMusic(() => {
-                this.currentMusic.pause();
-                this.currentMusic = null;
-            });
+                musicToStop.pause();
+            }, musicToStop);
         } else {
-            this.currentMusic.pause();
-            this.currentMusic = null;
+            musicToStop.pause();
         }
     }
     
@@ -881,30 +919,30 @@ class AudioManager {
         }, stepTime);
     }
     
-    fadeOutMusic(callback) {
-        if (!this.currentMusic) {
+    fadeOutMusic(callback, musicRef = null) {
+        const music = musicRef || this.currentMusic;
+        if (!music) {
             if (callback) callback();
             return;
         }
-        
+
         const startVolume = this.musicVolume * this.masterVolume;
         const steps = 20;
         const stepTime = this.fadeTime / steps;
         const volumeStep = startVolume / steps;
-        
+
         let currentStep = 0;
-        
-        this.musicFadeInterval = setInterval(() => {
+
+        const fadeInterval = setInterval(() => {
             currentStep++;
             const newVolume = startVolume - (volumeStep * currentStep);
-            
-            if (this.currentMusic) {
-                this.currentMusic.setVolume(Math.max(0, newVolume));
-            }
-            
+
+            try {
+                music.setVolume(Math.max(0, newVolume));
+            } catch (e) { /* music may have been disposed */ }
+
             if (currentStep >= steps) {
-                clearInterval(this.musicFadeInterval);
-                this.musicFadeInterval = null;
+                clearInterval(fadeInterval);
                 if (callback) callback();
             }
         }, stepTime);
@@ -1149,8 +1187,8 @@ AudioManager.playSound = function(key, volume) {
     AudioManager.getInstance().playSound(key, volume);
 };
 
-AudioManager.playMusic = function(key, fadeIn) {
-    AudioManager.getInstance().playMusic(key, fadeIn);
+AudioManager.playMusic = function(key, fadeIn, volumeMultiplier) {
+    AudioManager.getInstance().playMusic(key, fadeIn, volumeMultiplier);
 };
 
 AudioManager.playDayNightTransition = function(transitionType) {
