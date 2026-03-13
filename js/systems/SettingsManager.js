@@ -413,6 +413,11 @@ class SettingsManager {
             }
         });
 
+        // Propagar qualidade para GridManager
+        if (window.gameManager?.gridManager) {
+            window.gameManager.gridManager.graphicsQuality = quality;
+        }
+
         console.log('🎨 Qualidade aplicada - Sombras:', shadowMapSize, 'Luzes:', lightIntensity);
     }
 

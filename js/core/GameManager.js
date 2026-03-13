@@ -276,10 +276,17 @@ class GameManager {
         sunLight.intensity = 0.8;
         sunLight.diffuse = new BABYLON.Color3(1, 0.95, 0.8);
         
-        const shadowGenerator = new BABYLON.ShadowGenerator(1024, sunLight);
-        shadowGenerator.useBlurExponentialShadowMap = true;
-        shadowGenerator.blurKernel = 32;
-        
+        const quality = this.settingsManager?.settings?.graphics?.quality || 'medium';
+        const shadowMapSize = quality === 'low' ? 512 : quality === 'high' ? 2048 : 1024;
+        const shadowGenerator = new BABYLON.ShadowGenerator(shadowMapSize, sunLight);
+
+        if (quality === 'low') {
+            shadowGenerator.useBlurExponentialShadowMap = false;
+        } else {
+            shadowGenerator.useBlurExponentialShadowMap = true;
+            shadowGenerator.blurKernel = quality === 'high' ? 32 : 16;
+        }
+
         this.shadowGenerator = shadowGenerator;
     }
     

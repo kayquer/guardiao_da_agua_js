@@ -34,12 +34,23 @@ class GridManager {
         // Configurações visuais
         this.showGrid = true;
         this.gridOpacity = 0.3;
+
+        // Qualidade gráfica
+        this.graphicsQuality = this.getGraphicsQuality();
         
         this.initializeGrid();
         this.createVisualGrid();
         this.createTerrain();
     }
     
+    getGraphicsQuality() {
+        try {
+            return window.gameManager?.settingsManager?.settings?.graphics?.quality || 'medium';
+        } catch (e) {
+            return 'medium';
+        }
+    }
+
     // ===== INICIALIZAÇÃO =====
     initializeGrid() {
         console.log(`🗂️ Criando grid ${this.gridSize}x${this.gridSize}...`);
@@ -206,11 +217,12 @@ class GridManager {
         console.log('🏔️ Criando terreno procedural...');
 
         try {
-            // Criar terreno com subdivisões suficientes para detalhes
+            // Criar terreno com subdivisões baseadas na qualidade gráfica
+            const subdivMultiplier = this.graphicsQuality === 'low' ? 1 : 2;
             this.terrainMesh = BABYLON.MeshBuilder.CreateGround("terrain", {
                 width: this.gridSize * this.cellSize,
                 height: this.gridSize * this.cellSize,
-                subdivisions: this.gridSize * 2 // Mais subdivisões para melhor qualidade
+                subdivisions: this.gridSize * subdivMultiplier
             }, this.scene);
 
             // Aplicar elevação customizada aos vértices
@@ -305,8 +317,8 @@ class GridManager {
             }
         }
 
-        // Inicializar animação centralizada após criar todos os blocos
-        if (this.waterMeshes.length > 0) {
+        // Inicializar animação de água apenas em qualidade média ou alta
+        if (this.waterMeshes.length > 0 && this.graphicsQuality !== 'low') {
             this.initializeWaterAnimation();
         }
     }
@@ -341,17 +353,22 @@ class GridManager {
 
         // Transparência baseada na profundidade
         waterMaterial.alpha = 0.6 + depthFactor * 0.2;
-        waterMaterial.specularColor = new BABYLON.Color3(0.8, 0.8, 1.0);
-        waterMaterial.specularPower = 64; // Reflexos mais nítidos
 
-        // Adicionar reflexão se disponível
-        if (this.scene.environmentTexture) {
-            waterMaterial.reflectionTexture = this.scene.environmentTexture;
-            waterMaterial.reflectionFresnelParameters = new BABYLON.FresnelParameters();
-            waterMaterial.reflectionFresnelParameters.bias = 0.1;
-            waterMaterial.reflectionFresnelParameters.power = 0.5;
-            waterMaterial.reflectionFresnelParameters.leftColor = BABYLON.Color3.White();
-            waterMaterial.reflectionFresnelParameters.rightColor = BABYLON.Color3.Black();
+        if (this.graphicsQuality === 'low') {
+            waterMaterial.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+        } else {
+            waterMaterial.specularColor = new BABYLON.Color3(0.8, 0.8, 1.0);
+            waterMaterial.specularPower = 64;
+
+            // Adicionar reflexão se disponível
+            if (this.scene.environmentTexture) {
+                waterMaterial.reflectionTexture = this.scene.environmentTexture;
+                waterMaterial.reflectionFresnelParameters = new BABYLON.FresnelParameters();
+                waterMaterial.reflectionFresnelParameters.bias = 0.1;
+                waterMaterial.reflectionFresnelParameters.power = 0.5;
+                waterMaterial.reflectionFresnelParameters.leftColor = BABYLON.Color3.White();
+                waterMaterial.reflectionFresnelParameters.rightColor = BABYLON.Color3.Black();
+            }
         }
 
         // Armazenar dados para animação centralizada
@@ -470,8 +487,15 @@ class GridManager {
             }
         }
 
-        // Criar decorações após os blocos de terreno
-        this.createTerrainDecorations();
+        // Criar decorações apenas em qualidade média ou alta
+        if (this.graphicsQuality !== 'low') {
+            this.createTerrainDecorations();
+        }
+
+        // Merge de meshes do terreno para reduzir draw calls
+        if (this.graphicsQuality === 'low' || this.graphicsQuality === 'medium') {
+            this.mergeTerrainBlocks();
+        }
     }
 
     createTerrainBlock(gridX, gridZ, terrainType) {
@@ -531,6 +555,42 @@ class GridManager {
         };
 
         this.terrainBlocks.push(terrainBlock);
+    }
+
+    mergeTerrainBlocks() {
+        if (!this.terrainBlocks || this.terrainBlocks.length === 0) return;
+
+        console.log('🔧 Merging terrain blocks para otimização...');
+
+        // Agrupar blocos por tipo de terreno
+        const blocksByType = {};
+        this.terrainBlocks.forEach(block => {
+            const type = block.metadata?.terrainType || 'unknown';
+            if (!blocksByType[type]) blocksByType[type] = [];
+            blocksByType[type].push(block);
+        });
+
+        const mergedBlocks = [];
+        for (const [type, blocks] of Object.entries(blocksByType)) {
+            if (blocks.length <= 1) {
+                mergedBlocks.push(...blocks);
+                continue;
+            }
+
+            // Usar material compartilhado do primeiro bloco
+            const sharedMaterial = blocks[0].material;
+
+            const merged = BABYLON.Mesh.MergeMeshes(blocks, true, true, undefined, false, true);
+            if (merged) {
+                merged.material = sharedMaterial;
+                merged.receiveShadows = true;
+                merged.metadata = { terrain: true, terrainType: type, merged: true };
+                mergedBlocks.push(merged);
+            }
+        }
+
+        this.terrainBlocks = mergedBlocks;
+        console.log(`🔧 Terreno otimizado: ${mergedBlocks.length} meshes (era ~1600)`);
     }
 
     // ===== SISTEMA DE DECORAÇÃO =====

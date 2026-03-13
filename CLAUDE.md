@@ -60,7 +60,9 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 ├── StudySystem       (js/systems/StudySystem.js)        — educational unlockable content
 ├── SettingsManager   (js/systems/SettingsManager.js)   — audio/graphics/gameplay settings
 ├── SimCityCameraControls (js/systems/SimCityCameraControls.js) — pan/zoom/rotate with touch
-└── AudioManager      (js/utils/AudioManager.js)         — BGM/SFX pooling
+├── AudioManager      (js/utils/AudioManager.js)         — BGM/SFX pooling
+├── AssetLoader       (js/utils/AssetLoader.js)          — asset preloading & manifest
+└── GameUtils         (js/utils/GameUtils.js)            — shared utility functions
 ```
 
 ### Key Configuration Files
@@ -114,7 +116,7 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 - **pointer-events on HUD**: `.hud` has `pointer-events: none` with `.hud > *` re-enabling via `auto`. This works for nested elements (inherited), but elements appended to `document.body` (like `.mobile-toggle`) must have their own `z-index` and are unaffected.
 - **`display: none` vs transform visibility**: Mobile panels use CSS transforms for show/hide animations, but if the base CSS sets `display: none`, the transform has no visual effect. Always ensure mobile CSS overrides `display` for transform-animated panels.
 - **Mesh metadata must be preserved**: When replacing/merging building meshes, always copy `metadata` from old to new mesh or buildings become unselectable.
-- **building-studies.json format**: Each entry needs `buildingId`, `buildingName`, `category`, `difficulty`, `studyTitle`, `studyIcon`, `estimatedTime`, `learningObjectives`, `pages` (array of `{pageNumber, title, content (HTML string), image}`), `quiz`, `relatedBuildings`, `relatedConcepts`. Target audience: teenagers 11-14. Validate JSON with `node -e "JSON.parse(require('fs').readFileSync('data/building-studies.json','utf8'))"`.
+- **building-studies.json format**: Each entry needs `buildingId`, `buildingName`, `category`, `difficulty`, `studyTitle`, `studyIcon`, `estimatedTime`, `learningObjectives`, `pages` (array of `{pageNumber, title, content (HTML string), image}`), `quiz`, `relatedBuildings`, `relatedConcepts`. Each quiz question **must** have a numeric `id` field (sequential starting at 1) — without it, radio buttons share the same HTML `name` group and only one answer can be selected across all questions. Target audience: teenagers 11-14. All in-game text is **pt-BR (Brazilian Portuguese)**. Validate JSON with `node -e "JSON.parse(require('fs').readFileSync('data/building-studies.json','utf8'))"`.
 - **IDE diagnostics for AudioManager**: `AudioManager` hints ("Não foi possível encontrar o nome") are false positives — it's a global loaded via `<script>` tag, not an import.
 - **MIDI not supported**: The AudioManager uses Web Audio API / HTML5 Audio — only MP3, WAV, OGG are supported. MIDI files require a separate library (not implemented). Always use MP3 for BGM.
 - **Game over container CSS**: `#gameover-container` styles live in `css/tutorial.css` (not a separate file). It reuses tutorial classes (`.tutorial-content`, `.tutorial-dialog`) but has its own container/background/portrait rules. Missing these CSS rules causes the game over dialog to be invisible.

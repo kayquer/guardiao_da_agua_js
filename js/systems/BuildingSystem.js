@@ -87,7 +87,7 @@ class BuildingSystem {
             name: 'Bomba de Água',
             description: 'Extrai água de fontes subterrâneas',
             category: 'water',
-            cost: 5000,
+            cost: 2500,
             size: 1,
             waterProduction: 50,
             powerConsumption: 20,
@@ -100,12 +100,12 @@ class BuildingSystem {
                 nearWater: false
             }
         });
-        
+
         this.addBuildingType('water_well', {
             name: 'Poço Artesiano',
             description: 'Poço profundo para extração de água limpa',
             category: 'water',
-            cost: 8000,
+            cost: 4000,
             size: 1,
             waterProduction: 80,
             pollutionGeneration: 2,
@@ -483,7 +483,7 @@ class BuildingSystem {
             name: 'Hidrelétrica',
             description: 'Usina hidrelétrica limpa de alta capacidade',
             category: 'power',
-            cost: 15000,
+            cost: 11250,
             size: 3,
             powerGeneration: 500,
             waterConsumption: 0,
@@ -568,7 +568,7 @@ class BuildingSystem {
             name: 'Usina Solar',
             description: 'Fazenda solar fotovoltaica limpa',
             category: 'power',
-            cost: 12000,
+            cost: 9000,
             size: 3,
             powerGeneration: 200,
             pollutionGeneration: 0,
@@ -5340,9 +5340,9 @@ removePowerShortageIcon(building) {
         return Array.from(this.buildingTypes.values()).filter(type => type.visible !== false);
     }
     getBuildingTypesByCategory(category) {
-        return Array.from(this.buildingTypes.values()).filter(
-            type => type.category === category && type.visible !== false
-        );
+        return Array.from(this.buildingTypes.values())
+            .filter(type => type.category === category && type.visible !== false)
+            .sort((a, b) => a.cost - b.cost);
     }
     getAllBuildings() { return Array.from(this.buildings.values()); }
     getBuildingCount() { return this.buildings.size; }
