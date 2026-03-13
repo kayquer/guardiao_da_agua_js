@@ -11,11 +11,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Run `npm install` before first use to install Playwright dev dependency
 
 ### Development
+
 ```bash
 npm start          # Start Python HTTP server at http://localhost:3000
 ```
 
 ### Testing (Playwright E2E)
+
 ```bash
 npm test                   # Run all Playwright tests (headless)
 npm run test:headed        # Run tests with visible browser
@@ -30,17 +32,19 @@ Tests are in `tests/`. There is no unit test framework — all tests are Playwri
 ## Architecture
 
 ### Tech Stack
+
 - **No build step** — pure HTML/CSS/JavaScript loaded directly by browser
 - **Babylon.js** loaded from CDN (3D engine for scene, mesh, lighting, camera)
 - **Python HTTP server** for local development (`python -m http.server 3000`)
 
 ### Entry Points
+
 - `index.html` — root HTML; imports all CSS and JS via `<script>` tags
-- `js/main.js` — game boot: defines `GAME_CONFIG`, initializes `GameManager`, wires loading screen
+- `js/main.js` — game boot: defines `GAME_CONFIG`, initializes `GameManager`, wires loading screen, manages screen transitions and BGM
 
 ### Module Hierarchy
 
-```
+```text
 GameManager (js/core/GameManager.js)  ← central orchestrator
 ├── GridManager       (js/core/GridManager.js)           — 40×40 grid, terrain, occupancy
 ├── ResourceManager   (js/core/ResourceManager.js)       — water, budget, population, pollution, electricity
@@ -60,23 +64,28 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 ```
 
 ### Key Configuration Files
+
 - `js/config/GameConstants.js` — **all magic numbers live here**: `CAMERA`, `FEATURE_FLAGS`, initial resources, grid size. Edit here first when tuning gameplay.
 - `FEATURE_FLAGS` in `GameConstants.js` controls which building categories and UI features are enabled in release. `ENABLE_INFRASTRUCTURE` and `ENABLE_POWER_GRID` are currently `false`.
 
 ### Assets
+
 - `Sprites/` — 2D sprite sheets (Sunnyside World assets)
-- `Sounds/BGM/` and `Sounds/SFX/` — audio files
+- `Sounds/BGM/` — background music (MP3 only; MIDI not supported by Web Audio API)
+- `Sounds/SFX/` — sound effects
 - `models/` — OBJ 3D character models used by TutorialSystem
 - `data/building-studies.json` — educational content for buildings (used by StudySystem)
 - `UI/` — PNG/JPG UI elements and dialogue assets
 
 ### CSS
+
 - `css/styles.css` — base styles
 - `css/ui.css` — HUD and panel components
 - `css/responsive.css` — responsive overrides: `max-width: 768px` (mobile) and `min-width: 769px` (desktop accordion)
-- `css/tutorial.css` — tutorial overlay styles
+- `css/tutorial.css` — tutorial and game over overlay styles
 
 ## Key Patterns
+
 - **Singleton pattern**: `GameManager`, `SettingsManager`, `SaveSystem` — accessed via module-level `let` variables in `main.js`.
 - **System communication**: all systems receive a `gameManager` reference at construction and call back through it rather than importing each other directly.
 - **Building definitions**: large data objects defined inside `BuildingSystem.js`; `data/building-studies.json` holds supplemental educational text shown in StudySystem.
@@ -92,6 +101,10 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 - **hud-right visibility (desktop)**: Hidden by default (`display: none`). Shown via `showHudRight()` when building/terrain info is displayed, hidden via `hideHudRight()` when panels close.
 - **hud-right visibility (mobile)**: Uses `transform: translateX(100%)` to hide off-screen and `.active` class to slide in. Mobile CSS must override `display: none` from base CSS or the panel stays invisible regardless of transform.
 - **Panel show/hide must use centralized methods**: Always call `showHudRight()`/`hideHudRight()` instead of manually toggling `.hud-right` display or classes. Methods like `showMissionPanel()` must go through these to work on both platforms.
+- **BGM per screen**: `showScreen()` in `main.js` handles BGM transitions — menu/loading plays `bgm_menu` (Green Future), gameplay plays `bgm_gameplay` (Green City) at 30% volume. `AudioManager.playMusic()` auto-stops the current track with fade-out before starting the new one, preventing overlap.
+- **BGM volume multiplier**: `AudioManager.playMusic(key, fadeIn, volumeMultiplier)` accepts a third parameter (0.0–1.0) that scales `musicVolume * masterVolume`. Used to keep gameplay ambient music quieter than menu music.
+- **Game over overlay**: `GameOverSystem` detects defeat conditions (water depleted, pollution critical) and shows a fullscreen educational dialog via `#gameover-container`. CSS lives in `css/tutorial.css` alongside tutorial styles — both share `.tutorial-dialog` classes.
+- **Building placement feedback**: Clicking a disabled (can't afford) building button shows a warning notification with a clickable link to the FAQ budget section (`UIManager.showBudgetInsufficientNotification()`). After placing a building that causes energy deficit, `BuildingSystem.showEnergyShortageNotification()` warns about insufficient power (30s cooldown).
 
 ## Gotchas
 
@@ -103,3 +116,5 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 - **Mesh metadata must be preserved**: When replacing/merging building meshes, always copy `metadata` from old to new mesh or buildings become unselectable.
 - **building-studies.json format**: Each entry needs `buildingId`, `buildingName`, `category`, `difficulty`, `studyTitle`, `studyIcon`, `estimatedTime`, `learningObjectives`, `pages` (array of `{pageNumber, title, content (HTML string), image}`), `quiz`, `relatedBuildings`, `relatedConcepts`. Target audience: teenagers 11-14. Validate JSON with `node -e "JSON.parse(require('fs').readFileSync('data/building-studies.json','utf8'))"`.
 - **IDE diagnostics for AudioManager**: `AudioManager` hints ("Não foi possível encontrar o nome") are false positives — it's a global loaded via `<script>` tag, not an import.
+- **MIDI not supported**: The AudioManager uses Web Audio API / HTML5 Audio — only MP3, WAV, OGG are supported. MIDI files require a separate library (not implemented). Always use MP3 for BGM.
+- **Game over container CSS**: `#gameover-container` styles live in `css/tutorial.css` (not a separate file). It reuses tutorial classes (`.tutorial-content`, `.tutorial-dialog`) but has its own container/background/portrait rules. Missing these CSS rules causes the game over dialog to be invisible.
