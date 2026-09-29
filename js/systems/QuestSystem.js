@@ -1037,8 +1037,6 @@ class QuestSystem {
         }, 100); // Small delay to ensure game is fully initialized
     }
 
-
-    
     // ===== CONTROLE DE MISSÕES =====
     startFirstQuest() {
         this.startQuest('tutorial_01');
@@ -1128,8 +1126,6 @@ class QuestSystem {
         console.log(`✅ Missão completa: ${quest.title} (Performance: ${performanceMultiplier.toFixed(2)}x)`);
         return true;
     }
-
-
 
     calculatePerformanceMultiplier(quest) {
         if (!quest.scalingRewards) return 1.0;
@@ -1444,8 +1440,6 @@ class QuestSystem {
             console.log(`⭐ Experiência ganha: ${scaledExp}`);
         }
 
-
-
         // Special unlocks based on performance
         if (quest.rewards.performanceUnlocks && performanceMultiplier >= 1.5) {
             quest.rewards.performanceUnlocks.forEach(unlock => {
@@ -1454,8 +1448,6 @@ class QuestSystem {
             });
         }
     }
-
-
 
     // ===== INTERACTIVE CHOICE SYSTEM =====
     presentChoice(questId, choiceId) {
@@ -1644,21 +1636,9 @@ class QuestSystem {
         }
     }
 
-    // ===== ENHANCED MISSION MANAGEMENT =====
-    getAvailableChoices(questId) {
-        const quest = this.quests.get(questId);
-        return quest?.choices || [];
-    }
-
     getMissionsByUrgency(urgencyLevel) {
         return Array.from(this.quests.values()).filter(quest =>
             quest.urgency === urgencyLevel && quest.status === 'active'
-        );
-    }
-
-    getActiveEmergencies() {
-        return this.getMissionsByUrgency('critical').concat(
-            this.getMissionsByUrgency('high')
         );
     }
 
@@ -2294,32 +2274,6 @@ class QuestSystem {
     }
 
     /**
-     * Opens the appropriate building category for an objective
-     */
-    openBuildingCategory(buildingType) {
-        // Map building types to UI categories
-        const categoryMap = {
-            'water_pump': 'water',
-            'well': 'water',
-            'desalination_plant': 'water',
-            'rain_garden': 'water',
-            'floating_garden': 'water',
-            'monitoring_station': 'water',
-            'quality_monitor': 'water',
-            'treatment_plant': 'treatment',
-            'reservoir': 'storage',
-            'water_tower': 'storage'
-        };
-
-        const category = categoryMap[buildingType] || 'water';
-
-        // Trigger building category selection
-        if (window.gameManager.uiManager && window.gameManager.uiManager.selectBuildingCategory) {
-            window.gameManager.uiManager.selectBuildingCategory(category);
-        }
-    }
-
-    /**
      * Gets related info cards for a mission based on its simplified category
      * Returns simplified categories that match the mission's category (primary/secondary)
      */
@@ -2685,16 +2639,6 @@ class QuestSystem {
     // ===== MISSION MANAGEMENT HELPERS =====
 
     /**
-     * Gets missions by category - now simplified to only primary/secondary
-     */
-    getMissionsByCategory(category) {
-        return Array.from(this.quests.values()).filter(mission => {
-            // Filter by the simplified category system
-            return mission.category === category;
-        });
-    }
-
-    /**
      * Selects a mission category
      */
     selectCategory(category) {
@@ -2708,22 +2652,6 @@ class QuestSystem {
     selectMission(missionId) {
         this.missionUI.selectedMission = missionId;
         // Could expand to show detailed mission view
-    }
-
-    /**
-     * Starts a mission from the UI
-     */
-    startMission(missionId) {
-        if (this.startQuest(missionId)) {
-            this.renderMissionInterface();
-
-            if (this.gameManager.uiManager) {
-                this.gameManager.uiManager.showNotification(
-                    `Missão iniciada: ${this.quests.get(missionId).title}`,
-                    'info'
-                );
-            }
-        }
     }
 
     /**
@@ -2912,27 +2840,6 @@ class QuestSystem {
         return difficultyMap[difficulty] || 'Desconhecido';
     }
 
-    // ===== GETTERS =====
-    getActiveQuests() {
-        return Array.from(this.activeQuests).map(id => this.quests.get(id));
-    }
-
-    getCompletedQuests() {
-        return Array.from(this.completedQuests).map(id => this.quests.get(id));
-    }
-    
-    getCurrentMainQuest() {
-        return this.currentMainQuest ? this.quests.get(this.currentMainQuest) : null;
-    }
-    
-    getTotalScore() {
-        return this.totalScore;
-    }
-    
-    getAchievements() {
-        return Array.from(this.achievements);
-    }
-    
     // ===== SAVE/LOAD =====
     getSaveData() {
         return {

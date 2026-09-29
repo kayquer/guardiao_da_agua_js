@@ -23,8 +23,6 @@ class AssetLoader {
         try {
             // Lista de assets para carregar
             const assetList = [
-                // Sprites
-                
                 // ===== BACKGROUND MUSIC =====
                 { type: 'audio', key: 'bgm_menu', path: 'Sounds/BGM/green-future-menu-theme-lively.mp3', optional: true },
                 { type: 'audio', key: 'bgm_gameplay', path: 'Sounds/BGM/green-city-gameplay-ambient.mp3', optional: true },
@@ -384,34 +382,7 @@ class AssetLoader {
     static getAsset(key) {
         return AssetLoader.instance?.loadedAssets.get(key) || null;
     }
-    
-    static hasAsset(key) {
-        return AssetLoader.instance?.loadedAssets.has(key) || false;
-    }
-    
-    static getAllAssets() {
-        return AssetLoader.instance?.loadedAssets || new Map();
-    }
-    
-    // ===== UTILITÁRIOS =====
-    static createBabylonTexture(key, scene) {
-        const asset = AssetLoader.getAsset(key);
-        if (asset && asset.canvas) {
-            return new BABYLON.Texture(asset.canvas.toDataURL(), scene);
-        }
-        return null;
-    }
-    
-    static createBabylonMaterial(key, scene, materialName) {
-        const texture = AssetLoader.createBabylonTexture(key, scene);
-        if (texture) {
-            const material = new BABYLON.StandardMaterial(materialName, scene);
-            material.diffuseTexture = texture;
-            return material;
-        }
-        return null;
-    }
-    
+
     // ===== CLEANUP =====
     dispose() {
         this.loadedAssets.clear();

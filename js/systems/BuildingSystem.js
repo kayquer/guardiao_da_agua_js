@@ -1446,7 +1446,6 @@ class BuildingSystem {
         // Verificar requisitos de terreno
         if (buildingType.requirements) {
             const terrainType = this.gridManager.getTerrainType(gridX, gridZ);
-            //console.log(`🔍 Verificando terreno em (${gridX}, ${gridZ}): tipo='${terrainType}', requerido=${JSON.stringify(buildingType.requirements.terrain)}`);
 
             if (buildingType.requirements.terrain &&
                 !buildingType.requirements.terrain.includes(terrainType)) {
@@ -1459,7 +1458,6 @@ class BuildingSystem {
                 const currentTerrainName = terrainNames[terrainType] || terrainType;
                 const requiredTerrainNames = buildingType.requirements.terrain.map(t => terrainNames[t] || t).join(', ');
 
-                //console.warn(`❌ Terreno inadequado: '${terrainType}' não está em ${JSON.stringify(buildingType.requirements.terrain)}`);
                 return {
                     canPlace: false,
                     reason: `Você não pode construir ${buildingType.name} em ${currentTerrainName}. Requer: ${requiredTerrainNames}`,
@@ -1486,12 +1484,7 @@ class BuildingSystem {
             userFriendly: true
         };
     }
-    
-    placeBuildingAt(worldPosition, buildingTypeId) {
-        const gridPos = this.gridManager.worldToGrid(worldPosition);
-        return this.placeBuilding(gridPos.x, gridPos.z, buildingTypeId);
-    }
-    
+
     placeBuilding(gridX, gridZ, buildingTypeId) {
         // Verificar cooldown de construção
         if (this.isBuildingOnCooldown()) {
@@ -2556,142 +2549,6 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
         return merged;
     }
 
-    createTreatmentPlantMesh(buildingType) {
-        // ===== BUILDING SIZE AND GRID ALIGNMENT FIX: Respect building's actual size =====
-        const buildingSize = buildingType.size || 1;
-        const cellSize = this.gridManager.cellSize;
-        const buildingScale = 0.85; // Consistent with other methods
-        const actualSize = buildingSize * cellSize * buildingScale;
-
-        // Edifício principal
-        const main = BABYLON.MeshBuilder.CreateBox("treatmentMain", {
-            width: actualSize,
-            height: 1.5,
-            depth: actualSize
-        }, this.scene);
-
-        // Chaminé - scale with building size
-        const chimney = BABYLON.MeshBuilder.CreateBox("treatmentChimney", {
-            width: actualSize * 0.3,
-            height: 1.0,
-            depth: actualSize * 0.3
-        }, this.scene);
-        chimney.position.y = 2.0;
-        chimney.position.x = actualSize * 0.3;
-
-        const merged = this.mergeVisibleMeshes([main, chimney], `treatmentPlant_${buildingType.id}`);
-
-        // ===== FIX: Adjust position for multi-cell buildings =====
-        if (buildingSize > 1) {
-            const offset = (buildingSize - 1) * cellSize * 0.5;
-            merged.position.x += offset;
-            merged.position.z += offset;
-        }
-
-        return merged;
-    }
-
-    createStorageMesh(buildingType) {
-        // ===== BUILDING SIZE AND GRID ALIGNMENT FIX: Respect building's actual size =====
-        const buildingSize = buildingType.size || 1;
-        const cellSize = this.gridManager.cellSize;
-        const buildingScale = 0.85; // Consistent with other methods
-        const actualSize = buildingSize * cellSize * buildingScale;
-
-        // Tanque cilíndrico estilo voxel (usando cilindro com poucos lados)
-        const tank = BABYLON.MeshBuilder.CreateCylinder("storageTank", {
-            height: 2.5,
-            diameterTop: actualSize * 0.8,
-            diameterBottom: actualSize * 0.8,
-            tessellation: 8 // Poucos lados para estilo voxel
-        }, this.scene);
-
-        tank.name = `storage_${buildingType.id}`;
-
-        // ===== FIX: Adjust position for multi-cell buildings =====
-        if (buildingSize > 1) {
-            const offset = (buildingSize - 1) * cellSize * 0.5;
-            tank.position.x += offset;
-            tank.position.z += offset;
-        }
-
-        return tank;
-    }
-
-    createHouseMesh(buildingType) {
-        // ===== BUILDING SIZE AND GRID ALIGNMENT FIX: Respect building's actual size =====
-        const buildingSize = buildingType.size || 1;
-        const cellSize = this.gridManager.cellSize;
-        const buildingScale = 0.85; // Consistent with other methods
-        const actualSize = buildingSize * cellSize * buildingScale;
-
-        // Base da casa
-        const base = BABYLON.MeshBuilder.CreateBox("houseBase", {
-            width: actualSize,
-            height: 1.5,
-            depth: actualSize
-        }, this.scene);
-
-        // Telhado (pirâmide) - scale with building size
-        const roof = BABYLON.MeshBuilder.CreateBox("houseRoof", {
-            width: actualSize * 1.1,
-            height: 0.8,
-            depth: actualSize * 1.1
-        }, this.scene);
-        roof.position.y = 1.9;
-        roof.scaling.y = 0.5; // Achatar para parecer telhado
-
-        const merged = this.mergeVisibleMeshes([base, roof], `house_${buildingType.id}`);
-
-        // ===== FIX: Adjust position for multi-cell buildings =====
-        if (buildingSize > 1) {
-            const offset = (buildingSize - 1) * cellSize * 0.5;
-            merged.position.x += offset;
-            merged.position.z += offset;
-        }
-
-        return merged;
-    }
-
-    createPowerPlantMesh(buildingType) {
-        // ===== BUILDING SIZE AND GRID ALIGNMENT FIX: Respect building's actual size =====
-        const buildingSize = buildingType.size || 1;
-        const cellSize = this.gridManager.cellSize;
-        const buildingScale = 0.85; // Consistent with other methods
-        const actualSize = buildingSize * cellSize * buildingScale;
-
-        // Edifício principal
-        const main = BABYLON.MeshBuilder.CreateBox("powerMain", {
-            width: actualSize,
-            height: 2.0,
-            depth: actualSize
-        }, this.scene);
-
-        // Torres de resfriamento (cilindros) - scale with building size
-        const tower1 = BABYLON.MeshBuilder.CreateCylinder("powerTower1", {
-            height: 1.5,
-            diameterTop: actualSize * 0.4,
-            diameterBottom: actualSize * 0.4,
-            tessellation: 6
-        }, this.scene);
-        tower1.position.y = 2.75;
-        tower1.position.x = actualSize * 0.3;
-
-        const tower2 = tower1.clone("powerTower2");
-        tower2.position.x = -actualSize * 0.3;
-
-        const merged = this.mergeVisibleMeshes([main, tower1, tower2], `powerPlant_${buildingType.id}`);
-
-        // ===== FIX: Adjust position for multi-cell buildings =====
-        if (buildingSize > 1) {
-            const offset = (buildingSize - 1) * cellSize * 0.5;
-            merged.position.x += offset;
-            merged.position.z += offset;
-        }
-
-        return merged;
-    }
-
     createInfrastructureMesh(buildingType) {
         // ===== BUILDING SIZE AND GRID ALIGNMENT FIX: Respect building's actual size =====
         const buildingSize = buildingType.size || 1;
@@ -2732,64 +2589,6 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
         return mesh;
     }
 
-    createPublicBuildingMesh(buildingType) {
-        // ===== BUILDING SIZE AND PROPORTION CORRECTIONS: Edifícios públicos com dimensões corrigidas =====
-        const cellSize = this.gridManager.cellSize;
-        const buildingScale = 0.85;
-        const buildingSize = buildingType.size || 1;
-        const actualSize = buildingSize * cellSize * buildingScale;
-
-        if (buildingType.id === 'city_hall') {
-            // ===== FIX: Prefeitura Municipal com dimensões corrigidas para size=2 =====
-            const base = BABYLON.MeshBuilder.CreateBox("cityHallBase", {
-                width: actualSize,
-                height: 3.0,
-                depth: actualSize
-            }, this.scene);
-
-            // Colunas frontais proporcionais ao tamanho real
-            const columnDiameter = actualSize * 0.15;
-            const column1 = BABYLON.MeshBuilder.CreateCylinder("cityHallColumn1", {
-                height: 3.5,
-                diameter: columnDiameter,
-                tessellation: 8
-            }, this.scene);
-            column1.position.x = actualSize * 0.3;
-            column1.position.z = actualSize * 0.4;
-            column1.position.y = 1.75;
-
-            const column2 = column1.clone("cityHallColumn2");
-            column2.position.x = -actualSize * 0.3;
-
-            const column3 = column1.clone("cityHallColumn3");
-            column3.position.x = 0;
-
-            // Telhado triangular proporcional
-            const roof = BABYLON.MeshBuilder.CreateCylinder("cityHallRoof", {
-                height: 1.2,
-                diameterTop: 0,
-                diameterBottom: actualSize * 1.1,
-                tessellation: 4
-            }, this.scene);
-            roof.position.y = 4.0;
-            roof.rotation.y = Math.PI / 4;
-
-            const merged = this.mergeVisibleMeshes([base, column1, column2, column3, roof], `cityHall_${buildingType.id}`);
-
-            // ===== FIX: Ajustar posição para edifícios multi-célula =====
-            if (buildingSize > 1) {
-                const offset = (buildingSize - 1) * cellSize * 0.5;
-                merged.position.x += offset;
-                merged.position.z += offset;
-            }
-
-            return merged;
-        }
-
-        // Outros edifícios públicos genéricos
-        return this.createBasicVoxelMesh(buildingType);
-    }
-
     getTerrainHeightAt(gridX, gridZ) {
         // Obter altura do terreno na posição especificada
         if (this.gridManager && this.gridManager.elevationGrid) {
@@ -2799,78 +2598,6 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
             }
         }
         return 0.1; // Altura padrão
-    }
-
-    createBuildingShadow(buildingMesh, worldPos, terrainHeight) {
-        // ===== BUILDING SIZE AND PROPORTION CORRECTIONS: Sombra alinhada com footprint =====
-        const boundingBox = buildingMesh.getBoundingInfo().boundingBox;
-
-        // ===== FIX: Calcular tamanho da sombra baseado no footprint real do edifício =====
-        const buildingWidth = Math.abs(boundingBox.maximum.x - boundingBox.minimum.x);
-        const buildingDepth = Math.abs(boundingBox.maximum.z - boundingBox.minimum.z);
-
-        // Sombra ligeiramente maior que o edifício para efeito realista
-        const shadowWidth = buildingWidth * 1.1;
-        const shadowDepth = buildingDepth * 1.1;
-
-        const shadow = BABYLON.MeshBuilder.CreateGround(`shadow_${buildingMesh.name}`, {
-            width: shadowWidth,
-            height: shadowDepth
-        }, this.scene);
-
-        // ===== FIX: Posicionar sombra exatamente sob o centro do edifício =====
-        shadow.position.x = buildingMesh.position.x;
-        shadow.position.z = buildingMesh.position.z;
-        shadow.position.y = terrainHeight + 0.005; // Muito próximo ao terreno
-
-        // Material de sombra com gradiente
-        const shadowMaterial = new BABYLON.StandardMaterial(`shadowMat_${buildingMesh.name}`, this.scene);
-        shadowMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-        shadowMaterial.alpha = 0.4;
-        shadowMaterial.backFaceCulling = false;
-
-        // Criar textura de sombra com gradiente radial
-        try {
-            const shadowTexture = new BABYLON.DynamicTexture(`shadowTex_${buildingMesh.name}`, 64, this.scene);
-            const context = shadowTexture.getContext();
-            const imageData = context.createImageData(64, 64);
-            const data = imageData.data;
-
-            const center = 32;
-            const maxRadius = 32;
-
-            for (let x = 0; x < 64; x++) {
-                for (let y = 0; y < 64; y++) {
-                    const distance = Math.sqrt((x - center) ** 2 + (y - center) ** 2);
-                    const alpha = Math.max(0, 1 - (distance / maxRadius));
-                    const index = (y * 64 + x) * 4;
-
-                    data[index] = 0;     // R
-                    data[index + 1] = 0; // G
-                    data[index + 2] = 0; // B
-                    data[index + 3] = alpha * 255; // A
-                }
-            }
-
-            context.putImageData(imageData, 0, 0);
-            shadowTexture.update();
-
-            shadowMaterial.diffuseTexture = shadowTexture;
-            shadowMaterial.diffuseTexture.hasAlpha = true;
-
-            // Rastrear textura de sombra para limpeza
-            this.dynamicTextures.set(`shadowTex_${buildingMesh.name}`, shadowTexture);
-        } catch (error) {
-            console.warn('⚠️ Não foi possível criar textura de sombra gradiente');
-        }
-
-        shadow.material = shadowMaterial;
-
-        // Associar sombra ao edifício e rastrear para limpeza
-        buildingMesh.shadowMesh = shadow;
-        this.shadowMeshes.set(buildingMesh.name, shadow);
-
-        return shadow;
     }
 
     // Método para ajustar posicionamento preciso no terreno
@@ -3212,8 +2939,6 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
 
         return null;
     }
-
-
 
     createWaterTankFallback(buildingSize, cellSize, actualSize) {
         // Original procedural water tank
@@ -3717,109 +3442,6 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
         }
     }
 
-    // ===== SISTEMA DE RECICLAGEM =====
-    recycleBuilding(buildingId) {
-        const building = this.buildings.get(buildingId);
-        if (!building) {
-            console.warn(`⚠️ Edifício não encontrado para reciclagem: ${buildingId}`);
-            return false;
-        }
-
-        // Calcular recursos recuperados (70% do custo original)
-        const recoveredAmount = Math.floor(building.config.cost * 0.7);
-
-        // Mostrar animação de reciclagem
-        this.showRecyclingAnimation(building);
-
-        // Remover o edifício
-        const removed = this.removeBuilding(buildingId);
-
-        if (removed) {
-            // Adicionar recursos recuperados ao orçamento
-            if (window.gameManager && window.gameManager.resourceManager) {
-                window.gameManager.resourceManager.addBudget(recoveredAmount);
-
-                // Mostrar notificação de reciclagem
-                if (window.gameManager.uiManager) {
-                    window.gameManager.uiManager.showNotification(
-                        `♻️ ${building.config.name} reciclado! Recursos recuperados: R$ ${recoveredAmount}`,
-                        'success'
-                    );
-                }
-            }
-
-            console.log(`♻️ Edifício ${building.config.name} reciclado. Recursos recuperados: R$ ${recoveredAmount}`);
-            return { success: true, recoveredAmount };
-        }
-
-        return { success: false, recoveredAmount: 0 };
-    }
-
-    showRecyclingAnimation(building) {
-        if (!building.mesh) return;
-
-        try {
-            // Criar efeito de partículas de reciclagem
-            const particleSystem = new BABYLON.ParticleSystem("recycling", 50, this.scene);
-
-            // Textura das partículas (usar uma textura simples)
-            particleSystem.particleTexture = new BABYLON.Texture("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", this.scene);
-
-            // Posição do emissor
-            particleSystem.emitter = building.mesh;
-            particleSystem.minEmitBox = new BABYLON.Vector3(-1, 0, -1);
-            particleSystem.maxEmitBox = new BABYLON.Vector3(1, 0, 1);
-
-            // Cores das partículas (verde para reciclagem)
-            particleSystem.color1 = new BABYLON.Color4(0, 1, 0, 1.0);
-            particleSystem.color2 = new BABYLON.Color4(0.5, 1, 0.5, 1.0);
-            particleSystem.colorDead = new BABYLON.Color4(0, 0.5, 0, 0.0);
-
-            // Tamanho das partículas
-            particleSystem.minSize = 0.1;
-            particleSystem.maxSize = 0.3;
-
-            // Tempo de vida
-            particleSystem.minLifeTime = 0.5;
-            particleSystem.maxLifeTime = 1.5;
-
-            // Taxa de emissão
-            particleSystem.emitRate = 100;
-
-            // Direção das partículas
-            particleSystem.direction1 = new BABYLON.Vector3(-1, 2, -1);
-            particleSystem.direction2 = new BABYLON.Vector3(1, 4, 1);
-
-            // Velocidade
-            particleSystem.minEmitPower = 2;
-            particleSystem.maxEmitPower = 4;
-
-            // Gravidade
-            particleSystem.gravity = new BABYLON.Vector3(0, -9.81, 0);
-
-            // Iniciar sistema de partículas
-            particleSystem.start();
-
-            // Parar após 2 segundos e limpar
-            setTimeout(() => {
-                particleSystem.stop();
-                setTimeout(() => {
-                    particleSystem.dispose();
-                }, 2000);
-            }, 2000);
-
-        } catch (error) {
-            console.warn('⚠️ Erro ao criar animação de reciclagem:', error);
-        }
-    }
-
-    getRecyclingValue(buildingId) {
-        const building = this.buildings.get(buildingId);
-        if (!building) return 0;
-
-        return Math.floor(building.config.cost * 0.7);
-    }
-
     // ===== EFEITOS NOS RECURSOS =====
     applyBuildingEffects(building, add = true) {
         const config = building.config;
@@ -4024,13 +3646,7 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
             building => building.type === buildingTypeId
         );
     }
-    
-    getBuildingsByCategory(category) {
-        return Array.from(this.buildings.values()).filter(
-            building => building.config.category === category
-        );
-    }
-    
+
     // ===== PREVIEW SYSTEM CONSOLIDATION =====
     // ✅ UNIFIED PREVIEW SYSTEM: All preview functionality consolidated into advanced system
     // - startPreviewMode(): Initiates building placement preview with visual feedback
@@ -4265,13 +3881,6 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
                 this.gameManager.uiManager.hideBuildingCooldown();
             }
         }
-    }
-
-    getBuildingCooldownProgress() {
-        if (!this.buildingCooldown.active) return 0;
-
-        const elapsed = this.buildingCooldown.duration - this.buildingCooldown.remainingTime;
-        return Math.min(1, elapsed / this.buildingCooldown.duration);
     }
 
     // ===== SISTEMA DE NOTIFICAÇÕES =====
@@ -5059,31 +4668,6 @@ createCompletionText(buildingData, worldPos) {
         }
     }
 
-    // ===== CONTROLE DE VISIBILIDADE DOS LABELS =====
-    showBuildingLabel(buildingMesh, immediate = false) {
-        if (!buildingMesh || !buildingMesh.nameLabel) return;
-
-        const label = buildingMesh.nameLabel;
-        label.isVisible = true;
-        label.targetVisibility = 1;
-
-        if (immediate) {
-            label.visibility = 1;
-        }
-    }
-
-    hideBuildingLabel(buildingMesh, immediate = false) {
-        if (!buildingMesh || !buildingMesh.nameLabel) return;
-
-        const label = buildingMesh.nameLabel;
-        label.targetVisibility = 0;
-
-        if (immediate) {
-            label.visibility = 0;
-            label.isVisible = false;
-        }
-    }
-
     // Atualizar animações dos labels (chamado no update loop)
     updateBuildingLabels(deltaTime) {
         this.buildings.forEach(building => {
@@ -5335,17 +4919,12 @@ removePowerShortageIcon(building) {
         }
     }
 }
-    // ===== GETTERS =====
-    getBuildingTypes() {
-        return Array.from(this.buildingTypes.values()).filter(type => type.visible !== false);
-    }
     getBuildingTypesByCategory(category) {
         return Array.from(this.buildingTypes.values())
             .filter(type => type.category === category && type.visible !== false)
             .sort((a, b) => a.cost - b.cost);
     }
     getAllBuildings() { return Array.from(this.buildings.values()); }
-    getBuildingCount() { return this.buildings.size; }
     
     // ===== SAVE/LOAD =====
     getSaveData() {
@@ -5825,10 +5404,6 @@ removePowerShortageIcon(building) {
         return this.getAllBuildings().filter(building => building.type === type);
     }
 
-    getActiveBuildingsCount() {
-        return this.getAllBuildings().filter(building => building.active).length;
-    }
-
     // ===== CONECTIVIDADE DE INFRAESTRUTURA =====
     isInfrastructureBuilding(buildingType) {
         return buildingType.category === 'infrastructure' ||
@@ -6131,43 +5706,6 @@ removePowerShortageIcon(building) {
         console.log(`🔗 Conexões de infraestrutura removidas para ${building.config.name}`);
     }
 
-    getConnectedBuildings(buildingId) {
-        const building = this.buildings.get(buildingId);
-        if (!building || !building.connections) return [];
-
-        return Array.from(building.connections)
-            .map(id => this.buildings.get(id))
-            .filter(b => b != null);
-    }
-
-    isConnectedToNetwork(buildingId, targetBuildingId) {
-        // Busca em largura para verificar conectividade
-        const visited = new Set();
-        const queue = [buildingId];
-
-        while (queue.length > 0) {
-            const currentId = queue.shift();
-            if (visited.has(currentId)) continue;
-
-            visited.add(currentId);
-
-            if (currentId === targetBuildingId) {
-                return true;
-            }
-
-            const building = this.buildings.get(currentId);
-            if (building && building.connections) {
-                for (const connectedId of building.connections) {
-                    if (!visited.has(connectedId)) {
-                        queue.push(connectedId);
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
     // ===== SISTEMA DE ALUGUEL =====
     toggleBuildingRental(buildingId) {
         const building = this.buildings.get(buildingId);
@@ -6288,28 +5826,6 @@ removePowerShortageIcon(building) {
                 console.error('❌ Erro ao remover ícone de aluguel:', error);
             }
         }
-    }
-
-    canBuildingBeRented(buildingId) {
-        const building = this.buildings.get(buildingId);
-        if (!building) return false;
-
-        return !!(building.config.waterProduction || building.config.powerGeneration);
-    }
-
-    getRentalIncome(buildingId) {
-        const building = this.buildings.get(buildingId);
-        if (!building || !building.isRented) return 0;
-
-        let rentalIncome = 0;
-        if (building.config.waterProduction) {
-            rentalIncome += building.config.waterProduction * 2; // R$ 2 por L/s
-        }
-        if (building.config.powerGeneration) {
-            rentalIncome += building.config.powerGeneration * 50; // R$ 50 por MW
-        }
-
-        return rentalIncome;
     }
 
     // ===== EFEITOS VISUAIS APRIMORADOS DE CONSTRUÇÃO =====

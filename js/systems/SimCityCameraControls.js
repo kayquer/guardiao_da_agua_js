@@ -664,17 +664,7 @@ class SimCityCameraControls {
         this.targetPosition.z = Math.max(this.config.bounds.minZ, 
                                       Math.min(this.config.bounds.maxZ, this.targetPosition.z));
     }
-    
-    /**
-     * Enforce bounds on current camera position (for immediate updates)
-     */
-    enforceBounds() {
-        this.camera.target.x = Math.max(this.config.bounds.minX, 
-                                      Math.min(this.config.bounds.maxX, this.camera.target.x));
-        this.camera.target.z = Math.max(this.config.bounds.minZ, 
-                                      Math.min(this.config.bounds.maxZ, this.camera.target.z));
-    }
-    
+
     resetCamera() {
         // Return to default position and rotation
         this.targetPosition = BABYLON.Vector3.Zero();
@@ -719,21 +709,7 @@ class SimCityCameraControls {
         this.config.zoomLimits = { min, max };
         this.targetRadius = Math.max(min, Math.min(max, this.targetRadius));
     }
-    
-    setEdgePanning(enabled, threshold = 30, speed = 15.0) {
-        this.config.edgePanEnabled = enabled;
-        this.config.edgePanThreshold = threshold;
-        this.config.edgePanSpeed = speed;
-    }
-    
-    setSmoothingFactor(factor) {
-        this.config.smoothing = Math.max(0, Math.min(1, factor));
-    }
-    
-    setTouchMoveThreshold(threshold) {
-        this.touchMoveThreshold = threshold;
-    }
-    
+
     // ===== CLEANUP =====
     
     dispose() {

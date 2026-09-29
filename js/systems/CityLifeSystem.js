@@ -99,11 +99,7 @@ class CityLifeSystem {
         
         console.log(`🛣️ Encontradas ${this.roads.length} estradas`);
     }
-    
-    invalidateRoadNetworkCache() {
-        this.roadNetworkCache.isDirty = true;
-    }
-    
+
     calculateRoadConnections() {
         this.roads.forEach(road => {
             road.connections = [];

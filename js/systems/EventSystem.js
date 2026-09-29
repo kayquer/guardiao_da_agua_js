@@ -499,21 +499,7 @@ class EventSystem {
             event => event.type === eventTypeId
         );
     }
-    
-    getActiveEvents() {
-        return Array.from(this.activeEvents.values());
-    }
-    
-    getEventHistory() {
-        return [...this.eventHistory];
-    }
-    
-    // ===== CONTROLE =====
-    setEventsEnabled(enabled) {
-        this.eventsEnabled = enabled;
-        console.log(`⚡ Eventos ${enabled ? 'ativados' : 'desativados'}`);
-    }
-    
+
     setDifficulty(multiplier) {
         this.difficultyMultiplier = Math.max(0.1, Math.min(3.0, multiplier));
         console.log(`⚡ Dificuldade dos eventos: ${this.difficultyMultiplier}x`);

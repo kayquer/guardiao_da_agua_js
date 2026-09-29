@@ -215,24 +215,7 @@ class SettingsManager {
             });
         }
     }
-    
-    // ===== CONTROLE DE TELA =====
-    showSettings() {
-        console.log('⚙️ Abrindo configurações...');
-        
-        if (this.settingsScreen) {
-            this.settingsScreen.classList.add('active');
-        }
-        
-        // Atualizar valores na interface
-        this.updateUI();
-        
-        // Tocar som
-        if (window.AudioManager) {
-            AudioManager.playSound('sfx_click');
-        }
-    }
-    
+
     closeSettings() {
         console.log('⚙️ Fechando configurações...');
 
@@ -642,11 +625,7 @@ class SettingsManager {
     getSettings() {
         return { ...this.settings };
     }
-    
-    getSetting(category, key) {
-        return this.settings[category] && this.settings[category][key];
-    }
-    
+
     // ===== CLEANUP =====
     dispose() {
         console.log('🗑️ SettingsManager disposed');

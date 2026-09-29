@@ -170,13 +170,7 @@ function updateLoadingProgress(percentage) {
 function initializeMenuSystem() {
     // Botões do menu principal
     document.getElementById('btn-new-game').addEventListener('click', startNewGame);
-    //document.getElementById('btn-continue').addEventListener('click', continueGame);
     document.getElementById('btn-about').addEventListener('click', showAbout);
-    
-    // Verificar se há save game
-    if (SaveSystem.hasSaveData()) {
-        //document.getElementById('btn-continue').disabled = false;
-    }
 }
 
 // ===== INICIALIZAÇÃO DOS SISTEMAS DE JOGO =====
@@ -330,49 +324,6 @@ async function startNewGame() {
             showLoadingError(error);
             showScreen('main-menu');
         }
-    }
-}
-
-async function continueGame() {
-    console.log('📁 Continuando jogo salvo...');
-
-    try {
-        // Carregar save
-        const saveData = SaveSystem.loadGame();
-        if (saveData) {
-            // Mostrar tela de loading
-            showScreen('loading-screen');
-            updateLoadingProgress(0);
-
-            // Inicializar GameManager
-            gameManager = new GameManager();
-            updateLoadingProgress(30);
-
-            // Aguardar inicialização dos sistemas
-            await gameManager.initializeSystems();
-            updateLoadingProgress(70);
-
-            // Carregar jogo salvo
-            gameManager.loadGame(saveData);
-            updateLoadingProgress(100);
-
-            showScreen('game-screen');
-            isGameInitialized = true;
-
-            // Tornar gameManager disponível globalmente para testes
-            window.gameManager = gameManager;
-
-            // ===== FIX: Expose uiManager globally for HTML onclick handlers =====
-            window.uiManager = gameManager.uiManager;
-
-            console.log('✅ Jogo carregado com sucesso');
-        } else {
-            alert('Nenhum jogo salvo encontrado!');
-        }
-    } catch (error) {
-        console.error('❌ Erro ao carregar jogo:', error);
-        alert('Erro ao carregar o jogo: ' + error.message);
-        showScreen('main-menu');
     }
 }
 

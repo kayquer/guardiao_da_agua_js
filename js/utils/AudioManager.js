@@ -91,63 +91,7 @@ class AudioManager {
         // Load RSE SoundFX as fallback
         this.loadRSESoundFX();
     }
-    
-    // ===== CARREGAMENTO DE SONS =====
-    loadSound(key, asset) {
-        if (!this.enabled || !asset) return;
-        
-        try {
-            this.sounds.set(key, asset);
-            
-            // Criar pool de sons para SFX
-            if (key.startsWith('sfx_')) {
-                this.createSoundPool(key, asset);
-            }
-            
-            console.log(`🔊 Som carregado: ${key}`);
-            
-        } catch (error) {
-            console.error(`❌ Erro ao carregar som ${key}:`, error);
-        }
-    }
-    
-    loadMusic(key, asset) {
-        if (!this.enabled || !asset) return;
-        
-        try {
-            // Configurar música para loop
-            asset.setLoop(true);
-            this.music.set(key, asset);
-            
-            console.log(`🎵 Música carregada: ${key}`);
-            
-        } catch (error) {
-            console.error(`❌ Erro ao carregar música ${key}:`, error);
-        }
-    }
-    
-    createSoundPool(key, asset) {
-        const pool = [];
-        
-        for (let i = 0; i < this.maxPoolSize; i++) {
-            try {
-                // Criar cópia do áudio
-                const audioClone = new Audio(asset.audio.src);
-                audioClone.volume = this.sfxVolume * this.masterVolume;
-                
-                pool.push({
-                    audio: audioClone,
-                    inUse: false
-                });
-                
-            } catch (error) {
-                console.warn(`⚠️ Erro ao criar clone de áudio para ${key}:`, error);
-            }
-        }
-        
-        this.soundPools.set(key, pool);
-    }
-    
+
     // ===== SONS PROCEDURAIS =====
     createProceduralSounds() {
         console.log('🎵 Criando sons procedurais...');
@@ -988,19 +932,7 @@ class AudioManager {
             });
         });
     }
-    
-    // ===== CONFIGURAÇÕES =====
-    toggleAudio() {
-        this.enabled = !this.enabled;
-        
-        if (!this.enabled) {
-            this.stopMusic(false);
-        }
-        
-        this.saveSettings();
-        return this.enabled;
-    }
-    
+
     saveSettings() {
         const settings = {
             enabled: this.enabled,
@@ -1029,79 +961,6 @@ class AudioManager {
     
     // ===== RSE SOUNDFX AUDIO METHODS =====
 
-    // UI Sound Effects (mapped to RSE SoundFX)
-    playUIClick() { this.playSound('sfx_ui_click', 0.7); }
-    playUIHover() { this.playSound('sfx_ui_hover', 0.5); }
-    playUISelect() { this.playSound('sfx_ui_select', 0.8); }
-    playUIError() { this.playSound('sfx_ui_error', 0.9); }
-    playUISuccess() { this.playSound('sfx_ui_success', 0.8); }
-
-    // Construction Sound Effects (mapped to RSE SoundFX)
-    playConstructionStart() { this.playSound('sfx_construction_start', 0.7); }
-    playConstructionProgress() { this.playSound('sfx_construction_progress', 0.6); }
-    playConstructionComplete() { this.playSound('sfx_construction_complete', 0.8); }
-    playBuildingPlace() { this.playSound('sfx_building_place', 0.7); }
-
-    // Environmental Sound Effects (mapped to RSE SoundFX)
-    playWaterFlow() { this.playSound('sfx_water_flow', 0.6); }
-    playWaterSplash() { this.playSound('sfx_water_splash', 0.7); }
-    playNatureBirds() { this.playSound('sfx_nature_birds', 0.5); }
-    playWindGentle() { this.playSound('sfx_wind_gentle', 0.4); }
-    playRainLight() { this.playSound('sfx_rain_light', 0.5); }
-
-    // Alert/Notification Sounds (mapped to RSE SoundFX)
-    playMissionStart() { this.playSound('sfx_mission_start', 0.8); }
-    playMissionComplete() { this.playSound('sfx_mission_complete', 0.9); }
-    playWarningAlert() { this.playSound('sfx_warning_alert', 0.8); }
-    playResourceLow() { this.playSound('sfx_resource_low', 0.7); }
-
-    // Background Music Control
-    playMenuMusic() { this.playMusic('bgm_menu'); }
-    playGameplayMusic() { this.playMusic('bgm_gameplay', true, 0.3); }
-
-    // Smart Audio Selection (fallback system)
-    playSmartUISound(action) {
-        const soundMap = {
-            'click': 'sfx_ui_click',
-            'hover': 'sfx_ui_hover',
-            'select': 'sfx_ui_select',
-            'error': 'sfx_ui_error',
-            'success': 'sfx_ui_success'
-        };
-
-        const soundKey = soundMap[action];
-        if (soundKey && this.sounds.has(soundKey)) {
-            this.playSound(soundKey, 0.7);
-        } else {
-            // Fallback to procedural sounds
-            this.playSound(`sfx_${action}`, 0.7);
-        }
-    }
-
-    playSmartConstructionSound(phase) {
-        const soundMap = {
-            'start': 'sfx_construction_start',
-            'progress': 'sfx_construction_progress',
-            'complete': 'sfx_construction_complete',
-            'place': 'sfx_building_place'
-        };
-
-        const soundKey = soundMap[phase];
-        if (soundKey && this.sounds.has(soundKey)) {
-            this.playSound(soundKey, 0.7);
-        } else {
-            // Fallback to existing procedural sounds
-            this.playSound(`sfx_build_${phase}`, 0.7);
-        }
-    }
-
-    // ===== GETTERS =====
-    isEnabled() { return this.enabled; }
-    getMasterVolume() { return this.masterVolume; }
-    getMusicVolume() { return this.musicVolume; }
-    getSfxVolume() { return this.sfxVolume; }
-    isPlayingMusic() { return this.currentMusic !== null; }
-    
     // ===== CLEANUP =====
     dispose() {
         this.stopMusic(false);

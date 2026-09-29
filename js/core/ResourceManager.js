@@ -585,14 +585,7 @@ class ResourceManager {
             }
         });
     }
-    
-    getHistory(resourceType, timeRange = 3600000) { // 1 hora por padrão
-        const now = Date.now();
-        const cutoff = now - timeRange;
-        
-        return this.history[resourceType]?.filter(entry => entry.time >= cutoff) || [];
-    }
-    
+
     // ===== CALLBACKS =====
     onResourceChange(resourceType, callback) {
         if (!this.onResourceChange.has(resourceType)) {
@@ -628,35 +621,10 @@ class ResourceManager {
         return null;
     }
 
-    getWater() { return { ...this.resources.water }; }
     getBudget() { return { ...this.resources.budget }; }
-    getPopulation() { return { ...this.resources.population }; }
-    getPollution() { return { ...this.resources.pollution }; }
     getElectricity() { return { ...this.resources.electricity }; }
     getAllResources() { return JSON.parse(JSON.stringify(this.resources)); }
-    
-    getWaterPercentage() {
-        return (this.resources.water.current / this.resources.water.max) * 100;
-    }
-    
-    getSatisfactionLevel() {
-        const satisfaction = this.resources.population.satisfaction;
-        if (satisfaction >= 80) return 'excellent';
-        if (satisfaction >= 60) return 'good';
-        if (satisfaction >= 40) return 'fair';
-        if (satisfaction >= 20) return 'poor';
-        return 'critical';
-    }
-    
-    getPollutionLevel() {
-        const pollution = this.resources.pollution.current;
-        if (pollution <= 20) return 'clean';
-        if (pollution <= 40) return 'moderate';
-        if (pollution <= 60) return 'polluted';
-        if (pollution <= 80) return 'heavily_polluted';
-        return 'toxic';
-    }
-    
+
     // ===== RESET =====
     reset() {
         this.resources = {

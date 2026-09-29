@@ -251,25 +251,6 @@ class UIManager {
         this.setupControlButtonEnhancements();
     }
 
-    // ===== LATERAL MENU STABILITY FIX: Event listener management =====
-    cleanupEventListeners() {
-        // Remove existing category button listeners
-        if (this.categoryButtonListeners) {
-            this.categoryButtonListeners.forEach(({ element, listener }) => {
-                element.removeEventListener('click', listener);
-            });
-        }
-        this.categoryButtonListeners = [];
-
-        // Remove existing building item listeners
-        if (this.buildingItemListeners) {
-            this.buildingItemListeners.forEach(({ element, listener }) => {
-                element.removeEventListener('click', listener);
-            });
-        }
-        this.buildingItemListeners = [];
-    }
-
     setupCategoryButtons() {
         // Clean up existing listeners first
         this.cleanupCategoryButtons();
@@ -690,7 +671,6 @@ class UIManager {
         const hudTop = document.querySelector('.hud-top');
         if (hudTop) {
             hudTop.appendChild(resourceToggle);
-            //hudTop.appendChild(controlToggle);
         }
 
         // Store references for later updates
@@ -1405,52 +1385,7 @@ class UIManager {
             item.classList.remove('selected');
         });
     }
-    
-    // ===== DETALHES =====
-    showBuildingTypeDetails(buildingTypeId) {
-        if (!this.elements.detailsContent) return;
-        
-        const buildingType = this.gameManager.buildingSystem.buildingTypes.get(buildingTypeId);
-        if (!buildingType) return;
-        
-        this.elements.detailsContent.innerHTML = `
-            <div class="detail-item">
-                <div class="detail-label">Nome:</div>
-                <div class="detail-value">${buildingType.name}</div>
-            </div>
-            <div class="detail-item">
-                <div class="detail-label">Custo:</div>
-                <div class="detail-value">R$ ${buildingType.cost.toLocaleString()}</div>
-            </div>
-            <div class="detail-item">
-                <div class="detail-label">Manutenção:</div>
-                <div class="detail-value">R$ ${buildingType.maintenanceCost}/min</div>
-            </div>
-            ${buildingType.waterProduction ? `
-                <div class="detail-item">
-                    <div class="detail-label">Produção de Água:</div>
-                    <div class="detail-value">${buildingType.waterProduction}L/s</div>
-                </div>
-            ` : ''}
-            ${buildingType.pollutionReduction ? `
-                <div class="detail-item">
-                    <div class="detail-label">Redução de Poluição:</div>
-                    <div class="detail-value">${buildingType.pollutionReduction}%/s</div>
-                </div>
-            ` : ''}
-            ${buildingType.waterStorage ? `
-                <div class="detail-item">
-                    <div class="detail-label">Armazenamento:</div>
-                    <div class="detail-value">${buildingType.waterStorage}L</div>
-                </div>
-            ` : ''}
-            <div class="detail-item">
-                <div class="detail-label">Descrição:</div>
-                <div class="detail-value">${buildingType.description}</div>
-            </div>
-        `;
-    }
-    
+
     // ===== BUILDING DETAILS CONSOLIDATED =====
     // Note: Building details functionality has been consolidated into showBuildingSelectionInfo()
     // for better consistency and comprehensive information display
@@ -1605,13 +1540,6 @@ class UIManager {
         requirementsHTML += '</ul></div></div>';
 
         this.elements.detailsContent.innerHTML = requirementsHTML;
-    }
-
-    clearBuildingRequirements() {
-        if (!this.elements.detailsContent) return;
-
-        this.selectedBuildingType = null;
-        this.elements.detailsContent.innerHTML = '<p>Selecione um edifício para ver os requisitos</p>';
     }
 
     // ===== PAINÉIS DE DETALHES DE RECURSOS =====
@@ -2538,31 +2466,6 @@ class UIManager {
         );
     }
 
-    openHelpFAQBudget() {
-        // Open help modal
-        this.showHelpModal();
-
-        // Switch to FAQ tab
-        const faqTab = document.querySelector('.help-tab[data-tab="faq"]');
-        if (faqTab) {
-            faqTab.click();
-        }
-
-        // Scroll to budget section
-        setTimeout(() => {
-            const budgetSection = document.getElementById('faq-category-orcamento');
-            if (budgetSection) {
-                budgetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                // Briefly highlight the section
-                budgetSection.style.transition = 'background-color 0.3s ease';
-                budgetSection.style.backgroundColor = 'rgba(255, 215, 0, 0.3)';
-                setTimeout(() => {
-                    budgetSection.style.backgroundColor = '';
-                }, 2000);
-            }
-        }, 300);
-    }
-
     showPopulationDetailsPanel() {
         if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
 
@@ -2939,13 +2842,6 @@ class UIManager {
                 </button>
             `;
         }
-
-        // Botão de reciclagem
-        /*actions += `
-            <button class="action-btn recycle-btn" onclick="window.gameManager.recycleBuildingWithConfirmation('${building.id}')">
-                ♻️ Reciclar Edifício
-            </button>
-        `;*/
 
         return actions;
     }
@@ -3367,19 +3263,6 @@ class UIManager {
         }
     }
 
-    // ===== SISTEMA UNIFICADO DE TOOLTIPS =====
-    showBuildingHoverTooltip(building, mouseX, mouseY) {
-        // Mostrar tooltip de hover (diferente do painel lateral de seleção)
-        // Este método pode reutilizar a lógica existente de hover
-        if (this.gameManager && this.gameManager.updateHoverInfo) {
-            // Usar o sistema de hover existente, mas apenas para tooltips
-            const gridPos = this.gameManager.gridManager.worldToGrid({x: mouseX, z: mouseY});
-            this.gameManager.updateHoverInfo(gridPos.x, gridPos.z, mouseX, mouseY);
-        }
-    }
-
-
-
     // ===== RESOURCE UI REDESIGN: Sistema de tooltips para recursos =====
     showResourceTooltip(event, resourceName, resourceType) {
         // Criar ou obter tooltip
@@ -3448,20 +3331,6 @@ class UIManager {
         const tooltip = document.getElementById('resource-tooltip');
         if (tooltip) {
             tooltip.style.display = 'none';
-        }
-    }
-
-    // Método para garantir que apenas um tipo de informação seja exibido por vez
-    clearAllInfoDisplays() {
-        // Limpar tooltips de hover
-        if (this.gameManager) {
-            this.gameManager.hideHoverInfo();
-            this.gameManager.hideTerrainInfo();
-        }
-
-        // Limpar painel de seleção se não há seleção ativa
-        if (!this.gameManager || !this.gameManager.selectedBuilding) {
-            this.clearBuildingSelectionInfo();
         }
     }
 
