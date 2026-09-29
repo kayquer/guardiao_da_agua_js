@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Prerequisites
 
-- **Python 3** — required for `npm start` (uses `python -m http.server`)
+- **Python 3** — required for `npm start` (uses `python3 -m http.server`)
 - **Node.js >= 16** — required for Playwright tests
 - Run `npm install` before first use to install Playwright dev dependency
 
@@ -24,10 +24,10 @@ npm run test:headed        # Run tests with visible browser
 npm run test:ui            # Open Playwright interactive UI
 npm run test:debug         # Debug mode with step-through
 npm run test:report        # View HTML test report
-npm run install-playwright # Install Playwright browsers (first-time setup)
+npm run install-playwright # Install Playwright browsers (first-time setup; only chromium is used)
 ```
 
-Tests are in `tests/`. There is no unit test framework — all tests are Playwright E2E tests targeting the running dev server.
+The only spec is `tests/smoke.spec.js`: boot → new game → place a building → save/load → help/category → study → game over, run as `desktop` and `mobile` (Pixel 5) on chromium. It fails on **any** `pageerror`, `console.error`, HTTP ≥ 400 or failed request, so a deleted asset or a leftover `console.error` breaks it. `net::ERR_ABORTED` is ignored (Chromium aborts media range requests). `playwright.config.js` starts the server itself via `npm start` (`reuseExistingServer`).
 
 ## Architecture
 
@@ -72,12 +72,11 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 
 ### Assets
 
-- `Sprites/` — 2D sprite sheets (Sunnyside World assets)
 - `Sounds/BGM/` — background music (MP3 only; MIDI not supported by Web Audio API)
 - `Sounds/SFX/` — sound effects
 - `models/` — OBJ 3D character models used by TutorialSystem
 - `data/building-studies.json` — educational content for buildings (used by StudySystem)
-- `UI/` — PNG/JPG UI elements and dialogue assets
+- `UI/JPG/` — images for the educational studies (referenced by `data/building-studies.json`)
 
 ### CSS
 
@@ -119,4 +118,6 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 - **building-studies.json format**: Each entry needs `buildingId`, `buildingName`, `category`, `difficulty`, `studyTitle`, `studyIcon`, `estimatedTime`, `learningObjectives`, `pages` (array of `{pageNumber, title, content (HTML string), image}`), `quiz`, `relatedBuildings`, `relatedConcepts`. Each quiz question **must** have a numeric `id` field (sequential starting at 1) — without it, radio buttons share the same HTML `name` group and only one answer can be selected across all questions. Target audience: teenagers 11-14. All in-game text is **pt-BR (Brazilian Portuguese)**. Validate JSON with `node -e "JSON.parse(require('fs').readFileSync('data/building-studies.json','utf8'))"`.
 - **IDE diagnostics for AudioManager**: `AudioManager` hints ("Não foi possível encontrar o nome") are false positives — it's a global loaded via `<script>` tag, not an import.
 - **MIDI not supported**: The AudioManager uses Web Audio API / HTML5 Audio — only MP3, WAV, OGG are supported. MIDI files require a separate library (not implemented). Always use MP3 for BGM.
+- **Unused assets were purged (09/2026)**: anything not referenced by name in `index.html`/`js`/`css`/`data` was deleted. Exceptions kept on purpose: `models/**` (`.obj`/`.mtl` load textures by relative path), `Sounds/SFX/Environment/` and `Sounds/SFX/RSE/` (paths built with `${soundName}` in `AudioManager`). When adding an asset, reference it by its full path in code — or it may be mistaken for dead again.
+- **3D procedural animations find parts by mesh name**: `TutorialSystem` looks for keywords (`eye/olho`, `hair/cabelo`, `arm/braco/hand/mao`, `head/cabeca`, `body/torso/corpo`) in the OBJ mesh names. A new model with different names loses the animations silently (hair falls back to up to 5 meshes with y > 0).
 - **Game over container CSS**: `#gameover-container` styles live in `css/tutorial.css` (not a separate file). It reuses tutorial classes (`.tutorial-content`, `.tutorial-dialog`) but has its own container/background/portrait rules. Missing these CSS rules causes the game over dialog to be invisible.
