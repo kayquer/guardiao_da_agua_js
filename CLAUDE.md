@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Prerequisites
 
 - **Python 3** — required for `npm start` (uses `python3 -m http.server`)
-- **Node.js >= 16** — required for Playwright tests
+- **Node.js >= 18** — required for tests (`node:test`, `structuredClone`)
 - Run `npm install` before first use to install Playwright dev dependency
 
 ### Development
@@ -16,10 +16,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm start          # Start Python HTTP server at http://localhost:3000
 ```
 
-### Testing (Playwright E2E)
+### Testing
 
 ```bash
-npm test                   # Run all Playwright tests (headless)
+npm test                   # Unit (node:test, <1s) + E2E smoke
+npm run test:unit          # Only unit tests — run these after any game-rule or js/data change
+npm run test:e2e           # Only Playwright E2E (headless)
 npm run test:headed        # Run tests with visible browser
 npm run test:ui            # Open Playwright interactive UI
 npm run test:debug         # Debug mode with step-through
@@ -27,7 +29,9 @@ npm run test:report        # View HTML test report
 npm run install-playwright # Install Playwright browsers (first-time setup; only chromium is used)
 ```
 
-The only spec is `tests/smoke.spec.js`: boot → new game → place a building → save/load → help/category → study → game over, run as `desktop` and `mobile` (Pixel 5) on chromium. It fails on **any** `pageerror`, `console.error`, HTTP ≥ 400 or failed request, so a deleted asset or a leftover `console.error` breaks it. `net::ERR_ABORTED` is ignored (Chromium aborts media range requests). `playwright.config.js` starts the server itself via `npm start` (`reuseExistingServer`).
+**Unit tests** (`tests/unit/*.test.js`, no deps): `tests/unit/load.js` loads the game's global scripts into a `vm` context with stubbed `window`/`localStorage`/silenced `console`, and returns an evaluator (`g('ResourceManager')`) because top-level `class`/`const` are lexical, not properties of `window`. Only modules without Babylon/DOM are testable this way: `ResourceManager`, `LoanManager`, `EventSystem`, `SaveSystem`, `StudySystem`, and `js/data/`. Objects from the `vm` realm have other prototypes — compare via `JSON.stringify`, not `deepStrictEqual`. `data.test.js` holds `KNOWN_*` allowlists of content already broken in 10/2026 (missions targeting buildings that don't exist; buildings with `size: {width, height}` that the square-only grid can't occupy): remove entries as they're fixed, never add.
+
+**E2E:** the only spec is `tests/smoke.spec.js`: boot → new game → place a building → save/load → help/category → study → game over, run as `desktop` and `mobile` (Pixel 5) on chromium. It fails on **any** `pageerror`, `console.error`, HTTP ≥ 400 or failed request, so a deleted asset or a leftover `console.error` breaks it. `net::ERR_ABORTED` is ignored (Chromium aborts media range requests). `playwright.config.js` starts the server itself via `npm start` (`reuseExistingServer`).
 
 ## Architecture
 
