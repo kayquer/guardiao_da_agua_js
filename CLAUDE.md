@@ -89,7 +89,7 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 
 - **Singleton pattern**: `GameManager`, `SettingsManager`, `SaveSystem` — accessed via module-level `let` variables in `main.js`.
 - **System communication**: all systems receive a `gameManager` reference at construction and call back through it rather than importing each other directly.
-- **Building definitions**: large data objects defined inside `BuildingSystem.js`; `data/building-studies.json` holds supplemental educational text shown in StudySystem.
+- **Game data lives in `js/data/`**: `buildings.js` (`BUILDING_TYPES`, 56 buildings) and `missions.js` (`MISSIONS`, 15 missions), plain global objects keyed by id. `BuildingSystem.initializeBuildingTypes()` / `QuestSystem.initializeQuests()` register them with `structuredClone` — objectives hold mutable progress (`current`), so never register the shared object directly. Keep them pure data (no functions, no `Date.now()`): relative times go as a duration (`timeWindowMs`) and are resolved in `addQuest()`. Balancing a building or mission = edit `js/data/`, not the systems. `data/building-studies.json` holds the educational text shown in StudySystem.
 - **Dual Babylon.js scenes**: `TutorialSystem` creates a second Babylon.js scene for rendering 3D character portraits independently from the main game scene.
 - **Mobile/desktop branching**: `UIManager.isMobile = window.innerWidth <= 768` set at construction and on resize. Many methods early-return with `if (this.isMobile) return` or `if (!this.isMobile) return`.
 - **Cooldown system**: `UIManager.cooldownManager` prevents double-triggers. Use `this.isOnCooldown('key')` / `this.setCooldown('key', ms)` when adding new click handlers.
