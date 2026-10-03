@@ -372,10 +372,11 @@ class QuestSystem {
         let totalProgress = 0;
         
         quest.objectives.forEach(objective => {
-            const progress = this.checkObjectiveProgress(objective);
+            const progress = this.checkObjectiveProgress(objective, quest);
             objective.current = progress;
             
-            const objectiveProgress = Math.min(progress / objective.required, 1);
+            // required 0 = "nenhuma ocorrência" (avoid): cumprido enquanto não for violado
+            const objectiveProgress = objective.required > 0 ? Math.min(progress / objective.required, 1) : 1;
             totalProgress += objectiveProgress;
             
             if (objectiveProgress < 1) {
@@ -392,22 +393,27 @@ class QuestSystem {
             this.updateQuestUI();
         }
 
-        // Verificar limite de tempo
+        // Objetivo 'avoid' violado (ex.: água acabou) reprova na hora
+        if (quest.objectives.some(objective => objective.violated)) {
+            this.failQuest(questId);
+            return;
+        }
+
+        // Conclusão antes do limite de tempo: sobreviver até o fim do prazo é vencer
+        if (allObjectivesComplete) {
+            this.completeQuest(questId);
+            return;
+        }
+
         if (quest.timeLimit) {
             const elapsed = (Date.now() - quest.startTime) / 1000;
             if (elapsed >= quest.timeLimit) {
                 this.failQuest(questId);
-                return;
             }
-        }
-
-        // Verificar conclusão
-        if (allObjectivesComplete) {
-            this.completeQuest(questId);
         }
     }
     
-    checkObjectiveProgress(objective) {
+    checkObjectiveProgress(objective, quest) {
         const resourceManager = this.gameManager.resourceManager;
         const buildingSystem = this.gameManager.buildingSystem;
         
@@ -426,7 +432,8 @@ class QuestSystem {
                     if (objective.comparison === 'greater') {
                         return value >= objective.required ? objective.required : value;
                     } else if (objective.comparison === 'less') {
-                        return value <= objective.required ? objective.required : value;
+                        // acima do limite o progresso é parcial (limite/valor < 1), nunca completo
+                        return value <= objective.required ? objective.required : objective.required * (objective.required / value);
                     } else {
                         return value;
                     }
@@ -448,12 +455,16 @@ class QuestSystem {
                 }
                 break;
                 
-            case 'survival':
-                const elapsed = (Date.now() - this.quests.get(objective.questId)?.startTime || 0) / 1000;
+            case 'survival': {
+                const elapsed = (Date.now() - quest.startTime) / 1000;
                 return Math.min(elapsed, objective.required);
-                
+            }
+
             case 'avoid':
-                // Implementar lógica de evitar eventos
+                // Alvos aceitos estão em tests/unit/data.test.js (SUPPORTED.avoid)
+                if (objective.target === 'water_shortage' && resourceManager.resources.water.current <= 0) {
+                    objective.violated = true;
+                }
                 return 0;
         }
         
@@ -832,7 +843,7 @@ class QuestSystem {
         // Check each objective
         let allObjectivesComplete = true;
         mission.objectives.forEach((objective, index) => {
-            const progress = this.checkObjectiveProgress(objective);
+            const progress = this.checkObjectiveProgress(objective, mission);
             const isComplete = progress >= objective.required;
 
             log(`  📋 Objective ${index + 1}: ${objective.description}`);
@@ -902,8 +913,10 @@ class QuestSystem {
     
     loadData(data) {
         if (data) {
-            this.activeQuests = new Set(data.activeQuests || []);
-            this.completedQuests = new Set(data.completedQuests || []);
+            // save antigo pode citar missões removidas de js/data/missions.js
+            const known = id => this.quests.has(id);
+            this.activeQuests = new Set((data.activeQuests || []).filter(known));
+            this.completedQuests = new Set((data.completedQuests || []).filter(known));
             this.currentMainQuest = data.currentMainQuest;
             this.totalScore = data.totalScore || 0;
             this.achievements = new Set(data.achievements || []);
