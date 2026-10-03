@@ -53,14 +53,16 @@ npm run install-playwright # Install Playwright browsers (first-time setup; only
 ### Module Hierarchy
 
 ```text
-GameManager (js/core/GameManager.js)  ← central orchestrator
+GameManager (js/core/GameManager.js)  ← central orchestrator, render loop, input, clock, new/load game
+│     + core/game/CameraGuard.js (camera validation/recovery), core/game/SelectionVisuals.js (selection ring, placement overlay), core/game/Diagnostics.js (memory monitor, ?debug tools)
 ├── GridManager       (js/core/GridManager.js)           — 40×40 grid, terrain, occupancy
 ├── ResourceManager   (js/core/ResourceManager.js)       — water, budget, population, pollution, electricity
 ├── BuildingSystem    (js/systems/BuildingSystem.js)     — building registry, placement, preview, effects
 │     + building/BuildingMeshes.js (meshes/materials), building/BuildingFeedback.js (notifications, construction indicators, celebration, labels)
-├── UIManager         (js/systems/UIManager.js)          — HUD, categories, notifications, mobile panels
-│     + ui/MobileTouch.js (hold/multi-select), ui/StudyBookUI.js, ui/LoanUI.js, ui/ResourcePanels.js
-├── QuestSystem       (js/systems/QuestSystem.js)        — missions, objectives, stakeholder rep
+├── UIManager         (js/systems/UIManager.js)          — HUD, categories, notifications, help, building info
+│     + ui/MobilePanels.js (mobile controls/HUD/side panels), ui/MobileTouch.js (hold/multi-select), ui/StudyBookUI.js, ui/LoanUI.js, ui/ResourcePanels.js (all 6 resource panels)
+├── QuestSystem       (js/systems/QuestSystem.js)        — mission rules: objectives, rewards, choices, stakeholder rep
+│     + ui/MissionUI.js (mission panel, cards, carousel, details)
 ├── TutorialSystem    (js/systems/TutorialSystem.js)     — 3D character dialogue & animations
 ├── EventSystem       (js/systems/EventSystem.js)        — random climate events
 ├── SaveSystem        (js/systems/SaveSystem.js)         — localStorage, 5 save slots, auto-save
