@@ -6,6 +6,8 @@ test('jogo roda de ponta a ponta sem erros', async ({ page }) => {
     const problems = [];
     page.on('pageerror', e => problems.push(`pageerror: ${e.message}`));
     page.on('console', m => { if (m.type() === 'error') problems.push(`console.error: ${m.text()}`); });
+    // alert/confirm nativos travam a página: o jogo usa gameAlert/gameConfirm (SweetAlert2)
+    page.on('dialog', d => { problems.push(`diálogo nativo: ${d.message()}`); d.dismiss(); });
     // ERR_ABORTED = Chromium cancelando range request de mídia, não arquivo faltando (404 cai no 'response')
     page.on('requestfailed', r => {
         const err = r.failure()?.errorText;
@@ -53,6 +55,14 @@ test('jogo roda de ponta a ponta sem erros', async ({ page }) => {
         document.querySelector('.modal .close-btn, #help-modal .close-btn')?.click();
         document.querySelector('.category-btn')?.click();
     });
+
+    // Confirmação no estilo do jogo: Menu Principal → modal → Cancelar mantém o jogo
+    await page.evaluate(() => { window.gameManager.uiManager.returnToMainMenu(); }); // sem await: só resolve ao fechar
+    const dialog = page.locator('.swal2-popup.game-swal');
+    await expect(dialog).toBeVisible();
+    await dialog.locator('.swal2-cancel').click();
+    await expect(dialog).toBeHidden();
+    await expect(page.locator('#game-screen')).toBeVisible();
 
     // Estudo educacional (imagens do building-studies.json)
     await page.evaluate(() => window.gameManager.studySystem.startStudy('water_pump'));

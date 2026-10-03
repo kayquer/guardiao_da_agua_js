@@ -45,8 +45,8 @@ class TutorialSystem {
         // Skip button
         const skipBtn = document.getElementById('tutorial-skip-btn');
         if (skipBtn) {
-            skipBtn.addEventListener('click', () => {
-                if (confirm('Tem certeza que deseja pular o tutorial?')) {
+            skipBtn.addEventListener('click', async () => {
+                if (await gameConfirm('Pular tutorial?', 'Você pode aprender sobre cada construção depois, estudando-a no painel.', { confirmText: 'Pular' })) {
                     this.skip();
                 }
             });

@@ -291,25 +291,17 @@ async function startNewGame() {
 
 function showAbout() {
     log('ℹ️ Mostrando sobre...');
-    alert(`
-🎮 Guardião da Água v1.0.0
-
-Jogo educacional de simulação e gerenciamento de recursos hídricos.
-
-Desenvolvido para ensinar sobre:
-• Conservação da água
-• Gestão sustentável
-• Responsabilidade ambiental
-• Planejamento urbano
-
-Tecnologias utilizadas:
-• HTML5 Canvas
-• Babylon.js
-• JavaScript ES6+
-• CSS3
-
-© 2024 - Projeto Educacional
-    `);
+    gameDialog({
+        title: '💧 Guardião da Água',
+        html: `
+            <p>Jogo educacional de simulação e gestão de recursos hídricos.</p>
+            <p style="margin-top: 1rem;"><strong>Para aprender sobre:</strong><br>
+            conservação da água · gestão sustentável ·<br>
+            responsabilidade ambiental · planejamento urbano</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem;">Versão 1.0.0 · Feito com Babylon.js</p>
+        `,
+        confirmButtonText: 'Fechar'
+    });
 }
 
 // ===== TRATAMENTO DE ERROS =====

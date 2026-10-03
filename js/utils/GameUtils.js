@@ -24,6 +24,41 @@ function mixin(TargetClass, methods) {
 }
 
 /**
+ * ===== DIÁLOGOS (SweetAlert2 no estilo do jogo) =====
+ * Use no lugar de alert()/confirm(): os nativos travam a página e fogem do visual.
+ * O visual vem das classes do overlay de pausa (.overlay-content, .overlay-btn) + .game-swal em styles.css.
+ */
+function gameDialog(options) {
+    return Swal.fire({
+        buttonsStyling: false,
+        customClass: {
+            popup: 'game-swal overlay-content',
+            confirmButton: 'overlay-btn primary',
+            cancelButton: 'overlay-btn secondary'
+        },
+        confirmButtonText: 'OK',
+        ...options
+    });
+}
+
+/** Aviso com um botão. Resolve quando fechado. */
+function gameAlert(title, text, icon = 'info') {
+    return gameDialog({ title, text, icon });
+}
+
+/** Pergunta sim/não. Resolve true só se o jogador confirmar (Esc/fora = false). */
+async function gameConfirm(title, text, { confirmText = 'Sim', cancelText = 'Cancelar', icon = 'question' } = {}) {
+    const result = await gameDialog({
+        title, text, icon,
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: cancelText,
+        focusCancel: true
+    });
+    return result.isConfirmed;
+}
+
+/**
  * ===== VALIDATION UTILITIES =====
  */
 

@@ -117,6 +117,7 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 
 ## Gotchas
 
+- **Dialogs: never `alert()`/`confirm()`** (ESLint `no-alert` fails). Use `gameAlert(title, text, icon)` / `await gameConfirm(title, text, { confirmText, cancelText, icon })` from `GameUtils.js` — SweetAlert2 (CDN, pinned in `index.html`) dressed with the pause-overlay classes (`.overlay-content`, `.overlay-btn`) + `.game-swal` overrides in `css/styles.css`. Native dialogs freeze the page (and Playwright/automation); the smoke test fails on any native dialog. `gameConfirm` is async, so callers become `async` — in Playwright, trigger them without awaiting the returned promise. `.swal2-container` sits at z-index 20000, above every game panel.
 - **Logging**: use `log(...)` (defined in `GameConstants.js`), not `console.log` — it only prints when the URL has `?debug`. `?debug` also exposes the console helpers (`GAME_DEBUG`, `monitorCamera()`, `listAllMissions()`, `forceCompleteMission()`, `resetConstructionState()`…). `console.warn`/`console.error` always print, and any `console.error` fails the smoke test.
 - **No ES modules**: All JS files use plain `<script>` tags — no `import`/`export`. Order of `<script>` tags in `index.html` matters.
 - **Dev server required for tests**: Playwright tests expect the server running on `localhost:3000`. Start it with `npm start` before running `npm test`.

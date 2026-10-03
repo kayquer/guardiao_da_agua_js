@@ -1440,8 +1440,8 @@ class UIManager {
         AudioManager.playSound('sfx_success');
     }
     
-    returnToMainMenu() {
-        if (confirm('Tem certeza que deseja voltar ao menu principal? O progresso não salvo será perdido.')) {
+    async returnToMainMenu() {
+        if (await gameConfirm('Voltar ao menu?', 'O jogo é salvo automaticamente antes de sair.', { confirmText: 'Voltar ao menu', icon: 'warning' })) {
             // Salvar automaticamente
             this.gameManager.autoSave();
             

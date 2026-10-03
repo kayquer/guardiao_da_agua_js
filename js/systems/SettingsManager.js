@@ -527,7 +527,7 @@ class SettingsManager {
             
         } catch (error) {
             console.error('❌ Erro ao salvar configurações:', error);
-            alert('Erro ao salvar configurações!');
+            gameAlert('Não deu para salvar', 'As configurações não foram salvas. Tente de novo.', 'error');
         }
     }
     
@@ -562,8 +562,8 @@ class SettingsManager {
         }
     }
     
-    resetToDefaults() {
-        if (confirm('Tem certeza que deseja restaurar todas as configurações para os valores padrão?')) {
+    async resetToDefaults() {
+        if (await gameConfirm('Restaurar padrões?', 'Todas as configurações voltam aos valores originais.', { confirmText: 'Restaurar', icon: 'warning' })) {
             this.settings = JSON.parse(JSON.stringify(this.defaultSettings));
             this.updateUI();
             this.saveSettings();

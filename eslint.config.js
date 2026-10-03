@@ -7,7 +7,7 @@ const globals = require('globals');
 const scripts = [...fs.readFileSync('index.html', 'utf8').matchAll(/<script src="(js\/[^"]+)"/g)].map(m => m[1]);
 const projectGlobals = {};
 for (const file of scripts) {
-    for (const m of fs.readFileSync(file, 'utf8').matchAll(/^(?:(?:class|const|let|var|function)\s+|window\.)([A-Za-z_$][\w$]*)/gm)) {
+    for (const m of fs.readFileSync(file, 'utf8').matchAll(/^(?:(?:class|const|let|var|(?:async\s+)?function)\s+|window\.)([A-Za-z_$][\w$]*)/gm)) {
         projectGlobals[m[1]] = 'readonly';
     }
 }
@@ -18,13 +18,14 @@ module.exports = [
         languageOptions: {
             ecmaVersion: 2022,
             sourceType: 'script',
-            globals: { ...globals.browser, ...projectGlobals, BABYLON: 'readonly' }
+            globals: { ...globals.browser, ...projectGlobals, BABYLON: 'readonly', Swal: 'readonly' }
         },
         rules: {
             'no-undef': 'error',
             'no-redeclare': ['error', { builtinGlobals: false }],
             'no-dupe-class-members': 'error',
             'no-dupe-keys': 'error',
+            'no-alert': 'error', // use gameAlert/gameConfirm (GameUtils.js)
             'no-unused-vars': ['error', { vars: 'local', args: 'none', caughtErrors: 'none' }]
         }
     },

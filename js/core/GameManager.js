@@ -1442,7 +1442,7 @@ class GameManager {
 
         } catch (error) {
             console.error('❌ Erro ao carregar:', error);
-            alert('Erro ao carregar o jogo. Iniciando novo jogo.');
+            gameAlert('Save com problema', 'Não foi possível carregar o jogo salvo. Começando um jogo novo.', 'error');
             return this.startNewGame();
         }
     }
