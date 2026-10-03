@@ -84,7 +84,7 @@ class ResourceManager {
         this.historyMaxLength = 100;
 
         // Callbacks para mudanças
-        this.onResourceChange = new Map();
+        this.changeListeners = new Map(); // tipo → callbacks (ver onResourceChange)
         
         // Inicializar
         this.initializeResources();
@@ -595,14 +595,14 @@ class ResourceManager {
 
     // ===== CALLBACKS =====
     onResourceChange(resourceType, callback) {
-        if (!this.onResourceChange.has(resourceType)) {
-            this.onResourceChange.set(resourceType, []);
+        if (!this.changeListeners.has(resourceType)) {
+            this.changeListeners.set(resourceType, []);
         }
-        this.onResourceChange.get(resourceType).push(callback);
+        this.changeListeners.get(resourceType).push(callback);
     }
     
     notifyChange(resourceType, changeType, value) {
-        const callbacks = this.onResourceChange.get(resourceType);
+        const callbacks = this.changeListeners.get(resourceType);
         if (callbacks) {
             callbacks.forEach(callback => {
                 try {
@@ -681,21 +681,25 @@ class ResourceManager {
     addElectricityGeneration(amount) {
         this.resources.electricity.generation += amount;
         log(`⚡ Geração de energia +${amount} MW`);
+        this.updateElectricity(); // eficiência em dia já para quem lê logo depois (ex.: alerta pós-construção)
     }
 
     removeElectricityGeneration(amount) {
         this.resources.electricity.generation = Math.max(0, this.resources.electricity.generation - amount);
         log(`⚡ Geração de energia -${amount} MW`);
+        this.updateElectricity(); // eficiência em dia já para quem lê logo depois (ex.: alerta pós-construção)
     }
 
     addElectricityConsumption(amount) {
         this.resources.electricity.consumption += amount;
         log(`⚡ Consumo de energia +${amount} MW`);
+        this.updateElectricity(); // eficiência em dia já para quem lê logo depois (ex.: alerta pós-construção)
     }
 
     removeElectricityConsumption(amount) {
         this.resources.electricity.consumption = Math.max(0, this.resources.electricity.consumption - amount);
         log(`⚡ Consumo de energia -${amount} MW`);
+        this.updateElectricity(); // eficiência em dia já para quem lê logo depois (ex.: alerta pós-construção)
     }
 
     updateElectricity() {

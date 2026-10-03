@@ -62,3 +62,21 @@ test('adjustResource soma e respeita [0, max]', () => {
     rm.adjustResource('pollution', 1000);
     assert.strictEqual(rm.resources.pollution.current, rm.resources.pollution.max);
 });
+
+test('eficiência elétrica atualiza na hora em que o consumo muda', () => {
+    const rm = new ResourceManager();
+    rm.addElectricityConsumption(20);
+    assert.strictEqual(rm.getElectricity().efficiency, 0);
+    rm.addElectricityGeneration(10);
+    assert.strictEqual(rm.getElectricity().efficiency, 0.5);
+    rm.removeElectricityConsumption(20);
+    assert.strictEqual(rm.getElectricity().efficiency, 1);
+});
+
+test('onResourceChange registra listener e é chamado na mudança', () => {
+    const rm = new ResourceManager();
+    const calls = [];
+    rm.onResourceChange('budget', (type, value) => calls.push([type, value]));
+    rm.spendBudget(100);
+    assert.strictEqual(JSON.stringify(calls), JSON.stringify([['spent', 100]]));
+});
