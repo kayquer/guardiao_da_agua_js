@@ -1235,7 +1235,7 @@ class QuestSystem {
         if (!match) return false;
 
         const [, resource, operator, value] = match;
-        const currentValue = this.getResourceValue(resource);
+        const currentValue = this.getResourceValue(this.gameManager.resourceManager.resources, resource);
         const targetValue = parseInt(value);
 
         switch (operator) {
@@ -1245,26 +1245,6 @@ class QuestSystem {
             case '<': return currentValue < targetValue;
             case '==': return currentValue === targetValue;
             default: return false;
-        }
-    }
-
-    getResourceValue(resourceName) {
-        const resourceManager = this.gameManager.resourceManager;
-        if (!resourceManager) return 0;
-
-        switch (resourceName) {
-            case 'satisfaction':
-                return resourceManager.resources.satisfaction?.current || 0;
-            case 'population':
-                return resourceManager.resources.population?.current || 0;
-            case 'pollution':
-                return resourceManager.resources.pollution?.current || 0;
-            case 'budget':
-                return resourceManager.resources.budget?.current || 0;
-            case 'water':
-                return resourceManager.resources.water?.current || 0;
-            default:
-                return 0;
         }
     }
 
