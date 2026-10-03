@@ -362,7 +362,6 @@ class EventSystem {
         const effects = event.config.effects;
         const resourceManager = this.gameManager.resourceManager;
         const buildingSystem = this.gameManager.buildingSystem;
-        const multiplier = apply ? 1 : -1;
         
         if (!effects) return;
         

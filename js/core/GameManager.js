@@ -520,7 +520,7 @@ class GameManager {
         // Single iteration combining both search strategies for optimal performance
         const meshName = mesh.name;
 
-        for (const [buildingId, building] of this.buildingSystem.buildings) {
+        for (const building of this.buildingSystem.buildings.values()) {
             // Primary search: direct mesh reference comparison (fastest)
             if (building.mesh === mesh) {
                 return building;
@@ -2028,7 +2028,6 @@ class GameManager {
 
         const gridSize = this.gridManager.gridSize;
         const cellSize = this.gridManager.cellSize;
-        const buildingSize = buildingTypeData.size || 1;
 
         // Create shared materials for better performance
         const validMaterial = new BABYLON.StandardMaterial('overlayValidMat', this.scene);
@@ -2047,7 +2046,6 @@ class GameManager {
 
         // Process in batches to avoid UI freeze
         const batchSize = 100; // Process 100 cells at a time
-        const totalCells = gridSize * gridSize;
         let processedCells = 0;
 
         // Show loading notification

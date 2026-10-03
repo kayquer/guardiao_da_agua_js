@@ -113,7 +113,7 @@ class GameOverSystem {
         if (this.isGameOver) return;
 
         // Check all conditions
-        for (const [key, condition] of Object.entries(this.conditions)) {
+        for (const condition of Object.values(this.conditions)) {
             if (condition.check()) {
                 this.triggerGameOver(condition.reason);
                 break;

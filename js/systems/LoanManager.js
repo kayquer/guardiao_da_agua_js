@@ -73,7 +73,6 @@ class LoanManager {
     
     evaluateLoanApplication(amount, termMonths) {
         const monthlyIncome = this.getMonthlyIncome();
-        const currentDebt = this.cityFinancialHealth.totalDebt;
         const currentMonthlyPayments = this.cityFinancialHealth.monthlyPayments;
         
         // Critério 1: Valor máximo por empréstimo (5x receita mensal)
@@ -174,7 +173,6 @@ class LoanManager {
     // ===== PROCESSAMENTO DE PAGAMENTOS =====
     processMonthlyPayments() {
         let totalPayments = 0;
-        const currentBudget = this.gameManager.resourceManager.getBudget().current;
         
         this.loans.forEach(loan => {
             if (loan.status === 'active' && this.isPaymentDue(loan)) {

@@ -19,7 +19,8 @@ npm start          # Start Python HTTP server at http://localhost:3000
 ### Testing
 
 ```bash
-npm test                   # Unit (node:test, <1s) + E2E smoke
+npm test                   # Lint + unit (node:test, <1s) + E2E smoke
+npm run lint               # ESLint: no-undef, no-dupe-class-members, no-unused-vars
 npm run test:unit          # Only unit tests — run these after any game-rule or js/data change
 npm run test:e2e           # Only Playwright E2E (headless)
 npm run test:headed        # Run tests with visible browser
@@ -115,7 +116,7 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 
 - **No ES modules**: All JS files use plain `<script>` tags — no `import`/`export`. Order of `<script>` tags in `index.html` matters.
 - **Dev server required for tests**: Playwright tests expect the server running on `localhost:3000`. Start it with `npm start` before running `npm test`.
-- **No linter/formatter**: There is no ESLint or Prettier configured. Follow existing code style (camelCase methods, PascalCase classes).
+- **ESLint, no formatter**: `eslint.config.js` builds the list of project globals from the `<script src>` tags in `index.html` (top-level `class/const/let/function` and `window.X =`), so using a global from a file not loaded by `index.html` fails `no-undef`. `no-dupe-class-members` matters here: a second method with the same name silently replaces the first — it already caused a real bug (`QuestSystem.getResourceValue`) and 6 dead duplicates. No Prettier; follow existing style (camelCase methods, PascalCase classes).
 - **pointer-events on HUD**: `.hud` has `pointer-events: none` with `.hud > *` re-enabling via `auto`. This works for nested elements (inherited), but elements appended to `document.body` (like `.mobile-toggle`) must have their own `z-index` and are unaffected.
 - **`display: none` vs transform visibility**: Mobile panels use CSS transforms for show/hide animations, but if the base CSS sets `display: none`, the transform has no visual effect. Always ensure mobile CSS overrides `display` for transform-animated panels.
 - **Mesh metadata must be preserved**: When replacing/merging building meshes, always copy `metadata` from old to new mesh or buildings become unselectable.

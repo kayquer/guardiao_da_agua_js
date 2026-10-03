@@ -352,31 +352,23 @@ class SettingsManager {
         console.log('🎨 Aplicando qualidade gráfica:', quality);
 
         // Configurações baseadas na qualidade
-        let renderTargetSize, shadowMapSize, particleCount, lightIntensity;
+        let shadowMapSize, lightIntensity;
 
         switch (quality) {
             case 'low':
-                renderTargetSize = 512;
                 shadowMapSize = 512;
-                particleCount = 0.5;
                 lightIntensity = 0.8;
                 break;
             case 'medium':
-                renderTargetSize = 1024;
                 shadowMapSize = 1024;
-                particleCount = 1.0;
                 lightIntensity = 1.0;
                 break;
             case 'high':
-                renderTargetSize = 2048;
                 shadowMapSize = 2048;
-                particleCount = 1.5;
                 lightIntensity = 1.2;
                 break;
             default:
-                renderTargetSize = 1024;
                 shadowMapSize = 1024;
-                particleCount = 1.0;
                 lightIntensity = 1.0;
         }
 

@@ -146,7 +146,7 @@ class BuildingSystem {
     findNearbyResearchBuildings(gridX, gridZ) {
         const nearbyBuildings = [];
 
-        for (const [buildingId, building] of this.buildings) {
+        for (const building of this.buildings.values()) {
             const config = building.config;
 
             // Check if building provides research bonuses
@@ -1370,81 +1370,6 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
         return baseHeight;
     }
 
-    createWaterFacilityMesh(buildingType) {
-        // ===== BUILDING SIZE AND GRID ALIGNMENT FIX: Respect building's actual size =====
-        const buildingSize = buildingType.size || 1;
-        const cellSize = this.gridManager.cellSize;
-        const buildingScale = 0.85; // Consistent with other methods
-        const actualSize = buildingSize * cellSize * buildingScale;
-
-        // Base da bomba
-        const base = BABYLON.MeshBuilder.CreateBox("waterBase", {
-            width: actualSize,
-            height: 0.5,
-            depth: actualSize
-        }, this.scene);
-
-        // Torre da bomba - scale with building size
-        const tower = BABYLON.MeshBuilder.CreateBox("waterTower", {
-            width: actualSize * 0.6,
-            height: 1.0,
-            depth: actualSize * 0.6
-        }, this.scene);
-        tower.position.y = 0.75;
-
-        // Combinar meshes
-        const merged = this.mergeVisibleMeshes([base, tower], `waterFacility_${buildingType.id}`);
-
-        // ===== FIX: Adjust position for multi-cell buildings =====
-        if (buildingSize > 1) {
-            const offset = (buildingSize - 1) * cellSize * 0.5;
-            merged.position.x += offset;
-            merged.position.z += offset;
-        }
-
-        return merged;
-    }
-
-    createInfrastructureMesh(buildingType) {
-        // ===== BUILDING SIZE AND GRID ALIGNMENT FIX: Respect building's actual size =====
-        const buildingSize = buildingType.size || 1;
-        const cellSize = this.gridManager.cellSize;
-        const buildingScale = 0.85; // Consistent with other methods
-        const actualSize = buildingSize * cellSize * buildingScale;
-
-        let mesh;
-
-        if (buildingType.id === 'road') {
-            // Estrada baixa
-            mesh = BABYLON.MeshBuilder.CreateBox("road", {
-                width: actualSize,
-                height: 0.1,
-                depth: actualSize
-            }, this.scene);
-        } else if (buildingType.id === 'pipe') {
-            // Cano
-            mesh = BABYLON.MeshBuilder.CreateCylinder("pipe", {
-                height: actualSize,
-                diameterTop: actualSize * 0.2,
-                diameterBottom: actualSize * 0.2,
-                tessellation: 8
-            }, this.scene);
-            mesh.rotation.z = Math.PI / 2; // Horizontal
-        } else {
-            // Infraestrutura genérica
-            return this.createBasicVoxelMesh(buildingType);
-        }
-
-        // ===== FIX: Adjust position for multi-cell buildings =====
-        if (buildingSize > 1 && mesh) {
-            const offset = (buildingSize - 1) * cellSize * 0.5;
-            mesh.position.x += offset;
-            mesh.position.z += offset;
-        }
-
-        return mesh;
-    }
-
     getTerrainHeightAt(gridX, gridZ) {
         // Obter altura do terreno na posição especificada
         if (this.gridManager && this.gridManager.elevationGrid) {
@@ -2301,7 +2226,6 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
     // ===== EFEITOS NOS RECURSOS =====
     applyBuildingEffects(building, add = true) {
         const config = building.config;
-        const multiplier = add ? 1 : -1;
         
         // Aplicar efeitos se ResourceManager estiver disponível
         if (window.gameManager && gameManager.resourceManager) {
@@ -4251,15 +4175,6 @@ removePowerShortageIcon(building) {
         console.log('✅ BuildingSystem disposed - Memória limpa');
     }
 
-    // ===== MÉTODOS AUXILIARES =====
-    getAllBuildings() {
-        return Array.from(this.buildings.values());
-    }
-
-    getBuildingsByType(type) {
-        return this.getAllBuildings().filter(building => building.type === type);
-    }
-
     // ===== CONECTIVIDADE DE INFRAESTRUTURA =====
     isInfrastructureBuilding(buildingType) {
         return buildingType.category === 'infrastructure' ||
@@ -4359,15 +4274,6 @@ removePowerShortageIcon(building) {
         }
 
         return false;
-    }
-
-    getBuildingAt(gridX, gridZ) {
-        for (const building of this.buildings.values()) {
-            if (building.gridX === gridX && building.gridZ === gridZ) {
-                return building;
-            }
-        }
-        return null;
     }
 
     updateConnectionVisual(building1, building2) {

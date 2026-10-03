@@ -264,9 +264,6 @@ class GridManager {
                 return;
             }
 
-            // Calcular dimensões do grid de vértices
-            const subdivisions = this.gridSize;
-            const verticesPerSide = subdivisions + 1;
             const terrainWidth = this.gridSize * this.cellSize;
             const terrainHeight = this.gridSize * this.cellSize;
 
@@ -967,18 +964,6 @@ class GridManager {
         }
 
         return 'grassland';
-    }
-
-    // ===== CLEANUP =====
-    dispose() {
-        if (this.gridMesh) this.gridMesh.dispose();
-        if (this.terrainMesh) this.terrainMesh.dispose();
-        if (this.waterMesh) this.waterMesh.dispose();
-        if (this.gridMaterial) this.gridMaterial.dispose();
-        if (this.terrainMaterial) this.terrainMaterial.dispose();
-        if (this.waterMaterial) this.waterMaterial.dispose();
-
-        console.log('🗑️ GridManager disposed');
     }
 
     // ===== MATERIAIS E CORES =====

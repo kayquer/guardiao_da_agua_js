@@ -392,7 +392,6 @@ class AudioManager {
 
         const playMorningSound = () => {
             // Simular pássaros com tons aleatórios
-            const duration = 3.0;
             const birdFrequencies = [800, 1200, 1600, 2000];
 
             birdFrequencies.forEach((freq, index) => {
