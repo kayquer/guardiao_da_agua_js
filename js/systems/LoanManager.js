@@ -320,7 +320,12 @@ class LoanManager {
     
     loadData(data) {
         if (data) {
-            this.loans = new Map(data.loans || []);
+            // JSON transforma Date em string; sem reviver, isPaymentDue() nunca é verdadeiro
+            this.loans = new Map((data.loans || []).map(([id, loan]) => [id, {
+                ...loan,
+                startDate: new Date(loan.startDate),
+                nextPaymentDate: new Date(loan.nextPaymentDate)
+            }]));
             this.loanCounter = data.loanCounter || 0;
             this.cityFinancialHealth = data.cityFinancialHealth || this.cityFinancialHealth;
         }
