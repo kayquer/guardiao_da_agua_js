@@ -5,7 +5,7 @@
 
 class QuestSystem {
     constructor(gameManager) {
-        console.log('🎯 Inicializando QuestSystem...');
+        log('🎯 Inicializando QuestSystem...');
         
         this.gameManager = gameManager;
         
@@ -66,30 +66,30 @@ class QuestSystem {
 
         this.initializeQuests();
         
-        console.log('✅ QuestSystem inicializado');
+        log('✅ QuestSystem inicializado');
 
-        // ===== GLOBAL DEBUG FUNCTIONS =====
-        if (typeof window !== 'undefined') {
+        // ===== GLOBAL DEBUG FUNCTIONS (só com ?debug) =====
+        if (DEBUG) {
             window.validateMission = (missionId) => this.validateMissionCompletion(missionId);
             window.forceCompleteMission = (missionId) => this.forceCompleteMission(missionId);
             window.listActiveMissions = () => {
-                console.log('🎯 Active Missions:');
+                log('🎯 Active Missions:');
                 this.activeQuests.forEach(questId => {
                     const quest = this.quests.get(questId);
                     if (quest) {
-                        console.log(`  - ${quest.title} (${questId}): ${Math.round(quest.progress * 100)}%`);
+                        log(`  - ${quest.title} (${questId}): ${Math.round(quest.progress * 100)}%`);
                     }
                 });
             };
             window.listAllMissions = () => {
-                console.log('📋 All Missions:');
+                log('📋 All Missions:');
                 this.quests.forEach((quest, questId) => {
                     const status = this.completedQuests.has(questId) ? 'Completed' :
                                   this.activeQuests.has(questId) ? 'Active' : 'Available';
-                    console.log(`  - ${quest.title} (${questId}): ${status}`);
+                    log(`  - ${quest.title} (${questId}): ${status}`);
                 });
             };
-            console.log('🧪 Mission debug functions available: validateMission(), forceCompleteMission(), listActiveMissions(), listAllMissions()');
+            log('🧪 Mission debug functions available: validateMission(), forceCompleteMission(), listActiveMissions(), listAllMissions()');
         }
     }
     
@@ -100,7 +100,7 @@ class QuestSystem {
             this.addQuest(id, structuredClone(config));
         }
 
-        console.log(`✅ ${this.quests.size} missões definidas (incluindo missões aprimoradas)`);
+        log(`✅ ${this.quests.size} missões definidas (incluindo missões aprimoradas)`);
     }
 
     addQuest(id, config) {
@@ -135,7 +135,7 @@ class QuestSystem {
         setTimeout(() => {
             if (this.canStartMission(id)) {
                 this.startQuest(id);
-                console.log(`🎯 Mission auto-activated: ${quest.title}`);
+                log(`🎯 Mission auto-activated: ${quest.title}`);
             }
         }, 100); // Small delay to ensure game is fully initialized
     }
@@ -184,7 +184,7 @@ class QuestSystem {
             );
         }
         
-        console.log(`🎯 Missão iniciada: ${quest.title}`);
+        log(`🎯 Missão iniciada: ${quest.title}`);
         return true;
     }
     
@@ -226,7 +226,7 @@ class QuestSystem {
         // ===== ENHANCED MISSION COMPLETION AUDIO FEEDBACK =====
         this.playMissionCompletionAudio(quest, performanceMultiplier);
 
-        console.log(`✅ Missão completa: ${quest.title} (Performance: ${performanceMultiplier.toFixed(2)}x)`);
+        log(`✅ Missão completa: ${quest.title} (Performance: ${performanceMultiplier.toFixed(2)}x)`);
         return true;
     }
 
@@ -324,7 +324,7 @@ class QuestSystem {
                         );
                     }
 
-                    console.log(`🎯 Objetivo dinâmico ativado: ${dynObj.description}`);
+                    log(`🎯 Objetivo dinâmico ativado: ${dynObj.description}`);
                 }
             });
         });
@@ -484,7 +484,7 @@ class QuestSystem {
             this.totalScore += scaledScore;
 
             if (performanceMultiplier > 1) {
-                console.log(`🎯 Pontuação com bônus: ${scaledScore} (${quest.rewards.score} base + ${Math.round((performanceMultiplier - 1) * quest.rewards.score)} bônus)`);
+                log(`🎯 Pontuação com bônus: ${scaledScore} (${quest.rewards.score} base + ${Math.round((performanceMultiplier - 1) * quest.rewards.score)} bônus)`);
             }
         }
 
@@ -494,7 +494,7 @@ class QuestSystem {
             resourceManager.adjustResource('budget', scaledBudget);
 
             if (performanceMultiplier > 1) {
-                console.log(`💰 Orçamento com bônus: ${scaledBudget}`);
+                log(`💰 Orçamento com bônus: ${scaledBudget}`);
             }
         }
 
@@ -504,7 +504,7 @@ class QuestSystem {
                 const buildingType = buildingSystem?.buildingTypes.get(buildingTypeId);
                 if (buildingType) {
                     buildingType.unlocked = true;
-                    console.log(`🔓 Desbloqueado: ${buildingType.name}`);
+                    log(`🔓 Desbloqueado: ${buildingType.name}`);
                 }
             });
         }
@@ -520,13 +520,13 @@ class QuestSystem {
         if (quest.rewards.experience) {
             const scaledExp = Math.round(quest.rewards.experience * performanceMultiplier);
             // TODO: Implement experience system
-            console.log(`⭐ Experiência ganha: ${scaledExp}`);
+            log(`⭐ Experiência ganha: ${scaledExp}`);
         }
 
         // Special unlocks based on performance
         if (quest.rewards.performanceUnlocks && performanceMultiplier >= 1.5) {
             quest.rewards.performanceUnlocks.forEach(unlock => {
-                console.log(`🌟 Desbloqueio especial por desempenho: ${unlock}`);
+                log(`🌟 Desbloqueio especial por desempenho: ${unlock}`);
                 // TODO: Implement special unlocks
             });
         }
@@ -589,7 +589,7 @@ class QuestSystem {
         // Show the details panel
         this.gameManager.uiManager.showMissionPanel();
 
-        console.log(`🎭 Choice dialog shown for: ${quest.title}`);
+        log(`🎭 Choice dialog shown for: ${quest.title}`);
     }
 
     /**
@@ -666,7 +666,7 @@ class QuestSystem {
         // Refresh mission interface to show updated mission
         this.renderMissionInterface();
 
-        console.log(`🎯 Escolha feita: ${selectedOption.text}`);
+        log(`🎯 Escolha feita: ${selectedOption.text}`);
     }
 
     /**
@@ -682,7 +682,7 @@ class QuestSystem {
             if (consequences.budget !== 0) {
                 const type = consequences.budget > 0 ? 'Ganho' : 'Gasto';
                 const amount = Math.abs(consequences.budget);
-                console.log(`💰 ${type} de orçamento: R$ ${amount}`);
+                log(`💰 ${type} de orçamento: R$ ${amount}`);
             }
         }
 
@@ -698,13 +698,13 @@ class QuestSystem {
 
                 const icon = this.getStakeholderIcon(stakeholder);
                 const sign = value > 0 ? '+' : '';
-                console.log(`${icon} Reputação ${stakeholder}: ${sign}${value} (total: ${this.stakeholderReputation[stakeholder]})`);
+                log(`${icon} Reputação ${stakeholder}: ${sign}${value} (total: ${this.stakeholderReputation[stakeholder]})`);
             });
         }
 
         // Apply time limit changes
         if (consequences.timeLimit) {
-            console.log(`⏰ Limite de tempo alterado: ${consequences.timeLimit}s`);
+            log(`⏰ Limite de tempo alterado: ${consequences.timeLimit}s`);
         }
 
         // Apply resource changes
@@ -731,7 +731,7 @@ class QuestSystem {
                 if (now > quest.timeWindow.end) {
                     // Mission expired
                     quest.status = 'expired';
-                    console.log(`⏰ Missão expirou: ${quest.title}`);
+                    log(`⏰ Missão expirou: ${quest.title}`);
 
                     if (this.gameManager.uiManager) {
                         this.gameManager.uiManager.showNotification(
@@ -757,7 +757,7 @@ class QuestSystem {
                 );
             }
             
-            console.log(`🏆 Conquista desbloqueada: ${achievementId}`);
+            log(`🏆 Conquista desbloqueada: ${achievementId}`);
         }
     }
     
@@ -792,7 +792,7 @@ class QuestSystem {
             );
         }
         
-        console.log(`❌ Missão falhou: ${quest.title}`);
+        log(`❌ Missão falhou: ${quest.title}`);
     }
     
     // ===== ENHANCED MISSION MANAGEMENT UI =====
@@ -989,7 +989,7 @@ class QuestSystem {
             AudioManager.playSound('sfx_click', 0.6);
         }
 
-        console.log(`🎯 Mission filter set to: ${filter}`);
+        log(`🎯 Mission filter set to: ${filter}`);
     }
 
     /**
@@ -1351,7 +1351,7 @@ class QuestSystem {
             this.gameManager.uiManager.showMissionPanel();
         }
 
-        console.log(`🎯 Navigating to mission details: ${mission.title}`);
+        log(`🎯 Navigating to mission details: ${mission.title}`);
     }
 
     /**
@@ -1581,7 +1581,7 @@ class QuestSystem {
         navContainer.appendChild(nextBtn);
         missionHeader.appendChild(navContainer);
 
-        console.log(`🎯 Carousel navigation updated: ${this.missionCarousel.currentIndex + 1}/${this.missionCarousel.missions.length}`);
+        log(`🎯 Carousel navigation updated: ${this.missionCarousel.currentIndex + 1}/${this.missionCarousel.missions.length}`);
     }
 
     /**
@@ -1614,7 +1614,7 @@ class QuestSystem {
             AudioManager.playSound('sfx_click', 0.5);
         }
 
-        console.log(`🎯 Carousel navigated to mission ${newIndex + 1}/${this.missionCarousel.missions.length}`);
+        log(`🎯 Carousel navigated to mission ${newIndex + 1}/${this.missionCarousel.missions.length}`);
     }
 
     /**
@@ -1847,7 +1847,7 @@ class QuestSystem {
         if (mission.prerequisites && mission.prerequisites.length > 0) {
             const prerequisitesMet = mission.prerequisites.every(prereq => this.completedQuests.has(prereq));
             if (!prerequisitesMet) {
-                console.log(`🔒 Mission ${mission.title} blocked by prerequisites:`,
+                log(`🔒 Mission ${mission.title} blocked by prerequisites:`,
                     mission.prerequisites.filter(prereq => !this.completedQuests.has(prereq)));
                 return false;
             }
@@ -1866,7 +1866,7 @@ class QuestSystem {
             return false;
         }
 
-        console.log(`🔍 Validating mission completion: ${mission.title}`);
+        log(`🔍 Validating mission completion: ${mission.title}`);
 
         // Check each objective
         let allObjectivesComplete = true;
@@ -1874,15 +1874,15 @@ class QuestSystem {
             const progress = this.checkObjectiveProgress(objective);
             const isComplete = progress >= objective.required;
 
-            console.log(`  📋 Objective ${index + 1}: ${objective.description}`);
-            console.log(`     Progress: ${progress}/${objective.required} ${isComplete ? '✅' : '⏳'}`);
+            log(`  📋 Objective ${index + 1}: ${objective.description}`);
+            log(`     Progress: ${progress}/${objective.required} ${isComplete ? '✅' : '⏳'}`);
 
             if (!isComplete) {
                 allObjectivesComplete = false;
             }
         });
 
-        console.log(`🎯 Mission ${mission.title} completion status: ${allObjectivesComplete ? '✅ Complete' : '⏳ In Progress'}`);
+        log(`🎯 Mission ${mission.title} completion status: ${allObjectivesComplete ? '✅ Complete' : '⏳ In Progress'}`);
         return allObjectivesComplete;
     }
 
@@ -1896,7 +1896,7 @@ class QuestSystem {
             return false;
         }
 
-        console.log(`🧪 Force completing mission: ${mission.title}`);
+        log(`🧪 Force completing mission: ${mission.title}`);
 
         // Complete all objectives
         mission.objectives.forEach(objective => {
@@ -2024,7 +2024,7 @@ class QuestSystem {
                 }, 600);
             }
 
-            console.log(`🔊 Mission completion audio played: ${celebrationLevel} level for "${quest.title}"`);
+            log(`🔊 Mission completion audio played: ${celebrationLevel} level for "${quest.title}"`);
 
         } catch (error) {
             console.warn('⚠️ Error playing mission completion audio:', error);
@@ -2075,7 +2075,7 @@ class QuestSystem {
                 }, index * 100);
             });
 
-            console.log('🎵 Procedural victory sound created');
+            log('🎵 Procedural victory sound created');
 
         } catch (error) {
             console.warn('⚠️ Error creating procedural victory sound:', error);
@@ -2085,4 +2085,4 @@ class QuestSystem {
 
 // Exportar para escopo global
 window.QuestSystem = QuestSystem;
-console.log('🎯 QuestSystem carregado e exportado para window.QuestSystem');
+log('🎯 QuestSystem carregado e exportado para window.QuestSystem');

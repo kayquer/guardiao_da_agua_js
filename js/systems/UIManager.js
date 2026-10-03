@@ -5,7 +5,7 @@
 
 class UIManager {
     constructor(gameManager) {
-        console.log('🖥️ Inicializando UIManager...');
+        log('🖥️ Inicializando UIManager...');
 
         this.gameManager = gameManager;
         
@@ -91,7 +91,7 @@ class UIManager {
         // ===== STANDARDIZED STATE UPDATE HELPER =====
         this.updatePanelState = (panelType) => {
             this.uiState.currentOpenPanel = panelType;
-            console.log(`📋 Panel state updated: ${panelType || 'null'}`);
+            log(`📋 Panel state updated: ${panelType || 'null'}`);
         };
 
         // ===== EVENT LISTENER TRACKING =====
@@ -126,7 +126,7 @@ class UIManager {
 
     // ===== INICIALIZAÇÃO =====
     initialize() {
-        console.log('🖥️ Inicializando interface...');
+        log('🖥️ Inicializando interface...');
 
         // Verificar se elementos existem
         if (!this.elements.waterAmount) {
@@ -143,7 +143,7 @@ class UIManager {
         // Configurar responsividade
         this.handleResize();
 
-        console.log('✅ Interface inicializada');
+        log('✅ Interface inicializada');
     }
 
     // ===== MISSION MANAGEMENT UI =====
@@ -363,7 +363,7 @@ class UIManager {
             this.setupResourceItemTooltip(item, type, name);
         });
 
-        console.log('✅ Enhanced resource panel interactions initialized');
+        log('✅ Enhanced resource panel interactions initialized');
     }
 
     /**
@@ -411,7 +411,7 @@ class UIManager {
             this.eventListeners.compactResource.push({ element, event: 'click', handler: clickHandler });
         });
 
-        console.log('✅ Compact resource click handlers initialized');
+        log('✅ Compact resource click handlers initialized');
     }
 
     /**
@@ -490,7 +490,7 @@ class UIManager {
         try {
             // ===== STATE TRANSITION MANAGEMENT =====
             if (this.uiState.isTransitioning) {
-                console.log('⚠️ UI transition in progress, ignoring resource panel request');
+                log('⚠️ UI transition in progress, ignoring resource panel request');
                 return;
             }
 
@@ -502,14 +502,14 @@ class UIManager {
 
             // ===== FIX: Allow user-initiated panel switches to override priority restrictions =====
             if (!userInitiated && currentPriority > newPriority && this.uiState.currentOpenPanel !== resourceType) {
-                console.log(`⚠️ Higher priority panel (${this.uiState.currentOpenPanel}) is open, resource panel blocked (system-initiated)`);
+                log(`⚠️ Higher priority panel (${this.uiState.currentOpenPanel}) is open, resource panel blocked (system-initiated)`);
                 this.uiState.isTransitioning = false;
                 return;
             }
 
             // User-initiated switches always succeed
             if (userInitiated && this.uiState.currentOpenPanel !== resourceType) {
-                console.log(`🎯 User-initiated panel switch: ${this.uiState.currentOpenPanel} → ${resourceType}`);
+                log(`🎯 User-initiated panel switch: ${this.uiState.currentOpenPanel} → ${resourceType}`);
             }
 
             // ===== CLEAN TRANSITION =====
@@ -721,7 +721,7 @@ class UIManager {
         // Store reference
         this.hudBottomToggleButton = hudBottomToggle;
 
-        console.log('📱 Mobile bottom HUD toggle created');
+        log('📱 Mobile bottom HUD toggle created');
     }
 
     toggleMobileBottomHud() {
@@ -739,13 +739,13 @@ class UIManager {
             hudBottom.classList.add('expanded');
             toggleButton.classList.add('expanded');
             toggleButton.innerHTML = '▼'; // Down arrow (expanded state)
-            console.log('📱 Mobile bottom HUD expanded');
+            log('📱 Mobile bottom HUD expanded');
         } else {
             // Collapse
             hudBottom.classList.remove('expanded');
             toggleButton.classList.remove('expanded');
             toggleButton.innerHTML = '▲'; // Up arrow (collapsed state)
-            console.log('📱 Mobile bottom HUD collapsed');
+            log('📱 Mobile bottom HUD collapsed');
         }
     }
 
@@ -989,7 +989,7 @@ class UIManager {
 
         // ===== STATE TRANSITION MANAGEMENT =====
         if (this.uiState.isTransitioning) {
-            console.log('⚠️ UI transition in progress, ignoring category selection');
+            log('⚠️ UI transition in progress, ignoring category selection');
             return;
         }
 
@@ -1028,7 +1028,7 @@ class UIManager {
                 this.updatePanelState('building'); // FIX: Use updatePanelState
             }
 
-            console.log(`🏗️ Categoria selecionada: ${category}`);
+            log(`🏗️ Categoria selecionada: ${category}`);
 
         } catch (error) {
             console.error('❌ Error in category selection:', error);
@@ -1154,7 +1154,7 @@ class UIManager {
 
         // ===== STATE TRANSITION MANAGEMENT =====
         if (this.uiState.isTransitioning) {
-            console.log('⚠️ UI transition in progress, ignoring building selection');
+            log('⚠️ UI transition in progress, ignoring building selection');
             return;
         }
 
@@ -1205,7 +1205,7 @@ class UIManager {
             // Audio feedback
             AudioManager.playSound('sfx_click');
 
-            console.log(`🏗️ Building type selected: ${buildingTypeId}`);
+            log(`🏗️ Building type selected: ${buildingTypeId}`);
 
         } catch (error) {
             console.error('❌ Error in building selection:', error);
@@ -1262,7 +1262,7 @@ class UIManager {
      * @param {string} buildingTypeId - The building type ID
      */
     showMobileBuildingDetailsModal(buildingType, buildingTypeId) {
-        console.log('📱 Opening mobile building details modal:', buildingType.name);
+        log('📱 Opening mobile building details modal:', buildingType.name);
 
         // Open the right panel (details panel)
         const hudRight = document.querySelector('.hud-right');
@@ -1371,7 +1371,7 @@ class UIManager {
             this.updatePanelState('construction'); // FIX: Use updatePanelState
             this.uiState.selectedBuilding = buildingTypeId;
 
-            console.log('🏗️ Entering build mode from mobile modal - panels closed');
+            log('🏗️ Entering build mode from mobile modal - panels closed');
         });
 
         hudRight.appendChild(buildBtn);
@@ -1554,13 +1554,13 @@ class UIManager {
 
         // ===== STATE MANAGEMENT: Prevent showing same panel =====
         if (this.uiState.currentOpenPanel === panelType) {
-            console.log(`📊 Panel ${panelType} already open`);
+            log(`📊 Panel ${panelType} already open`);
             return;
         }
 
         // ===== TRANSITION MANAGEMENT =====
         if (this.uiState.isTransitioning) {
-            console.log('⚠️ UI transition in progress, queuing resource panel request');
+            log('⚠️ UI transition in progress, queuing resource panel request');
             setTimeout(() => this.showResourcePanel(panelType), 100);
             return;
         }
@@ -1612,7 +1612,7 @@ class UIManager {
             const panelMethod = panelMethods[panelType];
             if (panelMethod) {
                 panelMethod();
-                console.log(`📊 Resource panel opened: ${panelType}`);
+                log(`📊 Resource panel opened: ${panelType}`);
             } else {
                 console.warn(`⚠️ Unknown panel type: ${panelType}`);
                 this.updatePanelState(null); // FIX: Use updatePanelState
@@ -1642,7 +1642,7 @@ class UIManager {
                 this.elements.detailsPanel.style.display = 'none';
             }
 
-            console.log('📊 Resource panel closed');
+            log('📊 Resource panel closed');
 
         } catch (error) {
             console.error('❌ Error closing resource panel:', error);
@@ -2100,7 +2100,7 @@ class UIManager {
             }, 400); // Match slide-out animation duration
         }, duration);
 
-        console.log(`📱 Breaking news displayed: ${message}`);
+        log(`📱 Breaking news displayed: ${message}`);
     }
     
     removeNotification(notification, immediate = false) {
@@ -2137,7 +2137,7 @@ class UIManager {
             if (notificationToRemove && notificationToRemove.parentElement) {
                 notificationToRemove.parentElement.removeChild(notificationToRemove);
                 removalCount++;
-                console.log(`🗑️ Removed excess notification (${removalCount}/${notifications.length + removalCount})`);
+                log(`🗑️ Removed excess notification (${removalCount}/${notifications.length + removalCount})`);
             } else {
                 // Safety break if we can't remove the element
                 console.warn('⚠️ Could not remove notification, breaking loop to prevent freeze');
@@ -2439,7 +2439,7 @@ class UIManager {
             if (this._showDeviceControls) {
                 this._showDeviceControls(isMobileDevice ? 'mobile' : 'desktop');
             }
-            console.log('📖 Modal de controles aberto');
+            log('📖 Modal de controles aberto');
         }
     }
 
@@ -2447,7 +2447,7 @@ class UIManager {
         const modal = document.getElementById('controls-modal');
         if (modal) {
             modal.style.display = 'none';
-            console.log('📖 Modal de controles fechado');
+            log('📖 Modal de controles fechado');
         }
     }
 
@@ -2665,7 +2665,7 @@ class UIManager {
     dispose() {
         // Remover event listeners se necessário
         document.querySelectorAll('.mobile-toggle').forEach(btn => btn.remove());
-        console.log('🗑️ UIManager disposed');
+        log('🗑️ UIManager disposed');
     }
 
     // ===== HUD-RIGHT VISIBILITY (desktop) =====
@@ -2760,14 +2760,14 @@ class UIManager {
                 if (this.isMobile) {
                     this.closeMobilePanel('right');
                 }
-                console.log('✅ Building deselected via button');
+                log('✅ Building deselected via button');
             };
 
             newDeselectBtn.addEventListener('click', handleDeselect);
             newDeselectBtn.addEventListener('touchend', handleDeselect, { passive: false });
         }
 
-        console.log(`📋 Informações de seleção exibidas para ${building.config.name}`);
+        log(`📋 Informações de seleção exibidas para ${building.config.name}`);
 
         // Update selection counter badge (1 building selected)
         this.updateSelectionCounterBadge(1);
@@ -2972,7 +2972,7 @@ class UIManager {
         // Calcular preview inicial
         this.calculateLoanPreview();
 
-        console.log('🏦 Interface de empréstimos aberta');
+        log('🏦 Interface de empréstimos aberta');
     }
 
     closeLoanInterface() {
@@ -3389,7 +3389,7 @@ class UIManager {
 
     // ===== ENHANCED MOBILE TOUCH SUPPORT =====
     setupMobileTouchSupport() {
-        console.log('📱 Setting up enhanced mobile touch support...');
+        log('📱 Setting up enhanced mobile touch support...');
 
         // Add touch event listeners to all interactive elements
         const interactiveElements = document.querySelectorAll(
@@ -3625,7 +3625,7 @@ class UIManager {
                     const isTap = touchDuration < 250 && distance < 10;
 
                     if (isTap) {
-                        console.log(`👆 Tap detected: duration=${touchDuration}ms, distance=${distance.toFixed(1)}px`);
+                        log(`👆 Tap detected: duration=${touchDuration}ms, distance=${distance.toFixed(1)}px`);
 
                         // Create a proper pointer event for Babylon.js
                         const pointerEvent = new PointerEvent('pointerdown', {
@@ -3663,7 +3663,7 @@ class UIManager {
                                 if (building) {
                                     // ===== FIX: Call GameManager.selectBuilding to trigger aura effect =====
                                     this.gameManager.selectBuilding(building);
-                                    console.log(`🏢 Building selected via tap with aura: ${building.config.name}`);
+                                    log(`🏢 Building selected via tap with aura: ${building.config.name}`);
                                 }
                             } else {
                                 // Trigger Babylon.js scene picking for terrain/other interactions
@@ -3683,7 +3683,7 @@ class UIManager {
                             }
                         }
                     } else {
-                        console.log(`❌ Not a tap: duration=${touchDuration}ms, distance=${distance.toFixed(1)}px`);
+                        log(`❌ Not a tap: duration=${touchDuration}ms, distance=${distance.toFixed(1)}px`);
                     }
                 }
 
@@ -3693,7 +3693,7 @@ class UIManager {
             }, { passive: false });
         }
 
-        console.log('✅ Enhanced mobile touch support initialized');
+        log('✅ Enhanced mobile touch support initialized');
     }
 
     // ===== TOUCH-AND-HOLD INFO DISPLAY (500ms) =====
@@ -3819,7 +3819,7 @@ class UIManager {
 
         this.tooltipAutoHideTimer = setTimeout(() => {
             this.hideTouchHoldInfo();
-            console.log('🕐 Touch tooltip auto-hidden after 2 seconds');
+            log('🕐 Touch tooltip auto-hidden after 2 seconds');
         }, 2000);
     }
 
@@ -4045,7 +4045,7 @@ class UIManager {
 
     // ===== MULTI-SELECTION MODE (2s HOLD) =====
     startMultiSelectMode(x, y) {
-        console.log('🎯 Multi-select mode activated');
+        log('🎯 Multi-select mode activated');
 
         // Create selection rectangle overlay with orange color to match long-touch indicator
         const selectionRect = document.createElement('div');
@@ -4083,7 +4083,7 @@ class UIManager {
     }
 
     completeMultiSelect(startX, startY, endX, endY) {
-        console.log(`🎯 Completing multi-select from (${startX}, ${startY}) to (${endX}, ${endY})`);
+        log(`🎯 Completing multi-select from (${startX}, ${startY}) to (${endX}, ${endY})`);
 
         // Remove selection rectangle
         const selectionRect = document.getElementById('multi-select-rectangle');
@@ -4123,7 +4123,7 @@ class UIManager {
             }
         });
 
-        console.log(`✅ Selected ${selectedBuildings.length} buildings`);
+        log(`✅ Selected ${selectedBuildings.length} buildings`);
         console.table(selectedBuildings);
 
         // Show notification and display buildings in details panel
@@ -4270,14 +4270,14 @@ class UIManager {
                 if (this.isMobile) {
                     this.closeMobilePanel('right');
                 }
-                console.log('✅ Multi-selection panel closed via button');
+                log('✅ Multi-selection panel closed via button');
             };
 
             newCloseBtn.addEventListener('click', handleClose);
             newCloseBtn.addEventListener('touchend', handleClose, { passive: false });
         }
 
-        console.log(`📋 Multi-selection info displayed for ${buildings.length} buildings`);
+        log(`📋 Multi-selection info displayed for ${buildings.length} buildings`);
 
         // Update selection counter badge with number of selected buildings
         this.updateSelectionCounterBadge(buildings.length);
@@ -4293,16 +4293,16 @@ class UIManager {
         if (count > 0) {
             badge.textContent = count.toString();
             badge.style.display = 'flex';
-            console.log(`📊 Selection counter badge updated: ${count} building(s)`);
+            log(`📊 Selection counter badge updated: ${count} building(s)`);
         } else {
             badge.style.display = 'none';
-            console.log('📊 Selection counter badge hidden');
+            log('📊 Selection counter badge hidden');
         }
     }
 
     // ===== MISSION OBJECTIVE CLICK HANDLERS =====
     setupMissionObjectiveHandlers() {
-        console.log('🎯 Setting up mission objective click handlers...');
+        log('🎯 Setting up mission objective click handlers...');
 
         // Add click handlers to mission objectives
         document.addEventListener('click', (e) => {
@@ -4312,7 +4312,7 @@ class UIManager {
             }
         });
 
-        console.log('✅ Mission objective click handlers initialized');
+        log('✅ Mission objective click handlers initialized');
     }
 
     handleMissionObjectiveClick(objectiveElement) {
@@ -4337,7 +4337,7 @@ class UIManager {
                     AudioManager.playSound('sfx_click', 0.6);
                 }
 
-                console.log('🎯 Mission objective clicked: opened building panel');
+                log('🎯 Mission objective clicked: opened building panel');
             }
 
         } catch (error) {
@@ -4347,7 +4347,7 @@ class UIManager {
 
     // ===== CONTROL BUTTON ENHANCEMENTS =====
     setupControlButtonEnhancements() {
-        console.log('🎮 Setting up control button enhancements...');
+        log('🎮 Setting up control button enhancements...');
 
         // Enhanced pause button
         const pauseBtn = document.getElementById('btn-pause');
@@ -4398,12 +4398,12 @@ class UIManager {
                         this.gameManager.questSystem.closeMissionInterface();
                         this.closeMobilePanel('left');
                         missionsBtn.classList.remove('active');
-                        console.log('🎯 Mission interface closed (toggle)');
+                        log('🎯 Mission interface closed (toggle)');
                     } else {
                         // Open mission interface
                         this.gameManager.questSystem.openMissionInterface();
                         missionsBtn.classList.add('active');
-                        console.log('🎯 Mission interface opened (toggle)');
+                        log('🎯 Mission interface opened (toggle)');
                     }
 
                     AudioManager.playSound('sfx_click', 0.8);
@@ -4411,7 +4411,7 @@ class UIManager {
             });
         }
 
-        console.log('✅ Control button enhancements initialized');
+        log('✅ Control button enhancements initialized');
     }
 
     // ===== TERRAIN INFORMATION DISPLAY =====
@@ -4493,7 +4493,7 @@ class UIManager {
                 AudioManager.playSound('sfx_click', 0.4);
             }
 
-            console.log(`🌍 Terrain info displayed: ${terrain.name} at (${gridX}, ${gridZ})`);
+            log(`🌍 Terrain info displayed: ${terrain.name} at (${gridX}, ${gridZ})`);
 
         } catch (error) {
             console.warn('⚠️ Error showing terrain info:', error);
@@ -4519,7 +4519,7 @@ class UIManager {
                 this.updatePanelState(null);
             }
 
-            console.log('🌍 Terrain info hidden');
+            log('🌍 Terrain info hidden');
 
         } catch (error) {
             console.warn('⚠️ Error hiding terrain info:', error);
@@ -4925,4 +4925,4 @@ class UIManager {
 
 // Exportar para escopo global
 window.UIManager = UIManager;
-console.log('🖥️ UIManager carregado e exportado para window.UIManager');
+log('🖥️ UIManager carregado e exportado para window.UIManager');

@@ -5,7 +5,7 @@
 
 class SaveSystem {
     constructor() {
-        console.log('💾 Inicializando SaveSystem...');
+        log('💾 Inicializando SaveSystem...');
         
         // Configurações
         this.saveKey = 'guardiao_agua_save';
@@ -17,7 +17,7 @@ class SaveSystem {
         // Verificar suporte
         this.storageAvailable = this.checkStorageSupport();
         
-        console.log('✅ SaveSystem inicializado');
+        log('✅ SaveSystem inicializado');
     }
     
     // ===== VERIFICAÇÃO DE SUPORTE =====
@@ -54,7 +54,7 @@ class SaveSystem {
             // Atualizar lista de saves
             this.updateSaveList(slotName, saveData.metadata);
             
-            console.log(`💾 Jogo salvo: ${slotName}`);
+            log(`💾 Jogo salvo: ${slotName}`);
             return true;
             
         } catch (error) {
@@ -75,7 +75,7 @@ class SaveSystem {
             
             localStorage.setItem(this.autoSaveKey, dataToSave);
             
-            console.log('💾 Auto-save realizado');
+            log('💾 Auto-save realizado');
             return true;
             
         } catch (error) {
@@ -133,7 +133,7 @@ class SaveSystem {
                 return null;
             }
             
-            console.log(`📁 Jogo carregado: ${slotName}`);
+            log(`📁 Jogo carregado: ${slotName}`);
             return saveData.gameData;
             
         } catch (error) {
@@ -162,7 +162,7 @@ class SaveSystem {
                 return null;
             }
             
-            console.log('📁 Auto-save carregado');
+            log('📁 Auto-save carregado');
             return saveData.gameData;
             
         } catch (error) {
@@ -241,7 +241,7 @@ class SaveSystem {
         
         try {
             localStorage.setItem(this.settingsKey, JSON.stringify(settings));
-            console.log('💾 Configurações salvas');
+            log('💾 Configurações salvas');
             return true;
         } catch (error) {
             console.error('❌ Erro ao salvar configurações:', error);
@@ -283,7 +283,7 @@ class SaveSystem {
     // Tutorial persistence disabled - tutorial always shows on game start
     setTutorialCompleted(completed = true) {
         // No-op: Tutorial completion is not persisted
-        console.log(`📚 Tutorial completion not persisted (always shows on start)`);
+        log(`📚 Tutorial completion not persisted (always shows on start)`);
         return true;
     }
 
@@ -295,4 +295,4 @@ class SaveSystem {
 
 // Exportar para escopo global
 window.SaveSystem = SaveSystem;
-console.log('💾 SaveSystem carregado e exportado para window.SaveSystem');
+log('💾 SaveSystem carregado e exportado para window.SaveSystem');

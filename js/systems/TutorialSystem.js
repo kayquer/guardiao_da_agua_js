@@ -5,7 +5,7 @@
 
 class TutorialSystem {
     constructor(gameManager) {
-        console.log('📚 Inicializando TutorialSystem...');
+        log('📚 Inicializando TutorialSystem...');
 
         this.gameManager = gameManager;
         this.currentStep = 0;
@@ -35,7 +35,7 @@ class TutorialSystem {
         // FIX #1: Setup event listeners for tutorial navigation buttons
         this.setupEventListeners();
 
-        console.log('✅ TutorialSystem inicializado');
+        log('✅ TutorialSystem inicializado');
     }
 
     /**
@@ -68,7 +68,7 @@ class TutorialSystem {
             });
         }
 
-        console.log('✅ Tutorial event listeners configured');
+        log('✅ Tutorial event listeners configured');
     }
 
     /**
@@ -156,7 +156,7 @@ class TutorialSystem {
                 }
             });
 
-            console.log('✅ 3D Portrait system initialized');
+            log('✅ 3D Portrait system initialized');
             return true;
         } catch (error) {
             console.error('❌ Error initializing 3D portrait:', error);
@@ -180,7 +180,7 @@ class TutorialSystem {
                 this.portraitModel = null;
             }
 
-            console.log(`📦 Loading ${characterName} OBJ model...`);
+            log(`📦 Loading ${characterName} OBJ model...`);
 
             // Determine model path based on character
             let modelFolder, modelFile, texturePath, texturePrefix;
@@ -218,11 +218,11 @@ class TutorialSystem {
             );
 
             if (result.meshes && result.meshes.length > 0) {
-                console.log(`✅ Loaded ${result.meshes.length} meshes for ${characterName}`);
+                log(`✅ Loaded ${result.meshes.length} meshes for ${characterName}`);
                 
                 // Log all mesh names for debugging
                 result.meshes.forEach((mesh, idx) => {
-                    console.log(`  Mesh ${idx}: ${mesh.name} (material: ${mesh.material ? mesh.material.name : 'none'})`);
+                    log(`  Mesh ${idx}: ${mesh.name} (material: ${mesh.material ? mesh.material.name : 'none'})`);
                 });
 
                 // Create parent mesh for the model
@@ -237,7 +237,7 @@ class TutorialSystem {
 
                 // AUTO-CALCULATE BOUNDING BOX AND POSITION
                 const meshes = result.meshes.filter(m => m.name !== '__root__' && m instanceof BABYLON.Mesh);
-                console.log(`📊 Filtered to ${meshes.length} renderable meshes`);
+                log(`📊 Filtered to ${meshes.length} renderable meshes`);
                 
                 if (meshes.length > 0) {
                     // Calculate total bounding box
@@ -259,7 +259,7 @@ class TutorialSystem {
                     const size = max.subtract(min);
                     const maxDimension = Math.max(size.x, size.y, size.z);
 
-                    console.log(`📐 Model bounds - Size: ${size.toString()}, Center: ${center.toString()}`);
+                    log(`📐 Model bounds - Size: ${size.toString()}, Center: ${center.toString()}`);
 
                     // Auto-scale to fit in camera view (target size ~2 units)
                     const targetSize = 2;
@@ -274,7 +274,7 @@ class TutorialSystem {
                     this.portraitCamera.target = new BABYLON.Vector3(0, 0, 0);
                     this.portraitCamera.radius = targetSize * 2;
 
-                    console.log(`✅ Auto-scaled: ${scale.toFixed(4)}x, Position: ${this.portraitModel.position.toString()}`);
+                    log(`✅ Auto-scaled: ${scale.toFixed(4)}x, Position: ${this.portraitModel.position.toString()}`);
                 }
 
                 // APPLY PBR TEXTURES
@@ -286,7 +286,7 @@ class TutorialSystem {
                 // START PROCEDURAL ANIMATIONS
                 this.startProceduralAnimations();
 
-                console.log('✅ 3D character model loaded and positioned successfully');
+                log('✅ 3D character model loaded and positioned successfully');
                 return true;
             }
         } catch (error) {
@@ -302,9 +302,9 @@ class TutorialSystem {
      * Apply PBR textures to meshes
      */
     async applyPBRTextures(meshes, texturePath, texturePrefix) {
-        console.log('🎨 Applying PBR textures...');
-        console.log(`📁 Texture path: ${texturePath}`);
-        console.log(`🏷️ Texture prefix: ${texturePrefix}`);
+        log('🎨 Applying PBR textures...');
+        log(`📁 Texture path: ${texturePath}`);
+        log(`🏷️ Texture prefix: ${texturePrefix}`);
 
         try {
             // Dispose old materials
@@ -324,7 +324,7 @@ class TutorialSystem {
                 this.portraitScene
             );
             pbr.albedoTexture = colorTexture;
-            console.log('✅ Loaded albedo texture');
+            log('✅ Loaded albedo texture');
 
             // Load normal texture
             const normalTexture = new BABYLON.Texture(
@@ -334,7 +334,7 @@ class TutorialSystem {
             pbr.bumpTexture = normalTexture;
             pbr.invertNormalMapX = false;
             pbr.invertNormalMapY = false;
-            console.log('✅ Loaded normal texture');
+            log('✅ Loaded normal texture');
 
             // Load roughness/metallic texture
             const roughnessTexture = new BABYLON.Texture(
@@ -347,7 +347,7 @@ class TutorialSystem {
             pbr.useMetallnessFromMetallicTextureBlue = false;
             pbr.metallic = 0.0;
             pbr.roughness = 1.0;
-            console.log('✅ Loaded roughness texture');
+            log('✅ Loaded roughness texture');
 
             // Load ambient occlusion texture
             const aoTexture = new BABYLON.Texture(
@@ -356,7 +356,7 @@ class TutorialSystem {
             );
             pbr.ambientTexture = aoTexture;
             pbr.ambientTextureStrength = 1.0;
-            console.log('✅ Loaded AO texture');
+            log('✅ Loaded AO texture');
 
             // Configure PBR settings
             pbr.directIntensity = 1.0;
@@ -371,7 +371,7 @@ class TutorialSystem {
                 appliedCount++;
             });
 
-            console.log(`✅ PBR material applied to ${appliedCount} meshes`);
+            log(`✅ PBR material applied to ${appliedCount} meshes`);
         } catch (error) {
             console.error('❌ Error loading textures:', error);
             console.error(error.stack);
@@ -385,7 +385,7 @@ class TutorialSystem {
                 mesh.material = fallbackMat;
             });
             
-            console.log('⚠️ Using fallback material');
+            log('⚠️ Using fallback material');
         }
     }
 
@@ -393,7 +393,7 @@ class TutorialSystem {
      * Identify mesh parts for animation
      */
     identifyMeshParts(meshes) {
-        console.log('🔍 Identifying mesh parts for animation...');
+        log('🔍 Identifying mesh parts for animation...');
         
         this.animationData.meshParts = {
             eyes: [],
@@ -410,33 +410,33 @@ class TutorialSystem {
             // Identify eyes
             if (name.includes('eye') || name.includes('olho')) {
                 this.animationData.meshParts.eyes.push(mesh);
-                console.log(`👁️ Found eye mesh: ${mesh.name}`);
+                log(`👁️ Found eye mesh: ${mesh.name}`);
             }
             
             // Identify hair
             if (name.includes('hair') || name.includes('cabelo') || name.includes('pelo')) {
                 this.animationData.meshParts.hair.push(mesh);
-                console.log(`💇 Found hair mesh: ${mesh.name}`);
+                log(`💇 Found hair mesh: ${mesh.name}`);
             }
             
             // Identify arms
             if (name.includes('arm') || name.includes('braco') || name.includes('braço') || 
                 name.includes('hand') || name.includes('mao') || name.includes('mão')) {
                 this.animationData.meshParts.arms.push(mesh);
-                console.log(`💪 Found arm mesh: ${mesh.name}`);
+                log(`💪 Found arm mesh: ${mesh.name}`);
             }
             
             // Identify head
             if (name.includes('head') || name.includes('cabeca') || name.includes('cabeça')) {
                 this.animationData.meshParts.head.push(mesh);
-                console.log(`🗣️ Found head mesh: ${mesh.name}`);
+                log(`🗣️ Found head mesh: ${mesh.name}`);
             }
             
             // Identify body
             if (name.includes('body') || name.includes('torso') || name.includes('corpo') ||
                 name.includes('chest') || name.includes('peito')) {
                 this.animationData.meshParts.body.push(mesh);
-                console.log(`🫀 Found body mesh: ${mesh.name}`);
+                log(`🫀 Found body mesh: ${mesh.name}`);
             }
         });
 
@@ -448,17 +448,17 @@ class TutorialSystem {
                 return pos.y > 0; // Upper half
             });
             this.animationData.meshParts.hair = topMeshes.slice(0, Math.min(5, topMeshes.length));
-            console.log(`💇 Auto-detected ${this.animationData.meshParts.hair.length} hair meshes`);
+            log(`💇 Auto-detected ${this.animationData.meshParts.hair.length} hair meshes`);
         }
 
-        console.log(`✅ Mesh identification complete`);
+        log(`✅ Mesh identification complete`);
     }
 
     /**
      * Start procedural animations
      */
     startProceduralAnimations() {
-        console.log('🎬 Starting procedural animations...');
+        log('🎬 Starting procedural animations...');
         
         const deltaTimeMs = 16.67; // Assume 60fps
         
@@ -481,7 +481,7 @@ class TutorialSystem {
             this.animateIdleMovement(this.animationData.time);
         });
 
-        console.log('✅ Procedural animations started');
+        log('✅ Procedural animations started');
     }
 
     /**
@@ -884,7 +884,7 @@ class TutorialSystem {
         }
 
         this.renderCurrentStep();
-        console.log('📚 Tutorial iniciado');
+        log('📚 Tutorial iniciado');
     }
 
     /**
@@ -976,7 +976,7 @@ class TutorialSystem {
                 };
                 img.onerror = () => {
                     // Keep the emoji fallback
-                    console.log(`ℹ️ Using emoji fallback for portrait: ${step.character}`);
+                    log(`ℹ️ Using emoji fallback for portrait: ${step.character}`);
                 };
                 img.src = step.portrait;
             }
@@ -1001,7 +1001,7 @@ class TutorialSystem {
             };
             img.onerror = () => {
                 // Keep the gradient fallback
-                console.log(`ℹ️ Using gradient fallback for background`);
+                log(`ℹ️ Using gradient fallback for background`);
             };
             img.src = step.background;
         }
@@ -1028,7 +1028,7 @@ class TutorialSystem {
         // Update button states
         this.updateButtonStates();
 
-        console.log(`📚 Tutorial step ${this.currentStep + 1}/${this.tutorialSteps.length}: ${step.title}`);
+        log(`📚 Tutorial step ${this.currentStep + 1}/${this.tutorialSteps.length}: ${step.title}`);
     }
 
     /**
@@ -1079,7 +1079,7 @@ class TutorialSystem {
      */
     skip() {
         if (this.canSkip) {
-            console.log('📚 Tutorial pulado');
+            log('📚 Tutorial pulado');
             this.complete();
         }
     }
@@ -1104,7 +1104,7 @@ class TutorialSystem {
             this.gameManager.saveSystem.setTutorialCompleted(true);
         }
 
-        console.log('✅ Tutorial concluído');
+        log('✅ Tutorial concluído');
 
         // Show welcome notification
         if (this.gameManager.uiManager) {
@@ -1119,4 +1119,4 @@ class TutorialSystem {
 
 // Exportar para escopo global
 window.TutorialSystem = TutorialSystem;
-console.log('📚 TutorialSystem carregado e exportado para window.TutorialSystem');
+log('📚 TutorialSystem carregado e exportado para window.TutorialSystem');

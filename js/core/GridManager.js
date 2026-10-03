@@ -5,7 +5,7 @@
 
 class GridManager {
     constructor(scene) {
-        console.log('🗂️ Inicializando GridManager...');
+        log('🗂️ Inicializando GridManager...');
         
         this.scene = scene;
         this.gridSize = GAME_CONFIG.grid.size;
@@ -53,7 +53,7 @@ class GridManager {
 
     // ===== INICIALIZAÇÃO =====
     initializeGrid() {
-        console.log(`🗂️ Criando grid ${this.gridSize}x${this.gridSize}...`);
+        log(`🗂️ Criando grid ${this.gridSize}x${this.gridSize}...`);
 
         // Verificar se gridSize é válido
         if (!this.gridSize || this.gridSize < 1) {
@@ -79,8 +79,8 @@ class GridManager {
             }
         }
 
-        console.log('✅ Grid inicializado');
-        console.log(`📊 Grid stats: ${this.gridSize}x${this.gridSize} = ${this.gridSize * this.gridSize} células`);
+        log('✅ Grid inicializado');
+        log(`📊 Grid stats: ${this.gridSize}x${this.gridSize} = ${this.gridSize * this.gridSize} células`);
     }
     
     generateElevation(x, z) {
@@ -174,7 +174,7 @@ class GridManager {
     
     // ===== CRIAÇÃO VISUAL =====
     createVisualGrid() {
-        console.log('🎨 Criando grid visual...');
+        log('🎨 Criando grid visual...');
         
         // Material do grid
         this.gridMaterial = new BABYLON.StandardMaterial("gridMaterial", this.scene);
@@ -214,7 +214,7 @@ class GridManager {
     }
     
     createTerrain() {
-        console.log('🏔️ Criando terreno procedural...');
+        log('🏔️ Criando terreno procedural...');
 
         try {
             // Criar terreno com subdivisões baseadas na qualidade gráfica
@@ -254,7 +254,7 @@ class GridManager {
     applyElevationToTerrain() {
         if (!this.terrainMesh) return;
 
-        console.log('🏔️ Aplicando elevação ao terreno...');
+        log('🏔️ Aplicando elevação ao terreno...');
 
         try {
             // Obter dados dos vértices
@@ -292,7 +292,7 @@ class GridManager {
             // Recalcular normais para iluminação correta
             this.terrainMesh.createNormals(true);
 
-            console.log('✅ Elevação aplicada ao terreno');
+            log('✅ Elevação aplicada ao terreno');
 
         } catch (error) {
             console.error('❌ Erro ao aplicar elevação:', error);
@@ -300,7 +300,7 @@ class GridManager {
     }
     
     createWaterBodies() {
-        console.log('💧 Criando corpos d\'água estilo Minecraft...');
+        log('💧 Criando corpos d\'água estilo Minecraft...');
 
         // Encontrar áreas de água e criar blocos individuais
         this.waterMeshes = [];
@@ -468,7 +468,7 @@ class GridManager {
     }
 
     createVoxelTerrainBlocks() {
-        console.log('🧱 Criando blocos de terreno estilo voxel...');
+        log('🧱 Criando blocos de terreno estilo voxel...');
 
         this.terrainBlocks = [];
         this.decorationMeshes = [];
@@ -557,7 +557,7 @@ class GridManager {
     mergeTerrainBlocks() {
         if (!this.terrainBlocks || this.terrainBlocks.length === 0) return;
 
-        console.log('🔧 Merging terrain blocks para otimização...');
+        log('🔧 Merging terrain blocks para otimização...');
 
         // Agrupar blocos por tipo de terreno
         const blocksByType = {};
@@ -587,12 +587,12 @@ class GridManager {
         }
 
         this.terrainBlocks = mergedBlocks;
-        console.log(`🔧 Terreno otimizado: ${mergedBlocks.length} meshes (era ~1600)`);
+        log(`🔧 Terreno otimizado: ${mergedBlocks.length} meshes (era ~1600)`);
     }
 
     // ===== SISTEMA DE DECORAÇÃO =====
     createTerrainDecorations() {
-        console.log('🌿 Criando decorações do terreno...');
+        log('🌿 Criando decorações do terreno...');
 
         // Criar decorações apenas em terreno de terra/grama
         for (let x = 0; x < this.gridSize; x++) {
@@ -968,7 +968,7 @@ class GridManager {
 
     // ===== MATERIAIS E CORES =====
     createMultiTerrainMaterial() {
-        console.log('🎨 Criando sistema de materiais multi-terreno estilo Minecraft...');
+        log('🎨 Criando sistema de materiais multi-terreno estilo Minecraft...');
 
         // Criar material base com textura procedural
         this.terrainMaterial = new BABYLON.StandardMaterial("multiTerrainMaterial", this.scene);
@@ -988,7 +988,7 @@ class GridManager {
     }
 
     createMinecraftStyleTexture() {
-        console.log('🧱 Criando textura estilo Minecraft...');
+        log('🧱 Criando textura estilo Minecraft...');
 
         const textureSize = 256;
         const dynamicTexture = new BABYLON.DynamicTexture("minecraftTerrain", textureSize, this.scene);
@@ -1140,10 +1140,10 @@ class GridManager {
             this.terrainMesh = null;
         }
 
-        console.log('🗑️ GridManager disposed - Terreno e decorações limpos');
+        log('🗑️ GridManager disposed - Terreno e decorações limpos');
     }
 }
 
 // Exportar para escopo global
 window.GridManager = GridManager;
-console.log('🗂️ GridManager carregado e exportado para window.GridManager');
+log('🗂️ GridManager carregado e exportado para window.GridManager');

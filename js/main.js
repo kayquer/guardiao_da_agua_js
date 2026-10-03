@@ -29,7 +29,7 @@ const LOADING_TIPS = [
 
 // ===== INICIALIZAÇÃO COM TRATAMENTO DE ERRO =====
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🎮 Guardião da Água - Iniciando...');
+    log('🎮 Guardião da Água - Iniciando...');
 
     try {
         // Verificar suporte do navegador
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ===== VALIDAÇÃO DE DEPENDÊNCIAS CRÍTICAS =====
 function validateCriticalDependencies() {
-    console.log('🔍 Validando dependências críticas...');
+    log('🔍 Validando dependências críticas...');
 
     const criticalDependencies = [
         { name: 'Babylon.js', check: () => typeof BABYLON !== 'undefined' },
@@ -72,7 +72,7 @@ function validateCriticalDependencies() {
             console.error(`❌ Dependência crítica não encontrada: ${dep.name}`);
             return false;
         }
-        console.log(`✅ ${dep.name} carregado`);
+        log(`✅ ${dep.name} carregado`);
     }
 
     return true;
@@ -101,7 +101,7 @@ function checkBrowserSupport() {
         return false;
     }
     
-    console.log('✅ Navegador suportado');
+    log('✅ Navegador suportado');
     return true;
 }
 
@@ -136,7 +136,7 @@ function initializeMenuSystem() {
 // ===== INICIALIZAÇÃO DOS SISTEMAS DE JOGO =====
 function initializeGameSystems() {
     // Sistemas serão inicializados quando o jogo começar
-    console.log('🔧 Sistemas de jogo preparados');
+    log('🔧 Sistemas de jogo preparados');
 }
 
 // ===== CARREGAMENTO =====
@@ -145,27 +145,27 @@ async function startLoading() {
         updateLoadingProgress(10);
 
         // Carregar assets
-        console.log('📦 Carregando assets...');
+        log('📦 Carregando assets...');
         await AssetLoader.loadAssets(updateLoadingProgress);
         updateLoadingProgress(40);
 
         // Inicializar áudio
-        console.log('🔊 Inicializando sistema de áudio...');
+        log('🔊 Inicializando sistema de áudio...');
         AudioManager.getInstance();
         updateLoadingProgress(50);
 
         // Inicializar Babylon.js
-        console.log('🎨 Inicializando renderização 3D...');
+        log('🎨 Inicializando renderização 3D...');
         await initializeBabylon();
         updateLoadingProgress(70);
 
         // Preparar sistemas
-        console.log('⚙️ Preparando sistemas...');
+        log('⚙️ Preparando sistemas...');
         await prepareGameSystems();
         updateLoadingProgress(90);
 
         // Finalizar
-        console.log('✅ Carregamento concluído');
+        log('✅ Carregamento concluído');
         updateLoadingProgress(100);
 
         setTimeout(() => {
@@ -204,7 +204,7 @@ function showScreen(screenId) {
     if (targetScreen) {
         targetScreen.classList.add('active');
         currentScreen = screenId;
-        console.log(`📺 Tela ativa: ${screenId}`);
+        log(`📺 Tela ativa: ${screenId}`);
     }
 
     // BGM por tela
@@ -219,7 +219,7 @@ function showScreen(screenId) {
 
 // ===== AÇÕES DO MENU =====
 async function startNewGame() {
-    console.log('🎮 Iniciando novo jogo...');
+    log('🎮 Iniciando novo jogo...');
 
     try {
         // Mostrar tela de loading temporariamente
@@ -227,14 +227,14 @@ async function startNewGame() {
         updateLoadingProgress(0);
 
         // Validar dependências críticas antes de prosseguir
-        console.log('🔍 Validando dependências...');
+        log('🔍 Validando dependências...');
         if (typeof GameManager === 'undefined') {
             throw new Error('GameManager class não está disponível. Verifique se todos os scripts foram carregados.');
         }
         updateLoadingProgress(10);
 
         // Inicializar GameManager
-        console.log('🔧 Criando GameManager...');
+        log('🔧 Criando GameManager...');
         gameManager = new GameManager();
 
         if (!gameManager) {
@@ -243,7 +243,7 @@ async function startNewGame() {
         updateLoadingProgress(30);
 
         // Aguardar inicialização dos sistemas
-        console.log('⏳ Aguardando inicialização dos sistemas...');
+        log('⏳ Aguardando inicialização dos sistemas...');
         await gameManager.initializeSystems();
 
         // Verificar se a inicialização foi bem-sucedida
@@ -253,7 +253,7 @@ async function startNewGame() {
         updateLoadingProgress(70);
 
         // Iniciar novo jogo
-        console.log('🚀 Iniciando novo jogo...');
+        log('🚀 Iniciando novo jogo...');
         const success = gameManager.startNewGame();
         updateLoadingProgress(100);
 
@@ -267,7 +267,7 @@ async function startNewGame() {
             // ===== FIX: Expose uiManager globally for HTML onclick handlers =====
             window.uiManager = gameManager.uiManager;
 
-            console.log('✅ Jogo iniciado com sucesso');
+            log('✅ Jogo iniciado com sucesso');
         } else {
             console.error('❌ Falha ao iniciar novo jogo');
             showLoadingError('Falha ao iniciar o jogo. Verifique se todos os sistemas foram inicializados corretamente.');
@@ -290,7 +290,7 @@ async function startNewGame() {
 // Tutorial and Settings functions removed - tutorial now auto-starts on first game
 
 function showAbout() {
-    console.log('ℹ️ Mostrando sobre...');
+    log('ℹ️ Mostrando sobre...');
     alert(`
 🎮 Guardião da Água v1.0.0
 
@@ -455,8 +455,8 @@ window.addEventListener('error', function(e) {
     }
 });
 
-// ===== EXPORT PARA DEBUG =====
-if (typeof window !== 'undefined') {
+// ===== EXPORT PARA DEBUG (só com ?debug) =====
+if (DEBUG) {
     window.GAME_DEBUG = {
         config: GAME_CONFIG,
         gameManager: () => gameManager,
@@ -465,4 +465,4 @@ if (typeof window !== 'undefined') {
     }; 
 }
 
-console.log('🎮 Guardião da Água - Sistema principal carregado');
+log('🎮 Guardião da Água - Sistema principal carregado');

@@ -18,7 +18,7 @@ class AssetLoader {
         AssetLoader.instance = loader; // Definir instância singleton
         loader.onProgressCallback = onProgress;
         
-        console.log('📦 Iniciando carregamento de assets...');
+        log('📦 Iniciando carregamento de assets...');
         
         try {
             // Lista de assets para carregar
@@ -60,7 +60,7 @@ class AssetLoader {
             const loadPromises = assetList.map(asset => loader.loadAsset(asset));
             await Promise.allSettled(loadPromises);
             
-            console.log('✅ Carregamento de assets concluído');
+            log('✅ Carregamento de assets concluído');
             return loader.loadedAssets;
             
         } catch (error) {
@@ -95,7 +95,7 @@ class AssetLoader {
             
             if (asset) {
                 this.loadedAssets.set(key, asset);
-                console.log(`✅ Asset carregado: ${key}`);
+                log(`✅ Asset carregado: ${key}`);
             }
             
         } catch (error) {
@@ -178,9 +178,9 @@ class AssetLoader {
                 loaded: false,
                 loadInScene: async (scene) => {
                     try {
-                        console.log(`🎯 Carregando modelo 3D: ${path}`);
+                        log(`🎯 Carregando modelo 3D: ${path}`);
                         const result = await BABYLON.SceneLoader.ImportMeshAsync("", "", path, scene);
-                        console.log(`✅ Modelo 3D carregado: ${path}`);
+                        log(`✅ Modelo 3D carregado: ${path}`);
                         return {
                             meshes: result.meshes,
                             rootMesh: result.meshes[0],
@@ -322,7 +322,7 @@ class AssetLoader {
     
     // ===== FALLBACKS =====
     createFallbackAsset(key, type) {
-        console.log(`🔄 Criando fallback para: ${key}`);
+        log(`🔄 Criando fallback para: ${key}`);
         
         switch (type) {
             case 'image':
@@ -360,7 +360,7 @@ class AssetLoader {
         return {
             audio: null,
             duration: 0,
-            play: () => console.log('🔇 Audio fallback - sem som'),
+            play: () => log('🔇 Audio fallback - sem som'),
             pause: () => {},
             setVolume: () => {},
             setLoop: () => {}
@@ -375,7 +375,7 @@ class AssetLoader {
             this.onProgressCallback(percentage);
         }
         
-        console.log(`📦 Progresso: ${this.loadedCount}/${this.totalAssets} (${percentage.toFixed(1)}%)`);
+        log(`📦 Progresso: ${this.loadedCount}/${this.totalAssets} (${percentage.toFixed(1)}%)`);
     }
     
     // ===== ACESSO AOS ASSETS =====
@@ -387,11 +387,11 @@ class AssetLoader {
     dispose() {
         this.loadedAssets.clear();
         this.loadingPromises.clear();
-        console.log('🗑️ AssetLoader disposed');
+        log('🗑️ AssetLoader disposed');
     }
 }
 
 // Instância singleton
 AssetLoader.instance = null;
 
-console.log('📦 AssetLoader carregado');
+log('📦 AssetLoader carregado');

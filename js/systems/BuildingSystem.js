@@ -13,7 +13,7 @@
 
 class BuildingSystem {
     constructor(scene, gridManager, gameManager = null) {
-        console.log('🏗️ Inicializando BuildingSystem...');
+        log('🏗️ Inicializando BuildingSystem...');
 
         this.scene = scene;
         this.gridManager = gridManager;
@@ -65,17 +65,19 @@ class BuildingSystem {
         this.initializeBuildingTypes();
         this.createMaterials();
 
-        // Expor métodos de debug globalmente
-        window.resetConstructionState = () => this.forceResetConstructionState();
-        window.getConstructionInfo = () => ({
-            activeConstructions: this.constructionQueue.size,
-            maxConstructions: this.maxSimultaneousConstructions,
-            queueSize: this.constructionQueue.size,
-            queue: Array.from(this.constructionQueue.keys())
-        });
+        // Expor métodos de debug globalmente (só com ?debug)
+        if (DEBUG) {
+            window.resetConstructionState = () => this.forceResetConstructionState();
+            window.getConstructionInfo = () => ({
+                activeConstructions: this.constructionQueue.size,
+                maxConstructions: this.maxSimultaneousConstructions,
+                queueSize: this.constructionQueue.size,
+                queue: Array.from(this.constructionQueue.keys())
+            });
+        }
 
-        console.log('✅ BuildingSystem inicializado');
-        console.log('🧪 Debug: resetConstructionState() e getConstructionInfo() disponíveis globalmente');
+        log('✅ BuildingSystem inicializado');
+        log('🧪 Debug: resetConstructionState() e getConstructionInfo() disponíveis globalmente');
     }
     
     // ===== INICIALIZAÇÃO =====
@@ -84,7 +86,7 @@ class BuildingSystem {
         for (const [id, config] of Object.entries(BUILDING_TYPES)) {
             this.addBuildingType(id, structuredClone(config));
         }
-        console.log(`✅ ${this.buildingTypes.size} tipos de edifícios definidos`);
+        log(`✅ ${this.buildingTypes.size} tipos de edifícios definidos`);
     }
 
     addBuildingType(id, config) {
@@ -137,7 +139,7 @@ class BuildingSystem {
         const finalCost = Math.round(baseCost * (1 - totalReduction));
 
         if (totalReduction > 0) {
-            console.log(`🔬 Construction cost reduction: ${(totalReduction * 100).toFixed(1)}% (${baseCost} → ${finalCost})`);
+            log(`🔬 Construction cost reduction: ${(totalReduction * 100).toFixed(1)}% (${baseCost} → ${finalCost})`);
         }
 
         return finalCost;
@@ -192,14 +194,14 @@ class BuildingSystem {
         const finalEfficiency = baseEfficiency + bonusEfficiency;
 
         if (bonusEfficiency > 0) {
-            console.log(`🎓 Building efficiency bonus: +${(bonusEfficiency * 100).toFixed(1)}% for ${building.config.name}`);
+            log(`🎓 Building efficiency bonus: +${(bonusEfficiency * 100).toFixed(1)}% for ${building.config.name}`);
         }
 
         return Math.min(finalEfficiency, 2.0); // Cap at 200% efficiency
     }
     
     createMaterials() {
-        console.log('🎨 Criando materiais estilo Minecraft para edifícios...');
+        log('🎨 Criando materiais estilo Minecraft para edifícios...');
 
         // Material base para edifícios estilo voxel
         const baseMaterial = new BABYLON.StandardMaterial("buildingBase", this.scene);
@@ -347,7 +349,7 @@ class BuildingSystem {
             }
         }
 
-        console.log(`✅ Pode construir ${buildingType.name} em (${gridX}, ${gridZ})`);
+        log(`✅ Pode construir ${buildingType.name} em (${gridX}, ${gridZ})`);
         return {
             canPlace: true,
             reason: `Você pode construir ${buildingType.name} aqui`,
@@ -450,11 +452,11 @@ class BuildingSystem {
                 gridZ
             };
         }
-        console.log(`✅ Mesh metadata updated with buildingId: ${buildingId}`);
+        log(`✅ Mesh metadata updated with buildingId: ${buildingId}`);
 
         // ===== BUILDING CREATION LOG =====
-        console.log(`🏗️ Building created: ${buildingId} (${buildingTypeId}) at (${gridX}, ${gridZ})`);
-        console.log(`   📊 Total buildings: ${this.buildings.size + 1}`);
+        log(`🏗️ Building created: ${buildingId} (${buildingTypeId}) at (${gridX}, ${gridZ})`);
+        log(`   📊 Total buildings: ${this.buildings.size + 1}`);
 
         this.buildings.set(buildingId, buildingData);
 
@@ -483,9 +485,9 @@ class BuildingSystem {
             if (success) {
                 const savings = buildingType.cost - actualCost;
                 if (savings > 0) {
-                    console.log(`💰 Custo deduzido: R$ ${actualCost.toLocaleString()} (economia de R$ ${savings.toLocaleString()} graças à pesquisa!)`);
+                    log(`💰 Custo deduzido: R$ ${actualCost.toLocaleString()} (economia de R$ ${savings.toLocaleString()} graças à pesquisa!)`);
                 } else {
-                    console.log(`💰 Custo deduzido: R$ ${actualCost.toLocaleString()}`);
+                    log(`💰 Custo deduzido: R$ ${actualCost.toLocaleString()}`);
                 }
             } else {
                 console.error(`❌ Falha ao deduzir custo: R$ ${actualCost.toLocaleString()}`);
@@ -514,7 +516,7 @@ class BuildingSystem {
             }
         }
 
-        console.log(`🏗️ Edifício construído: ${buildingType.name} em (${gridX}, ${gridZ})`);
+        log(`🏗️ Edifício construído: ${buildingType.name} em (${gridX}, ${gridZ})`);
         return buildingData;
     }
     
@@ -532,15 +534,15 @@ class BuildingSystem {
 
         // ✅ FIX: Garantir que a rotação inicial seja sempre (0, 0, 0) alinhada ao grid
         standardizedMesh.rotation = BABYLON.Vector3.Zero();
-        console.log(`🎯 Rotação do mesh definida para (0, 0, 0) - alinhada ao grid`);
+        log(`🎯 Rotação do mesh definida para (0, 0, 0) - alinhada ao grid`);
 
         // ===== STANDARDIZED MATERIAL APPLICATION ===
         // ✅ FIX: Apenas aplicar material se o mesh ainda não tiver um (meshes não-merged já têm material)
         if (!standardizedMesh.material) {
             this.applyStandardizedMaterial(standardizedMesh, buildingType);
-            console.log(`🎨 Material aplicado para ${buildingType.name} (mesh não-merged)`);
+            log(`🎨 Material aplicado para ${buildingType.name} (mesh não-merged)`);
         } else {
-            console.log(`✅ Material preservado do merge para ${buildingType.name}`);
+            log(`✅ Material preservado do merge para ${buildingType.name}`);
         }
 
         // ===== STANDARDIZED SHADOW SYSTEM =====
@@ -647,7 +649,7 @@ class BuildingSystem {
      *     category: 'power',
      *     size: 2
      * });
-     * console.log(height); // Returns calculated height for 2x2 power building
+     * log(height); // Returns calculated height for 2x2 power building
      */
     getStandardizedBuildingHeight(buildingType) {
         // ===== CLEAN CODE REFACTORING: Use constants for height calculations =====
@@ -1094,7 +1096,7 @@ class BuildingSystem {
         try {
             const waterTankAsset = AssetLoader.getAsset('water_tank_3d');
             if (waterTankAsset && waterTankAsset.loadInScene) {
-                console.log('🎯 Carregando modelo 3D do reservatório de água...');
+                log('🎯 Carregando modelo 3D do reservatório de água...');
 
                 const modelData = await waterTankAsset.loadInScene(this.scene);
                 if (modelData && modelData.meshes && modelData.meshes.length > 0) {
@@ -1129,7 +1131,7 @@ class BuildingSystem {
                     // Dispose placeholder
                     placeholder.dispose();
 
-                    console.log('✅ Modelo 3D do reservatório carregado e substituído com sucesso');
+                    log('✅ Modelo 3D do reservatório carregado e substituído com sucesso');
                     return;
                 }
             }
@@ -1137,7 +1139,7 @@ class BuildingSystem {
             console.warn('⚠️ Erro ao carregar modelo 3D do reservatório:', error);
         }
 
-        console.log('🔄 Mantendo reservatório procedural');
+        log('🔄 Mantendo reservatório procedural');
     }
 
     /**
@@ -1155,7 +1157,7 @@ class BuildingSystem {
                     if (oldMesh.metadata) {
                         newMesh.metadata = Object.assign(newMesh.metadata || {}, oldMesh.metadata);
                     }
-                    console.log(`🔄 Mesh substituído para edifício ${buildingId}`);
+                    log(`🔄 Mesh substituído para edifício ${buildingId}`);
                     break;
                 }
             }
@@ -2111,7 +2113,7 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
         const buildingName = (building.config && building.config.name)
             ? building.config.name
             : 'Edifício Desconhecido';
-        console.log(`🗑️ Edifício removido: ${buildingName}`);
+        log(`🗑️ Edifício removido: ${buildingName}`);
         return true;
     }
 
@@ -2326,10 +2328,10 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
                     const incomeAmount = config.incomeGeneration * building.efficiency;
                     if (add) {
                         resourceManager.addIncome(incomeAmount);
-                        console.log(`💰 Receita adicionada: +R$ ${incomeAmount}/min de ${config.name}`);
+                        log(`💰 Receita adicionada: +R$ ${incomeAmount}/min de ${config.name}`);
                     } else {
                         resourceManager.removeIncome(incomeAmount);
-                        console.log(`💰 Receita removida: -R$ ${incomeAmount}/min de ${config.name}`);
+                        log(`💰 Receita removida: -R$ ${incomeAmount}/min de ${config.name}`);
                     }
                 }
             }
@@ -2348,10 +2350,10 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
                 if (rentalIncome > 0) {
                     if (add) {
                         resourceManager.addIncome(rentalIncome);
-                        console.log(`🏙️ Receita de aluguel adicionada: +R$ ${rentalIncome}/min de ${config.name}`);
+                        log(`🏙️ Receita de aluguel adicionada: +R$ ${rentalIncome}/min de ${config.name}`);
                     } else {
                         resourceManager.removeIncome(rentalIncome);
-                        console.log(`🏙️ Receita de aluguel removida: -R$ ${rentalIncome}/min de ${config.name}`);
+                        log(`🏙️ Receita de aluguel removida: -R$ ${rentalIncome}/min de ${config.name}`);
                     }
                 }
             }
@@ -2369,12 +2371,12 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
 
     addSatisfactionBonus(amount) {
         // Implementar quando ResourceManager suportar bônus de satisfação
-        console.log(`✅ Bônus de satisfação adicionado: +${amount}%`);
+        log(`✅ Bônus de satisfação adicionado: +${amount}%`);
     }
 
     removeSatisfactionBonus(amount) {
         // Implementar quando ResourceManager suportar bônus de satisfação
-        console.log(`➖ Bônus de satisfação removido: -${amount}%`);
+        log(`➖ Bônus de satisfação removido: -${amount}%`);
     }
 
     // ===== UTILITÁRIOS =====
@@ -2520,7 +2522,7 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
         // Aplicar efeito visual de construção
         this.applyConstructionVisuals(buildingData);
 
-        console.log(`🚧 Iniciando construção de ${buildingData.config.name} (${buildingData.constructionDuration / 1000}s) [${this.constructionQueue.size}/${this.maxSimultaneousConstructions}]`);
+        log(`🚧 Iniciando construção de ${buildingData.config.name} (${buildingData.constructionDuration / 1000}s) [${this.constructionQueue.size}/${this.maxSimultaneousConstructions}]`);
     }
 
     updateConstructions(deltaTime) {
@@ -2567,12 +2569,12 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
 
         // Log quando todas as construções são concluídas
         if (this.constructionQueue.size === 0) {
-            console.log('✅ Todas as construções concluídas');
+            log('✅ Todas as construções concluídas');
         }
     }
 
     completeConstruction(buildingData) {
-        console.log(`✅ Construção concluída: ${buildingData.config.name}`);
+        log(`✅ Construção concluída: ${buildingData.config.name}`);
 
         // Remover da fila de construção
         this.constructionQueue.delete(buildingData.id);
@@ -2596,7 +2598,7 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
 
         // Log do progresso das construções restantes
         if (this.constructionQueue.size > 0) {
-            console.log(`📊 Construções restantes: ${this.constructionQueue.size}/${this.maxSimultaneousConstructions}`);
+            log(`📊 Construções restantes: ${this.constructionQueue.size}/${this.maxSimultaneousConstructions}`);
         }
     }
 
@@ -2620,7 +2622,7 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
     }
 
     forceResetConstructionState() {
-        console.log('🔄 Forçando reset do estado de construção...');
+        log('🔄 Forçando reset do estado de construção...');
         this.constructionQueue.clear();
         this.showNotification('Sistema de construção reiniciado', 'info');
     }
@@ -2635,7 +2637,7 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
         this.buildingCooldown.lastBuildTime = Date.now();
         this.buildingCooldown.remainingTime = this.buildingCooldown.duration;
 
-        console.log(`⏱️ Cooldown de construção ativado: ${this.buildingCooldown.duration}ms`);
+        log(`⏱️ Cooldown de construção ativado: ${this.buildingCooldown.duration}ms`);
 
         // Mostrar indicador visual de cooldown
         if (this.gameManager && this.gameManager.uiManager) {
@@ -2654,7 +2656,7 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
         if (this.buildingCooldown.remainingTime <= 0) {
             this.buildingCooldown.active = false;
             this.buildingCooldown.remainingTime = 0;
-            console.log(`✅ Cooldown de construção finalizado`);
+            log(`✅ Cooldown de construção finalizado`);
 
             // Esconder indicador visual de cooldown
             if (this.gameManager && this.gameManager.uiManager) {
@@ -2673,7 +2675,7 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
         } else {
             // Fallback para console se UI não estiver disponível
             const prefix = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : type === 'success' ? '✅' : 'ℹ️';
-            console.log(`${prefix} ${message}`);
+            log(`${prefix} ${message}`);
         }
     }
 
@@ -3022,12 +3024,12 @@ updateConstructionIndicator(buildingData, progress) {
 
         // ✅ FIX: FORÇAR rotação para (0, 0, 0) para alinhamento perfeito com grid
         buildingData.mesh.rotation = BABYLON.Vector3.Zero();
-        console.log(`🎯 Rotação FORÇADA para (0, 0, 0) - alinhamento perfeito ao grid`);
+        log(`🎯 Rotação FORÇADA para (0, 0, 0) - alinhamento perfeito ao grid`);
 
         // ✅ FIX: Restaurar material original SEM sobrescrever com novo material
         if (buildingData.originalMaterial) {
             buildingData.mesh.material = buildingData.originalMaterial;
-            console.log(`♻️ Material original restaurado para ${buildingData.config.name}`);
+            log(`♻️ Material original restaurado para ${buildingData.config.name}`);
         }
         // Se não houver material salvo, o mesh já deve ter o material do merge
 
@@ -3035,7 +3037,7 @@ updateConstructionIndicator(buildingData, progress) {
         buildingData.mesh.isVisible = true;
         buildingData.mesh.setEnabled(true);
 
-        console.log(`🔧 Building mesh restored to normal state: ${buildingData.config.name}`);
+        log(`🔧 Building mesh restored to normal state: ${buildingData.config.name}`);
     }
 
     // Remover efeitos visuais aprimorados
@@ -3055,7 +3057,7 @@ updateConstructionIndicator(buildingData, progress) {
             // ✅ FIX: Salvar material original ANTES de aplicar efeitos de construção
             if (!buildingData.originalMaterial && buildingData.mesh.material) {
                 buildingData.originalMaterial = buildingData.mesh.material;
-                console.log(`💾 Material original salvo para ${buildingData.config.name}`);
+                log(`💾 Material original salvo para ${buildingData.config.name}`);
             }
 
             // Aplicar material de construção semi-transparente
@@ -3067,7 +3069,7 @@ updateConstructionIndicator(buildingData, progress) {
             // Adicionar animação de rotação suave durante construção
             this.startConstructionAnimation(buildingData);
 
-            console.log(`🎨 Efeitos visuais de construção aplicados para ${buildingData.config.name}`);
+            log(`🎨 Efeitos visuais de construção aplicados para ${buildingData.config.name}`);
         }
     }
 
@@ -3418,7 +3420,7 @@ createCompletionText(buildingData, worldPos) {
             labelPlane.targetVisibility = 0;
             labelPlane.fadeSpeed = 5; // Velocidade da transição (5 = 200ms)
 
-            console.log(`✅ Label criado para ${buildingType.name}: "${text}" (inicialmente oculto) - Z-index configurado`);
+            log(`✅ Label criado para ${buildingType.name}: "${text}" (inicialmente oculto) - Z-index configurado`);
 
         } catch (error) {
             console.error(`❌ Erro ao criar label para ${buildingType.name}:`, error);
@@ -3551,7 +3553,7 @@ createCompletionText(buildingData, worldPos) {
                 this.applyBuildingEffects(building, false); // Remover efeitos antigos
                 this.applyBuildingEffects(building, true);  // Aplicar novos efeitos
 
-                console.log(`🔧 Eficiência atualizada para ${building.config.name}: ${oldEfficiency.toFixed(2)} -> ${efficiency.toFixed(2)}`);
+                log(`🔧 Eficiência atualizada para ${building.config.name}: ${oldEfficiency.toFixed(2)} -> ${efficiency.toFixed(2)}`);
             } catch (error) {
                 console.error(`❌ Erro ao atualizar eficiência do edifício ${building.id}:`, error);
                 // Restaurar eficiência anterior em caso de erro
@@ -3604,7 +3606,7 @@ addPowerShortageEffects(building) {
         };
     }
 
-    console.log(`⚡❌ Efeitos de escassez de energia aplicados a ${building.config.name}`);
+    log(`⚡❌ Efeitos de escassez de energia aplicados a ${building.config.name}`);
 }
 
 removePowerShortageEffects(building) {
@@ -3626,7 +3628,7 @@ removePowerShortageEffects(building) {
     // Remover efeito de piscada
     mesh.powerShortageFlicker = null;
 
-    console.log(`⚡✅ Efeitos de escassez de energia removidos de ${building.config.name}`);
+    log(`⚡✅ Efeitos de escassez de energia removidos de ${building.config.name}`);
 }
 
 createPowerShortageIcon(building) {
@@ -3680,7 +3682,7 @@ createPowerShortageIcon(building) {
 
         animatePowerIcon();
 
-        console.log(`⚡ Ícone de escassez de energia criado para ${building.config.name}`);
+        log(`⚡ Ícone de escassez de energia criado para ${building.config.name}`);
 
     } catch (error) {
         console.error(`❌ Erro ao criar ícone de escassez de energia:`, error);
@@ -3736,12 +3738,12 @@ removePowerShortageIcon(building) {
     
     rebuildFromData() {
         // TODO: Implementar reconstrução de edifícios a partir de dados salvos
-        console.log('🔄 Reconstruindo edifícios...');
+        log('🔄 Reconstruindo edifícios...');
     }
 
     // ===== SISTEMA DE PREVIEW =====
     startPreviewMode(buildingTypeId) {
-        console.log(`🔍 Iniciando modo preview para: ${buildingTypeId}`);
+        log(`🔍 Iniciando modo preview para: ${buildingTypeId}`);
 
         this.selectedBuildingType = buildingTypeId;
         this.previewMode = true;
@@ -3757,7 +3759,7 @@ removePowerShortageIcon(building) {
     }
 
     stopPreviewMode() {
-        console.log('🔍 Parando modo preview');
+        log('🔍 Parando modo preview');
 
         this.previewMode = false;
         this.selectedBuildingType = null;
@@ -3933,7 +3935,7 @@ removePowerShortageIcon(building) {
         this.updateMultiCellPreview(gridX, gridZ, buildingType.size, isValid);
 
         // Log para debug (apenas quando a posição muda)
-        console.log(`🔍 Preview updated: (${gridX}, ${gridZ}) - ${isValid ? 'VALID' : 'INVALID'} - ${canPlaceResult.reason || 'No reason'}`);
+        log(`🔍 Preview updated: (${gridX}, ${gridZ}) - ${isValid ? 'VALID' : 'INVALID'} - ${canPlaceResult.reason || 'No reason'}`);
     }
 
     updatePreviewUIFeedback(isValid, canPlaceResult) {
@@ -4091,7 +4093,7 @@ removePowerShortageIcon(building) {
         const building = this.placeBuilding(gridX, gridZ, this.selectedBuildingType);
 
         if (building) {
-            console.log(`✅ Edifício ${buildingType.name} construído em (${gridX}, ${gridZ}) com alinhamento perfeito ao grid`);
+            log(`✅ Edifício ${buildingType.name} construído em (${gridX}, ${gridZ}) com alinhamento perfeito ao grid`);
             return true;
         } else {
             console.error('❌ Falha ao construir edifício');
@@ -4101,7 +4103,7 @@ removePowerShortageIcon(building) {
 
     // ===== CLEANUP =====
     dispose() {
-        console.log('🗑️ Iniciando disposal do BuildingSystem...');
+        log('🗑️ Iniciando disposal do BuildingSystem...');
 
         // Parar processamento da fila
         this.isProcessingDisposal = false;
@@ -4172,7 +4174,7 @@ removePowerShortageIcon(building) {
         });
         this.connectionMeshes.clear();
 
-        console.log('✅ BuildingSystem disposed - Memória limpa');
+        log('✅ BuildingSystem disposed - Memória limpa');
     }
 
     // ===== CONECTIVIDADE DE INFRAESTRUTURA =====
@@ -4205,7 +4207,7 @@ removePowerShortageIcon(building) {
                 // Atualizar visual da conexão
                 this.updateConnectionVisual(building, adjacentBuilding);
 
-                console.log(`🔗 Conectado: ${building.config.name} ↔ ${adjacentBuilding.config.name}`);
+                log(`🔗 Conectado: ${building.config.name} ↔ ${adjacentBuilding.config.name}`);
             }
         });
 
@@ -4326,7 +4328,7 @@ removePowerShortageIcon(building) {
 
             if (connectionMesh) {
                 this.connectionMeshes.set(connectionId, connectionMesh);
-                console.log(`🔗 Conexão seamless criada entre ${building1.config.name} e ${building2.config.name}`);
+                log(`🔗 Conexão seamless criada entre ${building1.config.name} e ${building2.config.name}`);
             }
 
         } catch (error) {
@@ -4465,7 +4467,7 @@ removePowerShortageIcon(building) {
 
         building.connections.clear();
 
-        console.log(`🔗 Conexões de infraestrutura removidas para ${building.config.name}`);
+        log(`🔗 Conexões de infraestrutura removidas para ${building.config.name}`);
     }
 
     // ===== SISTEMA DE ALUGUEL =====
@@ -4497,7 +4499,7 @@ removePowerShortageIcon(building) {
         const buildingName = (building.config && building.config.name)
             ? building.config.name
             : 'Edifício Desconhecido';
-        console.log(`🏙️ ${buildingName} agora está ${status}`);
+        log(`🏙️ ${buildingName} agora está ${status}`);
 
         return true;
     }
@@ -4559,7 +4561,7 @@ removePowerShortageIcon(building) {
             // Armazenar referência
             mesh.rentalIcon = iconPlane;
 
-            console.log(`🏙️ Ícone de aluguel criado para ${building.config.name}`);
+            log(`🏙️ Ícone de aluguel criado para ${building.config.name}`);
 
         } catch (error) {
             console.error(`❌ Erro ao criar ícone de aluguel:`, error);
@@ -4719,7 +4721,7 @@ removePowerShortageIcon(building) {
                     buildingData.mesh.rotation.copyFrom(buildingData.constructionAnimationData.originalRotation);
                     buildingData.mesh.scaling.copyFrom(targetScale);
                     buildingData.constructionAnimationData.isAnimating = false;
-                    console.log(`✅ Animação de construção finalizada - rotação restaurada para ${buildingData.config.name} rotação: ${buildingData.mesh.rotation}`);
+                    log(`✅ Animação de construção finalizada - rotação restaurada para ${buildingData.config.name} rotação: ${buildingData.mesh.rotation}`);
                     return;
                 }
 
@@ -4816,7 +4818,7 @@ removePowerShortageIcon(building) {
                 }, 600);
             }
 
-            console.log(`🔊 Audio de conclusão aprimorado reproduzido para ${buildingType.name}`);
+            log(`🔊 Audio de conclusão aprimorado reproduzido para ${buildingType.name}`);
 
         } catch (error) {
             console.warn('⚠️ Erro ao reproduzir áudio de conclusão:', error);
@@ -4842,7 +4844,7 @@ removePowerShortageIcon(building) {
                 buildingData.lastProgressAudio = currentMilestone;
                 buildingData.lastProgressSound = now;
 
-                console.log(`🔊 Som de progresso aprimorado (${Math.round(currentMilestone * 100)}%) para ${buildingData.config.name}`);
+                log(`🔊 Som de progresso aprimorado (${Math.round(currentMilestone * 100)}%) para ${buildingData.config.name}`);
             }
 
         } catch (error) {
@@ -4868,7 +4870,7 @@ removePowerShortageIcon(building) {
                 }
             }, 200);
 
-            console.log(`🔊 Audio de colocação aprimorado reproduzido para ${buildingType.name}`);
+            log(`🔊 Audio de colocação aprimorado reproduzido para ${buildingType.name}`);
 
         } catch (error) {
             console.warn('⚠️ Erro ao reproduzir áudio de colocação:', error);
@@ -4878,4 +4880,4 @@ removePowerShortageIcon(building) {
 
 // Exportar para escopo global
 window.BuildingSystem = BuildingSystem;
-console.log('🏗️ BuildingSystem carregado e exportado para window.BuildingSystem');
+log('🏗️ BuildingSystem carregado e exportado para window.BuildingSystem');

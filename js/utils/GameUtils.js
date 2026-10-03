@@ -286,4 +286,4 @@ if (typeof window !== 'undefined') {
     };
 }
 
-console.log('🛠️ GameUtils loaded - Clean Code utility functions available');
+log('🛠️ GameUtils loaded - Clean Code utility functions available');

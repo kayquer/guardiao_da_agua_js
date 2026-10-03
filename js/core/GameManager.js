@@ -5,7 +5,7 @@
 
 class GameManager {
     constructor() {
-        console.log('🎮 Inicializando GameManager...');
+        log('🎮 Inicializando GameManager...');
 
         // Estado do jogo
         this.gameState = 'menu';
@@ -95,7 +95,7 @@ class GameManager {
 
     // ===== VALIDAÇÃO DE DEPENDÊNCIAS =====
     validateDependencies() {
-        console.log('🔍 Validando dependências...');
+        log('🔍 Validando dependências...');
 
         const requiredClasses = [
             'GridManager', 'ResourceManager', 'BuildingSystem', 'CityLifeSystem',
@@ -120,13 +120,13 @@ class GameManager {
             throw new Error('❌ GAME_CONFIG não definido');
         }
 
-        console.log('✅ Todas as dependências validadas');
+        log('✅ Todas as dependências validadas');
     }
 
     // ===== INICIALIZAÇÃO =====
     async initializeSystems() {
         try {
-            console.log('🔧 Inicializando sistemas...');
+            log('🔧 Inicializando sistemas...');
 
             await this.initializeRenderer();
             this.validateDependencies();
@@ -149,9 +149,9 @@ class GameManager {
             await this.studySystem.initialize();
 
             this.setupEventListeners();
-            this.exposeDebugFunctions();
+            if (DEBUG) this.exposeDebugFunctions();
 
-            console.log('✅ Sistemas inicializados com sucesso');
+            log('✅ Sistemas inicializados com sucesso');
             this.initialized = true;
 
         } catch (error) {
@@ -162,7 +162,7 @@ class GameManager {
     }
     
     async initializeRenderer() {
-        console.log('🎨 Inicializando Babylon.js...');
+        log('🎨 Inicializando Babylon.js...');
 
         this.canvas = document.getElementById('game-canvas') || document.getElementById('test-canvas');
         if (!this.canvas) {
@@ -185,7 +185,7 @@ class GameManager {
         this.setupHoverSystem();
         this.startRenderLoop();
         
-        console.log('✅ Babylon.js inicializado');
+        log('✅ Babylon.js inicializado');
     }
 
     setupCanvas() {
@@ -201,7 +201,7 @@ class GameManager {
         }
 
         this.canvas.style.display = 'block';
-        console.log(`🎨 Canvas configurado: ${this.canvas.width}x${this.canvas.height}`);
+        log(`🎨 Canvas configurado: ${this.canvas.width}x${this.canvas.height}`);
     }
 
     setupCamera() {
@@ -288,7 +288,7 @@ class GameManager {
         if (this.scene && this.scene.onPointerObservable) {
             this.scene.onPointerObservable._observers = [];
             this.scene.onPointerObservable.clear();
-            console.log('🚫 Babylon.js pointer observables desabilitados');
+            log('🚫 Babylon.js pointer observables desabilitados');
         }
 
         // ===== DISABLE DEFAULT BABYLON.JS CAMERA CONTROLS =====
@@ -319,7 +319,7 @@ class GameManager {
                 }
             }
 
-            console.log('🎮 SimCity-style camera controls initialized');
+            log('🎮 SimCity-style camera controls initialized');
         } else {
             console.warn('⚠️ SimCityCameraControls not found, falling back to basic zoom');
             // Fallback to basic zoom only
@@ -340,7 +340,7 @@ class GameManager {
             this.handleKeyboardEvent(kbInfo);
         });
 
-        console.log('🎮 Controles inicializados: SimCity Camera + Building Placement');
+        log('🎮 Controles inicializados: SimCity Camera + Building Placement');
     }
 
     // ===== BUILDING PLACEMENT CONTROLS =====
@@ -360,11 +360,11 @@ class GameManager {
             event.preventDefault();
             if (this.buildMode) {
                 this.exitBuildMode();
-                console.log('🚫 Building mode cancelled via right-click');
+                log('🚫 Building mode cancelled via right-click');
             }
         });
 
-        console.log('🏗️ Building placement controls initialized');
+        log('🏗️ Building placement controls initialized');
     }
 
     handleBuildingPreviewMouseMove(event) {
@@ -439,7 +439,7 @@ class GameManager {
             const success = this.buildingSystem.confirmPlacement(gridPos.x, gridPos.z);
 
             if (success) {
-                console.log(`✅ Building placed successfully at (${gridPos.x}, ${gridPos.z})`);
+                log(`✅ Building placed successfully at (${gridPos.x}, ${gridPos.z})`);
                 // Exit build mode after successful placement
                 this.exitBuildMode();
             } else {
@@ -467,7 +467,7 @@ class GameManager {
                     if (typeof AudioManager !== 'undefined') {
                         AudioManager.playSound('sfx_click', 0.8);
                     }
-                    console.log(`🏢 Building selected: ${building.config.name} at (${building.gridX}, ${building.gridZ})`);
+                    log(`🏢 Building selected: ${building.config.name} at (${building.gridX}, ${building.gridZ})`);
                     return;
                 }
             }
@@ -479,7 +479,7 @@ class GameManager {
                 if (typeof AudioManager !== 'undefined') {
                     AudioManager.playSound('sfx_click', 0.8);
                 }
-                console.log(`🏢 Building selected: ${building.config.name} at (${building.gridX}, ${building.gridZ})`);
+                log(`🏢 Building selected: ${building.config.name} at (${building.gridX}, ${building.gridZ})`);
             } else {
                 // Click on terrain or non-building mesh
                 this.handleTerrainClick(x, y);
@@ -557,7 +557,7 @@ class GameManager {
             // Clear building selection
             this.deselectBuilding();
 
-            console.log(`🌍 Terrain clicked: ${terrainType} at (${gridPos.x}, ${gridPos.z})`);
+            log(`🌍 Terrain clicked: ${terrainType} at (${gridPos.x}, ${gridPos.z})`);
         }
     }
 
@@ -791,7 +791,7 @@ class GameManager {
     }
 
     emergencyRecovery() {
-        console.log('🚨 Iniciando recuperação de emergência...');
+        log('🚨 Iniciando recuperação de emergência...');
         
         try {
             if (this.scene) {
@@ -804,7 +804,7 @@ class GameManager {
             this.recreateCamera();
             this.renderState.recoveryAttempts++;
             
-            console.log(`✅ Recuperação concluída (tentativa ${this.renderState.recoveryAttempts})`);
+            log(`✅ Recuperação concluída (tentativa ${this.renderState.recoveryAttempts})`);
             
         } catch (error) {
             console.error('❌ Falha na recuperação:', error);
@@ -813,7 +813,7 @@ class GameManager {
     }
 
     recreateCamera() {
-        console.log('🔧 Recriando câmera...');
+        log('🔧 Recriando câmera...');
         
         try {
             const oldCamera = this.camera;
@@ -848,7 +848,7 @@ class GameManager {
                 }
             }
             
-            console.log('✅ Câmera recriada com sucesso');
+            log('✅ Câmera recriada com sucesso');
             
         } catch (error) {
             console.error('❌ Erro ao recriar câmera:', error);
@@ -858,7 +858,7 @@ class GameManager {
 
     recoverCameraState() {
         try {
-            console.log('🔧 Recuperando estado da câmera...');
+            log('🔧 Recuperando estado da câmera...');
 
             if (!this.camera) {
                 console.error('❌ Câmera não inicializada');
@@ -876,7 +876,7 @@ class GameManager {
                 this.engine.resize();
             }
 
-            console.log('✅ Recuperação da câmera concluída');
+            log('✅ Recuperação da câmera concluída');
 
         } catch (error) {
             console.error('❌ Falha na recuperação:', error);
@@ -896,7 +896,7 @@ class GameManager {
         if (this.engine) {
             try {
                 this.engine.stopRenderLoop();
-                console.log('🔧 Render loop parado');
+                log('🔧 Render loop parado');
             } catch (error) {
                 console.error('❌ Erro ao parar render loop:', error);
             }
@@ -1073,7 +1073,7 @@ class GameManager {
         const minutes = this.gameClockTime.getMinutes();
         this.dayNightCycle = (hours + minutes / 60) / 24;
 
-        console.log(`🕐 Relógio iniciado: ${this.formatGameTime()}`);
+        log(`🕐 Relógio iniciado: ${this.formatGameTime()}`);
         this.updateDayNightLighting();
     }
 
@@ -1147,7 +1147,7 @@ class GameManager {
     }
 
     handleDayNightTransition(fromState, toState) {
-        console.log(`🌅 Transição: ${fromState} -> ${toState}`);
+        log(`🌅 Transição: ${fromState} -> ${toState}`);
 
         if (typeof AudioManager !== 'undefined') {
             if (toState === 'day') {
@@ -1177,12 +1177,12 @@ class GameManager {
             }
         });
 
-        console.log('🎮 Sistema de hover configurado (apenas ESC)');
+        log('🎮 Sistema de hover configurado (apenas ESC)');
     }
 
     // ===== CONTROLE DE JOGO =====
     startNewGame() {
-        console.log('🎮 Iniciando novo jogo...');
+        log('🎮 Iniciando novo jogo...');
 
         if (!this.initialized) {
             console.error('❌ Sistemas não inicializados');
@@ -1229,7 +1229,7 @@ class GameManager {
             if (this.tutorialSystem && this.saveSystem && typeof this.saveSystem.isTutorialCompleted === 'function') {
                 const tutorialCompleted = this.saveSystem.isTutorialCompleted();
                 if (!tutorialCompleted) {
-                    console.log('📚 Starting tutorial automatically (first time player)');
+                    log('📚 Starting tutorial automatically (first time player)');
                     // Delay tutorial start to allow game to fully initialize
                     setTimeout(() => {
                         if (this.tutorialSystem) {
@@ -1237,7 +1237,7 @@ class GameManager {
                         }
                     }, 2000); // 2 second delay for full initialization
                 } else {
-                    console.log('📚 Tutorial already completed, skipping auto-start');
+                    log('📚 Tutorial already completed, skipping auto-start');
                 }
             } else {
                 console.warn('⚠️ Tutorial system or save system not available for auto-start');
@@ -1246,12 +1246,12 @@ class GameManager {
             console.warn('⚠️ Could not check tutorial status:', error);
         }
 
-        console.log('✅ Novo jogo iniciado');
+        log('✅ Novo jogo iniciado');
         return true;
     }
 
     createStarterCity() {
-        console.log('🏙️ Criando cidade inicial...');
+        log('🏙️ Criando cidade inicial...');
 
         if (!this.buildingSystem) {
             console.error('❌ BuildingSystem não disponível');
@@ -1264,11 +1264,11 @@ class GameManager {
             const originalCooldownActive = this.buildingSystem.buildingCooldown.active;
             this.buildingSystem.buildingCooldown.active = false;
 
-            console.log('🏛️ Construindo Prefeitura Municipal...');
+            log('🏛️ Construindo Prefeitura Municipal...');
             const success = this.buildingSystem.placeBuilding(cityHall.x, cityHall.z, cityHall.type);
 
             if (success) {
-                console.log('✅ Prefeitura construída');
+                log('✅ Prefeitura construída');
                 this.addCityHallLightingEffects(success);
                 this.centerCameraOnCityHall(cityHall.x, cityHall.z);
             } else {
@@ -1279,7 +1279,7 @@ class GameManager {
 
             if (this.resourceManager) {
                 this.resourceManager.adjustResource('budget', 10000);
-                console.log('💰 Bônus inicial aplicado');
+                log('💰 Bônus inicial aplicado');
             }
 
         } catch (error) {
@@ -1293,7 +1293,7 @@ class GameManager {
         }
 
         try {
-            console.log('💡 Adicionando efeitos de iluminação...');
+            log('💡 Adicionando efeitos de iluminação...');
 
             const light = new BABYLON.PointLight("cityHallLight",
                 new BABYLON.Vector3(cityHallBuilding.mesh.position.x,
@@ -1334,7 +1334,7 @@ class GameManager {
                 particles: particleSystem
             };
 
-            console.log('✅ Efeitos de iluminação criados');
+            log('✅ Efeitos de iluminação criados');
 
         } catch (error) {
             console.error('❌ Erro ao criar efeitos de iluminação:', error);
@@ -1349,12 +1349,12 @@ class GameManager {
 
         try {
             const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
-            console.log(`📷 Centralizando câmera na Prefeitura em (${gridX}, ${gridZ})`);
+            log(`📷 Centralizando câmera na Prefeitura em (${gridX}, ${gridZ})`);
 
             // Use SimCityCameraControls for smooth camera transition if available
             if (this.cameraControls && typeof this.cameraControls.centerCameraOn === 'function') {
                 this.cameraControls.centerCameraOn(worldPos.x, worldPos.z, 25);
-                console.log('✅ Câmera centralizada com transição suave');
+                log('✅ Câmera centralizada com transição suave');
             } else {
                 // Fallback to direct camera positioning
                 const targetPosition = new BABYLON.Vector3(worldPos.x, 0, worldPos.z);
@@ -1378,7 +1378,7 @@ class GameManager {
                     this.isometricAngles = { alpha: -Math.PI / 4, beta: Math.PI / 3.5 };
                 }
 
-                console.log('✅ Câmera centralizada (fallback direto)');
+                log('✅ Câmera centralizada (fallback direto)');
             }
 
         } catch (error) {
@@ -1388,7 +1388,7 @@ class GameManager {
 
     // ===== CONTROLES DE JOGO =====
     loadGame(saveData) {
-        console.log('📁 Carregando jogo...');
+        log('📁 Carregando jogo...');
 
         if (!this.initialized) {
             console.error('❌ Sistemas não inicializados');
@@ -1437,7 +1437,7 @@ class GameManager {
             this.gameState = 'playing';
             this.handleResize();
 
-            console.log('✅ Jogo carregado');
+            log('✅ Jogo carregado');
             return true;
 
         } catch (error) {
@@ -1451,7 +1451,7 @@ class GameManager {
         if (this.gameState === 'playing') {
             this.gameState = 'paused';
             this.uiManager.showPauseOverlay();
-            console.log('⏸️ Jogo pausado');
+            log('⏸️ Jogo pausado');
         }
     }
 
@@ -1459,7 +1459,7 @@ class GameManager {
         if (this.gameState === 'paused') {
             this.gameState = 'playing';
             this.uiManager.hidePauseOverlay();
-            console.log('▶️ Jogo retomado');
+            log('▶️ Jogo retomado');
         }
     }
 
@@ -1478,7 +1478,7 @@ class GameManager {
             default: speedInfo = `${this.timeScale}x (velocidade customizada)`; break;
         }
 
-        console.log(`⏱️ Velocidade alterada: ${speedInfo}`);
+        log(`⏱️ Velocidade alterada: ${speedInfo}`);
 
         if (this.uiManager) {
             this.uiManager.showNotification(`Velocidade: ${speedInfo}`, 'info');
@@ -1519,7 +1519,7 @@ class GameManager {
         this.canvas.style.cursor = 'crosshair';
         this.startBuildingPreview(buildingType);
         this.createPlacementOverlay(buildingType);
-        console.log(`🏗️ Modo construção: ${buildingType}`);
+        log(`🏗️ Modo construção: ${buildingType}`);
     }
 
     exitBuildMode() {
@@ -1539,7 +1539,7 @@ class GameManager {
         this.uiManager.clearBuildingSelection();
         this.uiManager.hideBuildingPlacementFeedback();
 
-        console.log('🏗️ Modo construção desativado');
+        log('🏗️ Modo construção desativado');
     }
 
     startBuildingPreview(buildingTypeId) {
@@ -1552,7 +1552,7 @@ class GameManager {
     cancelBuildingPreview() {
         if (this.buildingSystem && this.buildingSystem.previewMode) {
             this.buildingSystem.stopPreviewMode();
-            console.log('🔍 Preview cancelado');
+            log('🔍 Preview cancelado');
         }
     }
 
@@ -1572,7 +1572,7 @@ class GameManager {
         this.uiManager.showBuildingSelectionInfo(building);
         this.uiManager.toggleMobilePanel('right');
 
-        console.log(`🏢 Selecionado: ${building.config.name}`);
+        log(`🏢 Selecionado: ${building.config.name}`);
     }
 
     deselectBuilding() {
@@ -1580,7 +1580,7 @@ class GameManager {
             const buildingName = (this.selectedBuilding.config && this.selectedBuilding.config.name)
                 ? this.selectedBuilding.config.name
                 : 'Edifício Desconhecido';
-            console.log(`🏢 Desselecionado: ${buildingName}`);
+            log(`🏢 Desselecionado: ${buildingName}`);
         }
 
         this.clearBuildingSelection();
@@ -1728,7 +1728,7 @@ class GameManager {
                 const buildingName = (building.config && building.config.name)
                     ? building.config.name
                     : 'Edifício Desconhecido';
-                console.log(`🗑️ Indicador removido: ${buildingName}`);
+                log(`🗑️ Indicador removido: ${buildingName}`);
 
             } catch (error) {
                 console.error('❌ Erro ao remover indicador:', error);
@@ -1893,7 +1893,7 @@ class GameManager {
                 this.uiManager.handleResize();
             }
 
-            console.log(`🔄 Canvas redimensionado: ${this.canvas.width}x${this.canvas.height}`);
+            log(`🔄 Canvas redimensionado: ${this.canvas.width}x${this.canvas.height}`);
         }
     }
 
@@ -1902,7 +1902,7 @@ class GameManager {
         if (this.gameState === 'playing') {
             const saveData = this.getSaveData();
             this.saveSystem.autoSave(saveData);
-            console.log('💾 Auto-save realizado');
+            log('💾 Auto-save realizado');
         }
     }
 
@@ -1910,7 +1910,7 @@ class GameManager {
         const saveData = this.getSaveData();
         this.saveSystem.saveGame(saveData);
         this.uiManager.showNotification('Jogo salvo com sucesso!', 'success');
-        console.log('💾 Jogo salvo manualmente');
+        log('💾 Jogo salvo manualmente');
     }
 
     getSaveData() {
@@ -1940,7 +1940,7 @@ class GameManager {
     }
 
     runMemoryStressTest() {
-        console.log('🧪 Iniciando teste de stress de memória...');
+        log('🧪 Iniciando teste de stress de memória...');
 
         if (!this.buildingSystem) {
             console.error('❌ BuildingSystem não disponível');
@@ -1948,7 +1948,7 @@ class GameManager {
         }
 
         const initialMemory = this.getMemoryInfo();
-        console.log(`📊 Memória inicial: ${(initialMemory.heapUsed / 1024 / 1024).toFixed(2)}MB`);
+        log(`📊 Memória inicial: ${(initialMemory.heapUsed / 1024 / 1024).toFixed(2)}MB`);
 
         const buildingTypes = ['water_pump', 'treatment_plant', 'house', 'apartment', 'water_tank'];
         const placedBuildings = [];
@@ -1968,7 +1968,7 @@ class GameManager {
                     if (building) {
                         placedBuildings.push(building.id);
                         placed = true;
-                        console.log(`✅ Edifício ${i + 1}/20: ${buildingType} em (${x}, ${z})`);
+                        log(`✅ Edifício ${i + 1}/20: ${buildingType} em (${x}, ${z})`);
                     }
                 }
                 attempts++;
@@ -1981,9 +1981,9 @@ class GameManager {
 
         setTimeout(() => {
             const afterPlacement = this.getMemoryInfo();
-            console.log(`📊 Memória após colocação: ${(afterPlacement.heapUsed / 1024 / 1024).toFixed(2)}MB`);
+            log(`📊 Memória após colocação: ${(afterPlacement.heapUsed / 1024 / 1024).toFixed(2)}MB`);
 
-            console.log('🗑️ Removendo todos os edifícios...');
+            log('🗑️ Removendo todos os edifícios...');
             placedBuildings.forEach(buildingId => {
                 this.buildingSystem.removeBuilding(buildingId);
             });
@@ -1994,7 +1994,7 @@ class GameManager {
 
             setTimeout(() => {
                 const finalMemory = this.getMemoryInfo();
-                console.log(`📊 Memória final: ${(finalMemory.heapUsed / 1024 / 1024).toFixed(2)}MB`);
+                log(`📊 Memória final: ${(finalMemory.heapUsed / 1024 / 1024).toFixed(2)}MB`);
 
                 const memoryDiff = finalMemory.heapUsed - initialMemory.heapUsed;
                 const diffMB = (memoryDiff / 1024 / 1024).toFixed(2);
@@ -2002,10 +2002,10 @@ class GameManager {
                 if (memoryDiff > 5 * 1024 * 1024) {
                     console.error(`🚨 POSSÍVEL VAZAMENTO: ${diffMB}MB`);
                 } else {
-                    console.log(`✅ TESTE PASSOU: apenas ${diffMB}MB de diferença`);
+                    log(`✅ TESTE PASSOU: apenas ${diffMB}MB de diferença`);
                 }
 
-                console.log('🧪 Teste de stress concluído');
+                log('🧪 Teste de stress concluído');
             }, 2000);
         }, 1000);
     }
@@ -2021,7 +2021,7 @@ class GameManager {
             return;
         }
 
-        console.log(`🎨 Creating placement overlay for ${buildingType}...`);
+        log(`🎨 Creating placement overlay for ${buildingType}...`);
 
         // Create overlay mesh array
         this.placementOverlayMeshes = [];
@@ -2093,7 +2093,7 @@ class GameManager {
             }
         }
 
-        console.log(`✅ Placement overlay created with ${this.placementOverlayMeshes.length} cells`);
+        log(`✅ Placement overlay created with ${this.placementOverlayMeshes.length} cells`);
 
         if (this.uiManager) {
             this.uiManager.showNotification('✅ Área de construção pronta!', 'success', 1500);
@@ -2102,7 +2102,7 @@ class GameManager {
 
     clearPlacementOverlay() {
         if (this.placementOverlayMeshes && this.placementOverlayMeshes.length > 0) {
-            console.log(`🗑️ Clearing placement overlay (${this.placementOverlayMeshes.length} meshes)...`);
+            log(`🗑️ Clearing placement overlay (${this.placementOverlayMeshes.length} meshes)...`);
 
             this.placementOverlayMeshes.forEach(mesh => {
                 if (mesh.material) {
@@ -2112,7 +2112,7 @@ class GameManager {
             });
 
             this.placementOverlayMeshes = [];
-            console.log('✅ Placement overlay cleared');
+            log('✅ Placement overlay cleared');
         }
     }
 
@@ -2124,16 +2124,16 @@ class GameManager {
         if (this.engine) {
             this.engine.dispose();
         }
-        console.log('🗑️ GameManager disposed');
+        log('🗑️ GameManager disposed');
     }
 }
 
 // Exportar para escopo global
 window.GameManager = GameManager;
-console.log('🎮 GameManager carregado e exportado para window.GameManager');
+log('🎮 GameManager carregado e exportado para window.GameManager');
 
 // ===== FUNÇÕES DE DEBUG GLOBAIS =====
-window.monitorCamera = () => {
+if (DEBUG) window.monitorCamera = () => {
     if (!window.gameManager) {
         console.warn('⚠️ GameManager não inicializado');
         return;
@@ -2164,7 +2164,7 @@ window.monitorCamera = () => {
                 clearInterval(monitor);
                 window.gameManager.emergencyRecovery();
             } else {
-                console.log('✅ Câmera OK:', {
+                log('✅ Câmera OK:', {
                     alpha: state.alpha.toFixed(3),
                     beta: state.beta.toFixed(3),
                     position: `(${state.position.x.toFixed(1)}, ${state.position.y.toFixed(1)}, ${state.position.z.toFixed(1)})`
@@ -2173,8 +2173,8 @@ window.monitorCamera = () => {
         }
     }, 1000);
     
-    console.log('🎮 Monitor de câmera iniciado');
+    log('🎮 Monitor de câmera iniciado');
     return monitor;
 };
 
-console.log('🎮 Funções de debug disponíveis: monitorCamera(), getCameraState(), recoverCamera()');
+log('🎮 Funções de debug disponíveis: monitorCamera(), getCameraState(), recoverCamera()');

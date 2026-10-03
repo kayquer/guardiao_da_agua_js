@@ -5,7 +5,7 @@
 
 class EventSystem {
     constructor(gameManager) {
-        console.log('⚡ Inicializando EventSystem...');
+        log('⚡ Inicializando EventSystem...');
         
         this.gameManager = gameManager;
         
@@ -25,12 +25,12 @@ class EventSystem {
         
         this.initializeEventTypes();
         
-        console.log('✅ EventSystem inicializado');
+        log('✅ EventSystem inicializado');
     }
     
     // ===== INICIALIZAÇÃO =====
     initializeEventTypes() {
-        console.log('⚡ Definindo tipos de eventos...');
+        log('⚡ Definindo tipos de eventos...');
         
         // EVENTOS CLIMÁTICOS
         this.addEventType('drought', {
@@ -235,7 +235,7 @@ class EventSystem {
             }
         });
         
-        console.log(`✅ ${this.eventTypes.size} tipos de eventos definidos`);
+        log(`✅ ${this.eventTypes.size} tipos de eventos definidos`);
     }
     
     addEventType(id, config) {
@@ -337,7 +337,7 @@ class EventSystem {
             duration: eventType.duration
         });
         
-        console.log(`⚡ Evento iniciado: ${eventType.name}`);
+        log(`⚡ Evento iniciado: ${eventType.name}`);
         return event;
     }
     
@@ -354,7 +354,7 @@ class EventSystem {
         // Notificar UI
         this.notifyEventEnd(event);
         
-        console.log(`⚡ Evento finalizado: ${event.config.name}`);
+        log(`⚡ Evento finalizado: ${event.config.name}`);
     }
     
     // ===== EFEITOS =====
@@ -488,7 +488,7 @@ class EventSystem {
             }
             
             // TODO: Implementar modal educacional na UI
-            console.log('📚 Conteúdo educacional:', message);
+            log('📚 Conteúdo educacional:', message);
         }
     }
     
@@ -501,7 +501,7 @@ class EventSystem {
 
     setDifficulty(multiplier) {
         this.difficultyMultiplier = Math.max(0.1, Math.min(3.0, multiplier));
-        console.log(`⚡ Dificuldade dos eventos: ${this.difficultyMultiplier}x`);
+        log(`⚡ Dificuldade dos eventos: ${this.difficultyMultiplier}x`);
     }
     
     // ===== SAVE/LOAD =====
@@ -528,4 +528,4 @@ class EventSystem {
 
 // Exportar para escopo global
 window.EventSystem = EventSystem;
-console.log('⚡ EventSystem carregado e exportado para window.EventSystem');
+log('⚡ EventSystem carregado e exportado para window.EventSystem');

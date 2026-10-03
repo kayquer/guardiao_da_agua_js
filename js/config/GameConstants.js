@@ -6,6 +6,13 @@
  * Tudo aqui é lido por algum sistema — não acrescente constante sem uso.
  */
 
+// ===== LOG DE DESENVOLVIMENTO =====
+// Abra o jogo com ?debug na URL para ver os logs. console.warn/error aparecem sempre.
+const DEBUG = new URLSearchParams(location.search).has('debug');
+function log(...args) {
+    if (DEBUG) console.log(...args);
+}
+
 // ===== CONFIGURAÇÃO DO JOGO (balanceamento) =====
 const GAME_CONFIG = {
     canvas: {

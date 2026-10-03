@@ -11,6 +11,7 @@ function load(...files) {
     const store = new Map();
     const ctx = {
         console: silent,
+        location: { search: '' },
         performance: { now: () => Date.now() },
         localStorage: {
             getItem: k => (store.has(k) ? store.get(k) : null),
@@ -18,6 +19,7 @@ function load(...files) {
             removeItem: k => store.delete(k)
         },
         structuredClone,
+        URLSearchParams,
         setTimeout,
         clearTimeout
     };

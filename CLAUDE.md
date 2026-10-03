@@ -114,6 +114,7 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 
 ## Gotchas
 
+- **Logging**: use `log(...)` (defined in `GameConstants.js`), not `console.log` — it only prints when the URL has `?debug`. `?debug` also exposes the console helpers (`GAME_DEBUG`, `monitorCamera()`, `listAllMissions()`, `forceCompleteMission()`, `resetConstructionState()`…). `console.warn`/`console.error` always print, and any `console.error` fails the smoke test.
 - **No ES modules**: All JS files use plain `<script>` tags — no `import`/`export`. Order of `<script>` tags in `index.html` matters.
 - **Dev server required for tests**: Playwright tests expect the server running on `localhost:3000`. Start it with `npm start` before running `npm test`.
 - **ESLint, no formatter**: `eslint.config.js` builds the list of project globals from the `<script src>` tags in `index.html` (top-level `class/const/let/function` and `window.X =`), so using a global from a file not loaded by `index.html` fails `no-undef`. `no-dupe-class-members` matters here: a second method with the same name silently replaces the first — it already caused a real bug (`QuestSystem.getResourceValue`) and 6 dead duplicates. No Prettier; follow existing style (camelCase methods, PascalCase classes).
