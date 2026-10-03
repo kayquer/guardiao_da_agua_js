@@ -19,6 +19,7 @@ jobs:
           python-version: '3.x'
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - run: node scripts/cache-bust.js --check  # index.html precisa vir com as versões em dia
       - run: npm test
       - uses: actions/upload-artifact@v4
         if: failure()

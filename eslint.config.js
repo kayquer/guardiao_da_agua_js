@@ -4,7 +4,7 @@
 const fs = require('fs');
 const globals = require('globals');
 
-const scripts = [...fs.readFileSync('index.html', 'utf8').matchAll(/<script src="(js\/[^"]+)"/g)].map(m => m[1]);
+const scripts = [...fs.readFileSync('index.html', 'utf8').matchAll(/<script src="(js\/[^"?]+)/g)].map(m => m[1]);
 const projectGlobals = {};
 for (const file of scripts) {
     for (const m of fs.readFileSync(file, 'utf8').matchAll(/^(?:(?:class|const|let|var|(?:async\s+)?function)\s+|window\.)([A-Za-z_$][\w$]*)/gm)) {
@@ -30,7 +30,7 @@ module.exports = [
         }
     },
     {
-        files: ['tests/**/*.js', '*.config.js'],
+        files: ['tests/**/*.js', 'scripts/**/*.js', '*.config.js'],
         languageOptions: { sourceType: 'commonjs', globals: { ...globals.node, ...globals.browser } }
     }
 ];
