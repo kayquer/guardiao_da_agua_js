@@ -53,8 +53,10 @@ npm run install-playwright # Install Playwright browsers (first-time setup; only
 GameManager (js/core/GameManager.js)  ← central orchestrator
 ├── GridManager       (js/core/GridManager.js)           — 40×40 grid, terrain, occupancy
 ├── ResourceManager   (js/core/ResourceManager.js)       — water, budget, population, pollution, electricity
-├── BuildingSystem    (js/systems/BuildingSystem.js)     — building registry, placement, preview
-├── UIManager         (js/systems/UIManager.js)          — all HUD panels, modals, notifications
+├── BuildingSystem    (js/systems/BuildingSystem.js)     — building registry, placement, preview, effects
+│     + building/BuildingMeshes.js (meshes/materials), building/BuildingFeedback.js (notifications, construction indicators, celebration, labels)
+├── UIManager         (js/systems/UIManager.js)          — HUD, categories, notifications, mobile panels
+│     + ui/MobileTouch.js (hold/multi-select), ui/StudyBookUI.js, ui/LoanUI.js, ui/ResourcePanels.js
 ├── QuestSystem       (js/systems/QuestSystem.js)        — missions, objectives, stakeholder rep
 ├── TutorialSystem    (js/systems/TutorialSystem.js)     — 3D character dialogue & animations
 ├── EventSystem       (js/systems/EventSystem.js)        — random climate events
@@ -92,6 +94,7 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 
 ## Key Patterns
 
+- **Partial class files (mixin)**: big classes are split across files with `mixin(Class, { methodA() {...}, ... })` (defined in `GameUtils.js`). Methods land on the prototype exactly like class methods, so callers keep using `this.method()`. Partial files go right after their class in `index.html`. `mixin` **throws on a name collision** — on purpose: a duplicated method name used to silently replace the other. Find a method with `grep -rn "    methodName(" js/` — it may live in a partial.
 - **Singleton pattern**: `GameManager`, `SettingsManager`, `SaveSystem` — accessed via module-level `let` variables in `main.js`.
 - **System communication**: all systems receive a `gameManager` reference at construction and call back through it rather than importing each other directly.
 - **Game data lives in `js/data/`**: `buildings.js` (`BUILDING_TYPES`, 56 buildings) and `missions.js` (`MISSIONS`, 15 missions), plain global objects keyed by id. `BuildingSystem.initializeBuildingTypes()` / `QuestSystem.initializeQuests()` register them with `structuredClone` — objectives hold mutable progress (`current`), so never register the shared object directly. Keep them pure data (no functions, no `Date.now()`): relative times go as a duration (`timeWindowMs`) and are resolved in `addQuest()`. Balancing a building or mission = edit `js/data/`, not the systems. `data/building-studies.json` holds the educational text shown in StudySystem.
