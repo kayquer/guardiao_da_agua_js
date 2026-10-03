@@ -1278,7 +1278,7 @@ class GameManager {
             this.buildingSystem.buildingCooldown.active = originalCooldownActive;
 
             if (this.resourceManager) {
-                this.resourceManager.resources.budget.current += 10000;
+                this.resourceManager.adjustResource('budget', 10000);
                 console.log('💰 Bônus inicial aplicado');
             }
 

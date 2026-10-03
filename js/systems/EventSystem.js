@@ -389,11 +389,11 @@ class EventSystem {
         }
         
         if (effects.pollutionSpike && resourceManager && apply) {
-            resourceManager.resources.pollution.current += effects.pollutionSpike;
+            resourceManager.adjustResource('pollution', effects.pollutionSpike);
         }
         
         if (effects.budgetBonus && resourceManager && apply) {
-            resourceManager.resources.budget.current += effects.budgetBonus;
+            resourceManager.adjustResource('budget', effects.budgetBonus);
         }
         
         if (effects.maintenanceCost && resourceManager && apply) {

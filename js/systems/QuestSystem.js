@@ -491,7 +491,7 @@ class QuestSystem {
         // Orçamento (with performance scaling)
         if (quest.rewards.budget && resourceManager) {
             const scaledBudget = Math.round(quest.rewards.budget * performanceMultiplier);
-            resourceManager.resources.budget.current += scaledBudget;
+            resourceManager.adjustResource('budget', scaledBudget);
 
             if (performanceMultiplier > 1) {
                 console.log(`💰 Orçamento com bônus: ${scaledBudget}`);
@@ -677,7 +677,7 @@ class QuestSystem {
 
         // Apply budget changes
         if (consequences.budget && this.gameManager.resourceManager) {
-            this.gameManager.resourceManager.resources.budget.current += consequences.budget;
+            this.gameManager.resourceManager.adjustResource('budget', consequences.budget);
 
             if (consequences.budget !== 0) {
                 const type = consequences.budget > 0 ? 'Ganho' : 'Gasto';
@@ -710,10 +710,8 @@ class QuestSystem {
         // Apply resource changes
         if (consequences.resources && this.gameManager.resourceManager) {
             Object.entries(consequences.resources).forEach(([resource, value]) => {
-                if (resource === 'water') {
-                    this.gameManager.resourceManager.resources.water.current += value;
-                } else if (resource === 'pollution') {
-                    this.gameManager.resourceManager.resources.pollution.current += value;
+                if (resource === 'water' || resource === 'pollution') {
+                    this.gameManager.resourceManager.adjustResource(resource, value);
                 }
             });
         }

@@ -51,3 +51,14 @@ test('save/load preserva os recursos', () => {
     restored.loadData(JSON.parse(JSON.stringify(rm.getSaveData())));
     assert.strictEqual(JSON.stringify(restored.resources), JSON.stringify(rm.resources));
 });
+
+test('adjustResource soma e respeita [0, max]', () => {
+    const rm = new ResourceManager();
+    const budget = rm.resources.budget.current;
+    rm.adjustResource('budget', 500);
+    assert.strictEqual(rm.resources.budget.current, budget + 500);
+    rm.adjustResource('budget', -1e9);
+    assert.strictEqual(rm.resources.budget.current, 0);
+    rm.adjustResource('pollution', 1000);
+    assert.strictEqual(rm.resources.pollution.current, rm.resources.pollution.max);
+});

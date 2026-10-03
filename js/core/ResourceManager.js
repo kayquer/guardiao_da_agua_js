@@ -431,6 +431,13 @@ class ResourceManager {
         console.log(`💰 Orçamento aumentado: +R$ ${amount} (total: R$ ${this.resources.budget.current})`);
     }
 
+    // Ajuste pontual (eventos, missões, bônus). Mesmo limite que o tick aplica: [0, max].
+    adjustResource(resourceType, amount) {
+        const resource = this.resources[resourceType];
+        resource.current = Math.max(0, Math.min(resource.max ?? Infinity, resource.current + amount));
+        this.notifyChange(resourceType, 'current', amount);
+    }
+
     addExpense(amount) {
         this.resources.budget.expenses += amount;
         this.notifyChange('budget', 'expenses', amount);
