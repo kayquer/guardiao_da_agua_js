@@ -89,3 +89,39 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
     await page.waitForTimeout(3000);
     expect(problems).toEqual([]);
 });
+
+// Dados de js/data/buildings.js: todo prédio visível acha lugar no mapa, é construído e ganha mesh.
+// Pegou 9 prédios com size {width, height} que o grid (só quadrados) não sabia ocupar.
+test('todo prédio visível pode ser construído', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'mesma lógica do desktop');
+    const problems = [];
+    page.on('pageerror', e => problems.push(`pageerror: ${e.message}`));
+    page.on('console', m => { if (m.type() === 'error') problems.push(`console.error: ${m.text()}`); });
+
+    await page.goto('/index.html');
+    await page.click('#btn-new-game');
+    await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
+
+    const failures = await page.evaluate(() => {
+        const gm = window.gameManager, bs = gm.buildingSystem;
+        gm.studySystem.isBuildingUnlocked = () => true;
+        bs.maxSimultaneousConstructions = Infinity;
+        const failed = [];
+        for (const [id, type] of bs.buildingTypes) {
+            if (!type.visible) continue;
+            gm.resourceManager.resources.budget.current = 1e9;
+            bs.buildingCooldown.active = false;
+            let spot = null;
+            for (let x = 0; x < 40 && !spot; x++) for (let z = 0; z < 40 && !spot; z++) {
+                if (bs.canPlaceBuilding(x, z, id).canPlace) spot = [x, z];
+            }
+            if (!spot) { failed.push(`${id}: nenhum lugar válido`); continue; }
+            const b = bs.placeBuilding(spot[0], spot[1], id);
+            if (!b) failed.push(`${id}: placeBuilding retornou null`);
+            else if (!b.mesh || b.mesh.isDisposed()) failed.push(`${id}: sem mesh`);
+        }
+        return failed;
+    });
+    expect(failures).toEqual([]);
+    expect(problems).toEqual([]);
+});

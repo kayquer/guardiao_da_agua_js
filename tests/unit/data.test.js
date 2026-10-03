@@ -23,20 +23,14 @@ const KNOWN_MISSING_BUILDINGS = new Set([
     'emergency_protocol', 'rapid_response_team', 'advanced_treatment'
 ]);
 const KNOWN_MISSING_MISSIONS = new Set(['recovery_contamination']);
-// O grid só sabe ocupar quadrados (size numérico); estes usam {width, height}.
-const KNOWN_OBJECT_SIZE = new Set([
-    'water_research_center', 'linear_park', 'rain_garden', 'green_roof', 'green_wall',
-    'floating_garden', 'monitoring_station', 'water_quality_monitor', 'erosion_control'
-]);
 
 test('todo prédio tem custo, categoria e tamanho válidos', () => {
     for (const [id, b] of Object.entries(BUILDINGS)) {
         assert.ok(b.cost > 0, `${id}.cost`);
         assert.ok(typeof b.name === 'string' && b.name, `${id}.name`);
         assert.ok(typeof b.category === 'string' && b.category, `${id}.category`);
-        if (!KNOWN_OBJECT_SIZE.has(id)) {
-            assert.ok(Number.isInteger(b.size) && b.size >= 1, `${id}.size deve ser inteiro >= 1`);
-        }
+        // o grid só ocupa quadrados: size é o lado, em células
+        assert.ok(Number.isInteger(b.size) && b.size >= 1, `${id}.size deve ser inteiro >= 1`);
     }
 });
 

@@ -885,7 +885,7 @@ const BUILDING_TYPES = {
         category: 'public',
         cost: 100000,
         buildTime: 45,
-        size: { width: 3, height: 3 },
+        size: 3,
         requirements: {
             terrain: ['grassland', 'lowland'],
             population: 1000,
@@ -917,7 +917,7 @@ const BUILDING_TYPES = {
         category: 'public',
         cost: 25000,
         buildTime: 20,
-        size: { width: 5, height: 2 },
+        size: 3,
         requirements: {
             terrain: ['grassland', 'lowland'],
             nearWater: true
@@ -946,7 +946,7 @@ const BUILDING_TYPES = {
         category: 'water',
         cost: 8000,
         buildTime: 10,
-        size: { width: 2, height: 2 },
+        size: 2,
         requirements: {
             terrain: ['grassland', 'lowland']
         },
@@ -974,7 +974,7 @@ const BUILDING_TYPES = {
         category: 'public',
         cost: 15000,
         buildTime: 15,
-        size: { width: 2, height: 2 },
+        size: 2,
         requirements: {
             terrain: ['grassland', 'lowland']
         },
@@ -1002,7 +1002,7 @@ const BUILDING_TYPES = {
         category: 'public',
         cost: 12000,
         buildTime: 12,
-        size: { width: 1, height: 2 },
+        size: 1,
         requirements: {
             terrain: ['grassland', 'lowland']
         },
@@ -1030,7 +1030,7 @@ const BUILDING_TYPES = {
         category: 'water',
         cost: 18000,
         buildTime: 18,
-        size: { width: 3, height: 3 },
+        size: 3,
         requirements: {
             terrain: ['water'],
             waterBody: true
@@ -1061,7 +1061,7 @@ const BUILDING_TYPES = {
         category: 'water',
         cost: 20000,
         buildTime: 15,
-        size: { width: 1, height: 1 },
+        size: 1,
         requirements: {
             terrain: ['grassland', 'lowland'],
             nearWater: true
@@ -1089,7 +1089,7 @@ const BUILDING_TYPES = {
         category: 'water',
         cost: 12000,
         buildTime: 10,
-        size: { width: 1, height: 1 },
+        size: 1,
         requirements: {
             terrain: ['grassland', 'lowland', 'water']
         },
@@ -1116,7 +1116,7 @@ const BUILDING_TYPES = {
         category: 'infrastructure',
         cost: 15000,
         buildTime: 20,
-        size: { width: 2, height: 1 },
+        size: 1,
         requirements: {
             terrain: ['grassland', 'highland']
         },
