@@ -10,19 +10,6 @@ const BUILDINGS = g('BUILDING_TYPES');
 const MISSIONS = g('MISSIONS');
 const ids = new Set(Object.keys(BUILDINGS));
 
-// Problemas que já existiam quando estes testes foram escritos (10/2026). Decisão de conteúdo
-// pendente: criar os prédios ou trocar os alvos. Remova daqui ao corrigir; não acrescente.
-const KNOWN_MISSING_BUILDINGS = new Set([
-    'spring_protection', 'riparian_forest', 'water_treatment_plant', 'buffer_zone',
-    'livestock_waste_management', 'repair_station', 'education_center', 'water_recycling_plant',
-    'isolation_station', 'distribution_point',
-    // unlocks
-    'advanced_water_treatment', 'sustainable_agriculture', 'advanced_erosion_control',
-    'advanced_green_infrastructure', 'urban_ecology', 'master_water_guardian', 'advanced_monitoring',
-    'advanced_filtration', 'smart_meters', 'leak_detection_ai', 'contamination_detector',
-    'emergency_protocol', 'rapid_response_team', 'advanced_treatment'
-]);
-const KNOWN_MISSING_MISSIONS = new Set(['recovery_contamination']);
 
 test('todo prédio tem custo, categoria e tamanho válidos', () => {
     for (const [id, b] of Object.entries(BUILDINGS)) {
@@ -38,18 +25,18 @@ test('missões só referenciam prédios e missões que existem', () => {
     for (const [mid, m] of Object.entries(MISSIONS)) {
         const objectives = [...(m.objectives || []), ...(m.dynamicObjectives || [])];
         for (const o of objectives) {
-            if (o.type === 'build' && !KNOWN_MISSING_BUILDINGS.has(o.target)) {
+            if (o.type === 'build') {
                 assert.ok(ids.has(o.target), `${mid}: objetivo constrói '${o.target}' inexistente`);
             }
         }
         for (const u of [...(m.rewards?.unlock || []), ...(m.rewards?.performanceUnlocks || [])]) {
-            if (!KNOWN_MISSING_BUILDINGS.has(u)) assert.ok(ids.has(u), `${mid}: desbloqueia '${u}' inexistente`);
+            assert.ok(ids.has(u), `${mid}: desbloqueia '${u}' inexistente`);
         }
         for (const p of m.prerequisites || []) {
             assert.ok(MISSIONS[p], `${mid}: pré-requisito '${p}' inexistente`);
         }
         const next = m.consequences?.failure?.unlockMission;
-        if (next && !KNOWN_MISSING_MISSIONS.has(next)) {
+        if (next) {
             assert.ok(MISSIONS[next], `${mid}: unlockMission '${next}' inexistente`);
         }
     }
@@ -69,5 +56,26 @@ test('estudos apontam para prédios existentes e quiz tem ids sequenciais', () =
         assert.ok(ids.has(s.buildingId), `estudo de '${s.buildingId}' sem prédio`);
         const questions = s.quiz?.questions || s.quiz || [];
         questions.forEach((q, i) => assert.strictEqual(q.id, i + 1, `${s.buildingId}: quiz[${i}].id`));
+    }
+});
+
+// Tipos/alvos que QuestSystem.checkObjectiveProgress sabe medir. Objetivo fora disso nunca progride
+// (já existiram missões com 'observation', 'management', 'research'... impossíveis de concluir).
+const RESOURCE_TARGETS = ['water', 'pollution', 'population', 'satisfaction', 'budget'];
+const SUPPORTED = {
+    build: o => ids.has(o.target),
+    resource: o => RESOURCE_TARGETS.includes(o.target),
+    sustained: o => RESOURCE_TARGETS.includes(o.target) && typeof o.threshold === 'number',
+    survival: o => o.target === 'time' && o.required > 0,
+    avoid: o => ['water_shortage'].includes(o.target)
+};
+
+test('todo objetivo de missão é de um tipo que o motor mede', () => {
+    for (const [mid, m] of Object.entries(MISSIONS)) {
+        for (const o of [...(m.objectives || []), ...(m.dynamicObjectives || [])]) {
+            const check = SUPPORTED[o.type];
+            assert.ok(check, `${mid}/${o.id}: tipo '${o.type}' não implementado`);
+            assert.ok(check(o), `${mid}/${o.id}: alvo '${o.target}' inválido para '${o.type}'`);
+        }
     }
 });
