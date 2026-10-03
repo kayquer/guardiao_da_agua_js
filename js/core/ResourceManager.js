@@ -363,7 +363,8 @@ class ResourceManager {
         const population = this.resources.population;
         const water = this.resources.water;
         
-        water.consumption = population.current * 2;
+        // população + consumo fixo dos edifícios (add/removeWaterConsumption)
+        water.consumption = population.current * 2 + (water.buildingConsumption || 0);
         water.waste = water.consumption * 0.1;
         
         this.consumptionCache.cachedConsumption = water.consumption;
@@ -441,6 +442,20 @@ class ResourceManager {
     addExpense(amount) {
         this.resources.budget.expenses += amount;
         this.notifyChange('budget', 'expenses', amount);
+    }
+
+    // Consumo fixo de edifícios (casas, zonas, comércio). Fica separado porque
+    // updateConsumption() recalcula water.consumption a partir da população a cada ciclo.
+    addWaterConsumption(amount) {
+        this.resources.water.buildingConsumption = (this.resources.water.buildingConsumption || 0) + amount;
+        this.invalidateConsumptionCache();
+        this.notifyChange('water', 'consumption', amount);
+    }
+
+    removeWaterConsumption(amount) {
+        this.resources.water.buildingConsumption = Math.max(0, (this.resources.water.buildingConsumption || 0) - amount);
+        this.invalidateConsumptionCache();
+        this.notifyChange('water', 'consumption', -amount);
     }
 
     // ===== GESTÃO DE ARMAZENAMENTO DE ÁGUA =====

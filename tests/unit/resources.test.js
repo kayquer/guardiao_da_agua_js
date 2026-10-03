@@ -80,3 +80,16 @@ test('onResourceChange registra listener e é chamado na mudança', () => {
     rm.spendBudget(100);
     assert.strictEqual(JSON.stringify(calls), JSON.stringify([['spent', 100]]));
 });
+
+test('consumo de água dos edifícios soma ao da população e sobrevive ao recálculo', () => {
+    const rm = new ResourceManager();
+    rm.invalidateConsumptionCache();
+    rm.updateConsumption();
+    const base = rm.resources.water.consumption;
+    rm.addWaterConsumption(40);
+    rm.updateConsumption();
+    assert.strictEqual(rm.resources.water.consumption, base + 40);
+    rm.removeWaterConsumption(40);
+    rm.updateConsumption();
+    assert.strictEqual(rm.resources.water.consumption, base);
+});
