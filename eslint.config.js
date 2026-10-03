@@ -24,6 +24,7 @@ module.exports = [
             'no-undef': 'error',
             'no-redeclare': ['error', { builtinGlobals: false }],
             'no-dupe-class-members': 'error',
+            'no-dupe-keys': 'error',
             'no-unused-vars': ['error', { vars: 'local', args: 'none', caughtErrors: 'none' }]
         }
     },

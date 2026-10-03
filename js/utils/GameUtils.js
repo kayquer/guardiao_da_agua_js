@@ -9,6 +9,21 @@
  */
 
 /**
+ * Espalha uma classe grande em vários arquivos sem mudar as chamadas (this.metodo()).
+ * Métodos entram como os de class (não enumeráveis). Falha alto em colisão de nome:
+ * método duplicado sobrescreveria o outro em silêncio.
+ * Uso, no fim do arquivo parcial: mixin(BuildingSystem, { metodoA() {...}, metodoB() {...} });
+ */
+function mixin(TargetClass, methods) {
+    for (const [name, value] of Object.entries(methods)) {
+        if (name in TargetClass.prototype) {
+            throw new Error(`mixin: ${TargetClass.name}.${name} já existe`);
+        }
+        Object.defineProperty(TargetClass.prototype, name, { value, writable: true, configurable: true });
+    }
+}
+
+/**
  * ===== VALIDATION UTILITIES =====
  */
 
