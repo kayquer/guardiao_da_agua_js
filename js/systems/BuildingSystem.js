@@ -1732,7 +1732,7 @@ class BuildingSystem {
      */
     getStandardizedBuildingDimensions(buildingType) {
         // ===== CLEAN CODE REFACTORING: Use constants for building scale =====
-        const BUILDING_CONSTANTS = window.GameConstants?.BUILDINGS || { SCALE_FACTOR: 0.85 };
+        const BUILDING_CONSTANTS = BUILDINGS;
         const BUILDING_SCALE_FACTOR = BUILDING_CONSTANTS.SCALE_FACTOR;
 
         const buildingSize = buildingType.size || 1;
@@ -1781,21 +1781,7 @@ class BuildingSystem {
      */
     getStandardizedBuildingHeight(buildingType) {
         // ===== CLEAN CODE REFACTORING: Use constants for height calculations =====
-        const BUILDING_CONSTANTS = window.GameConstants?.BUILDINGS || {
-            BASE_HEIGHT: 1.5,
-            SIZE_HEIGHT_MULTIPLIER: 0.3,
-            CATEGORY_HEIGHT_MODIFIERS: {
-                'water': 0.5,
-                'treatment': 1.0,
-                'storage': 1.5,
-                'residential': 0,
-                'power': 1.5,
-                'infrastructure': -1.2,
-                'public': 2.0,
-                'commercial': 1.0,
-                'industrial': 1.2
-            }
-        };
+        const BUILDING_CONSTANTS = BUILDINGS;
 
         const baseHeight = BUILDING_CONSTANTS.BASE_HEIGHT;
         const sizeMultiplier = (buildingType.size || 1) * BUILDING_CONSTANTS.SIZE_HEIGHT_MULTIPLIER;
@@ -1822,7 +1808,7 @@ class BuildingSystem {
 
         // ===== CLEAN CODE REFACTORING: Use constants for multi-cell positioning =====
         if (buildingSize > 1) {
-            const BUILDING_CONSTANTS = window.GameConstants?.BUILDINGS || { MULTI_CELL_OFFSET_MULTIPLIER: 0.5 };
+            const BUILDING_CONSTANTS = BUILDINGS;
             const offset = (buildingSize - 1) * this.gridManager.cellSize * BUILDING_CONSTANTS.MULTI_CELL_OFFSET_MULTIPLIER;
             mesh.position.x += offset;
             mesh.position.z += offset;
@@ -2400,7 +2386,7 @@ createStandardizedPublicBuildingMesh(buildingType, dimensions) {
         const buildingDepth = Math.abs(boundingBox.maximum.z - boundingBox.minimum.z);
 
         // ===== CLEAN CODE REFACTORING: Use constants for shadow sizing =====
-        const BUILDING_CONSTANTS = window.GameConstants?.BUILDINGS || { SHADOW_SIZE_MULTIPLIER: 1.05 };
+        const BUILDING_CONSTANTS = BUILDINGS;
         const shadowWidth = buildingWidth * BUILDING_CONSTANTS.SHADOW_SIZE_MULTIPLIER;
         const shadowDepth = buildingDepth * BUILDING_CONSTANTS.SHADOW_SIZE_MULTIPLIER;
 

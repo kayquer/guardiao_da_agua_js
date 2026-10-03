@@ -33,11 +33,6 @@ function validateBuilding(building) {
  * @returns {boolean} True if coordinates are valid
  */
 function validateCoordinates(x, z) {
-    const VALIDATION = window.GameConstants?.VALIDATION || {
-        MIN_COORDINATE: -1000,
-        MAX_COORDINATE: 1000
-    };
-    
     return typeof x === 'number' && 
            typeof z === 'number' && 
            x >= VALIDATION.MIN_COORDINATE && 
@@ -52,11 +47,6 @@ function validateCoordinates(x, z) {
  * @returns {boolean} True if value is valid
  */
 function validateResourceValue(value) {
-    const VALIDATION = window.GameConstants?.VALIDATION || {
-        MIN_RESOURCE_VALUE: 0,
-        MAX_RESOURCE_VALUE: 999999
-    };
-    
     return typeof value === 'number' && 
            value >= VALIDATION.MIN_RESOURCE_VALUE && 
            value <= VALIDATION.MAX_RESOURCE_VALUE;

@@ -7,46 +7,6 @@
  */
 
 // ===== CONFIGURAÇÕES GLOBAIS =====
-const GAME_CONFIG = {
-    // Configurações do Canvas
-    canvas: {
-        width: window.innerWidth,
-        height: window.innerHeight,
-        antialias: true,
-        preserveDrawingBuffer: false
-    },
-    
-    // Configurações do Grid
-    grid: {
-        size: 40,        // Aumentado de 20 para 40 (4x mais área)
-        cellSize: 2,
-        height: 0.1
-    },
-    
-    // Configurações de Performance
-    performance: {
-        targetFPS: 60,
-        maxObjects: 400,
-        cullingDistance: 50
-    },
-    
-    // Configurações de Recursos
-    resources: {
-        initialWater: 1000,
-        initialBudget: 30000,        // Reduzido de 50000 para 30000 para maior desafio
-        initialPopulation: 75,       // Reduzido de 500 para 75 para progressão mais realista
-        initialSatisfaction: 50,     // Reduzido de 85 para 50 para estado neutro inicial
-        initialPollution: 15         // Mantido em 15% (já está na faixa ideal 10-20%)
-    },
-    
-    // Configurações de Gameplay
-    gameplay: {
-        timeScale: 1,
-        autoSaveInterval: 30000, // 30 segundos
-        eventFrequency: 60000 // 1 minuto
-    }
-};
-
 // ===== VARIÁVEIS GLOBAIS =====
 let gameManager = null;
 let settingsManager = null;

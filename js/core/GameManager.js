@@ -205,13 +205,7 @@ class GameManager {
     }
 
     setupCamera() {
-        this.CAMERA_CONSTANTS = window.GameConstants?.CAMERA || {
-            ISOMETRIC_ALPHA: -Math.PI / 4,
-            ISOMETRIC_BETA: Math.PI / 3.5,
-            DEFAULT_ZOOM_DISTANCE: 30,
-            MIN_ZOOM_DISTANCE: 10,
-            MAX_ZOOM_DISTANCE: 60
-        };
+        this.CAMERA_CONSTANTS = { ...CAMERA };
 
         if (!this.validate(this.CAMERA_CONSTANTS.ISOMETRIC_ALPHA) ||
             !this.validate(this.CAMERA_CONSTANTS.ISOMETRIC_BETA)) {

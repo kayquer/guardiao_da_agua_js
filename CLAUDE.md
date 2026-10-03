@@ -40,7 +40,7 @@ The only spec is `tests/smoke.spec.js`: boot → new game → place a building �
 ### Entry Points
 
 - `index.html` — root HTML; imports all CSS and JS via `<script>` tags
-- `js/main.js` — game boot: defines `GAME_CONFIG`, initializes `GameManager`, wires loading screen, manages screen transitions and BGM
+- `js/main.js` — game boot: initializes `GameManager`, wires loading screen, manages screen transitions and BGM
 
 ### Module Hierarchy
 
@@ -67,8 +67,8 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 
 ### Key Configuration Files
 
-- `js/config/GameConstants.js` — **all magic numbers live here**: `CAMERA`, `FEATURE_FLAGS`, initial resources, grid size. Edit here first when tuning gameplay.
-- `FEATURE_FLAGS` in `GameConstants.js` controls which building categories and UI features are enabled in release. `ENABLE_INFRASTRUCTURE` and `ENABLE_POWER_GRID` are currently `false`.
+- `js/config/GameConstants.js` — single source of config, loaded first: `GAME_CONFIG` (initial resources, grid size, autosave/event intervals), `FEATURE_FLAGS`, `CAMERA`, `BUILDINGS` (mesh scale/height), `UI.PANEL_PRIORITIES`, `VALIDATION`. Every constant there is read somewhere — don't add unused ones, and don't put fallback copies of these values in consumers (they used to drift: 30000 vs 40000 initial budget).
+- `FEATURE_FLAGS` hides buildings (`HIDDEN_BUILDINGS`: power pole, thermal/coal/nuclear plants), categories (`HIDDEN_CATEGORIES`: `infrastructure`) and UI features (`rentalButton`) in release.
 
 ### Assets
 
