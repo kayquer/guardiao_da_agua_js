@@ -581,14 +581,12 @@ class UIManager {
         ];
 
         // ===== FEATURE FLAGS: Hide categories based on release configuration =====
-        if (typeof FEATURE_FLAGS !== 'undefined') {
-            categories.forEach(category => {
-                const categoryBtn = document.querySelector(`[data-category="${category.id}"]`);
-                if (categoryBtn && !FEATURE_FLAGS.isCategoryVisible(category.id)) {
-                    categoryBtn.style.display = 'none';
-                }
-            });
-        }
+        categories.forEach(category => {
+            const categoryBtn = document.querySelector(`[data-category="${category.id}"]`);
+            if (categoryBtn && !FEATURE_FLAGS.isCategoryVisible(category.id)) {
+                categoryBtn.style.display = 'none';
+            }
+        });
 
         // As categorias já estão no HTML, apenas configurar eventos
         this.selectCategory('water'); // Categoria padrão
@@ -1714,8 +1712,7 @@ class UIManager {
         const config = building.config;
 
         // ===== FEATURE FLAGS: Hide rental button in release version =====
-        const showRentalButton = typeof FEATURE_FLAGS !== 'undefined' ?
-            FEATURE_FLAGS.isUIFeatureVisible('rentalButton') : true;
+        const showRentalButton = FEATURE_FLAGS.isUIFeatureVisible('rentalButton');
 
         // Botão de aluguel para edifícios de infraestrutura
         if (showRentalButton && (config.waterProduction > 0 || config.powerGeneration > 0)) {

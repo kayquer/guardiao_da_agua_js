@@ -91,8 +91,8 @@ class BuildingSystem {
 
     addBuildingType(id, config) {
         // ===== FEATURE FLAGS: Check if building should be visible in release version =====
-        const isVisible = typeof FEATURE_FLAGS !== 'undefined' ? FEATURE_FLAGS.isBuildingVisible(id) : true;
-        const isCategoryVisible = typeof FEATURE_FLAGS !== 'undefined' ? FEATURE_FLAGS.isCategoryVisible(config.category) : true;
+        const isVisible = FEATURE_FLAGS.isBuildingVisible(id);
+        const isCategoryVisible = FEATURE_FLAGS.isCategoryVisible(config.category);
 
         this.buildingTypes.set(id, {
             id,
