@@ -40,23 +40,6 @@ const BUILDING_TYPES = {
         }
     },
 
-    desalination_plant: {
-        name: 'Usina de Dessalinização',
-        description: 'Converte água salgada em água potável',
-        category: 'water',
-        cost: 25000,
-        size: 2,
-        waterProduction: 200,
-        pollutionGeneration: 15,
-        maintenanceCost: 500,
-        icon: '🏭',
-        color: '#0D47A1',
-        requirements: {
-            terrain: ['water', 'lowland'],
-            nearWater: true
-        }
-    },
-
     // CATEGORIA: TRATAMENTO
     treatment_plant: {
         name: 'Estação de Tratamento',

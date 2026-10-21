@@ -164,7 +164,6 @@ const MISSIONS = {
         rewards: {
             score: 500,
             budget: 10000,
-            unlock: ['desalination_plant'],
             achievement: 'sustainable_city'
         },
         educationalContent: {

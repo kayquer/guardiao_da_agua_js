@@ -50,7 +50,7 @@ class EventSystem {
                 tips: [
                     'Implemente medidas de conservação de água',
                     'Diversifique suas fontes hídricas',
-                    'Considere tecnologias de dessalinização'
+                    'Construa reservatórios para guardar água da chuva'
                 ]
             }
         });

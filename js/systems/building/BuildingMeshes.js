@@ -1091,24 +1091,6 @@ mixin(BuildingSystem, {
             ring.position.y = 0.35;
 
             mesh = this.mergeVisibleMeshes([well, ring], `well_${type}`);
-
-        } else if (type === 'desalination_plant') {
-            // ===== DESALINATION PLANT - STANDARDIZED SCALING =====
-            // Usina - complexo industrial proporcional ao tamanho
-            const main = BABYLON.MeshBuilder.CreateBox("desal_main", {
-                width: actualSize,
-                height: 2.5,
-                depth: actualSize
-            }, this.scene);
-
-            const tower = BABYLON.MeshBuilder.CreateCylinder("desal_tower", {
-                height: 3.5,
-                diameter: actualSize * 0.3
-            }, this.scene);
-            tower.position.x = actualSize * 0.3;
-            tower.position.y = 2.0;
-
-            mesh = this.mergeVisibleMeshes([main, tower], `desal_${type}`);
         }
 
         // ===== STANDARDIZED POSITIONING: Multi-cell building support =====
