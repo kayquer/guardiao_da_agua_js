@@ -6,28 +6,40 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Prerequisites
 
-- **Python 3** — required for `npm start` (uses `python -m http.server`)
-- **Node.js >= 16** — required for Playwright tests
+- **Python 3** — required for `npm start` (uses `python3 -m http.server`)
+- **Node.js >= 18** — required for tests (`node:test`, `structuredClone`)
 - Run `npm install` before first use to install Playwright dev dependency
 
 ### Development
 
 ```bash
-npm start          # Start Python HTTP server at http://localhost:3000
+npm start          # Start Python HTTP server at http://localhost:3000 (runs cache-bust first)
+npm run cache-bust # Update ?v=<hash> of every js/css in index.html (also runs before start/test)
 ```
 
-### Testing (Playwright E2E)
+### Testing
 
 ```bash
-npm test                   # Run all Playwright tests (headless)
+npm test                   # Lint + unit (node:test, <1s) + E2E smoke
+npm run lint               # ESLint: no-undef, no-dupe-class-members, no-unused-vars
+npm run test:unit          # Only unit tests — run these after any game-rule or js/data change
+npm run test:e2e           # Only Playwright E2E (headless)
 npm run test:headed        # Run tests with visible browser
 npm run test:ui            # Open Playwright interactive UI
 npm run test:debug         # Debug mode with step-through
 npm run test:report        # View HTML test report
-npm run install-playwright # Install Playwright browsers (first-time setup)
+npm run install-playwright # Install Playwright browsers (first-time setup; only chromium is used)
 ```
 
-Tests are in `tests/`. There is no unit test framework — all tests are Playwright E2E tests targeting the running dev server.
+**Unit tests** (`tests/unit/*.test.js`, no deps): `tests/unit/load.js` loads the game's global scripts into a `vm` context with stubbed `window`/`localStorage`/silenced `console`, and returns an evaluator (`g('ResourceManager')`) because top-level `class`/`const` are lexical, not properties of `window`. Only code without Babylon/DOM is testable this way: `ResourceManager`, `LoanManager`, `EventSystem`, `SaveSystem`, `StudySystem`, `js/data/`, and `QuestSystem`'s rules (`quests.test.js` stubs `updateQuestUI`/`playMissionCompletionAudio` on the prototype, since those live in DOM partials). Objects from the `vm` realm have other prototypes — compare via `JSON.stringify`, not `deepStrictEqual`. `data.test.js` is strict: every mission reference must exist, every building `size` is an integer (the grid only occupies squares), and every objective must use a type/target listed in `SUPPORTED` — the types `QuestSystem.checkObjectiveProgress` actually measures (`build`, `resource`, `sustained`, `survival`, `avoid:water_shortage`). Adding a new objective type = implement it in `checkObjectiveProgress` **and** add it to `SUPPORTED`. In 10/2026, 9 missions were deleted because they used unimplemented types or nonexistent buildings.
+
+**E2E — `tests/partials.spec.js`:** exercises every partial (mixin) file at least once — mission UI, loans, resource panels, selection/placement overlay, camera guard, diagnostics, study book, mobile panels/touch (mobile project only) — plus a finished construction and the post-build energy alert (must say `apenas 0% de eficiência`). **When you add a partial file, add a call to it here.**
+
+Every E2E test that isn't about the tutorial must call `gameManager.tutorialSystem.complete()` right after boot — otherwise the game stays frozen and constructions never finish.
+
+It also has `todo prédio visível pode ser construído` (desktop only): places every visible building type with unlimited budget/queue — it caught 9 object-sized buildings and the missing `ResourceManager.addWaterConsumption`.
+
+**E2E — `tests/smoke.spec.js`:** boot → new game → place a building → save/load → help/category → study → game over, run as `desktop` and `mobile` (Pixel 5) on chromium. `tutorial congela o jogo e guia a construção da prefeitura` walks the real tutorial (frozen clock, locked buildings, free city hall, skippable parts) and loads all 3 portrait models. Locally, run E2E with `--workers=1` (CI does): parallel Babylon instances time out on slower machines. It fails on **any** `pageerror`, `console.error`, HTTP ≥ 400 or failed request, so a deleted asset or a leftover `console.error` breaks it. `net::ERR_ABORTED` is ignored (Chromium aborts media range requests). `playwright.config.js` starts the server itself via `npm start` (`reuseExistingServer`).
 
 ## Architecture
 
@@ -40,18 +52,22 @@ Tests are in `tests/`. There is no unit test framework — all tests are Playwri
 ### Entry Points
 
 - `index.html` — root HTML; imports all CSS and JS via `<script>` tags
-- `js/main.js` — game boot: defines `GAME_CONFIG`, initializes `GameManager`, wires loading screen, manages screen transitions and BGM
+- `js/main.js` — game boot: initializes `GameManager`, wires loading screen, manages screen transitions and BGM
 
 ### Module Hierarchy
 
 ```text
-GameManager (js/core/GameManager.js)  ← central orchestrator
+GameManager (js/core/GameManager.js)  ← central orchestrator, render loop, input, clock, new/load game
+│     + core/game/CameraGuard.js (camera validation/recovery), core/game/SelectionVisuals.js (selection ring, placement overlay), core/game/Diagnostics.js (memory monitor, ?debug tools)
 ├── GridManager       (js/core/GridManager.js)           — 40×40 grid, terrain, occupancy
 ├── ResourceManager   (js/core/ResourceManager.js)       — water, budget, population, pollution, electricity
-├── BuildingSystem    (js/systems/BuildingSystem.js)     — building registry, placement, preview
-├── UIManager         (js/systems/UIManager.js)          — all HUD panels, modals, notifications
-├── QuestSystem       (js/systems/QuestSystem.js)        — missions, objectives, stakeholder rep
-├── TutorialSystem    (js/systems/TutorialSystem.js)     — 3D character dialogue & animations
+├── BuildingSystem    (js/systems/BuildingSystem.js)     — building registry, placement, preview, effects
+│     + building/BuildingMeshes.js (meshes/materials), building/BuildingFeedback.js (notifications, construction indicators, celebration, labels)
+├── UIManager         (js/systems/UIManager.js)          — HUD, categories, notifications, help, building info
+│     + ui/MobilePanels.js (mobile controls/HUD/side panels), ui/MobileTouch.js (hold/multi-select), ui/StudyBookUI.js, ui/LoanUI.js, ui/ResourcePanels.js (all 6 resource panels)
+├── QuestSystem       (js/systems/QuestSystem.js)        — mission rules: objectives, rewards, choices, stakeholder rep
+│     + ui/MissionUI.js (mission panel, cards, carousel, details)
+├── TutorialSystem    (js/systems/TutorialSystem.js)     — mandatory start tutorial (story + coach/spotlight), 3D portraits
 ├── EventSystem       (js/systems/EventSystem.js)        — random climate events
 ├── SaveSystem        (js/systems/SaveSystem.js)         — localStorage, 5 save slots, auto-save
 ├── CityLifeSystem    (js/systems/CityLifeSystem.js)     — animated cars/pedestrians
@@ -67,17 +83,16 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 
 ### Key Configuration Files
 
-- `js/config/GameConstants.js` — **all magic numbers live here**: `CAMERA`, `FEATURE_FLAGS`, initial resources, grid size. Edit here first when tuning gameplay.
-- `FEATURE_FLAGS` in `GameConstants.js` controls which building categories and UI features are enabled in release. `ENABLE_INFRASTRUCTURE` and `ENABLE_POWER_GRID` are currently `false`.
+- `js/config/GameConstants.js` — single source of config, loaded first: `GAME_CONFIG` (initial resources, grid size, autosave/event intervals), `FEATURE_FLAGS`, `CAMERA`, `BUILDINGS` (mesh scale/height), `UI.PANEL_PRIORITIES`, `VALIDATION`. Every constant there is read somewhere — don't add unused ones, and don't put fallback copies of these values in consumers (they used to drift: 30000 vs 40000 initial budget).
+- `FEATURE_FLAGS` hides buildings (`HIDDEN_BUILDINGS`: power pole, thermal/coal/nuclear plants), categories (`HIDDEN_CATEGORIES`: `infrastructure`) and UI features (`rentalButton`) in release.
 
 ### Assets
 
-- `Sprites/` — 2D sprite sheets (Sunnyside World assets)
 - `Sounds/BGM/` — background music (MP3 only; MIDI not supported by Web Audio API)
 - `Sounds/SFX/` — sound effects
 - `models/` — OBJ 3D character models used by TutorialSystem
 - `data/building-studies.json` — educational content for buildings (used by StudySystem)
-- `UI/` — PNG/JPG UI elements and dialogue assets
+- `UI/JPG/` — images for the educational studies (referenced by `data/building-studies.json`)
 
 ### CSS
 
@@ -88,9 +103,10 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 
 ## Key Patterns
 
+- **Partial class files (mixin)**: big classes are split across files with `mixin(Class, { methodA() {...}, ... })` (defined in `GameUtils.js`). Methods land on the prototype exactly like class methods, so callers keep using `this.method()`. Partial files go right after their class in `index.html`. `mixin` **throws on a name collision** — on purpose: a duplicated method name used to silently replace the other. Find a method with `grep -rn "    methodName(" js/` — it may live in a partial.
 - **Singleton pattern**: `GameManager`, `SettingsManager`, `SaveSystem` — accessed via module-level `let` variables in `main.js`.
 - **System communication**: all systems receive a `gameManager` reference at construction and call back through it rather than importing each other directly.
-- **Building definitions**: large data objects defined inside `BuildingSystem.js`; `data/building-studies.json` holds supplemental educational text shown in StudySystem.
+- **Game data lives in `js/data/`**: `buildings.js` (`BUILDING_TYPES`, 55 buildings; `size` = square side in cells) and `missions.js` (`MISSIONS`, 6 missions), plain global objects keyed by id. `BuildingSystem.initializeBuildingTypes()` / `QuestSystem.initializeQuests()` register them with `structuredClone` — objectives hold mutable progress (`current`), so never register the shared object directly. Keep them pure data (no functions, no `Date.now()`): relative times go as a duration (`timeWindowMs`) and are resolved in `addQuest()`. Balancing a building or mission = edit `js/data/`, not the systems. `data/building-studies.json` holds the educational text shown in StudySystem.
 - **Dual Babylon.js scenes**: `TutorialSystem` creates a second Babylon.js scene for rendering 3D character portraits independently from the main game scene.
 - **Mobile/desktop branching**: `UIManager.isMobile = window.innerWidth <= 768` set at construction and on resize. Many methods early-return with `if (this.isMobile) return` or `if (!this.isMobile) return`.
 - **Cooldown system**: `UIManager.cooldownManager` prevents double-triggers. Use `this.isOnCooldown('key')` / `this.setCooldown('key', ms)` when adding new click handlers.
@@ -105,18 +121,27 @@ GameManager (js/core/GameManager.js)  ← central orchestrator
 - **Panel show/hide must use centralized methods**: Always call `showHudRight()`/`hideHudRight()` instead of manually toggling `.hud-right` display or classes. Methods like `showMissionPanel()` must go through these to work on both platforms.
 - **BGM per screen**: `showScreen()` in `main.js` handles BGM transitions — menu/loading plays `bgm_menu` (Green Future), gameplay plays `bgm_gameplay` (Green City) at 30% volume. `AudioManager.playMusic()` auto-stops the current track with fade-out before starting the new one, preventing overlap.
 - **BGM volume multiplier**: `AudioManager.playMusic(key, fadeIn, volumeMultiplier)` accepts a third parameter (0.0–1.0) that scales `musicVolume * masterVolume`. Used to keep gameplay ambient music quieter than menu music.
-- **Game over overlay**: `GameOverSystem` detects defeat conditions (water depleted, pollution critical) and shows a fullscreen educational dialog via `#gameover-container`. CSS lives in `css/tutorial.css` alongside tutorial styles — both share `.tutorial-dialog` classes.
+- **Game over overlay**: `GameOverSystem` detects defeat conditions (water depleted, pollution critical) and shows a fullscreen educational dialog via `#gameover-container`. CSS lives in `css/tutorial.css`; the `.tutorial-*` classes there are used **only** by game over now (the tutorial uses `.tut-*`).
+- **Start tutorial freezes the game**: `startNewGame()` sets `gameState = 'tutorial'` — `update()` then only refreshes the HUD; nothing simulates, no autosave, Space/visibility don't pause. `TutorialSystem.complete()` is the only thing that sets `'playing'` (and calls `questSystem.restartClocks()`, since missions auto-start at boot with `Date.now()` timers). There is **no starter city**: the city hall is built by the player in a mandatory step.
+- **Tutorial steps** (`createTutorialSteps()`): the first step asks *aprender agora* / *durante o jogo*; the lessons are the `intro` steps with `chapter: 1..6`. "Durante o jogo" (or "Pular aulas") sets `lessonsDeferred`, and `QuestSystem.completeQuest` → `tutorialSystem.onMissionCompleted()` opens the next chapter 4 s later via `openLessons(chapter)` — a `run: 'lessons'` over the same UI that freezes the game (`gameState 'tutorial'`) and returns to `'playing'` on close. The 📚 HUD button (`#btn-lessons`) opens all chapters. Steps can override button text with `nextLabel`/`skipLabel`. Fields: `group` (`intro` default, `cityhall`, `missions`, `interface`, `end`) and `mode` (`story` default = fullscreen, `coach` = game visible + card + spotlight). "Pular" jumps to the next group; groups without an entry in `TutorialSystem.SKIP_LABELS` are mandatory. Coach steps take `targets` (selectors or `{selector, text, scrollIn}`): the **first one on screen** gets the spotlight and its `text` becomes the hint, re-evaluated every 250 ms — that's how one step guides desktop (category → item) and mobile (🏗️ → item → Construir) without branching. `waitFor: '<buildingId>'` locks "Próximo" until it exists; `enter(gm)` runs on every render of the step (also on "Anterior").
+- **Tutorial building hooks**: `BuildingSystem.placeBuilding` calls `tutorialSystem.onBuildingPlaced()` (refunds the cost — city hall is free — and completes construction instantly, since the loop is frozen). `UIManager.selectBuildingType` refuses anything but `tutorialSystem.allowedBuilding` while the tutorial is active.
 - **Building placement feedback**: Clicking a disabled (can't afford) building button shows a warning notification with a clickable link to the FAQ budget section (`UIManager.showBudgetInsufficientNotification()`). After placing a building that causes energy deficit, `BuildingSystem.showEnergyShortageNotification()` warns about insufficient power (30s cooldown).
 
 ## Gotchas
 
+- **Read aloud**: `setupReadAloud(button, () => text)` / `stopSpeaking()` in `GameUtils.js` (Web Speech API, pt-BR voice, one sentence per utterance because Chrome cuts long ones). Used by the tutorial (`#tutorial-read-btn`) and the study book (`.read-aloud-btn`); call `stopSpeaking()` whenever the text being read goes away.
+- **Dialogs: never `alert()`/`confirm()`** (ESLint `no-alert` fails). Use `gameAlert(title, text, icon)` / `await gameConfirm(title, text, { confirmText, cancelText, icon })` from `GameUtils.js` — SweetAlert2 (CDN, pinned in `index.html`) dressed with the pause-overlay classes (`.overlay-content`, `.overlay-btn`) + `.game-swal` overrides in `css/styles.css`. Native dialogs freeze the page (and Playwright/automation); the smoke test fails on any native dialog. `gameConfirm` is async, so callers become `async` — in Playwright, trigger them without awaiting the returned promise. `.swal2-container` sits at z-index 20000, above every game panel.
+- **Cache-busting (`scripts/cache-bust.js`)**: every `<script src="js/…">`/`<link href="css/…">` in `index.html` carries `?v=<sha1 of content>`. Without it the browser mixed cached old files with new ones and boot died (`log is not defined`). It runs on `prestart`/`pretest`; CI runs `--check` and fails if `index.html` was committed with stale versions — so commit `index.html` together with JS/CSS changes. New script/link tags need no manual `?v=`: the script adds it. Not covered: `fetch` of `data/*.json`, CSS `url()` images, models/sounds.
+- **Logging**: use `log(...)` (defined in `GameConstants.js`), not `console.log` — it only prints when the URL has `?debug`. `?debug` also exposes the console helpers (`GAME_DEBUG`, `monitorCamera()`, `listAllMissions()`, `forceCompleteMission()`, `resetConstructionState()`…). `console.warn`/`console.error` always print, and any `console.error` fails the smoke test.
 - **No ES modules**: All JS files use plain `<script>` tags — no `import`/`export`. Order of `<script>` tags in `index.html` matters.
 - **Dev server required for tests**: Playwright tests expect the server running on `localhost:3000`. Start it with `npm start` before running `npm test`.
-- **No linter/formatter**: There is no ESLint or Prettier configured. Follow existing code style (camelCase methods, PascalCase classes).
+- **ESLint, no formatter**: `eslint.config.js` builds the list of project globals from the `<script src>` tags in `index.html` (top-level `class/const/let/function` and `window.X =`), so using a global from a file not loaded by `index.html` fails `no-undef`. `no-dupe-class-members` matters here: a second method with the same name silently replaces the first — it already caused a real bug (`QuestSystem.getResourceValue`) and 6 dead duplicates. No Prettier; follow existing style (camelCase methods, PascalCase classes).
 - **pointer-events on HUD**: `.hud` has `pointer-events: none` with `.hud > *` re-enabling via `auto`. This works for nested elements (inherited), but elements appended to `document.body` (like `.mobile-toggle`) must have their own `z-index` and are unaffected.
 - **`display: none` vs transform visibility**: Mobile panels use CSS transforms for show/hide animations, but if the base CSS sets `display: none`, the transform has no visual effect. Always ensure mobile CSS overrides `display` for transform-animated panels.
 - **Mesh metadata must be preserved**: When replacing/merging building meshes, always copy `metadata` from old to new mesh or buildings become unselectable.
-- **building-studies.json format**: Each entry needs `buildingId`, `buildingName`, `category`, `difficulty`, `studyTitle`, `studyIcon`, `estimatedTime`, `learningObjectives`, `pages` (array of `{pageNumber, title, content (HTML string), image}`), `quiz`, `relatedBuildings`, `relatedConcepts`. Each quiz question **must** have a numeric `id` field (sequential starting at 1) — without it, radio buttons share the same HTML `name` group and only one answer can be selected across all questions. Target audience: teenagers 11-14. All in-game text is **pt-BR (Brazilian Portuguese)**. Validate JSON with `node -e "JSON.parse(require('fs').readFileSync('data/building-studies.json','utf8'))"`.
+- **building-studies.json format**: Each entry needs `buildingId`, `buildingName`, `category`, `difficulty`, `studyTitle`, `studyIcon`, `estimatedTime`, `learningObjectives`, `pages` (array of `{pageNumber, title, content (HTML string), image}`), `quiz`, `relatedBuildings`, `relatedConcepts`. Quizzes: **at most 2 questions, `passingScore: 50`** (1 right answer unlocks), reading-comprehension/cause-and-effect only — no numbers, dates, laws, acronyms or terms to memorize; page text has no digits either (target is 11-14 y/o, not technical). Each quiz question **must** have a numeric `id` field (sequential starting at 1) — without it, radio buttons share the same HTML `name` group and only one answer can be selected across all questions. Target audience: teenagers 11-14. All in-game text is **pt-BR (Brazilian Portuguese)**. Validate JSON with `node -e "JSON.parse(require('fs').readFileSync('data/building-studies.json','utf8'))"`.
 - **IDE diagnostics for AudioManager**: `AudioManager` hints ("Não foi possível encontrar o nome") are false positives — it's a global loaded via `<script>` tag, not an import.
 - **MIDI not supported**: The AudioManager uses Web Audio API / HTML5 Audio — only MP3, WAV, OGG are supported. MIDI files require a separate library (not implemented). Always use MP3 for BGM.
+- **Unused assets were purged (09/2026)**: anything not referenced by name in `index.html`/`js`/`css`/`data` was deleted. Exceptions kept on purpose: `models/**` (`.obj`/`.mtl` load textures by relative path), `Sounds/SFX/Environment/` and `Sounds/SFX/RSE/` (paths built with `${soundName}` in `AudioManager`). When adding an asset, reference it by its full path in code — or it may be mistaken for dead again.
+- **3D procedural animations find parts by mesh name**: `TutorialSystem` looks for keywords (`eye/olho`, `hair/cabelo`, `arm/braco/hand/mao`, `head/cabeca`, `body/torso/corpo`) in the OBJ mesh names. A new model with different names loses the animations silently (hair falls back to up to 5 meshes with y > 0).
 - **Game over container CSS**: `#gameover-container` styles live in `css/tutorial.css` (not a separate file). It reuses tutorial classes (`.tutorial-content`, `.tutorial-dialog`) but has its own container/background/portrait rules. Missing these CSS rules causes the game over dialog to be invisible.

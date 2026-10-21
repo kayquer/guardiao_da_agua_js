@@ -5,7 +5,7 @@
 
 class StudySystem {
     constructor(gameManager) {
-        console.log('📚 Inicializando StudySystem...');
+        log('📚 Inicializando StudySystem...');
 
         this.gameManager = gameManager;
 
@@ -39,14 +39,14 @@ class StudySystem {
             this.unlockedBuildings.add(id);
         });
 
-        console.log('✅ StudySystem inicializado (aguardando carregamento de conteúdo)');
+        log('✅ StudySystem inicializado (aguardando carregamento de conteúdo)');
     }
 
     // ===== INICIALIZAÇÃO ASSÍNCRONA =====
     async initialize() {
-        console.log('📚 Carregando conteúdo educacional...');
+        log('📚 Carregando conteúdo educacional...');
         await this.loadStudyContent();
-        console.log('✅ StudySystem totalmente inicializado');
+        log('✅ StudySystem totalmente inicializado');
     }
 
     // ===== CARREGAMENTO DE CONTEÚDO =====
@@ -65,7 +65,7 @@ class StudySystem {
             });
 
             this.contentLoaded = true;
-            console.log(`📚 ${this.studyContent.size} módulos de estudo carregados`);
+            log(`📚 ${this.studyContent.size} módulos de estudo carregados`);
 
             // Auto-unlock buildings without study content
             this.unlockBuildingsWithoutStudyContent();
@@ -128,14 +128,14 @@ class StudySystem {
             }
         });
 
-        console.log(`🔓 Auto-unlocked ${unlockedCount} buildings without study content`);
+        log(`🔓 Auto-unlocked ${unlockedCount} buildings without study content`);
     }
     
     // ===== DESBLOQUEIO DE EDIFÍCIOS =====
     unlockBuilding(buildingId) {
         if (!this.unlockedBuildings.has(buildingId)) {
             this.unlockedBuildings.add(buildingId);
-            console.log(`🔓 Edifício desbloqueado: ${buildingId}`);
+            log(`🔓 Edifício desbloqueado: ${buildingId}`);
             
             // Notificar UI
             if (this.gameManager.uiManager) {
@@ -176,7 +176,7 @@ class StudySystem {
         this.quizScore = 0;
         this.quizCompleted = false;
 
-        console.log(`📖 Iniciando estudo: ${content.studyTitle}`);
+        log(`📖 Iniciando estudo: ${content.studyTitle}`);
         return true;
     }
     
@@ -186,7 +186,7 @@ class StudySystem {
             this.currentStudy = null;
             this.currentPage = 0;
             
-            console.log(`✅ Estudo concluído: ${buildingId}`);
+            log(`✅ Estudo concluído: ${buildingId}`);
             return true;
         }
         return false;
@@ -251,7 +251,7 @@ class StudySystem {
     loadSaveData(data) {
         if (data && data.unlockedBuildings) {
             this.unlockedBuildings = new Set(data.unlockedBuildings);
-            console.log(`📁 ${this.unlockedBuildings.size} edifícios desbloqueados carregados`);
+            log(`📁 ${this.unlockedBuildings.size} edifícios desbloqueados carregados`);
         }
     }
 
@@ -259,7 +259,7 @@ class StudySystem {
         // Salvar automaticamente através do GameManager
         if (this.gameManager && this.gameManager.saveSystem) {
             // Trigger autosave
-            console.log('💾 Progresso de estudos salvo');
+            log('💾 Progresso de estudos salvo');
         }
     }
 
@@ -282,7 +282,7 @@ class StudySystem {
 
     submitQuizAnswer(questionId, selectedOptionIndex) {
         this.currentQuizAnswers[questionId] = selectedOptionIndex;
-        console.log(`📝 Resposta registrada - Questão ${questionId}: Opção ${selectedOptionIndex}`);
+        log(`📝 Resposta registrada - Questão ${questionId}: Opção ${selectedOptionIndex}`);
     }
 
     calculateQuizScore() {
@@ -300,7 +300,7 @@ class StudySystem {
         });
 
         this.quizScore = Math.round((correctAnswers / totalQuestions) * 100);
-        console.log(`📊 Quiz Score: ${correctAnswers}/${totalQuestions} (${this.quizScore}%)`);
+        log(`📊 Quiz Score: ${correctAnswers}/${totalQuestions} (${this.quizScore}%)`);
 
         return this.quizScore;
     }
@@ -312,7 +312,7 @@ class StudySystem {
         const score = this.calculateQuizScore();
         const passed = score >= quiz.passingScore;
 
-        console.log(`🎓 Quiz ${passed ? 'APROVADO' : 'REPROVADO'}: ${score}% (mínimo: ${quiz.passingScore}%)`);
+        log(`🎓 Quiz ${passed ? 'APROVADO' : 'REPROVADO'}: ${score}% (mínimo: ${quiz.passingScore}%)`);
 
         return passed;
     }
@@ -335,11 +335,11 @@ class StudySystem {
         this.currentQuizAnswers = {};
         this.quizScore = 0;
         this.quizCompleted = false;
-        console.log('🔄 StudySystem resetado');
+        log('🔄 StudySystem resetado');
     }
 }
 
 // Exportar para escopo global
 window.StudySystem = StudySystem;
-console.log('📚 StudySystem carregado e exportado para window.StudySystem');
+log('📚 StudySystem carregado e exportado para window.StudySystem');
 

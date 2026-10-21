@@ -5,7 +5,7 @@
 
 class LoanManager {
     constructor(gameManager) {
-        console.log('🏦 Inicializando LoanManager...');
+        log('🏦 Inicializando LoanManager...');
         
         this.gameManager = gameManager;
         this.loans = new Map(); // ID do empréstimo -> dados do empréstimo
@@ -29,12 +29,12 @@ class LoanManager {
             paymentHistory: []
         };
         
-        console.log('✅ LoanManager inicializado');
+        log('✅ LoanManager inicializado');
     }
     
     // ===== SOLICITAÇÃO DE EMPRÉSTIMO =====
     requestLoan(amount, termMonths) {
-        console.log(`🏦 Solicitação de empréstimo: R$ ${amount} por ${termMonths} meses`);
+        log(`🏦 Solicitação de empréstimo: R$ ${amount} por ${termMonths} meses`);
         
         // Validar parâmetros
         if (amount <= 0 || termMonths <= 0) {
@@ -58,7 +58,7 @@ class LoanManager {
             this.cityFinancialHealth.totalDebt += amount;
             this.cityFinancialHealth.monthlyPayments += loan.monthlyPayment;
             
-            console.log(`✅ Empréstimo aprovado: R$ ${amount} a ${(approval.interestRate * 100).toFixed(2)}% ao ano`);
+            log(`✅ Empréstimo aprovado: R$ ${amount} a ${(approval.interestRate * 100).toFixed(2)}% ao ano`);
             
             return {
                 approved: true,
@@ -67,13 +67,12 @@ class LoanManager {
             };
         }
         
-        console.log(`❌ Empréstimo rejeitado: ${approval.reason}`);
+        log(`❌ Empréstimo rejeitado: ${approval.reason}`);
         return approval;
     }
     
     evaluateLoanApplication(amount, termMonths) {
         const monthlyIncome = this.getMonthlyIncome();
-        const currentDebt = this.cityFinancialHealth.totalDebt;
         const currentMonthlyPayments = this.cityFinancialHealth.monthlyPayments;
         
         // Critério 1: Valor máximo por empréstimo (5x receita mensal)
@@ -174,7 +173,6 @@ class LoanManager {
     // ===== PROCESSAMENTO DE PAGAMENTOS =====
     processMonthlyPayments() {
         let totalPayments = 0;
-        const currentBudget = this.gameManager.resourceManager.getBudget().current;
         
         this.loans.forEach(loan => {
             if (loan.status === 'active' && this.isPaymentDue(loan)) {
@@ -186,7 +184,7 @@ class LoanManager {
         });
         
         if (totalPayments > 0) {
-            console.log(`🏦 Pagamentos mensais processados: R$ ${totalPayments.toFixed(2)}`);
+            log(`🏦 Pagamentos mensais processados: R$ ${totalPayments.toFixed(2)}`);
             
             if (this.gameManager.uiManager) {
                 this.gameManager.uiManager.showNotification(
@@ -277,7 +275,7 @@ class LoanManager {
         // Atualizar pagamentos mensais
         this.cityFinancialHealth.monthlyPayments -= loan.monthlyPayment;
         
-        console.log(`✅ Empréstimo ${loan.id} quitado com sucesso!`);
+        log(`✅ Empréstimo ${loan.id} quitado com sucesso!`);
         
         if (this.gameManager.uiManager) {
             this.gameManager.uiManager.showNotification(
@@ -320,7 +318,12 @@ class LoanManager {
     
     loadData(data) {
         if (data) {
-            this.loans = new Map(data.loans || []);
+            // JSON transforma Date em string; sem reviver, isPaymentDue() nunca é verdadeiro
+            this.loans = new Map((data.loans || []).map(([id, loan]) => [id, {
+                ...loan,
+                startDate: new Date(loan.startDate),
+                nextPaymentDate: new Date(loan.nextPaymentDate)
+            }]));
             this.loanCounter = data.loanCounter || 0;
             this.cityFinancialHealth = data.cityFinancialHealth || this.cityFinancialHealth;
         }
@@ -329,10 +332,10 @@ class LoanManager {
     // ===== CLEANUP =====
     dispose() {
         this.loans.clear();
-        console.log('🗑️ LoanManager disposed');
+        log('🗑️ LoanManager disposed');
     }
 }
 
 // Exportar para escopo global
 window.LoanManager = LoanManager;
-console.log('🏦 LoanManager carregado e exportado para window.LoanManager');
+log('🏦 LoanManager carregado e exportado para window.LoanManager');

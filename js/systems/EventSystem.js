@@ -5,7 +5,7 @@
 
 class EventSystem {
     constructor(gameManager) {
-        console.log('⚡ Inicializando EventSystem...');
+        log('⚡ Inicializando EventSystem...');
         
         this.gameManager = gameManager;
         
@@ -25,12 +25,12 @@ class EventSystem {
         
         this.initializeEventTypes();
         
-        console.log('✅ EventSystem inicializado');
+        log('✅ EventSystem inicializado');
     }
     
     // ===== INICIALIZAÇÃO =====
     initializeEventTypes() {
-        console.log('⚡ Definindo tipos de eventos...');
+        log('⚡ Definindo tipos de eventos...');
         
         // EVENTOS CLIMÁTICOS
         this.addEventType('drought', {
@@ -50,7 +50,7 @@ class EventSystem {
                 tips: [
                     'Implemente medidas de conservação de água',
                     'Diversifique suas fontes hídricas',
-                    'Considere tecnologias de dessalinização'
+                    'Construa reservatórios para guardar água da chuva'
                 ]
             }
         });
@@ -235,7 +235,7 @@ class EventSystem {
             }
         });
         
-        console.log(`✅ ${this.eventTypes.size} tipos de eventos definidos`);
+        log(`✅ ${this.eventTypes.size} tipos de eventos definidos`);
     }
     
     addEventType(id, config) {
@@ -337,7 +337,7 @@ class EventSystem {
             duration: eventType.duration
         });
         
-        console.log(`⚡ Evento iniciado: ${eventType.name}`);
+        log(`⚡ Evento iniciado: ${eventType.name}`);
         return event;
     }
     
@@ -354,7 +354,7 @@ class EventSystem {
         // Notificar UI
         this.notifyEventEnd(event);
         
-        console.log(`⚡ Evento finalizado: ${event.config.name}`);
+        log(`⚡ Evento finalizado: ${event.config.name}`);
     }
     
     // ===== EFEITOS =====
@@ -362,7 +362,6 @@ class EventSystem {
         const effects = event.config.effects;
         const resourceManager = this.gameManager.resourceManager;
         const buildingSystem = this.gameManager.buildingSystem;
-        const multiplier = apply ? 1 : -1;
         
         if (!effects) return;
         
@@ -389,11 +388,11 @@ class EventSystem {
         }
         
         if (effects.pollutionSpike && resourceManager && apply) {
-            resourceManager.resources.pollution.current += effects.pollutionSpike;
+            resourceManager.adjustResource('pollution', effects.pollutionSpike);
         }
         
         if (effects.budgetBonus && resourceManager && apply) {
-            resourceManager.resources.budget.current += effects.budgetBonus;
+            resourceManager.adjustResource('budget', effects.budgetBonus);
         }
         
         if (effects.maintenanceCost && resourceManager && apply) {
@@ -489,7 +488,7 @@ class EventSystem {
             }
             
             // TODO: Implementar modal educacional na UI
-            console.log('📚 Conteúdo educacional:', message);
+            log('📚 Conteúdo educacional:', message);
         }
     }
     
@@ -499,24 +498,10 @@ class EventSystem {
             event => event.type === eventTypeId
         );
     }
-    
-    getActiveEvents() {
-        return Array.from(this.activeEvents.values());
-    }
-    
-    getEventHistory() {
-        return [...this.eventHistory];
-    }
-    
-    // ===== CONTROLE =====
-    setEventsEnabled(enabled) {
-        this.eventsEnabled = enabled;
-        console.log(`⚡ Eventos ${enabled ? 'ativados' : 'desativados'}`);
-    }
-    
+
     setDifficulty(multiplier) {
         this.difficultyMultiplier = Math.max(0.1, Math.min(3.0, multiplier));
-        console.log(`⚡ Dificuldade dos eventos: ${this.difficultyMultiplier}x`);
+        log(`⚡ Dificuldade dos eventos: ${this.difficultyMultiplier}x`);
     }
     
     // ===== SAVE/LOAD =====
@@ -543,4 +528,4 @@ class EventSystem {
 
 // Exportar para escopo global
 window.EventSystem = EventSystem;
-console.log('⚡ EventSystem carregado e exportado para window.EventSystem');
+log('⚡ EventSystem carregado e exportado para window.EventSystem');

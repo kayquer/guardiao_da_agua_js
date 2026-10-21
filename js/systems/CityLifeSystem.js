@@ -5,7 +5,7 @@
 
 class CityLifeSystem {
     constructor(scene, gridManager, buildingSystem) {
-        console.log('🚗 Inicializando Sistema de Vida Urbana...');
+        log('🚗 Inicializando Sistema de Vida Urbana...');
         
         this.scene = scene;
         this.gridManager = gridManager;
@@ -39,7 +39,7 @@ class CityLifeSystem {
         this.initializeMaterials();
         this.findRoads();
         
-        console.log('✅ Sistema de Vida Urbana inicializado');
+        log('✅ Sistema de Vida Urbana inicializado');
     }
     
     initializeMaterials() {
@@ -97,13 +97,9 @@ class CityLifeSystem {
         this.roadNetworkCache.isDirty = false;
         this.roadNetworkCache.lastUpdate = now;
         
-        console.log(`🛣️ Encontradas ${this.roads.length} estradas`);
+        log(`🛣️ Encontradas ${this.roads.length} estradas`);
     }
-    
-    invalidateRoadNetworkCache() {
-        this.roadNetworkCache.isDirty = true;
-    }
-    
+
     calculateRoadConnections() {
         this.roads.forEach(road => {
             road.connections = [];
@@ -408,10 +404,10 @@ class CityLifeSystem {
         this.materials.forEach(material => material.dispose());
         this.materials.clear();
         
-        console.log('🚗 Sistema de Vida Urbana finalizado');
+        log('🚗 Sistema de Vida Urbana finalizado');
     }
 }
 
 // Exportar para escopo global
 window.CityLifeSystem = CityLifeSystem;
-console.log('🚗 CityLifeSystem carregado e exportado para window.CityLifeSystem');
+log('🚗 CityLifeSystem carregado e exportado para window.CityLifeSystem');

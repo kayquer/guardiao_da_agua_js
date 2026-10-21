@@ -5,7 +5,7 @@
 
 class ResourceManager {
     constructor(gameManager = null) {
-        console.log('💧 Inicializando ResourceManager...');
+        log('💧 Inicializando ResourceManager...');
 
         this.gameManager = gameManager;
         
@@ -84,7 +84,7 @@ class ResourceManager {
         this.historyMaxLength = 100;
 
         // Callbacks para mudanças
-        this.onResourceChange = new Map();
+        this.changeListeners = new Map(); // tipo → callbacks (ver onResourceChange)
         
         // Inicializar
         this.initializeResources();
@@ -98,7 +98,7 @@ class ResourceManager {
         // Adicionar primeiro ponto no histórico
         this.addToHistory();
         
-        console.log('✅ Recursos inicializados');
+        log('✅ Recursos inicializados');
     }
     
     // ===== ATUALIZAÇÃO =====
@@ -312,7 +312,7 @@ class ResourceManager {
         });
 
         this.resources.population.max = totalCapacity;
-        console.log(`👥 Capacidade populacional atualizada: ${totalCapacity}`);
+        log(`👥 Capacidade populacional atualizada: ${totalCapacity}`);
     }
 
     calculatePopulationAttraction() {
@@ -363,7 +363,8 @@ class ResourceManager {
         const population = this.resources.population;
         const water = this.resources.water;
         
-        water.consumption = population.current * 2;
+        // população + consumo fixo dos edifícios (add/removeWaterConsumption)
+        water.consumption = population.current * 2 + (water.buildingConsumption || 0);
         water.waste = water.consumption * 0.1;
         
         this.consumptionCache.cachedConsumption = water.consumption;
@@ -428,7 +429,14 @@ class ResourceManager {
     addBudget(amount) {
         this.resources.budget.current += amount;
         this.notifyChange('budget', 'current', amount);
-        console.log(`💰 Orçamento aumentado: +R$ ${amount} (total: R$ ${this.resources.budget.current})`);
+        log(`💰 Orçamento aumentado: +R$ ${amount} (total: R$ ${this.resources.budget.current})`);
+    }
+
+    // Ajuste pontual (eventos, missões, bônus). Mesmo limite que o tick aplica: [0, max].
+    adjustResource(resourceType, amount) {
+        const resource = this.resources[resourceType];
+        resource.current = Math.max(0, Math.min(resource.max ?? Infinity, resource.current + amount));
+        this.notifyChange(resourceType, 'current', amount);
     }
 
     addExpense(amount) {
@@ -436,11 +444,25 @@ class ResourceManager {
         this.notifyChange('budget', 'expenses', amount);
     }
 
+    // Consumo fixo de edifícios (casas, zonas, comércio). Fica separado porque
+    // updateConsumption() recalcula water.consumption a partir da população a cada ciclo.
+    addWaterConsumption(amount) {
+        this.resources.water.buildingConsumption = (this.resources.water.buildingConsumption || 0) + amount;
+        this.invalidateConsumptionCache();
+        this.notifyChange('water', 'consumption', amount);
+    }
+
+    removeWaterConsumption(amount) {
+        this.resources.water.buildingConsumption = Math.max(0, (this.resources.water.buildingConsumption || 0) - amount);
+        this.invalidateConsumptionCache();
+        this.notifyChange('water', 'consumption', -amount);
+    }
+
     // ===== GESTÃO DE ARMAZENAMENTO DE ÁGUA =====
     addWaterStorage(amount) {
         this.resources.water.storage += amount;
         this.notifyChange('water', 'storage', amount);
-        console.log(`💧 Capacidade de armazenamento aumentada: +${amount}L (total: ${this.resources.water.storage}L)`);
+        log(`💧 Capacidade de armazenamento aumentada: +${amount}L (total: ${this.resources.water.storage}L)`);
     }
 
     removeWaterStorage(amount) {
@@ -450,7 +472,7 @@ class ResourceManager {
             this.resources.water.current = this.resources.water.storage;
         }
         this.notifyChange('water', 'storage', -amount);
-        console.log(`💧 Capacidade de armazenamento reduzida: -${amount}L (total: ${this.resources.water.storage}L)`);
+        log(`💧 Capacidade de armazenamento reduzida: -${amount}L (total: ${this.resources.water.storage}L)`);
     }
     
     // ===== VERIFICAÇÕES =====
@@ -585,24 +607,17 @@ class ResourceManager {
             }
         });
     }
-    
-    getHistory(resourceType, timeRange = 3600000) { // 1 hora por padrão
-        const now = Date.now();
-        const cutoff = now - timeRange;
-        
-        return this.history[resourceType]?.filter(entry => entry.time >= cutoff) || [];
-    }
-    
+
     // ===== CALLBACKS =====
     onResourceChange(resourceType, callback) {
-        if (!this.onResourceChange.has(resourceType)) {
-            this.onResourceChange.set(resourceType, []);
+        if (!this.changeListeners.has(resourceType)) {
+            this.changeListeners.set(resourceType, []);
         }
-        this.onResourceChange.get(resourceType).push(callback);
+        this.changeListeners.get(resourceType).push(callback);
     }
     
     notifyChange(resourceType, changeType, value) {
-        const callbacks = this.onResourceChange.get(resourceType);
+        const callbacks = this.changeListeners.get(resourceType);
         if (callbacks) {
             callbacks.forEach(callback => {
                 try {
@@ -628,35 +643,10 @@ class ResourceManager {
         return null;
     }
 
-    getWater() { return { ...this.resources.water }; }
     getBudget() { return { ...this.resources.budget }; }
-    getPopulation() { return { ...this.resources.population }; }
-    getPollution() { return { ...this.resources.pollution }; }
     getElectricity() { return { ...this.resources.electricity }; }
     getAllResources() { return JSON.parse(JSON.stringify(this.resources)); }
-    
-    getWaterPercentage() {
-        return (this.resources.water.current / this.resources.water.max) * 100;
-    }
-    
-    getSatisfactionLevel() {
-        const satisfaction = this.resources.population.satisfaction;
-        if (satisfaction >= 80) return 'excellent';
-        if (satisfaction >= 60) return 'good';
-        if (satisfaction >= 40) return 'fair';
-        if (satisfaction >= 20) return 'poor';
-        return 'critical';
-    }
-    
-    getPollutionLevel() {
-        const pollution = this.resources.pollution.current;
-        if (pollution <= 20) return 'clean';
-        if (pollution <= 40) return 'moderate';
-        if (pollution <= 60) return 'polluted';
-        if (pollution <= 80) return 'heavily_polluted';
-        return 'toxic';
-    }
-    
+
     // ===== RESET =====
     reset() {
         this.resources = {
@@ -699,28 +689,32 @@ class ResourceManager {
         });
         
         this.initializeResources();
-        console.log('🔄 Recursos resetados');
+        log('🔄 Recursos resetados');
     }
 
     // ===== ENERGIA =====
     addElectricityGeneration(amount) {
         this.resources.electricity.generation += amount;
-        console.log(`⚡ Geração de energia +${amount} MW`);
+        log(`⚡ Geração de energia +${amount} MW`);
+        this.updateElectricity(); // eficiência em dia já para quem lê logo depois (ex.: alerta pós-construção)
     }
 
     removeElectricityGeneration(amount) {
         this.resources.electricity.generation = Math.max(0, this.resources.electricity.generation - amount);
-        console.log(`⚡ Geração de energia -${amount} MW`);
+        log(`⚡ Geração de energia -${amount} MW`);
+        this.updateElectricity(); // eficiência em dia já para quem lê logo depois (ex.: alerta pós-construção)
     }
 
     addElectricityConsumption(amount) {
         this.resources.electricity.consumption += amount;
-        console.log(`⚡ Consumo de energia +${amount} MW`);
+        log(`⚡ Consumo de energia +${amount} MW`);
+        this.updateElectricity(); // eficiência em dia já para quem lê logo depois (ex.: alerta pós-construção)
     }
 
     removeElectricityConsumption(amount) {
         this.resources.electricity.consumption = Math.max(0, this.resources.electricity.consumption - amount);
-        console.log(`⚡ Consumo de energia -${amount} MW`);
+        log(`⚡ Consumo de energia -${amount} MW`);
+        this.updateElectricity(); // eficiência em dia já para quem lê logo depois (ex.: alerta pós-construção)
     }
 
     updateElectricity() {
@@ -752,10 +746,10 @@ class ResourceManager {
         if (data && data.history) {
             this.history = { ...data.history };
         }
-        console.log('📁 Dados de recursos carregados');
+        log('📁 Dados de recursos carregados');
     }
 }
 
 // Exportar para escopo global
 window.ResourceManager = ResourceManager;
-console.log('💧 ResourceManager carregado e exportado para window.ResourceManager');
+log('💧 ResourceManager carregado e exportado para window.ResourceManager');

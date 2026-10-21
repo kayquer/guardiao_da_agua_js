@@ -290,6 +290,68 @@ html, body {
     box-shadow: 0 0px 0 #000000;
 }
 
+/* ===== DIÁLOGOS (SweetAlert2 com o visual do overlay de pausa) ===== */
+/* O popup já recebe .overlay-content e os botões .overlay-btn (ver gameDialog em GameUtils.js);
+   aqui só se neutraliza o visual padrão do SweetAlert2, que tem a mesma especificidade. */
+/* Acima de qualquer painel do jogo (o maior é 10001): confirmação nunca fica por baixo */
+.swal2-container {
+    z-index: 20000;
+}
+
+.swal2-container.swal2-backdrop-show {
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.swal2-popup.game-swal {
+    background: linear-gradient(135deg, #ffd93d, #ffaf40);
+    border: 6px solid #000000;
+    border-radius: 30px;
+    box-shadow: 0 0 0 6px #000000, 0 12px 0 #000000;
+    padding: 2rem 2rem 2.5rem;
+    width: min(500px, calc(100vw - 32px));
+    font-family: 'Lilita One', cursive;
+}
+
+.swal2-popup.game-swal .swal2-title {
+    margin-bottom: 0;
+    padding: 0.5rem 0 0;
+    font-size: 2rem;
+    line-height: 1.15;
+}
+
+.swal2-popup.game-swal .swal2-html-container {
+    color: #000000;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+/* Botões empilhados e da mesma largura, como no overlay de pausa */
+.swal2-popup.game-swal .swal2-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.2rem;
+    width: 100%;
+    max-width: 320px;
+    margin: 1.5rem auto 0;
+}
+
+.swal2-popup.game-swal .swal2-actions .overlay-btn {
+    margin: 0;
+}
+
+.swal2-popup.game-swal .swal2-icon {
+    border-width: 5px;
+    box-shadow: 0 4px 0 #000000;
+    background: #ffffff;
+}
+
+.swal2-popup.game-swal .overlay-btn:focus-visible {
+    outline: 4px solid #ffffff;
+    outline-offset: 3px;
+}
+
 /* ===== ANIMAÇÕES ===== */
 @keyframes pulse {
     0%, 100% { transform: scale(1) rotate(-2deg); }

@@ -9,6 +9,105 @@
  */
 
 /**
+ * Espalha uma classe grande em vários arquivos sem mudar as chamadas (this.metodo()).
+ * Métodos entram como os de class (não enumeráveis). Falha alto em colisão de nome:
+ * método duplicado sobrescreveria o outro em silêncio.
+ * Uso, no fim do arquivo parcial: mixin(BuildingSystem, { metodoA() {...}, metodoB() {...} });
+ */
+function mixin(TargetClass, methods) {
+    for (const [name, value] of Object.entries(methods)) {
+        if (name in TargetClass.prototype) {
+            throw new Error(`mixin: ${TargetClass.name}.${name} já existe`);
+        }
+        Object.defineProperty(TargetClass.prototype, name, { value, writable: true, configurable: true });
+    }
+}
+
+/**
+ * ===== DIÁLOGOS (SweetAlert2 no estilo do jogo) =====
+ * Use no lugar de alert()/confirm(): os nativos travam a página e fogem do visual.
+ * O visual vem das classes do overlay de pausa (.overlay-content, .overlay-btn) + .game-swal em styles.css.
+ */
+function gameDialog(options) {
+    return Swal.fire({
+        buttonsStyling: false,
+        customClass: {
+            popup: 'game-swal overlay-content',
+            confirmButton: 'overlay-btn primary',
+            cancelButton: 'overlay-btn secondary'
+        },
+        confirmButtonText: 'OK',
+        ...options
+    });
+}
+
+/** Aviso com um botão. Resolve quando fechado. */
+function gameAlert(title, text, icon = 'info') {
+    return gameDialog({ title, text, icon });
+}
+
+/** Pergunta sim/não. Resolve true só se o jogador confirmar (Esc/fora = false). */
+async function gameConfirm(title, text, { confirmText = 'Sim', cancelText = 'Cancelar', icon = 'question' } = {}) {
+    const result = await gameDialog({
+        title, text, icon,
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: cancelText,
+        focusCancel: true
+    });
+    return result.isConfirmed;
+}
+
+/**
+ * ===== LEITURA EM VOZ ALTA (Web Speech API, nativa do navegador) =====
+ * setupReadAloud(botão, () => texto) transforma o botão em play/stop.
+ * Uma leitura por vez no jogo todo; sem síntese de voz, o botão some.
+ */
+let readAloudButton = null;
+let readAloudLast = null;
+
+function stopSpeaking() {
+    if (!window.speechSynthesis) return;
+    if (readAloudButton) {
+        readAloudButton.textContent = '🔊';
+        readAloudButton.setAttribute('aria-pressed', 'false');
+    }
+    readAloudButton = null;
+    readAloudLast = null;
+    speechSynthesis.cancel();
+}
+
+function setupReadAloud(button, getText) {
+    if (!window.speechSynthesis) {
+        button.hidden = true;
+        return;
+    }
+    button.setAttribute('aria-pressed', 'false');
+    button.addEventListener('click', () => {
+        const wasPlaying = readAloudButton === button;
+        stopSpeaking();
+        if (wasPlaying) return;
+
+        const voice = speechSynthesis.getVoices().find(v => v.lang.replace('_', '-') === 'pt-BR');
+        // Uma frase por fala: o Chrome corta falas longas no meio
+        const sentences = getText().split(/(?<=[.!?])\s+/).filter(s => s.trim());
+        sentences.forEach(sentence => {
+            const utterance = new SpeechSynthesisUtterance(sentence);
+            utterance.lang = 'pt-BR';
+            if (voice) utterance.voice = voice;
+            speechSynthesis.speak(utterance);
+            readAloudLast = utterance;
+        });
+        const last = readAloudLast;
+        if (!last) return;
+        last.onend = () => { if (readAloudLast === last) stopSpeaking(); };
+        readAloudButton = button;
+        button.textContent = '⏹️';
+        button.setAttribute('aria-pressed', 'true');
+    });
+}
+
+/**
  * ===== VALIDATION UTILITIES =====
  */
 
@@ -33,11 +132,6 @@ function validateBuilding(building) {
  * @returns {boolean} True if coordinates are valid
  */
 function validateCoordinates(x, z) {
-    const VALIDATION = window.GameConstants?.VALIDATION || {
-        MIN_COORDINATE: -1000,
-        MAX_COORDINATE: 1000
-    };
-    
     return typeof x === 'number' && 
            typeof z === 'number' && 
            x >= VALIDATION.MIN_COORDINATE && 
@@ -52,11 +146,6 @@ function validateCoordinates(x, z) {
  * @returns {boolean} True if value is valid
  */
 function validateResourceValue(value) {
-    const VALIDATION = window.GameConstants?.VALIDATION || {
-        MIN_RESOURCE_VALUE: 0,
-        MAX_RESOURCE_VALUE: 999999
-    };
-    
     return typeof value === 'number' && 
            value >= VALIDATION.MIN_RESOURCE_VALUE && 
            value <= VALIDATION.MAX_RESOURCE_VALUE;
@@ -296,4 +385,4 @@ if (typeof window !== 'undefined') {
     };
 }
 
-console.log('🛠️ GameUtils loaded - Clean Code utility functions available');
+log('🛠️ GameUtils loaded - Clean Code utility functions available');

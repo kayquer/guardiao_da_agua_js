@@ -5,7 +5,7 @@
 
 class GridManager {
     constructor(scene) {
-        console.log('🗂️ Inicializando GridManager...');
+        log('🗂️ Inicializando GridManager...');
         
         this.scene = scene;
         this.gridSize = GAME_CONFIG.grid.size;
@@ -53,7 +53,7 @@ class GridManager {
 
     // ===== INICIALIZAÇÃO =====
     initializeGrid() {
-        console.log(`🗂️ Criando grid ${this.gridSize}x${this.gridSize}...`);
+        log(`🗂️ Criando grid ${this.gridSize}x${this.gridSize}...`);
 
         // Verificar se gridSize é válido
         if (!this.gridSize || this.gridSize < 1) {
@@ -79,8 +79,8 @@ class GridManager {
             }
         }
 
-        console.log('✅ Grid inicializado');
-        console.log(`📊 Grid stats: ${this.gridSize}x${this.gridSize} = ${this.gridSize * this.gridSize} células`);
+        log('✅ Grid inicializado');
+        log(`📊 Grid stats: ${this.gridSize}x${this.gridSize} = ${this.gridSize * this.gridSize} células`);
     }
     
     generateElevation(x, z) {
@@ -174,7 +174,7 @@ class GridManager {
     
     // ===== CRIAÇÃO VISUAL =====
     createVisualGrid() {
-        console.log('🎨 Criando grid visual...');
+        log('🎨 Criando grid visual...');
         
         // Material do grid
         this.gridMaterial = new BABYLON.StandardMaterial("gridMaterial", this.scene);
@@ -214,7 +214,7 @@ class GridManager {
     }
     
     createTerrain() {
-        console.log('🏔️ Criando terreno procedural...');
+        log('🏔️ Criando terreno procedural...');
 
         try {
             // Criar terreno com subdivisões baseadas na qualidade gráfica
@@ -254,7 +254,7 @@ class GridManager {
     applyElevationToTerrain() {
         if (!this.terrainMesh) return;
 
-        console.log('🏔️ Aplicando elevação ao terreno...');
+        log('🏔️ Aplicando elevação ao terreno...');
 
         try {
             // Obter dados dos vértices
@@ -264,9 +264,6 @@ class GridManager {
                 return;
             }
 
-            // Calcular dimensões do grid de vértices
-            const subdivisions = this.gridSize;
-            const verticesPerSide = subdivisions + 1;
             const terrainWidth = this.gridSize * this.cellSize;
             const terrainHeight = this.gridSize * this.cellSize;
 
@@ -295,7 +292,7 @@ class GridManager {
             // Recalcular normais para iluminação correta
             this.terrainMesh.createNormals(true);
 
-            console.log('✅ Elevação aplicada ao terreno');
+            log('✅ Elevação aplicada ao terreno');
 
         } catch (error) {
             console.error('❌ Erro ao aplicar elevação:', error);
@@ -303,7 +300,7 @@ class GridManager {
     }
     
     createWaterBodies() {
-        console.log('💧 Criando corpos d\'água estilo Minecraft...');
+        log('💧 Criando corpos d\'água estilo Minecraft...');
 
         // Encontrar áreas de água e criar blocos individuais
         this.waterMeshes = [];
@@ -471,7 +468,7 @@ class GridManager {
     }
 
     createVoxelTerrainBlocks() {
-        console.log('🧱 Criando blocos de terreno estilo voxel...');
+        log('🧱 Criando blocos de terreno estilo voxel...');
 
         this.terrainBlocks = [];
         this.decorationMeshes = [];
@@ -560,7 +557,7 @@ class GridManager {
     mergeTerrainBlocks() {
         if (!this.terrainBlocks || this.terrainBlocks.length === 0) return;
 
-        console.log('🔧 Merging terrain blocks para otimização...');
+        log('🔧 Merging terrain blocks para otimização...');
 
         // Agrupar blocos por tipo de terreno
         const blocksByType = {};
@@ -590,12 +587,12 @@ class GridManager {
         }
 
         this.terrainBlocks = mergedBlocks;
-        console.log(`🔧 Terreno otimizado: ${mergedBlocks.length} meshes (era ~1600)`);
+        log(`🔧 Terreno otimizado: ${mergedBlocks.length} meshes (era ~1600)`);
     }
 
     // ===== SISTEMA DE DECORAÇÃO =====
     createTerrainDecorations() {
-        console.log('🌿 Criando decorações do terreno...');
+        log('🌿 Criando decorações do terreno...');
 
         // Criar decorações apenas em terreno de terra/grama
         for (let x = 0; x < this.gridSize; x++) {
@@ -936,132 +933,7 @@ class GridManager {
         }
         return 0;
     }
-    
-    // ===== VISUALIZAÇÃO =====
-    toggleGridVisibility() {
-        this.showGrid = !this.showGrid;
-        if (this.gridMesh) {
-            this.gridMesh.setEnabled(this.showGrid);
-        }
-    }
-    
-    setGridOpacity(opacity) {
-        this.gridOpacity = Math.max(0, Math.min(1, opacity));
-        if (this.gridMesh) {
-            this.gridMesh.alpha = this.gridOpacity;
-        }
-    }
-    
-    highlightCell(gridX, gridZ, color = new BABYLON.Color3(1, 1, 0), type = 'hover') {
-        // Limpar highlight anterior se existir
-        this.clearHighlights();
 
-        if (gridX < 0 || gridX >= this.gridSize || gridZ < 0 || gridZ >= this.gridSize) {
-            return;
-        }
-
-        try {
-            // Criar highlight visual para a célula
-            const worldPos = this.gridToWorld(gridX, gridZ);
-
-            const highlight = BABYLON.MeshBuilder.CreateBox(`cellHighlight_${type}`, {
-                width: this.cellSize * 0.95,
-                height: 0.05,
-                depth: this.cellSize * 0.95
-            }, this.scene);
-
-            highlight.position.x = worldPos.x;
-            highlight.position.z = worldPos.z;
-            highlight.position.y = worldPos.y + 0.02;
-
-            // Material do highlight
-            const material = new BABYLON.StandardMaterial(`highlightMat_${type}`, this.scene);
-            material.diffuseColor = color;
-            material.emissiveColor = new BABYLON.Color3(color.r * 0.3, color.g * 0.3, color.b * 0.3);
-            material.alpha = type === 'hover' ? 0.3 : 0.5;
-
-            highlight.material = material;
-
-            // Armazenar referência para limpeza
-            this.currentHighlight = highlight;
-
-            // Animação de pulsação para hover
-            if (type === 'hover') {
-                this.animateHighlight(highlight);
-            }
-
-        } catch (error) {
-            console.warn('⚠️ Erro ao criar highlight de célula:', error);
-        }
-    }
-
-    clearHighlights() {
-        if (this.currentHighlight) {
-            try {
-                if (!this.currentHighlight.isDisposed()) {
-                    this.currentHighlight.dispose();
-                }
-            } catch (error) {
-                console.warn('⚠️ Erro ao limpar highlight:', error);
-            }
-            this.currentHighlight = null;
-        }
-    }
-
-    animateHighlight(highlight) {
-        if (!highlight || highlight.isDisposed()) return;
-
-        // Animação de pulsação suave
-        const animationKeys = [];
-        animationKeys.push({
-            frame: 0,
-            value: 0.2
-        });
-        animationKeys.push({
-            frame: 30,
-            value: 0.4
-        });
-        animationKeys.push({
-            frame: 60,
-            value: 0.2
-        });
-
-        const alphaAnimation = new BABYLON.Animation(
-            "highlightPulse",
-            "material.alpha",
-            30,
-            BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
-        );
-
-        alphaAnimation.setKeys(animationKeys);
-        highlight.animations.push(alphaAnimation);
-
-        this.scene.beginAnimation(highlight, 0, 60, true);
-    }
-    
-    // ===== UTILITÁRIOS =====
-    getGridInfo() {
-        let occupiedCells = 0;
-        let waterCells = 0;
-        
-        for (let x = 0; x < this.gridSize; x++) {
-            for (let z = 0; z < this.gridSize; z++) {
-                if (this.occupationGrid[x][z]) occupiedCells++;
-                if (this.terrainGrid[x][z] === 'water') waterCells++;
-            }
-        }
-        
-        return {
-            totalCells: this.gridSize * this.gridSize,
-            occupiedCells,
-            freeCells: (this.gridSize * this.gridSize) - occupiedCells,
-            waterCells,
-            landCells: (this.gridSize * this.gridSize) - waterCells,
-            occupationPercentage: (occupiedCells / (this.gridSize * this.gridSize)) * 100
-        };
-    }
-    
     // ===== SAVE/LOAD =====
     getSaveData() {
         return {
@@ -1094,21 +966,9 @@ class GridManager {
         return 'grassland';
     }
 
-    // ===== CLEANUP =====
-    dispose() {
-        if (this.gridMesh) this.gridMesh.dispose();
-        if (this.terrainMesh) this.terrainMesh.dispose();
-        if (this.waterMesh) this.waterMesh.dispose();
-        if (this.gridMaterial) this.gridMaterial.dispose();
-        if (this.terrainMaterial) this.terrainMaterial.dispose();
-        if (this.waterMaterial) this.waterMaterial.dispose();
-
-        console.log('🗑️ GridManager disposed');
-    }
-
     // ===== MATERIAIS E CORES =====
     createMultiTerrainMaterial() {
-        console.log('🎨 Criando sistema de materiais multi-terreno estilo Minecraft...');
+        log('🎨 Criando sistema de materiais multi-terreno estilo Minecraft...');
 
         // Criar material base com textura procedural
         this.terrainMaterial = new BABYLON.StandardMaterial("multiTerrainMaterial", this.scene);
@@ -1128,7 +988,7 @@ class GridManager {
     }
 
     createMinecraftStyleTexture() {
-        console.log('🧱 Criando textura estilo Minecraft...');
+        log('🧱 Criando textura estilo Minecraft...');
 
         const textureSize = 256;
         const dynamicTexture = new BABYLON.DynamicTexture("minecraftTerrain", textureSize, this.scene);
@@ -1217,34 +1077,6 @@ class GridManager {
         return colors[terrainType] || colors['dirt'];
     }
 
-    createTerrainTexture() {
-        // Criar textura procedural simples para dar mais realismo
-        const textureSize = 512;
-        const dynamicTexture = new BABYLON.DynamicTexture("terrainTexture", textureSize, this.scene);
-
-        // Preencher com padrão de grama
-        const context = dynamicTexture.getContext();
-        const imageData = context.createImageData(textureSize, textureSize);
-
-        for (let i = 0; i < imageData.data.length; i += 4) {
-            // Adicionar variação sutil na cor da grama
-            const variation = (Math.random() - 0.5) * 0.1;
-            imageData.data[i] = Math.max(0, Math.min(255, (34 + variation * 255))); // R
-            imageData.data[i + 1] = Math.max(0, Math.min(255, (139 + variation * 255))); // G
-            imageData.data[i + 2] = Math.max(0, Math.min(255, (34 + variation * 255))); // B
-            imageData.data[i + 3] = 255; // A
-        }
-
-        context.putImageData(imageData, 0, 0);
-        dynamicTexture.update();
-
-        this.terrainMaterial.diffuseTexture = dynamicTexture;
-        this.terrainMaterial.diffuseTexture.uOffset = 0;
-        this.terrainMaterial.diffuseTexture.vOffset = 0;
-        this.terrainMaterial.diffuseTexture.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
-        this.terrainMaterial.diffuseTexture.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
-    }
-
     // ===== LIMPEZA DE DECORAÇÕES =====
     clearDecorationsInArea(gridX, gridZ, size = 1) {
         // Remove decorações em uma área específica (para construção)
@@ -1308,10 +1140,10 @@ class GridManager {
             this.terrainMesh = null;
         }
 
-        console.log('🗑️ GridManager disposed - Terreno e decorações limpos');
+        log('🗑️ GridManager disposed - Terreno e decorações limpos');
     }
 }
 
 // Exportar para escopo global
 window.GridManager = GridManager;
-console.log('🗂️ GridManager carregado e exportado para window.GridManager');
+log('🗂️ GridManager carregado e exportado para window.GridManager');

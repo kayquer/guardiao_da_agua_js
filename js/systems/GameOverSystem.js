@@ -5,7 +5,7 @@
 
 class GameOverSystem {
     constructor(gameManager) {
-        console.log('💀 Inicializando GameOverSystem...');
+        log('💀 Inicializando GameOverSystem...');
 
         this.gameManager = gameManager;
         this.isGameOver = false;
@@ -48,7 +48,7 @@ class GameOverSystem {
         // Game over messages
         this.messages = this.createGameOverMessages();
 
-        console.log('✅ GameOverSystem inicializado');
+        log('✅ GameOverSystem inicializado');
     }
 
     /**
@@ -113,7 +113,7 @@ class GameOverSystem {
         if (this.isGameOver) return;
 
         // Check all conditions
-        for (const [key, condition] of Object.entries(this.conditions)) {
+        for (const condition of Object.values(this.conditions)) {
             if (condition.check()) {
                 this.triggerGameOver(condition.reason);
                 break;
@@ -127,7 +127,7 @@ class GameOverSystem {
     triggerGameOver(reason) {
         if (this.isGameOver) return;
 
-        console.log(`💀 Game Over: ${reason}`);
+        log(`💀 Game Over: ${reason}`);
         this.isGameOver = true;
         this.gameOverReason = reason;
 
@@ -271,7 +271,7 @@ class GameOverSystem {
                 }
             });
 
-            console.log('✅ Game over 3D portrait initialized');
+            log('✅ Game over 3D portrait initialized');
             return true;
         } catch (error) {
             console.error('❌ Error initializing game over portrait:', error);
@@ -402,7 +402,7 @@ class GameOverSystem {
                 mesh.material = pbr;
             });
 
-            console.log(`✅ PBR textures applied to ${meshes.length} meshes (game over)`);
+            log(`✅ PBR textures applied to ${meshes.length} meshes (game over)`);
         } catch (error) {
             console.error('❌ Error loading game over textures:', error);
 
@@ -420,7 +420,7 @@ class GameOverSystem {
      * Return to main menu
      */
     returnToMainMenu() {
-        console.log('🔙 Returning to main menu...');
+        log('🔙 Returning to main menu...');
 
         // Dispose 3D portrait
         this.dispose3DPortrait();
@@ -466,10 +466,10 @@ class GameOverSystem {
      */
     dispose() {
         this.dispose3DPortrait();
-        console.log('🗑️ GameOverSystem disposed');
+        log('🗑️ GameOverSystem disposed');
     }
 }
 
 // Export to global scope
 window.GameOverSystem = GameOverSystem;
-console.log('💀 GameOverSystem carregado e exportado para window.GameOverSystem');
+log('💀 GameOverSystem carregado e exportado para window.GameOverSystem');

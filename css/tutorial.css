@@ -3,19 +3,6 @@
  * RPG-style tutorial interface for children aged 11-14
  */
 
-/* ===== TUTORIAL CONTAINER ===== */
-#tutorial-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 200; /* Above all other UI */
-    display: none; /* Hidden by default */
-    flex-direction: column;
-    background: #000;
-}
-
 /* ===== GAME OVER CONTAINER ===== */
 #gameover-container {
     position: fixed;
@@ -80,20 +67,6 @@
     transform: scale(1.05);
 }
 
-/* ===== TUTORIAL BACKGROUND ===== */
-#tutorial-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    filter: brightness(0.7);
-    z-index: 1;
-}
-
 /* ===== TUTORIAL CONTENT ===== */
 .tutorial-content {
     position: relative;
@@ -117,26 +90,6 @@
     background-position: center;
     background-repeat: no-repeat;
     transition: background-image 0.5s ease;
-}
-
-#tutorial-portrait {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    border: 5px solid rgba(255, 255, 255, 0.9);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    object-fit: cover;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-/* 3D Portrait Canvas */
-#tutorial-portrait-canvas {
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    
-    outline: none;
-    border: none;
 }
 
 /* ===== DIALOG BOX ===== */
@@ -175,28 +128,6 @@
     border-bottom: 3px solid rgba(74, 158, 255, 0.3);
 }
 
-#tutorial-icon {
-    font-size: 2.5rem;
-    animation: bounce 2s ease-in-out infinite;
-}
-
-#tutorial-title {
-    font-family: 'Lilita One', cursive;
-    font-size: 1.8rem;
-    color: #2D3561;
-    flex: 1;
-}
-
-/* ===== DIALOG TEXT ===== */
-#tutorial-text {
-    font-family: 'Fredoka', sans-serif;
-    font-size: 1.2rem;
-    line-height: 1.6;
-    color: #2D3561;
-    margin-bottom: 1.5rem;
-    font-weight: 500;
-}
-
 /* ===== TUTORIAL CONTROLS ===== */
 .tutorial-controls {
     display: flex;
@@ -204,15 +135,6 @@
     align-items: center;
     gap: 1rem;
     margin-top: 1rem;
-}
-
-/* FIX #2: Hide tutorial progress display */
-.tutorial-progress {
-    display: none !important;
-    font-family: 'Fredoka', sans-serif;
-    font-size: 1rem;
-    color: #666;
-    font-weight: 600;
 }
 
 .tutorial-buttons {
@@ -242,42 +164,6 @@
 .tutorial-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-}
-
-/* Previous Button */
-#tutorial-prev-btn {
-    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-    border-color: #7f8c8d;
-    color: white;
-}
-
-#tutorial-prev-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7b 100%);
-    transform: scale(1.05);
-}
-
-/* Next Button */
-#tutorial-next-btn {
-    background: linear-gradient(135deg, #00ff88 0%, #00d470 100%);
-    border-color: #00aa55;
-    color: white;
-}
-
-#tutorial-next-btn:hover {
-    background: linear-gradient(135deg, #00d470 0%, #00aa55 100%);
-    transform: scale(1.05);
-}
-
-/* Skip Button */
-#tutorial-skip-btn {
-    background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
-    border-color: #ff8c00;
-    color: #2D3561;
-}
-
-#tutorial-skip-btn:hover {
-    background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
-    transform: scale(1.05);
 }
 
 /* ===== ANIMATIONS ===== */
@@ -315,16 +201,6 @@
         padding: 15px;
     }
 
-    #tutorial-portrait {
-        width: 100px;
-        height: 100px;
-    }
-
-    #tutorial-portrait-canvas {
-        width: 150px;
-        height: 150px;
-    }
-
     .tutorial-dialog {
         padding: 1.5rem;
         border-radius: 16px;
@@ -332,19 +208,6 @@
 
     .tutorial-character-name {
         font-size: 1.2rem;
-    }
-
-    #tutorial-icon {
-        font-size: 2rem;
-    }
-
-    #tutorial-title {
-        font-size: 1.4rem;
-    }
-
-    #tutorial-text {
-        font-size: 1rem;
-        line-height: 1.5;
     }
 
     .tutorial-controls {
@@ -361,11 +224,6 @@
         width: 100%;
         font-size: 1rem;
         padding: 0.75rem 1rem;
-    }
-
-    .tutorial-progress {
-        font-size: 0.9rem;
-        text-align: center;
     }
 
     #gameover-portrait {
@@ -391,27 +249,8 @@
         padding: 10px;
     }
 
-    #tutorial-portrait {
-        width: 80px;
-        height: 80px;
-    }
-
-    #tutorial-portrait-canvas {
-        width: 120px;
-        height: 120px;
-    }
-
     .tutorial-dialog {
         padding: 1rem;
-    }
-
-    #tutorial-title {
-        font-size: 1.2rem;
-    }
-
-    #tutorial-text {
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
     }
 
     #gameover-portrait {
@@ -430,3 +269,561 @@
     }
 }
 
+
+/* =====================================================================
+   TUTORIAL (TutorialSystem.js)
+   .tutorial--story: tela cheia, card widescreen (introdução e final)
+   .tutorial--coach: jogo visível, card compacto + spotlight no alvo do HUD
+   As classes .tutorial-* acima ficam só para o #gameover-container.
+   ===================================================================== */
+#tutorial-container {
+    --tut-ink: #2D3561;
+    --tut-muted: #6b7390;
+    --tut-line: #e3e8f3;
+    --tut-blue: #4a9eff;
+    --tut-green: #00a85a;
+    --tut-green-dark: #007a41;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: none; /* flex quando ativo */
+    align-items: center;
+    justify-content: center;
+    padding: clamp(16px, 3vw, 40px);
+    font-family: 'Fredoka', sans-serif;
+    color: var(--tut-ink);
+}
+
+#tutorial-container.tutorial--story {
+    background: #0b1530;
+}
+
+#tutorial-background {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) center / cover no-repeat;
+}
+
+#tutorial-background::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(8, 20, 48, 0.35) 0%, rgba(8, 20, 48, 0.8) 100%);
+}
+
+.tut-card {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    width: min(1200px, 100%);
+    height: min(82vh, 760px);
+    background: #fff;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    animation: tutIn 0.35s ease-out;
+}
+
+.tut-portrait {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem 1.5rem;
+    background: linear-gradient(160deg, var(--tut-blue) 0%, var(--tut-ink) 100%) center / cover no-repeat;
+    transition: background-image 0.4s ease;
+}
+
+#tutorial-portrait-canvas {
+    width: 240px;
+    height: 240px;
+    outline: none;
+    touch-action: none;
+}
+
+#tutorial-portrait {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border: 5px solid rgba(255, 255, 255, 0.9);
+    object-fit: cover;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.tut-name {
+    font-family: 'Lilita One', cursive;
+    font-size: 1.25rem;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 0.35rem 1.1rem;
+    border-radius: 999px;
+    text-align: center;
+}
+
+.tut-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 1.75rem 2rem 1.25rem;
+}
+
+.tut-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 3px solid rgba(74, 158, 255, 0.25);
+}
+
+#tutorial-icon {
+    font-size: 2.2rem;
+    line-height: 1;
+}
+
+#tutorial-title {
+    flex: 1;
+    margin: 0;
+    font-family: 'Lilita One', cursive;
+    font-size: clamp(1.3rem, 2.2vw, 1.9rem);
+    font-weight: normal;
+    color: var(--tut-ink);
+}
+
+.tut-text {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 1rem 0.5rem 1rem 0;
+    font-size: 1.15rem;
+    line-height: 1.65;
+    font-weight: 500;
+}
+
+.tut-text::after {
+    content: '';
+    display: block;
+    clear: both;
+}
+
+/* as imagens vêm inline no texto dos passos com width:100%: no desktop ficam ao lado do texto */
+.tut-text img {
+    float: right;
+    width: 45% !important;
+    margin: 0.25rem 0 1rem 1.5rem !important;
+    border-radius: 12px !important;
+}
+
+.tut-hint {
+    margin-top: 0.5rem;
+    padding: 0.7rem 1rem;
+    border-radius: 12px;
+    background: #fff6d1;
+    border: 2px solid #ffc845;
+    color: #5a4300;
+    font-weight: 600;
+    animation: tutIn 0.25s ease-out;
+}
+
+.tut-hint[hidden] {
+    display: none;
+}
+
+.tut-footer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--tut-line);
+}
+
+.tut-progress {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--tut-muted);
+}
+
+#tutorial-progress {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tut-progress-bar {
+    max-width: 320px;
+    height: 8px;
+    background: var(--tut-line);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+#tutorial-progress-fill {
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, var(--tut-blue), var(--tut-green));
+    transition: width 0.3s ease;
+}
+
+.tut-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.tut-btn {
+    white-space: nowrap;
+    min-height: 44px;
+    padding: 0.65rem 1.4rem;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.tut-btn:focus-visible {
+    outline: 3px solid var(--tut-blue);
+    outline-offset: 2px;
+}
+
+.tut-btn[hidden] {
+    display: none;
+}
+
+.tut-btn--primary {
+    background: var(--tut-green);
+    color: #fff;
+    box-shadow: 0 4px 0 var(--tut-green-dark);
+}
+
+.tut-btn--primary:hover:not(:disabled) {
+    background: #00964f;
+}
+
+.tut-btn--primary:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--tut-green-dark);
+}
+
+.tut-btn--primary:disabled {
+    background: #b8c2d6;
+    box-shadow: 0 4px 0 #9aa5bc;
+    cursor: not-allowed;
+}
+
+.tut-btn--ghost {
+    background: #fff;
+    color: var(--tut-ink);
+    border: 2px solid #d5dcea;
+}
+
+.tut-btn--ghost:hover:not(:disabled) {
+    background: #f2f5fb;
+}
+
+.tut-btn--ghost:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.tut-btn--link {
+    background: none;
+    color: var(--tut-muted);
+    text-decoration: underline;
+    padding-inline: 0.5rem;
+}
+
+.tut-btn--link:hover {
+    color: var(--tut-ink);
+}
+
+/* ===== MODO COACH ===== */
+#tutorial-container.tutorial--coach {
+    pointer-events: none; /* o jogo continua clicável; só o card captura cliques */
+    background: transparent;
+    padding: 16px;
+}
+
+.tutorial--coach #tutorial-background {
+    display: none;
+}
+
+#tutorial-container.tutorial--coach[data-dock-y="bottom"] { align-items: flex-end; }
+#tutorial-container.tutorial--coach[data-dock-y="top"] { align-items: flex-start; padding-top: 72px; }
+#tutorial-container.tutorial--coach[data-dock-x="left"] { justify-content: flex-start; }
+#tutorial-container.tutorial--coach[data-dock-x="right"] { justify-content: flex-end; }
+
+.tutorial--coach .tut-card {
+    pointer-events: auto;
+    grid-template-columns: 120px minmax(0, 1fr);
+    width: min(600px, 100%);
+    height: auto;
+    max-height: 48vh;
+    border: 3px solid var(--tut-blue);
+    border-radius: 20px;
+}
+
+.tutorial--coach .tut-portrait {
+    padding: 0.75rem 0.5rem;
+    gap: 0.4rem;
+}
+
+.tutorial--coach #tutorial-portrait-canvas {
+    width: 100px;
+    height: 100px;
+}
+
+.tutorial--coach #tutorial-portrait {
+    width: 80px;
+    height: 80px;
+    border-width: 3px;
+}
+
+.tutorial--coach .tut-name {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+}
+
+.tutorial--coach .tut-body {
+    padding: 0.9rem 1.2rem 0.8rem;
+}
+
+.tutorial--coach .tut-header {
+    padding-bottom: 0.5rem;
+    border-bottom-width: 2px;
+}
+
+.tutorial--coach #tutorial-icon {
+    font-size: 1.6rem;
+}
+
+.tutorial--coach .read-aloud-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 1.05rem;
+}
+
+.tutorial--coach #tutorial-title {
+    font-size: 1.3rem;
+}
+
+.tutorial--coach .tut-text {
+    padding: 0.6rem 0;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.tutorial--coach .tut-footer {
+    padding-top: 0.6rem;
+}
+
+.tutorial--coach .tut-btn {
+    min-height: 40px;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+}
+
+/* Spotlight: escurece tudo menos o alvo; não intercepta cliques */
+#tutorial-spotlight {
+    position: fixed;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: 14px;
+    box-shadow: 0 0 0 9999px rgba(8, 20, 48, 0.55);
+    transition: left 0.25s ease, top 0.25s ease, width 0.25s ease, height 0.25s ease;
+}
+
+#tutorial-spotlight::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 3px solid #ffc845;
+    border-radius: 18px;
+    animation: tutPulse 1.4s ease-in-out infinite;
+}
+
+#tutorial-spotlight[hidden] {
+    display: none;
+}
+
+@keyframes tutIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes tutPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tut-card, .tut-hint, #tutorial-spotlight::after { animation: none; }
+    #tutorial-spotlight { transition: none; }
+}
+
+/* ===== TUTORIAL MOBILE ===== */
+@media screen and (max-width: 768px) {
+    #tutorial-container.tutorial--story {
+        padding: 0;
+        align-items: stretch;
+    }
+
+    .tut-card {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto minmax(0, 1fr);
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+    }
+
+    .tut-portrait {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 0.75rem;
+        padding: 0.6rem 1rem;
+    }
+
+    #tutorial-portrait-canvas {
+        width: 88px;
+        height: 88px;
+    }
+
+    #tutorial-portrait {
+        width: 64px;
+        height: 64px;
+        border-width: 3px;
+    }
+
+    .tut-name {
+        font-size: 1rem;
+    }
+
+    .tut-body {
+        padding: 0.9rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+    }
+
+    #tutorial-icon {
+        font-size: 1.7rem;
+    }
+
+    .tut-text {
+        font-size: 1rem;
+        line-height: 1.55;
+        padding-right: 0;
+    }
+
+    .tut-text img {
+        float: none;
+        width: 100% !important;
+        margin: 0.5rem 0 !important;
+    }
+
+    .tut-footer {
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .tut-progress {
+        flex-basis: 100%;
+    }
+
+    .tut-progress-bar {
+        max-width: none;
+    }
+
+    .tut-nav {
+        width: 100%;
+    }
+
+    #tutorial-next-btn {
+        flex: 1;
+    }
+
+    /* coach vira uma folha encostada embaixo (ou em cima) da tela */
+    #tutorial-container.tutorial--coach {
+        padding: 8px;
+        justify-content: center;
+    }
+
+    #tutorial-container.tutorial--coach[data-dock-y="top"] {
+        padding-top: 8px;
+    }
+
+    .tutorial--coach .tut-card {
+        grid-template-columns: 72px minmax(0, 1fr);
+        grid-template-rows: none;
+        width: 100%;
+        max-height: 50vh;
+        border-radius: 16px;
+    }
+
+    .tutorial--coach .tut-portrait {
+        flex-direction: column;
+        justify-content: center;
+        padding: 0.4rem;
+    }
+
+    .tutorial--coach .tut-name {
+        display: none;
+    }
+
+    .tutorial--coach #tutorial-next-btn {
+        flex: 0 1 auto;
+        margin-left: auto;
+    }
+
+    .tutorial--coach .tut-nav {
+        gap: 0.4rem;
+    }
+
+    .tutorial--coach .tut-btn {
+        padding: 0.5rem 0.8rem;
+    }
+
+    .tutorial--coach .tut-btn--link {
+        padding-inline: 0.2rem;
+    }
+
+    .tutorial--coach #tutorial-portrait-canvas {
+        width: 56px;
+        height: 56px;
+    }
+
+    .tutorial--coach #tutorial-portrait {
+        width: 48px;
+        height: 48px;
+    }
+
+    .tutorial--coach .tut-body {
+        padding: 0.6rem 0.9rem 0.7rem;
+    }
+
+    .tutorial--coach .tut-progress {
+        display: none;
+    }
+}
+
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    .tut-card {
+        grid-template-columns: 140px minmax(0, 1fr);
+        grid-template-rows: none;
+    }
+
+    .tut-portrait {
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .tutorial--coach .tut-card {
+        max-height: 70vh;
+        width: min(560px, 100%);
+    }
+}
