@@ -59,6 +59,55 @@ async function gameConfirm(title, text, { confirmText = 'Sim', cancelText = 'Can
 }
 
 /**
+ * ===== LEITURA EM VOZ ALTA (Web Speech API, nativa do navegador) =====
+ * setupReadAloud(botão, () => texto) transforma o botão em play/stop.
+ * Uma leitura por vez no jogo todo; sem síntese de voz, o botão some.
+ */
+let readAloudButton = null;
+let readAloudLast = null;
+
+function stopSpeaking() {
+    if (!window.speechSynthesis) return;
+    if (readAloudButton) {
+        readAloudButton.textContent = '🔊';
+        readAloudButton.setAttribute('aria-pressed', 'false');
+    }
+    readAloudButton = null;
+    readAloudLast = null;
+    speechSynthesis.cancel();
+}
+
+function setupReadAloud(button, getText) {
+    if (!window.speechSynthesis) {
+        button.hidden = true;
+        return;
+    }
+    button.setAttribute('aria-pressed', 'false');
+    button.addEventListener('click', () => {
+        const wasPlaying = readAloudButton === button;
+        stopSpeaking();
+        if (wasPlaying) return;
+
+        const voice = speechSynthesis.getVoices().find(v => v.lang.replace('_', '-') === 'pt-BR');
+        // Uma frase por fala: o Chrome corta falas longas no meio
+        const sentences = getText().split(/(?<=[.!?])\s+/).filter(s => s.trim());
+        sentences.forEach(sentence => {
+            const utterance = new SpeechSynthesisUtterance(sentence);
+            utterance.lang = 'pt-BR';
+            if (voice) utterance.voice = voice;
+            speechSynthesis.speak(utterance);
+            readAloudLast = utterance;
+        });
+        const last = readAloudLast;
+        if (!last) return;
+        last.onend = () => { if (readAloudLast === last) stopSpeaking(); };
+        readAloudButton = button;
+        button.textContent = '⏹️';
+        button.setAttribute('aria-pressed', 'true');
+    });
+}
+
+/**
  * ===== VALIDATION UTILITIES =====
  */
 

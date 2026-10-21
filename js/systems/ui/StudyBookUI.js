@@ -38,6 +38,7 @@ mixin(UIManager, {
     },
 
     showStudyBookInterface(studyContent) {
+        stopSpeaking(); // trocou de página: a leitura anterior para
         // Create book overlay if it doesn't exist
         let bookOverlay = document.getElementById('study-book-overlay');
         if (!bookOverlay) {
@@ -81,7 +82,10 @@ mixin(UIManager, {
 
                     <div class="book-content">
                         <div class="page-number">Página ${currentPage.pageNumber} de ${studyContent.pages.length}</div>
-                        <h3 class="page-title">${currentPage.title}</h3>
+                        <div class="page-title-row">
+                            <h3 class="page-title">${currentPage.title}</h3>
+                            <button class="read-aloud-btn" aria-label="Ouvir a página em voz alta" title="Ouvir">🔊</button>
+                        </div>
                         ${currentPage.image ? `<div class="page-image"><img src="${currentPage.image}" alt="${currentPage.title}" onerror="this.parentElement.style.display='none'"></div>` : ''}
                         <div class="page-text">${currentPage.content}</div>
                         ${quizHTML}
@@ -110,6 +114,9 @@ mixin(UIManager, {
                 </div>
             </div>
         `;
+
+        setupReadAloud(bookOverlay.querySelector('.read-aloud-btn'), () =>
+            `${currentPage.title}. ${bookOverlay.querySelector('.page-text').innerText}`);
 
         // Show overlay with animation
         bookOverlay.classList.add('active');
