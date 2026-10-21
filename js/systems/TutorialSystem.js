@@ -5,12 +5,11 @@
 
 class TutorialSystem {
     constructor(gameManager) {
-        console.log('📚 Inicializando TutorialSystem...');
+        log('📚 Inicializando TutorialSystem...');
 
         this.gameManager = gameManager;
         this.currentStep = 0;
         this.isActive = false;
-        this.canSkip = true; // Allow skipping for testing
 
         // 3D Portrait System
         this.portraitEngine = null;
@@ -31,11 +30,13 @@ class TutorialSystem {
 
         // Tutorial steps with educational content
         this.tutorialSteps = this.createTutorialSteps();
+        this.coachTimer = null;
+        this.handleKey = (e) => this.onKeyDown(e);
 
         // FIX #1: Setup event listeners for tutorial navigation buttons
         this.setupEventListeners();
 
-        console.log('✅ TutorialSystem inicializado');
+        log('✅ TutorialSystem inicializado');
     }
 
     /**
@@ -45,11 +46,7 @@ class TutorialSystem {
         // Skip button
         const skipBtn = document.getElementById('tutorial-skip-btn');
         if (skipBtn) {
-            skipBtn.addEventListener('click', () => {
-                if (confirm('Tem certeza que deseja pular o tutorial?')) {
-                    this.skip();
-                }
-            });
+            skipBtn.addEventListener('click', () => this.skip());
         }
 
         // Previous button
@@ -68,7 +65,12 @@ class TutorialSystem {
             });
         }
 
-        console.log('✅ Tutorial event listeners configured');
+        setupReadAloud(document.getElementById('tutorial-read-btn'), () =>
+            `${document.getElementById('tutorial-title').innerText}. ${document.getElementById('tutorial-text').innerText}`);
+
+        document.getElementById('btn-lessons')?.addEventListener('click', () => this.openLessons());
+
+        log('✅ Tutorial event listeners configured');
     }
 
     /**
@@ -156,7 +158,7 @@ class TutorialSystem {
                 }
             });
 
-            console.log('✅ 3D Portrait system initialized');
+            log('✅ 3D Portrait system initialized');
             return true;
         } catch (error) {
             console.error('❌ Error initializing 3D portrait:', error);
@@ -180,7 +182,7 @@ class TutorialSystem {
                 this.portraitModel = null;
             }
 
-            console.log(`📦 Loading ${characterName} OBJ model...`);
+            log(`📦 Loading ${characterName} OBJ model...`);
 
             // Determine model path based on character
             let modelFolder, modelFile, texturePath, texturePrefix;
@@ -218,11 +220,11 @@ class TutorialSystem {
             );
 
             if (result.meshes && result.meshes.length > 0) {
-                console.log(`✅ Loaded ${result.meshes.length} meshes for ${characterName}`);
+                log(`✅ Loaded ${result.meshes.length} meshes for ${characterName}`);
                 
                 // Log all mesh names for debugging
                 result.meshes.forEach((mesh, idx) => {
-                    console.log(`  Mesh ${idx}: ${mesh.name} (material: ${mesh.material ? mesh.material.name : 'none'})`);
+                    log(`  Mesh ${idx}: ${mesh.name} (material: ${mesh.material ? mesh.material.name : 'none'})`);
                 });
 
                 // Create parent mesh for the model
@@ -237,7 +239,7 @@ class TutorialSystem {
 
                 // AUTO-CALCULATE BOUNDING BOX AND POSITION
                 const meshes = result.meshes.filter(m => m.name !== '__root__' && m instanceof BABYLON.Mesh);
-                console.log(`📊 Filtered to ${meshes.length} renderable meshes`);
+                log(`📊 Filtered to ${meshes.length} renderable meshes`);
                 
                 if (meshes.length > 0) {
                     // Calculate total bounding box
@@ -259,7 +261,7 @@ class TutorialSystem {
                     const size = max.subtract(min);
                     const maxDimension = Math.max(size.x, size.y, size.z);
 
-                    console.log(`📐 Model bounds - Size: ${size.toString()}, Center: ${center.toString()}`);
+                    log(`📐 Model bounds - Size: ${size.toString()}, Center: ${center.toString()}`);
 
                     // Auto-scale to fit in camera view (target size ~2 units)
                     const targetSize = 2;
@@ -274,7 +276,7 @@ class TutorialSystem {
                     this.portraitCamera.target = new BABYLON.Vector3(0, 0, 0);
                     this.portraitCamera.radius = targetSize * 2;
 
-                    console.log(`✅ Auto-scaled: ${scale.toFixed(4)}x, Position: ${this.portraitModel.position.toString()}`);
+                    log(`✅ Auto-scaled: ${scale.toFixed(4)}x, Position: ${this.portraitModel.position.toString()}`);
                 }
 
                 // APPLY PBR TEXTURES
@@ -286,7 +288,7 @@ class TutorialSystem {
                 // START PROCEDURAL ANIMATIONS
                 this.startProceduralAnimations();
 
-                console.log('✅ 3D character model loaded and positioned successfully');
+                log('✅ 3D character model loaded and positioned successfully');
                 return true;
             }
         } catch (error) {
@@ -302,9 +304,9 @@ class TutorialSystem {
      * Apply PBR textures to meshes
      */
     async applyPBRTextures(meshes, texturePath, texturePrefix) {
-        console.log('🎨 Applying PBR textures...');
-        console.log(`📁 Texture path: ${texturePath}`);
-        console.log(`🏷️ Texture prefix: ${texturePrefix}`);
+        log('🎨 Applying PBR textures...');
+        log(`📁 Texture path: ${texturePath}`);
+        log(`🏷️ Texture prefix: ${texturePrefix}`);
 
         try {
             // Dispose old materials
@@ -324,7 +326,7 @@ class TutorialSystem {
                 this.portraitScene
             );
             pbr.albedoTexture = colorTexture;
-            console.log('✅ Loaded albedo texture');
+            log('✅ Loaded albedo texture');
 
             // Load normal texture
             const normalTexture = new BABYLON.Texture(
@@ -334,7 +336,7 @@ class TutorialSystem {
             pbr.bumpTexture = normalTexture;
             pbr.invertNormalMapX = false;
             pbr.invertNormalMapY = false;
-            console.log('✅ Loaded normal texture');
+            log('✅ Loaded normal texture');
 
             // Load roughness/metallic texture
             const roughnessTexture = new BABYLON.Texture(
@@ -347,7 +349,7 @@ class TutorialSystem {
             pbr.useMetallnessFromMetallicTextureBlue = false;
             pbr.metallic = 0.0;
             pbr.roughness = 1.0;
-            console.log('✅ Loaded roughness texture');
+            log('✅ Loaded roughness texture');
 
             // Load ambient occlusion texture
             const aoTexture = new BABYLON.Texture(
@@ -356,7 +358,7 @@ class TutorialSystem {
             );
             pbr.ambientTexture = aoTexture;
             pbr.ambientTextureStrength = 1.0;
-            console.log('✅ Loaded AO texture');
+            log('✅ Loaded AO texture');
 
             // Configure PBR settings
             pbr.directIntensity = 1.0;
@@ -371,7 +373,7 @@ class TutorialSystem {
                 appliedCount++;
             });
 
-            console.log(`✅ PBR material applied to ${appliedCount} meshes`);
+            log(`✅ PBR material applied to ${appliedCount} meshes`);
         } catch (error) {
             console.error('❌ Error loading textures:', error);
             console.error(error.stack);
@@ -385,7 +387,7 @@ class TutorialSystem {
                 mesh.material = fallbackMat;
             });
             
-            console.log('⚠️ Using fallback material');
+            log('⚠️ Using fallback material');
         }
     }
 
@@ -393,7 +395,7 @@ class TutorialSystem {
      * Identify mesh parts for animation
      */
     identifyMeshParts(meshes) {
-        console.log('🔍 Identifying mesh parts for animation...');
+        log('🔍 Identifying mesh parts for animation...');
         
         this.animationData.meshParts = {
             eyes: [],
@@ -410,33 +412,33 @@ class TutorialSystem {
             // Identify eyes
             if (name.includes('eye') || name.includes('olho')) {
                 this.animationData.meshParts.eyes.push(mesh);
-                console.log(`👁️ Found eye mesh: ${mesh.name}`);
+                log(`👁️ Found eye mesh: ${mesh.name}`);
             }
             
             // Identify hair
             if (name.includes('hair') || name.includes('cabelo') || name.includes('pelo')) {
                 this.animationData.meshParts.hair.push(mesh);
-                console.log(`💇 Found hair mesh: ${mesh.name}`);
+                log(`💇 Found hair mesh: ${mesh.name}`);
             }
             
             // Identify arms
             if (name.includes('arm') || name.includes('braco') || name.includes('braço') || 
                 name.includes('hand') || name.includes('mao') || name.includes('mão')) {
                 this.animationData.meshParts.arms.push(mesh);
-                console.log(`💪 Found arm mesh: ${mesh.name}`);
+                log(`💪 Found arm mesh: ${mesh.name}`);
             }
             
             // Identify head
             if (name.includes('head') || name.includes('cabeca') || name.includes('cabeça')) {
                 this.animationData.meshParts.head.push(mesh);
-                console.log(`🗣️ Found head mesh: ${mesh.name}`);
+                log(`🗣️ Found head mesh: ${mesh.name}`);
             }
             
             // Identify body
             if (name.includes('body') || name.includes('torso') || name.includes('corpo') ||
                 name.includes('chest') || name.includes('peito')) {
                 this.animationData.meshParts.body.push(mesh);
-                console.log(`🫀 Found body mesh: ${mesh.name}`);
+                log(`🫀 Found body mesh: ${mesh.name}`);
             }
         });
 
@@ -448,17 +450,17 @@ class TutorialSystem {
                 return pos.y > 0; // Upper half
             });
             this.animationData.meshParts.hair = topMeshes.slice(0, Math.min(5, topMeshes.length));
-            console.log(`💇 Auto-detected ${this.animationData.meshParts.hair.length} hair meshes`);
+            log(`💇 Auto-detected ${this.animationData.meshParts.hair.length} hair meshes`);
         }
 
-        console.log(`✅ Mesh identification complete`);
+        log(`✅ Mesh identification complete`);
     }
 
     /**
      * Start procedural animations
      */
     startProceduralAnimations() {
-        console.log('🎬 Starting procedural animations...');
+        log('🎬 Starting procedural animations...');
         
         const deltaTimeMs = 16.67; // Assume 60fps
         
@@ -481,7 +483,7 @@ class TutorialSystem {
             this.animateIdleMovement(this.animationData.time);
         });
 
-        console.log('✅ Procedural animations started');
+        log('✅ Procedural animations started');
     }
 
     /**
@@ -601,6 +603,7 @@ class TutorialSystem {
             this.portraitEngine.dispose();
             this.portraitEngine = null;
         }
+        this.currentCharacter = null;
         
         // Reset animation data
         this.animationData = {
@@ -616,194 +619,317 @@ class TutorialSystem {
      * Creates all tutorial steps with educational content
      */
  createTutorialSteps() {
+    // Retratos 2D (fallback quando o 3D não carrega)
+    const CLAUDIA = 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy';
+    const GIL = 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400';
+    const SAPO = 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=400';
+    const openMissions = gm => gm.questSystem.missionUI.isOpen || gm.questSystem.openMissionInterface();
+    const closeMissions = gm => { if (gm.questSystem.missionUI.isOpen) gm.questSystem.closeMissionInterface(); gm.uiManager.hideHudRight(); };
+    // Passo sem `group` é da introdução; sem `mode` é 'story' (tela cheia)
     return [
+        // Escolha: aprender sobre a água agora (lições em seguida) ou durante o jogo (uma por missão)
+        {
+            offer: true,
+            nextLabel: 'Aprender agora',
+            skipLabel: 'Durante o jogo',
+            character: 'Claudia',
+            portrait: CLAUDIA,
+            background: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=1080',
+            title: 'Olá, Guardião!',
+            text: 'Eu sou a Pesquisadora Cláudia! Antes de construir a cidade, posso te contar como a água funciona na natureza, com a ajuda dos meus amigos Gil e Dr. Sapo. <br><br>Você quer aprender <b>agora</b>, ou <b>aos poucos, durante o jogo</b>? Se escolher durante o jogo, a cada missão completada a gente aparece com uma aula nova.',
+            icon: '💧'
+        },
+
         // Step 1: Introduction & Responsibility
         {
+            chapter: 1,
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=1080',
             title: 'Bem-vindo, Guardião da Água!',
-            text: 'Olá! Eu sou a Pesquisadora Cláudia, e tenho uma missão muito importante para você. Nossa cidade está enfrentando uma crise nos recursos hídricos - a água que usamos para beber, tomar banho e regar as plantações está em risco! <img src="https://images.pexels.com/photos/1481105/pexels-photo-1481105.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Você foi escolhido como o novo <b>Guardião da Água</b>. Eu vou te ensinar tudo sobre como proteger nosso bem mais precioso. Vamos juntos nessa jornada de aprendizado e descoberta?',
+            text: 'Olá! Eu sou a Pesquisadora Cláudia. Nossa cidade está com um problema sério: a água que a gente bebe, usa no banho e leva para as plantações está em perigo! <img src="https://images.pexels.com/photos/1481105/pexels-photo-1481105.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Por isso você foi escolhido como o novo <b>Guardião da Água</b>. Sua missão é proteger esse tesouro, e eu vou estar do seu lado, te ensinando cada passo. Topa cuidar da água com a gente?',
             icon: '👋'
         },
 
         // Step 2: Hidrosfera - Concepts & References
         {
+            chapter: 1,
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=1080',
             title: 'A Hidrosfera: Toda a Água do Planeta',
-            text: 'Primeiro, vamos entender o que é a <b>hidrosfera</b>. Segundo Oliveira e Santos (2017), a hidrosfera é toda a água presente na superfície e no subsolo do nosso planeta Terra! <img src="UI/JPG/ciclo_agua.jpg" style="width:100%; border-radius:8px; margin:10px 0;"/> Ela está distribuída em três formas: <b>sólida</b> (como gelo nas geleiras), <b>líquida</b> (nos oceanos, rios e lagos) e <b>gasosa</b> (nas nuvens). A água está sempre em movimento - ela nunca para! Esse movimento pode ser rápido, como uma chuva, ou muito lento, demorando até milhões de anos para acontecer.',
+            text: 'Vamos começar pela <b>hidrosfera</b>: é toda a água do planeta, a que a gente vê e a que fica escondida debaixo da terra! <img src="UI/JPG/ciclo_agua.jpg" style="width:100%; border-radius:8px; margin:10px 0;"/> Ela aparece de três jeitos: <b>sólida</b> (gelo, como o do congelador), <b>líquida</b> (rios, lagos e mares) e <b>gasosa</b> (o vapor que forma as nuvens). E a água nunca fica parada! Às vezes ela se move rapidinho, como numa chuva. Outras vezes vai devagar, devagarinho, mais lenta que uma tartaruga.',
             icon: '🌍',
             educationalTopic: 'hidrosfera'
         },
 
         // Step 3: Concepts - Hydrological Cycle & References
         {
+            chapter: 2,
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=1080',
             title: 'O Ciclo Hidrológico: O Motor da Vida',
-            text: 'Agora vem a parte mais legal! Garcez e Alvarez (1988) explicam que o <b>ciclo hidrológico</b> é como um jogo de transformações mágicas da água. <img src="https://images.pexels.com/photos/531756/pexels-photo-531756.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Imagine: o Sol aquece a água dos rios e ela <b>evapora</b> (vira vapor e sobe). Lá em cima, ela se junta em <b>nuvens</b>. Quando as nuvens ficam pesadas, a água cai como <b>chuva</b>. A chuva abastece os rios, e o ciclo recomeça! Este ciclo tem duas fases principais: a <b>fase atmosférica</b> (o que acontece no céu) e a <b>fase terrestre</b> (o que acontece no solo). Se quebrarmos qualquer parte desse ciclo, toda a natureza sofre.',
+            text: 'Agora vem a parte mais legal: o <b>ciclo da água</b>! É como uma brincadeira de transformações. <img src="https://images.pexels.com/photos/531756/pexels-photo-531756.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> O Sol esquenta o rio e a água <b>evapora</b>, igual à fumacinha da panela. Lá em cima, ela vira <b>nuvem</b>. Quando a nuvem fica pesada, cai como <b>chuva</b>, enche os rios e tudo recomeça! Uma parte acontece no céu e a outra no chão. Se a gente estragar qualquer pedaço dessa roda, a natureza inteira sente.',
             icon: '🔄',
             educationalTopic: 'ciclo_hidrologico'
         },
 
         // Step 4: Concept - Watershed & References
         {
+            chapter: 2,
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?q=80&w=1080',
             title: 'A Bacia Hidrográfica: Como uma Grande Tigela',
-            text: 'Vou te contar um segredo da natureza! Christofoletti (1974) descobriu que uma <b>bacia hidrográfica</b> funciona como uma tigela gigante. <img src="https://images.pexels.com/photos/414171/pexels-photo-414171.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Imagine: todos os riozinhos pequenos (chamados de <b>afluentes</b>) se juntam e formam um rio maior (o <b>rio principal</b>). Toda água da chuva que cai nessa "tigela" vai escorrer para o mesmo lugar! Santos (2007) complementa dizendo que precisamos entender as <b>nascentes</b> (onde o rio nasce), os <b>divisores de água</b> (as "bordas da tigela") e a <b>foz</b> (onde o rio termina). O mais importante: se alguém polui a água lá em cima da "tigela", quem mora lá embaixo vai receber água suja!',
+            text: 'Vou te contar um segredo: uma <b>bacia hidrográfica</b> funciona como uma tigela gigante! <img src="https://images.pexels.com/photos/414171/pexels-photo-414171.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Os riozinhos, chamados <b>afluentes</b>, se juntam e formam o <b>rio principal</b>. Toda chuva que cai na tigela escorre para o mesmo lugar. O rio nasce na <b>nascente</b>, as bordas da tigela são os <b>divisores de água</b> e o fim do rio é a <b>foz</b>. Agora o mais importante: se alguém suja a água lá no alto, quem mora lá embaixo recebe água suja!',
             icon: '🏞️',
             educationalTopic: 'bacia_hidrografica'
         },
 
         // Step 5: Water Resources Management & References
         {
+            chapter: 3,
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1497515114629-f71d768fd07c?q=80&w=1080',
             title: 'Recursos Hídricos: Água para Todos',
-            text: 'Bordalo (2017) nos alerta: a água não pode ser tratada como uma mercadoria para ser vendida ao melhor preço! <img src="UI/JPG/agua_de_todos.jpg" style="width:100%; border-radius:8px; margin:10px 0;"/> Os <b>recursos hídricos</b> são o conjunto de toda água disponível para usarmos. Mas existem muitos desafios: o governo precisa garantir água para as pessoas beberem, para as fábricas trabalharem, para a agricultura produzir alimentos. Às vezes esses interesses entram em conflito. Por isso, a água deve ser vista como <b>fonte de vida e sobrevivência</b>, com acesso garantido para todos em condições de <b>segurança hídrica</b>. Seu papel como Guardião é equilibrar essas necessidades!',
+            text: 'Água não é brinquedo de loja para ser vendida a quem paga mais! <img src="UI/JPG/agua_de_todos.jpg" style="width:100%; border-radius:8px; margin:10px 0;"/> Os <b>recursos hídricos</b> são toda a água que temos para usar. E todo mundo quer um pedaço: as pessoas precisam beber, as fábricas precisam trabalhar e as plantações precisam crescer. É como dividir uma pizza numa festa cheia: se ninguém organiza, alguém fica sem. Por isso a água é <b>fonte de vida</b> e precisa chegar a todos. Seu papel de Guardião é equilibrar essa divisão!',
             icon: '⚖️',
             educationalTopic: 'recursos_hidricos'
         },
 
         // Step 6: Research Centers
         {
+            chapter: 3,
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=1080',
             title: 'Centros de Pesquisa: Nossos Olhos Científicos',
-            text: 'Como cientista, eu trabalho em um <b>Centro de Pesquisa</b>! Aqui usamos microscópios e equipamentos especiais para descobrir coisas invisíveis. <img src="https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Medimos a <b>qualidade da água</b>: se tem bactérias perigosas, se está muito quente, se tem produtos químicos ruins. É como fazer um check-up de saúde na água! Sem a ciência, estaríamos apenas "chutando" e não sabendo o que fazer. Os Centros de Pesquisa são seus melhores aliados nessa missão.',
+            text: 'Eu trabalho num <b>Centro de Pesquisa</b>! Lá a gente usa microscópios e aparelhos especiais para enxergar o que o olho não vê. <img src="https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Nós examinamos a <b>qualidade da água</b>: se tem bactérias perigosas, se está quente demais, se tem produtos químicos ruins. É como levar a água ao médico para um check-up! Sem ciência, a gente só ia ficar chutando. Os Centros de Pesquisa são seus melhores aliados nessa missão.',
             icon: '🔬',
             educationalTopic: 'centros_pesquisa'
         },
 
         // Step 7: Agriculture Dilemma
         {
+            chapter: 3,
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=1080',
             title: 'Agricultura: Produzir Alimentos sem Destruir',
-            text: 'A <b>agricultura</b> é super importante - ela produz a comida que comemos! Mas também precisa de muita, muita água. <img src="/UI/JPG/cana_de_acucar.jpg" style="width:100%; border-radius:8px; margin:10px 0;"/> A plantação de <b>cana-de-açúcar</b> e a <b>pecuária</b> (criação de gado) movimentam a economia da região. Mas temos que ter cuidado! Os <b>agrotóxicos</b> (venenos usados para matar insetos) podem escorrer para os rios. O gado pode sujar a água com seus dejetos. Seu desafio é encontrar o equilíbrio: produzir alimentos SEM destruir a natureza. Agora vou te apresentar alguém que sofre muito quando erramos nesse equilíbrio...',
+            text: 'A <b>agricultura</b> é super importante: é dela que vem a comida do nosso prato! Mas ela bebe muita, muita água. <img src="/UI/JPG/cana_de_acucar.jpg" style="width:100%; border-radius:8px; margin:10px 0;"/> A <b>cana-de-açúcar</b> e a criação de gado ajudam a região a ganhar dinheiro. Só que os <b>agrotóxicos</b>, venenos que matam insetos, podem escorrer para os rios. E o cocô do gado também suja a água. Seu desafio é produzir comida SEM destruir a natureza. Agora quero te apresentar alguém que sofre muito quando a gente erra nisso...',
             icon: '🌾',
             educationalTopic: 'agricultura_agua'
         },
 
         // Step 8: Riparian Forest & APP (Gil the Fish)
         {
+            chapter: 4,
             character: 'Gil, o Lambari',
             portrait: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400',
             background: 'https://images.unsplash.com/photo-1535591273668-578e31182c4f?q=80&w=1080',
             title: 'Glub glub! Prazer, sou o Gil!',
-            text: 'Oi, Guardião! Eu sou o Gil, o Lambari mais esperto desse rio! Vou te contar um segredo: a <b>Mata Ciliar</b> é a nossa salvação! <img src="https://images.pexels.com/photos/35047478/pexels-photo-35047478.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Sabe por quê ela se chama "ciliar"? Porque funciona como os cílios dos seus olhos - protege! As árvores nas margens fazem sombra e mantêm a água fresquinha (eu odeio água quente!). Elas também seguram a terra para não cair no rio. As <b>APPs</b> (Áreas de Preservação Permanente) são zonas especiais onde NINGUÉM pode construir ou cortar árvores. É lei! Ali eu coloco meus ovinhos e eles ficam protegidos.',
+            text: 'Glub! Oi, Guardião! Eu sou o Gil, o Lambari mais esperto desse rio! Meu segredo é a <b>Mata Ciliar</b>! <img src="https://images.pexels.com/photos/35047478/pexels-photo-35047478.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Sabe por que ela tem esse nome? Porque protege o rio igual os cílios protegem seus olhos! As árvores da margem fazem sombra e deixam a água fresquinha (eu odeio água quente!). Elas também seguram a terra para não cair no rio. Essas margens são <b>áreas protegidas</b>: ninguém pode construir nem cortar árvore ali. É lá que eu guardo meus ovinhos!',
             icon: '🐟',
             educationalTopic: 'mata_ciliar_app'
         },
 
         // Step 9: Erosion & Sedimentation (Gil the Fish)
         {
+            chapter: 4,
             character: 'Gil, o Lambari',
             portrait: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400',
             background: 'https://images.unsplash.com/photo-1599940824399-b87987ce0799?q=80&w=1080',
             title: 'Socorro! Não consigo respirar!',
-            text: 'Glub... glub... quando os humanos cortam as árvores da Mata Ciliar, acontece um desastre! A chuva cai e arrasta toda a terra solta para dentro do rio. Isso é a <b>erosão</b>! <img src="UI/JPG/erosao.jpg" style="width:100%; border-radius:8px; margin:10px 0;"/> Aí começa o <b>assoreamento</b>: o rio fica cheio de terra, lama e areia. Ele fica raso, a água fica toda barrenta e escura. Minhas brânquias (meu "nariz" de peixe) ficam entupidas de barro - é horrível! Não consigo respirar direito. Muitos dos meus amigos peixes morrem por causa disso. Por favor, proteja nossas árvores! Mas tem coisa pior... o Dr. Sapo vai te explicar.',
+            text: 'Glub... glub... quando cortam as árvores da margem, é um desastre! A chuva arrasta a terra solta para dentro do rio. Isso é a <b>erosão</b>! <img src="UI/JPG/erosao.jpg" style="width:100%; border-radius:8px; margin:10px 0;"/> Aí vem o <b>assoreamento</b>: o rio vai enchendo de terra, lama e areia, fica raso e com cor de café com leite. Minhas brânquias, que são o meu nariz de peixe, entopem de barro. É horrível, não consigo respirar! Muitos amigos meus morrem assim. Por favor, proteja nossas árvores! Mas tem coisa pior... o Dr. Sapo vai te contar.',
             icon: '🧱',
             educationalTopic: 'erosao_assoreamento'
         },
 
         // Step 10: Sewage & Contamination Details
         {
+            chapter: 4,
             character: 'Dr. Sapo',
             portrait: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=400',
             background: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?q=80&w=1080',
             title: 'Dr. Sapo e o Perigo Invisível! ☣️',
-            text: 'Croac croac! Sou o Dr. Sapo, especialista em poluição aquática. Tenho um alerta URGENTE: cuidado com o <b>esgoto</b>! <img src="https://images.pexels.com/photos/15060366/pexels-photo-15060366.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Quando casas e fábricas jogam esgoto sem tratar no rio, as bactérias do cocô começam a comer todo o <b>oxigênio dissolvido</b> da água. É o oxigênio que o Gil usa para respirar! Sem oxigênio, os peixes morrem asfixiados. O esgoto também traz doenças terríveis para os humanos: diarreia, hepatite, leptospirose. A água limpa vira VENENO! Por isso precisamos de <b>estações de tratamento de esgoto</b>. Elas limpam a água suja antes de devolver ao rio.',
+            text: 'Croac! Sou o Dr. Sapo, especialista em poluição da água, e tenho um alerta URGENTE: cuidado com o <b>esgoto</b>! <img src="https://images.pexels.com/photos/15060366/pexels-photo-15060366.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Quando o esgoto cai no rio sem tratamento, as bactérias do cocô comem o <b>oxigênio</b> da água, justo o ar que o Gil respira! Sem ele, os peixes sufocam. E as pessoas pegam doenças, como diarreia. A água limpa vira VENENO! Croac! Por isso precisamos de <b>estações de tratamento de esgoto</b>: elas lavam a água suja antes de devolvê-la ao rio.',
             icon: '🤢',
             educationalTopic: 'esgoto_contaminacao'
         },
 
         // Step 11: Groundwater & Springs
         {
+            chapter: 5,
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1633511090164-b43840ea1607?q=80&w=1080',
             title: 'A Água Subterrânea: O Tesouro Escondido',
-            text: 'Guardião, vou te mostrar um perigo invisível! Debaixo da terra existe um mundo de água: os <b>aquíferos</b> e <b>lençóis freáticos</b>. <img src="UI/JPG/agua_subterranea.png" style="width:100%; border-radius:8px; margin:10px 0;"/> É como um rio subterrâneo gigante que alimenta poços e nascentes. Mas quando vazam produtos perigosos no solo - como <b>chorume</b> de lixões, gasolina de postos ou agrotóxicos - eles infiltram e contaminam essa água escondida. O pior: um aquífero poluído pode levar 50, 100 ou até 200 anos para se limpar naturalmente! Proteja as <b>nascentes</b> como se fossem tesouros raros, porque elas alimentam os rios que vemos na superfície.',
+            text: 'Guardião, olha esse perigo escondido! Debaixo da terra existe um mundo de água: os <b>aquíferos</b> e os <b>lençóis freáticos</b>. <img src="UI/JPG/agua_subterranea.png" style="width:100%; border-radius:8px; margin:10px 0;"/> Funcionam como uma grande caixa-d\'água subterrânea que abastece poços e nascentes. Mas quando vaza sujeira no chão, como o <b>chorume</b> do lixão, gasolina ou agrotóxicos, ela afunda e contamina essa água. E o pior: limpar um aquífero sujo pode demorar mais que a vida inteira dos seus avós! Proteja as <b>nascentes</b> como tesouros, porque elas alimentam os rios.',
             icon: '💧',
             educationalTopic: 'agua_subterranea'
         },
 
         // Step 12: Urban Planning (Várzea)
         {
+            chapter: 5,
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1547619292-240402b5ae5d?q=80&w=1080',
             title: 'Cidades Inteligentes: Respeitar o Rio',
-            text: 'Sabe o que acontece quando a cidade cresce de forma errada? Enchentes! Os rios precisam de espaço para "respirar". <img src="https://images.pexels.com/photos/2418664/pexels-photo-2418664.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> As <b>áreas de várzea</b> são como uma "zona de segurança" do rio - quando chove muito, ele precisa desse espaço extra para a água se espalhar. Mas algumas pessoas constroem casas bem ali! Resultado: quando vem a enchente, as casas ficam debaixo d\'água. Além disso, o asfalto e concreto das cidades não deixam a água da chuva penetrar no solo. Precisamos de um <b>planejamento urbano inteligente</b> que respeite os limites da natureza.',
+            text: 'Sabe o que acontece quando a cidade cresce do jeito errado? Enchente! O rio precisa de espaço para respirar. <img src="https://images.pexels.com/photos/2418664/pexels-photo-2418664.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> A <b>várzea</b> é a área de segurança do rio: quando chove muito, a água se espalha por ali. Mas tem gente que constrói casa bem nesse lugar! Resultado: na enchente, as casas ficam debaixo d\'água. E o asfalto e o concreto não deixam a chuva entrar no chão. Precisamos de um <b>planejamento urbano inteligente</b>, que respeite o espaço da natureza.',
             icon: '🏗️',
             educationalTopic: 'ocupacao_urbana'
         },
 
         // Step 13: Green Infrastructure Solutions
         {
+            chapter: 6,
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
             background: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1080',
             title: 'Soluções Verdes: Tecnologia a Favor da Natureza',
-            text: 'Agora vou te mostrar soluções incríveis! A <b>infraestrutura verde</b> usa a própria natureza como tecnologia. <img src="https://images.pexels.com/photos/1105019/pexels-photo-1105019.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Os <b>jardins de chuva</b> são canteiros especiais que absorvem a água como uma esponja gigante. Os <b>tetos verdes</b> (telhados cobertos de plantas) também retêm água e deixam a cidade mais fresca. <b>Pavimentos permeáveis</b> são como calçadas com furinhos que deixam a água passar. É a engenharia imitando a natureza! Essas soluções evitam enchentes e ainda deixam a cidade mais bonita.',
+            text: 'Agora as soluções incríveis! A <b>infraestrutura verde</b> usa a própria natureza como tecnologia. <img src="https://images.pexels.com/photos/1105019/pexels-photo-1105019.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Os <b>jardins de chuva</b> são canteiros que chupam a água como uma esponja. Os <b>tetos verdes</b> são telhados cheios de plantas que seguram a chuva e refrescam a cidade. E os <b>pavimentos permeáveis</b> são calçadas com furinhos que deixam a água passar para o chão. É a engenharia copiando a natureza! Assim a gente evita enchentes e ainda deixa a cidade mais bonita.',
             icon: '🌿',
             educationalTopic: 'infraestrutura_verde'
         },
 
         // Step 14: Floating Gardens
         {
+            chapter: 6,
             character: 'Dr. Sapo',
             portrait: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=400',
             background: 'https://images.unsplash.com/photo-1542355554-46329402513f?q=80&w=1080',
             title: 'Jardins Flutuantes: Ilhas Mágicas que Limpam',
-            text: 'Croac! Essa é minha invenção favorita: <b>jardins flutuantes</b>! São como ilhas de plantas que boiam na água do rio. <img src="https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> As raízes dessas plantas penduradas na água funcionam como filtros naturais - elas "comem" os poluentes e deixam a água mais limpa! Além disso, criam um habitat perfeito: o Gil coloca seus ovos ali embaixo, eu pulo de planta em planta caçando insetos, e até passarinhos fazem ninhos. É ecologia, beleza e limpeza, tudo junto! Uma solução genial que a natureza nos ensinou.',
+            text: 'Croac! Essa é minha invenção favorita: os <b>jardins flutuantes</b>! São ilhas de plantas que boiam no rio. <img src="https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> As raízes ficam penduradas na água e funcionam como o filtro de uma geladeira: elas comem a sujeira e deixam a água mais limpa! E ainda viram casa para todo mundo: o Gil põe seus ovos embaixo, eu pulo de planta em planta caçando insetos e até passarinho faz ninho ali. Limpeza, beleza e vida juntas. Croac, que ideia genial!',
             icon: '🪷',
             educationalTopic: 'jardins_flutuantes'
         },
 
-        // NOVOS STEPS: Tutorial de Mecânicas do Jogo
-
-        // Step 15: Game Introduction
+        // ===== PREFEITURA (obrigatório): o jogador constrói a sede da cidade =====
         {
-            character: 'Claudia',
-            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            background: 'https://images.unsplash.com/photo-1498036882173-b41c28a8ba34?q=80&w=1080',
-            title: 'Agora Vamos Aprender a Jogar!',
-            text: 'Muito bem, Guardião! Você aprendeu toda a teoria sobre água e natureza. Agora vou te ensinar como usar este simulador! <img src="https://images.pexels.com/photos/442576/pexels-photo-442576.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Pense neste jogo como uma cidade de verdade que você vai gerenciar. Você vai construir prédios, proteger o rio e tomar decisões importantes. Cada escolha sua afeta a saúde da água e a felicidade dos moradores. Nas próximas telas, vou te explicar cada parte do jogo para você virar um mestre!',
-            icon: '🎮'
+            group: 'cityhall', mode: 'coach', character: 'Claudia', portrait: CLAUDIA, icon: '🏛️',
+            title: 'Primeiro passo: a Prefeitura',
+            text: 'Toda cidade precisa de uma sede de governo, e é da <b>Prefeitura</b> que você vai comandar as obras. Esta fica por conta do governo federal: <b>não custa nada</b>!',
+            waitFor: 'city_hall',
+            // já abre a categoria certa: com outra aberta, o botão "Públicos" fica fora da tela
+            enter: gm => gm.uiManager.uiState.currentCategory !== 'public' && gm.uiManager.selectCategory('public'),
+            placingHint: '👆 Agora clique (ou toque) num terreno do mapa. Onde a sombra ficar <b>verde</b>, a Prefeitura cabe.',
+            // O primeiro alvo visível ganha o destaque: acompanha o jogador abrindo menu → categoria → item
+            targets: [
+                { selector: '.mobile-build-btn', text: '👆 Toque em <b>Construir</b>.' },
+                { selector: '.building-item[data-building-type="city_hall"]', text: '👆 Escolha a <b>🏛️ Prefeitura Municipal</b>.', scrollIn: '#building-panel' },
+                { selector: '.category-btn[data-category="public"]', text: '👆 Abra a categoria <b>🏛️ Públicos</b>.' },
+                { selector: '.mobile-toggle.left', text: '👆 Toque em <b>🏗️</b> para abrir as construções.' },
+                { selector: '#building-panel', text: '👆 Abra a categoria <b>🏛️ Públicos</b> no menu de construções.' }
+            ]
+        },
+        {
+            group: 'cityhall', mode: 'coach', character: 'Claudia', portrait: CLAUDIA, icon: '🎉',
+            title: 'Prefeitura construída!',
+            text: 'Muito bem, Guardião! A cidade agora tem governo. Daqui pra frente, cada construção sai do <b>orçamento</b> da cidade: gaste com sabedoria.'
         },
 
-        // Step 16: Camera Movement
+        // ===== MISSÕES (opcional) =====
         {
-            character: 'Gil, o Lambari',
-            portrait: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400',
-            background: 'https://images.unsplash.com/photo-1498036882173-b41c28a8ba34?q=80&w=1080',
-            title: 'Movendo a Câmera: Explore a Cidade!',
-            text: 'Glub glub! Primeiro você precisa aprender a "nadar" pela cidade! Use as <b>setas do teclado</b> (↑ ↓ ← →) ou <b>arraste com o mouse</b> para mover a câmera. <img src="https://images.pexels.com/photos/1229861/pexels-photo-1229861.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Quer ver de perto? Use a <b>roda do mouse</b> ou <b>Zoom +/-</b> para aproximar e afastar. Você pode girar a câmera segurando o <b>botão direito do mouse</b> e movendo. Pratique bastante para conhecer cada cantinho da cidade - desde as nascentes lá no alto até a foz do rio!',
-            icon: '📹'
+            group: 'missions', mode: 'coach', offer: true, character: 'Claudia', portrait: CLAUDIA, icon: '🎯',
+            title: 'Quer conhecer as missões?',
+            text: 'As missões mostram o que a cidade precisa agora e dão recompensas. Posso te mostrar onde elas ficam?'
+        },
+        {
+            group: 'missions', mode: 'coach', character: 'Claudia', portrait: CLAUDIA, icon: '🎯',
+            title: 'O botão de Missões',
+            text: 'Clique em <b>🎯</b> sempre que quiser ver todos os seus desafios.',
+            targets: ['#btn-missions']
+        },
+        {
+            group: 'missions', mode: 'coach', character: 'Claudia', portrait: CLAUDIA, icon: '📋',
+            title: 'Suas missões',
+            text: 'Aqui ficam as missões ativas, com objetivos, recompensas e dicas. Completar missões dá <b>dinheiro</b> e <b>desbloqueia construções</b>!',
+            enter: openMissions,
+            targets: ['.hud-right']
+        },
+        {
+            group: 'missions', mode: 'coach', character: 'Claudia', portrait: CLAUDIA, icon: '💧',
+            title: 'A missão da vez',
+            text: 'Aqui fica a missão atual e o progresso dela. A primeira é construir uma <b>Bomba de Água</b>. Clique nela para ver os detalhes.',
+            enter: closeMissions,
+            targets: ['.hud-bottom .mission-info', '.hud-bottom-toggle']
         },
 
-        // Step 17: Building Selection
+        // ===== INTERFACE (opcional) =====
         {
-            character: 'Claudia',
-            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            background: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1080',
-            title: 'Construindo: Escolha com Sabedoria!',
-            text: 'No canto da tela você vai ver o <b>Menu de Construções</b>. Clique nele para ver todas as opções disponíveis! <img src="https://images.pexels.com/photos/1094767/pexels-photo-1094767.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Cada construção tem um propósito: 🏭 <b>Estação de Tratamento</b> limpa esgoto, 🌳 <b>Mata Ciliar</b> protege o rio, 🔬 <b>Centro de Pesquisa</b> monitora a qualidade da água. Para construir, <b>clique na construção desejada</b>, depois <b>clique no mapa</b> onde quer colocar. Mas cuidado! Cada construção custa dinheiro e recursos. Escolha com sabedoria!',
-            icon: '🏗️'
+            group: 'interface', mode: 'coach', offer: true, character: 'Gil, o Lambari', portrait: GIL, icon: '🧭',
+            title: 'Um tour pela tela?',
+            text: 'Glub! Posso te mostrar o que cada número da tela significa. É rapidinho!',
+            enter: closeMissions
         },
+        {
+            group: 'interface', mode: 'coach', character: 'Gil, o Lambari', portrait: GIL, icon: '💧',
+            title: 'Água',
+            text: 'Quanta água a cidade tem guardada. Se ela acabar, é <b>fim de jogo</b>!',
+            targets: ['.resource-item:has(#water-amount)', '#compact-water']
+        },
+        {
+            group: 'interface', mode: 'coach', character: 'Gil, o Lambari', portrait: GIL, icon: '🏭',
+            title: 'Poluição',
+            text: 'Quanto mais alta, pior para o rio e para mim! Se chegar a <b>100%</b>, também é fim de jogo. Tratamento de esgoto ajuda a baixar.',
+            targets: ['.resource-item:has(#pollution-level)', '.mobile-top-toggle.resource-toggle']
+        },
+        {
+            group: 'interface', mode: 'coach', character: 'Gil, o Lambari', portrait: GIL, icon: '👥',
+            title: 'População',
+            text: 'Quantas pessoas moram na cidade. Mais gente paga mais impostos, mas também consome mais água.',
+            targets: ['.resource-item:has(#population-count)', '#compact-population']
+        },
+        {
+            group: 'interface', mode: 'coach', character: 'Gil, o Lambari', portrait: GIL, icon: '😊',
+            title: 'Satisfação',
+            text: 'O quanto os moradores estão felizes com a cidade. Serviços públicos e parques deixam todo mundo mais contente.',
+            targets: ['.resource-item:has(#satisfaction-level)', '.mobile-top-toggle.resource-toggle']
+        },
+        {
+            group: 'interface', mode: 'coach', character: 'Gil, o Lambari', portrait: GIL, icon: '💰',
+            title: 'Orçamento',
+            text: 'O dinheiro da cidade. Toda construção custa, e algumas têm manutenção. Guarde um pouco para emergências!',
+            targets: ['.resource-item:has(#budget-amount)', '#compact-budget']
+        },
+        {
+            group: 'interface', mode: 'coach', character: 'Gil, o Lambari', portrait: GIL, icon: '⚡',
+            title: 'Energia',
+            text: 'Algumas construções precisam de eletricidade. Se faltar energia, elas perdem eficiência.',
+            targets: ['.resource-item:has(#electricity-amount)', '#compact-energy']
+        },
+        {
+            group: 'interface', mode: 'coach', character: 'Gil, o Lambari', portrait: GIL, icon: '🕐',
+            title: 'Relógio',
+            text: 'A data e a hora da cidade. O tempo só começa a passar quando este tutorial terminar.',
+            targets: ['.resource-item:has(#game-clock)', '.mobile-top-toggle.resource-toggle']
+        },
+        {
+            group: 'interface', mode: 'coach', character: 'Claudia', portrait: CLAUDIA, icon: '🏗️',
+            title: 'Construções',
+            text: 'Aqui ficam as construções, separadas por categoria. As marcadas com 🔒 ainda estão bloqueadas: clique nelas para <b>estudar</b> e desbloquear.',
+            targets: ['#building-panel', '.mobile-toggle.left']
+        },
+        {
+            group: 'interface', mode: 'coach', character: 'Gil, o Lambari', portrait: GIL, icon: '📹',
+            title: 'Movendo a câmera',
+            text: 'Arraste para mover, segure o <b>botão direito</b> para girar e use a <b>roda do mouse</b> para zoom (teclado: setas/WASD, Q/E gira, R volta). No celular, arraste com um dedo e use dois para zoom. Clique numa construção para ver os detalhes dela.'
+        },
+        {
+            group: 'interface', mode: 'coach', character: 'Dr. Sapo', portrait: SAPO, icon: '❓',
+            title: 'Ajuda e pausa',
+            text: 'Croac! Esqueceu um comando? O botão <b>❓</b> mostra todos. No computador, aperte <b>Espaço</b> para pausar: é no menu de pausa que você salva (o jogo também salva sozinho de tempos em tempos).',
+            targets: ['#btn-help']
+        },
+
+        // ===== FINAL =====
 
         // Step 18: Game Logic
         {
+            group: 'end',
             character: 'Dr. Sapo',
             portrait: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=400',
             background: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1080',
@@ -812,28 +938,9 @@ class TutorialSystem {
             icon: '⚙️'
         },
 
-        // Step 19: Missions Menu
-        {
-            character: 'Claudia',
-            portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            background: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=1080',
-            title: 'Menu de Missões: Seus Objetivos!',
-            text: 'Procure o ícone 📋 <b>Missões</b> na interface. Ali você verá todos os seus desafios! <img src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> As missões são divididas em categorias:<br>🎯 <b>Principais</b>: Objetivos obrigatórios para progredir<br>⭐ <b>Secundárias</b>: Desafios opcionais que dão recompensas<br>📚 <b>Educacionais</b>: Aprenda mais sobre ciência da água<br>Clique em cada missão para ver detalhes, recompensas e dicas. Complete missões para ganhar <b>pontos, dinheiro</b> e <b>desbloquear novas construções</b>!',
-            icon: '📋'
-        },
-
-        // Step 20: Resources & Progression
-        {
-            character: 'Gil, o Lambari',
-            portrait: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=400',
-            background: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1080',
-            title: 'Recursos e Progressão: Cresça Devagar!',
-            text: 'Glub! No topo da tela você vê seus <b>recursos</b>: 💰 Dinheiro, ⚡ Energia, 👥 População. <img src="https://images.pexels.com/photos/259027/pexels-photo-259027.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> A <b>progressão do jogo</b> funciona assim:<br>1️⃣ Complete missões → Ganhe recompensas<br>2️⃣ Use dinheiro para construir → Melhore a cidade<br>3️⃣ Melhore indicadores → Desbloqueie níveis<br>4️⃣ Níveis novos → Novas construções e desafios<br>Não gaste todo seu dinheiro de uma vez! Economize para emergências. A cidade cresce aos poucos, como uma plantinha que você cuida todos os dias.',
-            icon: '📈'
-        },
-
         // Step 21: Tips & Strategy
         {
+            group: 'end',
             character: 'Dr. Sapo',
             portrait: 'https://images.unsplash.com/photo-1551028150-64b9f398f678?q=80&w=400',
             background: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1080',
@@ -844,279 +951,391 @@ class TutorialSystem {
 
         // Step 22: Final Conclusion
         {
+            group: 'end',
             character: 'Claudia',
             portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=happy',
-            background: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1080',
+            background: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=1080',
             title: 'Você Está Pronto, Guardião!',
-            text: 'Parabéns! Agora você sabe tudo: desde o ciclo hidrológico e as bacias hidrográficas até como jogar e gerenciar a cidade. <img src="https://images.pexels.com/photos/1438072/pexels-photo-1438072.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Você entende que a água conecta tudo: agricultura, cidade, floresta e vida selvagem. Como disse Bordalo (2017), a água é fonte de vida e deve ser acessível para todos. Gil, Dr. Sapo e eu estaremos aqui para te ajudar durante sua jornada. Suas escolhas definirão o futuro desta cidade e de todos os seres que dependem da água. <b>Boa sorte, Guardião da Água!</b> 🌊',
+            text: 'Parabéns, Guardião! A Prefeitura está de pé e você já sabe como a cidade funciona. <img src="https://images.pexels.com/photos/1438072/pexels-photo-1438072.jpeg?auto=compress&cs=tinysrgb&w=300" style="width:100%; border-radius:8px; margin:10px 0;"/> Lembre-se: a água conecta tudo — a cidade, as plantações, a floresta e os bichos. Gil, Dr. Sapo e eu estaremos por perto. Quer rever as aulas sobre a água? É só tocar em <b>📚</b>. <b>Boa sorte, Guardião da Água!</b> 🌊',
             icon: '🎓'
         }
     ];
 }
 
     /**
-     * Starts the tutorial
+     * Inicia o tutorial. O GameManager já deixou o jogo em gameState 'tutorial' (congelado).
      */
-    async start() {
+    start() {
+        this.lessonsDeferred = false; // true = aulas sobre a água vêm uma por missão
+        this.nextChapter = 1;
+        return this.begin(this.tutorialSteps, 'tutorial');
+    }
+
+    /**
+     * Abre aulas sobre a água no meio do jogo, que fica congelado enquanto estiverem abertas.
+     * chapter = uma aula (a da missão concluída); sem chapter = todas (botão 📚).
+     */
+    openLessons(chapter) {
+        const gm = this.gameManager;
+        if (this.isActive || gm.gameState !== 'playing') return false;
+        const lessons = this.tutorialSteps.filter(s => s.chapter && (!chapter || s.chapter === chapter));
+        if (!lessons.length) return false;
+        gm.gameState = 'tutorial';
+        this.begin(lessons, 'lessons');
+        return true;
+    }
+
+    /** Hook de QuestSystem.completeQuest: quem escolheu aprender "durante o jogo" ganha a próxima aula. */
+    onMissionCompleted() {
+        if (!this.lessonsDeferred) return;
+        setTimeout(() => { // depois da comemoração da missão
+            if (this.openLessons(this.nextChapter)) this.nextChapter++;
+            const lastChapter = Math.max(...this.tutorialSteps.map(s => s.chapter || 0));
+            if (this.nextChapter > lastChapter) this.lessonsDeferred = false;
+        }, 4000);
+    }
+
+    /** run: 'tutorial' (início do jogo) ou 'lessons' (aulas abertas durante o jogo) */
+    async begin(steps, run) {
+        this.steps = steps;
+        this.run = run;
         this.isActive = true;
         this.currentStep = 0;
-
-        // Freeze game time so resources don't deplete and events don't trigger
-        // while the tutorial dialog is visible. Construction still completes in
-        // real time (uses Date.now()), so the starter city will be ready when
-        // the player finishes the tutorial.
-        if (this.gameManager) {
-            this.gameManager.timeScale = 0;
-        }
+        this.mode = null;
 
         this.showTutorialUI();
+        this.renderCurrentStep();
+        document.addEventListener('keydown', this.handleKey, true);
+        this.coachTimer = setInterval(() => this.updateCoach(), 250);
 
-        // Initialize 3D portrait if enabled
         if (this.use3DPortrait) {
             const initialized = await this.initialize3DPortrait();
-            if (initialized) {
-                // Load the 3D character model
-                await this.load3DCharacter();
-            } else {
+            if (!this.isActive) { this.dispose3DPortrait(); return; } // concluído enquanto carregava
+            if (!initialized) {
                 console.warn('⚠️ Falling back to 2D portraits');
                 this.use3DPortrait = false;
             }
+            this.renderCurrentStep(); // agora com o retrato 3D
         }
-
-        this.renderCurrentStep();
-        console.log('📚 Tutorial iniciado');
+        log(`📚 Tutorial iniciado (${run})`);
     }
 
-    /**
-     * Shows the tutorial UI
-     */
     showTutorialUI() {
-        const tutorialContainer = document.getElementById('tutorial-container');
-        if (tutorialContainer) {
-            tutorialContainer.style.display = 'flex';
-        }
+        document.getElementById('tutorial-container').style.display = 'flex';
     }
 
-    /**
-     * Hides the tutorial UI
-     */
     hideTutorialUI() {
-        const tutorialContainer = document.getElementById('tutorial-container');
-        if (tutorialContainer) {
-            tutorialContainer.style.display = 'none';
-        }
+        document.getElementById('tutorial-container').style.display = 'none';
+        document.getElementById('tutorial-spotlight').hidden = true;
+    }
+
+    groupOf(step) {
+        return step.group || 'intro';
+    }
+
+    /** Prédio que o passo atual manda construir (null = nenhum). Usado pela trava em UIManager.selectBuildingType. */
+    get allowedBuilding() {
+        return this.isActive ? this.steps[this.currentStep]?.waitFor ?? null : null;
+    }
+
+    isStepDone(step) {
+        return !step.waitFor || this.gameManager.buildingSystem.getBuildingsByType(step.waitFor).length > 0;
     }
 
     /**
      * Renders the current tutorial step
      */
     async renderCurrentStep() {
-        const step = this.tutorialSteps[this.currentStep];
-        if (!step) return;
+        const step = this.steps[this.currentStep];
+        if (!step || !this.isActive) return;
+
+        stopSpeaking();
+        step.enter?.(this.gameManager);
+
+        const container = document.getElementById('tutorial-container');
+        const mode = step.mode || 'story';
+        if (mode !== this.mode) {
+            this.mode = mode;
+            container.classList.toggle('tutorial--story', mode === 'story');
+            container.classList.toggle('tutorial--coach', mode === 'coach');
+            // o canvas do retrato muda de tamanho entre os modos
+            requestAnimationFrame(() => this.portraitEngine?.resize());
+        }
 
         // Handle portrait display (3D or 2D)
         const portrait = document.getElementById('tutorial-portrait');
         const portraitCanvas = document.getElementById('tutorial-portrait-canvas');
-        const portraitContainer = document.querySelector('.tutorial-portrait-container');
+        const portraitContainer = container.querySelector('.tut-portrait');
 
         // Characters with 3D models
         const has3DModel = ['Claudia', 'Gil, o Lambari', 'Dr. Sapo'].includes(step.character);
 
         if (this.use3DPortrait && this.portraitScene && has3DModel) {
-            // Show 3D portrait for characters with models
-            if (portraitCanvas) {
-                portraitCanvas.style.display = 'block';
-            }
-            if (portrait) {
-                portrait.style.display = 'none';
-            }
+            portraitCanvas.style.display = 'block';
+            portrait.style.display = 'none';
 
             // Load the appropriate character model if not already loaded or if character changed
             if (!this.currentCharacter || this.currentCharacter !== step.character) {
-                await this.load3DCharacter(step.character);
                 this.currentCharacter = step.character;
+                await this.load3DCharacter(step.character);
             }
 
             // Set character-specific background for portrait container
-            if (portraitContainer) {
-                switch(step.character) {
-                    case 'Claudia':
-                        portraitContainer.style.backgroundImage = 'linear-gradient(135deg, rgba(101, 84, 192, 0.15) 0%, rgba(74, 47, 189, 0.15) 100%), url("https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=400&h=400&fit=crop")';
-                        portraitContainer.style.backgroundSize = 'cover';
-                        portraitContainer.style.backgroundPosition = 'center';
-                        break;
-                    case 'Gil, o Lambari':
-                        portraitContainer.style.backgroundImage = 'linear-gradient(135deg, rgba(0, 119, 182, 0.3) 0%, rgba(0, 180, 216, 0.3) 100%), url("https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=400&h=400&fit=crop")';
-                        portraitContainer.style.backgroundSize = 'cover';
-                        portraitContainer.style.backgroundPosition = 'center';
-                        break;
-                    case 'Dr. Sapo':
-                        portraitContainer.style.backgroundImage = 'linear-gradient(135deg, rgba(46, 125, 50, 0.3) 0%, rgba(27, 94, 32, 0.3) 100%), url("https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=400&h=400&fit=crop")';
-                        portraitContainer.style.backgroundSize = 'cover';
-                        portraitContainer.style.backgroundPosition = 'center';
-                        break;
-                }
-            }
+            const backgrounds = {
+                'Claudia': 'linear-gradient(135deg, rgba(101, 84, 192, 0.55) 0%, rgba(74, 47, 189, 0.55) 100%), url("https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=400&h=400&fit=crop")',
+                'Gil, o Lambari': 'linear-gradient(135deg, rgba(0, 119, 182, 0.5) 0%, rgba(0, 180, 216, 0.5) 100%), url("https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=400&h=400&fit=crop")',
+                'Dr. Sapo': 'linear-gradient(135deg, rgba(46, 125, 50, 0.5) 0%, rgba(27, 94, 32, 0.5) 100%), url("https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=400&h=400&fit=crop")'
+            };
+            portraitContainer.style.backgroundImage = backgrounds[step.character];
         } else {
-            // Show 2D portrait for other characters
-            if (portraitCanvas) {
-                portraitCanvas.style.display = 'none';
-            }
-            if (portrait) {
-                portrait.style.display = 'block';
+            portraitCanvas.style.display = 'none';
+            portrait.style.display = 'block';
 
-                // Use emoji SVG as fallback immediately (don't wait for error)
-                portrait.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%234a9eff" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="80" text-anchor="middle" dy=".3em"%3E👩‍🔬%3C/text%3E%3C/svg%3E';
-                portrait.alt = step.character;
+            // Use emoji SVG as fallback immediately (don't wait for error)
+            portrait.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%234a9eff" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="80" text-anchor="middle" dy=".3em"%3E👩‍🔬%3C/text%3E%3C/svg%3E';
+            portrait.alt = step.character;
 
-                // Try to load actual image if it exists
-                const img = new Image();
-                img.onload = () => {
-                    portrait.src = step.portrait;
-                };
-                img.onerror = () => {
-                    // Keep the emoji fallback
-                    console.log(`ℹ️ Using emoji fallback for portrait: ${step.character}`);
-                };
-                img.src = step.portrait;
-            }
+            // Try to load actual image if it exists
+            const img = new Image();
+            img.onload = () => { portrait.src = step.portrait; };
+            img.onerror = () => log(`ℹ️ Using emoji fallback for portrait: ${step.character}`);
+            img.src = step.portrait;
 
-            // Remove background for 2D portraits
-            if (portraitContainer) {
-                portraitContainer.style.backgroundImage = 'none';
-            }
+            portraitContainer.style.backgroundImage = '';
         }
 
-        // FIX #3: Update background with solid color fallback
-        const background = document.getElementById('tutorial-background');
-        if (background) {
-            // Set gradient fallback immediately
-            background.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            background.style.backgroundColor = '#667eea';
-
-            // Try to load actual background if it exists
+        // Fundo de tela cheia só existe no modo story
+        if (step.background) {
+            const background = document.getElementById('tutorial-background');
             const img = new Image();
-            img.onload = () => {
-                background.style.backgroundImage = `url('${step.background}')`;
-            };
-            img.onerror = () => {
-                // Keep the gradient fallback
-                console.log(`ℹ️ Using gradient fallback for background`);
-            };
+            img.onload = () => { background.style.backgroundImage = `url('${step.background}')`; };
+            img.onerror = () => log('ℹ️ Using gradient fallback for background');
             img.src = step.background;
         }
 
-        // Update dialog content
-        const icon = document.getElementById('tutorial-icon');
-        if (icon) icon.textContent = step.icon;
-
-        const title = document.getElementById('tutorial-title');
-        if (title) title.textContent = step.title;
-
+        document.getElementById('tutorial-icon').textContent = step.icon;
+        document.getElementById('tutorial-title').textContent = step.title;
         const text = document.getElementById('tutorial-text');
-        if (text) text.innerHTML = step.text;
+        text.innerHTML = step.text;
+        text.scrollTop = 0;
+        document.getElementById('tutorial-character-name').textContent = step.character;
 
-        const character = document.getElementById('tutorial-character-name');
-        if (character) character.textContent = step.character;
+        // Progresso dentro da parte atual ("Missões · 2 de 4", "Aula 3 · 1 de 2")
+        const lessons = this.run === 'lessons';
+        const partOf = s => (lessons ? s.chapter : this.groupOf(s));
+        const part = this.steps.filter(s => partOf(s) === partOf(step));
+        const position = part.indexOf(step) + 1;
+        const label = lessons ? `Aula ${step.chapter}` : TutorialSystem.GROUP_LABELS[this.groupOf(step)];
+        document.getElementById('tutorial-progress').textContent = `${label} · ${position} de ${part.length}`;
+        document.getElementById('tutorial-progress-fill').style.width = `${(position / part.length) * 100}%`;
 
-        // Update progress
-        const progress = document.getElementById('tutorial-progress');
-        if (progress) {
-            progress.textContent = `${this.currentStep + 1} / ${this.tutorialSteps.length}`;
-        }
-
-        // Update button states
+        this.lastHint = null; // força redesenhar a dica
         this.updateButtonStates();
+        this.updateCoach();
 
-        console.log(`📚 Tutorial step ${this.currentStep + 1}/${this.tutorialSteps.length}: ${step.title}`);
+        log(`📚 Tutorial step ${this.currentStep + 1}/${this.steps.length}: ${step.title}`);
     }
 
-    /**
-     * Updates button states (enable/disable)
-     */
     updateButtonStates() {
+        const step = this.steps[this.currentStep];
         const prevBtn = document.getElementById('tutorial-prev-btn');
         const nextBtn = document.getElementById('tutorial-next-btn');
+        const skipBtn = document.getElementById('tutorial-skip-btn');
 
-        if (prevBtn) {
-            prevBtn.disabled = this.currentStep === 0;
+        prevBtn.disabled = this.currentStep === 0;
+        nextBtn.disabled = !this.isStepDone(step);
+
+        const last = this.currentStep === this.steps.length - 1;
+        const lessons = this.run === 'lessons';
+        if (last) {
+            nextBtn.textContent = lessons ? 'Voltar ao jogo' : 'Começar a jogar!';
+        } else {
+            nextBtn.textContent = step.nextLabel || (step.offer ? 'Mostrar' : 'Próximo →');
         }
 
-        if (nextBtn) {
-            if (this.currentStep === this.tutorialSteps.length - 1) {
-                nextBtn.textContent = 'Começar Jogo!';
-            } else {
-                nextBtn.textContent = 'Próximo';
+        const skipLabel = lessons ? (!last && 'Fechar aula') : step.skipLabel || TutorialSystem.SKIP_LABELS[this.groupOf(step)];
+        skipBtn.hidden = !skipLabel;
+        if (skipLabel) skipBtn.textContent = skipLabel;
+    }
+
+    /**
+     * Modo coach: destaca o primeiro alvo visível do passo e encaixa o card longe dele.
+     * Roda num intervalo porque o alvo muda conforme o jogador abre menus.
+     */
+    updateCoach() {
+        const step = this.steps[this.currentStep];
+        const spotlight = document.getElementById('tutorial-spotlight');
+        if (!this.isActive || !step || this.mode !== 'coach') {
+            spotlight.hidden = true;
+            return;
+        }
+
+        const placing = step.waitFor && this.gameManager.buildingSystem.previewMode;
+        const target = placing ? null : this.findTarget(step.targets);
+
+        const hint = document.getElementById('tutorial-hint');
+        const hintHtml = (placing ? step.placingHint : target?.text) || '';
+        if (hintHtml !== this.lastHint) {
+            this.lastHint = hintHtml;
+            hint.hidden = !hintHtml;
+            hint.innerHTML = hintHtml || '';
+        }
+
+        const container = document.getElementById('tutorial-container');
+        let dockX = 'center';
+        let dockY = 'bottom';
+        if (target) {
+            const r = target.el.getBoundingClientRect();
+            const pad = 6;
+            Object.assign(spotlight.style, {
+                left: `${r.left - pad}px`, top: `${r.top - pad}px`,
+                width: `${r.width + pad * 2}px`, height: `${r.height + pad * 2}px`
+            });
+            spotlight.hidden = false;
+            const cx = (r.left + r.right) / 2;
+            const cy = (r.top + r.bottom) / 2;
+            dockY = cy > window.innerHeight / 2 ? 'top' : 'bottom';
+            if (cx < window.innerWidth / 3) dockX = 'right';
+            else if (cx > window.innerWidth * 2 / 3) dockX = 'left';
+        } else {
+            spotlight.hidden = true;
+            if (placing) { // canto de cima: centro do mapa e barra do modo construção livres
+                dockX = 'right';
+                dockY = 'top';
             }
         }
+        container.dataset.dockX = dockX;
+        container.dataset.dockY = dockY;
+
+        // o "Próximo" destrava assim que o passo é cumprido
+        document.getElementById('tutorial-next-btn').disabled = !this.isStepDone(step);
+    }
+
+    findTarget(targets = []) {
+        for (const t of targets) {
+            const el = document.querySelector(t.selector || t);
+            if (!el) continue;
+            // alvo dentro de lista rolável: traz para a vista se a lista estiver na tela
+            if (t.scrollIn && !this.isOnScreen(el) && this.isOnScreen(document.querySelector(t.scrollIn))) {
+                el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            }
+            if (this.isOnScreen(el)) return { el, text: t.text };
+        }
+        return null;
+    }
+
+    isOnScreen(el) {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && r.right > 0 && r.bottom > 0 &&
+            r.left < window.innerWidth && r.top < window.innerHeight &&
+            (el.checkVisibility?.({ checkOpacity: true, checkVisibilityCSS: true }) ?? true);
     }
 
     /**
-     * Goes to next step
+     * Hook chamado por BuildingSystem.placeBuilding. A prefeitura do tutorial é
+     * grátis e fica pronta na hora (o loop está congelado, a obra nunca terminaria).
      */
-    next() {
-        if (this.currentStep < this.tutorialSteps.length - 1) {
-            this.currentStep++;
-            this.renderCurrentStep();
+    onBuildingPlaced(building) {
+        const step = this.steps[this.currentStep];
+        if (!this.isActive || building.type !== step?.waitFor) return;
+
+        const gm = this.gameManager;
+        gm.resourceManager.adjustResource('budget', building.config.cost);
+        gm.buildingSystem.buildingCooldown.active = false;
+        gm.buildingSystem.completeConstruction(building);
+        if (building.type === 'city_hall') {
+            gm.addCityHallLightingEffects(building);
+            gm.centerCameraOnCityHall(building.gridX, building.gridZ);
+        }
+        this.next();
+    }
+
+    onKeyDown(e) {
+        if (!this.isActive || e.target.closest?.('button, input, textarea, select')) return;
+        if (document.querySelector('.swal2-container')) return;
+
+        const story = this.mode === 'story';
+        const nextBtn = document.getElementById('tutorial-next-btn');
+        const skipBtn = document.getElementById('tutorial-skip-btn');
+
+        if (e.key === 'Enter' || (story && e.key === 'ArrowRight')) {
+            if (!nextBtn.disabled) this.next();
+        } else if (story && e.key === 'ArrowLeft') {
+            this.previous();
+        } else if (e.key === 'Escape' && !skipBtn.hidden) {
+            this.skip();
         } else {
-            // Tutorial completed
+            return; // no modo coach as setas continuam movendo a câmera
+        }
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    goTo(index) {
+        this.currentStep = index;
+        this.renderCurrentStep();
+    }
+
+    next() {
+        if (!this.isStepDone(this.steps[this.currentStep])) return;
+        if (this.currentStep < this.steps.length - 1) {
+            this.goTo(this.currentStep + 1);
+        } else {
             this.complete();
         }
     }
 
-    /**
-     * Goes to previous step
-     */
     previous() {
-        if (this.currentStep > 0) {
-            this.currentStep--;
-            this.renderCurrentStep();
-        }
+        if (this.currentStep > 0) this.goTo(this.currentStep - 1);
     }
 
     /**
-     * Skips the tutorial
+     * "Pular" leva ao início da próxima parte. Partes obrigatórias não têm o botão.
      */
     skip() {
-        if (this.canSkip) {
-            console.log('📚 Tutorial pulado');
-            this.complete();
+        if (this.run === 'lessons') return this.complete();
+        const step = this.steps[this.currentStep];
+        const group = this.groupOf(step);
+        if (!step.skipLabel && !TutorialSystem.SKIP_LABELS[group]) return;
+        if (group === 'intro') { // "durante o jogo": as aulas que faltam vêm uma por missão
+            this.lessonsDeferred = true;
+            this.nextChapter = step.chapter || 1;
         }
+        const nextIndex = this.steps.findIndex((s, i) => i > this.currentStep && this.groupOf(s) !== group);
+        log(`📚 Parte "${group}" pulada`);
+        if (nextIndex === -1) return this.complete();
+        this.goTo(nextIndex);
     }
 
     /**
-     * Completes the tutorial
+     * Encerra o tutorial e só então solta o jogo.
      */
     complete() {
+        if (!this.isActive) return;
         this.isActive = false;
+        clearInterval(this.coachTimer);
+        document.removeEventListener('keydown', this.handleKey, true);
         this.hideTutorialUI();
-
-        // Restore normal game time now that the tutorial is over
-        if (this.gameManager) {
-            this.gameManager.timeScale = 1;
-        }
-
-        // Dispose 3D portrait system
+        stopSpeaking();
         this.dispose3DPortrait();
 
-        // Mark tutorial as completed in save data
-        if (this.gameManager.saveSystem) {
-            this.gameManager.saveSystem.setTutorialCompleted(true);
-        }
+        const gm = this.gameManager;
+        gm.gameState = 'playing';
+        if (this.run === 'lessons') return;
 
-        console.log('✅ Tutorial concluído');
+        gm.timeScale = 1;
+        gm.questSystem?.restartClocks();
+        gm.saveSystem?.setTutorialCompleted(true);
 
-        // Show welcome notification
-        if (this.gameManager.uiManager) {
-            this.gameManager.uiManager.showNotification(
-                '🎓 Tutorial concluído! Boa sorte, Guardião da Água!',
-                'success',
-                5000
-            );
-        }
+        log('✅ Tutorial concluído');
+        gm.uiManager?.showNotification('🎓 Tutorial concluído! Boa sorte, Guardião da Água!', 'success', 5000);
     }
 }
 
+TutorialSystem.GROUP_LABELS = { intro: 'Introdução', cityhall: 'Prefeitura', missions: 'Missões', interface: 'Interface', end: 'Final' };
+TutorialSystem.SKIP_LABELS = { intro: 'Pular aulas', missions: 'Pular esta parte', interface: 'Pular esta parte' };
+
+
 // Exportar para escopo global
 window.TutorialSystem = TutorialSystem;
-console.log('📚 TutorialSystem carregado e exportado para window.TutorialSystem');
+log('📚 TutorialSystem carregado e exportado para window.TutorialSystem');

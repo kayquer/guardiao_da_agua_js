@@ -18,13 +18,11 @@ class AssetLoader {
         AssetLoader.instance = loader; // Definir instância singleton
         loader.onProgressCallback = onProgress;
         
-        console.log('📦 Iniciando carregamento de assets...');
+        log('📦 Iniciando carregamento de assets...');
         
         try {
             // Lista de assets para carregar
             const assetList = [
-                // Sprites
-                
                 // ===== BACKGROUND MUSIC =====
                 { type: 'audio', key: 'bgm_menu', path: 'Sounds/BGM/green-future-menu-theme-lively.mp3', optional: true },
                 { type: 'audio', key: 'bgm_gameplay', path: 'Sounds/BGM/green-city-gameplay-ambient.mp3', optional: true },
@@ -62,7 +60,7 @@ class AssetLoader {
             const loadPromises = assetList.map(asset => loader.loadAsset(asset));
             await Promise.allSettled(loadPromises);
             
-            console.log('✅ Carregamento de assets concluído');
+            log('✅ Carregamento de assets concluído');
             return loader.loadedAssets;
             
         } catch (error) {
@@ -97,7 +95,7 @@ class AssetLoader {
             
             if (asset) {
                 this.loadedAssets.set(key, asset);
-                console.log(`✅ Asset carregado: ${key}`);
+                log(`✅ Asset carregado: ${key}`);
             }
             
         } catch (error) {
@@ -180,9 +178,9 @@ class AssetLoader {
                 loaded: false,
                 loadInScene: async (scene) => {
                     try {
-                        console.log(`🎯 Carregando modelo 3D: ${path}`);
+                        log(`🎯 Carregando modelo 3D: ${path}`);
                         const result = await BABYLON.SceneLoader.ImportMeshAsync("", "", path, scene);
-                        console.log(`✅ Modelo 3D carregado: ${path}`);
+                        log(`✅ Modelo 3D carregado: ${path}`);
                         return {
                             meshes: result.meshes,
                             rootMesh: result.meshes[0],
@@ -324,7 +322,7 @@ class AssetLoader {
     
     // ===== FALLBACKS =====
     createFallbackAsset(key, type) {
-        console.log(`🔄 Criando fallback para: ${key}`);
+        log(`🔄 Criando fallback para: ${key}`);
         
         switch (type) {
             case 'image':
@@ -362,7 +360,7 @@ class AssetLoader {
         return {
             audio: null,
             duration: 0,
-            play: () => console.log('🔇 Audio fallback - sem som'),
+            play: () => log('🔇 Audio fallback - sem som'),
             pause: () => {},
             setVolume: () => {},
             setLoop: () => {}
@@ -377,50 +375,23 @@ class AssetLoader {
             this.onProgressCallback(percentage);
         }
         
-        console.log(`📦 Progresso: ${this.loadedCount}/${this.totalAssets} (${percentage.toFixed(1)}%)`);
+        log(`📦 Progresso: ${this.loadedCount}/${this.totalAssets} (${percentage.toFixed(1)}%)`);
     }
     
     // ===== ACESSO AOS ASSETS =====
     static getAsset(key) {
         return AssetLoader.instance?.loadedAssets.get(key) || null;
     }
-    
-    static hasAsset(key) {
-        return AssetLoader.instance?.loadedAssets.has(key) || false;
-    }
-    
-    static getAllAssets() {
-        return AssetLoader.instance?.loadedAssets || new Map();
-    }
-    
-    // ===== UTILITÁRIOS =====
-    static createBabylonTexture(key, scene) {
-        const asset = AssetLoader.getAsset(key);
-        if (asset && asset.canvas) {
-            return new BABYLON.Texture(asset.canvas.toDataURL(), scene);
-        }
-        return null;
-    }
-    
-    static createBabylonMaterial(key, scene, materialName) {
-        const texture = AssetLoader.createBabylonTexture(key, scene);
-        if (texture) {
-            const material = new BABYLON.StandardMaterial(materialName, scene);
-            material.diffuseTexture = texture;
-            return material;
-        }
-        return null;
-    }
-    
+
     // ===== CLEANUP =====
     dispose() {
         this.loadedAssets.clear();
         this.loadingPromises.clear();
-        console.log('🗑️ AssetLoader disposed');
+        log('🗑️ AssetLoader disposed');
     }
 }
 
 // Instância singleton
 AssetLoader.instance = null;
 
-console.log('📦 AssetLoader carregado');
+log('📦 AssetLoader carregado');

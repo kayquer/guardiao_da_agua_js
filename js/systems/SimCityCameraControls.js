@@ -86,7 +86,7 @@ class SimCityCameraControls {
         this.setupControls();
         this.startUpdateLoop();
         
-        console.log('🎮 SimCity-style camera controls initialized (Fixed Version)');
+        log('🎮 SimCity-style camera controls initialized (Fixed Version)');
     }
     
     /**
@@ -158,10 +158,10 @@ class SimCityCameraControls {
 
         this.boundHandlers.documentPointerup = () => {
             if (this.isDragging) {
-                console.log('🖱️ Mouse drag ended');
+                log('🖱️ Mouse drag ended');
             }
             if (this.isRotating) {
-                console.log('🖱️ Mouse rotation ended');
+                log('🖱️ Mouse rotation ended');
             }
             this.isDragging = false;
             this.isRotating = false;
@@ -174,7 +174,7 @@ class SimCityCameraControls {
         // Pointer down - start drag/rotation
         this.boundHandlers.pointerdown = (event) => {
             if (this.isActivelyPlacingBuilding()) {
-                console.log('🏗️ Camera controls blocked - actively placing building');
+                log('🏗️ Camera controls blocked - actively placing building');
                 return;
             }
 
@@ -185,12 +185,12 @@ class SimCityCameraControls {
             } else if (event.button === 1) { // Middle button - rotation
                 this.isRotating = true;
                 this.canvas.style.cursor = 'grab';
-                console.log('🖱️ Mouse rotation started (middle button)');
+                log('🖱️ Mouse rotation started (middle button)');
                 event.preventDefault();
             } else if (event.button === 2) { // Right button - also rotation
                 this.isRotating = true;
                 this.canvas.style.cursor = 'grab';
-                console.log('🖱️ Mouse rotation started (right button)');
+                log('🖱️ Mouse rotation started (right button)');
             }
 
             this.lastPointerPosition = { x: event.clientX, y: event.clientY };
@@ -307,7 +307,7 @@ class SimCityCameraControls {
             const wasQuickTap = touchDuration < 200 && !this.touchHasMoved;
             
             if (wasQuickTap) {
-                console.log('👆 Quick tap detected - allowing building selection');
+                log('👆 Quick tap detected - allowing building selection');
                 // Don't prevent default - let the tap propagate for building selection
             }
             
@@ -664,17 +664,7 @@ class SimCityCameraControls {
         this.targetPosition.z = Math.max(this.config.bounds.minZ, 
                                       Math.min(this.config.bounds.maxZ, this.targetPosition.z));
     }
-    
-    /**
-     * Enforce bounds on current camera position (for immediate updates)
-     */
-    enforceBounds() {
-        this.camera.target.x = Math.max(this.config.bounds.minX, 
-                                      Math.min(this.config.bounds.maxX, this.camera.target.x));
-        this.camera.target.z = Math.max(this.config.bounds.minZ, 
-                                      Math.min(this.config.bounds.maxZ, this.camera.target.z));
-    }
-    
+
     resetCamera() {
         // Return to default position and rotation
         this.targetPosition = BABYLON.Vector3.Zero();
@@ -682,7 +672,7 @@ class SimCityCameraControls {
         this.targetRadius = 30;
         this.camera.beta = Math.PI / 3.5;
 
-        console.log('📷 Camera reset to default position');
+        log('📷 Camera reset to default position');
     }
 
     /**
@@ -699,7 +689,7 @@ class SimCityCameraControls {
         // Enforce bounds
         this.enforceTargetBounds();
 
-        console.log(`📷 Camera centering on position (${worldX.toFixed(1)}, ${worldZ.toFixed(1)}) with radius ${radius}`);
+        log(`📷 Camera centering on position (${worldX.toFixed(1)}, ${worldZ.toFixed(1)}) with radius ${radius}`);
     }
 
     // ===== CONFIGURATION METHODS =====
@@ -719,21 +709,7 @@ class SimCityCameraControls {
         this.config.zoomLimits = { min, max };
         this.targetRadius = Math.max(min, Math.min(max, this.targetRadius));
     }
-    
-    setEdgePanning(enabled, threshold = 30, speed = 15.0) {
-        this.config.edgePanEnabled = enabled;
-        this.config.edgePanThreshold = threshold;
-        this.config.edgePanSpeed = speed;
-    }
-    
-    setSmoothingFactor(factor) {
-        this.config.smoothing = Math.max(0, Math.min(1, factor));
-    }
-    
-    setTouchMoveThreshold(threshold) {
-        this.touchMoveThreshold = threshold;
-    }
-    
+
     // ===== CLEANUP =====
     
     dispose() {
@@ -765,7 +741,7 @@ class SimCityCameraControls {
         // Clear bound handlers
         this.boundHandlers = {};
         
-        console.log('🗑️ SimCity camera controls disposed');
+        log('🗑️ SimCity camera controls disposed');
     }
 }
 

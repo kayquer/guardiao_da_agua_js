@@ -5,7 +5,7 @@
 
 class SaveSystem {
     constructor() {
-        console.log('💾 Inicializando SaveSystem...');
+        log('💾 Inicializando SaveSystem...');
         
         // Configurações
         this.saveKey = 'guardiao_agua_save';
@@ -17,7 +17,7 @@ class SaveSystem {
         // Verificar suporte
         this.storageAvailable = this.checkStorageSupport();
         
-        console.log('✅ SaveSystem inicializado');
+        log('✅ SaveSystem inicializado');
     }
     
     // ===== VERIFICAÇÃO DE SUPORTE =====
@@ -54,7 +54,7 @@ class SaveSystem {
             // Atualizar lista de saves
             this.updateSaveList(slotName, saveData.metadata);
             
-            console.log(`💾 Jogo salvo: ${slotName}`);
+            log(`💾 Jogo salvo: ${slotName}`);
             return true;
             
         } catch (error) {
@@ -75,7 +75,7 @@ class SaveSystem {
             
             localStorage.setItem(this.autoSaveKey, dataToSave);
             
-            console.log('💾 Auto-save realizado');
+            log('💾 Auto-save realizado');
             return true;
             
         } catch (error) {
@@ -133,7 +133,7 @@ class SaveSystem {
                 return null;
             }
             
-            console.log(`📁 Jogo carregado: ${slotName}`);
+            log(`📁 Jogo carregado: ${slotName}`);
             return saveData.gameData;
             
         } catch (error) {
@@ -162,7 +162,7 @@ class SaveSystem {
                 return null;
             }
             
-            console.log('📁 Auto-save carregado');
+            log('📁 Auto-save carregado');
             return saveData.gameData;
             
         } catch (error) {
@@ -207,79 +207,7 @@ class SaveSystem {
             console.error('❌ Erro ao atualizar lista de saves:', error);
         }
     }
-    
-    getSaveList() {
-        if (!this.storageAvailable) return {};
-        
-        try {
-            const saveListKey = `${this.saveKey}_list`;
-            return JSON.parse(localStorage.getItem(saveListKey) || '{}');
-        } catch (error) {
-            console.error('❌ Erro ao obter lista de saves:', error);
-            return {};
-        }
-    }
-    
-    // ===== REMOÇÃO =====
-    deleteSave(slotName) {
-        if (!this.storageAvailable) return false;
-        
-        try {
-            const key = `${this.saveKey}_${slotName}`;
-            localStorage.removeItem(key);
-            
-            // Remover da lista
-            const saveListKey = `${this.saveKey}_list`;
-            let saveList = JSON.parse(localStorage.getItem(saveListKey) || '{}');
-            delete saveList[slotName];
-            localStorage.setItem(saveListKey, JSON.stringify(saveList));
-            
-            console.log(`🗑️ Save removido: ${slotName}`);
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Erro ao remover save:', error);
-            return false;
-        }
-    }
-    
-    deleteAutoSave() {
-        if (!this.storageAvailable) return false;
-        
-        try {
-            localStorage.removeItem(this.autoSaveKey);
-            console.log('🗑️ Auto-save removido');
-            return true;
-        } catch (error) {
-            console.error('❌ Erro ao remover auto-save:', error);
-            return false;
-        }
-    }
-    
-    clearAllSaves() {
-        if (!this.storageAvailable) return false;
-        
-        try {
-            // Remover todos os saves
-            const keys = Object.keys(localStorage);
-            keys.forEach(key => {
-                if (key.startsWith(this.saveKey)) {
-                    localStorage.removeItem(key);
-                }
-            });
-            
-            // Remover auto-save
-            localStorage.removeItem(this.autoSaveKey);
-            
-            console.log('🗑️ Todos os saves removidos');
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Erro ao limpar saves:', error);
-            return false;
-        }
-    }
-    
+
     // ===== COMPRESSÃO =====
     compressData(data) {
         try {
@@ -313,7 +241,7 @@ class SaveSystem {
         
         try {
             localStorage.setItem(this.settingsKey, JSON.stringify(settings));
-            console.log('💾 Configurações salvas');
+            log('💾 Configurações salvas');
             return true;
         } catch (error) {
             console.error('❌ Erro ao salvar configurações:', error);
@@ -332,101 +260,7 @@ class SaveSystem {
             return null;
         }
     }
-    
-    // ===== INFORMAÇÕES DE ARMAZENAMENTO =====
-    getStorageInfo() {
-        if (!this.storageAvailable) {
-            return {
-                available: false,
-                used: 0,
-                total: 0,
-                percentage: 0
-            };
-        }
-        
-        try {
-            let used = 0;
-            
-            // Calcular espaço usado pelos saves do jogo
-            Object.keys(localStorage).forEach(key => {
-                if (key.startsWith(this.saveKey) || 
-                    key === this.autoSaveKey || 
-                    key === this.settingsKey) {
-                    used += localStorage.getItem(key).length;
-                }
-            });
-            
-            // Estimar total disponível (varia por navegador, geralmente 5-10MB)
-            const estimatedTotal = 5 * 1024 * 1024; // 5MB
-            
-            return {
-                available: true,
-                used: used,
-                total: estimatedTotal,
-                percentage: (used / estimatedTotal) * 100,
-                usedFormatted: this.formatBytes(used),
-                totalFormatted: this.formatBytes(estimatedTotal)
-            };
-            
-        } catch (error) {
-            console.error('❌ Erro ao obter informações de armazenamento:', error);
-            return {
-                available: false,
-                used: 0,
-                total: 0,
-                percentage: 0
-            };
-        }
-    }
-    
-    formatBytes(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-    
-    // ===== EXPORT/IMPORT =====
-    exportSave(slotName = 'manual_save') {
-        const saveData = this.loadGame(slotName);
-        if (!saveData) return null;
-        
-        try {
-            const exportData = {
-                game: 'Guardião da Água',
-                version: '1.0.0',
-                exportDate: new Date().toISOString(),
-                data: saveData
-            };
-            
-            return JSON.stringify(exportData, null, 2);
-        } catch (error) {
-            console.error('❌ Erro ao exportar save:', error);
-            return null;
-        }
-    }
-    
-    importSave(importString, slotName = 'imported_save') {
-        try {
-            const importData = JSON.parse(importString);
-            
-            // Verificar formato
-            if (!importData.game || importData.game !== 'Guardião da Água') {
-                throw new Error('Arquivo de save inválido');
-            }
-            
-            // Salvar dados importados
-            return this.saveGame(importData.data, slotName);
-            
-        } catch (error) {
-            console.error('❌ Erro ao importar save:', error);
-            return false;
-        }
-    }
-    
+
     // ===== MÉTODOS ESTÁTICOS =====
     static hasSaveData() {
         const saveSystem = new SaveSystem();
@@ -449,7 +283,7 @@ class SaveSystem {
     // Tutorial persistence disabled - tutorial always shows on game start
     setTutorialCompleted(completed = true) {
         // No-op: Tutorial completion is not persisted
-        console.log(`📚 Tutorial completion not persisted (always shows on start)`);
+        log(`📚 Tutorial completion not persisted (always shows on start)`);
         return true;
     }
 
@@ -461,4 +295,4 @@ class SaveSystem {
 
 // Exportar para escopo global
 window.SaveSystem = SaveSystem;
-console.log('💾 SaveSystem carregado e exportado para window.SaveSystem');
+log('💾 SaveSystem carregado e exportado para window.SaveSystem');

@@ -5,7 +5,7 @@
 
 class SettingsManager {
     constructor() {
-        console.log('⚙️ Inicializando SettingsManager...');
+        log('⚙️ Inicializando SettingsManager...');
         
         // Configurações padrão
         this.defaultSettings = {
@@ -45,7 +45,7 @@ class SettingsManager {
         // Configurar event listeners
         this.setupEventListeners();
         
-        console.log('✅ SettingsManager inicializado');
+        log('✅ SettingsManager inicializado');
     }
     
     // ===== INICIALIZAÇÃO =====
@@ -92,7 +92,7 @@ class SettingsManager {
                 const value = parseInt(e.target.value);
                 masterVolumeValue.textContent = `${value}%`;
                 this.settings.audio.masterVolume = value;
-                console.log('🔊 Volume geral alterado para:', value);
+                log('🔊 Volume geral alterado para:', value);
                 this.applyAudioSettings();
             });
         }
@@ -105,7 +105,7 @@ class SettingsManager {
                 const value = parseInt(e.target.value);
                 musicVolumeValue.textContent = `${value}%`;
                 this.settings.audio.musicVolume = value;
-                console.log('🎵 Volume da música alterado para:', value);
+                log('🎵 Volume da música alterado para:', value);
                 this.applyAudioSettings();
             });
         }
@@ -118,7 +118,7 @@ class SettingsManager {
                 const value = parseInt(e.target.value);
                 sfxVolumeValue.textContent = `${value}%`;
                 this.settings.audio.sfxVolume = value;
-                console.log('🔊 Volume dos efeitos alterado para:', value);
+                log('🔊 Volume dos efeitos alterado para:', value);
                 this.applyAudioSettings();
             });
         }
@@ -130,7 +130,7 @@ class SettingsManager {
         if (graphicsQuality) {
             graphicsQuality.addEventListener('change', (e) => {
                 this.settings.graphics.quality = e.target.value;
-                console.log('🎨 Qualidade gráfica alterada para:', e.target.value);
+                log('🎨 Qualidade gráfica alterada para:', e.target.value);
                 this.applyGraphicsSettings();
             });
         }
@@ -140,7 +140,7 @@ class SettingsManager {
         if (antialiasing) {
             antialiasing.addEventListener('change', (e) => {
                 this.settings.graphics.antialiasing = e.target.checked;
-                console.log('🎨 Anti-aliasing alterado para:', e.target.checked);
+                log('🎨 Anti-aliasing alterado para:', e.target.checked);
                 this.applyGraphicsSettings();
             });
         }
@@ -150,7 +150,7 @@ class SettingsManager {
         if (shadows) {
             shadows.addEventListener('change', (e) => {
                 this.settings.graphics.shadows = e.target.checked;
-                console.log('🌑 Sombras alteradas para:', e.target.checked);
+                log('🌑 Sombras alteradas para:', e.target.checked);
                 this.applyGraphicsSettings();
             });
         }
@@ -162,7 +162,7 @@ class SettingsManager {
         if (difficulty) {
             difficulty.addEventListener('change', (e) => {
                 this.settings.gameplay.difficulty = e.target.value;
-                console.log('🎮 Dificuldade alterada para:', e.target.value);
+                log('🎮 Dificuldade alterada para:', e.target.value);
                 this.applyGameplaySettings();
             });
         }
@@ -172,7 +172,7 @@ class SettingsManager {
         if (autoSave) {
             autoSave.addEventListener('change', (e) => {
                 this.settings.gameplay.autoSave = e.target.checked;
-                console.log('💾 Auto-save alterado para:', e.target.checked);
+                log('💾 Auto-save alterado para:', e.target.checked);
                 this.applyGameplaySettings();
             });
         }
@@ -182,7 +182,7 @@ class SettingsManager {
         if (tutorialHints) {
             tutorialHints.addEventListener('change', (e) => {
                 this.settings.gameplay.tutorialHints = e.target.checked;
-                console.log('💡 Dicas do tutorial alteradas para:', e.target.checked);
+                log('💡 Dicas do tutorial alteradas para:', e.target.checked);
                 this.applyGameplaySettings();
             });
         }
@@ -197,7 +197,7 @@ class SettingsManager {
                 const value = parseFloat(e.target.value);
                 cameraSensitivityValue.textContent = `${value.toFixed(1)}x`;
                 this.settings.controls.cameraSensitivity = value;
-                console.log('🎮 Sensibilidade da câmera alterada para:', value);
+                log('🎮 Sensibilidade da câmera alterada para:', value);
                 this.applyControlsSettings();
             });
         }
@@ -210,31 +210,14 @@ class SettingsManager {
                 const value = parseFloat(e.target.value);
                 zoomSpeedValue.textContent = `${value.toFixed(1)}x`;
                 this.settings.controls.zoomSpeed = value;
-                console.log('🔍 Velocidade do zoom alterada para:', value);
+                log('🔍 Velocidade do zoom alterada para:', value);
                 this.applyControlsSettings();
             });
         }
     }
-    
-    // ===== CONTROLE DE TELA =====
-    showSettings() {
-        console.log('⚙️ Abrindo configurações...');
-        
-        if (this.settingsScreen) {
-            this.settingsScreen.classList.add('active');
-        }
-        
-        // Atualizar valores na interface
-        this.updateUI();
-        
-        // Tocar som
-        if (window.AudioManager) {
-            AudioManager.playSound('sfx_click');
-        }
-    }
-    
+
     closeSettings() {
-        console.log('⚙️ Fechando configurações...');
+        log('⚙️ Fechando configurações...');
 
         if (this.settingsScreen) {
             this.settingsScreen.classList.remove('active');
@@ -306,19 +289,19 @@ class SettingsManager {
     
     // ===== APLICAÇÃO DE CONFIGURAÇÕES =====
     applyAudioSettings() {
-        console.log('🔊 Aplicando configurações de áudio...', this.settings.audio);
+        log('🔊 Aplicando configurações de áudio...', this.settings.audio);
 
         if (typeof AudioManager !== 'undefined') {
             try {
                 const audioManager = AudioManager.getInstance();
-                console.log('🔊 AudioManager encontrado, aplicando volumes...');
+                log('🔊 AudioManager encontrado, aplicando volumes...');
 
                 // Aplicar volumes (converter de 0-100 para 0-1)
                 audioManager.setMasterVolume(this.settings.audio.masterVolume / 100);
                 audioManager.setMusicVolume(this.settings.audio.musicVolume / 100);
                 audioManager.setSfxVolume(this.settings.audio.sfxVolume / 100);
 
-                console.log('✅ Configurações de áudio aplicadas:', {
+                log('✅ Configurações de áudio aplicadas:', {
                     master: audioManager.masterVolume,
                     music: audioManager.musicVolume,
                     sfx: audioManager.sfxVolume
@@ -332,7 +315,7 @@ class SettingsManager {
     }
     
     applyGraphicsSettings() {
-        console.log('🎨 Aplicando configurações gráficas...', this.settings.graphics);
+        log('🎨 Aplicando configurações gráficas...', this.settings.graphics);
 
         if (window.gameManager && window.gameManager.scene && window.gameManager.engine) {
             const scene = window.gameManager.scene;
@@ -348,14 +331,14 @@ class SettingsManager {
                 // Anti-aliasing (requer reinicialização do engine)
                 const currentAntialias = engine.getCreationOptions().antialias;
                 if (this.settings.graphics.antialiasing !== currentAntialias) {
-                    console.log('⚙️ Anti-aliasing alterado - será aplicado na próxima inicialização');
+                    log('⚙️ Anti-aliasing alterado - será aplicado na próxima inicialização');
                     // Salvar configuração para próxima inicialização
                     if (typeof GAME_CONFIG !== 'undefined') {
                         GAME_CONFIG.canvas.antialias = this.settings.graphics.antialiasing;
                     }
                 }
 
-                console.log('✅ Configurações gráficas aplicadas');
+                log('✅ Configurações gráficas aplicadas');
             } catch (error) {
                 console.error('❌ Erro ao aplicar configurações gráficas:', error);
             }
@@ -366,41 +349,33 @@ class SettingsManager {
 
     applyQualitySettings(scene, engine) {
         const quality = this.settings.graphics.quality;
-        console.log('🎨 Aplicando qualidade gráfica:', quality);
+        log('🎨 Aplicando qualidade gráfica:', quality);
 
         // Configurações baseadas na qualidade
-        let renderTargetSize, shadowMapSize, particleCount, lightIntensity;
+        let shadowMapSize, lightIntensity;
 
         switch (quality) {
             case 'low':
-                renderTargetSize = 512;
                 shadowMapSize = 512;
-                particleCount = 0.5;
                 lightIntensity = 0.8;
                 break;
             case 'medium':
-                renderTargetSize = 1024;
                 shadowMapSize = 1024;
-                particleCount = 1.0;
                 lightIntensity = 1.0;
                 break;
             case 'high':
-                renderTargetSize = 2048;
                 shadowMapSize = 2048;
-                particleCount = 1.5;
                 lightIntensity = 1.2;
                 break;
             default:
-                renderTargetSize = 1024;
                 shadowMapSize = 1024;
-                particleCount = 1.0;
                 lightIntensity = 1.0;
         }
 
         // Aplicar configurações de sombra baseadas na qualidade
         if (window.gameManager.shadowGenerator) {
             window.gameManager.shadowGenerator.mapSize = shadowMapSize;
-            console.log('🎨 Tamanho do mapa de sombras definido para:', shadowMapSize);
+            log('🎨 Tamanho do mapa de sombras definido para:', shadowMapSize);
         }
 
         // Ajustar intensidade das luzes
@@ -418,12 +393,12 @@ class SettingsManager {
             window.gameManager.gridManager.graphicsQuality = quality;
         }
 
-        console.log('🎨 Qualidade aplicada - Sombras:', shadowMapSize, 'Luzes:', lightIntensity);
+        log('🎨 Qualidade aplicada - Sombras:', shadowMapSize, 'Luzes:', lightIntensity);
     }
 
     applyShadowSettings(scene) {
         const shadowsEnabled = this.settings.graphics.shadows;
-        console.log('🌑 Aplicando configurações de sombras:', shadowsEnabled);
+        log('🌑 Aplicando configurações de sombras:', shadowsEnabled);
 
         if (window.gameManager.shadowGenerator) {
             const shadowGenerator = window.gameManager.shadowGenerator;
@@ -439,27 +414,27 @@ class SettingsManager {
                     }
                 });
 
-                console.log('✅ Sombras ativadas');
+                log('✅ Sombras ativadas');
             } else {
                 // Desativar sombras
                 shadowGenerator.getShadowMap().renderList = [];
-                console.log('❌ Sombras desativadas');
+                log('❌ Sombras desativadas');
             }
         }
     }
     
     applyGameplaySettings() {
-        console.log('🎮 Aplicando configurações de gameplay...', this.settings.gameplay);
+        log('🎮 Aplicando configurações de gameplay...', this.settings.gameplay);
 
         try {
             // Auto-save
             if (typeof GAME_CONFIG !== 'undefined') {
                 if (this.settings.gameplay.autoSave) {
                     GAME_CONFIG.gameplay.autoSaveInterval = 30000; // 30 segundos
-                    console.log('✅ Auto-save ativado (30s)');
+                    log('✅ Auto-save ativado (30s)');
                 } else {
                     GAME_CONFIG.gameplay.autoSaveInterval = Number.MAX_SAFE_INTEGER; // Desativar
-                    console.log('❌ Auto-save desativado');
+                    log('❌ Auto-save desativado');
                 }
             }
 
@@ -478,21 +453,21 @@ class SettingsManager {
                         break;
                 }
                 window.gameManager.eventSystem.setDifficulty(difficultyMultiplier);
-                console.log(`🎮 Dificuldade definida: ${this.settings.gameplay.difficulty} (${difficultyMultiplier}x)`);
+                log(`🎮 Dificuldade definida: ${this.settings.gameplay.difficulty} (${difficultyMultiplier}x)`);
             }
 
             // Dicas do tutorial - removida dependência do TutorialManager obsoleto
             // As configurações de tutorial agora são gerenciadas pelo TutorialSystem
-            console.log(`💡 Dicas do tutorial: ${this.settings.gameplay.tutorialHints ? 'ativadas' : 'desativadas'}`);
+            log(`💡 Dicas do tutorial: ${this.settings.gameplay.tutorialHints ? 'ativadas' : 'desativadas'}`);
 
-            console.log('✅ Configurações de gameplay aplicadas');
+            log('✅ Configurações de gameplay aplicadas');
         } catch (error) {
             console.error('❌ Erro ao aplicar configurações de gameplay:', error);
         }
     }
     
     applyControlsSettings() {
-        console.log('🎮 Aplicando configurações de controles...', this.settings.controls);
+        log('🎮 Aplicando configurações de controles...', this.settings.controls);
 
         try {
             if (window.gameManager && window.gameManager.camera) {
@@ -506,7 +481,7 @@ class SettingsManager {
                 camera.angularSensibilityX = baseSensitivity * sensitivityMultiplier;
                 camera.angularSensibilityY = baseSensitivity * sensitivityMultiplier;
 
-                console.log(`🎮 Sensibilidade da câmera aplicada: ${this.settings.controls.cameraSensitivity}x (${camera.angularSensibilityX})`);
+                log(`🎮 Sensibilidade da câmera aplicada: ${this.settings.controls.cameraSensitivity}x (${camera.angularSensibilityX})`);
 
                 // Aplicar velocidade do zoom
                 // Valores menores = zoom mais rápido, valores maiores = zoom mais lento
@@ -515,17 +490,17 @@ class SettingsManager {
 
                 camera.wheelPrecision = baseZoomSpeed * zoomMultiplier;
 
-                console.log(`🔍 Velocidade do zoom aplicada: ${this.settings.controls.zoomSpeed}x (${camera.wheelPrecision})`);
+                log(`🔍 Velocidade do zoom aplicada: ${this.settings.controls.zoomSpeed}x (${camera.wheelPrecision})`);
 
                 // Aplicar velocidade de movimento WASD
                 if (window.gameManager.cameraControls) {
                     const baseMovementSpeed = 0.5;
                     window.gameManager.cameraControls.speed = baseMovementSpeed * this.settings.controls.cameraSensitivity;
 
-                    console.log(`🚶 Velocidade de movimento WASD aplicada: ${window.gameManager.cameraControls.speed}`);
+                    log(`🚶 Velocidade de movimento WASD aplicada: ${window.gameManager.cameraControls.speed}`);
                 }
 
-                console.log('✅ Configurações de controles aplicadas');
+                log('✅ Configurações de controles aplicadas');
             } else {
                 console.warn('⚠️ GameManager ou câmera não encontrados');
             }
@@ -545,14 +520,14 @@ class SettingsManager {
             this.applyGameplaySettings();
             this.applyControlsSettings();
             
-            console.log('✅ Configurações salvas');
+            log('✅ Configurações salvas');
             
             // Mostrar feedback
             this.showSaveConfirmation();
             
         } catch (error) {
             console.error('❌ Erro ao salvar configurações:', error);
-            alert('Erro ao salvar configurações!');
+            gameAlert('Não deu para salvar', 'As configurações não foram salvas. Tente de novo.', 'error');
         }
     }
     
@@ -562,7 +537,7 @@ class SettingsManager {
             if (saved) {
                 const loadedSettings = JSON.parse(saved);
                 this.settings = this.mergeSettings(this.defaultSettings, loadedSettings);
-                console.log('✅ Configurações carregadas:', this.settings);
+                log('✅ Configurações carregadas:', this.settings);
 
                 // Aplicar configurações carregadas com delay para garantir que os sistemas estejam prontos
                 setTimeout(() => {
@@ -572,7 +547,7 @@ class SettingsManager {
                     this.applyControlsSettings();
                 }, 100);
             } else {
-                console.log('📝 Nenhuma configuração salva encontrada, usando padrões');
+                log('📝 Nenhuma configuração salva encontrada, usando padrões');
                 // Aplicar configurações padrão
                 setTimeout(() => {
                     this.applyAudioSettings();
@@ -587,13 +562,13 @@ class SettingsManager {
         }
     }
     
-    resetToDefaults() {
-        if (confirm('Tem certeza que deseja restaurar todas as configurações para os valores padrão?')) {
+    async resetToDefaults() {
+        if (await gameConfirm('Restaurar padrões?', 'Todas as configurações voltam aos valores originais.', { confirmText: 'Restaurar', icon: 'warning' })) {
             this.settings = JSON.parse(JSON.stringify(this.defaultSettings));
             this.updateUI();
             this.saveSettings();
             
-            console.log('🔄 Configurações restauradas para padrão');
+            log('🔄 Configurações restauradas para padrão');
         }
     }
     
@@ -642,15 +617,11 @@ class SettingsManager {
     getSettings() {
         return { ...this.settings };
     }
-    
-    getSetting(category, key) {
-        return this.settings[category] && this.settings[category][key];
-    }
-    
+
     // ===== CLEANUP =====
     dispose() {
-        console.log('🗑️ SettingsManager disposed');
+        log('🗑️ SettingsManager disposed');
     }
 }
 
-console.log('⚙️ SettingsManager carregado');
+log('⚙️ SettingsManager carregado');

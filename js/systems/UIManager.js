@@ -5,7 +5,7 @@
 
 class UIManager {
     constructor(gameManager) {
-        console.log('🖥️ Inicializando UIManager...');
+        log('🖥️ Inicializando UIManager...');
 
         this.gameManager = gameManager;
         
@@ -91,7 +91,7 @@ class UIManager {
         // ===== STANDARDIZED STATE UPDATE HELPER =====
         this.updatePanelState = (panelType) => {
             this.uiState.currentOpenPanel = panelType;
-            console.log(`📋 Panel state updated: ${panelType || 'null'}`);
+            log(`📋 Panel state updated: ${panelType || 'null'}`);
         };
 
         // ===== EVENT LISTENER TRACKING =====
@@ -126,7 +126,7 @@ class UIManager {
 
     // ===== INICIALIZAÇÃO =====
     initialize() {
-        console.log('🖥️ Inicializando interface...');
+        log('🖥️ Inicializando interface...');
 
         // Verificar se elementos existem
         if (!this.elements.waterAmount) {
@@ -143,7 +143,7 @@ class UIManager {
         // Configurar responsividade
         this.handleResize();
 
-        console.log('✅ Interface inicializada');
+        log('✅ Interface inicializada');
     }
 
     // ===== MISSION MANAGEMENT UI =====
@@ -249,25 +249,6 @@ class UIManager {
 
         // ===== CONTROL BUTTON ENHANCEMENTS =====
         this.setupControlButtonEnhancements();
-    }
-
-    // ===== LATERAL MENU STABILITY FIX: Event listener management =====
-    cleanupEventListeners() {
-        // Remove existing category button listeners
-        if (this.categoryButtonListeners) {
-            this.categoryButtonListeners.forEach(({ element, listener }) => {
-                element.removeEventListener('click', listener);
-            });
-        }
-        this.categoryButtonListeners = [];
-
-        // Remove existing building item listeners
-        if (this.buildingItemListeners) {
-            this.buildingItemListeners.forEach(({ element, listener }) => {
-                element.removeEventListener('click', listener);
-            });
-        }
-        this.buildingItemListeners = [];
     }
 
     setupCategoryButtons() {
@@ -382,7 +363,7 @@ class UIManager {
             this.setupResourceItemTooltip(item, type, name);
         });
 
-        console.log('✅ Enhanced resource panel interactions initialized');
+        log('✅ Enhanced resource panel interactions initialized');
     }
 
     /**
@@ -430,7 +411,7 @@ class UIManager {
             this.eventListeners.compactResource.push({ element, event: 'click', handler: clickHandler });
         });
 
-        console.log('✅ Compact resource click handlers initialized');
+        log('✅ Compact resource click handlers initialized');
     }
 
     /**
@@ -509,7 +490,7 @@ class UIManager {
         try {
             // ===== STATE TRANSITION MANAGEMENT =====
             if (this.uiState.isTransitioning) {
-                console.log('⚠️ UI transition in progress, ignoring resource panel request');
+                log('⚠️ UI transition in progress, ignoring resource panel request');
                 return;
             }
 
@@ -521,14 +502,14 @@ class UIManager {
 
             // ===== FIX: Allow user-initiated panel switches to override priority restrictions =====
             if (!userInitiated && currentPriority > newPriority && this.uiState.currentOpenPanel !== resourceType) {
-                console.log(`⚠️ Higher priority panel (${this.uiState.currentOpenPanel}) is open, resource panel blocked (system-initiated)`);
+                log(`⚠️ Higher priority panel (${this.uiState.currentOpenPanel}) is open, resource panel blocked (system-initiated)`);
                 this.uiState.isTransitioning = false;
                 return;
             }
 
             // User-initiated switches always succeed
             if (userInitiated && this.uiState.currentOpenPanel !== resourceType) {
-                console.log(`🎯 User-initiated panel switch: ${this.uiState.currentOpenPanel} → ${resourceType}`);
+                log(`🎯 User-initiated panel switch: ${this.uiState.currentOpenPanel} → ${resourceType}`);
             }
 
             // ===== CLEAN TRANSITION =====
@@ -600,225 +581,18 @@ class UIManager {
         ];
 
         // ===== FEATURE FLAGS: Hide categories based on release configuration =====
-        if (typeof FEATURE_FLAGS !== 'undefined') {
-            categories.forEach(category => {
-                const categoryBtn = document.querySelector(`[data-category="${category.id}"]`);
-                if (categoryBtn && !FEATURE_FLAGS.isCategoryVisible(category.id)) {
-                    categoryBtn.style.display = 'none';
-                }
-            });
-        }
+        categories.forEach(category => {
+            const categoryBtn = document.querySelector(`[data-category="${category.id}"]`);
+            if (categoryBtn && !FEATURE_FLAGS.isCategoryVisible(category.id)) {
+                categoryBtn.style.display = 'none';
+            }
+        });
 
         // As categorias já estão no HTML, apenas configurar eventos
         this.selectCategory('water'); // Categoria padrão
     }
     
-    createMobileControls() {
-        if (!this.isMobile) return;
-
-        // Remove existing mobile controls
-        document.querySelectorAll('.mobile-toggle').forEach(btn => btn.remove());
-        document.querySelectorAll('.mobile-top-toggle').forEach(btn => btn.remove());
-
-        // ===== BOTTOM TOGGLES (Building and Information Panels) =====
-        // Criar botões de toggle para mobile (bottom)
-        const leftToggle = document.createElement('button');
-        leftToggle.className = 'mobile-toggle left';
-        leftToggle.innerHTML = '🏗️';
-        leftToggle.title = 'Abrir painel de construção';
-
-        // Add both click and touch event handlers
-        const leftToggleHandler = (e) => {
-            e.preventDefault();
-            this.toggleMobilePanel('left');
-        };
-        leftToggle.addEventListener('click', leftToggleHandler);
-        leftToggle.addEventListener('touchend', leftToggleHandler, { passive: false });
-
-        document.body.appendChild(leftToggle);
-
-        const rightToggle = document.createElement('button');
-        rightToggle.className = 'mobile-toggle right';
-        rightToggle.innerHTML = 'ℹ️';
-        rightToggle.title = 'Abrir painel de informações';
-
-        // ===== SELECTION COUNTER BADGE =====
-        const selectionBadge = document.createElement('span');
-        selectionBadge.className = 'selection-counter-badge';
-        selectionBadge.style.display = 'none'; // Hidden by default
-        selectionBadge.textContent = '0';
-        rightToggle.appendChild(selectionBadge);
-
-        // Add both click and touch event handlers
-        const rightToggleHandler = (e) => {
-            e.preventDefault();
-            this.toggleMobilePanel('right');
-        };
-        rightToggle.addEventListener('click', rightToggleHandler);
-        rightToggle.addEventListener('touchend', rightToggleHandler, { passive: false });
-
-        document.body.appendChild(rightToggle);
-
-        // ===== TOP TOGGLES (Resource Panel and Control Buttons) =====
-        // Create toggle button for resource-panel
-        const resourceToggle = document.createElement('button');
-        resourceToggle.className = 'mobile-top-toggle resource-toggle';
-        resourceToggle.innerHTML = '📊';
-        resourceToggle.title = 'Mostrar/Ocultar recursos';
-
-        const resourceToggleHandler = (e) => {
-            e.preventDefault();
-            this.toggleTopHudElement('resource-panel');
-        };
-        resourceToggle.addEventListener('click', resourceToggleHandler);
-        resourceToggle.addEventListener('touchend', resourceToggleHandler, { passive: false });
-
-        // Create toggle button for control-buttons
-        const controlToggle = document.createElement('button');
-        controlToggle.className = 'mobile-top-toggle control-toggle';
-        controlToggle.innerHTML = '⚙️';
-        controlToggle.title = 'Mostrar/Ocultar controles';
-
-        const controlToggleHandler = (e) => {
-            e.preventDefault();
-            this.toggleTopHudElement('control-buttons');
-        };
-        controlToggle.addEventListener('click', controlToggleHandler);
-        controlToggle.addEventListener('touchend', controlToggleHandler, { passive: false });
-
-        // Add top toggles to hud-top
-        const hudTop = document.querySelector('.hud-top');
-        if (hudTop) {
-            hudTop.appendChild(resourceToggle);
-            //hudTop.appendChild(controlToggle);
-        }
-
-        // Store references for later updates
-        this.mobileToggleButtons = {
-            left: leftToggle,
-            right: rightToggle,
-            resource: resourceToggle,
-            control: controlToggle
-        };
-
-        // Initialize top HUD elements as hidden on mobile
-        this.initializeTopHudVisibility();
-
-        // Create mobile panel headers for hud-right
-        this.createMobilePanelHeaders();
-
-        // ===== MOBILE BOTTOM HUD TOGGLE =====
-        this.createMobileBottomHudToggle();
-    }
-
-    createMobileBottomHudToggle() {
-        if (!this.isMobile) return;
-
-        // Remove existing toggle if any
-        const existingToggle = document.querySelector('.hud-bottom-toggle');
-        if (existingToggle) existingToggle.remove();
-
-        // Create toggle button
-        const hudBottomToggle = document.createElement('button');
-        hudBottomToggle.className = 'hud-bottom-toggle';
-        hudBottomToggle.innerHTML = '▲'; // Up arrow (collapsed state)
-        hudBottomToggle.title = 'Mostrar/Ocultar informações de missão';
-
-        // Track state
-        this.hudBottomExpanded = false;
-
-        // Toggle handler
-        const toggleHandler = (e) => {
-            e.preventDefault();
-            this.toggleMobileBottomHud();
-        };
-
-        hudBottomToggle.addEventListener('click', toggleHandler);
-        hudBottomToggle.addEventListener('touchend', toggleHandler, { passive: false });
-
-        document.body.appendChild(hudBottomToggle);
-
-        // Store reference
-        this.hudBottomToggleButton = hudBottomToggle;
-
-        console.log('📱 Mobile bottom HUD toggle created');
-    }
-
-    toggleMobileBottomHud() {
-        if (!this.isMobile) return;
-
-        const hudBottom = document.querySelector('.hud-bottom');
-        const toggleButton = this.hudBottomToggleButton;
-
-        if (!hudBottom || !toggleButton) return;
-
-        this.hudBottomExpanded = !this.hudBottomExpanded;
-
-        if (this.hudBottomExpanded) {
-            // Expand
-            hudBottom.classList.add('expanded');
-            toggleButton.classList.add('expanded');
-            toggleButton.innerHTML = '▼'; // Down arrow (expanded state)
-            console.log('📱 Mobile bottom HUD expanded');
-        } else {
-            // Collapse
-            hudBottom.classList.remove('expanded');
-            toggleButton.classList.remove('expanded');
-            toggleButton.innerHTML = '▲'; // Up arrow (collapsed state)
-            console.log('📱 Mobile bottom HUD collapsed');
-        }
-    }
-
-    /**
-     * Toggle visibility of top HUD elements (resource-panel or control-buttons)
-     * @param {string} elementClass - The class name of the element to toggle
-     */
-    toggleTopHudElement(elementClass) {
-        if (!this.isMobile) return;
-
-        const element = document.querySelector(`.${elementClass}`);
-        if (!element) return;
-
-        const isVisible = element.classList.contains('mobile-visible');
-
-        if (isVisible) {
-            element.classList.remove('mobile-visible');
-            // Update toggle button state
-            const toggleBtn = elementClass === 'resource-panel' ?
-                this.mobileToggleButtons.resource :
-                this.mobileToggleButtons.control;
-            if (toggleBtn) {
-                toggleBtn.classList.remove('active');
-            }
-        } else {
-            element.classList.add('mobile-visible');
-            // Update toggle button state
-            const toggleBtn = elementClass === 'resource-panel' ?
-                this.mobileToggleButtons.resource :
-                this.mobileToggleButtons.control;
-            if (toggleBtn) {
-                toggleBtn.classList.add('active');
-            }
-        }
-    }
-
-    /**
-     * Initialize top HUD elements visibility on mobile
-     */
-    initializeTopHudVisibility() {
-        if (!this.isMobile) return;
-
-        const resourcePanel = document.querySelector('.resource-panel');
-        const controlButtons = document.querySelector('.control-buttons');
-
-        // Hide both by default on mobile
-        if (resourcePanel) {
-            resourcePanel.classList.remove('mobile-visible');
-        }
-        if (controlButtons) {
-            controlButtons.classList.remove('mobile-visible');
-        }
-    }
+    // ===== Controles, HUD e painéis do mobile: js/systems/ui/MobilePanels.js (5 métodos) =====
     
     // ===== ATUALIZAÇÃO =====
     update(deltaTime) {
@@ -1009,7 +783,7 @@ class UIManager {
 
         // ===== STATE TRANSITION MANAGEMENT =====
         if (this.uiState.isTransitioning) {
-            console.log('⚠️ UI transition in progress, ignoring category selection');
+            log('⚠️ UI transition in progress, ignoring category selection');
             return;
         }
 
@@ -1048,7 +822,7 @@ class UIManager {
                 this.updatePanelState('building'); // FIX: Use updatePanelState
             }
 
-            console.log(`🏗️ Categoria selecionada: ${category}`);
+            log(`🏗️ Categoria selecionada: ${category}`);
 
         } catch (error) {
             console.error('❌ Error in category selection:', error);
@@ -1172,9 +946,16 @@ class UIManager {
         // ===== ENHANCED BUILDING SELECTION WITH STATE MANAGEMENT =====
         if (!buildingTypeId) return;
 
+        // Durante o tutorial só se constrói o que o passo atual pede
+        const tutorial = this.gameManager.tutorialSystem;
+        if (tutorial?.isActive && buildingTypeId !== tutorial.allowedBuilding) {
+            this.showNotification('📚 Siga o tutorial: ainda não é hora de construir isso.', 'warning');
+            return;
+        }
+
         // ===== STATE TRANSITION MANAGEMENT =====
         if (this.uiState.isTransitioning) {
-            console.log('⚠️ UI transition in progress, ignoring building selection');
+            log('⚠️ UI transition in progress, ignoring building selection');
             return;
         }
 
@@ -1225,7 +1006,7 @@ class UIManager {
             // Audio feedback
             AudioManager.playSound('sfx_click');
 
-            console.log(`🏗️ Building type selected: ${buildingTypeId}`);
+            log(`🏗️ Building type selected: ${buildingTypeId}`);
 
         } catch (error) {
             console.error('❌ Error in building selection:', error);
@@ -1276,181 +1057,14 @@ class UIManager {
         }
     }
 
-    /**
-     * Shows mobile building details modal with "Construir" button
-     * @param {Object} buildingType - The building type object
-     * @param {string} buildingTypeId - The building type ID
-     */
-    showMobileBuildingDetailsModal(buildingType, buildingTypeId) {
-        console.log('📱 Opening mobile building details modal:', buildingType.name);
-
-        // Open the right panel (details panel)
-        const hudRight = document.querySelector('.hud-right');
-        if (!hudRight) return;
-
-        // Show the panel
-        this.mobilePanelsVisible.right = true;
-        hudRight.classList.add('active');
-
-        // Update toggle button state
-        if (this.mobileToggleButtons && this.mobileToggleButtons.right) {
-            this.mobileToggleButtons.right.classList.add('active');
-        }
-
-        // Build the details content
-        const detailsContent = this.elements.detailsContent;
-        if (!detailsContent) return;
-
-        // Check if player can afford the building
-        const currentBudget = this.gameManager.resourceManager.resources.budget.current;
-        const canAfford = currentBudget >= buildingType.cost;
-
-        detailsContent.innerHTML = `
-            <div class="mobile-building-details">
-                <div class="building-header">
-                    <div class="building-icon-large">${buildingType.icon || '🏗️'}</div>
-                    <h2>${buildingType.name}</h2>
-                </div>
-
-                <div class="building-description">
-                    <p>${buildingType.description || 'Sem descrição disponível'}</p>
-                </div>
-
-                <div class="building-stats-mobile">
-                    <div class="stat-item">
-                        <span class="stat-label">💰 Custo:</span>
-                        <span class="stat-value ${!canAfford ? 'critical' : ''}">R$ ${buildingType.cost.toLocaleString()}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">🔧 Manutenção:</span>
-                        <span class="stat-value">R$ ${buildingType.maintenanceCost}/min</span>
-                    </div>
-                    ${buildingType.waterProduction ? `
-                        <div class="stat-item">
-                            <span class="stat-label">💧 Produção de Água:</span>
-                            <span class="stat-value">${buildingType.waterProduction}L/s</span>
-                        </div>
-                    ` : ''}
-                    ${buildingType.pollutionReduction ? `
-                        <div class="stat-item">
-                            <span class="stat-label">🌿 Redução de Poluição:</span>
-                            <span class="stat-value">${buildingType.pollutionReduction}%</span>
-                        </div>
-                    ` : ''}
-                    ${buildingType.powerGeneration ? `
-                        <div class="stat-item">
-                            <span class="stat-label">⚡ Geração de Energia:</span>
-                            <span class="stat-value">${buildingType.powerGeneration} MW</span>
-                        </div>
-                    ` : ''}
-                    ${buildingType.powerConsumption ? `
-                        <div class="stat-item">
-                            <span class="stat-label">🔌 Consumo de Energia:</span>
-                            <span class="stat-value">${buildingType.powerConsumption} MW</span>
-                        </div>
-                    ` : ''}
-                </div>
-
-                ${buildingType.requirements && buildingType.requirements.nearWater ? `
-                    <div class="building-requirements">
-                        <h4>📋 Requisitos Especiais</h4>
-                        <ul>
-                            <li>💧 Deve estar próximo à água</li>
-                        </ul>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-
-        // Create and add the "Construir" button
-        const existingBtn = hudRight.querySelector('.mobile-build-btn');
-        if (existingBtn) {
-            existingBtn.remove();
-        }
-
-        const buildBtn = document.createElement('button');
-        buildBtn.className = `mobile-build-btn ${!canAfford ? 'disabled' : ''}`;
-        buildBtn.innerHTML = `<span>🏗️</span> Construir`;
-        buildBtn.disabled = !canAfford;
-
-        buildBtn.addEventListener('click', () => {
-            if (!canAfford) {
-                this.showNotification('❌ Dinheiro insuficiente!', 'error', 3000);
-                AudioManager.playSound('sfx_build_error', 0.6);
-                return;
-            }
-
-            // Close both mobile panels (right info panel and left building panel)
-            this.closeMobilePanel('right');
-            this.closeMobilePanel('left');
-
-            // Enter build mode
-            this.gameManager.enterBuildMode(buildingTypeId);
-
-            // Update UI state
-            this.updatePanelState('construction'); // FIX: Use updatePanelState
-            this.uiState.selectedBuilding = buildingTypeId;
-
-            console.log('🏗️ Entering build mode from mobile modal - panels closed');
-        });
-
-        hudRight.appendChild(buildBtn);
-
-        // Add escape key listener
-        this.addMobileEscapeListener();
-    }
+    // ===== Controles, HUD e painéis do mobile: js/systems/ui/MobilePanels.js (1 métodos) =====
 
     clearBuildingSelection() {
         document.querySelectorAll('.building-item').forEach(item => {
             item.classList.remove('selected');
         });
     }
-    
-    // ===== DETALHES =====
-    showBuildingTypeDetails(buildingTypeId) {
-        if (!this.elements.detailsContent) return;
-        
-        const buildingType = this.gameManager.buildingSystem.buildingTypes.get(buildingTypeId);
-        if (!buildingType) return;
-        
-        this.elements.detailsContent.innerHTML = `
-            <div class="detail-item">
-                <div class="detail-label">Nome:</div>
-                <div class="detail-value">${buildingType.name}</div>
-            </div>
-            <div class="detail-item">
-                <div class="detail-label">Custo:</div>
-                <div class="detail-value">R$ ${buildingType.cost.toLocaleString()}</div>
-            </div>
-            <div class="detail-item">
-                <div class="detail-label">Manutenção:</div>
-                <div class="detail-value">R$ ${buildingType.maintenanceCost}/min</div>
-            </div>
-            ${buildingType.waterProduction ? `
-                <div class="detail-item">
-                    <div class="detail-label">Produção de Água:</div>
-                    <div class="detail-value">${buildingType.waterProduction}L/s</div>
-                </div>
-            ` : ''}
-            ${buildingType.pollutionReduction ? `
-                <div class="detail-item">
-                    <div class="detail-label">Redução de Poluição:</div>
-                    <div class="detail-value">${buildingType.pollutionReduction}%/s</div>
-                </div>
-            ` : ''}
-            ${buildingType.waterStorage ? `
-                <div class="detail-item">
-                    <div class="detail-label">Armazenamento:</div>
-                    <div class="detail-value">${buildingType.waterStorage}L</div>
-                </div>
-            ` : ''}
-            <div class="detail-item">
-                <div class="detail-label">Descrição:</div>
-                <div class="detail-value">${buildingType.description}</div>
-            </div>
-        `;
-    }
-    
+
     // ===== BUILDING DETAILS CONSOLIDATED =====
     // Note: Building details functionality has been consolidated into showBuildingSelectionInfo()
     // for better consistency and comprehensive information display
@@ -1505,8 +1119,8 @@ class UIManager {
         AudioManager.playSound('sfx_success');
     }
     
-    returnToMainMenu() {
-        if (confirm('Tem certeza que deseja voltar ao menu principal? O progresso não salvo será perdido.')) {
+    async returnToMainMenu() {
+        if (await gameConfirm('Voltar ao menu?', 'O jogo é salvo automaticamente antes de sair.', { confirmText: 'Voltar ao menu', icon: 'warning' })) {
             // Salvar automaticamente
             this.gameManager.autoSave();
             
@@ -1607,441 +1221,7 @@ class UIManager {
         this.elements.detailsContent.innerHTML = requirementsHTML;
     }
 
-    clearBuildingRequirements() {
-        if (!this.elements.detailsContent) return;
-
-        this.selectedBuildingType = null;
-        this.elements.detailsContent.innerHTML = '<p>Selecione um edifício para ver os requisitos</p>';
-    }
-
-    // ===== PAINÉIS DE DETALHES DE RECURSOS =====
-    showResourcePanel(panelType) {
-        // ===== ENHANCED RESOURCE PANEL DISPLAY SYSTEM =====
-
-        // ===== VALIDATION =====
-        if (!panelType) {
-            console.warn('⚠️ No panel type specified');
-            return;
-        }
-
-        // ===== STATE MANAGEMENT: Prevent showing same panel =====
-        if (this.uiState.currentOpenPanel === panelType) {
-            console.log(`📊 Panel ${panelType} already open`);
-            return;
-        }
-
-        // ===== TRANSITION MANAGEMENT =====
-        if (this.uiState.isTransitioning) {
-            console.log('⚠️ UI transition in progress, queuing resource panel request');
-            setTimeout(() => this.showResourcePanel(panelType), 100);
-            return;
-        }
-
-        this.uiState.isTransitioning = true;
-
-        try {
-            // ===== CLEAN PREVIOUS PANEL =====
-            this.closeCurrentPanel();
-
-            // ===== UPDATE STATE =====
-            this.updatePanelState(panelType);
-
-            // ===== MOBILE: Open right panel if on mobile =====
-            if (this.isMobile) {
-                const hudRight = document.querySelector('.hud-right');
-                if (hudRight) {
-                    this.mobilePanelsVisible.right = true;
-                    hudRight.classList.add('active');
-
-                    // Update toggle button state
-                    if (this.mobileToggleButtons && this.mobileToggleButtons.right) {
-                        this.mobileToggleButtons.right.classList.add('active');
-                    }
-
-                    // Add escape key listener
-                    this.addMobileEscapeListener();
-                }
-            }
-
-            // ===== FIX: Ensure details panel is visible after transition =====
-            if (this.elements.detailsPanel) {
-                this.elements.detailsPanel.style.display = 'flex';
-            }
-
-            // ===== FIX: Show hud-right container (desktop) =====
-            this.showHudRight();
-
-            // ===== ENHANCED PANEL ROUTING =====
-            const panelMethods = {
-                'water': () => this.showWaterDetailsPanel(),
-                'budget': () => this.showBudgetDetailsPanel(),
-                'electricity': () => this.showEnergyDetailsPanel(),
-                'satisfaction': () => this.showSatisfactionDetailsPanel(),
-                'population': () => this.showPopulationDetailsPanel(),
-                'pollution': () => this.showPollutionDetailsPanel()
-            };
-
-            const panelMethod = panelMethods[panelType];
-            if (panelMethod) {
-                panelMethod();
-                console.log(`📊 Resource panel opened: ${panelType}`);
-            } else {
-                console.warn(`⚠️ Unknown panel type: ${panelType}`);
-                this.updatePanelState(null); // FIX: Use updatePanelState
-            }
-
-        } catch (error) {
-            console.error('❌ Error showing resource panel:', error);
-            this.updatePanelState(null); // FIX: Use updatePanelState
-        } finally {
-            this.uiState.isTransitioning = false;
-        }
-    }
-
-    closeResourcePanel() {
-        try {
-            // ===== ENHANCED RESOURCE PANEL CLOSING =====
-
-            // ===== STATE CLEANUP =====
-            this.updatePanelState(null);
-
-            // ===== PANEL CLEANUP =====
-            if (this.elements.detailsContent) {
-                this.elements.detailsContent.innerHTML = '<p>Clique em um recurso para ver detalhes</p>';
-            }
-
-            if (this.elements.detailsPanel) {
-                this.elements.detailsPanel.style.display = 'none';
-            }
-
-            console.log('📊 Resource panel closed');
-
-        } catch (error) {
-            console.error('❌ Error closing resource panel:', error);
-        }
-    }
-
-    showWaterDetailsPanel() {
-        if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
-
-        const water = this.gameManager.resourceManager.resources.water;
-        const buildings = this.gameManager.buildingSystem.getAllBuildings();
-
-        // Filtrar edifícios que produzem água
-        const waterProducers = buildings.filter(b => b.config.waterProduction && b.active);
-
-        let detailsHTML = `
-            <div class="resource-details-panel">
-                <h4>💧 Gestão de Água</h4>
-
-                <div class="resource-summary">
-                    <div class="resource-stat">
-                        <span class="stat-label">Água Atual:</span>
-                        <span class="stat-value">${Math.floor(water.current).toLocaleString()}L</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Capacidade:</span>
-                        <span class="stat-value">${Math.floor(water.storage).toLocaleString()}L</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Produção:</span>
-                        <span class="stat-value">+${this.formatNumber(water.production, 1)}L/min</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Consumo:</span>
-                        <span class="stat-value">-${this.formatNumber(water.consumption, 1)}L/min</span>
-                    </div>
-                </div>
-
-                <div class="resource-sources">
-                    <h5>🏭 Fontes de Produção</h5>
-        `;
-
-        if (waterProducers.length > 0) {
-            detailsHTML += '<ul>';
-            waterProducers.forEach(building => {
-                const production = building.config.waterProduction * building.efficiency;
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-production">+${this.formatNumber(production, 1)}L/min</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
-        } else {
-            detailsHTML += '<p class="no-sources">Nenhuma fonte de água ativa</p>';
-        }
-
-        // Edifícios de armazenamento
-        const storageBuildings = buildings.filter(b => b.config.waterStorage && b.active);
-        if (storageBuildings.length > 0) {
-            detailsHTML += '<h5>🛢️ Armazenamento</h5><ul>';
-            storageBuildings.forEach(building => {
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-storage">+${building.config.waterStorage}L</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
-        }
-
-        detailsHTML += '</div></div>';
-
-        this.elements.detailsContent.innerHTML = detailsHTML;
-    }
-
-    showBudgetDetailsPanel() {
-        if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
-
-        const budget = this.gameManager.resourceManager.resources.budget;
-        const taxRevenue = this.gameManager.resourceManager.getTaxRevenue();
-        const taxRates = this.gameManager.resourceManager.getTaxRates();
-        const buildings = this.gameManager.buildingSystem.getAllBuildings();
-
-        let detailsHTML = `
-            <div class="resource-details-panel">
-                <h4>💰 Gestão Financeira</h4>
-
-                <div class="resource-summary">
-                    <div class="resource-stat">
-                        <span class="stat-label">Orçamento Atual:</span>
-                        <span class="stat-value">R$ ${Math.floor(budget.current).toLocaleString()}</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Receita:</span>
-                        <span class="stat-value">+R$ ${this.formatNumber(budget.income, 0)}/min</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Despesas:</span>
-                        <span class="stat-value">-R$ ${this.formatNumber(budget.expenses, 0)}/min</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Saldo Líquido:</span>
-                        <span class="stat-value ${budget.income - budget.expenses >= 0 ? 'positive' : 'negative'}">
-                            ${budget.income - budget.expenses >= 0 ? '+' : ''}R$ ${this.formatNumber(budget.income - budget.expenses, 0)}/min
-                        </span>
-                    </div>
-                </div>
-
-                <div class="resource-sources">
-                    <h5>💵 Receitas Tributárias</h5>
-                    <ul>
-                        <li>
-                            <span class="building-icon">👥</span>
-                            <span class="building-name">Impostos Populacionais</span>
-                            <span class="building-production">+R$ ${this.formatNumber(taxRevenue.population, 0)}/min</span>
-                        </li>
-                        <li>
-                            <span class="building-icon">🏬</span>
-                            <span class="building-name">Impostos Comerciais</span>
-                            <span class="building-production">+R$ ${this.formatNumber(taxRevenue.business, 0)}/min</span>
-                        </li>
-                        <li>
-                            <span class="building-icon">🎡</span>
-                            <span class="building-name">Impostos de Turismo</span>
-                            <span class="building-production">+R$ ${this.formatNumber(taxRevenue.tourism, 0)}/min</span>
-                        </li>
-                        <li>
-                            <span class="building-icon">🏛️</span>
-                            <span class="building-name">Receita Base</span>
-                            <span class="building-production">+R$ 1.000/min</span>
-                        </li>
-                        <li style="border-top: 2px solid rgba(0,0,0,0.2); margin-top: 8px; padding-top: 8px;">
-                            <span class="building-icon">📊</span>
-                            <span class="building-name"><strong>Total de Receitas</strong></span>
-                            <span class="building-production"><strong>+R$ ${this.formatNumber(budget.income, 0)}/min</strong></span>
-                        </li>
-                    </ul>
-                    <p style="font-size: 0.85em; color: #666; margin-top: 10px; font-style: italic;">
-                        💡 Multiplicador de Desenvolvimento: ${taxRates.developmentMultiplier.toFixed(2)}x
-                    </p>
-                </div>
-
-                <div class="resource-sources">
-                    <h5>💸 Fontes de Despesa</h5>
-        `;
-
-        const expenseBuildings = buildings.filter(b => b.config.maintenanceCost && b.active);
-        if (expenseBuildings.length > 0) {
-            detailsHTML += '<ul>';
-            expenseBuildings.forEach(building => {
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-cost">-R$ ${building.config.maintenanceCost}/min</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
-        } else {
-            detailsHTML += '<p class="no-sources">Nenhuma despesa de manutenção</p>';
-        }
-
-        detailsHTML += '</div></div>';
-
-        this.elements.detailsContent.innerHTML = detailsHTML;
-    }
-
-    showEnergyDetailsPanel() {
-        if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
-
-        const electricity = this.gameManager.resourceManager.resources.electricity;
-        const buildings = this.gameManager.buildingSystem.getAllBuildings();
-
-        // Filtrar edifícios que geram energia
-        const powerGenerators = buildings.filter(b => b.config.powerGeneration && b.active);
-        const powerConsumers = buildings.filter(b => b.config.powerConsumption && b.active);
-
-        let detailsHTML = `
-            <div class="resource-details-panel">
-                <h4>⚡ Gestão de Energia</h4>
-
-                <div class="resource-summary">
-                    <div class="resource-stat">
-                        <span class="stat-label">Geração:</span>
-                        <span class="stat-value">+${this.formatNumber(electricity.generation, 1)}kW</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Consumo:</span>
-                        <span class="stat-value">-${this.formatNumber(electricity.consumption, 1)}kW</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Saldo:</span>
-                        <span class="stat-value ${electricity.generation - electricity.consumption >= 0 ? 'positive' : 'negative'}">
-                            ${electricity.generation - electricity.consumption >= 0 ? '+' : ''}${this.formatNumber(electricity.generation - electricity.consumption, 1)}kW
-                        </span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Eficiência:</span>
-                        <span class="stat-value">${Math.floor(electricity.efficiency * 100)}%</span>
-                    </div>
-                </div>
-
-                <div class="resource-sources">
-                    <h5>🔋 Fontes de Energia</h5>
-        `;
-
-        if (powerGenerators.length > 0) {
-            detailsHTML += '<ul>';
-            powerGenerators.forEach(building => {
-                // ===== ZERO-ERROR POLICY FIX: Validar config antes de usar =====
-                if (!building.config) {
-                    console.warn('⚠️ Edifício sem configuração encontrado na lista de geradores:', building);
-                    return;
-                }
-
-                const isRenewable = ['hydroelectric_plant', 'solar_panel', 'wind_turbine'].includes(building.type);
-                const renewableIcon = isRenewable ? '🌱' : '🏭';
-                const renewableText = isRenewable ? ' (Renovável)' : ' (Não-renovável)';
-
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-production">+${building.config.powerGeneration}kW</span>
-                        <span class="renewable-indicator">${renewableIcon}${renewableText}</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
-        } else {
-            detailsHTML += '<p class="no-sources">Nenhuma fonte de energia ativa</p>';
-        }
-
-        if (powerConsumers.length > 0) {
-            detailsHTML += '<h5>🔌 Consumidores de Energia</h5><ul>';
-            powerConsumers.forEach(building => {
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-consumption">-${building.config.powerConsumption}kW</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
-        }
-
-        detailsHTML += '</div></div>';
-
-        this.elements.detailsContent.innerHTML = detailsHTML;
-    }
-
-    showSatisfactionDetailsPanel() {
-        if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
-
-        const population = this.gameManager.resourceManager.resources.population;
-        const buildings = this.gameManager.buildingSystem.getAllBuildings();
-
-        let detailsHTML = `
-            <div class="resource-details-panel">
-                <h4>😊 Satisfação da População</h4>
-
-                <div class="resource-summary">
-                    <div class="resource-stat">
-                        <span class="stat-label">Satisfação Atual:</span>
-                        <span class="stat-value">${Math.floor(population.satisfaction)}%</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">População:</span>
-                        <span class="stat-value">${population.current.toLocaleString()}</span>
-                    </div>
-                </div>
-
-                <div class="resource-sources">
-                    <h5>✅ Fatores Positivos</h5>
-                    <ul>
-                        <li>💧 Abastecimento de água adequado</li>
-                        <li>🌿 Baixos níveis de poluição</li>
-                        <li>🏥 Infraestrutura de saúde</li>
-                        <li>🎓 Infraestrutura educacional</li>
-                        <li>🌳 Áreas verdes e recreação</li>
-                    </ul>
-
-                    <h5>❌ Fatores Negativos</h5>
-                    <ul>
-                        <li>🚱 Escassez de água</li>
-                        <li>🏭 Alta poluição</li>
-                        <li>⚡ Falta de energia</li>
-                        <li>🚧 Infraestrutura inadequada</li>
-                    </ul>
-
-                    <h5>🏢 Edifícios que Melhoram Satisfação</h5>
-        `;
-
-        const satisfactionBuildings = buildings.filter(b => b.config && b.config.satisfactionBonus && b.active);
-        if (satisfactionBuildings.length > 0) {
-            detailsHTML += '<ul>';
-            satisfactionBuildings.forEach(building => {
-                // ===== ZERO-ERROR POLICY FIX: Validar config antes de usar =====
-                if (!building.config) {
-                    console.warn('⚠️ Edifício sem configuração encontrado na lista de satisfação:', building);
-                    return;
-                }
-
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-bonus">+${building.config.satisfactionBonus}%</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
-        } else {
-            detailsHTML += '<p class="no-sources">Nenhum edifício de satisfação construído</p>';
-        }
-
-        detailsHTML += '</div></div>';
-
-        this.elements.detailsContent.innerHTML = detailsHTML;
-    }
+    // ===== Painéis de detalhe de recursos: js/systems/ui/ResourcePanels.js (6 métodos) =====
 
     // ===== ALERTA CENTRAL (MODAL) =====
     showCentralAlert(title, message, type = 'warning', details = '') {
@@ -2172,7 +1352,7 @@ class UIManager {
             }, 400); // Match slide-out animation duration
         }, duration);
 
-        console.log(`📱 Breaking news displayed: ${message}`);
+        log(`📱 Breaking news displayed: ${message}`);
     }
     
     removeNotification(notification, immediate = false) {
@@ -2209,7 +1389,7 @@ class UIManager {
             if (notificationToRemove && notificationToRemove.parentElement) {
                 notificationToRemove.parentElement.removeChild(notificationToRemove);
                 removalCount++;
-                console.log(`🗑️ Removed excess notification (${removalCount}/${notifications.length + removalCount})`);
+                log(`🗑️ Removed excess notification (${removalCount}/${notifications.length + removalCount})`);
             } else {
                 // Safety break if we can't remove the element
                 console.warn('⚠️ Could not remove notification, breaking loop to prevent freeze');
@@ -2222,165 +1402,7 @@ class UIManager {
         }
     }
     
-    // ===== ENHANCED MOBILE PANEL MANAGEMENT =====
-    createMobilePanelHeaders() {
-        if (!this.isMobile) return;
-
-        // Add mobile header to hud-right panel
-        const hudRight = document.querySelector('.hud-right');
-        const detailsPanel = hudRight?.querySelector('.details-panel');
-
-        if (detailsPanel && !detailsPanel.querySelector('.mobile-panel-header')) {
-            // Create mobile header
-            const mobileHeader = document.createElement('div');
-            mobileHeader.className = 'mobile-panel-header';
-
-            const title = document.createElement('div');
-            title.className = 'mobile-panel-title';
-            title.textContent = 'Informações';
-
-            const closeBtn = document.createElement('button');
-            closeBtn.className = 'mobile-close-btn';
-            closeBtn.innerHTML = '✕';
-            closeBtn.title = 'Fechar painel';
-
-            // Add both click and touch event handlers
-            const closeBtnHandler = (e) => {
-                e.preventDefault();
-                this.closeMobilePanel('right');
-            };
-            closeBtn.addEventListener('click', closeBtnHandler);
-            closeBtn.addEventListener('touchend', closeBtnHandler, { passive: false });
-
-            mobileHeader.appendChild(title);
-            mobileHeader.appendChild(closeBtn);
-
-            // Insert at the beginning of details panel
-            detailsPanel.insertBefore(mobileHeader, detailsPanel.firstChild);
-        }
-    }
-
-    toggleMobilePanel(side) {
-        if (!this.isMobile) return;
-
-        const panel = side === 'left' ?
-            document.querySelector('.hud-left') :
-            document.querySelector('.hud-right');
-
-        if (panel) {
-            const wasVisible = this.mobilePanelsVisible[side];
-
-            // Close all panels first
-            this.closeAllMobilePanels();
-
-            if (!wasVisible) {
-                // Open the requested panel
-                this.mobilePanelsVisible[side] = true;
-                panel.classList.add('active');
-
-                // Update toggle button state
-                if (this.mobileToggleButtons && this.mobileToggleButtons[side]) {
-                    this.mobileToggleButtons[side].classList.add('active');
-                }
-
-                // ===== PANEL SEPARATION: Hide control-buttons when right panel is open =====
-                if (side === 'right') {
-                    const controlButtons = document.querySelector('.control-buttons');
-                    if (controlButtons) {
-                        controlButtons.classList.remove('mobile-visible');
-                    }
-                    // Update control toggle button state
-                    if (this.mobileToggleButtons && this.mobileToggleButtons.control) {
-                        this.mobileToggleButtons.control.classList.remove('active');
-                    }
-                }
-
-                // Add escape key listener for mobile panels
-                this.addMobileEscapeListener();
-            }
-        }
-    }
-
-    closeMobilePanel(side) {
-        if (!this.isMobile) return;
-
-        const panel = side === 'left' ?
-            document.querySelector('.hud-left') :
-            document.querySelector('.hud-right');
-
-        if (panel) {
-            this.mobilePanelsVisible[side] = false;
-            panel.classList.remove('active');
-
-            // Update toggle button state
-            if (this.mobileToggleButtons && this.mobileToggleButtons[side]) {
-                this.mobileToggleButtons[side].classList.remove('active');
-            }
-
-            // If closing right panel (info), remove build button
-            if (side === 'right') {
-                // Remove mobile build button if it exists
-                const mobileBuildBtn = document.querySelector('.mobile-build-btn');
-                if (mobileBuildBtn) {
-                    mobileBuildBtn.remove();
-                }
-            }
-
-            // Remove escape listener if no panels are open
-            if (!this.mobilePanelsVisible.left && !this.mobilePanelsVisible.right) {
-                this.removeMobileEscapeListener();
-            }
-        }
-    }
-
-    closeAllMobilePanels() {
-        if (!this.isMobile) return;
-
-        ['left', 'right'].forEach(side => {
-            const panel = document.querySelector(`.hud-${side}`);
-            if (panel) {
-                this.mobilePanelsVisible[side] = false;
-                panel.classList.remove('active');
-
-                // Update toggle button state
-                if (this.mobileToggleButtons && this.mobileToggleButtons[side]) {
-                    this.mobileToggleButtons[side].classList.remove('active');
-                }
-            }
-        });
-
-        // Hide resource panel
-        const resourcePanel = document.querySelector('.resource-panel');
-        if (resourcePanel) {
-            resourcePanel.classList.remove('mobile-active');
-        }
-
-        // Remove mobile build button if it exists
-        const mobileBuildBtn = document.querySelector('.mobile-build-btn');
-        if (mobileBuildBtn) {
-            mobileBuildBtn.remove();
-        }
-
-        this.removeMobileEscapeListener();
-    }
-
-    addMobileEscapeListener() {
-        if (!this.mobileEscapeListener) {
-            this.mobileEscapeListener = (event) => {
-                if (event.key === 'Escape') {
-                    this.closeAllMobilePanels();
-                }
-            };
-            document.addEventListener('keydown', this.mobileEscapeListener);
-        }
-    }
-
-    removeMobileEscapeListener() {
-        if (this.mobileEscapeListener) {
-            document.removeEventListener('keydown', this.mobileEscapeListener);
-            this.mobileEscapeListener = null;
-        }
-    }
+    // ===== Controles, HUD e painéis do mobile: js/systems/ui/MobilePanels.js (6 métodos) =====
     
     // ===== ENHANCED RESPONSIVIDADE =====
     handleResize() {
@@ -2400,33 +1422,7 @@ class UIManager {
         }
     }
 
-    cleanupMobileControls() {
-        // Remove mobile controls
-        document.querySelectorAll('.mobile-toggle').forEach(btn => btn.remove());
-
-        // Remove mobile bottom HUD toggle
-        const hudBottomToggle = document.querySelector('.hud-bottom-toggle');
-        if (hudBottomToggle) hudBottomToggle.remove();
-
-        // Remove mobile panel headers
-        document.querySelectorAll('.mobile-panel-header').forEach(header => header.remove());
-
-        // Reset mobile state
-        this.mobilePanelsVisible = { left: false, right: false };
-        this.mobileToggleButtons = null;
-        this.hudBottomToggleButton = null;
-        this.hudBottomExpanded = false;
-        this.removeMobileEscapeListener();
-
-        // Remove active classes from panels
-        document.querySelectorAll('.hud-left, .hud-right').forEach(panel => {
-            panel.classList.remove('active');
-        });
-
-        // Remove expanded class from hud-bottom
-        const hudBottom = document.querySelector('.hud-bottom');
-        if (hudBottom) hudBottom.classList.remove('expanded');
-    }
+    // ===== Controles, HUD e painéis do mobile: js/systems/ui/MobilePanels.js (1 métodos) =====
 
     setupHelpModal() {
         // Botão de ajuda
@@ -2511,7 +1507,7 @@ class UIManager {
             if (this._showDeviceControls) {
                 this._showDeviceControls(isMobileDevice ? 'mobile' : 'desktop');
             }
-            console.log('📖 Modal de controles aberto');
+            log('📖 Modal de controles aberto');
         }
     }
 
@@ -2519,7 +1515,7 @@ class UIManager {
         const modal = document.getElementById('controls-modal');
         if (modal) {
             modal.style.display = 'none';
-            console.log('📖 Modal de controles fechado');
+            log('📖 Modal de controles fechado');
         }
     }
 
@@ -2538,210 +1534,7 @@ class UIManager {
         );
     }
 
-    openHelpFAQBudget() {
-        // Open help modal
-        this.showHelpModal();
-
-        // Switch to FAQ tab
-        const faqTab = document.querySelector('.help-tab[data-tab="faq"]');
-        if (faqTab) {
-            faqTab.click();
-        }
-
-        // Scroll to budget section
-        setTimeout(() => {
-            const budgetSection = document.getElementById('faq-category-orcamento');
-            if (budgetSection) {
-                budgetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                // Briefly highlight the section
-                budgetSection.style.transition = 'background-color 0.3s ease';
-                budgetSection.style.backgroundColor = 'rgba(255, 215, 0, 0.3)';
-                setTimeout(() => {
-                    budgetSection.style.backgroundColor = '';
-                }, 2000);
-            }
-        }, 300);
-    }
-
-    showPopulationDetailsPanel() {
-        if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
-
-        const population = this.gameManager.resourceManager.resources.population;
-        const buildings = this.gameManager.buildingSystem.getAllBuildings();
-
-        // Filtrar edifícios que afetam população
-        const residentialBuildings = buildings.filter(b => b.config.populationCapacity && b.active);
-        const serviceBuildings = buildings.filter(b => b.config.satisfactionBonus && b.active);
-
-        let detailsHTML = `
-            <div class="resource-details-panel">
-                <h4>👥 Gestão da População</h4>
-
-                <div class="resource-summary">
-                    <div class="resource-stat">
-                        <span class="stat-label">População Atual:</span>
-                        <span class="stat-value">${Math.floor(population.current).toLocaleString()}</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Capacidade Máxima:</span>
-                        <span class="stat-value">${Math.floor(population.max).toLocaleString()}</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Crescimento:</span>
-                        <span class="stat-value">${this.formatNumber(population.growth, 1)}/min</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Satisfação:</span>
-                        <span class="stat-value">${Math.floor(population.satisfaction)}%</span>
-                    </div>
-                </div>
-
-                <div class="resource-sources">
-                    <h5>🏠 Edifícios Residenciais</h5>
-        `;
-
-        if (residentialBuildings.length > 0) {
-            detailsHTML += '<ul>';
-            residentialBuildings.forEach(building => {
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-production">+${building.config.populationCapacity} hab</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
-        } else {
-            detailsHTML += '<p class="no-sources">Nenhum edifício residencial construído</p>';
-        }
-
-        if (serviceBuildings.length > 0) {
-            detailsHTML += '<h5>🏢 Serviços e Infraestrutura</h5><ul>';
-            serviceBuildings.forEach(building => {
-                // ===== ZERO-ERROR POLICY FIX: Validar config antes de usar =====
-                if (!building.config) {
-                    console.warn('⚠️ Edifício sem configuração encontrado na lista de serviços:', building);
-                    return;
-                }
-
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-production">+${building.config.satisfactionBonus}% satisfação</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
-        }
-
-        detailsHTML += `
-                    <h5>📊 Fatores de Crescimento</h5>
-                    <ul>
-                        <li>💧 Disponibilidade de água</li>
-                        <li>🏠 Capacidade habitacional</li>
-                        <li>😊 Nível de satisfação</li>
-                        <li>🏭 Baixa poluição</li>
-                        <li>⚡ Fornecimento de energia</li>
-                    </ul>
-                </div>
-            </div>
-        `;
-
-        this.elements.detailsContent.innerHTML = detailsHTML;
-    }
-
-    showPollutionDetailsPanel() {
-        if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
-
-        const pollution = this.gameManager.resourceManager.resources.pollution;
-        const buildings = this.gameManager.buildingSystem.getAllBuildings();
-
-        // Filtrar edifícios que afetam poluição
-        const pollutionSources = buildings.filter(b => b.config.pollutionGeneration && b.active);
-        const cleanupBuildings = buildings.filter(b => b.config.pollutionReduction && b.active);
-
-        let detailsHTML = `
-            <div class="resource-details-panel">
-                <h4>🏭 Gestão da Poluição</h4>
-
-                <div class="resource-summary">
-                    <div class="resource-stat">
-                        <span class="stat-label">Poluição Atual:</span>
-                        <span class="stat-value">${Math.floor(pollution.current)}%</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Fontes Ativas:</span>
-                        <span class="stat-value">${this.formatNumber(pollution.sources, 1)}/min</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Redução:</span>
-                        <span class="stat-value">-${this.formatNumber(pollution.reduction, 1)}/min</span>
-                    </div>
-                    <div class="resource-stat">
-                        <span class="stat-label">Balanço:</span>
-                        <span class="stat-value ${(pollution.sources - pollution.reduction) <= 0 ? 'positive' : 'negative'}">
-                            ${pollution.sources - pollution.reduction >= 0 ? '+' : ''}${this.formatNumber(pollution.sources - pollution.reduction, 1)}/min
-                        </span>
-                    </div>
-                </div>
-
-                <div class="resource-sources">
-        `;
-
-        if (pollutionSources.length > 0) {
-            detailsHTML += '<h5>🏭 Fontes de Poluição</h5><ul>';
-            pollutionSources.forEach(building => {
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-consumption">+${building.config.pollutionGeneration}%/min</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
-        }
-
-        if (cleanupBuildings.length > 0) {
-            detailsHTML += '<h5>🌱 Sistemas de Limpeza</h5><ul>';
-            cleanupBuildings.forEach(building => {
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-production">-${building.config.pollutionReduction}%/min</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
-        }
-
-        detailsHTML += `
-                    <h5>🌍 Impactos da Poluição</h5>
-                    <ul>
-                        <li>😷 Reduz satisfação da população</li>
-                        <li>🏥 Aumenta custos de saúde pública</li>
-                        <li>🐟 Contamina recursos hídricos</li>
-                        <li>🌡️ Contribui para mudanças climáticas</li>
-                        <li>🌱 Degrada ecossistemas locais</li>
-                    </ul>
-
-                    <h5>✅ Estratégias de Redução</h5>
-                    <ul>
-                        <li>🌳 Construir áreas verdes e parques</li>
-                        <li>♻️ Implementar sistemas de reciclagem</li>
-                        <li>🔋 Usar fontes de energia limpa</li>
-                        <li>🚌 Promover transporte público</li>
-                        <li>🏭 Modernizar indústrias</li>
-                    </ul>
-                </div>
-            </div>
-        `;
-
-        this.elements.detailsContent.innerHTML = detailsHTML;
-    }
+    // ===== Painéis de detalhe de recursos: js/systems/ui/ResourcePanels.js (2 métodos) =====
 
     // ===== UTILITY METHODS =====
     formatNumber(value, decimals = 1) {
@@ -2762,7 +1555,7 @@ class UIManager {
     dispose() {
         // Remover event listeners se necessário
         document.querySelectorAll('.mobile-toggle').forEach(btn => btn.remove());
-        console.log('🗑️ UIManager disposed');
+        log('🗑️ UIManager disposed');
     }
 
     // ===== HUD-RIGHT VISIBILITY (desktop) =====
@@ -2857,14 +1650,14 @@ class UIManager {
                 if (this.isMobile) {
                     this.closeMobilePanel('right');
                 }
-                console.log('✅ Building deselected via button');
+                log('✅ Building deselected via button');
             };
 
             newDeselectBtn.addEventListener('click', handleDeselect);
             newDeselectBtn.addEventListener('touchend', handleDeselect, { passive: false });
         }
 
-        console.log(`📋 Informações de seleção exibidas para ${building.config.name}`);
+        log(`📋 Informações de seleção exibidas para ${building.config.name}`);
 
         // Update selection counter badge (1 building selected)
         this.updateSelectionCounterBadge(1);
@@ -2926,8 +1719,7 @@ class UIManager {
         const config = building.config;
 
         // ===== FEATURE FLAGS: Hide rental button in release version =====
-        const showRentalButton = typeof FEATURE_FLAGS !== 'undefined' ?
-            FEATURE_FLAGS.isUIFeatureVisible('rentalButton') : true;
+        const showRentalButton = FEATURE_FLAGS.isUIFeatureVisible('rentalButton');
 
         // Botão de aluguel para edifícios de infraestrutura
         if (showRentalButton && (config.waterProduction > 0 || config.powerGeneration > 0)) {
@@ -2939,13 +1731,6 @@ class UIManager {
                 </button>
             `;
         }
-
-        // Botão de reciclagem
-        /*actions += `
-            <button class="action-btn recycle-btn" onclick="window.gameManager.recycleBuildingWithConfirmation('${building.id}')">
-                ♻️ Reciclar Edifício
-            </button>
-        `;*/
 
         return actions;
     }
@@ -2967,201 +1752,7 @@ class UIManager {
         return categoryNames[category] || category;
     }
 
-    // ===== SISTEMA DE EMPRÉSTIMOS =====
-    showLoanInterface() {
-        if (!this.gameManager.loanManager) {
-            console.warn('⚠️ LoanManager não disponível');
-            return;
-        }
-
-        const loanManager = this.gameManager.loanManager;
-        const monthlyIncome = loanManager.getMonthlyIncome();
-        const maxLoanAmount = loanManager.getMaxLoanAmount();
-        const creditScore = loanManager.getCreditScore();
-        const currentDebt = loanManager.getTotalDebt();
-        const monthlyPayments = loanManager.getMonthlyPayments();
-
-        // Usar o painel de detalhes para mostrar a interface de empréstimos
-        const detailsPanel = this.elements.detailsPanel;
-        const detailsContent = this.elements.detailsContent;
-
-        if (!detailsPanel || !detailsContent) return;
-
-        const content = `
-            <div class="loan-interface">
-                <div class="loan-header">
-                    <h3>🏦 Sistema de Empréstimos</h3>
-                    <button class="close-btn" onclick="window.gameManager.uiManager.closeLoanInterface()">✖️</button>
-                </div>
-
-                <div class="financial-status">
-                    <h4>📊 Status Financeiro da Cidade</h4>
-                    <div class="status-grid">
-                        <div class="status-item">
-                            <span class="status-label">Receita Mensal:</span>
-                            <span class="status-value">R$ ${monthlyIncome.toFixed(2)}</span>
-                        </div>
-                        <div class="status-item">
-                            <span class="status-label">Score de Crédito:</span>
-                            <span class="status-value credit-score-${this.getCreditScoreClass(creditScore)}">${creditScore}</span>
-                        </div>
-                        <div class="status-item">
-                            <span class="status-label">Dívida Total:</span>
-                            <span class="status-value">R$ ${currentDebt.toFixed(2)}</span>
-                        </div>
-                        <div class="status-item">
-                            <span class="status-label">Pagamentos Mensais:</span>
-                            <span class="status-value">R$ ${monthlyPayments.toFixed(2)}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="loan-application">
-                    <h4>💰 Solicitar Empréstimo</h4>
-                    <div class="loan-form">
-                        <div class="form-group">
-                            <label for="loan-amount">Valor do Empréstimo (máx. R$ ${maxLoanAmount.toFixed(2)}):</label>
-                            <input type="number" id="loan-amount" min="1000" max="${maxLoanAmount}" step="1000" value="10000">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="loan-term">Prazo de Pagamento:</label>
-                            <select id="loan-term">
-                                <option value="6">6 meses</option>
-                                <option value="12" selected>12 meses</option>
-                                <option value="24">24 meses</option>
-                                <option value="36">36 meses</option>
-                            </select>
-                        </div>
-
-                        <div class="loan-preview" id="loan-preview">
-                            <div class="preview-item">
-                                <span>Taxa de Juros Estimada:</span>
-                                <span id="estimated-rate">-</span>
-                            </div>
-                            <div class="preview-item">
-                                <span>Pagamento Mensal:</span>
-                                <span id="monthly-payment">-</span>
-                            </div>
-                            <div class="preview-item">
-                                <span>Total a Pagar:</span>
-                                <span id="total-payment">-</span>
-                            </div>
-                        </div>
-
-                        <div class="form-actions">
-                            <button class="loan-btn calculate-btn" onclick="window.gameManager.uiManager.calculateLoanPreview()">
-                                📊 Calcular
-                            </button>
-                            <button class="loan-btn apply-btn" onclick="window.gameManager.uiManager.applyForLoan()">
-                                💰 Solicitar Empréstimo
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="active-loans">
-                    <h4>📋 Empréstimos Ativos</h4>
-                    <div id="active-loans-list">
-                        ${this.generateActiveLoansHTML(loanManager.getActiveLoans())}
-                    </div>
-                </div>
-            </div>
-        `;
-
-        detailsContent.innerHTML = content;
-        detailsPanel.style.display = 'flex';
-        this.updatePanelState('loans');
-
-        // Calcular preview inicial
-        this.calculateLoanPreview();
-
-        console.log('🏦 Interface de empréstimos aberta');
-    }
-
-    closeLoanInterface() {
-        const detailsPanel = this.elements.detailsPanel;
-
-        if (detailsPanel && this.uiState.currentOpenPanel === 'loans') {
-            detailsPanel.style.display = 'none';
-            this.updatePanelState(null);
-        }
-    }
-
-    calculateLoanPreview() {
-        const amountInput = document.getElementById('loan-amount');
-        const termSelect = document.getElementById('loan-term');
-
-        if (!amountInput || !termSelect) return;
-
-        const amount = parseFloat(amountInput.value) || 0;
-        const termMonths = parseInt(termSelect.value) || 12;
-
-        if (amount <= 0) return;
-
-        const loanManager = this.gameManager.loanManager;
-        const interestRate = loanManager.calculateInterestRate();
-        const monthlyPayment = loanManager.calculateMonthlyPayment(amount, termMonths, interestRate);
-        const totalPayment = monthlyPayment * termMonths;
-
-        // Atualizar preview
-        document.getElementById('estimated-rate').textContent = `${(interestRate * 100).toFixed(2)}% ao ano`;
-        document.getElementById('monthly-payment').textContent = `R$ ${monthlyPayment.toFixed(2)}`;
-        document.getElementById('total-payment').textContent = `R$ ${totalPayment.toFixed(2)}`;
-    }
-
-    applyForLoan() {
-        const amountInput = document.getElementById('loan-amount');
-        const termSelect = document.getElementById('loan-term');
-
-        if (!amountInput || !termSelect) return;
-
-        const amount = parseFloat(amountInput.value) || 0;
-        const termMonths = parseInt(termSelect.value) || 12;
-
-        if (amount <= 0) {
-            this.showNotification('❌ Valor do empréstimo inválido', 'error');
-            return;
-        }
-
-        const result = this.gameManager.loanManager.requestLoan(amount, termMonths);
-
-        if (result.approved) {
-            this.showNotification(
-                `✅ Empréstimo aprovado! R$ ${amount} a ${(result.interestRate * 100).toFixed(2)}% ao ano`,
-                'success'
-            );
-
-            // Atualizar interface
-            this.showLoanInterface();
-        } else {
-            this.showNotification(`❌ Empréstimo rejeitado: ${result.reason}`, 'error');
-        }
-    }
-
-    generateActiveLoansHTML(loans) {
-        if (loans.length === 0) {
-            return '<p class="no-loans">Nenhum empréstimo ativo</p>';
-        }
-
-        return loans.map(loan => `
-            <div class="loan-item">
-                <div class="loan-info">
-                    <span class="loan-id">${loan.id}</span>
-                    <span class="loan-balance">Saldo: R$ ${loan.remainingBalance.toFixed(2)}</span>
-                    <span class="loan-payment">Pagamento: R$ ${loan.monthlyPayment.toFixed(2)}/mês</span>
-                    <span class="loan-remaining">${loan.remainingMonths} meses restantes</span>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    getCreditScoreClass(score) {
-        if (score >= 750) return 'excellent';
-        if (score >= 650) return 'good';
-        if (score >= 550) return 'fair';
-        return 'poor';
-    }
+    // ===== Interface de empréstimos: js/systems/ui/LoanUI.js (6 métodos) =====
 
     // ===== SISTEMA DE COOLDOWN VISUAL APRIMORADO =====
     showBuildingCooldown(remainingTime, totalTime) {
@@ -3367,19 +1958,6 @@ class UIManager {
         }
     }
 
-    // ===== SISTEMA UNIFICADO DE TOOLTIPS =====
-    showBuildingHoverTooltip(building, mouseX, mouseY) {
-        // Mostrar tooltip de hover (diferente do painel lateral de seleção)
-        // Este método pode reutilizar a lógica existente de hover
-        if (this.gameManager && this.gameManager.updateHoverInfo) {
-            // Usar o sistema de hover existente, mas apenas para tooltips
-            const gridPos = this.gameManager.gridManager.worldToGrid({x: mouseX, z: mouseY});
-            this.gameManager.updateHoverInfo(gridPos.x, gridPos.z, mouseX, mouseY);
-        }
-    }
-
-
-
     // ===== RESOURCE UI REDESIGN: Sistema de tooltips para recursos =====
     showResourceTooltip(event, resourceName, resourceType) {
         // Criar ou obter tooltip
@@ -3451,20 +2029,6 @@ class UIManager {
         }
     }
 
-    // Método para garantir que apenas um tipo de informação seja exibido por vez
-    clearAllInfoDisplays() {
-        // Limpar tooltips de hover
-        if (this.gameManager) {
-            this.gameManager.hideHoverInfo();
-            this.gameManager.hideTerrainInfo();
-        }
-
-        // Limpar painel de seleção se não há seleção ativa
-        if (!this.gameManager || !this.gameManager.selectedBuilding) {
-            this.clearBuildingSelectionInfo();
-        }
-    }
-
     // ===== BUILDING PLACEMENT FEEDBACK =====
     updateBuildingPlacementFeedback(message, isValid) {
         try {
@@ -3518,922 +2082,11 @@ class UIManager {
         }
     }
 
-    // ===== ENHANCED MOBILE TOUCH SUPPORT =====
-    setupMobileTouchSupport() {
-        console.log('📱 Setting up enhanced mobile touch support...');
-
-        // Add touch event listeners to all interactive elements
-        const interactiveElements = document.querySelectorAll(
-            '.resource-item, .building-item, .category-btn, .control-btn, .mission-objective, button'
-        );
-
-        interactiveElements.forEach(element => {
-            // Add touch feedback
-            element.addEventListener('touchstart', (e) => {
-                element.style.transform = 'scale(0.95)';
-                element.style.transition = 'transform 0.1s ease';
-            }, { passive: true });
-
-            element.addEventListener('touchend', (e) => {
-                element.style.transform = '';
-                element.style.transition = 'transform 0.2s ease';
-            }, { passive: true });
-
-            element.addEventListener('touchcancel', (e) => {
-                element.style.transform = '';
-                element.style.transition = 'transform 0.2s ease';
-            }, { passive: true });
-        });
-
-        // Enhanced touch support for canvas interactions
-        if (this.gameManager && this.gameManager.canvas) {
-            // Store touch start position to detect taps vs drags
-            let touchStartPos = null;
-            let touchStartTime = 0;
-            let touchHoldTimer = null;
-            let multiSelectTimer = null;
-            let isHoldingForInfo = false;
-            let isMultiSelectMode = false;
-            let multiSelectStartPos = null;
-            let touchIndicatorTimer = null;
-            let holdCompletedForTerrain = false; // Track if 500ms hold completed for terrain
-
-            this.gameManager.canvas.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-
-                const touch = e.touches[0];
-                touchStartPos = { x: touch.clientX, y: touch.clientY };
-                touchStartTime = Date.now();
-                isHoldingForInfo = false;
-                isMultiSelectMode = false;
-                holdCompletedForTerrain = false;
-
-                // Clear any existing timers
-                if (touchHoldTimer) clearTimeout(touchHoldTimer);
-                if (multiSelectTimer) clearTimeout(multiSelectTimer);
-                if (touchIndicatorTimer) clearTimeout(touchIndicatorTimer);
-
-                // ===== VISUAL FEEDBACK: Show circular loading indicator after 250ms =====
-                touchIndicatorTimer = setTimeout(() => {
-                    const currentPos = { x: touch.clientX, y: touch.clientY };
-                    const distance = Math.sqrt(
-                        Math.pow(currentPos.x - touchStartPos.x, 2) +
-                        Math.pow(currentPos.y - touchStartPos.y, 2)
-                    );
-
-                    // Only show indicator if finger hasn't moved much (< 10px)
-                    if (distance < 10) {
-                        this.showTouchHoldIndicator(touch.clientX, touch.clientY);
-                    }
-                }, 250);
-
-                // Set up 500ms timer for info display
-                touchHoldTimer = setTimeout(() => {
-                    const currentPos = { x: touch.clientX, y: touch.clientY };
-                    const distance = Math.sqrt(
-                        Math.pow(currentPos.x - touchStartPos.x, 2) +
-                        Math.pow(currentPos.y - touchStartPos.y, 2)
-                    );
-
-                    // Only process if finger hasn't moved much (< 10px)
-                    if (distance < 10) {
-                        isHoldingForInfo = true;
-
-                        // Check what we're touching
-                        const pickResult = this.gameManager.scene.pick(touch.clientX, touch.clientY);
-
-                        if (pickResult && pickResult.hit &&
-                            pickResult.pickedMesh &&
-                            pickResult.pickedMesh.metadata &&
-                            pickResult.pickedMesh.metadata.buildingId) {
-                            // Touching a building - show info immediately
-                            this.showTouchHoldInfo(touch.clientX, touch.clientY);
-                        } else {
-                            // Touching terrain - just mark that hold completed, show info on release
-                            holdCompletedForTerrain = true;
-                        }
-
-                        // ===== VISUAL FEEDBACK: Pulse effect at 500ms =====
-                        this.pulseTouchHoldIndicator();
-                    }
-                }, 500);
-
-                // Set up 1500ms timer for multi-selection mode
-                multiSelectTimer = setTimeout(() => {
-                    const currentPos = { x: touch.clientX, y: touch.clientY };
-                    const distance = Math.sqrt(
-                        Math.pow(currentPos.x - touchStartPos.x, 2) +
-                        Math.pow(currentPos.y - touchStartPos.y, 2)
-                    );
-
-                    // Only activate multi-select if finger hasn't moved much (< 10px)
-                    if (distance < 10) {
-                        isMultiSelectMode = true;
-                        multiSelectStartPos = { x: touch.clientX, y: touch.clientY };
-                        // ===== VISUAL FEEDBACK: Complete circle at 1500ms =====
-                        this.completeTouchHoldIndicator();
-                        this.startMultiSelectMode(touch.clientX, touch.clientY);
-                    }
-                }, 1500);
-
-                // Convert touch to mouse event for building placement preview
-                if (this.gameManager.buildMode) {
-                    const mouseEvent = new MouseEvent('mousemove', {
-                        clientX: touch.clientX,
-                        clientY: touch.clientY
-                    });
-                    this.gameManager.handleBuildingPreviewMouseMove(mouseEvent);
-                }
-            }, { passive: false });
-
-            this.gameManager.canvas.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-
-                if (e.touches.length === 0) return;
-                const touch = e.touches[0];
-
-                // Calculate movement distance
-                const distance = touchStartPos ?
-                    Math.sqrt(
-                        Math.pow(touch.clientX - touchStartPos.x, 2) +
-                        Math.pow(touch.clientY - touchStartPos.y, 2)
-                    ) : 0;
-
-                // If moved more than 10px, cancel hold timers (user is dragging)
-                if (distance > 10) {
-                    if (touchHoldTimer) {
-                        clearTimeout(touchHoldTimer);
-                        touchHoldTimer = null;
-                    }
-                    if (multiSelectTimer) {
-                        clearTimeout(multiSelectTimer);
-                        multiSelectTimer = null;
-                    }
-                    if (touchIndicatorTimer) {
-                        clearTimeout(touchIndicatorTimer);
-                        touchIndicatorTimer = null;
-                    }
-                    this.hideTouchHoldInfo();
-                    this.hideTouchHoldIndicator();
-                }
-
-                // Update multi-select rectangle if in multi-select mode
-                if (isMultiSelectMode && multiSelectStartPos) {
-                    this.updateMultiSelectRectangle(
-                        multiSelectStartPos.x,
-                        multiSelectStartPos.y,
-                        touch.clientX,
-                        touch.clientY
-                    );
-                }
-
-                // Update building preview position during drag
-                if (this.gameManager.buildMode) {
-                    const mouseEvent = new MouseEvent('mousemove', {
-                        clientX: touch.clientX,
-                        clientY: touch.clientY
-                    });
-                    this.gameManager.handleBuildingPreviewMouseMove(mouseEvent);
-                }
-            }, { passive: false });
-
-            this.gameManager.canvas.addEventListener('touchend', (e) => {
-                e.preventDefault();
-
-                // Clear timers
-                if (touchHoldTimer) {
-                    clearTimeout(touchHoldTimer);
-                    touchHoldTimer = null;
-                }
-                if (multiSelectTimer) {
-                    clearTimeout(multiSelectTimer);
-                    multiSelectTimer = null;
-                }
-                if (touchIndicatorTimer) {
-                    clearTimeout(touchIndicatorTimer);
-                    touchIndicatorTimer = null;
-                }
-
-                // Hide visual indicator
-                this.hideTouchHoldIndicator();
-
-                if (e.changedTouches.length === 0) return;
-
-                const touch = e.changedTouches[0];
-                const touchEndPos = { x: touch.clientX, y: touch.clientY };
-                const touchDuration = Date.now() - touchStartTime;
-
-                // Calculate distance moved
-                const distance = touchStartPos ?
-                    Math.sqrt(
-                        Math.pow(touchEndPos.x - touchStartPos.x, 2) +
-                        Math.pow(touchEndPos.y - touchStartPos.y, 2)
-                    ) : 0;
-
-                // Handle multi-select mode completion
-                if (isMultiSelectMode && multiSelectStartPos) {
-                    this.completeMultiSelect(
-                        multiSelectStartPos.x,
-                        multiSelectStartPos.y,
-                        touch.clientX,
-                        touch.clientY
-                    );
-                    isMultiSelectMode = false;
-                    multiSelectStartPos = null;
-                } else if (isHoldingForInfo) {
-                    // If hold was for terrain, show info now on release
-                    if (holdCompletedForTerrain) {
-                        this.showTouchHoldInfo(touch.clientX, touch.clientY);
-                        holdCompletedForTerrain = false;
-                    } else {
-                        // Building info was already shown, just hide the tooltip
-                        this.hideTouchHoldInfo();
-                    }
-                    isHoldingForInfo = false;
-                } else {
-                    // Only trigger click if it's a tap (short duration, minimal movement)
-                    // Reduced threshold from 300ms to 250ms to match camera controls and improve responsiveness
-                    const isTap = touchDuration < 250 && distance < 10;
-
-                    if (isTap) {
-                        console.log(`👆 Tap detected: duration=${touchDuration}ms, distance=${distance.toFixed(1)}px`);
-
-                        // Create a proper pointer event for Babylon.js
-                        const pointerEvent = new PointerEvent('pointerdown', {
-                            clientX: touch.clientX,
-                            clientY: touch.clientY,
-                            bubbles: true,
-                            cancelable: true,
-                            view: window,
-                            pointerId: 1,
-                            pointerType: 'touch'
-                        });
-
-                        if (this.gameManager.buildMode) {
-                            // Building placement mode
-                            const mouseEvent = new MouseEvent('click', {
-                                clientX: touch.clientX,
-                                clientY: touch.clientY,
-                                bubbles: true,
-                                cancelable: true
-                            });
-                            this.gameManager.handleBuildingPlacementClick(mouseEvent);
-                        } else {
-                            // Normal mode - check if we tapped on a building
-                            const pickResult = this.gameManager.scene.pick(touch.clientX, touch.clientY);
-
-                            if (pickResult && pickResult.hit &&
-                                pickResult.pickedMesh &&
-                                pickResult.pickedMesh.metadata &&
-                                pickResult.pickedMesh.metadata.buildingId) {
-
-                                // Tapped on a building - use GameManager's selectBuilding for full aura effect
-                                const buildingId = pickResult.pickedMesh.metadata.buildingId;
-                                const building = this.gameManager.buildingSystem.buildings.get(buildingId);
-
-                                if (building) {
-                                    // ===== FIX: Call GameManager.selectBuilding to trigger aura effect =====
-                                    this.gameManager.selectBuilding(building);
-                                    console.log(`🏢 Building selected via tap with aura: ${building.config.name}`);
-                                }
-                            } else {
-                                // Trigger Babylon.js scene picking for terrain/other interactions
-                                this.gameManager.canvas.dispatchEvent(pointerEvent);
-
-                                // Also dispatch pointerup for complete interaction
-                                const pointerUpEvent = new PointerEvent('pointerup', {
-                                    clientX: touch.clientX,
-                                    clientY: touch.clientY,
-                                    bubbles: true,
-                                    cancelable: true,
-                                    view: window,
-                                    pointerId: 1,
-                                    pointerType: 'touch'
-                                });
-                                this.gameManager.canvas.dispatchEvent(pointerUpEvent);
-                            }
-                        }
-                    } else {
-                        console.log(`❌ Not a tap: duration=${touchDuration}ms, distance=${distance.toFixed(1)}px`);
-                    }
-                }
-
-                // Reset touch tracking
-                touchStartPos = null;
-                touchStartTime = 0;
-            }, { passive: false });
-        }
-
-        console.log('✅ Enhanced mobile touch support initialized');
-    }
-
-    // ===== TOUCH-AND-HOLD INFO DISPLAY (500ms) =====
-    showTouchHoldInfo(clientX, clientY) {
-        // Get pick info from Babylon.js scene
-        const pickResult = this.gameManager.scene.pick(clientX, clientY);
-
-        if (!pickResult || !pickResult.hit) {
-            return;
-        }
-
-        let infoText = '';
-        let infoTitle = '';
-
-        // Check if we hit a building
-        if (pickResult.pickedMesh && pickResult.pickedMesh.metadata && pickResult.pickedMesh.metadata.buildingId) {
-            const buildingId = pickResult.pickedMesh.metadata.buildingId;
-            const building = this.gameManager.buildingSystem.buildings.get(buildingId);
-
-            if (building) {
-                // ===== FIX: Use GameManager.selectBuilding to trigger aura effect =====
-                this.gameManager.selectBuilding(building);
-
-                // Also show a quick tooltip for immediate feedback
-                infoTitle = building.config.name;
-                infoText = `Tipo: ${building.config.category}\n`;
-                if (building.config.waterProduction) {
-                    infoText += `💧 Produção: ${building.config.waterProduction}L/s\n`;
-                }
-                if (building.config.energyConsumption) {
-                    infoText += `⚡ Consumo: ${building.config.energyConsumption}MW\n`;
-                }
-                if (building.config.maintenanceCost) {
-                    infoText += `🔧 Manutenção: R$ ${building.config.maintenanceCost}/min`;
-                }
-
-                this.displayTouchTooltip(clientX, clientY, infoTitle, infoText);
-                return;
-            }
-        } else if (pickResult.pickedPoint) {
-            // Hit terrain
-            const gridPos = this.gameManager.gridManager.worldToGrid(pickResult.pickedPoint);
-            const terrainType = this.gameManager.gridManager.getTerrainType(gridPos.x, gridPos.z);
-            const elevation = this.gameManager.gridManager.getElevation(gridPos.x, gridPos.z);
-            const isOccupied = this.gameManager.gridManager.isCellOccupied(gridPos.x, gridPos.z);
-
-            const terrainNames = {
-                'water': '💧 Água',
-                'grassland': '🌿 Campo',
-                'lowland': '🏞️ Planície',
-                'hill': '⛰️ Colina',
-                'mountain': '🏔️ Montanha'
-            };
-
-            infoTitle = terrainNames[terrainType] || terrainType;
-            infoText = `Elevação: ${(elevation * 100).toFixed(0)}%\n`;
-            infoText += `Posição: (${gridPos.x}, ${gridPos.z})\n`;
-            infoText += isOccupied ? '❌ Ocupado' : '✅ Disponível';
-        }
-
-        if (infoTitle || infoText) {
-            this.displayTouchTooltip(clientX, clientY, infoTitle, infoText);
-        }
-    }
-
-    displayTouchTooltip(x, y, title, text) {
-        // Remove existing tooltip and clear any existing timeout
-        this.hideTouchHoldInfo();
-
-        // Create tooltip element
-        const tooltip = document.createElement('div');
-        tooltip.id = 'touch-hold-tooltip';
-        tooltip.style.position = 'fixed';
-        tooltip.style.left = `${x + 20}px`;
-        tooltip.style.top = `${y - 60}px`;
-        tooltip.style.background = 'linear-gradient(135deg, rgba(45, 53, 97, 0.98) 0%, rgba(26, 31, 58, 0.98) 100%)';
-        tooltip.style.color = '#fff';
-        tooltip.style.padding = '12px 16px';
-        tooltip.style.borderRadius = '12px';
-        tooltip.style.fontSize = '0.85rem';
-        tooltip.style.fontWeight = '600';
-        tooltip.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.5), 0 0 20px rgba(100, 100, 255, 0.4)';
-        tooltip.style.border = '2px solid rgba(100, 100, 255, 0.4)';
-        tooltip.style.zIndex = '10000';
-        tooltip.style.pointerEvents = 'none';
-        tooltip.style.maxWidth = '250px';
-        tooltip.style.whiteSpace = 'pre-line';
-        tooltip.style.backdropFilter = 'blur(10px)';
-
-        if (title) {
-            const titleEl = document.createElement('div');
-            titleEl.textContent = title;
-            titleEl.style.fontWeight = '700';
-            titleEl.style.marginBottom = '8px';
-            titleEl.style.fontSize = '1rem';
-            titleEl.style.color = '#00ff88';
-            tooltip.appendChild(titleEl);
-        }
-
-        if (text) {
-            const textEl = document.createElement('div');
-            textEl.textContent = text;
-            textEl.style.fontSize = '0.8rem';
-            textEl.style.lineHeight = '1.4';
-            tooltip.appendChild(textEl);
-        }
-
-        document.body.appendChild(tooltip);
-
-        // Adjust position if tooltip goes off screen
-        const rect = tooltip.getBoundingClientRect();
-        if (rect.right > window.innerWidth) {
-            tooltip.style.left = `${x - rect.width - 20}px`;
-        }
-        if (rect.bottom > window.innerHeight) {
-            tooltip.style.top = `${y - rect.height - 20}px`;
-        }
-
-        // ===== AUTO-HIDE: Automatically hide tooltip after 5 seconds =====
-        if (this.tooltipAutoHideTimer) {
-            clearTimeout(this.tooltipAutoHideTimer);
-        }
-
-        this.tooltipAutoHideTimer = setTimeout(() => {
-            this.hideTouchHoldInfo();
-            console.log('🕐 Touch tooltip auto-hidden after 2 seconds');
-        }, 2000);
-    }
-
-    hideTouchHoldInfo() {
-        // Clear auto-hide timer if it exists
-        if (this.tooltipAutoHideTimer) {
-            clearTimeout(this.tooltipAutoHideTimer);
-            this.tooltipAutoHideTimer = null;
-        }
-
-        const tooltip = document.getElementById('touch-hold-tooltip');
-        if (tooltip) {
-            tooltip.remove();
-        }
-    }
-
-    // ===== TOUCH-AND-HOLD VISUAL INDICATOR =====
-    showTouchHoldIndicator(x, y) {
-        // Remove existing indicator
-        this.hideTouchHoldIndicator();
-
-        // Create circular loading indicator
-        const indicator = document.createElement('div');
-        indicator.id = 'touch-hold-indicator';
-        indicator.style.position = 'fixed';
-        indicator.style.left = `${x}px`;
-        indicator.style.top = `${y}px`;
-        indicator.style.width = '60px';
-        indicator.style.height = '60px';
-        indicator.style.transform = 'translate(-50%, -50%)';
-        indicator.style.zIndex = '10000';
-        indicator.style.pointerEvents = 'none';
-
-        // Create SVG circle
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('width', '60');
-        svg.setAttribute('height', '60');
-        svg.style.transform = 'rotate(-90deg)'; // Start from top
-
-        // Background circle (full circle, semi-transparent)
-        const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        bgCircle.setAttribute('cx', '30');
-        bgCircle.setAttribute('cy', '30');
-        bgCircle.setAttribute('r', '25');
-        bgCircle.setAttribute('fill', 'none');
-        bgCircle.setAttribute('stroke', 'rgba(255, 255, 255, 0.3)');
-        bgCircle.setAttribute('stroke-width', '4');
-
-        // Progress circle (animated)
-        const progressCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        progressCircle.setAttribute('cx', '30');
-        progressCircle.setAttribute('cy', '30');
-        progressCircle.setAttribute('r', '25');
-        progressCircle.setAttribute('fill', 'none');
-        progressCircle.setAttribute('stroke', '#00ff88');
-        progressCircle.setAttribute('stroke-width', '4');
-        progressCircle.setAttribute('stroke-linecap', 'round');
-        progressCircle.setAttribute('stroke-dasharray', '157'); // 2 * PI * 25
-        progressCircle.setAttribute('stroke-dashoffset', '157');
-        progressCircle.style.filter = 'drop-shadow(0 0 8px rgba(0, 255, 136, 0.8))';
-        progressCircle.style.transition = 'stroke-dashoffset 1.25s linear'; // 250ms to 1500ms = 1250ms
-
-        svg.appendChild(bgCircle);
-        svg.appendChild(progressCircle);
-        indicator.appendChild(svg);
-        document.body.appendChild(indicator);
-
-        // Start animation after a brief delay
-        requestAnimationFrame(() => {
-            progressCircle.style.strokeDashoffset = '0';
-        });
-
-        // Store reference for pulse and complete effects
-        indicator.progressCircle = progressCircle;
-    }
-
-    pulseTouchHoldIndicator() {
-        const indicator = document.getElementById('touch-hold-indicator');
-        if (!indicator || !indicator.progressCircle) return;
-
-        // Create pulse effect at 500ms
-        const pulse = document.createElement('div');
-        pulse.style.position = 'absolute';
-        pulse.style.left = '50%';
-        pulse.style.top = '50%';
-        pulse.style.width = '60px';
-        pulse.style.height = '60px';
-        pulse.style.transform = 'translate(-50%, -50%)';
-        pulse.style.borderRadius = '50%';
-        pulse.style.background = 'rgba(0, 255, 136, 0.4)';
-        pulse.style.animation = 'pulse-effect 0.5s ease-out';
-
-        indicator.appendChild(pulse);
-
-        // Remove pulse after animation
-        setTimeout(() => {
-            if (pulse.parentNode) {
-                pulse.remove();
-            }
-        }, 500);
-
-        // Add text label for 500ms milestone
-        const textLabel = document.createElement('div');
-        textLabel.id = 'touch-hold-text-500';
-        textLabel.style.position = 'absolute';
-        textLabel.style.left = '50%';
-        textLabel.style.top = '80px'; // Below the circle
-        textLabel.style.transform = 'translateX(-50%)';
-        textLabel.style.whiteSpace = 'nowrap';
-        textLabel.style.fontSize = '0.75rem';
-        textLabel.style.fontWeight = '600';
-        textLabel.style.color = '#00ff88';
-        textLabel.style.textShadow = '0 0 8px rgba(0, 255, 136, 0.8), 0 2px 4px rgba(0, 0, 0, 0.8)';
-        textLabel.style.background = 'rgba(0, 0, 0, 0.7)';
-        textLabel.style.padding = '4px 8px';
-        textLabel.style.borderRadius = '6px';
-        textLabel.style.pointerEvents = 'none';
-        textLabel.textContent = 'Solte para informações de terreno';
-
-        indicator.appendChild(textLabel);
-
-        // Add pulse animation to document if not exists
-        if (!document.getElementById('pulse-animation-style')) {
-            const style = document.createElement('style');
-            style.id = 'pulse-animation-style';
-            style.textContent = `
-                @keyframes pulse-effect {
-                    0% {
-                        transform: translate(-50%, -50%) scale(1);
-                        opacity: 0.6;
-                    }
-                    100% {
-                        transform: translate(-50%, -50%) scale(2);
-                        opacity: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-    }
-
-    completeTouchHoldIndicator() {
-        const indicator = document.getElementById('touch-hold-indicator');
-        if (!indicator || !indicator.progressCircle) return;
-
-        // Change color to indicate completion
-        indicator.progressCircle.setAttribute('stroke', '#ffaa00');
-        indicator.progressCircle.style.filter = 'drop-shadow(0 0 12px rgba(255, 170, 0, 1))';
-
-        // Add completion flash effect
-        const flash = document.createElement('div');
-        flash.style.position = 'absolute';
-        flash.style.left = '50%';
-        flash.style.top = '50%';
-        flash.style.width = '60px';
-        flash.style.height = '60px';
-        flash.style.transform = 'translate(-50%, -50%)';
-        flash.style.borderRadius = '50%';
-        flash.style.background = 'rgba(255, 170, 0, 0.6)';
-        flash.style.animation = 'flash-effect 0.3s ease-out';
-
-        indicator.appendChild(flash);
-
-        // Remove flash after animation
-        setTimeout(() => {
-            if (flash.parentNode) {
-                flash.remove();
-            }
-        }, 300);
-
-        // Remove 500ms text label if it exists
-        const oldTextLabel = document.getElementById('touch-hold-text-500');
-        if (oldTextLabel) {
-            oldTextLabel.remove();
-        }
-
-        // Add text label for 1500ms milestone
-        const textLabel = document.createElement('div');
-        textLabel.id = 'touch-hold-text-1500';
-        textLabel.style.position = 'absolute';
-        textLabel.style.left = '50%';
-        textLabel.style.top = '80px'; // Below the circle
-        textLabel.style.transform = 'translateX(-50%)';
-        textLabel.style.whiteSpace = 'nowrap';
-        textLabel.style.fontSize = '0.75rem';
-        textLabel.style.fontWeight = '600';
-        textLabel.style.color = '#ffaa00';
-        textLabel.style.textShadow = '0 0 8px rgba(255, 170, 0, 0.8), 0 2px 4px rgba(0, 0, 0, 0.8)';
-        textLabel.style.background = 'rgba(0, 0, 0, 0.7)';
-        textLabel.style.padding = '4px 8px';
-        textLabel.style.borderRadius = '6px';
-        textLabel.style.pointerEvents = 'none';
-        textLabel.textContent = 'Arraste para selecionar construções';
-
-        indicator.appendChild(textLabel);
-
-        // Add flash animation to document if not exists
-        if (!document.getElementById('flash-animation-style')) {
-            const style = document.createElement('style');
-            style.id = 'flash-animation-style';
-            style.textContent = `
-                @keyframes flash-effect {
-                    0% {
-                        transform: translate(-50%, -50%) scale(0.8);
-                        opacity: 0.8;
-                    }
-                    100% {
-                        transform: translate(-50%, -50%) scale(1.5);
-                        opacity: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-    }
-
-    hideTouchHoldIndicator() {
-        const indicator = document.getElementById('touch-hold-indicator');
-        if (indicator) {
-            indicator.remove();
-        }
-    }
-
-    // ===== MULTI-SELECTION MODE (2s HOLD) =====
-    startMultiSelectMode(x, y) {
-        console.log('🎯 Multi-select mode activated');
-
-        // Create selection rectangle overlay with orange color to match long-touch indicator
-        const selectionRect = document.createElement('div');
-        selectionRect.id = 'multi-select-rectangle';
-        selectionRect.style.position = 'fixed';
-        selectionRect.style.left = `${x}px`;
-        selectionRect.style.top = `${y}px`;
-        selectionRect.style.width = '0px';
-        selectionRect.style.height = '0px';
-        selectionRect.style.border = '3px dashed rgba(255, 170, 0, 0.8)';
-        selectionRect.style.background = 'rgba(255, 170, 0, 0.2)';
-        selectionRect.style.zIndex = '9999';
-        selectionRect.style.pointerEvents = 'none';
-        selectionRect.style.boxShadow = '0 0 20px rgba(255, 170, 0, 0.6)';
-
-        document.body.appendChild(selectionRect);
-
-        // Show notification
-        this.showNotification('🎯 Modo de seleção múltipla ativado! Arraste para selecionar edifícios.', 'info', 3000);
-    }
-
-    updateMultiSelectRectangle(startX, startY, currentX, currentY) {
-        const selectionRect = document.getElementById('multi-select-rectangle');
-        if (!selectionRect) return;
-
-        const left = Math.min(startX, currentX);
-        const top = Math.min(startY, currentY);
-        const width = Math.abs(currentX - startX);
-        const height = Math.abs(currentY - startY);
-
-        selectionRect.style.left = `${left}px`;
-        selectionRect.style.top = `${top}px`;
-        selectionRect.style.width = `${width}px`;
-        selectionRect.style.height = `${height}px`;
-    }
-
-    completeMultiSelect(startX, startY, endX, endY) {
-        console.log(`🎯 Completing multi-select from (${startX}, ${startY}) to (${endX}, ${endY})`);
-
-        // Remove selection rectangle
-        const selectionRect = document.getElementById('multi-select-rectangle');
-        if (selectionRect) {
-            selectionRect.remove();
-        }
-
-        // Get all buildings within the selection rectangle
-        const selectedBuildings = [];
-        const buildings = this.gameManager.buildingSystem.buildings;
-
-        buildings.forEach((building) => {
-            if (building.mesh) {
-                // Project 3D position to 2D screen coordinates
-                const screenPos = BABYLON.Vector3.Project(
-                    building.mesh.position,
-                    BABYLON.Matrix.Identity(),
-                    this.gameManager.scene.getTransformMatrix(),
-                    this.gameManager.camera.viewport.toGlobal(
-                        this.gameManager.engine.getRenderWidth(),
-                        this.gameManager.engine.getRenderHeight()
-                    )
-                );
-
-                const x = screenPos.x;
-                const y = screenPos.y;
-
-                // Check if building is within selection rectangle
-                const minX = Math.min(startX, endX);
-                const maxX = Math.max(startX, endX);
-                const minY = Math.min(startY, endY);
-                const maxY = Math.max(startY, endY);
-
-                if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
-                    selectedBuildings.push(building);
-                }
-            }
-        });
-
-        console.log(`✅ Selected ${selectedBuildings.length} buildings`);
-        console.table(selectedBuildings);
-
-        // Show notification and display buildings in details panel
-        if (selectedBuildings.length > 0) {
-            this.showNotification(
-                `✅ ${selectedBuildings.length} edifício(s) selecionado(s)`,
-                'success',
-                3000
-            );
-
-            // Display multi-selection info in details panel
-            this.showMultiSelectionInfo(selectedBuildings);
-
-            // Highlight selected buildings with visual feedback
-            selectedBuildings.forEach(building => {
-                if (building.mesh && building.mesh.material) {
-                    // Add a temporary highlight effect with proper null checks
-                    let originalColor = null;
-
-                    // Safely clone the original emissive color if it exists
-                    if (building.mesh.material.emissiveColor) {
-                        originalColor = building.mesh.material.emissiveColor.clone();
-                    } else {
-                        // Fallback to default color if emissiveColor doesn't exist
-                        originalColor = new BABYLON.Color3(0, 0, 0);
-                    }
-
-                    // Set highlight color
-                    building.mesh.material.emissiveColor = new BABYLON.Color3(0, 1, 0.5);
-
-                    // Restore original color after 1 second
-                    setTimeout(() => {
-                        if (building.mesh && building.mesh.material && originalColor) {
-                            building.mesh.material.emissiveColor = originalColor;
-                        }
-                    }, 1000);
-                }
-            });
-        } else {
-            this.showNotification('❌ Nenhum edifício selecionado', 'warning', 2000);
-        }
-    }
-
-    // ===== MULTI-SELECTION INFO DISPLAY =====
-    showMultiSelectionInfo(buildings) {
-        if (!buildings || buildings.length === 0) return;
-
-        const detailsPanel = this.elements.detailsPanel;
-        const detailsContent = this.elements.detailsContent;
-
-        if (!detailsPanel || !detailsContent) return;
-
-        // Generate content for multiple buildings
-        let content = `
-            <div class="multi-selection-info">
-                <div class="selection-header">
-                    <h3>🏢 ${buildings.length} Edifícios Selecionados</h3>
-                    <button class="deselect-btn" data-action="close-multi">✖️ Fechar</button>
-                </div>
-                <div class="multi-selection-list">
-        `;
-
-        // Add each building as a separate item
-        buildings.forEach((building, index) => {
-            const categoryName = this.getCategoryDisplayName(building.config.category);
-            const statusClass = building.active ? 'status-active' : 'status-inactive';
-            const statusText = building.active ? 'Ativo' : 'Inativo';
-
-            content += `
-                <div class="building-item" data-building-index="${index}">
-                    <div class="building-item-header">
-                        <h4>${index + 1}. ${building.config.name}</h4>
-                        <span class="building-category">${categoryName}</span>
-                    </div>
-                    <div class="building-item-details">
-                        <div class="detail-row">
-                            <span class="detail-label">Status:</span>
-                            <span class="detail-value ${statusClass}">${statusText}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Eficiência:</span>
-                            <span class="detail-value">${Math.round(building.efficiency * 100)}%</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Posição:</span>
-                            <span class="detail-value">(${building.gridX}, ${building.gridZ})</span>
-                        </div>
-            `;
-
-            // Add production/consumption stats
-            if (building.config.waterProduction > 0) {
-                content += `
-                        <div class="detail-row">
-                            <span class="detail-label">💧 Produção:</span>
-                            <span class="detail-value">${building.config.waterProduction}L/s</span>
-                        </div>
-                `;
-            }
-            if (building.config.powerGeneration > 0) {
-                content += `
-                        <div class="detail-row">
-                            <span class="detail-label">⚡ Geração:</span>
-                            <span class="detail-value">${building.config.powerGeneration} MW</span>
-                        </div>
-                `;
-            }
-            if (building.config.maintenanceCost > 0) {
-                content += `
-                        <div class="detail-row">
-                            <span class="detail-label">🔧 Manutenção:</span>
-                            <span class="detail-value">R$ ${building.config.maintenanceCost}/min</span>
-                        </div>
-                `;
-            }
-
-            content += `
-                    </div>
-                </div>
-            `;
-        });
-
-        content += `
-                </div>
-            </div>
-        `;
-
-        detailsContent.innerHTML = content;
-        detailsPanel.style.display = 'flex';
-        this.updatePanelState('multi-selection');
-
-        // ===== FIX: Add proper event listener for close button (mobile-friendly) =====
-        const closeBtn = detailsContent.querySelector('.deselect-btn[data-action="close-multi"]');
-        if (closeBtn) {
-            // Remove any existing listeners
-            const newCloseBtn = closeBtn.cloneNode(true);
-            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
-
-            // Add both click and touchend for mobile compatibility
-            const handleClose = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.clearBuildingSelectionInfo();
-                // Close mobile panel if on mobile
-                if (this.isMobile) {
-                    this.closeMobilePanel('right');
-                }
-                console.log('✅ Multi-selection panel closed via button');
-            };
-
-            newCloseBtn.addEventListener('click', handleClose);
-            newCloseBtn.addEventListener('touchend', handleClose, { passive: false });
-        }
-
-        console.log(`📋 Multi-selection info displayed for ${buildings.length} buildings`);
-
-        // Update selection counter badge with number of selected buildings
-        this.updateSelectionCounterBadge(buildings.length);
-    }
-
-    // ===== SELECTION COUNTER BADGE UPDATE =====
-    updateSelectionCounterBadge(count) {
-        if (!this.isMobile) return; // Only show on mobile
-
-        const badge = document.querySelector('.selection-counter-badge');
-        if (!badge) return;
-
-        if (count > 0) {
-            badge.textContent = count.toString();
-            badge.style.display = 'flex';
-            console.log(`📊 Selection counter badge updated: ${count} building(s)`);
-        } else {
-            badge.style.display = 'none';
-            console.log('📊 Selection counter badge hidden');
-        }
-    }
+    // ===== Toque no mobile (segurar, multisseleção): js/systems/ui/MobileTouch.js (13 métodos) =====
 
     // ===== MISSION OBJECTIVE CLICK HANDLERS =====
     setupMissionObjectiveHandlers() {
-        console.log('🎯 Setting up mission objective click handlers...');
+        log('🎯 Setting up mission objective click handlers...');
 
         // Add click handlers to mission objectives
         document.addEventListener('click', (e) => {
@@ -4443,7 +2096,7 @@ class UIManager {
             }
         });
 
-        console.log('✅ Mission objective click handlers initialized');
+        log('✅ Mission objective click handlers initialized');
     }
 
     handleMissionObjectiveClick(objectiveElement) {
@@ -4468,7 +2121,7 @@ class UIManager {
                     AudioManager.playSound('sfx_click', 0.6);
                 }
 
-                console.log('🎯 Mission objective clicked: opened building panel');
+                log('🎯 Mission objective clicked: opened building panel');
             }
 
         } catch (error) {
@@ -4478,7 +2131,7 @@ class UIManager {
 
     // ===== CONTROL BUTTON ENHANCEMENTS =====
     setupControlButtonEnhancements() {
-        console.log('🎮 Setting up control button enhancements...');
+        log('🎮 Setting up control button enhancements...');
 
         // Enhanced pause button
         const pauseBtn = document.getElementById('btn-pause');
@@ -4529,12 +2182,12 @@ class UIManager {
                         this.gameManager.questSystem.closeMissionInterface();
                         this.closeMobilePanel('left');
                         missionsBtn.classList.remove('active');
-                        console.log('🎯 Mission interface closed (toggle)');
+                        log('🎯 Mission interface closed (toggle)');
                     } else {
                         // Open mission interface
                         this.gameManager.questSystem.openMissionInterface();
                         missionsBtn.classList.add('active');
-                        console.log('🎯 Mission interface opened (toggle)');
+                        log('🎯 Mission interface opened (toggle)');
                     }
 
                     AudioManager.playSound('sfx_click', 0.8);
@@ -4542,7 +2195,7 @@ class UIManager {
             });
         }
 
-        console.log('✅ Control button enhancements initialized');
+        log('✅ Control button enhancements initialized');
     }
 
     // ===== TERRAIN INFORMATION DISPLAY =====
@@ -4624,7 +2277,7 @@ class UIManager {
                 AudioManager.playSound('sfx_click', 0.4);
             }
 
-            console.log(`🌍 Terrain info displayed: ${terrain.name} at (${gridX}, ${gridZ})`);
+            log(`🌍 Terrain info displayed: ${terrain.name} at (${gridX}, ${gridZ})`);
 
         } catch (error) {
             console.warn('⚠️ Error showing terrain info:', error);
@@ -4650,389 +2303,17 @@ class UIManager {
                 this.updatePanelState(null);
             }
 
-            console.log('🌍 Terrain info hidden');
+            log('🌍 Terrain info hidden');
 
         } catch (error) {
             console.warn('⚠️ Error hiding terrain info:', error);
         }
     }
 
-    // ===== STUDY BOOK SYSTEM =====
-    openStudyBook(buildingId) {
-        if (!this.gameManager.studySystem) {
-            console.error('❌ StudySystem not initialized');
-            this.showNotification('❌ Sistema de estudos não inicializado', 'error');
-            return;
-        }
-
-        // Check if content is still loading
-        if (!this.gameManager.studySystem.contentLoaded) {
-            console.warn('⏳ Conteúdo educacional ainda carregando...');
-            this.showNotification('⏳ Aguarde, carregando conteúdo educacional...', 'warning');
-            return;
-        }
-
-        const studyContent = this.gameManager.studySystem.getStudyContent(buildingId);
-        if (!studyContent) {
-            console.warn(`⚠️ No study content for building: ${buildingId}`);
-            this.showNotification('⚠️ Conteúdo educacional não disponível para este edifício', 'warning');
-            return;
-        }
-
-        // Start the study
-        this.gameManager.studySystem.startStudy(buildingId);
-
-        // Create and show the book interface
-        this.showStudyBookInterface(studyContent);
-
-        // Play book opening sound
-        if (this.gameManager.audioManager) {
-            this.gameManager.audioManager.playSound('sfx_ui_select');
-        }
-    }
-
-    showStudyBookInterface(studyContent) {
-        // Create book overlay if it doesn't exist
-        let bookOverlay = document.getElementById('study-book-overlay');
-        if (!bookOverlay) {
-            bookOverlay = document.createElement('div');
-            bookOverlay.id = 'study-book-overlay';
-            bookOverlay.className = 'study-book-overlay';
-            document.body.appendChild(bookOverlay);
-        }
-
-        // Get current page
-        const currentPage = this.gameManager.studySystem.getCurrentPage();
-        const progress = this.gameManager.studySystem.getProgress();
-        const isLastPage = this.gameManager.studySystem.isLastPage();
-
-        // Check if this is a quiz page
-        const hasQuiz = this.gameManager.studySystem.hasQuiz();
-        const quiz = this.gameManager.studySystem.getQuiz();
-        const isQuizPage = hasQuiz && isLastPage;
-
-        // Generate quiz HTML if this is a quiz page
-        let quizHTML = '';
-        if (isQuizPage && quiz) {
-            quizHTML = this.renderQuizQuestions(quiz);
-        }
-
-        // Build book HTML
-        bookOverlay.innerHTML = `
-            <div class="study-book-container">
-                <div class="study-book ${isQuizPage ? 'quiz-page' : ''}">
-                    <div class="book-header">
-                        <h2>${studyContent.studyTitle}</h2>
-                        <button class="book-close-btn" onclick="window.gameManager.uiManager.closeStudyBook()">✕</button>
-                    </div>
-
-                    <div class="book-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${progress}%"></div>
-                        </div>
-                        <span class="progress-text">${progress}% concluído</span>
-                    </div>
-
-                    <div class="book-content">
-                        <div class="page-number">Página ${currentPage.pageNumber} de ${studyContent.pages.length}</div>
-                        <h3 class="page-title">${currentPage.title}</h3>
-                        ${currentPage.image ? `<div class="page-image"><img src="${currentPage.image}" alt="${currentPage.title}" onerror="this.parentElement.style.display='none'"></div>` : ''}
-                        <div class="page-text">${currentPage.content}</div>
-                        ${quizHTML}
-                    </div>
-
-                    <div class="book-navigation">
-                        <button class="nav-btn prev-btn" ${this.gameManager.studySystem.currentPage === 0 ? 'disabled' : ''}
-                                onclick="window.gameManager.uiManager.previousStudyPage()">
-                            ◀ Anterior
-                        </button>
-
-                        ${isLastPage ?
-                            `<button class="nav-btn complete-btn" onclick="window.gameManager.uiManager.completeStudy()">
-                                ✓ Concluir Estudo
-                            </button>` :
-                            `<button class="nav-btn next-btn" onclick="window.gameManager.uiManager.nextStudyPage()">
-                                Próxima ▶
-                            </button>`
-                        }
-                    </div>
-
-                    <div class="book-info">
-                        <span>⏱️ ${studyContent.estimatedTime}</span>
-                        
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Show overlay with animation
-        bookOverlay.classList.add('active');
-
-        // Setup quiz event listeners if this is a quiz page
-        if (isQuizPage && quiz) {
-            this.setupQuizEventListeners(quiz);
-        }
-
-        // Pause game
-        if (this.gameManager.timeScale > 0) {
-            this.gameManager.previousTimeScale = this.gameManager.timeScale;
-            this.gameManager.setTimeScale(0);
-        }
-    }
-
-    renderQuizQuestions(quiz) {
-        if (!quiz || !quiz.questions || quiz.questions.length === 0) {
-            return '';
-        }
-
-        let questionsHTML = '<div class="quiz-container">';
-
-        quiz.questions.forEach((question, index) => {
-            const questionId = question.id ?? index;
-            const userAnswer = this.gameManager.studySystem.currentQuizAnswers[questionId];
-
-            questionsHTML += `
-                <div class="quiz-question" data-question-id="${questionId}">
-                    <h4 class="question-text">
-                        <span class="question-number">${index + 1}.</span>
-                        ${question.question}
-                    </h4>
-                    <div class="quiz-options">
-            `;
-
-            question.options.forEach((option, optionIndex) => {
-                const isSelected = userAnswer === optionIndex;
-                questionsHTML += `
-                    <label class="quiz-option ${isSelected ? 'selected' : ''}">
-                        <input type="radio"
-                               name="quiz-${this.gameManager.studySystem.currentStudy}-q${questionId}"
-                               value="${optionIndex}"
-                               ${isSelected ? 'checked' : ''}
-                               data-question-id="${questionId}">
-                        <span class="option-text">${option}</span>
-                    </label>
-                `;
-            });
-
-            questionsHTML += `
-                    </div>
-                </div>
-            `;
-        });
-
-        questionsHTML += `
-            <div class="quiz-info">
-                <p>📊 <strong>Nota mínima para aprovação:</strong> ${quiz.passingScore}%</p>
-                <p>❓ <strong>Total de questões:</strong> ${quiz.questions.length}</p>
-            </div>
-        </div>`;
-
-        return questionsHTML;
-    }
-
-    setupQuizEventListeners(quiz) {
-        // Wait for DOM to be ready
-        setTimeout(() => {
-            const bookOverlay = document.getElementById('study-book-overlay');
-            if (!bookOverlay) return;
-            const radioButtons = bookOverlay.querySelectorAll('.quiz-option input[type="radio"]');
-
-            radioButtons.forEach(radio => {
-                radio.addEventListener('change', (e) => {
-                    const questionId = parseInt(e.target.dataset.questionId);
-                    const selectedOption = parseInt(e.target.value);
-
-                    // Submit answer to StudySystem
-                    this.gameManager.studySystem.submitQuizAnswer(questionId, selectedOption);
-
-                    // Update visual selection
-                    const questionContainer = e.target.closest('.quiz-question');
-                    questionContainer.querySelectorAll('.quiz-option').forEach(opt => {
-                        opt.classList.remove('selected');
-                    });
-                    e.target.closest('.quiz-option').classList.add('selected');
-
-                    // Play selection sound
-                    if (this.gameManager.audioManager) {
-                        this.gameManager.audioManager.playSound('sfx_ui_click');
-                    }
-                });
-            });
-        }, 100);
-    }
-
-    nextStudyPage() {
-        if (this.gameManager.studySystem.nextPage()) {
-            const studyContent = this.gameManager.studySystem.getStudyContent(this.gameManager.studySystem.currentStudy);
-            this.showStudyBookInterface(studyContent);
-
-            // Play page turn sound
-            if (this.gameManager.audioManager) {
-                this.gameManager.audioManager.playSound('sfx_ui_click');
-            }
-        }
-    }
-
-    previousStudyPage() {
-        if (this.gameManager.studySystem.previousPage()) {
-            const studyContent = this.gameManager.studySystem.getStudyContent(this.gameManager.studySystem.currentStudy);
-            this.showStudyBookInterface(studyContent);
-
-            // Play page turn sound
-            if (this.gameManager.audioManager) {
-                this.gameManager.audioManager.playSound('sfx_ui_click');
-            }
-        }
-    }
-
-    completeStudy() {
-        const buildingId = this.gameManager.studySystem.currentStudy;
-        if (!buildingId) return;
-
-        const studySystem = this.gameManager.studySystem;
-
-        // Check if this study has a quiz
-        if (studySystem.hasQuiz()) {
-            const quiz = studySystem.getQuiz();
-
-            // Validate all questions are answered
-            if (!studySystem.areAllQuestionsAnswered()) {
-                this.showNotification(
-                    '⚠️ Por favor, responda todas as questões antes de concluir!',
-                    'warning',
-                    3000
-                );
-
-                if (this.gameManager.audioManager) {
-                    this.gameManager.audioManager.playSound('sfx_build_error');
-                }
-
-                // Scroll to quiz section
-                const quizContainer = document.querySelector('.quiz-container');
-                if (quizContainer) {
-                    quizContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-                    // Add warning message at top of quiz
-                    const existingWarning = document.querySelector('.quiz-warning-message');
-                    if (existingWarning) existingWarning.remove();
-                    const warningDiv = document.createElement('div');
-                    warningDiv.className = 'quiz-warning-message';
-                    warningDiv.innerHTML = '⚠️ Responda todas as questões antes de concluir o estudo!';
-                    quizContainer.insertBefore(warningDiv, quizContainer.firstChild);
-                }
-
-                // Highlight unanswered questions
-                const answers = studySystem.currentQuizAnswers;
-                document.querySelectorAll('.quiz-question').forEach(q => {
-                    const qId = parseInt(q.dataset.questionId);
-                    q.classList.toggle('unanswered', answers[qId] === undefined);
-                });
-
-                // Update book-info with warning
-                const bookInfo = document.querySelector('.book-info');
-                if (bookInfo) {
-                    bookInfo.innerHTML = '<span style="color: #FF9800;">⚠️ Responda o quiz para concluir</span>';
-                }
-
-                return;
-            }
-
-            // Calculate score and check if passed
-            const score = studySystem.calculateQuizScore();
-            const passed = studySystem.isQuizPassed();
-
-            if (!passed) {
-                // Quiz failed - show results and allow retry
-                this.showQuizResults(false, score, quiz.passingScore);
-
-                if (this.gameManager.audioManager) {
-                    this.gameManager.audioManager.playSound('sfx_build_error');
-                }
-                return;
-            }
-
-            // Quiz passed - show success and unlock building
-            this.showQuizResults(true, score, quiz.passingScore);
-            studySystem.completeStudy(buildingId);
-
-            // Play success sound
-            if (this.gameManager.audioManager) {
-                this.gameManager.audioManager.playSound('sfx_ui_success');
-            }
-
-            // Close book after a delay to show results
-            setTimeout(() => {
-                this.closeStudyBook();
-                this.loadBuildingItemsWithStateManagement();
-            }, 2500);
-
-        } else {
-            // No quiz - complete study directly
-            studySystem.completeStudy(buildingId);
-
-            // Play success sound
-            if (this.gameManager.audioManager) {
-                this.gameManager.audioManager.playSound('sfx_ui_success');
-            }
-
-            // Close book
-            this.closeStudyBook();
-
-            // Refresh building items to show unlocked state
-            this.loadBuildingItemsWithStateManagement();
-        }
-    }
-
-    showQuizResults(passed, score, passingScore) {
-        const resultsContainer = document.querySelector('.quiz-container');
-        if (!resultsContainer) return;
-
-        const resultClass = passed ? 'quiz-passed' : 'quiz-failed';
-        const resultIcon = passed ? '🎉' : '❌';
-        const resultTitle = passed ? 'Parabéns! Você foi aprovado!' : 'Não foi dessa vez...';
-        const resultMessage = passed
-            ? `Você acertou ${score}% das questões e desbloqueou este edifício!`
-            : `Você acertou ${score}% das questões. É necessário ${passingScore}% para aprovação. Revise o conteúdo e tente novamente.`;
-
-        const resultsHTML = `
-            <div class="quiz-results ${resultClass}">
-                <div class="results-icon">${resultIcon}</div>
-                <h3>${resultTitle}</h3>
-                <div class="results-score">
-                    <div class="score-circle">
-                        <span class="score-value">${score}%</span>
-                    </div>
-                </div>
-                <p class="results-message">${resultMessage}</p>
-                ${!passed ? '<button class="retry-btn" onclick="window.gameManager.uiManager.retryQuiz()">🔄 Tentar Novamente</button>' : ''}
-            </div>
-        `;
-
-        resultsContainer.innerHTML = resultsHTML;
-    }
-
-    retryQuiz() {
-        // Reset quiz state
-        this.gameManager.studySystem.currentQuizAnswers = {};
-        this.gameManager.studySystem.quizScore = 0;
-
-        // Go back to first page to review content
-        this.gameManager.studySystem.currentPage = 0;
-
-        // Refresh the study interface
-        const studyContent = this.gameManager.studySystem.getStudyContent(
-            this.gameManager.studySystem.currentStudy
-        );
-        this.showStudyBookInterface(studyContent);
-
-        this.showNotification('📚 Revise o conteúdo e tente novamente!', 'info', 3000);
-
-        if (this.gameManager.audioManager) {
-            this.gameManager.audioManager.playSound('sfx_ui_click');
-        }
-    }
+    // ===== Livro de estudo e quiz: js/systems/ui/StudyBookUI.js (9 métodos) =====
 
     closeStudyBook() {
+        stopSpeaking();
         const bookOverlay = document.getElementById('study-book-overlay');
         if (bookOverlay) {
             bookOverlay.classList.remove('active');
@@ -5056,4 +2337,4 @@ class UIManager {
 
 // Exportar para escopo global
 window.UIManager = UIManager;
-console.log('🖥️ UIManager carregado e exportado para window.UIManager');
+log('🖥️ UIManager carregado e exportado para window.UIManager');

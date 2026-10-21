@@ -5,7 +5,7 @@
 
 class AudioManager {
     constructor() {
-        console.log('🔊 Inicializando AudioManager...');
+        log('🔊 Inicializando AudioManager...');
         
         // Estado do áudio
         this.enabled = true;
@@ -49,13 +49,13 @@ class AudioManager {
         // Criar sons procedurais se não houver assets
         this.createProceduralSounds();
 
-        console.log('✅ AudioManager inicializado');
+        log('✅ AudioManager inicializado');
     }
 
     // ===== CARREGAMENTO DE ASSETS =====
     loadFromAssetLoader() {
         if (typeof AssetLoader === 'undefined' || !AssetLoader.instance) {
-            console.log('📦 AssetLoader não disponível, carregando sons RSE/SoundFX');
+            log('📦 AssetLoader não disponível, carregando sons RSE/SoundFX');
             this.loadRSESoundFX();
             return;
         }
@@ -78,79 +78,23 @@ class AudioManager {
             if (asset && asset.audio) {
                 if (key.startsWith('bgm_')) {
                     this.music.set(key, asset);
-                    console.log(`🎵 Música carregada: ${key}`);
+                    log(`🎵 Música carregada: ${key}`);
                 } else {
                     this.sounds.set(key, asset);
-                    console.log(`🔊 Som carregado: ${key}`);
+                    log(`🔊 Som carregado: ${key}`);
                 }
             } else {
-                console.log(`⚠️ Asset de áudio não encontrado: ${key}, usando fallback`);
+                log(`⚠️ Asset de áudio não encontrado: ${key}, usando fallback`);
             }
         });
 
         // Load RSE SoundFX as fallback
         this.loadRSESoundFX();
     }
-    
-    // ===== CARREGAMENTO DE SONS =====
-    loadSound(key, asset) {
-        if (!this.enabled || !asset) return;
-        
-        try {
-            this.sounds.set(key, asset);
-            
-            // Criar pool de sons para SFX
-            if (key.startsWith('sfx_')) {
-                this.createSoundPool(key, asset);
-            }
-            
-            console.log(`🔊 Som carregado: ${key}`);
-            
-        } catch (error) {
-            console.error(`❌ Erro ao carregar som ${key}:`, error);
-        }
-    }
-    
-    loadMusic(key, asset) {
-        if (!this.enabled || !asset) return;
-        
-        try {
-            // Configurar música para loop
-            asset.setLoop(true);
-            this.music.set(key, asset);
-            
-            console.log(`🎵 Música carregada: ${key}`);
-            
-        } catch (error) {
-            console.error(`❌ Erro ao carregar música ${key}:`, error);
-        }
-    }
-    
-    createSoundPool(key, asset) {
-        const pool = [];
-        
-        for (let i = 0; i < this.maxPoolSize; i++) {
-            try {
-                // Criar cópia do áudio
-                const audioClone = new Audio(asset.audio.src);
-                audioClone.volume = this.sfxVolume * this.masterVolume;
-                
-                pool.push({
-                    audio: audioClone,
-                    inUse: false
-                });
-                
-            } catch (error) {
-                console.warn(`⚠️ Erro ao criar clone de áudio para ${key}:`, error);
-            }
-        }
-        
-        this.soundPools.set(key, pool);
-    }
-    
+
     // ===== SONS PROCEDURAIS =====
     createProceduralSounds() {
-        console.log('🎵 Criando sons procedurais...');
+        log('🎵 Criando sons procedurais...');
 
         // Sons básicos usando Web Audio API (fallbacks para sons não encontrados)
         this.createBeepSound('sfx_click', 800, 0.1);
@@ -184,7 +128,7 @@ class AudioManager {
             const newSound = this.sounds.get(newKey);
             if (newSound && !this.sounds.has(oldKey)) {
                 this.sounds.set(oldKey, newSound);
-                console.log(`🔗 Mapeamento criado: ${oldKey} -> ${newKey}`);
+                log(`🔗 Mapeamento criado: ${oldKey} -> ${newKey}`);
             }
         });
     }
@@ -269,7 +213,7 @@ class AudioManager {
 
     // ===== SONS AMBIENTES =====
     createAmbientSounds() {
-        console.log('🌅 Criando sons ambientes para ciclo dia/noite...');
+        log('🌅 Criando sons ambientes para ciclo dia/noite...');
 
         // Tentar carregar sons de arquivo primeiro
         this.loadEnvironmentSounds();
@@ -291,7 +235,7 @@ class AudioManager {
                 const asset = AssetLoader.getAsset(`sfx_${soundName}`);
                 if (asset && asset.audio) {
                     this.sounds.set(`sfx_${soundName}`, asset);
-                    console.log(`🌅 Som ambiente carregado: ${soundName}`);
+                    log(`🌅 Som ambiente carregado: ${soundName}`);
                     return;
                 }
             }
@@ -324,16 +268,16 @@ class AudioManager {
                     },
                     audio: audio
                 });
-                console.log(`🔊 Som carregado: ${key}`);
+                log(`🔊 Som carregado: ${key}`);
             });
 
             audio.addEventListener('error', () => {
-                console.log(`⚠️ Arquivo ${filepath} não encontrado`);
+                log(`⚠️ Arquivo ${filepath} não encontrado`);
                 if (onError) onError();
             });
 
         } catch (error) {
-            console.log(`⚠️ Erro ao carregar ${key}:`, error);
+            log(`⚠️ Erro ao carregar ${key}:`, error);
             if (onError) onError();
         }
     }
@@ -347,7 +291,7 @@ class AudioManager {
 
     // ===== RSE SOUNDFX LOADING =====
     loadRSESoundFX() {
-        console.log('🎵 Carregando RSE SoundFX...');
+        log('🎵 Carregando RSE SoundFX...');
 
         // Load individual sound files
         const rseSounds = [
@@ -414,7 +358,7 @@ class AudioManager {
             const newSound = this.sounds.get(newKey);
             if (newSound && !this.sounds.has(oldKey)) {
                 this.sounds.set(oldKey, newSound);
-                console.log(`🔗 RSE Mapeamento criado: ${oldKey} -> ${newKey}`);
+                log(`🔗 RSE Mapeamento criado: ${oldKey} -> ${newKey}`);
             }
         });
     }
@@ -448,7 +392,6 @@ class AudioManager {
 
         const playMorningSound = () => {
             // Simular pássaros com tons aleatórios
-            const duration = 3.0;
             const birdFrequencies = [800, 1200, 1600, 2000];
 
             birdFrequencies.forEach((freq, index) => {
@@ -479,7 +422,7 @@ class AudioManager {
             audio: null
         });
 
-        console.log('🌅 Som procedural de manhã criado');
+        log('🌅 Som procedural de manhã criado');
     }
 
     createNightSoundProcedural() {
@@ -526,12 +469,12 @@ class AudioManager {
             audio: null
         });
 
-        console.log('🌙 Som procedural de noite criado');
+        log('🌙 Som procedural de noite criado');
     }
 
     // ===== SONS ESPECÍFICOS PARA CONSTRUÇÃO =====
     createConstructionSounds() {
-        console.log('🏗️ Criando sons de construção procedurais...');
+        log('🏗️ Criando sons de construção procedurais...');
 
         // Som de colocação de edifício (martelo + clique)
         this.createConstructionPlacementSound('sfx_build_place');
@@ -545,7 +488,7 @@ class AudioManager {
         // Som de erro de construção (buzzer)
         this.createConstructionErrorSound('sfx_build_error');
 
-        console.log('✅ Sons de construção procedurais criados');
+        log('✅ Sons de construção procedurais criados');
     }
 
     createConstructionPlacementSound(key) {
@@ -775,7 +718,7 @@ class AudioManager {
             }
         } else {
             // Som não encontrado - tentar fallback silencioso
-            console.log(`🔇 Som ${key} não disponível (usando fallback silencioso)`);
+            log(`🔇 Som ${key} não disponível (usando fallback silencioso)`);
         }
     }
     
@@ -848,7 +791,7 @@ class AudioManager {
             this.fadeInMusic();
         }
 
-        console.log(`🎵 Reproduzindo música: ${key} (volume: ${Math.round(volumeMultiplier * 100)}%)`);
+        log(`🎵 Reproduzindo música: ${key} (volume: ${Math.round(volumeMultiplier * 100)}%)`);
     }
 
     _setupAutoplayResume() {
@@ -988,19 +931,7 @@ class AudioManager {
             });
         });
     }
-    
-    // ===== CONFIGURAÇÕES =====
-    toggleAudio() {
-        this.enabled = !this.enabled;
-        
-        if (!this.enabled) {
-            this.stopMusic(false);
-        }
-        
-        this.saveSettings();
-        return this.enabled;
-    }
-    
+
     saveSettings() {
         const settings = {
             enabled: this.enabled,
@@ -1029,79 +960,6 @@ class AudioManager {
     
     // ===== RSE SOUNDFX AUDIO METHODS =====
 
-    // UI Sound Effects (mapped to RSE SoundFX)
-    playUIClick() { this.playSound('sfx_ui_click', 0.7); }
-    playUIHover() { this.playSound('sfx_ui_hover', 0.5); }
-    playUISelect() { this.playSound('sfx_ui_select', 0.8); }
-    playUIError() { this.playSound('sfx_ui_error', 0.9); }
-    playUISuccess() { this.playSound('sfx_ui_success', 0.8); }
-
-    // Construction Sound Effects (mapped to RSE SoundFX)
-    playConstructionStart() { this.playSound('sfx_construction_start', 0.7); }
-    playConstructionProgress() { this.playSound('sfx_construction_progress', 0.6); }
-    playConstructionComplete() { this.playSound('sfx_construction_complete', 0.8); }
-    playBuildingPlace() { this.playSound('sfx_building_place', 0.7); }
-
-    // Environmental Sound Effects (mapped to RSE SoundFX)
-    playWaterFlow() { this.playSound('sfx_water_flow', 0.6); }
-    playWaterSplash() { this.playSound('sfx_water_splash', 0.7); }
-    playNatureBirds() { this.playSound('sfx_nature_birds', 0.5); }
-    playWindGentle() { this.playSound('sfx_wind_gentle', 0.4); }
-    playRainLight() { this.playSound('sfx_rain_light', 0.5); }
-
-    // Alert/Notification Sounds (mapped to RSE SoundFX)
-    playMissionStart() { this.playSound('sfx_mission_start', 0.8); }
-    playMissionComplete() { this.playSound('sfx_mission_complete', 0.9); }
-    playWarningAlert() { this.playSound('sfx_warning_alert', 0.8); }
-    playResourceLow() { this.playSound('sfx_resource_low', 0.7); }
-
-    // Background Music Control
-    playMenuMusic() { this.playMusic('bgm_menu'); }
-    playGameplayMusic() { this.playMusic('bgm_gameplay', true, 0.3); }
-
-    // Smart Audio Selection (fallback system)
-    playSmartUISound(action) {
-        const soundMap = {
-            'click': 'sfx_ui_click',
-            'hover': 'sfx_ui_hover',
-            'select': 'sfx_ui_select',
-            'error': 'sfx_ui_error',
-            'success': 'sfx_ui_success'
-        };
-
-        const soundKey = soundMap[action];
-        if (soundKey && this.sounds.has(soundKey)) {
-            this.playSound(soundKey, 0.7);
-        } else {
-            // Fallback to procedural sounds
-            this.playSound(`sfx_${action}`, 0.7);
-        }
-    }
-
-    playSmartConstructionSound(phase) {
-        const soundMap = {
-            'start': 'sfx_construction_start',
-            'progress': 'sfx_construction_progress',
-            'complete': 'sfx_construction_complete',
-            'place': 'sfx_building_place'
-        };
-
-        const soundKey = soundMap[phase];
-        if (soundKey && this.sounds.has(soundKey)) {
-            this.playSound(soundKey, 0.7);
-        } else {
-            // Fallback to existing procedural sounds
-            this.playSound(`sfx_build_${phase}`, 0.7);
-        }
-    }
-
-    // ===== GETTERS =====
-    isEnabled() { return this.enabled; }
-    getMasterVolume() { return this.masterVolume; }
-    getMusicVolume() { return this.musicVolume; }
-    getSfxVolume() { return this.sfxVolume; }
-    isPlayingMusic() { return this.currentMusic !== null; }
-    
     // ===== CLEANUP =====
     dispose() {
         this.stopMusic(false);
@@ -1114,7 +972,7 @@ class AudioManager {
         this.music.clear();
         this.soundPools.clear();
 
-        console.log('🗑️ AudioManager disposed');
+        log('🗑️ AudioManager disposed');
     }
 
     // ===== SONS DE TRANSIÇÃO DIA/NOITE =====
@@ -1134,7 +992,7 @@ class AudioManager {
         // Reproduzir som com fade-in suave (volume reduzido para 50%)
         this.playAmbientSoundWithFade(soundKey, 0.15);
 
-        console.log(`🌅 Som de transição reproduzido: ${transitionType}`);
+        log(`🌅 Som de transição reproduzido: ${transitionType}`);
     }
 
     playAmbientSoundWithFade(soundKey, targetVolume = 0.15) {
@@ -1195,4 +1053,4 @@ AudioManager.playDayNightTransition = function(transitionType) {
     AudioManager.getInstance().playDayNightTransition(transitionType);
 };
 
-console.log('🔊 AudioManager carregado');
+log('🔊 AudioManager carregado');
