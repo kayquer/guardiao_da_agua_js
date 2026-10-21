@@ -1,8 +1,8 @@
 const { test, expect } = require('@playwright/test');
 
-// Smoke de regressão: boot → novo jogo → construir → salvar/carregar → UI.
-// Qualquer erro de JS, console.error ou asset 4xx/falho reprova o teste.
-test('jogo roda de ponta a ponta sem erros', async ({ page }) => {
+// Smoke de regressão: boot → novo jogo → construir → salvar/carregar → UI, e o fluxo do tutorial.
+// Qualquer erro de JS, console.error, diálogo nativo ou asset 4xx/falho entra em `problems`.
+function watchProblems(page) {
     const problems = [];
     page.on('pageerror', e => problems.push(`pageerror: ${e.message}`));
     page.on('console', m => { if (m.type() === 'error') problems.push(`console.error: ${m.text()}`); });
@@ -16,10 +16,17 @@ test('jogo roda de ponta a ponta sem erros', async ({ page }) => {
     const requested = new Set();
     page.on('request', r => requested.add(new URL(r.url()).pathname));
     page.on('response', r => { if (r.status() >= 400) problems.push(`HTTP ${r.status()}: ${r.url()}`); });
+    return { problems, requested };
+}
+
+test('jogo roda de ponta a ponta sem erros', async ({ page }) => {
+    const { problems, requested } = watchProblems(page);
 
     await page.goto('/index.html');
     await page.click('#btn-new-game');
     await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
+    // O jogo fica congelado até o tutorial acabar (o fluxo dele tem teste próprio no smoke)
+    await page.evaluate(() => window.gameManager.tutorialSystem.complete());
     await expect(page.locator('#game-canvas')).toBeVisible();
     await expect(page.locator('#game-hud')).toBeVisible();
 
@@ -67,7 +74,7 @@ test('jogo roda de ponta a ponta sem erros', async ({ page }) => {
     // Estudo educacional (imagens do building-studies.json)
     await page.evaluate(() => window.gameManager.studySystem.startStudy('water_pump'));
 
-    // Deixar o loop rodar (tutorial 3D, CityLife, eventos, sons carregados tarde)
+    // Deixar o loop rodar (CityLife, eventos, sons carregados tarde)
     await page.waitForTimeout(10000);
 
     // Game over (modelo 3D + diálogo próprios)
@@ -76,4 +83,94 @@ test('jogo roda de ponta a ponta sem erros', async ({ page }) => {
     await page.waitForTimeout(3000);
     expect(problems).toEqual([]);
     if (process.env.REQ_LOG) require('fs').appendFileSync(process.env.REQ_LOG, [...requested].join('\n') + '\n');
+});
+
+// Tutorial: o jogo só começa no fim; a prefeitura sai de um passo obrigatório (e grátis).
+test('tutorial congela o jogo e guia a construção da prefeitura', async ({ page }) => {
+    const { problems } = watchProblems(page);
+    await page.goto('/index.html');
+    await page.click('#btn-new-game');
+    await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
+
+    const tutorial = page.locator('#tutorial-container');
+    const next = page.locator('#tutorial-next-btn');
+    const skip = page.locator('#tutorial-skip-btn');
+    await expect(tutorial).toBeVisible();
+    await expect(tutorial).toHaveClass(/tutorial--story/);
+
+    // Congelado: sem prefeitura automática e o tempo não anda
+    const before = await page.evaluate(() => ({
+        state: window.gameManager.gameState,
+        time: window.gameManager.gameTime,
+        halls: window.gameManager.buildingSystem.getBuildingsByType('city_hall').length
+    }));
+    expect(before).toEqual({ state: 'tutorial', time: 0, halls: 0 });
+    await page.waitForFunction(() => window.gameManager.tutorialSystem.portraitModel, null, { timeout: 30000 });
+    expect(await page.evaluate(() => window.gameManager.gameTime)).toBe(0);
+
+    // Escolha "aprender agora", ouve um trecho e pula o resto das aulas: elas passam a vir uma por missão
+    await expect(next).toHaveText('Aprender agora');
+    await expect(skip).toHaveText('Durante o jogo');
+    await next.click();
+    await page.locator('#tutorial-read-btn').click();
+    await skip.click();
+
+    // Prefeitura: modo coach, sem "pular" e com "próximo" travado
+    await expect(tutorial).toHaveClass(/tutorial--coach/);
+    await expect(skip).toBeHidden();
+    await expect(next).toBeDisabled();
+
+    const placed = await page.evaluate(() => {
+        const gm = window.gameManager, bs = gm.buildingSystem;
+        gm.uiManager.selectBuildingType('water_pump'); // travado pelo tutorial
+        const blocked = !bs.previewMode;
+        gm.enterBuildMode('city_hall');
+        for (let x = 0; x < 40; x++) for (let z = 0; z < 40; z++) {
+            if (bs.canPlaceBuilding(x, z, 'city_hall').canPlace) {
+                const ok = bs.confirmPlacement(x, z);
+                gm.exitBuildMode();
+                const hall = bs.getBuildingsByType('city_hall')[0];
+                return { blocked, ok, active: hall?.active, free: gm.resourceManager.resources.budget.current === GAME_CONFIG.resources.initialBudget };
+            }
+        }
+        return { blocked };
+    });
+    expect(placed).toEqual({ blocked: true, ok: true, active: true, free: true });
+    await expect(page.locator('#tutorial-title')).toHaveText('Prefeitura construída!');
+    await expect(next).toBeEnabled();
+
+    // Partes opcionais: pula missões e interface; o final é obrigatório
+    await next.click();
+    await expect(page.locator('#tutorial-title')).toHaveText('Quer conhecer as missões?');
+    await skip.click();
+    await expect(page.locator('#tutorial-title')).toHaveText('Um tour pela tela?');
+    await skip.click();
+    await expect(tutorial).toHaveClass(/tutorial--story/);
+    await expect(skip).toBeHidden();
+    await next.click();
+    await next.click();
+    await expect(next).toHaveText('Começar a jogar!');
+    expect(await page.evaluate(() => window.gameManager.gameState)).toBe('tutorial');
+    await next.click();
+
+    await expect(tutorial).toBeHidden();
+    expect(await page.evaluate(() => window.gameManager.gameState)).toBe('playing');
+    await page.waitForFunction(() => window.gameManager.gameTime > 0);
+
+    // Missão concluída → aula 1 abre sozinha, com o jogo congelado; "Fechar aula" devolve o jogo
+    await page.evaluate(() => window.gameManager.questSystem.completeQuest('tutorial_01'));
+    await expect(tutorial).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('#tutorial-progress')).toContainText('Aula 1');
+    expect(await page.evaluate(() => window.gameManager.gameState)).toBe('tutorial');
+    await skip.click();
+    await expect(tutorial).toBeHidden();
+    expect(await page.evaluate(() => window.gameManager.gameState)).toBe('playing');
+
+    // Botão 📚 reabre todas as aulas
+    await page.evaluate(() => document.getElementById('btn-lessons').click());
+    await expect(tutorial).toBeVisible();
+    await expect(skip).toHaveText('Fechar aula');
+    await skip.click();
+    await expect(tutorial).toBeHidden();
+    expect(problems).toEqual([]);
 });

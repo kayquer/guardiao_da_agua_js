@@ -946,6 +946,13 @@ class UIManager {
         // ===== ENHANCED BUILDING SELECTION WITH STATE MANAGEMENT =====
         if (!buildingTypeId) return;
 
+        // Durante o tutorial só se constrói o que o passo atual pede
+        const tutorial = this.gameManager.tutorialSystem;
+        if (tutorial?.isActive && buildingTypeId !== tutorial.allowedBuilding) {
+            this.showNotification('📚 Siga o tutorial: ainda não é hora de construir isso.', 'warning');
+            return;
+        }
+
         // ===== STATE TRANSITION MANAGEMENT =====
         if (this.uiState.isTransitioning) {
             log('⚠️ UI transition in progress, ignoring building selection');
@@ -2306,6 +2313,7 @@ class UIManager {
     // ===== Livro de estudo e quiz: js/systems/ui/StudyBookUI.js (9 métodos) =====
 
     closeStudyBook() {
+        stopSpeaking();
         const bookOverlay = document.getElementById('study-book-overlay');
         if (bookOverlay) {
             bookOverlay.classList.remove('active');

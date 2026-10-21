@@ -9,9 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
     <!-- CSS -->
     <link rel="stylesheet" href="css/styles.css?v=0d596b55">
-    <link rel="stylesheet" href="css/ui.css?v=29aad090">
+    <link rel="stylesheet" href="css/ui.css?v=d3a8847f">
     <link rel="stylesheet" href="css/responsive.css?v=5ca8d06b">
-    <link rel="stylesheet" href="css/tutorial.css?v=24d0dc2f">
+    <link rel="stylesheet" href="css/tutorial.css?v=f017ef11">
 
     <!-- Babylon.js CDN -->
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
@@ -133,6 +133,7 @@
                     <button style="display: none;" id="btn-speed-3x" class="control-btn">3x</button>
                     <button style="display: none;" id="btn-loans" class="control-btn loans-btn" title="Empréstimos" onclick="window.gameManager.uiManager.showLoanInterface()">🏦</button>
                     <button id="btn-missions" class="control-btn missions-btn" title="Missões">🎯</button>
+                    <button id="btn-lessons" class="control-btn help-btn" title="Aulas sobre a água">📚</button>
                     <button id="btn-help" class="control-btn help-btn" title="Controles">❓</button>
                 </div>
             </div>
@@ -210,24 +211,6 @@
                     <button id="btn-save-game" class="overlay-btn secondary">Salvar Jogo</button>
                     <button id="btn-main-menu" class="overlay-btn secondary">Menu Principal</button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tela de Tutorial -->
-    <div id="tutorial-screen" class="screen">
-        <div class="tutorial-container">
-            <div class="tutorial-header">
-                <h2>Tutorial - Guardião da Água</h2>
-                <button id="btn-close-tutorial" class="close-btn">✕</button>
-            </div>
-            <div class="tutorial-content" id="tutorial-content">
-                <!-- Conteúdo do tutorial será inserido dinamicamente -->
-            </div>
-            <div class="tutorial-navigation">
-                <button id="btn-tutorial-prev" class="tutorial-btn" disabled>← Anterior</button>
-                <span class="tutorial-page" id="tutorial-page">1 / 5</span>
-                <button id="btn-tutorial-next" class="tutorial-btn">Próximo →</button>
             </div>
         </div>
     </div>
@@ -456,7 +439,7 @@
                         <div class="faq-item">
                             <button class="faq-question">Como aumentar o abastecimento de água?</button>
                             <div class="faq-answer">
-                                <p>Construa poços, estações de bombeamento ou dessalinizadores. Cada tipo tem diferentes capacidades de produção. Posicione-os próximos a fontes de água para maior eficiência.</p>
+                                <p>Construa poços, bombas de água e reservatórios. Cada tipo tem diferentes capacidades de produção. Posicione-os próximos a fontes de água para maior eficiência.</p>
                             </div>
                         </div>
                         <div class="faq-item">
@@ -526,45 +509,38 @@
     <!-- Scripts do Jogo - Ordem correta de dependências -->
 
     <!-- Clean Code Refactoring: Game Constants (loaded first) -->
-    <script src="js/config/GameConstants.js?v=e92abf51"></script>
-    <script src="js/data/buildings.js?v=84d87893"></script>
-    <script src="js/data/missions.js?v=596a0201"></script>
+    <script src="js/config/GameConstants.js?v=034c3d1c"></script>
+    <script src="js/data/buildings.js?v=9d624346"></script>
+    <script src="js/data/missions.js?v=ee3a5835"></script>
 
     <!-- ===== TUTORIAL SYSTEM ===== -->
-    <div id="tutorial-container">
+    <!-- Tutorial: modo 'story' (tela cheia) ou 'coach' (card + spotlight sobre o HUD) — TutorialSystem.js -->
+    <div id="tutorial-container" class="tutorial--story" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
         <div id="tutorial-background"></div>
-        <div class="tutorial-content">
-            
-
-            <!-- Dialog Box -->
-            <div class="tutorial-dialog-box">
-              
-                <div class="tutorial-dialog">
-                  <!-- Character Portrait -->
-            <div class="tutorial-portrait-container">
-                <!-- 3D Model Canvas (for 3D characters) -->
+        <div id="tutorial-spotlight" hidden></div>
+        <div class="tut-card">
+            <div class="tut-portrait">
                 <canvas id="tutorial-portrait-canvas" style="display: none;"></canvas>
-                <!-- 2D Image (fallback for non-3D characters) -->
-                <img id="tutorial-portrait" src="" alt="Pesquisadora Claudia">
+                <img id="tutorial-portrait" src="" alt="">
+                <div class="tut-name" id="tutorial-character-name"></div>
             </div>
-                    <div class="tutorial-character-name" id="tutorial-character-name">Pesquisadora Claudia</div>
-
-                    <div class="tutorial-dialog-header">
-                        <span id="tutorial-icon">👋</span>
-                        <h2 id="tutorial-title">Bem-vindo!</h2>
+            <div class="tut-body">
+                <div class="tut-header">
+                    <span id="tutorial-icon" aria-hidden="true"></span>
+                    <h2 id="tutorial-title"></h2>
+                    <button id="tutorial-read-btn" class="read-aloud-btn" aria-label="Ouvir o texto em voz alta" title="Ouvir">🔊</button>
+                </div>
+                <div id="tutorial-text" class="tut-text"></div>
+                <div id="tutorial-hint" class="tut-hint" role="status" hidden></div>
+                <div class="tut-footer">
+                    <div class="tut-progress">
+                        <span id="tutorial-progress"></span>
+                        <div class="tut-progress-bar"><div id="tutorial-progress-fill"></div></div>
                     </div>
-
-                    <p id="tutorial-text">
-                        Olá! Eu sou a Pesquisadora Claudia, e você foi escolhido para uma missão muito importante!
-                    </p>
-
-                    <div class="tutorial-controls">
-                        <div class="tutorial-progress" id="tutorial-progress">1 / 16</div>
-                        <div class="tutorial-buttons">
-                            <button id="tutorial-skip-btn" class="tutorial-btn">Pular Tutorial</button>
-                            <button id="tutorial-prev-btn" class="tutorial-btn" disabled>Anterior</button>
-                            <button id="tutorial-next-btn" class="tutorial-btn">Próximo</button>
-                        </div>
+                    <div class="tut-nav">
+                        <button id="tutorial-skip-btn" class="tut-btn tut-btn--link">Pular</button>
+                        <button id="tutorial-prev-btn" class="tut-btn tut-btn--ghost" aria-label="Voltar" disabled>←</button>
+                        <button id="tutorial-next-btn" class="tut-btn tut-btn--primary">Próximo →</button>
                     </div>
                 </div>
             </div>
@@ -611,7 +587,7 @@
     </div>
 
     <!-- Utilitários primeiro -->
-    <script src="js/utils/GameUtils.js?v=52735056"></script>
+    <script src="js/utils/GameUtils.js?v=d0ef60a0"></script>
     <script src="js/utils/AssetLoader.js?v=8dad7252"></script>
     <script src="js/utils/AudioManager.js?v=0b52cb45"></script>
 
@@ -622,29 +598,29 @@
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=7fb1fd1c"></script>
 
-    <script src="js/core/GameManager.js?v=7bf2a136"></script>
+    <script src="js/core/GameManager.js?v=ef76826e"></script>
     <script src="js/core/game/Diagnostics.js?v=7a3bbf0a"></script>
     <script src="js/core/game/SelectionVisuals.js?v=3f6374bb"></script>
     <script src="js/core/game/CameraGuard.js?v=47e1747c"></script>
 
     <!-- Game systems -->
-    <script src="js/systems/BuildingSystem.js?v=341faff7"></script>
-    <script src="js/systems/building/BuildingMeshes.js?v=3976fb33"></script>
+    <script src="js/systems/BuildingSystem.js?v=d7e5727c"></script>
+    <script src="js/systems/building/BuildingMeshes.js?v=2bb3e29b"></script>
     <script src="js/systems/building/BuildingFeedback.js?v=45bdb216"></script>
     <script src="js/systems/CityLifeSystem.js?v=91c74c9c"></script>
-    <script src="js/systems/UIManager.js?v=7190ccf9"></script>
+    <script src="js/systems/UIManager.js?v=1e2dc0c5"></script>
     <script src="js/systems/ui/MobileTouch.js?v=de882a3d"></script>
-    <script src="js/systems/ui/StudyBookUI.js?v=1dc84db2"></script>
+    <script src="js/systems/ui/StudyBookUI.js?v=bb18c2fb"></script>
     <script src="js/systems/ui/LoanUI.js?v=ff798703"></script>
     <script src="js/systems/ui/ResourcePanels.js?v=9f16172b"></script>
     <script src="js/systems/ui/MobilePanels.js?v=c8bdf450"></script>
     <script src="js/systems/LoanManager.js?v=b5b5c4de"></script>
-    <script src="js/systems/QuestSystem.js?v=88fa58fa"></script>
+    <script src="js/systems/QuestSystem.js?v=b52c6dea"></script>
     <script src="js/systems/ui/MissionUI.js?v=81f9a178"></script>
-    <script src="js/systems/EventSystem.js?v=0e1220e4"></script>
+    <script src="js/systems/EventSystem.js?v=cc4dd6bc"></script>
     <script src="js/systems/SaveSystem.js?v=05eecd24"></script>
     <script src="js/systems/StudySystem.js?v=14cee54f"></script>
-    <script src="js/systems/TutorialSystem.js?v=b2d70ee4"></script>
+    <script src="js/systems/TutorialSystem.js?v=3a5a067f"></script>
     <script src="js/systems/GameOverSystem.js?v=b9e25aa2"></script>
     <script src="js/systems/SettingsManager.js?v=df9029df"></script>
 

@@ -660,6 +660,11 @@ class GameManager {
     }
 
     update(deltaTime) {
+        // Durante o tutorial nada simula; só o HUD se atualiza (o tour mostra valores reais)
+        if (this.gameState === 'tutorial') {
+            this.uiManager?.update(deltaTime);
+            return;
+        }
         if (this.gameState !== 'playing') return;
         
         this.gameTime += deltaTime * this.timeScale;
@@ -871,69 +876,14 @@ class GameManager {
         }
 
         this.handleResize();
-        this.createStarterCity();
 
-        // FIX: Tutorial auto-start re-enabled with proper error handling
-        try {
-            if (this.tutorialSystem && this.saveSystem && typeof this.saveSystem.isTutorialCompleted === 'function') {
-                const tutorialCompleted = this.saveSystem.isTutorialCompleted();
-                if (!tutorialCompleted) {
-                    log('📚 Starting tutorial automatically (first time player)');
-                    // Delay tutorial start to allow game to fully initialize
-                    setTimeout(() => {
-                        if (this.tutorialSystem) {
-                            this.tutorialSystem.start();
-                        }
-                    }, 2000); // 2 second delay for full initialization
-                } else {
-                    log('📚 Tutorial already completed, skipping auto-start');
-                }
-            } else {
-                console.warn('⚠️ Tutorial system or save system not available for auto-start');
-            }
-        } catch (error) {
-            console.warn('⚠️ Could not check tutorial status:', error);
-        }
+        // Tutorial obrigatório: o jogo fica congelado ('tutorial') até ele terminar,
+        // e é nele que o jogador constrói a prefeitura.
+        this.gameState = 'tutorial';
+        this.tutorialSystem.start();
 
         log('✅ Novo jogo iniciado');
         return true;
-    }
-
-    createStarterCity() {
-        log('🏙️ Criando cidade inicial...');
-
-        if (!this.buildingSystem) {
-            console.error('❌ BuildingSystem não disponível');
-            return;
-        }
-
-        try {
-            const cityHall = { type: 'city_hall', x: 10, z: 10 };
-
-            const originalCooldownActive = this.buildingSystem.buildingCooldown.active;
-            this.buildingSystem.buildingCooldown.active = false;
-
-            log('🏛️ Construindo Prefeitura Municipal...');
-            const success = this.buildingSystem.placeBuilding(cityHall.x, cityHall.z, cityHall.type);
-
-            if (success) {
-                log('✅ Prefeitura construída');
-                this.addCityHallLightingEffects(success);
-                this.centerCameraOnCityHall(cityHall.x, cityHall.z);
-            } else {
-                console.warn('⚠️ Falha ao construir Prefeitura');
-            }
-
-            this.buildingSystem.buildingCooldown.active = originalCooldownActive;
-
-            if (this.resourceManager) {
-                this.resourceManager.adjustResource('budget', 10000);
-                log('💰 Bônus inicial aplicado');
-            }
-
-        } catch (error) {
-            console.error('❌ Erro ao criar cidade inicial:', error);
-        }
     }
 
     addCityHallLightingEffects(cityHallBuilding) {

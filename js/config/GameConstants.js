@@ -28,7 +28,7 @@ const GAME_CONFIG = {
 
     resources: {
         initialWater: 1000,
-        initialBudget: 30000,
+        initialBudget: 40000,
         initialPopulation: 75,
         initialSatisfaction: 50,
         initialPollution: 15

@@ -517,6 +517,7 @@ class BuildingSystem {
         }
 
         log(`🏗️ Edifício construído: ${buildingType.name} em (${gridX}, ${gridZ})`);
+        this.gameManager?.tutorialSystem?.onBuildingPlaced(buildingData);
         return buildingData;
     }
     

@@ -141,6 +141,11 @@ class QuestSystem {
     }
 
     // ===== CONTROLE DE MISSÕES =====
+    // Missões são ativadas no boot; o relógio delas só deve contar depois do tutorial
+    restartClocks() {
+        this.activeQuests.forEach(id => { this.quests.get(id).startTime = Date.now(); });
+    }
+
     startFirstQuest() {
         this.startQuest('tutorial_01');
     }
@@ -197,6 +202,7 @@ class QuestSystem {
         quest.completionTime = Date.now();
         this.activeQuests.delete(questId);
         this.completedQuests.add(questId);
+        this.gameManager.tutorialSystem?.onMissionCompleted();
 
         // ===== ENHANCED COMPLETION SYSTEM =====
 

@@ -12,6 +12,8 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
     await page.goto('/index.html');
     await page.click('#btn-new-game');
     await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
+    // O jogo fica congelado até o tutorial acabar (o fluxo dele tem teste próprio no smoke)
+    await page.evaluate(() => window.gameManager.tutorialSystem.complete());
 
     // building/BuildingMeshes + BuildingFeedback: obra até o fim (celebração, rótulo) e alerta de energia
     const buildingId = await page.evaluate(() => {
@@ -101,6 +103,8 @@ test('todo prédio visível pode ser construído', async ({ page }, testInfo) =>
     await page.goto('/index.html');
     await page.click('#btn-new-game');
     await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
+    // O jogo fica congelado até o tutorial acabar (o fluxo dele tem teste próprio no smoke)
+    await page.evaluate(() => window.gameManager.tutorialSystem.complete());
 
     const failures = await page.evaluate(() => {
         const gm = window.gameManager, bs = gm.buildingSystem;
