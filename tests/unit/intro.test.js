@@ -37,13 +37,10 @@ test('o layout é determinístico (mesma semente, mesma cidade)', () => {
     assert.strictEqual(JSON.stringify(again.trees.slice(0, 50)), JSON.stringify(layout.trees.slice(0, 50)));
 });
 
-test('tomadas: 15–25 s no total e a curta termina na mesma pose final', () => {
+test('tomadas: 15–25 s no total', () => {
     const total = SHOTS.shots.reduce((sum, s) => sum + s.ms, 0);
     assert.ok(total >= 15000 && total <= 25000, `abertura com ${total} ms`);
-    const last = SHOTS.shots[SHOTS.shots.length - 1].points.slice(-1)[0];
-    const shortLast = SHOTS.shortShot.points.slice(-1)[0];
-    assert.strictEqual(JSON.stringify(shortLast), JSON.stringify(last));
-    for (const s of [...SHOTS.shots, SHOTS.shortShot]) {
+    for (const s of SHOTS.shots) {
         assert.ok(s.points.length >= 2, 'tomada precisa de 2+ pontos');
         for (const p of s.points) {
             assert.strictEqual(p.pos.length, 3);

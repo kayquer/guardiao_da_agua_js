@@ -196,14 +196,6 @@ const INTRO_SHOTS = {
             ]
         }
     ],
-    // Repetição na mesma sessão: só a grua final, curta
-    shortShot: {
-        ms: 4200,
-        points: [
-            { pos: [10, 8, -1], look: [16, 3, 17] },
-            { pos: [5, 17, -9], look: [19, 2.5, 22] }
-        ]
-    },
     cutFadeMs: 380,
     // Balanço depois que o menu aparece: ângulo (rad) e período (ms) em volta do alvo final
     orbit: { swing: 0.32, periodMs: 70000 }
