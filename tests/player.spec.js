@@ -330,7 +330,11 @@ test('bússola clicável: vira a câmera para o norte e, se já estiver no norte
     expect(Math.abs(await page.evaluate(() => window.gameManager.cameraControls.targetAlpha - 7.3))).toBeLessThanOrEqual(Math.PI);
     await page.waitForTimeout(400); // cooldown do clique
     await page.click('#compass');
-    await expect.poll(async () => near(await north(), 180), { timeout: 8000 }).toBe(true);
+    // O alvo já aponta para o sul na hora (α = +π/2); o giro suave é por quadro e no CI (GL por software,
+    // poucos FPS) os 180° levam bem mais que no desktop
+    const south = await page.evaluate(() => window.gameManager.cameraControls.targetAlpha);
+    expect(Math.abs(Math.atan2(Math.sin(south - Math.PI / 2), Math.cos(south - Math.PI / 2)))).toBeLessThan(0.01);
+    await expect.poll(async () => near(await north(), 180), { timeout: 25000 }).toBe(true);
     expect(problems).toEqual([]);
 });
 
