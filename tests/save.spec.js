@@ -202,7 +202,13 @@ test('salvar, recarregar a página e continuar: o jogo volta exatamente como est
     expect(removal.after).toEqual(removal.before);
 
     // A obra continua de onde parou e termina
-    await page.waitForFunction(id => !window.gameManager.buildingSystem.buildings.get(id).underConstruction, felled.id, { timeout: 30000 });
+    // Poll com o estado da simulação: se falhar (CI lento), a mensagem mostra o que segurou o relógio
+    await expect.poll(() => page.evaluate(id => {
+        const gm = window.gameManager, b = gm.buildingSystem.buildings.get(id);
+        if (!b.underConstruction) return 'pronta';
+        return `obra: state=${gm.gameState} holds=[${[...gm.pauseReasons]}] ` +
+            `faltam=${Math.round(b.constructionStartTime + b.constructionDuration - gm.buildingSystem.simNow())}ms`;
+    }, felled.id), { timeout: 45000 }).toBe('pronta');
     expect(await page.evaluate(id => window.gameManager.buildingSystem.buildings.get(id).active, felled.id)).toBe(true);
 
     // Autosave pelo relógio (GAME_CONFIG.gameplay.autoSaveInterval) com o jogo rodando
