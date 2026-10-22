@@ -8,7 +8,10 @@ class ResourceManager {
         log('💧 Inicializando ResourceManager...');
 
         this.gameManager = gameManager;
-        
+
+        // Satisfação extra pelas árvores em pé (TreeSystem.applyEffects)
+        this.greenBonus = 0;
+
         // Recursos principais
         this.resources = {
             water: {
@@ -264,6 +267,9 @@ class ResourceManager {
         if (pollution.current < 20) satisfaction += 15;
         else if (pollution.current < 50) satisfaction += 5;
         else satisfaction -= 15;
+
+        // Área verde: árvores em pé (cai quando derrubadas para construir)
+        satisfaction += this.greenBonus || 0;
 
         // Atualizar satisfação
         population.satisfaction = Math.max(0, Math.min(100, satisfaction));
@@ -732,20 +738,25 @@ class ResourceManager {
     }
 
     // ===== SAVE/LOAD =====
+    // Os totais (produção, consumo, fontes/redução de poluição, receita, despesas, geração de energia,
+    // armazenamento, consumo fixo dos prédios) já incluem o efeito dos prédios, das árvores e dos eventos.
+    // Por isso o load NÃO reaplica applyBuildingEffects/TreeSystem.applyEffects: restaura os números como estavam.
+    // O histórico (até 100 amostras × 5 recursos, com horário real) não vai: nada o lê e ele inchava o save.
     getSaveData() {
-        return {
-            resources: this.resources,
-            history: this.history
-        };
+        return JSON.parse(JSON.stringify({ resources: this.resources }));
     }
-    
+
     loadData(data) {
         if (data && data.resources) {
-            this.resources = { ...data.resources };
+            const saved = JSON.parse(JSON.stringify(data.resources));
+            // Campos que faltarem (save de antes de um recurso novo) ficam com o valor do jogo novo
+            for (const [type, values] of Object.entries(this.resources)) {
+                this.resources[type] = { ...values, ...(saved[type] || {}) };
+            }
         }
-        if (data && data.history) {
-            this.history = { ...data.history };
-        }
+        this.invalidateConsumptionCache();
+        this.lastUpdate = 0;
+        this.updateElectricity();
         log('📁 Dados de recursos carregados');
     }
 }

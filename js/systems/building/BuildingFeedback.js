@@ -34,11 +34,27 @@ mixin(BuildingSystem, {
                 'Energia Insuficiente',
                 `Seus edifícios estão operando a apenas ${efficiencyPercent}% de eficiência por falta de energia.`,
                 'warning',
-                `Geração atual: ${generation} kW | Consumo: ${consumption} kW | Déficit: ${deficit} kW\n\nConstrua usinas de energia (Hidrelétrica, Painéis Solares ou Turbinas Eólicas) para suprir a demanda.`
+                `Geração atual: ${generation} kW | Consumo: ${consumption} kW | Déficit: ${deficit} kW\n\nConstrua usinas de energia (Hidrelétrica, Painéis Solares ou Turbinas Eólicas) para suprir a demanda.`,
+                // Se esperou um livro/tutorial fechar: só mostra se ainda faltar energia (obras contam)
+                { stillRelevant: () => this.isEnergyShortProjected() }
             );
         } else {
             this.showNotification(`Energia insuficiente! Eficiência: ${efficiencyPercent}%`, 'warning');
         }
+    },
+
+    // Falta energia contando as obras em andamento (o consumo/geração delas só entra na conclusão)?
+    isEnergyShortProjected() {
+        const rm = window.gameManager?.resourceManager;
+        if (!rm) return false;
+        const electricity = rm.getElectricity();
+        let consumption = electricity.consumption, generation = electricity.generation;
+        this.buildings.forEach(b => {
+            if (b.effectsApplied || !b.underConstruction) return;
+            consumption += b.config?.powerConsumption || 0;
+            if (!b.isRented) generation += b.config?.powerGeneration || 0;
+        });
+        return consumption > generation;
     },
 
     // ===== FUNÇÃO REUTILIZÁVEL PARA CRIAR PLAQUINHAS DE TEXTO CARTOON =====
@@ -387,8 +403,8 @@ mixin(BuildingSystem, {
             // ✅ FIX: Garantir que a rotação esteja zerada antes de salvar
             buildingData.mesh.rotation = BABYLON.Vector3.Zero();
             
-            // Aplicar efeito de construção aprimorado
-            buildingData.mesh.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
+            // Aplicar efeito de construção aprimorado (modelo .glb: cresce de baixo pra cima, base no chão)
+            buildingData.mesh.scaling = this.getConstructionScaling(buildingData.mesh, 0);
             buildingData.originalRotation = BABYLON.Vector3.Zero(); // Sempre (0, 0, 0) para grid
             buildingData.originalScaling = new BABYLON.Vector3(1, 1, 1);
 
@@ -667,8 +683,12 @@ mixin(BuildingSystem, {
 
                 // Efeito de "bounce" na escala
                 const bounceScale = this.easeOutBounce(progress);
+                // Modelo .glb já terminou a obra no tamanho cheio: só um "pulo" leve na altura
+                const popStart = mesh.metadata?.fromModel
+                    ? new BABYLON.Vector3(targetScale.x, targetScale.y * 0.85, targetScale.z)
+                    : new BABYLON.Vector3(0.3, 0.3, 0.3);
                 const scale = BABYLON.Vector3.Lerp(
-                    new BABYLON.Vector3(0.3, 0.3, 0.3),
+                    popStart,
                     targetScale,
                     bounceScale
                 );
@@ -817,7 +837,7 @@ mixin(BuildingSystem, {
         this.buildings.forEach(building => {
             if (building.mesh && building.mesh.powerShortageFlicker) {
                 const flicker = building.mesh.powerShortageFlicker;
-                flicker.time += deltaTime;
+                flicker.time += deltaTime / 1000; // deltaTime vem em ms; interval/duration em segundos
 
                 // Verificar se é hora de piscar
                 if (flicker.time >= flicker.interval) {
@@ -825,7 +845,9 @@ mixin(BuildingSystem, {
 
                     // Aplicar efeito de piscada
                     if (building.mesh.material) {
-                        const originalAlpha = building.mesh.material.alpha || 1;
+                        // Guarda o alfa real uma vez: lido no meio de uma piscada, ele ficaria preso em 0.3
+                        flicker.baseAlpha ??= building.mesh.material.alpha || 1;
+                        const originalAlpha = flicker.baseAlpha;
 
                         // Piscar reduzindo a opacidade
                         building.mesh.material.alpha = 0.3;

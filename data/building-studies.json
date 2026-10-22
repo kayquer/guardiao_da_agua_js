@@ -17,7 +17,7 @@
         "pageNumber": 1,
         "title": "O que faz uma bomba de água?",
         "content": "<p>Debaixo da terra existe muita água guardada entre rochas e areia. Ela fica em grandes reservatórios naturais chamados <b>aquíferos</b>. A bomba de água serve para puxar essa água lá de baixo e levar até a cidade.</p><ul><li><b>Motor:</b> dá a força para puxar a água.</li><li><b>Canos:</b> levam a água até a superfície.</li><li><b>Controle:</b> decide quanta água sai e com que força.</li></ul><p>💡 O Brasil tem um dos maiores reservatórios de água subterrânea do mundo, maior do que muitos países inteiros!</p>",
-        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Water_well_hand_pump.jpg/800px-Water_well_hand_pump.jpg"
+        "image": "assets/images/studies/bomba-de-agua.webp"
       },
       {
         "pageNumber": 2,
@@ -70,7 +70,7 @@
         "pageNumber": 1,
         "title": "O que é um jardim de chuva?",
         "content": "<p>Um jardim de chuva é um canteiro um pouco mais baixo que o chão em volta. Quando chove, a água corre para ele em vez de escorrer pela rua.</p><ul><li><b>Buraco raso:</b> funciona como uma bacia que segura a água.</li><li><b>Solo fofo:</b> uma mistura de terra que deixa a água entrar fácil.</li><li><b>Plantas da região:</b> aguentam tanto tempo seco quanto encharcado.</li><li><b>Cobertura de folhas:</b> protege o solo e mantém a umidade.</li></ul><p>💡 Um jardim de chuva absorve bem mais água do que um gramado comum.</p>",
-        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Rain_garden_cross_section.svg/1200px-Rain_garden_cross_section.svg.png"
+        "image": "assets/images/studies/jardim-de-chuva.webp"
       },
       {
         "pageNumber": 2,
@@ -82,7 +82,7 @@
         "pageNumber": 3,
         "title": "Escolhendo as plantas",
         "content": "<p>Nem toda planta serve para um jardim de chuva. As melhores são as <b>nativas</b>, que já nasciam na região e estão acostumadas ao clima.</p><ul><li><b>Para lugares de sol forte:</b> capins altos e plantas de brejo, como a taboa, que é ótima para filtrar a água.</li><li><b>Para lugares de meia-sombra:</b> plantas resistentes, como samambaias e lírios.</li></ul><p>A planta certa precisa gostar de ficar molhada depois da chuva e também aguentar dias secos.</p><p>⚠️ Evite plantas invasoras, que se espalham e tomam o lugar das outras, e plantas que dão muito trabalho para cuidar.</p>",
-        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Typha_latifolia_02.jpg/800px-Typha_latifolia_02.jpg"
+        "image": "assets/images/studies/plantas-nativas.webp"
       },
       {
         "pageNumber": 4,
@@ -124,7 +124,7 @@
         "pageNumber": 1,
         "title": "Um jardim que boia",
         "content": "<p>Um jardim flutuante é uma plataforma que boia na água, com plantas crescendo em cima. As raízes ficam penduradas para dentro do lago ou do rio e ajudam a limpar a água de um jeito natural.</p><ul><li><b>Plataforma:</b> feita de material reciclado ou que se desfaz na natureza.</li><li><b>Base:</b> um material cheio de buraquinhos onde as raízes se prendem.</li><li><b>Plantas aquáticas:</b> escolhidas porque filtram a água.</li><li><b>Seres minúsculos nas raízes:</b> se alimentam da sujeira.</li></ul><p>💡 A ideia foi copiada dos pântanos e das áreas alagadas da natureza.</p>",
-        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Constructed_wetland.jpg/1200px-Constructed_wetland.jpg"
+        "image": "assets/images/studies/jardim-flutuante.webp"
       },
       {
         "pageNumber": 2,
@@ -136,7 +136,7 @@
         "pageNumber": 3,
         "title": "Para que serve na cidade",
         "content": "<p>Jardins flutuantes ajudam a recuperar lagos, rios e córregos poluídos. Também viram abrigo para peixes e aves.</p><p>Quando a água recebe sujeira demais, como adubo e esgoto, as algas crescem sem parar, cobrem tudo e roubam o oxigênio. Os peixes morrem. As plantas do jardim comem esse excesso, então sobra menos comida para as algas.</p><ul><li>💰 Custa bem menos do que uma estação de tratamento comum.</li><li>⚡ Não precisa de energia elétrica.</li><li>🔧 Dá pouco trabalho para manter.</li><li>♻️ As plantas cortadas viram adubo.</li></ul>",
-        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Water_hyacinth_flower.jpg/800px-Water_hyacinth_flower.jpg"
+        "image": "assets/images/studies/lagoa-recuperada.webp"
       },
       {
         "pageNumber": 4,
@@ -178,7 +178,7 @@
         "pageNumber": 1,
         "title": "Uma vigia para a água",
         "content": "<p>A estação de monitoramento é como um vigia que nunca dorme. Ela fica perto de rios, lagos e reservatórios e confere a água o tempo todo, sozinha.</p><ul><li>🔬 <b>Sensores:</b> medem como está a água.</li><li>📡 <b>Antena:</b> manda as informações na hora para a cidade.</li><li>☀️ <b>Painel solar:</b> dá energia mesmo em lugares sem tomada.</li><li>💾 <b>Memória:</b> guarda tudo caso o sinal caia.</li><li>🤖 <b>Programa esperto:</b> percebe quando algo foge do normal.</li></ul><p>💡 Uma estação moderna descobre uma contaminação em poucos minutos.</p>",
-        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Water_quality_monitoring_station.jpg/1200px-Water_quality_monitoring_station.jpg"
+        "image": "assets/images/studies/estacao-monitoramento.webp"
       },
       {
         "pageNumber": 2,
@@ -258,7 +258,7 @@
         "pageNumber": 1,
         "title": "Um laboratório para a água",
         "content": "<p>O monitor de qualidade é um laboratório. Enquanto a estação de monitoramento vigia a água o tempo todo, o laboratório faz exames mais detalhados, como um médico que pede exame de sangue.</p><p>Lá, os técnicos usam aparelhos que:</p><ul><li>🔬 Encontram metais e venenos escondidos na água.</li><li>🧪 Separam misturas para descobrir cada substância.</li><li>🦠 Fazem micróbios crescerem para ver quais estão na água.</li></ul><p>💡 Os aparelhos são tão sensíveis que acham uma sujeirinha minúscula, como uma gota perdida numa piscina enorme.</p>",
-        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Water_testing_laboratory.jpg/1200px-Water_testing_laboratory.jpg"
+        "image": "assets/images/studies/laboratorio-qualidade.webp"
       },
       {
         "pageNumber": 2,
@@ -337,7 +337,7 @@
         "pageNumber": 1,
         "title": "O que é um poço artesiano?",
         "content": "<p>Um poço artesiano é um buraco bem fundo feito no chão para alcançar a <b>água subterrânea</b>, aquela que fica guardada entre rochas e areia, bem abaixo dos nossos pés.</p><ul><li><b>Perfuração:</b> máquinas furam o solo até achar uma camada com água.</li><li><b>Tubo de proteção:</b> impede que as paredes do poço desmoronem.</li><li><b>Bomba:</b> puxa a água até a superfície.</li><li><b>Filtro:</b> segura areia e pedrinhas.</li></ul><p>💡 O nome \"artesiano\" vem de uma região da França onde esse tipo de poço ficou famoso há muito tempo.</p>",
-        "image": null
+        "image": "assets/images/studies/poco-artesiano.webp"
       },
       {
         "pageNumber": 2,
@@ -391,7 +391,7 @@
         "pageNumber": 1,
         "title": "Por que filtrar a água?",
         "content": "<p>Mesmo a água que parece limpinha pode ter <b>sujeiras invisíveis</b>: terra, micróbios e produtos químicos que fazem mal à saúde. Por isso, filtrar é uma das partes mais importantes do tratamento.</p><p>A filtração pode remover:</p><ul><li>🟤 <b>Sólidos:</b> areia, barro e restos de plantas.</li><li>🦠 <b>Micróbios:</b> bactérias e parasitas.</li><li>🧪 <b>Químicos:</b> agrotóxicos e metais.</li><li>🎨 <b>Cor e cheiro:</b> o que deixa gosto ruim.</li></ul><p>💡 Povos muito antigos, como os egípcios, já limpavam a água passando por areia e pedrinhas.</p>",
-        "image": null
+        "image": "assets/images/studies/estacao-de-filtros.webp"
       },
       {
         "pageNumber": 2,
@@ -471,7 +471,7 @@
         "pageNumber": 1,
         "title": "Uma fábrica de água limpa",
         "content": "<p>A <b>estação de tratamento</b> funciona como uma fábrica: entra água de rios, lagos e represas, e sai água segura para beber, cozinhar e tomar banho.</p><p>A água do rio pode até parecer limpa, mas carrega coisas que não vemos:</p><ul><li><b>Germes</b> (bactérias e vírus) que causam doenças.</li><li><b>Terra e areia</b>, que deixam a água turva.</li><li><b>Restos de plantas e algas</b>, que mudam o gosto e a cor.</li><li><b>Produtos</b> que escorrem das fazendas e das cidades.</li></ul><p>Sem a estação, essa água iria direto para as torneiras. Por isso ela é uma das construções mais importantes de uma cidade.</p>",
-        "image": null
+        "image": "assets/images/studies/estacao-de-tratamento.webp"
       },
       {
         "pageNumber": 2,
@@ -551,7 +551,7 @@
         "pageNumber": 1,
         "title": "O estoque de água da cidade",
         "content": "<p>Imagine se o mercado só recebesse comida na hora exata em que você fosse comer. Seria uma confusão! Com a água é parecido.</p><p>Os <b>reservatórios</b> são grandes tanques que guardam água já tratada, para que ela esteja pronta sempre que alguém abrir a torneira.</p><ul><li><b>Elevado:</b> fica num lugar alto ou numa torre.</li><li><b>Apoiado:</b> fica no chão, perto das estações de tratamento.</li><li><b>Enterrado:</b> fica embaixo da terra, protegido do calor e da sujeira.</li></ul><p>Existem reservatórios pequenos, como a caixa d'água de uma casa, e outros gigantes, capazes de abastecer bairros inteiros.</p>",
-        "image": null
+        "image": "assets/images/studies/reservatorio.webp"
       },
       {
         "pageNumber": 2,
@@ -605,7 +605,7 @@
         "pageNumber": 1,
         "title": "Guardiãs nas alturas",
         "content": "<p>Caixas d'água e torres d'água guardam água no alto e usam a <b>gravidade</b> para levá-la até as torneiras.</p><ul><li><b>Caixa d'água:</b> fica no telhado de uma casa ou prédio.</li><li><b>Torre d'água:</b> uma estrutura bem alta que abastece um bairro inteiro.</li></ul><p>Elas podem ser feitas de plástico (leve e barato, comum nas casas), fibra de vidro (não enferruja), concreto (para as torres grandes) ou aço.</p><p><b>Curiosidade:</b> a torre d'água também é chamada de <b>castelo d'água</b>, porque as primeiras torres tinham jeito de castelo!</p>",
-        "image": null
+        "image": "assets/images/studies/caixa-dagua.webp"
       },
       {
         "pageNumber": 2,
@@ -659,7 +659,7 @@
         "pageNumber": 1,
         "title": "Onde nascem as soluções",
         "content": "<p>Um <b>centro de pesquisa</b> é um lugar onde cientistas e engenheiros procuram respostas para problemas reais. No caso da água, eles estudam como tratar, economizar e proteger esse recurso tão precioso.</p><p>O que acontece lá dentro:</p><ul><li><b>Testes:</b> analisar a água de rios, poços e torneiras.</li><li><b>Novos tratamentos:</b> criar jeitos mais baratos de limpar a água.</li><li><b>Vigiar a natureza:</b> acompanhar a saúde dos rios.</li><li><b>Sensores e robôs:</b> que observam a água sozinhos, o dia inteiro.</li><li><b>Ensino:</b> formar novos cientistas e dividir o que se descobriu.</li></ul>",
-        "image": null
+        "image": "assets/images/studies/centro-de-pesquisa.webp"
       },
       {
         "pageNumber": 2,
@@ -740,7 +740,7 @@
         "pageNumber": 1,
         "title": "Formando os guardiões do futuro",
         "content": "<p>A universidade é muito mais do que um lugar para assistir aula. Ela forma as pessoas que vão cuidar da água e cria soluções novas.</p><ul><li><b>Ensino:</b> forma engenheiros, biólogos, químicos e outros profissionais.</li><li><b>Pesquisa:</b> descobre jeitos novos de tratar, levar e economizar água.</li><li><b>Extensão:</b> leva o que aprendeu para as comunidades que precisam.</li><li><b>Ajuda aos governos:</b> dá ideias para planos e regras sobre o uso da água.</li></ul><p>No Brasil, muitas universidades públicas oferecem cursos gratuitos e de ótima qualidade.</p>",
-        "image": null
+        "image": "assets/images/studies/universidade.webp"
       },
       {
         "pageNumber": 2,
@@ -820,7 +820,7 @@
         "pageNumber": 1,
         "title": "A ciência por trás da água",
         "content": "<p>Um <b>centro de pesquisas hídricas</b> é um laboratório especial onde cientistas estudam tudo sobre a água: se ela está limpa, como tratá-la e como protegê-la.</p><ul><li>Analisam a água de rios, lagos e poços para achar poluição.</li><li>Criam filtros e tratamentos melhores.</li><li>Cuidam dos peixes, plantas e outros seres que vivem na água.</li><li>Buscam soluções para lugares onde falta água.</li></ul><p><b>Você sabia?</b> O Brasil tem muita água doce, mas ela está mal dividida: a região da Amazônia tem água de sobra, enquanto o sertão do Nordeste sofre com secas.</p>",
-        "image": null
+        "image": "assets/images/studies/centro-pesquisas-hidricas.webp"
       },
       {
         "pageNumber": 2,
@@ -899,7 +899,7 @@
         "pageNumber": 1,
         "title": "O que é um Parque Linear?",
         "content": "<p>Um parque linear é uma <b>faixa comprida de área verde</b> que acompanha o caminho de um rio ou córrego. Ele não é quadrado como uma praça: é longo e estreito, seguindo a água.</p><p>Para que ele serve?</p><ul><li><b>Proteger o rio</b> contra lixo, sujeira e casas construídas na beira.</li><li><b>Evitar enchentes</b>, dando espaço para a água se espalhar.</li><li><b>Lazer</b>, com ciclovias e pistas de caminhada.</li><li><b>Ligar bairros</b>, como um corredor verde para pessoas e animais.</li></ul><p>Muitos rios das cidades foram escondidos em tubos debaixo do chão. O parque linear ajuda a trazer esses rios de volta para perto das pessoas.</p>",
-        "image": null
+        "image": "assets/images/studies/parque-linear.webp"
       },
       {
         "pageNumber": 2,
@@ -954,7 +954,7 @@
         "pageNumber": 1,
         "title": "O que é um Muro Verde?",
         "content": "<p>Um muro verde, ou <b>jardim vertical</b>, é uma parede coberta de plantas vivas. Em vez de concreto cinza, imagine uma parede inteira cheia de folhas e flores!</p><p>Como ele funciona:</p><ul><li><b>Suporte:</b> uma grade ou painel preso na parede.</li><li><b>Lugar para as raízes:</b> vasos, fibra de coco ou um tipo de tecido.</li><li><b>Rega:</b> pequenos canos que pingam água em cada planta.</li><li><b>Plantas resistentes</b>, que gostam de crescer na vertical.</li></ul><p>Existem muros verdes enormes pelo mundo, do tamanho de um campo de futebol!</p>",
-        "image": null
+        "image": "assets/images/studies/muro-verde.webp"
       },
       {
         "pageNumber": 2,
@@ -1034,7 +1034,7 @@
         "pageNumber": 1,
         "title": "O que é um Telhado Verde?",
         "content": "<p>Um telhado verde é o topo de um prédio <b>coberto de plantas</b>. Em vez de telhas ou concreto torrando no sol, imagine grama, um jardim ou até uma horta lá em cima!</p><p>Ele é feito em camadas, como um bolo:</p><ul><li>Uma camada que <b>impede a água de vazar</b> para dentro do prédio.</li><li>Uma proteção para as <b>raízes não estragarem</b> a laje.</li><li>Uma camada que deixa o <b>excesso de água escorrer</b>.</li><li>Uma <b>terra leve</b>, onde as plantas crescem.</li><li>As <b>plantas</b>, que aguentam sol e vento.</li></ul><p>Não é invenção nova: povos antigos de lugares frios já cobriam as casas com grama para se proteger do frio!</p>",
-        "image": null
+        "image": "assets/images/studies/telhado-verde.webp"
       },
       {
         "pageNumber": 2,
@@ -1114,7 +1114,7 @@
         "pageNumber": 1,
         "title": "Eletricidade que Vem do Vento",
         "content": "<p>Energia eólica é a <b>eletricidade feita com o vento</b>. Parece mágica, mas é ciência!</p><ul><li>O <b>vento empurra as pás</b> da turbina, que são enormes.</li><li>As pás <b>giram um eixo</b>, como um cata-vento gigante.</li><li>Esse giro move um <b>gerador</b>, que transforma movimento em eletricidade.</li><li>A energia segue pelos <b>fios</b> até as casas e fábricas.</li></ul><p>Uma única turbina grande consegue abastecer muitas casas. E o \"combustível\", que é o vento, sai de graça!</p>",
-        "image": null
+        "image": "assets/images/studies/parque-eolico.webp"
       },
       {
         "pageNumber": 2,
@@ -1193,7 +1193,7 @@
         "pageNumber": 1,
         "title": "Eletricidade Direto do Sol",
         "content": "<p>Energia solar é a <b>eletricidade feita com a luz do sol</b>. Quem faz isso são os painéis solares, aquelas placas escuras que você já viu em telhados.</p><ul><li>A <b>luz do sol bate</b> no painel.</li><li>O material do painel <b>reage à luz</b> e cria uma corrente elétrica.</li><li>Um aparelho <b>ajusta essa corrente</b> para o tipo que usamos em casa.</li><li>A eletricidade vai para a casa ou para a rede da cidade.</li></ul><p>O sol manda para a Terra muito mais energia do que o mundo inteiro usa. O desafio é conseguir captar e guardar essa energia.</p>",
-        "image": null
+        "image": "assets/images/studies/fazenda-solar.webp"
       },
       {
         "pageNumber": 2,
@@ -1272,7 +1272,7 @@
         "pageNumber": 1,
         "title": "Transformando Água em Eletricidade",
         "content": "<p>Uma usina hidrelétrica faz eletricidade com a <b>força da água em movimento</b>.</p><ul><li>Uma <b>barragem</b> fecha o rio e forma um lago enorme, chamado reservatório.</li><li>A água <b>desce com força</b> por grandes tubos.</li><li>Essa força <b>gira turbinas</b> gigantes.</li><li>As turbinas movem um <b>gerador</b>, que produz eletricidade.</li><li>A energia viaja por fios até as cidades.</li></ul><p>A maior parte da eletricidade do Brasil vem de hidrelétricas. Nosso país tem muitos rios grandes e algumas das maiores usinas do mundo.</p>",
-        "image": null
+        "image": "assets/images/studies/usina-hidreletrica.webp"
       },
       {
         "pageNumber": 2,

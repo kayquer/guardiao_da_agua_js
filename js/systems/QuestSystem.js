@@ -117,7 +117,7 @@ class QuestSystem {
             chainId: config.chainId || null,               // Mission chain identifier
             chainPosition: config.chainPosition || 0,      // Position in chain
             timeWindow: config.timeWindowMs                 // Time window to start mission
-                ? { start: Date.now(), end: Date.now() + config.timeWindowMs }
+                ? { start: this.simNow(), end: this.simNow() + config.timeWindowMs }
                 : null,
             choices: config.choices || [],                 // Interactive choices
             consequences: config.consequences || {},        // Results of choices
@@ -141,9 +141,15 @@ class QuestSystem {
     }
 
     // ===== CONTROLE DE MISSÕES =====
+    // Relógio das missões = tempo de jogo (gameTime): para na pausa, no tutorial e com popup aberto.
+    // Date.now() continuaria correndo e a missão "envelheceria" com o jogo parado.
+    simNow() {
+        return this.gameManager.gameTime || 0;
+    }
+
     // Missões são ativadas no boot; o relógio delas só deve contar depois do tutorial
     restartClocks() {
-        this.activeQuests.forEach(id => { this.quests.get(id).startTime = Date.now(); });
+        this.activeQuests.forEach(id => { this.quests.get(id).startTime = this.simNow(); });
     }
 
     startFirstQuest() {
@@ -170,7 +176,7 @@ class QuestSystem {
         
         // Iniciar missão
         quest.status = 'active';
-        quest.startTime = Date.now();
+        quest.startTime = this.simNow();
         this.activeQuests.add(questId);
         
         // Definir como missão principal se for tutorial ou main
@@ -184,7 +190,7 @@ class QuestSystem {
         // Notificar
         if (this.gameManager.uiManager) {
             this.gameManager.uiManager.showNotification(
-                `Nova missão: ${quest.title}`,
+                `Nova missão: ${PlayerProfile.personalize(quest.title)}`,
                 'info'
             );
         }
@@ -199,7 +205,7 @@ class QuestSystem {
 
         // Marcar como completa
         quest.status = 'completed';
-        quest.completionTime = Date.now();
+        quest.completionTime = this.simNow();
         this.activeQuests.delete(questId);
         this.completedQuests.add(questId);
         this.gameManager.tutorialSystem?.onMissionCompleted();
@@ -223,7 +229,7 @@ class QuestSystem {
                 ` (Desempenho Excelente! +${Math.round((performanceMultiplier - 1) * 100)}% bônus)` : '';
 
             this.gameManager.uiManager.showNotification(
-                `Missão completa: ${quest.title}${performanceText}`,
+                `Missão completa: ${PlayerProfile.personalize(quest.title)}${performanceText}`,
                 'success',
                 5000
             );
@@ -412,7 +418,7 @@ class QuestSystem {
         }
 
         if (quest.timeLimit) {
-            const elapsed = (Date.now() - quest.startTime) / 1000;
+            const elapsed = (this.simNow() - quest.startTime) / 1000;
             if (elapsed >= quest.timeLimit) {
                 this.failQuest(questId);
             }
@@ -462,7 +468,7 @@ class QuestSystem {
                 break;
                 
             case 'survival': {
-                const elapsed = (Date.now() - quest.startTime) / 1000;
+                const elapsed = (this.simNow() - quest.startTime) / 1000;
                 return Math.min(elapsed, objective.required);
             }
 
@@ -574,7 +580,7 @@ class QuestSystem {
             <div class="choice-dialog">
                 <div class="choice-header">
                     <div class="choice-mission-title">
-                        <span class="mission-icon">${quest.missionIcon || '🎯'}</span>
+                        <span class="mission-icon">${uiIcon(quest.missionIcon || 'ui-target', 'lg')}</span>
                         <h3>${quest.title}</h3>
                     </div>
                     <p class="choice-question">🎭 ${choice.question}</p>
@@ -601,7 +607,7 @@ class QuestSystem {
             </div>
         `;
 
-        detailsContent.innerHTML = dialogContent;
+        detailsContent.innerHTML = uiIconsIn(dialogContent);
 
         // Show the details panel
         this.gameManager.uiManager.showMissionPanel();
@@ -741,7 +747,7 @@ class QuestSystem {
     }
 
     checkTimeWindowMissions() {
-        const now = Date.now();
+        const now = this.simNow();
 
         this.quests.forEach(quest => {
             if (quest.timeWindow && quest.status === 'available') {
@@ -900,46 +906,86 @@ class QuestSystem {
     }
 
     // ===== SAVE/LOAD =====
+    // Tempos (startTime, completionTime, timeWindow) são em gameTime, que também vai no save: os prazos
+    // continuam de onde estavam. Objetivos guardam só o progresso (o texto vem de js/data/missions.js).
     getSaveData() {
+        const objectiveState = objective => ({
+            id: objective.id,
+            current: objective.current,
+            sustainedTime: objective.sustainedTime,
+            violated: objective.violated || undefined,
+            activated: objective.activated || undefined
+        });
         return {
             activeQuests: Array.from(this.activeQuests),
             completedQuests: Array.from(this.completedQuests),
             currentMainQuest: this.currentMainQuest,
             totalScore: this.totalScore,
+            questCounter: this.questCounter,
             achievements: Array.from(this.achievements),
+            stakeholderReputation: { ...this.stakeholderReputation },
             questStates: Array.from(this.quests.entries()).map(([id, quest]) => ({
                 id,
                 status: quest.status,
                 startTime: quest.startTime,
                 completionTime: quest.completionTime,
-                progress: quest.progress
+                progress: quest.progress,
+                timeWindow: quest.timeWindow,
+                objectives: quest.objectives.map(objectiveState),
+                dynamicObjectives: (quest.dynamicObjectives || []).filter(o => o.activated).map(o => o.id),
+                choices: (quest.choices || []).map(choice => choice.id) // escolhas já feitas saem da lista
             }))
         };
     }
-    
+
     loadData(data) {
-        if (data) {
-            // save antigo pode citar missões removidas de js/data/missions.js
-            const known = id => this.quests.has(id);
-            this.activeQuests = new Set((data.activeQuests || []).filter(known));
-            this.completedQuests = new Set((data.completedQuests || []).filter(known));
-            this.currentMainQuest = data.currentMainQuest;
-            this.totalScore = data.totalScore || 0;
-            this.achievements = new Set(data.achievements || []);
-            
-            // Restaurar estados das missões
-            if (data.questStates) {
-                data.questStates.forEach(state => {
-                    const quest = this.quests.get(state.id);
-                    if (quest) {
-                        quest.status = state.status;
-                        quest.startTime = state.startTime;
-                        quest.completionTime = state.completionTime;
-                        quest.progress = state.progress;
-                    }
-                });
+        if (!data) return;
+        // save antigo pode citar missões removidas de js/data/missions.js
+        const known = id => this.quests.has(id);
+        this.activeQuests = new Set((data.activeQuests || []).filter(known));
+        this.completedQuests = new Set((data.completedQuests || []).filter(known));
+        this.currentMainQuest = known(data.currentMainQuest) ? data.currentMainQuest : null;
+        this.totalScore = data.totalScore || 0;
+        this.questCounter = data.questCounter || 0;
+        this.achievements = new Set(data.achievements || []);
+        if (data.stakeholderReputation) Object.assign(this.stakeholderReputation, data.stakeholderReputation);
+
+        (data.questStates || []).forEach(state => {
+            const quest = this.quests.get(state.id);
+            if (!quest) return;
+            quest.status = state.status;
+            quest.startTime = state.startTime;
+            quest.completionTime = state.completionTime;
+            quest.progress = state.progress || 0;
+            if (state.timeWindow !== undefined) quest.timeWindow = state.timeWindow;
+
+            // Objetivos dinâmicos que já tinham aparecido voltam para a lista antes do progresso
+            (state.dynamicObjectives || []).forEach(id => {
+                const dynamic = (quest.dynamicObjectives || []).find(o => o.id === id);
+                if (dynamic && !dynamic.activated) {
+                    dynamic.activated = true;
+                    quest.objectives.push(dynamic);
+                }
+            });
+            (state.objectives || []).forEach((saved, index) => {
+                const objective = quest.objectives.find(o => saved.id !== undefined && o.id === saved.id) || quest.objectives[index];
+                if (!objective) return;
+                if (Number.isFinite(saved.current)) objective.current = saved.current;
+                if (Number.isFinite(saved.sustainedTime)) objective.sustainedTime = saved.sustainedTime;
+                if (saved.violated) objective.violated = true;
+            });
+            if (Array.isArray(state.choices)) {
+                quest.choices = (quest.choices || []).filter(choice => state.choices.includes(choice.id));
             }
-        }
+        });
+        // Status e listas coerentes (save editado à mão): vale para as missões que têm estado no save
+        (data.questStates || []).forEach(({ id }) => {
+            const quest = this.quests.get(id);
+            if (!quest) return;
+            if (quest.status === 'active') this.activeQuests.add(id);
+            else this.activeQuests.delete(id);
+            if (quest.status === 'completed') this.completedQuests.add(id);
+        });
     }
 
     // ===== ENHANCED MISSION COMPLETION AUDIO FEEDBACK =====

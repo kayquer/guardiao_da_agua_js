@@ -12,6 +12,10 @@ mixin(BuildingSystem, {
             return null;
         }
 
+        // Nome único por prédio: sombra e conexão com o terreno são indexadas pelo nome do mesh
+        // (com o nome só do tipo, o segundo prédio igual sobrescrevia as peças do primeiro)
+        standardizedMesh.name = `${standardizedMesh.name}#${standardizedMesh.uniqueId}`;
+
         // ===== STANDARDIZED POSITIONING SYSTEM =====
         this.applyStandardizedPositioning(standardizedMesh, gridX, gridZ, buildingType);
 
@@ -20,22 +24,19 @@ mixin(BuildingSystem, {
         log(`🎯 Rotação do mesh definida para (0, 0, 0) - alinhada ao grid`);
 
         // ===== STANDARDIZED MATERIAL APPLICATION ===
-        // ✅ FIX: Apenas aplicar material se o mesh ainda não tiver um (meshes não-merged já têm material)
-        if (!standardizedMesh.material) {
+        // Sem material ou com o cinza padrão do merge → material com a cor do prédio.
+        // Material próprio do merge (peças com cores diferentes) ou de modelo é preservado.
+        if (!standardizedMesh.material || standardizedMesh.material === this.getDefaultMergeMaterial()) {
             this.applyStandardizedMaterial(standardizedMesh, buildingType);
-            log(`🎨 Material aplicado para ${buildingType.name} (mesh não-merged)`);
-        } else {
-            log(`✅ Material preservado do merge para ${buildingType.name}`);
         }
 
         // ===== STANDARDIZED SHADOW SYSTEM =====
         this.applyStandardizedShadows(standardizedMesh);
 
         // ===== STANDARDIZED TERRAIN INTEGRATION =====
-        this.adjustBuildingToTerrain(standardizedMesh, gridX, gridZ);
+        const terrainHeight = this.adjustBuildingToTerrain(standardizedMesh, gridX, gridZ, buildingType.size || 1);
 
         // ===== STANDARDIZED SHADOW CREATION =====
-        const terrainHeight = this.getTerrainHeightAt(gridX, gridZ);
         this.createStandardizedBuildingShadow(standardizedMesh, terrainHeight);
 
         // ===== STANDARDIZED METADATA =====
@@ -44,6 +45,7 @@ mixin(BuildingSystem, {
         // ===== STANDARDIZED LABELING =====
         const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
         this.createBuildingNameLabel(standardizedMesh, buildingType, worldPos);
+        if (standardizedMesh.metadata.fromModel) this.fitBuildingLabelToMesh(standardizedMesh);
 
         return standardizedMesh;
     },
@@ -56,6 +58,11 @@ mixin(BuildingSystem, {
      * @returns {BABYLON.Mesh} - The standardized building mesh
      */
     createStandardizedBuildingMesh(buildingType) {
+        // Modelo .glb da tabela (js/data/buildingModels.js), se já carregou; senão o procedural abaixo
+        // é a reserva e BuildingModels.js troca o mesh quando o modelo ficar pronto
+        const modelMesh = this.createBuildingModelMesh(buildingType);
+        if (modelMesh) return modelMesh;
+
         // Get standardized dimensions
         const dimensions = this.getStandardizedBuildingDimensions(buildingType);
 
@@ -176,7 +183,16 @@ mixin(BuildingSystem, {
      * @param {Object} buildingType - The building type configuration
      */
     applyStandardizedMaterial(mesh, buildingType) {
-        const material = this.createMinecraftBuildingMaterial(buildingType);
+        // Material próprio por prédio (cor e textura do tipo, textura compartilhada): os efeitos de
+        // falta de energia e destaque alteram o material e não podem afetar os outros prédios do tipo.
+        // Liberado em performDisposal (metadata.perBuilding).
+        const typeMaterial = this.createMinecraftBuildingMaterial(buildingType);
+        const material = new BABYLON.StandardMaterial(`buildingMat_${buildingType.id}_${mesh.uniqueId}`, this.scene);
+        material.diffuseColor = typeMaterial.diffuseColor.clone();
+        material.specularColor = typeMaterial.specularColor.clone();
+        material.diffuseTexture = typeMaterial.diffuseTexture;
+        material.alpha = typeMaterial.alpha;
+        material.metadata = { perBuilding: true };
         mesh.material = material;
 
         // ===== FIX BUILDING VISIBILITY: Ensure mesh is visible =====
@@ -195,8 +211,9 @@ mixin(BuildingSystem, {
      * @param {BABYLON.Mesh} mesh - The building mesh
      */
     applyStandardizedShadows(mesh) {
-        if (this.scene.shadowGenerator) {
-            this.scene.shadowGenerator.addShadowCaster(mesh);
+        const shadowGenerator = this.gameManager?.shadowGenerator;
+        if (shadowGenerator) {
+            shadowGenerator.addShadowCaster(mesh);
         }
         mesh.receiveShadows = true;
     },
@@ -210,6 +227,7 @@ mixin(BuildingSystem, {
      */
     applyStandardizedMetadata(mesh, buildingType, gridX, gridZ) {
         mesh.metadata = {
+            ...(mesh.metadata || {}), // fromModel/modelFile dos prédios com modelo .glb
             building: true,
             buildingType: buildingType.id,
             gridX,
@@ -529,11 +547,6 @@ mixin(BuildingSystem, {
      * @returns {BABYLON.Mesh} - The building mesh
      */
     createStandardizedStorageMesh(buildingType, dimensions) {
-        // Special handling for water tank with 3D model
-        if (buildingType.id === 'water_tank') {
-            return this.createWaterTankWithModel(buildingType, dimensions);
-        }
-
         // Default storage mesh for other storage types
         const tank = BABYLON.MeshBuilder.CreateCylinder("storageTank", {
             height: dimensions.height,
@@ -547,104 +560,62 @@ mixin(BuildingSystem, {
     },
 
     /**
-     * Creates water tank with 3D model support
-     * @param {Object} buildingType - The building type configuration
-     * @param {Object} dimensions - Standardized dimensions
-     * @returns {BABYLON.Mesh} - The building mesh (placeholder that gets replaced)
-     */
-    createWaterTankWithModel(buildingType, dimensions) {
-        // Create placeholder mesh first (for immediate display)
-        const placeholder = BABYLON.MeshBuilder.CreateCylinder("waterTankPlaceholder", {
-            height: dimensions.height,
-            diameterTop: dimensions.width * 0.8,
-            diameterBottom: dimensions.width * 0.8,
-            tessellation: 12
-        }, this.scene);
-
-        placeholder.name = `storage_${buildingType.id}_placeholder`;
-
-        // Try to load 3D model asynchronously and replace placeholder
-        this.loadWaterTank3DModel(placeholder, buildingType, dimensions);
-
-        return placeholder;
-    },
-
-    /**
-     * Loads 3D water tank model and replaces placeholder
-     * @param {BABYLON.Mesh} placeholder - The placeholder mesh to replace
-     * @param {Object} buildingType - The building type configuration
-     * @param {Object} dimensions - Standardized dimensions
-     */
-    async loadWaterTank3DModel(placeholder, buildingType, dimensions) {
-        try {
-            const waterTankAsset = AssetLoader.getAsset('water_tank_3d');
-            if (waterTankAsset && waterTankAsset.loadInScene) {
-                log('🎯 Carregando modelo 3D do reservatório de água...');
-
-                const modelData = await waterTankAsset.loadInScene(this.scene);
-                if (modelData && modelData.meshes && modelData.meshes.length > 0) {
-                    const rootMesh = modelData.rootMesh;
-
-                    // Copy position and properties from placeholder
-                    rootMesh.position = placeholder.position.clone();
-                    rootMesh.rotation = placeholder.rotation.clone();
-
-                    // Scale the model to fit the grid cell
-                    const targetSize = dimensions.width * 0.9;
-                    const boundingInfo = rootMesh.getBoundingInfo();
-                    const modelSize = boundingInfo.boundingBox.extendSize;
-                    const maxDimension = Math.max(modelSize.x, modelSize.z) * 2;
-
-                    if (maxDimension > 0) {
-                        const scale = targetSize / maxDimension;
-                        rootMesh.scaling = new BABYLON.Vector3(scale, scale, scale);
-                    }
-
-                    // Ensure the model is positioned on the ground
-                    const groundY = boundingInfo.boundingBox.minimum.y * rootMesh.scaling.y;
-                    rootMesh.position.y = placeholder.position.y - groundY;
-
-                    // Copy metadata and properties
-                    rootMesh.name = `storage_${buildingType.id}`;
-                    rootMesh.metadata = placeholder.metadata;
-
-                    // Replace placeholder in building system
-                    this.replaceBuildingMesh(placeholder, rootMesh);
-
-                    // Dispose placeholder
-                    placeholder.dispose();
-
-                    log('✅ Modelo 3D do reservatório carregado e substituído com sucesso');
-                    return;
-                }
-            }
-        } catch (error) {
-            console.warn('⚠️ Erro ao carregar modelo 3D do reservatório:', error);
-        }
-
-        log('🔄 Mantendo reservatório procedural');
-    },
-
-    /**
-     * Replaces a building mesh in the system
-     * @param {BABYLON.Mesh} oldMesh - The old mesh to replace
-     * @param {BABYLON.Mesh} newMesh - The new mesh to use
+     * Troca o mesh de um prédio já colocado (ex.: procedural → modelo .glb que acabou de carregar),
+     * levando junto tudo que depende dele: metadata (seleção por clique/toque), base no mesmo chão,
+     * escala/rotação da obra, material próprio e de obra, sombra (caster, chão e conexão com o terreno),
+     * rótulo, ícones, indicador de seleção e filhos. Descarta o mesh antigo e o material próprio dele.
+     * @param {BABYLON.Mesh} oldMesh - mesh atual do prédio (buildingData.mesh)
+     * @param {BABYLON.Mesh} newMesh - mesh novo, com material próprio (metadata.perBuilding) e nome único
+     * @returns {boolean} se achou o prédio e trocou
      */
     replaceBuildingMesh(oldMesh, newMesh) {
-        // Update any references to the old mesh
-        if (this.buildings) {
-            for (const [buildingId, buildingData] of this.buildings.entries()) {
-                if (buildingData.mesh === oldMesh) {
-                    buildingData.mesh = newMesh;
-                    // Preserve metadata on new mesh for building selection
-                    if (oldMesh.metadata) {
-                        newMesh.metadata = Object.assign(newMesh.metadata || {}, oldMesh.metadata);
-                    }
-                    log(`🔄 Mesh substituído para edifício ${buildingId}`);
-                    break;
-                }
-            }
+        const buildingData = Array.from(this.buildings?.values() || []).find(b => b.mesh === oldMesh);
+        if (!buildingData || !oldMesh || oldMesh.isDisposed() || !newMesh) return false;
+
+        // Mesma base no terreno (o procedural é centrado em y; o modelo tem a base em y = 0)
+        const oldBottom = oldMesh.position.y - Math.abs(oldMesh.getBoundingInfo().boundingBox.minimum.y);
+        newMesh.position.set(oldMesh.position.x, oldBottom + Math.abs(newMesh.getBoundingInfo().boundingBox.minimum.y), oldMesh.position.z);
+        newMesh.rotation.copyFrom(oldMesh.rotation);
+        newMesh.scaling.copyFrom(oldMesh.scaling);
+        newMesh.receiveShadows = true;
+        newMesh.metadata = { ...(newMesh.metadata || {}), ...(oldMesh.metadata || {}), fromModel: !!newMesh.metadata?.fromModel };
+
+        const shadowGenerator = this.gameManager?.shadowGenerator;
+        if (shadowGenerator) {
+            shadowGenerator.removeShadowCaster(oldMesh);
+            shadowGenerator.addShadowCaster(newMesh);
         }
+
+        // Sombra no chão e conexão com o terreno são indexadas pelo nome do mesh
+        [['shadowMesh', this.shadowMeshes], ['terrainConnection', this.connectionMeshes]].forEach(([prop, map]) => {
+            const piece = oldMesh[prop];
+            if (!piece) return;
+            newMesh[prop] = piece;
+            if (map.get(oldMesh.name) === piece) map.delete(oldMesh.name);
+            map.set(newMesh.name, piece);
+        });
+        ['nameLabel', 'powerShortageIcon', 'powerShortageFlicker', 'rentalIcon', 'selectionIndicator'].forEach(prop => {
+            if (oldMesh[prop]) newMesh[prop] = oldMesh[prop];
+        });
+        oldMesh.getChildren().slice().forEach(child => child.setParent(newMesh));
+
+        // Material: o novo vira o "original" da obra; obra em andamento ganha um material de obra novo
+        const oldOwnMaterial = buildingData.originalMaterial || oldMesh.material;
+        const inConstruction = !!buildingData.originalMaterial && oldMesh.material !== buildingData.originalMaterial;
+        if (inConstruction && buildingData.constructionMaterial && buildingData.constructionMaterial !== oldOwnMaterial) {
+            buildingData.constructionMaterial.dispose(false, false);
+            buildingData.constructionMaterial = null;
+        }
+        if (oldOwnMaterial?.metadata?.perBuilding) oldOwnMaterial.dispose(false, false);
+        buildingData.mesh = newMesh;
+        if (buildingData.originalMaterial) buildingData.originalMaterial = newMesh.material;
+        if (inConstruction) this.applyConstructionMaterial(buildingData);
+        if (oldMesh.originalEmissiveColor) this.addPowerShortageEffects(buildingData); // reaplica o escurecimento
+
+        oldMesh.dispose(false, false);
+        this.fitBuildingLabelToMesh(newMesh);
+        log(`🔄 Mesh substituído para edifício ${buildingData.id}`);
+        return true;
     },
 
     /**
@@ -856,39 +827,26 @@ mixin(BuildingSystem, {
     },
 
     getTerrainHeightAt(gridX, gridZ) {
-        // Obter altura do terreno na posição especificada
-        if (this.gridManager && this.gridManager.elevationGrid) {
-            const elevation = this.gridManager.elevationGrid[gridX] && this.gridManager.elevationGrid[gridX][gridZ];
-            if (elevation !== undefined) {
-                return Math.max(0.1, elevation * 0.5 + 0.1);
-            }
-        }
-        return 0.1; // Altura padrão
+        // Topo do bloco de terreno da célula (colina é bem mais alta que pastagem)
+        return this.gridManager.getTerrainBlockHeight(gridX, gridZ);
     },
 
-    // Método para ajustar posicionamento preciso no terreno
-    adjustBuildingToTerrain(buildingMesh, gridX, gridZ) {
-        const terrainHeight = this.getTerrainHeightAt(gridX, gridZ);
-        const boundingBox = buildingMesh.getBoundingInfo().boundingBox;
-
-        // Verificar se há blocos de terreno adjacentes para melhor alinhamento
-        const adjacentHeights = [];
-        for (let dx = -1; dx <= 1; dx++) {
-            for (let dz = -1; dz <= 1; dz++) {
-                const adjX = gridX + dx;
-                const adjZ = gridZ + dz;
-                if (adjX >= 0 && adjX < this.gridManager.gridSize &&
-                    adjZ >= 0 && adjZ < this.gridManager.gridSize) {
-                    adjacentHeights.push(this.getTerrainHeightAt(adjX, adjZ));
-                }
+    // Altura do bloco mais alto da área size × size a partir de gridX/gridZ (prédio e prévia usam a mesma)
+    getBuildingAreaTerrainHeight(gridX, gridZ, size = 1) {
+        let height = 0;
+        for (let dx = 0; dx < size; dx++) {
+            for (let dz = 0; dz < size; dz++) {
+                height = Math.max(height, this.getTerrainHeightAt(gridX + dx, gridZ + dz));
             }
         }
+        return height;
+    },
 
-        // Usar altura média dos terrenos adjacentes para melhor integração
-        let finalTerrainHeight = terrainHeight;
-        if (adjacentHeights.length > 0) {
-            finalTerrainHeight = adjacentHeights.reduce((a, b) => a + b, 0) / adjacentHeights.length;
-        }
+    // Assenta o edifício no bloco mais alto da área que ele ocupa (size × size a partir de gridX/gridZ),
+    // senão ele afunda nas colinas da própria área. Retorna a altura usada.
+    adjustBuildingToTerrain(buildingMesh, gridX, gridZ, size = 1) {
+        const boundingBox = buildingMesh.getBoundingInfo().boundingBox;
+        const finalTerrainHeight = this.getBuildingAreaTerrainHeight(gridX, gridZ, size);
 
         // Posicionar o edifício com a base tocando o terreno
         // boundingBox.minimum.y é a distância do centro até a base do mesh
@@ -897,6 +855,7 @@ mixin(BuildingSystem, {
 
         // Criar base de conexão com o terreno se necessário
         this.createTerrainConnection(buildingMesh, gridX, gridZ, finalTerrainHeight);
+        return finalTerrainHeight;
     },
 
     createTerrainConnection(buildingMesh, gridX, gridZ, terrainHeight) {

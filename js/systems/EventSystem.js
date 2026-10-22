@@ -436,7 +436,12 @@ class EventSystem {
         for (let i = 0; i < buildingsToAffect; i++) {
             const randomBuilding = buildings[Math.floor(Math.random() * buildings.length)];
             if (randomBuilding.efficiency > 0.5) {
+                // Tira os efeitos com a eficiência antiga e soma com a nova, senão a conta dos recursos desanda
+                const buildingSystem = this.gameManager.buildingSystem;
+                const hadEffects = !!randomBuilding.effectsApplied;
+                buildingSystem.applyBuildingEffects(randomBuilding, false);
                 randomBuilding.efficiency = Math.max(0.5, randomBuilding.efficiency - 0.2);
+                if (hadEffects) buildingSystem.applyBuildingEffects(randomBuilding, true);
             }
         }
     }
@@ -505,24 +510,31 @@ class EventSystem {
     }
     
     // ===== SAVE/LOAD =====
+    // config (o tipo do evento) não vai no save: volta de eventTypes pelo type. Os efeitos de um evento ativo
+    // já estão nos totais do ResourceManager salvos, então o load não os reaplica (o fim do evento os retira).
     getSaveData() {
         return {
-            activeEvents: Array.from(this.activeEvents.entries()),
-            eventHistory: this.eventHistory,
+            activeEvents: Array.from(this.activeEvents.entries(), ([id, event]) => {
+                const rest = { ...event };
+                delete rest.config;
+                return [id, rest];
+            }),
+            eventHistory: this.eventHistory.slice(-50),
             lastEventTime: this.lastEventTime,
             difficultyMultiplier: this.difficultyMultiplier,
             eventsEnabled: this.eventsEnabled
         };
     }
-    
+
     loadData(data) {
-        if (data) {
-            this.activeEvents = new Map(data.activeEvents || []);
-            this.eventHistory = data.eventHistory || [];
-            this.lastEventTime = data.lastEventTime || 0;
-            this.difficultyMultiplier = data.difficultyMultiplier || 1.0;
-            this.eventsEnabled = data.eventsEnabled !== undefined ? data.eventsEnabled : true;
-        }
+        if (!data) return;
+        this.activeEvents = new Map((data.activeEvents || [])
+            .filter(([, event]) => event && this.eventTypes.has(event.type))
+            .map(([id, event]) => [id, { ...event, config: this.eventTypes.get(event.type) }]));
+        this.eventHistory = data.eventHistory || [];
+        this.lastEventTime = data.lastEventTime || 0;
+        this.difficultyMultiplier = data.difficultyMultiplier || 1.0;
+        this.eventsEnabled = data.eventsEnabled !== undefined ? data.eventsEnabled : true;
     }
 }
 

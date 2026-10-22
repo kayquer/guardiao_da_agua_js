@@ -6,7 +6,7 @@ const MISSIONS = {
 
     // ===== MISSÕES PRINCIPAIS (PRIMARY) =====
     tutorial_01: {
-        title: 'Bem-vindo, Guardião!',
+        title: 'Boas-vindas, {nome}!',
         description: 'Construa sua primeira bomba de água para começar a fornecer água à população.',
         type: 'primary',
         category: 'primary',

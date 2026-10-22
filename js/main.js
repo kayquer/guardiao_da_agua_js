@@ -129,8 +129,223 @@ function updateLoadingProgress(percentage) {
 // ===== SISTEMA DE MENUS =====
 function initializeMenuSystem() {
     // Botões do menu principal
-    document.getElementById('btn-new-game').addEventListener('click', startNewGame);
+    document.getElementById('btn-new-game').addEventListener('click', showProfileForm);
     document.getElementById('btn-about').addEventListener('click', showAbout);
+    document.getElementById('btn-start').addEventListener('click', onStartClick);
+    initializeProfileScreen();
+}
+
+// ===== PERFIS DE JOGADOR (PlayerProfile) =====
+const escapeHtml = text => String(text).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+
+// Jogos salvos por perfil (SaveSystem): a tela inicial usa a sua própria instância, sem GameManager
+let menuSaveSystem = null;
+const menuSaves = () => (menuSaveSystem = menuSaveSystem || new SaveSystem());
+
+function formatSavedAt(timestamp) {
+    const date = new Date(timestamp);
+    return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+function renderProfileList() {
+    const section = document.getElementById('profile-section');
+    const list = document.getElementById('profile-list');
+    const profiles = PlayerProfile.list();
+    section.hidden = profiles.length === 0;
+    list.innerHTML = profiles.map(p => {
+        const save = menuSaves().getSaveInfo(p.id);
+        const saveBadge = save?.ok
+            ? `<span class="profile-save" title="Jogo salvo em ${formatSavedAt(save.savedAt)}">${uiIcon('ui-save')} jogo salvo · ${save.summary.buildingCount} ${save.summary.buildingCount === 1 ? 'construção' : 'construções'}</span>`
+            : '';
+        return `<div class="profile-card" role="button" tabindex="0" data-profile-id="${p.id}" title="Jogar como ${escapeHtml(p.name)}">
+            <span class="profile-avatar">${escapeHtml(p.name.charAt(0).toUpperCase())}</span>
+            <span class="profile-info">
+                <span class="profile-name">${escapeHtml(p.name)}</span>
+                <span class="profile-meta">${p.age} anos · ${escapeHtml(p.city)}/${p.uf}</span>
+                ${saveBadge}
+            </span>
+            <span class="profile-play">▶</span>
+            <button class="profile-delete" data-delete-id="${p.id}" title="Apagar perfil" aria-label="Apagar perfil de ${escapeHtml(p.name)}">✕</button>
+        </div>`;
+    }).join('');
+}
+
+async function onProfileListClick(event) {
+    const deleteBtn = event.target.closest('[data-delete-id]');
+    if (deleteBtn) {
+        event.stopPropagation();
+        const profile = PlayerProfile.get(deleteBtn.dataset.deleteId);
+        const savedNote = menuSaves().hasSave(deleteBtn.dataset.deleteId) ? ', junto com o jogo salvo,' : '';
+        const ok = await gameConfirm('Apagar perfil?', `O perfil de ${profile?.name || 'jogador'}${savedNote} será apagado deste computador.`, { confirmText: 'Apagar', icon: 'warning' });
+        if (ok) {
+            PlayerProfile.remove(deleteBtn.dataset.deleteId);
+            menuSaves().deleteSave(deleteBtn.dataset.deleteId);
+            renderProfileList();
+        }
+        return;
+    }
+    const card = event.target.closest('[data-profile-id]');
+    if (!card || profileChoiceOpen) return;
+    profileChoiceOpen = true;
+    try {
+        await chooseGameForProfile(card.dataset.profileId);
+    } finally {
+        profileChoiceOpen = false;
+    }
+}
+
+let profileChoiceOpen = false;
+
+/** "Começar" (o "Getting Started" do menu): joga com o perfil ativo/último; sem perfil, abre o cadastro. */
+async function onStartClick() {
+    const profile = MenuIntro.startProfile();
+    if (!profile) return showProfileForm();
+    if (profileChoiceOpen) return;
+    profileChoiceOpen = true;
+    try {
+        await chooseGameForProfile(profile.id);
+    } finally {
+        profileChoiceOpen = false;
+    }
+}
+
+/**
+ * Perfil sem jogo salvo: começa um jogo novo. Com jogo salvo: "Continuar" carrega e "Novo jogo" apaga o save
+ * (depois de confirmar). Save danificado ou de versão antiga: avisa, apaga e começa um novo.
+ */
+async function chooseGameForProfile(profileId) {
+    const profile = PlayerProfile.activate(profileId);
+    if (!profile) return;
+    const saves = menuSaves();
+    const info = saves.getSaveInfo(profileId);
+    if (!info) return startNewGame();
+
+    const name = escapeHtml(profile.name);
+    if (!info.ok) {
+        await gameAlert('Jogo salvo com problema', `${SaveSystem.reasonText(info.reason)} Vamos começar um jogo novo para ${profile.name}.`, 'warning');
+        saves.deleteSave(profileId);
+        return startNewGame();
+    }
+
+    const summary = info.summary;
+    const day = summary.gameClockTime ? new Date(summary.gameClockTime).toLocaleDateString('pt-BR') : '';
+    const choice = await gameChoice(`Olá de novo, ${name}!`, // o título do SweetAlert também é HTML
+        `<p>Você tem um jogo salvo em <b>${formatSavedAt(info.savedAt)}</b>.</p>
+        <p class="save-summary">${uiIcon('ui-build')} ${summary.buildingCount} ${summary.buildingCount === 1 ? 'construção' : 'construções'} · ${uiIcon('res-population')} ${summary.population} habitantes · ${uiIcon('ui-target')} ${summary.completedQuests} ${summary.completedQuests === 1 ? 'missão concluída' : 'missões concluídas'}${day ? ` · 📅 ${day}` : ''}</p>
+        <p>Quer continuar de onde parou, ${name}?</p>`,
+        { confirmText: '▶ Continuar', denyText: '🆕 Novo jogo', icon: 'question' });
+    if (choice === 'confirm') {
+        const result = saves.load(profileId);
+        if (!result.ok) {
+            await gameAlert('Jogo salvo com problema', `${SaveSystem.reasonText(result.reason)} Vamos começar um jogo novo.`, 'warning');
+            saves.deleteSave(profileId);
+            return startNewGame();
+        }
+        return startNewGame({ saveData: result.data });
+    }
+    if (choice === 'deny') {
+        const sure = await gameConfirm('Começar um jogo novo?',
+            `O jogo salvo de ${profile.name} será apagado e não dá para desfazer.`,
+            { confirmText: 'Apagar e começar do zero', cancelText: 'Voltar', icon: 'warning' });
+        if (!sure) return;
+        saves.deleteSave(profileId);
+        return startNewGame();
+    }
+}
+
+function initializeProfileScreen() {
+    const list = document.getElementById('profile-list');
+    list.addEventListener('click', onProfileListClick);
+    list.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') onProfileListClick(event);
+    });
+
+    const ufSelect = document.getElementById('profile-uf');
+    ufSelect.innerHTML += Object.entries(BRAZIL_STATES)
+        .sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'))
+        .map(([uf, nome]) => `<option value="${uf}">${nome}</option>`).join('');
+    ufSelect.addEventListener('change', () => loadCitiesFor(ufSelect.value));
+
+    document.getElementById('profile-form').addEventListener('submit', submitProfileForm);
+    document.getElementById('btn-profile-back').addEventListener('click', () => showScreen('main-menu'));
+}
+
+let profileCities = null; // municípios do estado escolhido (null = API indisponível → texto livre)
+
+async function loadCitiesFor(uf) {
+    const input = document.getElementById('profile-city');
+    const options = document.getElementById('profile-city-options');
+    const hint = document.getElementById('profile-city-hint');
+    input.value = '';
+    options.innerHTML = '';
+    profileCities = null;
+    if (!uf) {
+        input.disabled = true;
+        input.placeholder = 'Escolha o estado primeiro';
+        hint.textContent = '';
+        return;
+    }
+    input.disabled = true;
+    input.placeholder = 'Carregando cidades...';
+    try {
+        const cities = await PlayerProfile.fetchCities(uf);
+        if (document.getElementById('profile-uf').value !== uf) return; // trocou de estado no meio
+        profileCities = cities;
+        options.innerHTML = cities.map(c => `<option value="${escapeHtml(c)}"></option>`).join('');
+        input.placeholder = 'Comece a digitar e escolha na lista';
+        hint.textContent = `${cities.length} cidades em ${BRAZIL_STATES[uf]}`;
+    } catch (error) {
+        console.warn('⚠️ Lista de cidades indisponível:', error.message);
+        input.placeholder = 'Digite o nome da sua cidade';
+        hint.textContent = 'Sem internet para a lista de cidades: digite o nome.';
+    }
+    input.disabled = false;
+    input.focus();
+}
+
+function showProfileForm() {
+    document.getElementById('profile-form').reset();
+    document.getElementById('profile-errors').textContent = '';
+    loadCitiesFor('');
+    showScreen('profile-screen');
+    document.getElementById('profile-name').focus();
+}
+
+async function submitProfileForm(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const errorsEl = document.getElementById('profile-errors');
+    const data = {
+        name: form.elements.name.value,
+        age: form.elements.age.value,
+        uf: form.elements.uf.value,
+        city: form.elements.city.value.trim()
+    };
+    const errors = PlayerProfile.validate(data);
+    // Com a lista do IBGE, a cidade precisa ser uma dela (garante que o clima ache o lugar certo)
+    if (data.city && profileCities) {
+        const normalize = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+        const match = profileCities.find(c => normalize(c) === normalize(data.city));
+        if (match) data.city = match;
+        else errors.push('Escolha a cidade na lista de sugestões.');
+    }
+    errorsEl.textContent = errors.join(' ');
+    if (errors.length) return;
+
+    const button = document.getElementById('btn-profile-start');
+    button.disabled = true;
+    errorsEl.textContent = 'Procurando sua cidade no mapa...';
+    let coords = null;
+    try {
+        coords = await PlayerProfile.geocode(data.city, data.uf);
+    } catch (error) {
+        console.warn('⚠️ Não foi possível localizar a cidade (o clima fica indisponível):', error.message);
+    }
+    button.disabled = false;
+    errorsEl.textContent = '';
+
+    PlayerProfile.create({ ...data, lat: coords?.lat ?? null, lon: coords?.lon ?? null });
+    startNewGame();
 }
 
 // ===== INICIALIZAÇÃO DOS SISTEMAS DE JOGO =====
@@ -154,14 +369,9 @@ async function startLoading() {
         AudioManager.getInstance();
         updateLoadingProgress(50);
 
-        // Inicializar Babylon.js
-        log('🎨 Inicializando renderização 3D...');
-        await initializeBabylon();
-        updateLoadingProgress(70);
-
-        // Preparar sistemas
-        log('⚙️ Preparando sistemas...');
-        await prepareGameSystems();
+        // Cidade da abertura (cena própria atrás do menu): monta enquanto a tela de carregamento aparece
+        log('🎨 Montando a cidade da abertura...');
+        await MenuIntro.prepare(p => updateLoadingProgress(50 + Math.round(p * 40)));
         updateLoadingProgress(90);
 
         // Finalizar
@@ -170,7 +380,7 @@ async function startLoading() {
 
         setTimeout(() => {
             showScreen('main-menu');
-        }, 1000);
+        }, MenuIntro.cinematic ? 300 : 1000);
 
     } catch (error) {
         console.error('❌ Erro no carregamento:', error);
@@ -178,22 +388,9 @@ async function startLoading() {
     }
 }
 
-async function initializeBabylon() {
-    // Babylon.js será inicializado quando necessário
-    return new Promise(resolve => {
-        setTimeout(resolve, 500); // Simular carregamento
-    });
-}
-
-async function prepareGameSystems() {
-    // Preparar sistemas sem inicializar completamente
-    return new Promise(resolve => {
-        setTimeout(resolve, 300); // Simular preparação
-    });
-}
-
 // ===== CONTROLE DE TELAS =====
 function showScreen(screenId) {
+    const previousScreen = currentScreen;
     // Ocultar todas as telas
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.remove('active');
@@ -206,22 +403,33 @@ function showScreen(screenId) {
         currentScreen = screenId;
         log(`📺 Tela ativa: ${screenId}`);
     }
+    if (screenId === 'main-menu') {
+        renderProfileList();
+        // Abertura (1ª vez) ou só a entrada do logo — voltar do cadastro não repete nada (MenuIntro)
+        MenuIntro.onMenuShown(previousScreen);
+    }
 
     // BGM por tela
+    // (playMusic recomeça a faixa mesmo se já estiver tocando: menu ↔ cadastro não troca de música)
     if (typeof AudioManager !== 'undefined' && AudioManager.playMusic) {
-        if (screenId === 'main-menu' || screenId === 'loading-screen') {
-            AudioManager.playMusic('bgm_menu');
-        } else if (screenId === 'game-screen') {
-            AudioManager.playMusic('bgm_gameplay', true, 0.3);
+        const bgm = screenId === 'game-screen' ? 'bgm_gameplay' : 'bgm_menu';
+        if (bgm !== currentBgm) {
+            currentBgm = bgm;
+            if (bgm === 'bgm_gameplay') AudioManager.playMusic('bgm_gameplay', true, 0.3);
+            else AudioManager.playMusic('bgm_menu');
         }
     }
 }
+let currentBgm = null;
 
 // ===== AÇÕES DO MENU =====
-async function startNewGame() {
-    log('🎮 Iniciando novo jogo...');
+// saveData (de SaveSystem.load): continua o jogo salvo em vez de começar um novo (sem tutorial)
+async function startNewGame({ saveData = null } = {}) {
+    log(saveData ? '📁 Continuando jogo salvo...' : '🎮 Iniciando novo jogo...');
 
     try {
+        // A cidade da abertura sai antes do jogo montar a dele (libera a GPU e o loop de render)
+        MenuIntro.dispose();
         // Mostrar tela de loading temporariamente
         showScreen('loading-screen');
         updateLoadingProgress(0);
@@ -252,20 +460,19 @@ async function startNewGame() {
         }
         updateLoadingProgress(70);
 
-        // Iniciar novo jogo
-        log('🚀 Iniciando novo jogo...');
-        const success = gameManager.startNewGame();
+        // Global antes de montar o jogo: partes do BuildingSystem leem window.gameManager (ex.: ao recriar prédios)
+        window.gameManager = gameManager;
+        // ===== FIX: Expose uiManager globally for HTML onclick handlers =====
+        window.uiManager = gameManager.uiManager;
+
+        // Iniciar novo jogo ou continuar o salvo
+        const success = saveData ? gameManager.loadGame(saveData) : gameManager.startNewGame();
         updateLoadingProgress(100);
 
         if (success) {
             showScreen('game-screen');
+            armBackGuard();
             isGameInitialized = true;
-
-            // Tornar gameManager disponível globalmente para testes
-            window.gameManager = gameManager;
-
-            // ===== FIX: Expose uiManager globally for HTML onclick handlers =====
-            window.uiManager = gameManager.uiManager;
 
             log('✅ Jogo iniciado com sucesso');
         } else {
@@ -445,6 +652,65 @@ window.addEventListener('error', function(e) {
             console.warn('⚠️ Non-critical error during initialization:', e.error.message);
         }
     }
+});
+
+// ===== SAIR NO MEIO DA PARTIDA =====
+// F5/Ctrl+R e o "voltar" do navegador perguntam no diálogo do jogo (com opção de salvar). Fechar a aba ou a
+// janela só permite o aviso nativo do navegador (beforeunload: o texto é fixo e o Chrome não deixa trocar).
+let leavingOnPurpose = false;
+
+function isMidGame() {
+    return currentScreen === 'game-screen' && !!gameManager && gameManager.gameState !== 'gameover';
+}
+
+async function confirmLeaveGame(title) {
+    const canSave = gameManager.canSave();
+    const text = canSave
+        ? 'O jogo será salvo antes de sair: depois, escolha o seu perfil e "Continuar".'
+        : 'O tutorial ainda não acabou, então este jogo não fica salvo.';
+    const leave = await gameConfirm(title, text,
+        { confirmText: canSave ? 'Salvar e sair' : 'Sair', cancelText: 'Continuar jogando', icon: 'warning' });
+    if (leave) {
+        gameManager.autoSave();
+        leavingOnPurpose = true;
+    }
+    return leave;
+}
+
+/**
+ * "Menu principal" (pausa) e "Voltar ao menu" (fim de jogo): salva e recarrega a página na tela inicial.
+ * Recarregar em vez de só trocar de tela: o GameManager deixa listeners no document/window, timers e uma
+ * engine no canvas; um segundo jogo na mesma página duplicaria tudo (e o botão salvar do jogo velho
+ * gravaria por cima do novo).
+ */
+function leaveToMainMenu() {
+    gameManager?.autoSave();
+    leavingOnPurpose = true;
+    location.reload();
+}
+
+window.addEventListener('beforeunload', event => {
+    if (leavingOnPurpose || !isMidGame()) return;
+    event.preventDefault();
+    event.returnValue = ''; // navegadores antigos só mostram o aviso com returnValue
+});
+
+document.addEventListener('keydown', async event => {
+    const reload = event.key === 'F5' || ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'r');
+    if (!reload || !isMidGame()) return;
+    event.preventDefault();
+    if (await confirmLeaveGame('Recarregar a página?')) location.reload();
+});
+
+// Voltar do navegador: uma entrada a mais no histórico (posta ao entrar no jogo) segura a página
+function armBackGuard() {
+    if (history.state?.guardiao !== 'jogo') history.pushState({ guardiao: 'jogo' }, '');
+}
+
+window.addEventListener('popstate', async () => {
+    if (!isMidGame()) return;
+    history.pushState({ guardiao: 'jogo' }, '');
+    if (await confirmLeaveGame('Sair do jogo?')) history.go(-2);
 });
 
 // ===== EXPORT PARA DEBUG (só com ?debug) =====

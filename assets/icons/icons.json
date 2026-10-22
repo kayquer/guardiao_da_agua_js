@@ -1,0 +1,2352 @@
+{
+  "res-water": {
+    "title": "Água",
+    "area": "hud",
+    "emoji": [
+      "💧"
+    ],
+    "usedIn": [
+      "index.html (#water-amount, compacto)",
+      "js/systems/ui/ResourcePanels.js",
+      "js/systems/TutorialSystem.js",
+      "js/systems/ui/MobilePanels.js",
+      "js/systems/ui/WeatherUI.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-water.svg"
+    }
+  },
+  "res-pollution": {
+    "title": "Poluição",
+    "area": "hud",
+    "emoji": [
+      "🏭"
+    ],
+    "usedIn": [
+      "index.html (.resource-icon poluição, ajuda)",
+      "js/systems/ui/ResourcePanels.js",
+      "js/systems/TutorialSystem.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-pollution.svg"
+    }
+  },
+  "res-budget": {
+    "title": "Orçamento",
+    "area": "hud",
+    "emoji": [
+      "💰"
+    ],
+    "usedIn": [
+      "index.html (orçamento, compacto, ajuda)",
+      "js/systems/ui/ResourcePanels.js",
+      "js/systems/TutorialSystem.js",
+      "js/systems/ui/MissionUI.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-budget.svg"
+    }
+  },
+  "res-population": {
+    "title": "População",
+    "area": "hud",
+    "emoji": [
+      "👥"
+    ],
+    "usedIn": [
+      "index.html (população, compacto)",
+      "js/systems/ui/ResourcePanels.js",
+      "js/systems/TutorialSystem.js",
+      "js/systems/QuestSystem.js (stakeholder citizens)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-population.svg"
+    }
+  },
+  "res-energy": {
+    "title": "Energia",
+    "area": "hud",
+    "emoji": [
+      "⚡"
+    ],
+    "usedIn": [
+      "index.html (energia, compacto, ajuda)",
+      "js/systems/ui/ResourcePanels.js",
+      "js/systems/TutorialSystem.js",
+      "js/systems/ui/MissionUI.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-energy.svg"
+    }
+  },
+  "res-satisfaction": {
+    "title": "Satisfação",
+    "area": "hud",
+    "emoji": [
+      "😊"
+    ],
+    "usedIn": [
+      "index.html (satisfação)",
+      "js/systems/ui/ResourcePanels.js",
+      "js/systems/TutorialSystem.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-satisfaction.svg"
+    }
+  },
+  "res-temperature": {
+    "title": "Temperatura",
+    "area": "hud",
+    "emoji": [
+      "🌡️",
+      "🤒"
+    ],
+    "usedIn": [
+      "index.html (#compact-weather-icon)",
+      "js/systems/WeatherService.js (código desconhecido)",
+      "js/systems/ui/WeatherUI.js",
+      "js/systems/ui/ResourcePanels.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/res-temperature.svg",
+      "sm": "svg/res-temperature-sm.svg"
+    }
+  },
+  "ui-target": {
+    "title": "Missões",
+    "area": "hud",
+    "emoji": [
+      "🎯"
+    ],
+    "usedIn": [
+      "index.html (#btn-missions, #objective-icon)",
+      "js/systems/ui/MissionUI.js (ícone padrão de missão/objetivo)",
+      "js/systems/QuestSystem.js (categoria primária, missionIcon padrão)",
+      "js/systems/TutorialSystem.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/ui-target.svg",
+      "sm": "svg/ui-target-sm.svg"
+    }
+  },
+  "ui-books": {
+    "title": "Aulas",
+    "area": "hud",
+    "emoji": [
+      "📚"
+    ],
+    "usedIn": [
+      "index.html (#btn-lessons)",
+      "js/systems/QuestSystem.js (categoria secundária)",
+      "data/building-studies.json (studyIcon water_pump)",
+      "js/systems/TutorialSystem.js",
+      "js/systems/ui/LessonBookUI.js",
+      "js/systems/ui/StudyBookUI.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/ui-books.svg",
+      "sm": "svg/ui-books-sm.svg"
+    }
+  },
+  "ui-pause": {
+    "title": "Pausar",
+    "area": "hud",
+    "emoji": [
+      "⏸️"
+    ],
+    "usedIn": [
+      "index.html (#btn-pause, .pp-paused)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-pause.svg"
+    }
+  },
+  "ui-build": {
+    "title": "Construir",
+    "area": "hud",
+    "emoji": [
+      "🏗️"
+    ],
+    "usedIn": [
+      "js/systems/ui/MobilePanels.js (botão construir no celular)",
+      "js/systems/ui/MissionUI.js (objetivo de construção)",
+      "js/systems/TutorialSystem.js",
+      "data/building-studies.json (studyIcon treatment_plant)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-build.svg"
+    }
+  },
+  "ui-player": {
+    "title": "Jogador",
+    "area": "hud",
+    "emoji": [
+      "👤"
+    ],
+    "usedIn": [
+      "index.html (.player-chip-icon)",
+      "js/systems/ui/WeatherUI.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-player.svg"
+    }
+  },
+  "ui-help": {
+    "title": "Ajuda",
+    "area": "ui",
+    "emoji": [
+      "❓"
+    ],
+    "usedIn": [
+      "index.html (#btn-help, aba Dúvidas)",
+      "js/systems/TutorialSystem.js",
+      "js/systems/ui/StudyBookUI.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-help.svg"
+    }
+  },
+  "ui-save": {
+    "title": "Salvar jogo",
+    "area": "ui",
+    "emoji": [
+      "💾"
+    ],
+    "usedIn": [
+      "index.html (#btn-save-game, #btn-save-settings)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-save.svg"
+    }
+  },
+  "ui-home": {
+    "title": "Menu principal",
+    "area": "ui",
+    "emoji": [
+      "🏠"
+    ],
+    "usedIn": [
+      "index.html (#btn-main-menu, game over)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-home.svg"
+    }
+  },
+  "ui-settings": {
+    "title": "Configurações",
+    "area": "ui",
+    "emoji": [
+      "⚙️"
+    ],
+    "usedIn": [
+      "index.html (Configurações)",
+      "js/systems/TutorialSystem.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-settings.svg"
+    }
+  },
+  "ui-sound": {
+    "title": "Ouvir em voz alta",
+    "area": "ui",
+    "emoji": [
+      "🔊"
+    ],
+    "usedIn": [
+      "index.html (#tutorial-read-btn, Áudio)",
+      "js/systems/ui/LessonBookUI.js",
+      "js/systems/ui/StudyBookUI.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-sound.svg"
+    }
+  },
+  "ui-close": {
+    "title": "Fechar",
+    "area": "ui",
+    "emoji": [
+      "✕",
+      "✖️"
+    ],
+    "usedIn": [
+      "index.html (.close-btn)",
+      "js/systems/ui/MissionUI.js",
+      "js/systems/ui/StudyBookUI.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-close.svg"
+    }
+  },
+  "ui-play": {
+    "title": "Jogar",
+    "area": "ui",
+    "emoji": [
+      "🎮"
+    ],
+    "usedIn": [
+      "index.html (botão Jogar, Gameplay, Controles)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-play.svg"
+    }
+  },
+  "ui-rocket": {
+    "title": "Começar",
+    "area": "ui",
+    "emoji": [
+      "🚀"
+    ],
+    "usedIn": [
+      "index.html (botão de início do perfil)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-rocket.svg"
+    }
+  },
+  "ui-hello": {
+    "title": "Olá",
+    "area": "ui",
+    "emoji": [
+      "👋"
+    ],
+    "usedIn": [
+      "index.html (tela de boas-vindas)",
+      "js/systems/TutorialSystem.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-hello.svg"
+    }
+  },
+  "status-done": {
+    "title": "Concluído",
+    "area": "ui",
+    "emoji": [
+      "✅",
+      "✔"
+    ],
+    "usedIn": [
+      "js/systems/ui/MissionUI.js (missão concluída, pré-requisito)",
+      "js/systems/TutorialSystem.js",
+      "js/systems/ui/LessonBookUI.js",
+      "js/systems/ui/StudyBookUI.js",
+      "js/systems/ui/ResourcePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/status-done.svg"
+    }
+  },
+  "status-locked": {
+    "title": "Bloqueado",
+    "area": "ui",
+    "emoji": [
+      "🔒"
+    ],
+    "usedIn": [
+      "js/systems/ui/MissionUI.js (missão bloqueada)",
+      "js/systems/TutorialSystem.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/status-locked.svg"
+    }
+  },
+  "status-unlocked": {
+    "title": "Desbloqueado",
+    "area": "ui",
+    "emoji": [
+      "🔓"
+    ],
+    "usedIn": [
+      "js/systems/ui/MissionUI.js (missão liberada)",
+      "js/systems/ui/StudyBookUI.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/status-unlocked.svg"
+    }
+  },
+  "status-pending": {
+    "title": "Aguardando",
+    "area": "ui",
+    "emoji": [
+      "⏳"
+    ],
+    "usedIn": [
+      "js/systems/ui/MissionUI.js (pré-requisito pendente)",
+      "js/systems/ui/WeatherUI.js",
+      "js/systems/ui/StudyBookUI.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/status-pending.svg"
+    }
+  },
+  "status-star": {
+    "title": "Estrela",
+    "area": "ui",
+    "emoji": [
+      "⭐"
+    ],
+    "usedIn": [
+      "js/systems/ui/MissionUI.js (recompensa)",
+      "js/systems/ui/LessonBookUI.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/status-star.svg"
+    }
+  },
+  "status-trophy": {
+    "title": "Conquista",
+    "area": "ui",
+    "emoji": [
+      "🏆"
+    ],
+    "usedIn": [
+      "js/systems/ui/MissionUI.js",
+      "js/systems/ui/LessonBookUI.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/status-trophy.svg"
+    }
+  },
+  "status-warning": {
+    "title": "Atenção",
+    "area": "ui",
+    "emoji": [
+      "⚠️"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js",
+      "js/systems/ui/WeatherUI.js",
+      "js/systems/ui/StudyBookUI.js",
+      "js/systems/TutorialSystem.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/status-warning.svg"
+    }
+  },
+  "status-info": {
+    "title": "Informação",
+    "area": "ui",
+    "emoji": [
+      "ℹ️"
+    ],
+    "usedIn": [
+      "js/systems/TutorialSystem.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/status-info.svg"
+    }
+  },
+  "status-tip": {
+    "title": "Dica",
+    "area": "ui",
+    "emoji": [
+      "💡"
+    ],
+    "usedIn": [
+      "js/systems/ui/WeatherUI.js (dica da água)",
+      "js/systems/ui/MissionUI.js",
+      "js/systems/ui/ResourcePanels.js",
+      "js/systems/ui/StudyBookUI.js",
+      "js/systems/TutorialSystem.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/status-tip.svg"
+    }
+  },
+  "status-error": {
+    "title": "Erro",
+    "area": "ui",
+    "emoji": [
+      "❌"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js",
+      "js/systems/ui/MobilePanels.js",
+      "js/systems/ui/StudyBookUI.js",
+      "js/systems/TutorialSystem.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/status-error.svg"
+    }
+  },
+  "ui-box": {
+    "title": "Recurso",
+    "area": "ui",
+    "emoji": [
+      "📦"
+    ],
+    "usedIn": [
+      "js/systems/ui/MissionUI.js (objetivo de recurso)",
+      "js/systems/TutorialSystem.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-box.svg"
+    }
+  },
+  "ui-chart-up": {
+    "title": "Crescimento",
+    "area": "ui",
+    "emoji": [
+      "📈"
+    ],
+    "usedIn": [
+      "js/systems/ui/MissionUI.js (objetivo de alcançar)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-chart-up.svg"
+    }
+  },
+  "ui-clipboard": {
+    "title": "Lista de objetivos",
+    "area": "ui",
+    "emoji": [
+      "📋"
+    ],
+    "usedIn": [
+      "js/systems/ui/MissionUI.js (sem missão ativa)",
+      "js/systems/TutorialSystem.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-clipboard.svg"
+    }
+  },
+  "ui-stats": {
+    "title": "Estatísticas",
+    "area": "ui",
+    "emoji": [
+      "📊"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (painel de estatísticas)",
+      "js/systems/QuestSystem.js (stakeholder padrão)",
+      "js/systems/TutorialSystem.js",
+      "js/systems/ui/MobilePanels.js",
+      "js/systems/ui/StudyBookUI.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-stats.svg"
+    }
+  },
+  "ui-book": {
+    "title": "Livro aberto",
+    "area": "ui",
+    "emoji": [
+      "📖"
+    ],
+    "usedIn": [
+      "js/systems/ui/MissionUI.js (aula da missão)",
+      "js/systems/ui/LessonBookUI.js",
+      "js/systems/TutorialSystem.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-book.svg"
+    }
+  },
+  "ui-clock": {
+    "title": "Relógio",
+    "area": "ui",
+    "emoji": [
+      "🕐",
+      "⏱️"
+    ],
+    "usedIn": [
+      "js/systems/TutorialSystem.js (passagem do tempo)",
+      "index.html (Controles de Tempo)",
+      "js/systems/ui/StudyBookUI.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-clock.svg"
+    }
+  },
+  "ui-camera": {
+    "title": "Câmera",
+    "area": "ui",
+    "emoji": [
+      "📹"
+    ],
+    "usedIn": [
+      "js/systems/TutorialSystem.js (controle de câmera)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-camera.svg"
+    }
+  },
+  "ui-compass": {
+    "title": "Guia da interface",
+    "area": "ui",
+    "emoji": [
+      "🧭"
+    ],
+    "usedIn": [
+      "js/systems/TutorialSystem.js (tour da interface)",
+      "js/systems/ui/MissionUI.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-compass.svg"
+    }
+  },
+  "ui-celebrate": {
+    "title": "Parabéns",
+    "area": "ui",
+    "emoji": [
+      "🎉"
+    ],
+    "usedIn": [
+      "js/systems/TutorialSystem.js",
+      "js/systems/ui/LessonBookUI.js",
+      "js/systems/ui/StudyBookUI.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-celebrate.svg"
+    }
+  },
+  "ui-leaf": {
+    "title": "Meio ambiente",
+    "area": "ui",
+    "emoji": [
+      "🌿"
+    ],
+    "usedIn": [
+      "js/systems/QuestSystem.js (stakeholder environment)",
+      "js/systems/ui/ResourcePanels.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-leaf.svg"
+    }
+  },
+  "ui-briefcase": {
+    "title": "Comércio",
+    "area": "ui",
+    "emoji": [
+      "💼"
+    ],
+    "usedIn": [
+      "js/systems/QuestSystem.js (stakeholder business)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-briefcase.svg"
+    }
+  },
+  "ui-renewable": {
+    "title": "Renovável",
+    "area": "ui",
+    "emoji": [
+      "🌱"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (indicador de energia renovável)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-renewable.svg"
+    }
+  },
+  "ui-income": {
+    "title": "Receita",
+    "area": "ui",
+    "emoji": [
+      "💵"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (receita)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-income.svg"
+    }
+  },
+  "ui-expense": {
+    "title": "Despesa",
+    "area": "ui",
+    "emoji": [
+      "💸"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (despesa)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-expense.svg"
+    }
+  },
+  "ui-battery": {
+    "title": "Bateria",
+    "area": "ui",
+    "emoji": [
+      "🔋"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (energia armazenada)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-battery.svg"
+    }
+  },
+  "ui-plug": {
+    "title": "Tomada / conexão",
+    "area": "ui",
+    "emoji": [
+      "🔌"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (sem energia)",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-plug.svg"
+    }
+  },
+  "ui-no-water": {
+    "title": "Falta de água",
+    "area": "ui",
+    "emoji": [
+      "🚱"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (falta de água)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-no-water.svg"
+    }
+  },
+  "ui-construction": {
+    "title": "Em construção",
+    "area": "ui",
+    "emoji": [
+      "🚧"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (obra em andamento)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-construction.svg"
+    }
+  },
+  "ui-recycle": {
+    "title": "Reciclagem",
+    "area": "ui",
+    "emoji": [
+      "♻️"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (reaproveitamento)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-recycle.svg"
+    }
+  },
+  "ui-axe": {
+    "title": "Desmatamento",
+    "area": "ui",
+    "emoji": [
+      "🪓"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (árvores cortadas)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-axe.svg"
+    }
+  },
+  "ui-sick": {
+    "title": "Doença",
+    "area": "ui",
+    "emoji": [
+      "😷",
+      "🤢"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (saúde)",
+      "js/systems/TutorialSystem.js (água contaminada)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-sick.svg"
+    }
+  },
+  "ui-bus": {
+    "title": "Transporte",
+    "area": "ui",
+    "emoji": [
+      "🚌"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (mobilidade)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-bus.svg"
+    }
+  },
+  "ui-tree": {
+    "title": "Árvores",
+    "area": "ui",
+    "emoji": [
+      "🌳"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (árvores)",
+      "js/systems/TutorialSystem.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-tree.svg"
+    }
+  },
+  "ui-river": {
+    "title": "Bacia hidrográfica",
+    "area": "ui",
+    "emoji": [
+      "🏞️"
+    ],
+    "usedIn": [
+      "js/systems/TutorialSystem.js (aula do caminho da água)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-river.svg"
+    }
+  },
+  "ui-farm": {
+    "title": "Agricultura",
+    "area": "ui",
+    "emoji": [
+      "🌾"
+    ],
+    "usedIn": [
+      "js/systems/TutorialSystem.js (água para todos)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-farm.svg"
+    }
+  },
+  "ui-bricks": {
+    "title": "Construção / erosão",
+    "area": "ui",
+    "emoji": [
+      "🧱"
+    ],
+    "usedIn": [
+      "js/systems/TutorialSystem.js (aula sobre margens)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-bricks.svg"
+    }
+  },
+  "ui-microscope": {
+    "title": "Ciência",
+    "area": "ui",
+    "emoji": [
+      "🔬"
+    ],
+    "usedIn": [
+      "js/systems/TutorialSystem.js",
+      "data/building-studies.json (studyIcon filter_station, research_center, water_research_center)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-microscope.svg"
+    }
+  },
+  "ui-biohazard": {
+    "title": "Contaminação",
+    "area": "ui",
+    "emoji": [
+      "☣️"
+    ],
+    "usedIn": [
+      "js/systems/TutorialSystem.js (poluição do rio)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-biohazard.svg"
+    }
+  },
+  "weather-wind": {
+    "title": "Vento",
+    "area": "weather",
+    "emoji": [
+      "💨",
+      "🌬️"
+    ],
+    "usedIn": [
+      "js/systems/ui/WeatherUI.js (vento e rajadas)",
+      "data/building-studies.json (studyIcon wind_farm)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/weather-wind.svg"
+    }
+  },
+  "weather-humidity": {
+    "title": "Umidade",
+    "area": "weather",
+    "emoji": [
+      "💦"
+    ],
+    "usedIn": [
+      "js/systems/ui/WeatherUI.js (umidade do ar)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/weather-humidity.svg"
+    }
+  },
+  "cat-water": {
+    "title": "Categoria Água",
+    "area": "cat",
+    "emoji": [
+      "💧"
+    ],
+    "usedIn": [
+      "index.html (.category-btn[data-category=\"water\"])",
+      "js/systems/UIManager.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/cat-water.svg"
+    }
+  },
+  "cat-treatment": {
+    "title": "Categoria Tratamento",
+    "area": "cat",
+    "emoji": [
+      "🏭"
+    ],
+    "usedIn": [
+      "index.html (.category-btn[data-category=\"treatment\"])",
+      "js/systems/UIManager.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/cat-treatment.svg"
+    }
+  },
+  "cat-storage": {
+    "title": "Categoria Armazenamento",
+    "area": "cat",
+    "emoji": [
+      "🏗️"
+    ],
+    "usedIn": [
+      "index.html (.category-btn[data-category=\"storage\"])",
+      "js/systems/UIManager.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/cat-storage.svg"
+    }
+  },
+  "cat-public": {
+    "title": "Categoria Públicos",
+    "area": "cat",
+    "emoji": [
+      "🏛️"
+    ],
+    "usedIn": [
+      "index.html (.category-btn[data-category=\"public\"])",
+      "js/systems/UIManager.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/cat-public.svg"
+    }
+  },
+  "cat-power": {
+    "title": "Categoria Energia",
+    "area": "cat",
+    "emoji": [
+      "⚡"
+    ],
+    "usedIn": [
+      "index.html (.category-btn[data-category=\"power\"])",
+      "js/systems/UIManager.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/cat-power.svg"
+    }
+  },
+  "cat-infrastructure": {
+    "title": "Categoria Infraestrutura",
+    "area": "cat",
+    "emoji": [
+      "🛣️"
+    ],
+    "usedIn": [
+      "index.html (.category-btn[data-category=\"infrastructure\"])",
+      "js/systems/UIManager.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/cat-infrastructure.svg"
+    }
+  },
+  "cat-zoning": {
+    "title": "Categoria Zoneamento",
+    "area": "cat",
+    "emoji": [
+      "🏘️"
+    ],
+    "usedIn": [
+      "index.html (.category-btn[data-category=\"zoning\"])",
+      "js/systems/UIManager.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/cat-zoning.svg"
+    }
+  },
+  "cat-commercial": {
+    "title": "Categoria Comercial",
+    "area": "cat",
+    "emoji": [
+      "🏬"
+    ],
+    "usedIn": [
+      "index.html (.category-btn[data-category=\"commercial\"])",
+      "js/systems/UIManager.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/cat-commercial.svg"
+    }
+  },
+  "cat-tourism": {
+    "title": "Categoria Turismo",
+    "area": "cat",
+    "emoji": [
+      "🎡"
+    ],
+    "usedIn": [
+      "index.html (.category-btn[data-category=\"tourism\"])",
+      "js/systems/UIManager.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/cat-tourism.svg"
+    }
+  },
+  "cat-industrial": {
+    "title": "Categoria Industrial",
+    "area": "cat",
+    "emoji": [
+      "🏭"
+    ],
+    "usedIn": [
+      "index.html (.category-btn[data-category=\"industrial\"])",
+      "js/systems/UIManager.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/cat-industrial.svg"
+    }
+  },
+  "weather-sun": {
+    "title": "Céu limpo",
+    "area": "weather",
+    "emoji": [
+      "☀️"
+    ],
+    "usedIn": [
+      "js/systems/WeatherService.js (código 0, dia)",
+      "js/systems/ui/WeatherUI.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/weather-sun.svg",
+      "sm": "svg/weather-sun-sm.svg"
+    }
+  },
+  "weather-moon": {
+    "title": "Noite de céu limpo",
+    "area": "weather",
+    "emoji": [
+      "🌙"
+    ],
+    "usedIn": [
+      "js/systems/WeatherService.js (noite)",
+      "js/systems/ui/WeatherUI.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/weather-moon.svg",
+      "sm": "svg/weather-moon-sm.svg"
+    }
+  },
+  "weather-partly": {
+    "title": "Poucas nuvens",
+    "area": "weather",
+    "emoji": [
+      "🌤️"
+    ],
+    "usedIn": [
+      "js/systems/WeatherService.js (códigos 1 e 2)",
+      "js/systems/ui/WeatherUI.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/weather-partly.svg",
+      "sm": "svg/weather-partly-sm.svg"
+    }
+  },
+  "weather-cloud": {
+    "title": "Nublado",
+    "area": "weather",
+    "emoji": [
+      "☁️"
+    ],
+    "usedIn": [
+      "js/systems/WeatherService.js (código 3)",
+      "js/systems/ui/WeatherUI.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/weather-cloud.svg",
+      "sm": "svg/weather-cloud-sm.svg"
+    }
+  },
+  "weather-fog": {
+    "title": "Neblina",
+    "area": "weather",
+    "emoji": [
+      "🌫️"
+    ],
+    "usedIn": [
+      "js/systems/WeatherService.js (códigos 45 e 48)",
+      "js/systems/ui/WeatherUI.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/weather-fog.svg",
+      "sm": "svg/weather-fog-sm.svg"
+    }
+  },
+  "weather-drizzle": {
+    "title": "Garoa",
+    "area": "weather",
+    "emoji": [
+      "🌦️"
+    ],
+    "usedIn": [
+      "js/systems/WeatherService.js (códigos 51–57)",
+      "js/systems/ui/WeatherUI.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/weather-drizzle.svg",
+      "sm": "svg/weather-drizzle-sm.svg"
+    }
+  },
+  "weather-rain": {
+    "title": "Chuva",
+    "area": "weather",
+    "emoji": [
+      "🌧️"
+    ],
+    "usedIn": [
+      "js/systems/WeatherService.js (códigos 61–81)",
+      "js/systems/ui/WeatherUI.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/weather-rain.svg",
+      "sm": "svg/weather-rain-sm.svg"
+    }
+  },
+  "weather-heavy-rain": {
+    "title": "Chuva forte",
+    "area": "weather",
+    "emoji": [
+      "🌧️"
+    ],
+    "usedIn": [
+      "js/systems/WeatherService.js (códigos 65, 67, 82)",
+      "js/systems/ui/WeatherUI.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/weather-heavy-rain.svg",
+      "sm": "svg/weather-heavy-rain-sm.svg"
+    }
+  },
+  "weather-snow": {
+    "title": "Neve",
+    "area": "weather",
+    "emoji": [
+      "❄️"
+    ],
+    "usedIn": [
+      "js/systems/WeatherService.js (códigos 71–86)",
+      "js/systems/ui/WeatherUI.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/weather-snow.svg",
+      "sm": "svg/weather-snow-sm.svg"
+    }
+  },
+  "weather-storm": {
+    "title": "Tempestade",
+    "area": "weather",
+    "emoji": [
+      "⛈️"
+    ],
+    "usedIn": [
+      "js/systems/WeatherService.js (códigos 95–99)",
+      "js/systems/ui/WeatherUI.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/weather-storm.svg",
+      "sm": "svg/weather-storm-sm.svg"
+    }
+  },
+  "water-pump": {
+    "title": "Bomba de Água",
+    "area": "building",
+    "emoji": [
+      "💧"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (water_pump.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (water_pump)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/water-pump.svg",
+      "sm": "svg/water-pump-sm.svg"
+    }
+  },
+  "water-well": {
+    "title": "Poço Artesiano",
+    "area": "building",
+    "emoji": [
+      "🕳️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (water_well.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (water_well)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/water-well.svg",
+      "sm": "svg/water-well-sm.svg"
+    }
+  },
+  "treatment-plant": {
+    "title": "Estação de Tratamento",
+    "area": "building",
+    "emoji": [
+      "🏭"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (treatment_plant.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (treatment_plant)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/treatment-plant.svg",
+      "sm": "svg/treatment-plant-sm.svg"
+    }
+  },
+  "filter-station": {
+    "title": "Estação de Filtros",
+    "area": "building",
+    "emoji": [
+      "🔧"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (filter_station.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (filter_station)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/filter-station.svg",
+      "sm": "svg/filter-station-sm.svg"
+    }
+  },
+  "water-tank": {
+    "title": "Reservatório",
+    "area": "building",
+    "emoji": [
+      "🛢️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (water_tank.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (water_tank)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/water-tank.svg",
+      "sm": "svg/water-tank-sm.svg"
+    }
+  },
+  "water-tower": {
+    "title": "Caixa d'Água",
+    "area": "building",
+    "emoji": [
+      "🗼"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (water_tower.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (water_tower)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/water-tower.svg",
+      "sm": "svg/water-tower-sm.svg"
+    }
+  },
+  "paved-road": {
+    "title": "Rua Asfaltada",
+    "area": "building",
+    "emoji": [
+      "🛣️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (paved_road.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/paved-road.svg",
+      "sm": "svg/paved-road-sm.svg"
+    }
+  },
+  "dirt-road": {
+    "title": "Estrada de Terra",
+    "area": "building",
+    "emoji": [
+      "🛤️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (dirt_road.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/dirt-road.svg",
+      "sm": "svg/dirt-road-sm.svg"
+    }
+  },
+  "sidewalk": {
+    "title": "Calçada",
+    "area": "building",
+    "emoji": [
+      "🚶"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (sidewalk.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/sidewalk.svg",
+      "sm": "svg/sidewalk-sm.svg"
+    }
+  },
+  "plaza": {
+    "title": "Praça",
+    "area": "building",
+    "emoji": [
+      "🌳"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (plaza.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/plaza.svg",
+      "sm": "svg/plaza-sm.svg"
+    }
+  },
+  "house": {
+    "title": "Casa",
+    "area": "building",
+    "emoji": [
+      "🏠"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (house.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/house.svg",
+      "sm": "svg/house-sm.svg"
+    }
+  },
+  "apartment": {
+    "title": "Prédio Residencial",
+    "area": "building",
+    "emoji": [
+      "🏢"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (apartment.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/apartment.svg",
+      "sm": "svg/apartment-sm.svg"
+    }
+  },
+  "zone-residential-light": {
+    "title": "Zona Residencial Leve",
+    "area": "building",
+    "emoji": [
+      "🏘️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (zone_residential_light.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/zone-residential-light.svg",
+      "sm": "svg/zone-residential-light-sm.svg"
+    }
+  },
+  "zone-residential-balanced": {
+    "title": "Zona Residencial Equilibrada",
+    "area": "building",
+    "emoji": [
+      "🏘️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (zone_residential_balanced.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/zone-residential-balanced.svg",
+      "sm": "svg/zone-residential-balanced-sm.svg"
+    }
+  },
+  "zone-residential-heavy": {
+    "title": "Zona Residencial Pesada",
+    "area": "building",
+    "emoji": [
+      "🏢"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (zone_residential_heavy.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/zone-residential-heavy.svg",
+      "sm": "svg/zone-residential-heavy-sm.svg"
+    }
+  },
+  "zone-industrial-light": {
+    "title": "Zona Industrial Leve",
+    "area": "building",
+    "emoji": [
+      "🏭"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (zone_industrial_light.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/zone-industrial-light.svg",
+      "sm": "svg/zone-industrial-light-sm.svg"
+    }
+  },
+  "zone-industrial-balanced": {
+    "title": "Zona Industrial Equilibrada",
+    "area": "building",
+    "emoji": [
+      "🏭"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (zone_industrial_balanced.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/zone-industrial-balanced.svg",
+      "sm": "svg/zone-industrial-balanced-sm.svg"
+    }
+  },
+  "zone-industrial-heavy": {
+    "title": "Zona Industrial Pesada",
+    "area": "building",
+    "emoji": [
+      "🏭"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (zone_industrial_heavy.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/zone-industrial-heavy.svg",
+      "sm": "svg/zone-industrial-heavy-sm.svg"
+    }
+  },
+  "zone-commercial-light": {
+    "title": "Zona Comercial Leve",
+    "area": "building",
+    "emoji": [
+      "🏪"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (zone_commercial_light.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/zone-commercial-light.svg",
+      "sm": "svg/zone-commercial-light-sm.svg"
+    }
+  },
+  "zone-commercial-balanced": {
+    "title": "Zona Comercial Equilibrada",
+    "area": "building",
+    "emoji": [
+      "🏬"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (zone_commercial_balanced.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/zone-commercial-balanced.svg",
+      "sm": "svg/zone-commercial-balanced-sm.svg"
+    }
+  },
+  "zone-commercial-heavy": {
+    "title": "Zona Comercial Pesada",
+    "area": "building",
+    "emoji": [
+      "🏢"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (zone_commercial_heavy.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/zone-commercial-heavy.svg",
+      "sm": "svg/zone-commercial-heavy-sm.svg"
+    }
+  },
+  "hydroelectric-plant": {
+    "title": "Hidrelétrica",
+    "area": "building",
+    "emoji": [
+      "🌊"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (hydroelectric_plant.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (hydroelectric_plant)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/hydroelectric-plant.svg",
+      "sm": "svg/hydroelectric-plant-sm.svg"
+    }
+  },
+  "power-pole": {
+    "title": "Poste de Energia",
+    "area": "building",
+    "emoji": [
+      "⚡"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (power_pole.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/power-pole.svg",
+      "sm": "svg/power-pole-sm.svg"
+    }
+  },
+  "thermal-plant": {
+    "title": "Termelétrica",
+    "area": "building",
+    "emoji": [
+      "🏭"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (thermal_plant.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/thermal-plant.svg",
+      "sm": "svg/thermal-plant-sm.svg"
+    }
+  },
+  "nuclear-plant": {
+    "title": "Usina Nuclear",
+    "area": "building",
+    "emoji": [
+      "☢️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (nuclear_plant.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/nuclear-plant.svg",
+      "sm": "svg/nuclear-plant-sm.svg"
+    }
+  },
+  "coal-plant": {
+    "title": "Usina a Carvão",
+    "area": "building",
+    "emoji": [
+      "🏭"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (coal_plant.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/coal-plant.svg",
+      "sm": "svg/coal-plant-sm.svg"
+    }
+  },
+  "solar-farm": {
+    "title": "Usina Solar",
+    "area": "building",
+    "emoji": [
+      "☀️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (solar_farm.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (solar_farm)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/solar-farm.svg",
+      "sm": "svg/solar-farm-sm.svg"
+    }
+  },
+  "wind-farm": {
+    "title": "Campo Eólico",
+    "area": "building",
+    "emoji": [
+      "💨"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (wind_farm.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (wind_farm)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/wind-farm.svg",
+      "sm": "svg/wind-farm-sm.svg"
+    }
+  },
+  "city-hall": {
+    "title": "Prefeitura Municipal",
+    "area": "building",
+    "emoji": [
+      "🏛️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (city_hall.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (water_tank: studyIcon 🏛️)",
+      "js/systems/QuestSystem.js (stakeholder government)",
+      "js/systems/TutorialSystem.js (prefeitura)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/city-hall.svg",
+      "sm": "svg/city-hall-sm.svg"
+    }
+  },
+  "school": {
+    "title": "Escola",
+    "area": "building",
+    "emoji": [
+      "🏫"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (school.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/school.svg",
+      "sm": "svg/school-sm.svg"
+    }
+  },
+  "hospital": {
+    "title": "Hospital",
+    "area": "building",
+    "emoji": [
+      "🏥"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (hospital.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/hospital.svg",
+      "sm": "svg/hospital-sm.svg"
+    }
+  },
+  "fire-station": {
+    "title": "Corpo de Bombeiros",
+    "area": "building",
+    "emoji": [
+      "🚒"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (fire_station.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/fire-station.svg",
+      "sm": "svg/fire-station-sm.svg"
+    }
+  },
+  "police-station": {
+    "title": "Delegacia de Polícia",
+    "area": "building",
+    "emoji": [
+      "🚔"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (police_station.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/police-station.svg",
+      "sm": "svg/police-station-sm.svg"
+    }
+  },
+  "research-center": {
+    "title": "Centro de Pesquisa",
+    "area": "building",
+    "emoji": [
+      "🔬"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (research_center.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (research_center)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/research-center.svg",
+      "sm": "svg/research-center-sm.svg"
+    }
+  },
+  "university": {
+    "title": "Universidade",
+    "area": "building",
+    "emoji": [
+      "🎓"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (university.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (university)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/university.svg",
+      "sm": "svg/university-sm.svg"
+    }
+  },
+  "shopping-center": {
+    "title": "Centro Comercial",
+    "area": "building",
+    "emoji": [
+      "🏬"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (shopping_center.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/shopping-center.svg",
+      "sm": "svg/shopping-center-sm.svg"
+    }
+  },
+  "office-building": {
+    "title": "Edifício de Escritórios",
+    "area": "building",
+    "emoji": [
+      "🏢"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (office_building.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/office-building.svg",
+      "sm": "svg/office-building-sm.svg"
+    }
+  },
+  "bank": {
+    "title": "Banco",
+    "area": "building",
+    "emoji": [
+      "🏦"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (bank.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "index.html (#btn-loans, empréstimos)",
+      "js/systems/ui/LoanUI.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/bank.svg",
+      "sm": "svg/bank-sm.svg"
+    }
+  },
+  "restaurant": {
+    "title": "Restaurante",
+    "area": "building",
+    "emoji": [
+      "🍽️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (restaurant.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/restaurant.svg",
+      "sm": "svg/restaurant-sm.svg"
+    }
+  },
+  "museum": {
+    "title": "Museu",
+    "area": "building",
+    "emoji": [
+      "🏛️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (museum.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/museum.svg",
+      "sm": "svg/museum-sm.svg"
+    }
+  },
+  "park": {
+    "title": "Parque Turístico",
+    "area": "building",
+    "emoji": [
+      "🎡"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (park.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/park.svg",
+      "sm": "svg/park-sm.svg"
+    }
+  },
+  "monument": {
+    "title": "Monumento Histórico",
+    "area": "building",
+    "emoji": [
+      "🗿"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (monument.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/monument.svg",
+      "sm": "svg/monument-sm.svg"
+    }
+  },
+  "hotel": {
+    "title": "Hotel",
+    "area": "building",
+    "emoji": [
+      "🏨"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (hotel.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/hotel.svg",
+      "sm": "svg/hotel-sm.svg"
+    }
+  },
+  "factory": {
+    "title": "Fábrica de Exportação",
+    "area": "building",
+    "emoji": [
+      "🏭"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (factory.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/factory.svg",
+      "sm": "svg/factory-sm.svg"
+    }
+  },
+  "tech-center": {
+    "title": "Centro Tecnológico",
+    "area": "building",
+    "emoji": [
+      "🔬"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (tech_center.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/tech-center.svg",
+      "sm": "svg/tech-center-sm.svg"
+    }
+  },
+  "port": {
+    "title": "Porto Comercial",
+    "area": "building",
+    "emoji": [
+      "⚓"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (port.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/port.svg",
+      "sm": "svg/port-sm.svg"
+    }
+  },
+  "water-research-center": {
+    "title": "Centro de Pesquisas Hídricas",
+    "area": "building",
+    "emoji": [
+      "🔬"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (water_research_center.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (water_research_center)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/water-research-center.svg",
+      "sm": "svg/water-research-center-sm.svg"
+    }
+  },
+  "linear-park": {
+    "title": "Parque Linear",
+    "area": "building",
+    "emoji": [
+      "🌳"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (linear_park.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (linear_park)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/linear-park.svg",
+      "sm": "svg/linear-park-sm.svg"
+    }
+  },
+  "rain-garden": {
+    "title": "Jardim de Chuva",
+    "area": "building",
+    "emoji": [
+      "🌧️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (rain_garden.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (rain_garden)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/rain-garden.svg",
+      "sm": "svg/rain-garden-sm.svg"
+    }
+  },
+  "green-roof": {
+    "title": "Teto Verde",
+    "area": "building",
+    "emoji": [
+      "🏢"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (green_roof.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (green_roof)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/green-roof.svg",
+      "sm": "svg/green-roof-sm.svg"
+    }
+  },
+  "green-wall": {
+    "title": "Parede Verde",
+    "area": "building",
+    "emoji": [
+      "🌿"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (green_wall.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (green_wall)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/green-wall.svg",
+      "sm": "svg/green-wall-sm.svg"
+    }
+  },
+  "floating-garden": {
+    "title": "Jardim Flutuante",
+    "area": "building",
+    "emoji": [
+      "🪷"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (floating_garden.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (floating_garden)",
+      "js/systems/TutorialSystem.js"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/floating-garden.svg",
+      "sm": "svg/floating-garden-sm.svg"
+    }
+  },
+  "monitoring-station": {
+    "title": "Estação de Monitoramento",
+    "area": "building",
+    "emoji": [
+      "📊"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (monitoring_station.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (monitoring_station)",
+      "js/data/missions.js (objetivo da missão)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/monitoring-station.svg",
+      "sm": "svg/monitoring-station-sm.svg"
+    }
+  },
+  "water-quality-monitor": {
+    "title": "Monitor de Qualidade",
+    "area": "building",
+    "emoji": [
+      "🔍"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (water_quality_monitor.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (water_quality_monitor)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/water-quality-monitor.svg",
+      "sm": "svg/water-quality-monitor-sm.svg"
+    }
+  },
+  "erosion-control": {
+    "title": "Controle de Erosão",
+    "area": "building",
+    "emoji": [
+      "🛡️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (erosion_control.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/erosion-control.svg",
+      "sm": "svg/erosion-control-sm.svg"
+    }
+  },
+  "lesson-planet": {
+    "title": "Aula 1: A água do planeta",
+    "area": "lesson",
+    "emoji": [
+      "🌍"
+    ],
+    "usedIn": [
+      "js/data/lessons.js (capítulo 1)",
+      "js/systems/ui/LessonBookUI.js (cartões do hub de aulas)",
+      "js/systems/TutorialSystem.js (Aula rápida)",
+      "js/systems/ui/ResourcePanels.js (🌍)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/lesson-planet.svg",
+      "sm": "svg/lesson-planet-sm.svg"
+    }
+  },
+  "lesson-water-cycle": {
+    "title": "Aula 2: O caminho da água",
+    "area": "lesson",
+    "emoji": [
+      "🔄"
+    ],
+    "usedIn": [
+      "js/data/lessons.js (capítulo 2)",
+      "js/systems/ui/LessonBookUI.js (cartões do hub de aulas)",
+      "js/systems/TutorialSystem.js (Aula rápida)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/lesson-water-cycle.svg",
+      "sm": "svg/lesson-water-cycle-sm.svg"
+    }
+  },
+  "lesson-sharing": {
+    "title": "Aula 3: Água para todos",
+    "area": "lesson",
+    "emoji": [
+      "⚖️"
+    ],
+    "usedIn": [
+      "js/data/lessons.js (capítulo 3)",
+      "js/systems/ui/LessonBookUI.js (cartões do hub de aulas)",
+      "js/systems/TutorialSystem.js (Aula rápida)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/lesson-sharing.svg",
+      "sm": "svg/lesson-sharing-sm.svg"
+    }
+  },
+  "lesson-river-life": {
+    "title": "Aula 4: A vida no rio",
+    "area": "lesson",
+    "emoji": [
+      "🐟"
+    ],
+    "usedIn": [
+      "js/data/lessons.js (capítulo 4)",
+      "js/systems/ui/LessonBookUI.js (cartões do hub de aulas)",
+      "js/systems/TutorialSystem.js (Aula rápida)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/lesson-river-life.svg",
+      "sm": "svg/lesson-river-life-sm.svg"
+    }
+  },
+  "lesson-hidden-water": {
+    "title": "Aula 5: Água escondida e cidades",
+    "area": "lesson",
+    "emoji": [
+      "🏙️"
+    ],
+    "usedIn": [
+      "js/data/lessons.js (capítulo 5)",
+      "js/systems/ui/LessonBookUI.js (cartões do hub de aulas)",
+      "js/systems/TutorialSystem.js (Aula rápida)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/lesson-hidden-water.svg",
+      "sm": "svg/lesson-hidden-water-sm.svg"
+    }
+  },
+  "lesson-green-solutions": {
+    "title": "Aula 6: Soluções verdes",
+    "area": "lesson",
+    "emoji": [
+      "🌿"
+    ],
+    "usedIn": [
+      "js/data/lessons.js (capítulo 6)",
+      "js/systems/ui/LessonBookUI.js (cartões do hub de aulas)",
+      "js/systems/TutorialSystem.js (Aula rápida)",
+      "js/systems/QuestSystem.js (🌿 também em ui-leaf)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/lesson-green-solutions.svg",
+      "sm": "svg/lesson-green-solutions-sm.svg"
+    }
+  },
+  "mission-new-manager": {
+    "title": "A Nova Gestora",
+    "area": "mission",
+    "emoji": [
+      "👩‍💼"
+    ],
+    "usedIn": [
+      "js/data/missions.js (story_chain_01_01.missionIcon)",
+      "js/systems/ui/MissionUI.js (.mission-icon, título dos detalhes)",
+      "js/systems/QuestSystem.js (.mission-icon)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/mission-new-manager.svg",
+      "sm": "svg/mission-new-manager-sm.svg"
+    }
+  }
+}

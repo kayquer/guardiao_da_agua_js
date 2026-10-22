@@ -59,6 +59,30 @@ async function gameConfirm(title, text, { confirmText = 'Sim', cancelText = 'Can
 }
 
 /**
+ * Pergunta com duas escolhas e "voltar". Resolve 'confirm', 'deny' ou null (cancelou, Esc ou clicou fora).
+ * html vai para innerHTML: escape o que vier do jogador.
+ */
+async function gameChoice(title, html, { confirmText, denyText, cancelText = 'Voltar', icon = 'question' } = {}) {
+    const result = await gameDialog({
+        title, html, icon,
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        denyButtonText: denyText,
+        cancelButtonText: cancelText,
+        customClass: {
+            popup: 'game-swal overlay-content',
+            confirmButton: 'overlay-btn primary',
+            denyButton: 'overlay-btn secondary',
+            cancelButton: 'overlay-btn secondary'
+        }
+    });
+    if (result.isConfirmed) return 'confirm';
+    if (result.isDenied) return 'deny';
+    return null;
+}
+
+/**
  * ===== LEITURA EM VOZ ALTA (Web Speech API, nativa do navegador) =====
  * setupReadAloud(botão, () => texto) transforma o botão em play/stop.
  * Uma leitura por vez no jogo todo; sem síntese de voz, o botão some.
@@ -66,10 +90,17 @@ async function gameConfirm(title, text, { confirmText = 'Sim', cancelText = 'Can
 let readAloudButton = null;
 let readAloudLast = null;
 
+// Avisa quem anima a boca (AnimatedPortrait): document recebe `readaloud` com { type, button }, sendo
+// type 'start'/'pause' por frase, 'word' a cada palavra (se a voz emitir boundary) e 'end' ao parar.
+function emitReadAloud(type, button) {
+    document.dispatchEvent(new CustomEvent('readaloud', { detail: { type, button } }));
+}
+
 function stopSpeaking() {
     if (!window.speechSynthesis) return;
+    if (readAloudButton) emitReadAloud('end', readAloudButton);
     if (readAloudButton) {
-        readAloudButton.textContent = '🔊';
+        readAloudButton.innerHTML = uiIcon('ui-sound');
         readAloudButton.setAttribute('aria-pressed', 'false');
     }
     readAloudButton = null;
@@ -95,12 +126,15 @@ function setupReadAloud(button, getText) {
             const utterance = new SpeechSynthesisUtterance(sentence);
             utterance.lang = 'pt-BR';
             if (voice) utterance.voice = voice;
+            utterance.onstart = () => emitReadAloud('start', button);
+            utterance.onboundary = event => { if (event.name === 'word') emitReadAloud('word', button); };
+            utterance.onend = () => emitReadAloud('pause', button);
             speechSynthesis.speak(utterance);
             readAloudLast = utterance;
         });
         const last = readAloudLast;
         if (!last) return;
-        last.onend = () => { if (readAloudLast === last) stopSpeaking(); };
+        last.onend = () => { if (readAloudLast === last) stopSpeaking(); else emitReadAloud('pause', button); };
         readAloudButton = button;
         button.textContent = '⏹️';
         button.setAttribute('aria-pressed', 'true');

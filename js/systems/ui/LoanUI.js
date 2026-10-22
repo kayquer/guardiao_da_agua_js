@@ -105,7 +105,7 @@ mixin(UIManager, {
             </div>
         `;
 
-        detailsContent.innerHTML = content;
+        detailsContent.innerHTML = uiIconsIn(content);
         detailsPanel.style.display = 'flex';
         this.updatePanelState('loans');
 

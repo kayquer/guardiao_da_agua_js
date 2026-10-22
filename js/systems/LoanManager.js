@@ -322,7 +322,8 @@ class LoanManager {
             this.loans = new Map((data.loans || []).map(([id, loan]) => [id, {
                 ...loan,
                 startDate: new Date(loan.startDate),
-                nextPaymentDate: new Date(loan.nextPaymentDate)
+                nextPaymentDate: new Date(loan.nextPaymentDate),
+                paymentHistory: (loan.paymentHistory || []).map(payment => ({ ...payment, date: new Date(payment.date) }))
             }]));
             this.loanCounter = data.loanCounter || 0;
             this.cityFinancialHealth = data.cityFinancialHealth || this.cityFinancialHealth;

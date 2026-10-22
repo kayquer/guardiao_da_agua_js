@@ -4,6 +4,9 @@
  */
 
 class GridManager {
+    // Quanto o chão (mesh "terrain") fica abaixo do topo dos blocos voxel: escondido na fresta entre eles
+    static TERRAIN_FLOOR_GAP = 0.15;
+
     constructor(scene) {
         log('🗂️ Inicializando GridManager...');
         
@@ -78,6 +81,8 @@ class GridManager {
                 this.terrainGrid[x][z] = this.determineTerrainType(x, z);
             }
         }
+        this.removeIsolatedHills();
+        this.startArea = this.findStartArea();
 
         log('✅ Grid inicializado');
         log(`📊 Grid stats: ${this.gridSize}x${this.gridSize} = ${this.gridSize * this.gridSize} células`);
@@ -150,13 +155,53 @@ class GridManager {
         if (terrainValue < 0.4) return 'grassland';  // Pastagem (ideal para construção)
         if (terrainValue < 0.6) return 'lowland';    // Planície baixa
 
-        // Colinas mais raras - apenas 15-20% do terreno
-        if (hillNoise > 0.6 && terrainValue > 0.5) return 'hill'; // Colinas elevadas (mais raras)
+        // Colinas raras (~4% do mapa): antes eram 15% e tomavam o centro, onde o jogo começa
+        if (hillNoise > 0.8 && terrainValue > 0.65) return 'hill'; // Colinas elevadas (mais raras)
         if (terrainValue < 0.8) return 'grassland';  // Mais pastagem
 
         // Colinas muito altas apenas em terreno muito elevado
-        if (terrainValue > 0.85 && hillNoise > 0.4) return 'hill';
+        if (terrainValue > 0.95 && hillNoise > 0.6) return 'hill';
         return 'grassland';                           // Padrão para pastagem
+    }
+
+    /** Colina solta (sem outra colina ao lado) vira pastagem: só picota a área de construção. */
+    removeIsolatedHills() {
+        const isHill = (x, z) => this.terrainGrid[x]?.[z] === 'hill';
+        for (let x = 0; x < this.gridSize; x++) {
+            for (let z = 0; z < this.gridSize; z++) {
+                if (isHill(x, z) && !isHill(x + 1, z) && !isHill(x - 1, z) && !isHill(x, z + 1) && !isHill(x, z - 1)) {
+                    this.terrainGrid[x][z] = 'grassland';
+                }
+            }
+        }
+    }
+
+    /**
+     * Área onde o jogo começa (câmera e Prefeitura do tutorial): o quadrado size×size com pelo menos
+     * `minBuildable` de terreno construível (campo/planície), o mais perto do centro do mapa.
+     * Retorna o centro em células { x, z } e a fração construível.
+     */
+    findStartArea(size = 8, minBuildable = 0.8) {
+        const center = this.gridSize / 2;
+        let best = null;
+        for (let x0 = 0; x0 + size <= this.gridSize; x0++) {
+            for (let z0 = 0; z0 + size <= this.gridSize; z0++) {
+                let buildable = 0;
+                for (let x = x0; x < x0 + size; x++) {
+                    for (let z = z0; z < z0 + size; z++) {
+                        const type = this.terrainGrid[x][z];
+                        if ((type === 'grassland' || type === 'lowland') && !this.occupationGrid[x][z]) buildable++;
+                    }
+                }
+                const ratio = buildable / (size * size);
+                if (ratio < minBuildable) continue;
+                const cx = x0 + size / 2, cz = z0 + size / 2;
+                // Área mais livre primeiro (cada 2,5% construível vale 1 célula de distância), depois a mais central
+                const score = Math.hypot(cx - center, cz - center) + (1 - ratio) * 40;
+                if (!best || score < best.score) best = { x: Math.floor(cx), z: Math.floor(cz), ratio, score };
+            }
+        }
+        return best ? { x: best.x, z: best.z, ratio: best.ratio } : { x: Math.floor(center), z: Math.floor(center), ratio: 0 };
     }
 
     // Função para gerar seed baseado na posição
@@ -251,46 +296,38 @@ class GridManager {
         this.createVoxelTerrainBlocks();
     }
 
+    // O mesh "terrain" é o chão sob os blocos voxel: aparece só nas frestas entre eles (e sob a água) e serve
+    // de alvo para o pick de posicionamento/informações do terreno. Cada vértice fica TERRAIN_FLOOR_GAP abaixo
+    // do topo mais baixo das células que ele toca (água conta como 0), então o relevo nunca passa por cima de
+    // um bloco. Antes ele usava elevação × 2 (até ~1,4 acima do topo de pastagens) e só a CPU via essa altura
+    // (buffer não atualizável): o pick acertava um chão invisível acima dos prédios e, se a GPU recriasse o
+    // buffer, o relevo aparecia por cima dos blocos perto de colinas.
     applyElevationToTerrain() {
         if (!this.terrainMesh) return;
 
         log('🏔️ Aplicando elevação ao terreno...');
 
         try {
-            // Obter dados dos vértices
             const positions = this.terrainMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             if (!positions) {
                 console.warn('⚠️ Não foi possível obter posições dos vértices');
                 return;
             }
 
-            const terrainWidth = this.gridSize * this.cellSize;
-            const terrainHeight = this.gridSize * this.cellSize;
-
-            // Aplicar elevação a cada vértice
+            const half = (this.gridSize * this.cellSize) / 2;
+            const eps = 1e-3;
             for (let i = 0; i < positions.length; i += 3) {
-                const x = positions[i];
-                const z = positions[i + 2];
-
-                // Converter coordenadas do mundo para grid
-                const gridX = Math.floor(((x + terrainWidth / 2) / terrainWidth) * this.gridSize);
-                const gridZ = Math.floor(((z + terrainHeight / 2) / terrainHeight) * this.gridSize);
-
-                // Garantir que estamos dentro dos limites
-                const clampedX = Math.max(0, Math.min(this.gridSize - 1, gridX));
-                const clampedZ = Math.max(0, Math.min(this.gridSize - 1, gridZ));
-
-                // Aplicar elevação
-                if (this.elevationGrid[clampedX] && this.elevationGrid[clampedX][clampedZ] !== undefined) {
-                    positions[i + 1] = this.elevationGrid[clampedX][clampedZ] * 2; // Y position (altura)
-                }
+                // Vértice em coordenadas de célula; na borda entre células ele toca 2 ou 4 delas
+                const fx = (positions[i] + half) / this.cellSize;
+                const fz = (positions[i + 2] + half) / this.cellSize;
+                positions[i + 1] = this.getTerrainFloorHeight(fx, fz, eps);
             }
 
-            // Atualizar mesh com novas posições
-            this.terrainMesh.updateVerticesData(BABYLON.VertexBuffer.PositionKind, positions);
-
-            // Recalcular normais para iluminação correta
-            this.terrainMesh.createNormals(true);
+            // setVerticesData (e não updateVerticesData): o buffer do CreateGround não é atualizável, então só a
+            // cópia da CPU mudava. Recalcula normais e a caixa envolvente (usada pelo pick).
+            this.terrainMesh.setVerticesData(BABYLON.VertexBuffer.PositionKind, positions);
+            this.terrainMesh.createNormals(false);
+            this.terrainMesh.refreshBoundingInfo();
 
             log('✅ Elevação aplicada ao terreno');
 
@@ -298,7 +335,24 @@ class GridManager {
             console.error('❌ Erro ao aplicar elevação:', error);
         }
     }
-    
+
+    // Altura do chão (mesh "terrain") no ponto (fx, fz) em coordenadas de célula: abaixo do topo mais baixo
+    // das células que o ponto toca. Sem Babylon — testado em tests/unit/world.test.js.
+    getTerrainFloorHeight(fx, fz, eps = 1e-3) {
+        const xs = [Math.floor(fx - eps), Math.floor(fx + eps)];
+        const zs = [Math.floor(fz - eps), Math.floor(fz + eps)];
+        let lowest = Infinity;
+        for (const x of xs) {
+            for (const z of zs) {
+                if (x < 0 || z < 0 || x >= this.gridSize || z >= this.gridSize) continue;
+                const top = this.getTerrainType(x, z) === 'water' ? 0 : this.getTerrainBlockHeight(x, z);
+                lowest = Math.min(lowest, top);
+            }
+        }
+        if (!isFinite(lowest)) return 0;
+        return Math.max(0, lowest - GridManager.TERRAIN_FLOOR_GAP);
+    }
+
     createWaterBodies() {
         log('💧 Criando corpos d\'água estilo Minecraft...');
 
@@ -497,27 +551,7 @@ class GridManager {
 
     createTerrainBlock(gridX, gridZ, terrainType) {
         const worldPos = this.gridToWorld(gridX, gridZ);
-
-        // Obter elevação com verificação de bounds
-        let elevation = 0;
-        if (gridX >= 0 && gridX < this.gridSize && gridZ >= 0 && gridZ < this.gridSize) {
-            if (this.elevationGrid[gridX] && this.elevationGrid[gridX][gridZ] !== undefined) {
-                elevation = this.elevationGrid[gridX][gridZ];
-            }
-        }
-
-        // Criar bloco de terreno com altura baseada no tipo
-        let blockHeight;
-        if (terrainType === 'hill') {
-            // Colinas são significativamente mais altas
-            blockHeight = Math.max(0.8, elevation * 1.5 + 0.5);
-        } else if (terrainType === 'lowland') {
-            // Planícies baixas são mais baixas
-            blockHeight = Math.max(0.05, elevation * 0.3 + 0.05);
-        } else {
-            // Pastagem e outros terrenos têm altura padrão
-            blockHeight = Math.max(0.1, elevation * 0.5 + 0.1);
-        }
+        const blockHeight = this.getTerrainBlockHeight(gridX, gridZ, terrainType);
 
         const terrainBlock = BABYLON.MeshBuilder.CreateBox(`terrain_${gridX}_${gridZ}`, {
             width: this.cellSize * 0.98,
@@ -552,6 +586,29 @@ class GridManager {
         };
 
         this.terrainBlocks.push(terrainBlock);
+    }
+
+    // Altura do bloco de terreno da célula (= topo dele, já que a base fica em y = 0).
+    // Usada também para assentar os edifícios (BuildingMeshes.getTerrainHeightAt).
+    getTerrainBlockHeight(gridX, gridZ, terrainType = this.getTerrainType(gridX, gridZ)) {
+        // Obter elevação com verificação de bounds
+        let elevation = 0;
+        if (gridX >= 0 && gridX < this.gridSize && gridZ >= 0 && gridZ < this.gridSize) {
+            if (this.elevationGrid[gridX] && this.elevationGrid[gridX][gridZ] !== undefined) {
+                elevation = this.elevationGrid[gridX][gridZ];
+            }
+        }
+
+        if (terrainType === 'hill') {
+            // Colinas são significativamente mais altas
+            return Math.max(0.8, elevation * 1.5 + 0.5);
+        }
+        if (terrainType === 'lowland') {
+            // Planícies baixas são mais baixas
+            return Math.max(0.05, elevation * 0.3 + 0.05);
+        }
+        // Pastagem e outros terrenos têm altura padrão
+        return Math.max(0.1, elevation * 0.5 + 0.1);
     }
 
     mergeTerrainBlocks() {

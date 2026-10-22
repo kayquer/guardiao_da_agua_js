@@ -37,7 +37,11 @@ mixin(UIManager, {
         }
     },
 
-    showStudyBookInterface(studyContent) {
+    /**
+     * @param {'next'|'prev'|null} [turn] direção da folha virando; null = abertura do livro
+     *   (anima o livro abrindo, sem folha virando)
+     */
+    showStudyBookInterface(studyContent, turn = null) {
         stopSpeaking(); // trocou de página: a leitura anterior para
         // Create book overlay if it doesn't exist
         let bookOverlay = document.getElementById('study-book-overlay');
@@ -66,11 +70,11 @@ mixin(UIManager, {
 
         // Build book HTML
         bookOverlay.innerHTML = `
-            <div class="study-book-container">
+            <div class="study-book-container${turn ? ' is-turning' : ''}">
                 <div class="study-book ${isQuizPage ? 'quiz-page' : ''}">
                     <div class="book-header">
                         <h2>${studyContent.studyTitle}</h2>
-                        <button class="book-close-btn" onclick="window.gameManager.uiManager.closeStudyBook()">✕</button>
+                        <button class="book-close-btn" onclick="window.gameManager.uiManager.closeStudyBook()" aria-label="Fechar">${uiIcon('ui-close')}</button>
                     </div>
 
                     <div class="book-progress">
@@ -80,11 +84,11 @@ mixin(UIManager, {
                         <span class="progress-text">${progress}% concluído</span>
                     </div>
 
-                    <div class="book-content">
+                    <div class="book-content${turn ? ` turn-in-${turn}` : ''}">
                         <div class="page-number">Página ${currentPage.pageNumber} de ${studyContent.pages.length}</div>
                         <div class="page-title-row">
                             <h3 class="page-title">${currentPage.title}</h3>
-                            <button class="read-aloud-btn" aria-label="Ouvir a página em voz alta" title="Ouvir">🔊</button>
+                            <button class="read-aloud-btn" aria-label="Ouvir a página em voz alta" title="Ouvir">${uiIcon('ui-sound')}</button>
                         </div>
                         ${currentPage.image ? `<div class="page-image"><img src="${currentPage.image}" alt="${currentPage.title}" onerror="this.parentElement.style.display='none'"></div>` : ''}
                         <div class="page-text">${currentPage.content}</div>
@@ -108,7 +112,7 @@ mixin(UIManager, {
                     </div>
 
                     <div class="book-info">
-                        <span>⏱️ ${studyContent.estimatedTime}</span>
+                        <span>${uiIcon('ui-clock')} ${studyContent.estimatedTime}</span>
                         
                     </div>
                 </div>
@@ -125,12 +129,7 @@ mixin(UIManager, {
         if (isQuizPage && quiz) {
             this.setupQuizEventListeners(quiz);
         }
-
-        // Pause game
-        if (this.gameManager.timeScale > 0) {
-            this.gameManager.previousTimeScale = this.gameManager.timeScale;
-            this.gameManager.setTimeScale(0);
-        }
+        // A pausa vem de syncPopupPause (UIManager), que vê o #study-book-overlay aberto
     },
 
     renderQuizQuestions(quiz) {
@@ -175,8 +174,8 @@ mixin(UIManager, {
 
         questionsHTML += `
             <div class="quiz-info">
-                <p>📊 <strong>Nota mínima para aprovação:</strong> ${quiz.passingScore}%</p>
-                <p>❓ <strong>Total de questões:</strong> ${quiz.questions.length}</p>
+                <p>${uiIcon('ui-stats')} <strong>Nota mínima para aprovação:</strong> ${quiz.passingScore}%</p>
+                <p>${uiIcon('ui-help')} <strong>Total de questões:</strong> ${quiz.questions.length}</p>
             </div>
         </div>`;
 
@@ -217,7 +216,7 @@ mixin(UIManager, {
     nextStudyPage() {
         if (this.gameManager.studySystem.nextPage()) {
             const studyContent = this.gameManager.studySystem.getStudyContent(this.gameManager.studySystem.currentStudy);
-            this.showStudyBookInterface(studyContent);
+            this.showStudyBookInterface(studyContent, 'next');
 
             // Play page turn sound
             if (this.gameManager.audioManager) {
@@ -229,7 +228,7 @@ mixin(UIManager, {
     previousStudyPage() {
         if (this.gameManager.studySystem.previousPage()) {
             const studyContent = this.gameManager.studySystem.getStudyContent(this.gameManager.studySystem.currentStudy);
-            this.showStudyBookInterface(studyContent);
+            this.showStudyBookInterface(studyContent, 'prev');
 
             // Play page turn sound
             if (this.gameManager.audioManager) {
@@ -270,7 +269,7 @@ mixin(UIManager, {
                     if (existingWarning) existingWarning.remove();
                     const warningDiv = document.createElement('div');
                     warningDiv.className = 'quiz-warning-message';
-                    warningDiv.innerHTML = '⚠️ Responda todas as questões antes de concluir o estudo!';
+                    warningDiv.innerHTML = uiIcon('status-warning') + ' Responda todas as questões antes de concluir o estudo!';
                     quizContainer.insertBefore(warningDiv, quizContainer.firstChild);
                 }
 
@@ -284,7 +283,7 @@ mixin(UIManager, {
                 // Update book-info with warning
                 const bookInfo = document.querySelector('.book-info');
                 if (bookInfo) {
-                    bookInfo.innerHTML = '<span style="color: #FF9800;">⚠️ Responda o quiz para concluir</span>';
+                    bookInfo.innerHTML = '<span style="color: #FF9800;">' + uiIcon('status-warning') + ' Responda o quiz para concluir</span>';
                 }
 
                 return;
@@ -349,7 +348,7 @@ mixin(UIManager, {
 
         const resultsHTML = `
             <div class="quiz-results ${resultClass}">
-                <div class="results-icon">${resultIcon}</div>
+                <div class="results-icon">${uiIcon(resultIcon, 'lg')}</div>
                 <h3>${resultTitle}</h3>
                 <div class="results-score">
                     <div class="score-circle">
@@ -357,31 +356,76 @@ mixin(UIManager, {
                     </div>
                 </div>
                 <p class="results-message">${resultMessage}</p>
-                ${!passed ? '<button class="retry-btn" onclick="window.gameManager.uiManager.retryQuiz()">🔄 Tentar Novamente</button>' : ''}
+                ${!passed ? this.renderQuizReview() : ''}
             </div>
         `;
 
         resultsContainer.innerHTML = resultsHTML;
+        // Resultado/revisão entram como uma folha nova (mesma virada das páginas)
+        this.turnStudyPage(resultsContainer.closest('.book-content'), 'next');
+        if (!passed) resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    },
+
+    /**
+     * Vira a folha de uma página que já está na tela (sem recriar o livro).
+     * Tira a classe, força reflow e põe de novo: cliques rápidos reiniciam a animação em vez de travar.
+     */
+    turnStudyPage(pageEl, direction) {
+        if (!pageEl) return;
+        pageEl.classList.remove('turn-in-next', 'turn-in-prev');
+        void pageEl.offsetWidth; // reinicia a animação
+        pageEl.classList.add(`turn-in-${direction}`);
+    },
+
+    /** Reprovou: mostra rapidinho onde errou (resposta dada × certa + explicação) e deixa escolher o que fazer. */
+    renderQuizReview() {
+        const wrong = this.gameManager.studySystem.getWrongAnswers();
+        const items = wrong.map(w => `
+            <li class="quiz-review-item">
+                <p class="quiz-review-question">${w.question}</p>
+                <p class="quiz-review-answer wrong">${uiIcon('status-error')} Você respondeu: ${w.chosen}</p>
+                <p class="quiz-review-answer right">${uiIcon('status-done')} Resposta certa: ${w.correct}</p>
+                ${w.explanation ? `<p class="quiz-review-why">${uiIcon('status-tip')} ${w.explanation}</p>` : ''}
+            </li>`).join('');
+        return `
+            <div class="quiz-review">
+                <h4>📝 Onde você errou</h4>
+                <ul>${items}</ul>
+            </div>
+            <p class="quiz-review-ask">E agora, ${PlayerProfile.displayName()}? Quer tentar de novo ou seguir em frente?</p>
+            <div class="quiz-review-actions">
+                <button class="retry-btn" onclick="window.gameManager.uiManager.retryQuiz()">🔄 Tentar de novo</button>
+                <button class="continue-btn" onclick="window.gameManager.uiManager.continueAfterQuiz()">${uiIcon('status-done')} Continuar e desbloquear</button>
+            </div>`;
     },
 
     retryQuiz() {
-        // Reset quiz state
+        // Respostas zeradas; continua na página do quiz (a revisão já mostrou o que estava errado)
         this.gameManager.studySystem.currentQuizAnswers = {};
         this.gameManager.studySystem.quizScore = 0;
 
-        // Go back to first page to review content
-        this.gameManager.studySystem.currentPage = 0;
-
-        // Refresh the study interface
         const studyContent = this.gameManager.studySystem.getStudyContent(
             this.gameManager.studySystem.currentStudy
         );
-        this.showStudyBookInterface(studyContent);
+        this.showStudyBookInterface(studyContent, 'prev'); // volta a folha para o quiz em branco
 
-        this.showNotification('📚 Revise o conteúdo e tente novamente!', 'info', 3000);
+        this.showNotification('📚 Responda de novo: você consegue!', 'info', 3000);
 
         if (this.gameManager.audioManager) {
             this.gameManager.audioManager.playSound('sfx_ui_click');
         }
+    },
+
+    /** Depois de ver os erros, o aluno pode seguir: o prédio é liberado mesmo sem a nota mínima. */
+    continueAfterQuiz() {
+        const studySystem = this.gameManager.studySystem;
+        const buildingId = studySystem.currentStudy;
+        if (!buildingId) return;
+        studySystem.completeStudy(buildingId);
+        this.gameManager.audioManager?.playSound('sfx_ui_success');
+        this.closeStudyBook();
+        this.loadBuildingItemsWithStateManagement();
+        const name = this.gameManager.buildingSystem.buildingTypes.get(buildingId)?.name || 'Prédio';
+        this.showNotification(`🔓 ${name} liberado! Lembre-se das dicas da revisão.`, 'success', 4000);
     },
 });

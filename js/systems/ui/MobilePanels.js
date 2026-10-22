@@ -14,7 +14,7 @@ mixin(UIManager, {
         // Criar botões de toggle para mobile (bottom)
         const leftToggle = document.createElement('button');
         leftToggle.className = 'mobile-toggle left';
-        leftToggle.innerHTML = '🏗️';
+        leftToggle.innerHTML = uiIcon('ui-build');
         leftToggle.title = 'Abrir painel de construção';
 
         // Add both click and touch event handlers
@@ -29,7 +29,7 @@ mixin(UIManager, {
 
         const rightToggle = document.createElement('button');
         rightToggle.className = 'mobile-toggle right';
-        rightToggle.innerHTML = 'ℹ️';
+        rightToggle.innerHTML = uiIcon('status-info');
         rightToggle.title = 'Abrir painel de informações';
 
         // ===== SELECTION COUNTER BADGE =====
@@ -53,7 +53,7 @@ mixin(UIManager, {
         // Create toggle button for resource-panel
         const resourceToggle = document.createElement('button');
         resourceToggle.className = 'mobile-top-toggle resource-toggle';
-        resourceToggle.innerHTML = '📊';
+        resourceToggle.innerHTML = uiIcon('ui-stats');
         resourceToggle.title = 'Mostrar/Ocultar recursos';
 
         const resourceToggleHandler = (e) => {
@@ -66,7 +66,7 @@ mixin(UIManager, {
         // Create toggle button for control-buttons
         const controlToggle = document.createElement('button');
         controlToggle.className = 'mobile-top-toggle control-toggle';
-        controlToggle.innerHTML = '⚙️';
+        controlToggle.innerHTML = uiIcon('ui-settings');
         controlToggle.title = 'Mostrar/Ocultar controles';
 
         const controlToggleHandler = (e) => {
@@ -233,15 +233,17 @@ mixin(UIManager, {
         // Build the details content
         const detailsContent = this.elements.detailsContent;
         if (!detailsContent) return;
+        // closeResourcePanel deixa o #details-panel com display none: sem isso o painel abria vazio (só o fundo e o botão)
+        if (this.elements.detailsPanel) this.elements.detailsPanel.style.display = 'flex';
 
         // Check if player can afford the building
         const currentBudget = this.gameManager.resourceManager.resources.budget.current;
         const canAfford = currentBudget >= buildingType.cost;
 
-        detailsContent.innerHTML = `
+        detailsContent.innerHTML = uiIconsIn(`
             <div class="mobile-building-details">
                 <div class="building-header">
-                    <div class="building-icon-large">${buildingType.icon || '🏗️'}</div>
+                    <div class="building-icon-large">${buildingIcon(buildingType, 'lg') || uiIcon('ui-build', 'lg')}</div>
                     <h2>${buildingType.name}</h2>
                 </div>
 
@@ -293,7 +295,7 @@ mixin(UIManager, {
                     </div>
                 ` : ''}
             </div>
-        `;
+        `);
 
         // Create and add the "Construir" button
         const existingBtn = hudRight.querySelector('.mobile-build-btn');
@@ -303,7 +305,7 @@ mixin(UIManager, {
 
         const buildBtn = document.createElement('button');
         buildBtn.className = `mobile-build-btn ${!canAfford ? 'disabled' : ''}`;
-        buildBtn.innerHTML = `<span>🏗️</span> Construir`;
+        buildBtn.innerHTML = `${uiIcon('ui-build')} Construir`;
         buildBtn.disabled = !canAfford;
 
         buildBtn.addEventListener('click', () => {
@@ -352,7 +354,7 @@ mixin(UIManager, {
 
             const closeBtn = document.createElement('button');
             closeBtn.className = 'mobile-close-btn';
-            closeBtn.innerHTML = '✕';
+            closeBtn.innerHTML = uiIcon('ui-close');
             closeBtn.title = 'Fechar painel';
 
             // Add both click and touch event handlers

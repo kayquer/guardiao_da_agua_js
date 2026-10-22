@@ -85,7 +85,7 @@ mixin(UIManager, {
                         isHoldingForInfo = true;
 
                         // Check what we're touching
-                        const pickResult = this.gameManager.scene.pick(touch.clientX, touch.clientY);
+                        const pickResult = this.gameManager.pickBuildingFirst(touch.clientX, touch.clientY);
 
                         if (pickResult && pickResult.hit &&
                             pickResult.pickedMesh &&
@@ -265,7 +265,7 @@ mixin(UIManager, {
                             this.gameManager.handleBuildingPlacementClick(mouseEvent);
                         } else {
                             // Normal mode - check if we tapped on a building
-                            const pickResult = this.gameManager.scene.pick(touch.clientX, touch.clientY);
+                            const pickResult = this.gameManager.pickBuildingFirst(touch.clientX, touch.clientY);
 
                             if (pickResult && pickResult.hit &&
                                 pickResult.pickedMesh &&
@@ -315,7 +315,7 @@ mixin(UIManager, {
     // ===== TOUCH-AND-HOLD INFO DISPLAY (500ms) =====
     showTouchHoldInfo(clientX, clientY) {
         // Get pick info from Babylon.js scene
-        const pickResult = this.gameManager.scene.pick(clientX, clientY);
+        const pickResult = this.gameManager.pickBuildingFirst(clientX, clientY);
 
         if (!pickResult || !pickResult.hit) {
             return;
@@ -351,7 +351,8 @@ mixin(UIManager, {
             }
         } else if (pickResult.pickedPoint) {
             // Hit terrain
-            const gridPos = this.gameManager.gridManager.worldToGrid(pickResult.pickedPoint);
+            const gridPos = this.gameManager.pickTerrainCell(clientX, clientY) ||
+                this.gameManager.gridManager.worldToGrid(pickResult.pickedPoint);
             const terrainType = this.gameManager.gridManager.getTerrainType(gridPos.x, gridPos.z);
             const elevation = this.gameManager.gridManager.getElevation(gridPos.x, gridPos.z);
             const isOccupied = this.gameManager.gridManager.isCellOccupied(gridPos.x, gridPos.z);
@@ -796,8 +797,8 @@ mixin(UIManager, {
         let content = `
             <div class="multi-selection-info">
                 <div class="selection-header">
-                    <h3>🏢 ${buildings.length} Edifícios Selecionados</h3>
-                    <button class="deselect-btn" data-action="close-multi">✖️ Fechar</button>
+                    <h3>${uiIcon('apartment', 'lg')} ${buildings.length} Edifícios Selecionados</h3>
+                    <button class="deselect-btn" data-action="close-multi">${uiIcon('ui-close')} Fechar</button>
                 </div>
                 <div class="multi-selection-list">
         `;
@@ -833,7 +834,7 @@ mixin(UIManager, {
             if (building.config.waterProduction > 0) {
                 content += `
                         <div class="detail-row">
-                            <span class="detail-label">💧 Produção:</span>
+                            <span class="detail-label">${uiIcon('res-water')} Produção:</span>
                             <span class="detail-value">${building.config.waterProduction}L/s</span>
                         </div>
                 `;
@@ -841,7 +842,7 @@ mixin(UIManager, {
             if (building.config.powerGeneration > 0) {
                 content += `
                         <div class="detail-row">
-                            <span class="detail-label">⚡ Geração:</span>
+                            <span class="detail-label">${uiIcon('res-energy')} Geração:</span>
                             <span class="detail-value">${building.config.powerGeneration} MW</span>
                         </div>
                 `;

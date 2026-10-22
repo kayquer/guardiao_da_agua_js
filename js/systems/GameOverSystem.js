@@ -11,21 +11,8 @@ class GameOverSystem {
         this.isGameOver = false;
         this.gameOverReason = null;
         
-        // 3D Portrait System (reuse from tutorial)
-        this.portraitEngine = null;
-        this.portraitScene = null;
-        this.portraitCamera = null;
-        this.portraitModel = null;
-        this.use3DPortrait = true;
-        
-        // Animation system
-        this.animationData = {
-            time: 0,
-            blinkTimer: 0,
-            breathTimer: 0,
-            hairWaveOffset: 0,
-            meshParts: {}
-        };
+        // Retrato animado da Cláudia (AnimatedPortrait), criado quando o fim de jogo aparece
+        this.portrait = null;
 
         // Game over conditions
         this.conditions = {
@@ -58,8 +45,8 @@ class GameOverSystem {
         return {
             water_depleted: {
                 character: 'Claudia',
-                portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=sad',
-                background: 'https://images.unsplash.com/photo-1541675154750-0444c7d51e8e?q=80&w=1080',
+                expression: 'worried',
+                background: 'assets/images/gameover/bg-sem-agua.webp',
                 title: 'A Cidade Ficou Sem Água! 💧',
                 text: `<p>Infelizmente, a cidade esgotou completamente suas reservas de água. A população está enfrentando uma crise hídrica severa.</p>
                 
@@ -81,8 +68,8 @@ class GameOverSystem {
             },
             pollution_critical: {
                 character: 'Claudia',
-                portrait: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Claudia&backgroundColor=b6e3f4&clothing=blazerAndShirt&eyes=sad',
-                background: 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?q=80&w=1080',
+                expression: 'worried',
+                background: 'assets/images/gameover/bg-poluicao.webp',
                 title: 'Poluição Crítica! ☣️',
                 text: `<p>A poluição atingiu níveis críticos e tornou a água imprópria para consumo. A saúde pública está em risco.</p>
                 
@@ -141,7 +128,7 @@ class GameOverSystem {
     /**
      * Show game over dialog using tutorial-style UI
      */
-    async showGameOverDialog() {
+    showGameOverDialog() {
         const container = document.getElementById('gameover-container');
         if (!container) {
             console.error('❌ Game over container not found');
@@ -150,17 +137,6 @@ class GameOverSystem {
 
         // Show container
         container.style.display = 'flex';
-
-        // Initialize 3D portrait if enabled
-        if (this.use3DPortrait) {
-            const initialized = await this.initialize3DPortrait();
-            if (initialized) {
-                await this.load3DCharacter('Claudia');
-            } else {
-                console.warn('⚠️ Falling back to 2D portraits');
-                this.use3DPortrait = false;
-            }
-        }
 
         // Render the message
         this.renderGameOverMessage();
@@ -182,25 +158,22 @@ class GameOverSystem {
             background.style.backgroundImage = `url('${message.background}')`;
         }
 
-        // Handle portrait display (3D or 2D)
-        const portrait = document.getElementById('gameover-portrait');
-        const portraitCanvas = document.getElementById('gameover-portrait-canvas');
-
-        if (this.use3DPortrait && this.portraitScene) {
-            if (portraitCanvas) portraitCanvas.style.display = 'block';
-            if (portrait) portrait.style.display = 'none';
-        } else {
-            if (portraitCanvas) portraitCanvas.style.display = 'none';
-            if (portrait) {
-                portrait.style.display = 'block';
-                portrait.src = message.portrait;
-                portrait.alt = message.character;
-            }
+        // Retrato animado (o mesmo do tutorial), com a expressão da mensagem
+        const slot = document.getElementById('gameover-portrait');
+        const id = TutorialSystem.CHARACTERS[message.character]?.id;
+        if (slot && id && !this.portrait) {
+            this.portrait = new AnimatedPortrait(id, { crop: 'face', label: TutorialSystem.displayName(message.character) });
+            slot.replaceChildren(this.portrait.el);
+        }
+        if (this.portrait) {
+            this.portrait.setExpression(message.expression || null);
+            this.portrait.enter();
+            this.portrait.talk(1800);
         }
 
         // Update dialog content
         const icon = document.getElementById('gameover-icon');
-        if (icon) icon.textContent = message.icon;
+        if (icon) icon.innerHTML = uiIcon(message.icon, 'lg');
 
         const title = document.getElementById('gameover-title');
         if (title) title.textContent = message.title;
@@ -209,211 +182,7 @@ class GameOverSystem {
         if (text) text.innerHTML = message.text;
 
         const character = document.getElementById('gameover-character-name');
-        if (character) character.textContent = message.character;
-    }
-
-    /**
-     * Initialize 3D portrait system (reuse tutorial code)
-     */
-    async initialize3DPortrait() {
-        const canvas = document.getElementById('gameover-portrait-canvas');
-        if (!canvas) {
-            console.warn('⚠️ Game over portrait canvas not found');
-            return false;
-        }
-
-        try {
-            this.portraitEngine = new BABYLON.Engine(canvas, true, {
-                preserveDrawingBuffer: true,
-                stencil: true
-            });
-
-            this.portraitScene = new BABYLON.Scene(this.portraitEngine);
-            this.portraitScene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
-
-            this.portraitCamera = new BABYLON.ArcRotateCamera(
-                'portraitCamera',
-                Math.PI / 2,
-                Math.PI / 2.5,
-                3,
-                new BABYLON.Vector3(0, 1, 0),
-                this.portraitScene
-            );
-            this.portraitCamera.lowerRadiusLimit = 2;
-            this.portraitCamera.upperRadiusLimit = 5;
-            this.portraitCamera.attachControl(canvas, false);
-
-            // Add lighting
-            const light1 = new BABYLON.HemisphericLight(
-                'portraitLight1',
-                new BABYLON.Vector3(0, 1, 0),
-                this.portraitScene
-            );
-            light1.intensity = 1.2;
-
-            const light2 = new BABYLON.DirectionalLight(
-                'portraitLight2',
-                new BABYLON.Vector3(-1, -2, -1),
-                this.portraitScene
-            );
-            light2.intensity = 0.8;
-
-            // Start render loop
-            this.portraitEngine.runRenderLoop(() => {
-                if (this.portraitScene) {
-                    this.portraitScene.render();
-                }
-            });
-
-            window.addEventListener('resize', () => {
-                if (this.portraitEngine) {
-                    this.portraitEngine.resize();
-                }
-            });
-
-            log('✅ Game over 3D portrait initialized');
-            return true;
-        } catch (error) {
-            console.error('❌ Error initializing game over portrait:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Load 3D character model (simplified from tutorial)
-     */
-    async load3DCharacter(characterName = 'Claudia') {
-        if (!this.portraitScene) return false;
-
-        try {
-            if (this.portraitModel) {
-                this.portraitModel.dispose();
-                this.portraitModel = null;
-            }
-
-            const modelFolder = 'models/Characters/girl-reading-a-book-icon-obj/';
-            const modelFile = 'girl-reading-a-book-icon.obj';
-
-            const result = await BABYLON.SceneLoader.ImportMeshAsync(
-                '',
-                modelFolder,
-                modelFile,
-                this.portraitScene
-            );
-
-            if (result.meshes && result.meshes.length > 0) {
-                this.portraitModel = new BABYLON.TransformNode('characterModel', this.portraitScene);
-                result.meshes.forEach(mesh => {
-                    if (mesh.parent === null) {
-                        mesh.parent = this.portraitModel;
-                    }
-                });
-
-                // Auto-position model
-                const meshes = result.meshes.filter(m => m.name !== '__root__' && m instanceof BABYLON.Mesh);
-                if (meshes.length > 0) {
-                    let min = new BABYLON.Vector3(Infinity, Infinity, Infinity);
-                    let max = new BABYLON.Vector3(-Infinity, -Infinity, -Infinity);
-
-                    meshes.forEach(mesh => {
-                        mesh.computeWorldMatrix(true);
-                        const boundingInfo = mesh.getBoundingInfo();
-                        min = BABYLON.Vector3.Minimize(min, boundingInfo.boundingBox.minimumWorld);
-                        max = BABYLON.Vector3.Maximize(max, boundingInfo.boundingBox.maximumWorld);
-                    });
-
-                    const center = BABYLON.Vector3.Center(min, max);
-                    const size = max.subtract(min);
-                    const maxDimension = Math.max(size.x, size.y, size.z);
-                    const scale = 2 / maxDimension;
-
-                    this.portraitModel.scaling = new BABYLON.Vector3(scale, scale, scale);
-                    this.portraitModel.position = center.scale(scale).negate();
-                    this.portraitCamera.target = new BABYLON.Vector3(0, 0, 0);
-                    this.portraitCamera.radius = 4;
-                }
-
-                // Apply PBR textures
-                const texturePath = 'models/Characters/girl-reading-a-book-icon-obj/textures/';
-                const texturePrefix = 'girl-reading-a-book-icon-001-';
-                await this.applyPBRTextures(meshes, texturePath, texturePrefix);
-
-                return true;
-            }
-        } catch (error) {
-            console.error('❌ Error loading game over character:', error);
-            return false;
-        }
-
-        return false;
-    }
-
-    /**
-     * Apply PBR textures to meshes (same as TutorialSystem)
-     */
-    async applyPBRTextures(meshes, texturePath, texturePrefix) {
-        try {
-            meshes.forEach(mesh => {
-                if (mesh.material) {
-                    mesh.material.dispose();
-                    mesh.material = null;
-                }
-            });
-
-            const pbr = new BABYLON.PBRMaterial('characterPBR', this.portraitScene);
-
-            pbr.albedoTexture = new BABYLON.Texture(
-                texturePath + texturePrefix + 'col-metalness-4k.png',
-                this.portraitScene
-            );
-
-            const normalTexture = new BABYLON.Texture(
-                texturePath + texturePrefix + 'nrm-metalness-4k.png',
-                this.portraitScene
-            );
-            pbr.bumpTexture = normalTexture;
-            pbr.invertNormalMapX = false;
-            pbr.invertNormalMapY = false;
-
-            const roughnessTexture = new BABYLON.Texture(
-                texturePath + texturePrefix + 'roughness-metalness-4k.png',
-                this.portraitScene
-            );
-            pbr.metallicTexture = roughnessTexture;
-            pbr.useRoughnessFromMetallicTextureAlpha = false;
-            pbr.useRoughnessFromMetallicTextureGreen = true;
-            pbr.useMetallnessFromMetallicTextureBlue = false;
-            pbr.metallic = 0.0;
-            pbr.roughness = 1.0;
-
-            const aoTexture = new BABYLON.Texture(
-                texturePath + texturePrefix + 'ao-metalness-4k.png',
-                this.portraitScene
-            );
-            pbr.ambientTexture = aoTexture;
-            pbr.ambientTextureStrength = 1.0;
-
-            pbr.directIntensity = 1.0;
-            pbr.environmentIntensity = 1.0;
-            pbr.specularIntensity = 0.5;
-            pbr.albedoColor = new BABYLON.Color3(1, 1, 1);
-
-            meshes.forEach(mesh => {
-                mesh.material = pbr;
-            });
-
-            log(`✅ PBR textures applied to ${meshes.length} meshes (game over)`);
-        } catch (error) {
-            console.error('❌ Error loading game over textures:', error);
-
-            const fallbackMat = new BABYLON.StandardMaterial('characterFallback', this.portraitScene);
-            fallbackMat.diffuseColor = new BABYLON.Color3(0.9, 0.8, 0.7);
-            fallbackMat.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2);
-
-            meshes.forEach(mesh => {
-                mesh.material = fallbackMat;
-            });
-        }
+        if (character) character.textContent = TutorialSystem.displayName(message.character);
     }
 
     /**
@@ -422,8 +191,7 @@ class GameOverSystem {
     returnToMainMenu() {
         log('🔙 Returning to main menu...');
 
-        // Dispose 3D portrait
-        this.dispose3DPortrait();
+        this.disposePortrait();
 
         // Hide game over container
         const container = document.getElementById('gameover-container');
@@ -435,37 +203,21 @@ class GameOverSystem {
         this.isGameOver = false;
         this.gameOverReason = null;
 
-        // Return to main menu (use global showScreen function)
-        if (typeof showScreen === 'function') {
-            showScreen('main-menu');
-        } else {
-            console.error('❌ showScreen function not found');
-        }
+        // Volta ao menu recarregando a página (main.js): um GameManager por página. O jogo salvo
+        // do perfil fica como estava no último salvamento (o fim de jogo não é salvo).
+        leaveToMainMenu();
     }
 
-    /**
-     * Dispose 3D portrait system
-     */
-    dispose3DPortrait() {
-        if (this.portraitModel) {
-            this.portraitModel.dispose();
-            this.portraitModel = null;
-        }
-        if (this.portraitScene) {
-            this.portraitScene.dispose();
-            this.portraitScene = null;
-        }
-        if (this.portraitEngine) {
-            this.portraitEngine.dispose();
-            this.portraitEngine = null;
-        }
+    disposePortrait() {
+        this.portrait?.destroy();
+        this.portrait = null;
     }
 
     /**
      * Cleanup
      */
     dispose() {
-        this.dispose3DPortrait();
+        this.disposePortrait();
         log('🗑️ GameOverSystem disposed');
     }
 }

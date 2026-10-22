@@ -6,18 +6,24 @@
     <title>Guardião da Água - Jogo Educacional</title>
     <meta name="description" content="Jogo educacional de simulação e gerenciamento de recursos hídricos">
     <meta name="keywords" content="água, educação, sustentabilidade, jogo, simulação">
+    <!-- Ícone embutido: sem ele o navegador pede /favicon.ico (404, reprova o E2E com navegador visível) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
     <!-- CSS -->
-    <link rel="stylesheet" href="css/styles.css?v=0d596b55">
-    <link rel="stylesheet" href="css/ui.css?v=d3a8847f">
+    <link rel="stylesheet" href="css/styles.css?v=479ea2e3">
+    <link rel="stylesheet" href="css/ui.css?v=e6efa8e5">
     <link rel="stylesheet" href="css/responsive.css?v=5ca8d06b">
-    <link rel="stylesheet" href="css/tutorial.css?v=f017ef11">
+    <link rel="stylesheet" href="css/tutorial.css?v=3a0ecf72">
+    <link rel="stylesheet" href="css/lessons.css?v=75823501">
+    <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
+    <link rel="stylesheet" href="css/player.css?v=24022d13">
+    <link rel="stylesheet" href="css/menu.css?v=9d19a275">
 
     <!-- Babylon.js CDN -->
-    <script src="https://cdn.babylonjs.com/babylon.js"></script>
-    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
-    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
-    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+    <script src="https://cdn.babylonjs.com/v9.31.2/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/v9.31.2/materialsLibrary/babylonjs.materials.min.js"></script>
+    <script src="https://cdn.babylonjs.com/v9.31.2/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://cdn.babylonjs.com/v9.31.2/gui/babylon.gui.min.js"></script>
 
     <!-- SweetAlert2: diálogos no estilo do jogo (gameAlert/gameConfirm em GameUtils.js) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.25/dist/sweetalert2.all.min.js"></script>
@@ -29,7 +35,8 @@
     <div id="loading-screen" class="screen active">
         <div class="loading-container">
             <div class="logo">
-                <h1>💧 Guardião da Água</h1>
+                <!-- Logo animado como <img>: a entrada toca sozinha ao abrir (assets/logo, ver js/utils/GameLogo.js) -->
+                <h1 class="game-logo"><img class="game-logo__img" src="assets/logo/guardiao-logo.svg" alt="Guardião da Água" draggable="false"></h1>
                 <p>Carregando recursos...</p>
             </div>
             <div class="loading-bar">
@@ -42,24 +49,106 @@
     </div>
 
     <!-- Menu Principal -->
+    <!-- Layout inspirado no menu do SimCity (2013): logo no canto, "Começar" grande, card de boas-vindas e
+         painel de destaques, com a cidade da abertura (js/systems/intro/) viva ao fundo -->
     <div id="main-menu" class="screen">
-        <div class="menu-container">
+        <div class="menu-container menu-layout">
+            <div class="menu-col menu-col--main">
+                <div class="menu-header">
+                    <!-- Logo: começa estático; GameLogo.mount() troca pelo SVG inline e GameLogo.play() toca a entrada -->
+                    <h1 id="main-menu-logo" class="game-logo"><img class="game-logo__img" src="assets/logo/guardiao-logo-static.svg" alt="Guardião da Água" draggable="false"></h1>                </div>
+
+                <button id="btn-start" class="menu-start-btn" type="button">
+                    <span class="menu-start-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-rocket.svg" alt="" aria-hidden="true" draggable="false"></span>
+                    <span class="menu-start-text">
+                        <span class="menu-start-title">Começar</span>
+                        <span id="menu-start-sub" class="menu-start-sub">Crie seu Guardião e construa a cidade</span>
+                    </span>
+                </button>
+
+                <div class="menu-buttons">
+                    <button id="btn-new-game" class="menu-btn primary">
+                        <span class="btn-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-play.svg" alt="" aria-hidden="true" draggable="false"></span>
+                        Novo Jogador
+                    </button>
+
+                    <button id="btn-about" class="menu-btn secondary">
+                        <span class="btn-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/status-info.svg" alt="" aria-hidden="true" draggable="false"></span>
+                        Sobre
+                    </button>
+                </div>
+            </div>
+
+            <div class="menu-col menu-col--side">
+                <section class="menu-card welcome-card" aria-labelledby="welcome-title">
+                    <div class="welcome-head">
+                        <span class="welcome-badge"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-hello.svg" alt="" aria-hidden="true" draggable="false"></span>
+                        <h2 id="welcome-title" class="welcome-title">Bem-vindo(a), <span class="welcome-name">Guardião!</span></h2>
+                    </div>
+                    <p id="welcome-text" class="welcome-text">Construa uma cidade que capta, trata e economiza água, e proteja o rio que dá vida a ela.</p>
+
+                    <!-- Perfis salvos (PlayerProfile): clicar em um começa o jogo com ele -->
+                    <div id="profile-section" class="profile-section" hidden>
+                        <h2 class="profile-title">Quem vai jogar?</h2>
+                        <div id="profile-list" class="profile-list"></div>
+                    </div>
+                </section>
+
+                <!-- Destaques (MENU_BILLBOARD em js/data/introCity.js), alternam sozinhos -->
+                <section id="menu-billboard" class="menu-card menu-billboard" aria-label="Destaques"></section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Abertura cinematográfica: tarjas de cinema, fade entre tomadas, legenda e "Pular" (MenuIntro) -->
+    <div id="intro-overlay" hidden>
+        <div class="intro-bar intro-bar--top"></div>
+        <div class="intro-bar intro-bar--bottom"></div>
+        <div id="intro-fade" class="intro-fade"></div>
+        <p id="intro-caption" class="intro-caption" aria-live="polite"></p>
+        <button id="btn-skip-intro" class="intro-skip" type="button">Pular <span class="intro-skip-key">Esc</span></button>
+    </div>
+
+    <!-- Cadastro do jogador (antes do primeiro jogo) -->
+    <div id="profile-screen" class="screen">
+        <div class="menu-container profile-form-container">
             <div class="menu-header">
-                <h1>💧 Guardião da Água</h1>
-                <p class="subtitle">Gerencie os recursos hídricos da sua cidade</p>
+                <h1><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-hello.svg" alt="" aria-hidden="true" draggable="false"> Olá, Guardião!</h1>
+                <p class="subtitle">Conte um pouco sobre você para começar</p>
             </div>
-            
-            <div class="menu-buttons">
-                <button id="btn-new-game" class="menu-btn primary">
-                    <span class="btn-icon">🎮</span>
-                    Novo Jogo
-                </button>
-                
-                <button id="btn-about" class="menu-btn secondary">
-                    <span class="btn-icon">ℹ️</span>
-                    Sobre
-                </button>
-            </div>
+            <form id="profile-form" class="profile-form" novalidate>
+                <label class="profile-field">
+                    <span>Seu primeiro nome ou apelido</span>
+                    <input id="profile-name" name="name" type="text" maxlength="20" autocomplete="off" placeholder="Ex.: Ana" required>
+                </label>
+                <label class="profile-field profile-field--small">
+                    <span>Sua idade</span>
+                    <input id="profile-age" name="age" type="number" min="5" max="99" inputmode="numeric" placeholder="Ex.: 12" required>
+                </label>
+                <label class="profile-field">
+                    <span>Seu estado</span>
+                    <select id="profile-uf" name="uf" required>
+                        <option value="">Escolha o estado...</option>
+                    </select>
+                </label>
+                <label class="profile-field">
+                    <span>Sua cidade</span>
+                    <input id="profile-city" name="city" type="text" list="profile-city-options" autocomplete="off" placeholder="Escolha o estado primeiro" disabled required>
+                    <datalist id="profile-city-options"></datalist>
+                    <small id="profile-city-hint" class="profile-hint"></small>
+                </label>
+                <p id="profile-errors" class="profile-errors" role="alert"></p>
+                <div class="menu-buttons">
+                    <button id="btn-profile-start" type="submit" class="menu-btn primary">
+                        <span class="btn-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-rocket.svg" alt="" aria-hidden="true" draggable="false"></span>
+                        Começar
+                    </button>
+                    <button id="btn-profile-back" type="button" class="menu-btn secondary">
+                        <span class="btn-icon">←</span>
+                        Voltar
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -75,66 +164,78 @@
                 <!-- Compact Resource Indicators (Mobile) -->
                 <div class="compact-resources">
                     <div class="compact-resource-item" id="compact-budget">
-                        <span class="compact-icon">💰</span>
+                        <span class="compact-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/res-budget.svg" alt="" aria-hidden="true" draggable="false"></span>
                         <span class="compact-value">50K</span>
                     </div>
                     <div class="compact-resource-item" id="compact-water">
-                        <span class="compact-icon">💧</span>
+                        <span class="compact-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/res-water.svg" alt="" aria-hidden="true" draggable="false"></span>
                         <span class="compact-value">1000L</span>
                     </div>
                     <div class="compact-resource-item" id="compact-energy">
-                        <span class="compact-icon">⚡</span>
+                        <span class="compact-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/res-energy.svg" alt="" aria-hidden="true" draggable="false"></span>
                         <span class="compact-value">0MW</span>
                     </div>
                     <div class="compact-resource-item" id="compact-population">
-                        <span class="compact-icon">👥</span>
+                        <span class="compact-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/res-population.svg" alt="" aria-hidden="true" draggable="false"></span>
                         <span class="compact-value">500</span>
+                    </div>
+                    <div class="compact-resource-item" id="compact-weather" title="Clima na sua cidade">
+                        <span class="compact-icon" id="compact-weather-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/res-temperature-sm.svg" alt="" aria-hidden="true" draggable="false"></span>
+                        <span class="compact-value" id="compact-weather-temp">--°</span>
                     </div>
                 </div>
 
                 <div class="resource-panel">
                     <div class="resource-item">
-                        <span class="resource-icon">💧</span>
+                        <span class="resource-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/res-water.svg" alt="" aria-hidden="true" draggable="false"></span>
                         <span class="resource-value" id="water-amount">1000L</span>
                     </div>
                     <div class="resource-item">
-                        <span class="resource-icon">🏭</span>
+                        <span class="resource-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/res-pollution.svg" alt="" aria-hidden="true" draggable="false"></span>
                         <span class="resource-value" id="pollution-level">15%</span>
                     </div>
                     <div class="resource-item">
-                        <span class="resource-icon">👥</span>
+                        <span class="resource-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/res-population.svg" alt="" aria-hidden="true" draggable="false"></span>
                         <span class="resource-value" id="population-count">500</span>
                     </div>
                     <div class="resource-item">
-                        <span class="resource-icon">😊</span>
+                        <span class="resource-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/res-satisfaction.svg" alt="" aria-hidden="true" draggable="false"></span>
                         <span class="resource-value" id="satisfaction-level">85%</span>
                     </div>
                     <div class="resource-item">
-                        <span class="resource-icon">💰</span>
+                        <span class="resource-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/res-budget.svg" alt="" aria-hidden="true" draggable="false"></span>
                         <span class="resource-value" id="budget-amount">R$ 50.000</span>
                     </div>
 
                     <div class="resource-item">
-                        <span class="resource-icon">⚡</span>
+                        <span class="resource-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/res-energy.svg" alt="" aria-hidden="true" draggable="false"></span>
                         <span class="resource-value" id="electricity-amount">0 MW</span>
                     </div>
 
-                    <div class="resource-item">
-                        <span class="resource-icon">🕐</span>
-                        <span class="resource-value" id="game-clock">00/00/0000 00:00</span>
+                    <!-- Relógio do jogo + clima real da cidade (ui/WeatherUI.js); clicar abre a previsão -->
+                    <div class="resource-item clock-weather" id="clock-weather">
+                        <span id="weather-card" class="weather-card weather-card--empty"></span>
+                        <span class="resource-value clock-text" id="game-clock">00/00/0000 00:00</span>
                     </div>
                 </div>
                 
+                <!-- Jogador (ui/WeatherUI.js) -->
+                <div class="player-hud">
+                    <div id="player-chip" class="player-chip" role="button" tabindex="0" title="Seu perfil e pausa">
+                        <span class="player-chip-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-player.svg" alt="" aria-hidden="true" draggable="false"></span>
+                        <span id="player-name">Guardião</span>
+                    </div>
+                </div>
+
                 <!-- Botões de Controle -->
                 <div class="control-buttons">
-                    <button style="display: none;" id="btn-pause" class="control-btn">⏸️</button>
+                    <button style="display: none;" id="btn-pause" class="control-btn" title="Pausar"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-pause.svg" alt="" aria-hidden="true" draggable="false"></button>
                     <button style="display: none;" id="btn-speed-1x" class="control-btn active">1x</button>
                     <button style="display: none;" id="btn-speed-2x" class="control-btn">2x</button>
                     <button style="display: none;" id="btn-speed-3x" class="control-btn">3x</button>
-                    <button style="display: none;" id="btn-loans" class="control-btn loans-btn" title="Empréstimos" onclick="window.gameManager.uiManager.showLoanInterface()">🏦</button>
-                    <button id="btn-missions" class="control-btn missions-btn" title="Missões">🎯</button>
-                    <button id="btn-lessons" class="control-btn help-btn" title="Aulas sobre a água">📚</button>
-                    <button id="btn-help" class="control-btn help-btn" title="Controles">❓</button>
+                    <button style="display: none;" id="btn-loans" class="control-btn loans-btn" title="Empréstimos" onclick="window.gameManager.uiManager.showLoanInterface()"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/bank-sm.svg" alt="" aria-hidden="true" draggable="false"></button>
+                    <button id="btn-missions" class="control-btn missions-btn" title="Missões" aria-label="Missões"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-target-sm.svg" alt="" aria-hidden="true" draggable="false"></button>
+                    <button id="btn-lessons" class="control-btn help-btn" title="Aulas sobre a água" aria-label="Aulas sobre a água"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-books-sm.svg" alt="" aria-hidden="true" draggable="false"></button>
                 </div>
             </div>
 
@@ -143,16 +244,16 @@
                 <div class="building-panel" id="building-panel">
                     <h3>Construções</h3>
                     <div class="building-categories">
-                        <button class="category-btn active" data-category="water">💧 Água</button>
-                        <button class="category-btn" data-category="treatment">🏭 Tratamento</button>
-                        <button class="category-btn" data-category="storage">🏗️ Armazenamento</button>
-                        <button class="category-btn" data-category="public">🏛️ Públicos</button>
-                        <button class="category-btn" data-category="power">⚡ Energia</button>
-                        <button class="category-btn" data-category="infrastructure">🛣️ Infraestrutura</button>
-                        <button class="category-btn" data-category="zoning">🏘️ Zoneamento</button>
-                        <button class="category-btn" data-category="commercial">🏬 Comercial</button>
-                        <button class="category-btn" data-category="tourism">🎡 Turismo</button>
-                        <button class="category-btn" data-category="industrial">🏭 Industrial</button>
+                        <button class="category-btn active" data-category="water"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-water.svg" alt="" aria-hidden="true" draggable="false"> Água</button>
+                        <button class="category-btn" data-category="treatment"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-treatment.svg" alt="" aria-hidden="true" draggable="false"> Tratamento</button>
+                        <button class="category-btn" data-category="storage"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-storage.svg" alt="" aria-hidden="true" draggable="false"> Armazenamento</button>
+                        <button class="category-btn" data-category="public"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-public.svg" alt="" aria-hidden="true" draggable="false"> Públicos</button>
+                        <button class="category-btn" data-category="power"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-power.svg" alt="" aria-hidden="true" draggable="false"> Energia</button>
+                        <button class="category-btn" data-category="infrastructure"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-infrastructure.svg" alt="" aria-hidden="true" draggable="false"> Infraestrutura</button>
+                        <button class="category-btn" data-category="zoning"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-zoning.svg" alt="" aria-hidden="true" draggable="false"> Zoneamento</button>
+                        <button class="category-btn" data-category="commercial"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-commercial.svg" alt="" aria-hidden="true" draggable="false"> Comercial</button>
+                        <button class="category-btn" data-category="tourism"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-tourism.svg" alt="" aria-hidden="true" draggable="false"> Turismo</button>
+                        <button class="category-btn" data-category="industrial"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-industrial.svg" alt="" aria-hidden="true" draggable="false"> Industrial</button>
                     </div>
                     <div class="building-items" id="building-items">
                         <!-- Itens de construção serão inseridos dinamicamente -->
@@ -169,7 +270,7 @@
                             <div class="mission-urgency" id="mission-urgency"></div>
                         </div>
                         <div class="mission-objective-display" id="mission-objective-display" onclick="window.gameManager.questSystem.focusOnCurrentObjective()">
-                            <div class="objective-icon" id="objective-icon">🎯</div>
+                            <div class="objective-icon" id="objective-icon"><img class="ui-icon ui-icon--lg" src="assets/icons/svg/ui-target.svg" alt="" aria-hidden="true" draggable="false"></div>
                             <div class="objective-content">
                                 <div class="objective-title" id="current-mission">Construa sua primeira estação de tratamento de água</div>
                                 <div class="objective-action" id="objective-action">Clique para ver detalhes</div>
@@ -203,13 +304,23 @@
         </div>
 
         <!-- Overlay de Pausa -->
+        <!-- Perfil + pausa: abre ao clicar no nome do jogador ou ao pausar (UIManager.renderPlayerPanel) -->
         <div id="pause-overlay" class="overlay hidden">
-            <div class="overlay-content">
-                <h2>Jogo Pausado</h2>
-                <div class="overlay-buttons">
-                    <button id="btn-resume" class="overlay-btn primary">Continuar</button>
-                    <button id="btn-save-game" class="overlay-btn secondary">Salvar Jogo</button>
-                    <button id="btn-main-menu" class="overlay-btn secondary">Menu Principal</button>
+            <div class="overlay-content player-panel" role="dialog" aria-labelledby="pp-name">
+                <div class="player-panel-head">
+                    <span class="profile-avatar" id="pp-avatar">G</span>
+                    <div class="player-panel-who">
+                        <h2 id="pp-name">Guardião</h2>
+                        <p id="pp-meta"></p>
+                    </div>
+                    <span class="pp-paused"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-pause.svg" alt="" aria-hidden="true" draggable="false"> Pausado</span>
+                </div>
+                <div class="pp-stats" id="pp-stats"></div>
+                <div class="overlay-buttons pp-buttons">
+                    <button id="btn-resume" class="overlay-btn primary">▶ Continuar</button>
+                    <button id="btn-help" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-help.svg" alt="" aria-hidden="true" draggable="false"> Ajuda e controles</button>
+                    <button id="btn-save-game" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-save.svg" alt="" aria-hidden="true" draggable="false"> Salvar jogo</button>
+                    <button id="btn-main-menu" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-home.svg" alt="" aria-hidden="true" draggable="false"> Menu principal</button>
                 </div>
             </div>
         </div>
@@ -219,13 +330,13 @@
     <div id="settings-screen" class="screen">
         <div class="settings-container">
             <div class="settings-header">
-                <h2>⚙️ Configurações</h2>
-                <button id="btn-close-settings" class="close-btn">✕</button>
+                <h2><img class="ui-icon ui-icon--lg" src="assets/icons/svg/ui-settings.svg" alt="" aria-hidden="true" draggable="false"> Configurações</h2>
+                <button id="btn-close-settings" class="close-btn" aria-label="Fechar"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-close.svg" alt="" aria-hidden="true" draggable="false"></button>
             </div>
             <div class="settings-content">
                 <!-- Seção de Áudio -->
                 <div class="settings-section">
-                    <h3>🔊 Áudio</h3>
+                    <h3><img class="ui-icon ui-icon--lg" src="assets/icons/svg/ui-sound.svg" alt="" aria-hidden="true" draggable="false"> Áudio</h3>
                     <div class="setting-item">
                         <label for="master-volume">Volume Geral</label>
                         <div class="volume-control">
@@ -272,15 +383,7 @@
 
                 <!-- Seção de Gameplay -->
                 <div class="settings-section">
-                    <h3>🎮 Gameplay</h3>
-                    <div class="setting-item">
-                        <label for="difficulty">Dificuldade</label>
-                        <select id="difficulty">
-                            <option value="easy">Fácil</option>
-                            <option value="normal" selected>Normal</option>
-                            <option value="hard">Difícil</option>
-                        </select>
-                    </div>
+                    <h3><img class="ui-icon ui-icon--lg" src="assets/icons/svg/ui-play.svg" alt="" aria-hidden="true" draggable="false"> Gameplay</h3>
                     <div class="setting-item">
                         <label for="auto-save">Salvamento Automático</label>
                         <input type="checkbox" id="auto-save" checked>
@@ -293,7 +396,7 @@
 
                 <!-- Seção de Controles -->
                 <div class="settings-section">
-                    <h3>🎮 Controles</h3>
+                    <h3><img class="ui-icon ui-icon--lg" src="assets/icons/svg/ui-play.svg" alt="" aria-hidden="true" draggable="false"> Controles</h3>
                     <div class="setting-item">
                         <label for="camera-sensitivity">Sensibilidade da Câmera</label>
                         <div class="volume-control">
@@ -312,7 +415,7 @@
             </div>
             <div class="settings-footer">
                 <button id="btn-reset-settings" class="settings-btn secondary">🔄 Restaurar Padrões</button>
-                <button id="btn-save-settings" class="settings-btn primary">💾 Salvar</button>
+                <button id="btn-save-settings" class="settings-btn primary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-save.svg" alt="" aria-hidden="true" draggable="false"> Salvar</button>
             </div>
         </div>
     </div>
@@ -321,14 +424,14 @@
     <div id="controls-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📖 Central de Ajuda</h2>
-                <button id="close-controls-modal" class="close-btn">✕</button>
+                <h2><img class="ui-icon ui-icon--lg" src="assets/icons/svg/ui-book.svg" alt="" aria-hidden="true" draggable="false"> Central de Ajuda</h2>
+                <button id="close-controls-modal" class="close-btn" aria-label="Fechar"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-close.svg" alt="" aria-hidden="true" draggable="false"></button>
             </div>
 
             <!-- Tab navigation -->
             <div class="help-tabs">
-                <button class="help-tab active" data-tab="controls">🎮 Controles</button>
-                <button class="help-tab" data-tab="faq">❓ Dúvidas Frequentes</button>
+                <button class="help-tab active" data-tab="controls"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-play.svg" alt="" aria-hidden="true" draggable="false"> Controles</button>
+                <button class="help-tab" data-tab="faq"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-help.svg" alt="" aria-hidden="true" draggable="false"> Dúvidas Frequentes</button>
             </div>
 
             <div class="modal-body">
@@ -357,7 +460,7 @@
                             </ul>
                         </div>
                         <div class="controls-section">
-                            <h3>🏗️ Construção (PC)</h3>
+                            <h3><img class="ui-icon ui-icon--lg" src="assets/icons/svg/ui-build.svg" alt="" aria-hidden="true" draggable="false"> Construção (PC)</h3>
                             <ul>
                                 <li><strong>Selecionar categoria:</strong> Clique no botão da categoria</li>
                                 <li><strong>Selecionar edifício:</strong> Clique no item da lista</li>
@@ -378,7 +481,7 @@
                             </ul>
                         </div>
                         <div class="controls-section">
-                            <h3>🏗️ Construção (Celular)</h3>
+                            <h3><img class="ui-icon ui-icon--lg" src="assets/icons/svg/ui-build.svg" alt="" aria-hidden="true" draggable="false"> Construção (Celular)</h3>
                             <ul>
                                 <li><strong>Selecionar categoria:</strong> Toque no botão da categoria</li>
                                 <li><strong>Selecionar edifício:</strong> Toque no item</li>
@@ -390,16 +493,16 @@
 
                     <!-- Common controls -->
                     <div class="controls-section">
-                        <h3>⏱️ Controles de Tempo</h3>
+                        <h3><img class="ui-icon ui-icon--lg" src="assets/icons/svg/ui-clock.svg" alt="" aria-hidden="true" draggable="false"> Controles de Tempo</h3>
                         <ul>
-                            <li><strong>Pausar/Continuar:</strong> Botão ⏸️</li>
+                            <li><strong>Pausar/Continuar:</strong> Botão <img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-pause.svg" alt="" aria-hidden="true" draggable="false"></li>
                             <li><strong>Velocidade:</strong> Botões 1x, 2x, 3x</li>
                             <li><strong>Relógio:</strong> Mostra data e hora do jogo</li>
                         </ul>
                     </div>
 
                     <div class="controls-section">
-                        <h3>ℹ️ Informações</h3>
+                        <h3><img class="ui-icon ui-icon--lg" src="assets/icons/svg/status-info.svg" alt="" aria-hidden="true" draggable="false"> Informações</h3>
                         <ul>
                             <li><strong>Recursos:</strong> Monitore água, população, orçamento e poluição</li>
                             <li><strong>Missões:</strong> Acompanhe objetivos na parte inferior</li>
@@ -412,7 +515,7 @@
 
                     <!-- FAQ: Energia -->
                     <div class="faq-category">
-                        <h3>⚡ Energia Elétrica</h3>
+                        <h3><img class="ui-icon ui-icon--lg" src="assets/icons/svg/res-energy.svg" alt="" aria-hidden="true" draggable="false"> Energia Elétrica</h3>
                         <div class="faq-item">
                             <button class="faq-question">Fiquei sem energia, o que fazer?</button>
                             <div class="faq-answer">
@@ -435,7 +538,7 @@
 
                     <!-- FAQ: Água -->
                     <div class="faq-category">
-                        <h3>💧 Água</h3>
+                        <h3><img class="ui-icon ui-icon--lg" src="assets/icons/svg/res-water.svg" alt="" aria-hidden="true" draggable="false"> Água</h3>
                         <div class="faq-item">
                             <button class="faq-question">Como aumentar o abastecimento de água?</button>
                             <div class="faq-answer">
@@ -458,7 +561,7 @@
 
                     <!-- FAQ: Dinheiro -->
                     <div class="faq-category" id="faq-category-orcamento">
-                        <h3>💰 Orçamento</h3>
+                        <h3><img class="ui-icon ui-icon--lg" src="assets/icons/svg/res-budget.svg" alt="" aria-hidden="true" draggable="false"> Orçamento</h3>
                         <div class="faq-item">
                             <button class="faq-question">Como ganhar mais dinheiro?</button>
                             <div class="faq-answer">
@@ -481,7 +584,7 @@
 
                     <!-- FAQ: Poluição -->
                     <div class="faq-category">
-                        <h3>🏭 Poluição</h3>
+                        <h3><img class="ui-icon ui-icon--lg" src="assets/icons/svg/res-pollution.svg" alt="" aria-hidden="true" draggable="false"> Poluição</h3>
                         <div class="faq-item">
                             <button class="faq-question">Como reduzir a poluição?</button>
                             <div class="faq-answer">
@@ -509,9 +612,14 @@
     <!-- Scripts do Jogo - Ordem correta de dependências -->
 
     <!-- Clean Code Refactoring: Game Constants (loaded first) -->
-    <script src="js/config/GameConstants.js?v=034c3d1c"></script>
+    <script src="js/config/GameConstants.js?v=0a33d617"></script>
     <script src="js/data/buildings.js?v=9d624346"></script>
-    <script src="js/data/missions.js?v=ee3a5835"></script>
+    <script src="js/data/buildingModels.js?v=cd78dbb9"></script>
+    <script src="js/data/missions.js?v=32aa1b5d"></script>
+    <script src="js/data/brazil.js?v=c0fa1745"></script>
+    <script src="js/data/lessons.js?v=06e4cea9"></script>
+    <script src="js/data/introCity.js?v=89035414"></script>
+    <script src="js/data/portraits.js?v=c9d4265b"></script>
 
     <!-- ===== TUTORIAL SYSTEM ===== -->
     <!-- Tutorial: modo 'story' (tela cheia) ou 'coach' (card + spotlight sobre o HUD) — TutorialSystem.js -->
@@ -520,15 +628,15 @@
         <div id="tutorial-spotlight" hidden></div>
         <div class="tut-card">
             <div class="tut-portrait">
-                <canvas id="tutorial-portrait-canvas" style="display: none;"></canvas>
-                <img id="tutorial-portrait" src="" alt="">
+                <!-- Retrato animado do personagem (AnimatedPortrait, montado por TutorialSystem.showPortrait) -->
+                <div id="tutorial-portrait"></div>
                 <div class="tut-name" id="tutorial-character-name"></div>
             </div>
             <div class="tut-body">
                 <div class="tut-header">
                     <span id="tutorial-icon" aria-hidden="true"></span>
                     <h2 id="tutorial-title"></h2>
-                    <button id="tutorial-read-btn" class="read-aloud-btn" aria-label="Ouvir o texto em voz alta" title="Ouvir">🔊</button>
+                    <button id="tutorial-read-btn" class="read-aloud-btn" aria-label="Ouvir o texto em voz alta" title="Ouvir"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-sound.svg" alt="" aria-hidden="true" draggable="false"></button>
                 </div>
                 <div id="tutorial-text" class="tut-text"></div>
                 <div id="tutorial-hint" class="tut-hint" role="status" hidden></div>
@@ -558,10 +666,8 @@
                 <div class="tutorial-dialog">
                     <!-- Character Portrait -->
                     <div class="tutorial-portrait-container">
-                        <!-- 3D Model Canvas (for 3D characters) -->
-                        <canvas id="gameover-portrait-canvas" style="display: none;"></canvas>
-                        <!-- 2D Image (fallback for non-3D characters) -->
-                        <img id="gameover-portrait" src="" alt="Pesquisadora Claudia">
+                        <!-- Retrato animado da Cláudia, preocupada (AnimatedPortrait, GameOverSystem) -->
+                        <div id="gameover-portrait"></div>
                     </div>
                     <div class="tutorial-character-name" id="gameover-character-name">Pesquisadora Claudia</div>
 
@@ -577,7 +683,7 @@
                     <div class="tutorial-controls">
                         <div class="tutorial-buttons" style="justify-content: center;">
                             <button id="gameover-menu-btn" class="tutorial-btn" onclick="window.gameManager?.gameOverSystem?.returnToMainMenu()">
-                                🏠 Voltar ao Menu Principal
+                                <img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-home.svg" alt="" aria-hidden="true" draggable="false"> Voltar ao Menu Principal
                             </button>
                         </div>
                     </div>
@@ -587,44 +693,61 @@
     </div>
 
     <!-- Utilitários primeiro -->
-    <script src="js/utils/GameUtils.js?v=d0ef60a0"></script>
-    <script src="js/utils/AssetLoader.js?v=8dad7252"></script>
+    <script src="js/utils/GameUtils.js?v=08d3dac7"></script>
+    <script src="js/utils/Icons.js?v=f477a3c0"></script>
+    <script src="js/utils/GameLogo.js?v=f238ea7b"></script>
+    <script src="js/utils/AssetLoader.js?v=88b9cdca"></script>
     <script src="js/utils/AudioManager.js?v=0b52cb45"></script>
+    <script src="js/ui/AnimatedPortrait.js?v=7a5cbd3d"></script>
 
     <!-- Core systems - ordem de dependência -->
-    <script src="js/core/GridManager.js?v=e5123690"></script>
-    <script src="js/core/ResourceManager.js?v=224788e0"></script>
+    <script src="js/core/GridManager.js?v=f479199c"></script>
+    <script src="js/core/ResourceManager.js?v=61ba378a"></script>
 
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=7fb1fd1c"></script>
 
-    <script src="js/core/GameManager.js?v=ef76826e"></script>
+    <script src="js/core/GameManager.js?v=32d0c480"></script>
     <script src="js/core/game/Diagnostics.js?v=7a3bbf0a"></script>
     <script src="js/core/game/SelectionVisuals.js?v=3f6374bb"></script>
     <script src="js/core/game/CameraGuard.js?v=47e1747c"></script>
 
     <!-- Game systems -->
-    <script src="js/systems/BuildingSystem.js?v=d7e5727c"></script>
-    <script src="js/systems/building/BuildingMeshes.js?v=2bb3e29b"></script>
-    <script src="js/systems/building/BuildingFeedback.js?v=45bdb216"></script>
+    <script src="js/systems/BuildingSystem.js?v=df0acad3"></script>
+    <script src="js/systems/building/BuildingMeshes.js?v=bdf1136b"></script>
+    <script src="js/systems/building/BuildingFeedback.js?v=7ffe0870"></script>
+    <script src="js/systems/building/BuildingModels.js?v=1f5361b0"></script>
     <script src="js/systems/CityLifeSystem.js?v=91c74c9c"></script>
-    <script src="js/systems/UIManager.js?v=1e2dc0c5"></script>
-    <script src="js/systems/ui/MobileTouch.js?v=de882a3d"></script>
-    <script src="js/systems/ui/StudyBookUI.js?v=bb18c2fb"></script>
-    <script src="js/systems/ui/LoanUI.js?v=ff798703"></script>
-    <script src="js/systems/ui/ResourcePanels.js?v=9f16172b"></script>
-    <script src="js/systems/ui/MobilePanels.js?v=c8bdf450"></script>
-    <script src="js/systems/LoanManager.js?v=b5b5c4de"></script>
-    <script src="js/systems/QuestSystem.js?v=b52c6dea"></script>
-    <script src="js/systems/ui/MissionUI.js?v=81f9a178"></script>
-    <script src="js/systems/EventSystem.js?v=cc4dd6bc"></script>
-    <script src="js/systems/SaveSystem.js?v=05eecd24"></script>
-    <script src="js/systems/StudySystem.js?v=14cee54f"></script>
-    <script src="js/systems/TutorialSystem.js?v=3a5a067f"></script>
-    <script src="js/systems/GameOverSystem.js?v=b9e25aa2"></script>
-    <script src="js/systems/SettingsManager.js?v=df9029df"></script>
+    <script src="js/systems/UIManager.js?v=b72036c5"></script>
+    <script src="js/systems/ui/MobileTouch.js?v=8bdbbd37"></script>
+    <script src="js/systems/ui/StudyBookUI.js?v=436b53aa"></script>
+    <script src="js/systems/ui/LoanUI.js?v=8ce42ca1"></script>
+    <script src="js/systems/ui/ResourcePanels.js?v=dce9a428"></script>
+    <script src="js/systems/ui/MobilePanels.js?v=32975648"></script>
+    <script src="js/systems/ui/WeatherUI.js?v=f5c4df70"></script>
+    <script src="js/systems/ui/CompassUI.js?v=88a8d97d"></script>
+    <script src="js/systems/ui/LessonBookUI.js?v=6172fc17"></script>
+    <script src="js/systems/LoanManager.js?v=c789f7fd"></script>
+    <script src="js/systems/QuestSystem.js?v=079aa28f"></script>
+    <script src="js/systems/ui/MissionUI.js?v=cd957493"></script>
+    <script src="js/systems/EventSystem.js?v=82f85107"></script>
+    <script src="js/systems/SaveSystem.js?v=4dde8506"></script>
+    <script src="js/systems/StudySystem.js?v=1bed212d"></script>
+    <script src="js/systems/TutorialSystem.js?v=595a2d62"></script>
+    <script src="js/systems/GameOverSystem.js?v=4f5afa72"></script>
+    <script src="js/systems/SettingsManager.js?v=582180ee"></script>
+    <script src="js/systems/PlayerProfile.js?v=4b57073c"></script>
+    <script src="js/systems/WeatherEffects.js?v=0e5dcfac"></script>
+    <script src="js/systems/TreeSystem.js?v=99c82675"></script>
+    <script src="js/systems/WeatherService.js?v=eabc4ddc"></script>
+    <script src="js/systems/LessonProgress.js?v=442710af"></script>
+
+    <!-- Abertura cinematográfica do menu (cena Babylon própria; usa o carregador de modelos do BuildingSystem) -->
+    <script src="js/systems/intro/IntroLayout.js?v=176a4c5c"></script>
+    <script src="js/systems/intro/IntroCinematic.js?v=8da3af80"></script>
+    <script src="js/systems/intro/MenuIntro.js?v=6caebdcc"></script>
 
     <!-- Main initialization -->
-    <script src="js/main.js?v=12cc69a1"></script>
+    <script src="js/main.js?v=c56db457"></script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { startGame } = require('./helpers');
 
 // Cada arquivo parcial (mixin em js/core/game, js/systems/building, js/systems/ui) é exercitado
 // pelo menos uma vez. O smoke cobre o fluxo principal; aqui entram os painéis que ele não abre.
@@ -9,9 +10,7 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
     page.on('console', m => { if (m.type() === 'error') problems.push(`console.error: ${m.text()}`); });
     page.on('dialog', d => { problems.push(`diálogo nativo: ${d.message()}`); d.dismiss(); });
 
-    await page.goto('/index.html');
-    await page.click('#btn-new-game');
-    await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
+    await startGame(page);
     // O jogo fica congelado até o tutorial acabar (o fluxo dele tem teste próprio no smoke)
     await page.evaluate(() => window.gameManager.tutorialSystem.complete());
 
@@ -70,6 +69,17 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         ui.showPopulationDetailsPanel();
         ui.showPollutionDetailsPanel();
 
+        // ui/WeatherUI: popup do clima (a previsão vem do mock em tests/helpers.js)
+        ui.showWeatherModal();
+        ui.closeWeatherModal();
+
+        // ui/LessonBookUI: central de aulas → livro → vira a página → volta
+        ui.openLessonsHub();
+        ui.openLessonBook(1, { fromHub: true });
+        ui.turnLessonPage(1);
+        ui.closeLessonBook();
+        ui.closeLessonsHub();
+
         // ui/StudyBookUI
         ui.openStudyBook('water_pump');
     }, buildingId);
@@ -100,9 +110,7 @@ test('todo prédio visível pode ser construído', async ({ page }, testInfo) =>
     page.on('pageerror', e => problems.push(`pageerror: ${e.message}`));
     page.on('console', m => { if (m.type() === 'error') problems.push(`console.error: ${m.text()}`); });
 
-    await page.goto('/index.html');
-    await page.click('#btn-new-game');
-    await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
+    await startGame(page);
     // O jogo fica congelado até o tutorial acabar (o fluxo dele tem teste próprio no smoke)
     await page.evaluate(() => window.gameManager.tutorialSystem.complete());
 
@@ -127,5 +135,59 @@ test('todo prédio visível pode ser construído', async ({ page }, testInfo) =>
         return failed;
     });
     expect(failures).toEqual([]);
+    expect(problems).toEqual([]);
+});
+
+// ui/StudyBookUI: a folha vira (mesmas keyframes do livro do tutorial) para frente/trás e na revisão
+// do quiz; a abertura usa só o bookOpen. Cliques rápidos não travam nem pulam páginas.
+test('livro de estudo vira a página', async ({ page }, testInfo) => {
+    const problems = [];
+    page.on('pageerror', e => problems.push(`pageerror: ${e.message}`));
+    page.on('console', m => { if (m.type() === 'error') problems.push(`console.error: ${m.text()}`); });
+
+    await startGame(page);
+    // monitoring_station: estudo com quiz habilitado (o da bomba não tem)
+    await page.evaluate(() => window.gameManager.tutorialSystem.complete());
+    await page.waitForFunction(() => window.gameManager.studySystem.contentLoaded);
+    await page.evaluate(() => window.gameManager.uiManager.openStudyBook('monitoring_station'));
+
+    const container = page.locator('.study-book-container');
+    const content = page.locator('.study-book .book-content');
+    await expect(container).not.toHaveClass(/is-turning/); // abertura: livro abrindo, sem folha
+    await expect(content).not.toHaveClass(/turn-in/);
+
+    await page.locator('.study-book .next-btn').click();
+    await expect(content).toHaveClass(/turn-in-next/);
+    await expect(container).toHaveClass(/is-turning/);
+    await expect(page.locator('.page-number')).toContainText('Página 2');
+    // Congela a animação no meio para a foto (conferência visual)
+    await page.evaluate(() => document.getAnimations().forEach(a => { a.pause(); a.currentTime = 160; }));
+    const shot = testInfo.outputPath('folha-virando.png');
+    await page.screenshot({ path: shot });
+    await testInfo.attach('folha-virando', { path: shot, contentType: 'image/png' });
+    await page.evaluate(() => document.getAnimations().forEach(a => a.play()));
+
+    await page.locator('.study-book .prev-btn').click();
+    await expect(content).toHaveClass(/turn-in-prev/);
+    await expect(page.locator('.page-number')).toContainText('Página 1');
+
+    // Cliques rápidos: cada clique avança exatamente uma página
+    const total = await page.evaluate(() => window.gameManager.studySystem.getStudyContent('monitoring_station').pages.length);
+    for (let i = 1; i < total; i++) await page.locator('.study-book .next-btn').click();
+    await expect(page.locator('.page-number')).toContainText(`Página ${total} de ${total}`);
+    await expect(page.locator('.quiz-container')).toBeVisible();
+
+    // Reprovar → a revisão entra virando a folha; "Tentar de novo" volta a folha para o quiz
+    await page.evaluate(() => {
+        const ss = window.gameManager.studySystem;
+        ss.getQuiz().questions.forEach((q, i) => ss.submitQuizAnswer(q.id ?? i, (q.correctAnswer + 1) % q.options.length));
+        window.gameManager.uiManager.completeStudy();
+    });
+    await expect(page.locator('.quiz-review')).toBeVisible();
+    await expect(content).toHaveClass(/turn-in-next/);
+    await page.locator('.quiz-review-actions .retry-btn').click();
+    await expect(page.locator('.study-book .book-content')).toHaveClass(/turn-in-prev/);
+    await expect(page.locator('.quiz-review')).toHaveCount(0);
+
     expect(problems).toEqual([]);
 });

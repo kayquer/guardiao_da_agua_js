@@ -1,0 +1,600 @@
+/* =========================================================================
+   Central de aulas (#lessons-hub) e livro da aula (#lesson-book) — js/systems/ui/LessonBookUI.js
+   ========================================================================= */
+.lessons-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 15000;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgba(10, 14, 35, 0.75);
+    backdrop-filter: blur(3px);
+}
+
+.lessons-card {
+    width: min(860px, 100%);
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding: 1.3rem;
+    background: linear-gradient(180deg, #2D3561, #1A1F3A);
+    border: 5px solid #000;
+    border-radius: 24px;
+    box-shadow: 0 10px 0 #000;
+    color: #fff;
+}
+
+.lessons-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.lessons-head h3 {
+    margin: 0;
+    font-family: 'Lilita One', cursive;
+    font-size: 1.8rem;
+}
+
+.lessons-close {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 3px solid #000;
+    background: var(--cartoon-red);
+    color: #fff;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.lessons-greeting {
+    margin: 0.4rem 0 0.8rem;
+}
+
+.lessons-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 1rem;
+    font-weight: 800;
+}
+
+.lessons-progress-bar {
+    flex: 1;
+    height: 16px;
+    border: 3px solid #000;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+.lessons-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cartoon-green), var(--cartoon-yellow));
+    transition: width 0.6s ease;
+}
+
+.lessons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 0.8rem;
+}
+
+.lesson-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    padding: 1rem;
+    border: 4px solid #000;
+    border-radius: 18px;
+    background: linear-gradient(160deg, #fdf6e3, #f3e3bd);
+    color: #3b2a12;
+    text-align: left;
+    font: inherit;
+    box-shadow: 0 6px 0 #000;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lesson-card:hover,
+.lesson-card:focus-visible {
+    transform: translateY(-3px) rotate(-0.5deg);
+    outline: 3px solid var(--cartoon-blue);
+}
+
+.lesson-card:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #000;
+}
+
+.lesson-card.next {
+    border-color: var(--cartoon-orange);
+    box-shadow: 0 6px 0 #000, 0 0 0 4px var(--cartoon-yellow);
+}
+
+.lesson-card.done {
+    background: linear-gradient(160deg, #e6fbe9, #c8f2cf);
+}
+
+.lesson-card.just-done {
+    animation: lesson-pop 0.8s ease;
+}
+
+.lesson-card-icon {
+    font-size: 2.2rem;
+}
+
+.lesson-card-number {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+.lesson-card-title {
+    font-family: 'Lilita One', cursive;
+    font-size: 1.25rem;
+    font-weight: 400;
+}
+
+.lesson-card-summary {
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.lesson-card-status {
+    margin-top: 0.4rem;
+    padding: 0.15rem 0.6rem;
+    border: 2px solid #000;
+    border-radius: 50px;
+    background: #fff;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.lesson-card.done .lesson-card-status {
+    background: var(--cartoon-green);
+}
+
+@keyframes lesson-pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.08) rotate(2deg); }
+    100% { transform: scale(1); }
+}
+
+/* ===== Livro ===== */
+.lesson-book {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(180px, 32%) 14px 1fr;
+    grid-template-rows: 1fr auto;
+    width: min(960px, 100%);
+    height: min(640px, calc(100vh - 32px));
+    padding: 14px;
+    border: 5px solid #000;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #8b5a2b, #5d3a1a);
+    box-shadow: 0 12px 0 #000, inset 0 0 0 3px rgba(255, 255, 255, 0.15);
+    perspective: 1800px;
+}
+
+.book-page {
+    position: relative;
+    min-height: 0;
+    color: #3b2a12;
+    box-shadow: inset 0 0 30px rgba(120, 80, 30, 0.25);
+}
+
+.book-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1rem;
+    border-radius: 10px 0 0 10px;
+    background: linear-gradient(270deg, #e9dbb7, #fdf8ec 40%);
+    text-align: center;
+}
+
+.book-chapter {
+    font-family: 'Lilita One', cursive;
+    font-size: 1.15rem;
+}
+
+.book-character {
+    font-weight: 800;
+}
+
+.book-page-number {
+    font-size: 0.85rem;
+    opacity: 0.7;
+}
+
+.book-spine {
+    background: linear-gradient(90deg, #c9b48a, #8a7350 50%, #c9b48a);
+}
+
+.book-right {
+    border-radius: 0 10px 10px 0;
+    transform-origin: left center;
+    background: linear-gradient(90deg, #e9dbb7, #fdf8ec 12%);
+}
+
+.book-right-content {
+    height: 100%;
+    overflow-y: auto;
+    padding: 1.3rem 1.5rem;
+}
+
+.book-title {
+    margin: 0 0 0.7rem;
+    font-family: 'Lilita One', cursive;
+    font-size: 1.5rem;
+    color: #5d3a1a;
+}
+
+.book-text {
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.book-text img:not(.ui-icon) {
+    max-height: 220px;
+    object-fit: cover;
+}
+
+/* Virada de página: meia volta, troca o conteúdo, termina a volta */
+.book-right.turn-out-next { animation: page-out-next 0.26s ease-in forwards; }
+.book-right.turn-in-next { animation: page-in-next 0.26s ease-out; }
+.book-right.turn-out-prev { animation: page-out-prev 0.26s ease-in forwards; }
+.book-right.turn-in-prev { animation: page-in-prev 0.26s ease-out; }
+
+@keyframes page-out-next { to { transform: rotateY(-90deg); filter: brightness(0.8); } }
+@keyframes page-in-next { from { transform: rotateY(90deg); filter: brightness(0.8); } }
+@keyframes page-out-prev { to { transform: rotateY(90deg); filter: brightness(0.8); } }
+@keyframes page-in-prev { from { transform: rotateY(-90deg); filter: brightness(0.8); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .book-right.turn-out-next,
+    .book-right.turn-in-next,
+    .book-right.turn-out-prev,
+    .book-right.turn-in-prev { animation: none; }
+}
+
+.book-footer {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 12px;
+}
+
+.book-btn {
+    padding: 0.5rem 1rem;
+    border: 3px solid #000;
+    border-radius: 12px;
+    background: #fdf8ec;
+    color: #3b2a12;
+    font-family: 'Lilita One', cursive;
+    font-size: 1rem;
+    box-shadow: 0 4px 0 #000;
+    cursor: pointer;
+}
+
+.book-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.book-btn.book-next {
+    margin-left: auto;
+    background: var(--cartoon-blue);
+}
+
+.book-btn.book-next.finish {
+    background: var(--cartoon-green);
+}
+
+.book-dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-left: 0.5rem;
+}
+
+.book-dot {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #000;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.book-dot.read { background: var(--cartoon-green); }
+.book-dot.current { background: var(--cartoon-yellow); transform: scale(1.25); }
+
+@media (max-width: 768px) {
+    .lesson-book {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+        height: calc(100vh - 32px);
+        padding: 10px;
+    }
+
+    .book-spine {
+        display: none;
+    }
+
+    .book-left {
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 0.5rem;
+        border-radius: 10px 10px 0 0;
+    }
+
+    .book-right {
+        border-radius: 0 0 10px 10px;
+        transform-origin: center top;
+    }
+
+    .book-right-content {
+        padding: 1rem;
+    }
+
+    .book-footer {
+        flex-wrap: wrap;
+    }
+
+    .lessons-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Celular deitado (pouca altura): a página esquerda vira uma coluna estreita com o rosto em círculo,
+   presa no topo; só o texto da direita rola (.book-right-content) */
+@media (max-height: 500px) and (min-width: 769px) {
+    #lesson-book.lessons-overlay {
+        padding: 8px;
+    }
+
+    .lesson-book {
+        grid-template-columns: minmax(140px, 22%) 10px 1fr;
+        height: calc(100vh - 16px);
+        padding: 8px;
+    }
+
+    .book-left {
+        justify-content: flex-start;
+        gap: 0.35rem;
+        padding: 0.6rem 0.4rem;
+        overflow: hidden;
+    }
+
+    .book-chapter {
+        font-size: 0.95rem;
+    }
+
+    .book-left .aportrait--face {
+        width: 72px;
+    }
+
+    .book-right-content {
+        padding: 0.8rem 1rem;
+    }
+
+    .book-title {
+        font-size: 1.2rem;
+    }
+
+    .book-footer {
+        padding-top: 8px;
+    }
+
+    .book-btn {
+        padding: 0.35rem 0.8rem;
+    }
+}
+
+/* Os botões flutuantes do celular (fora do #game-screen) ficavam por cima do livro, da central de aulas e
+   da pausa, tapando o "Ouvir" e o "Concluir aula": somem enquanto um desses painéis de tela cheia está aberto */
+body:has(#lesson-book, #lessons-hub, #pause-overlay:not(.hidden)) :is(.mobile-toggle, .hud-bottom-toggle) {
+    visibility: hidden;
+}
+
+/* ===== CENTRAL DE AULAS: ABAS (Como jogar / Conteúdo / Guias) ===== */
+.lessons-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.25rem 0 0.75rem;
+}
+
+.lessons-tab {
+    padding: 0.45rem 1rem;
+    border: 3px solid #000;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.85);
+    color: #1a1a1a;
+    font-family: 'Lilita One', cursive;
+    font-size: 1rem;
+    box-shadow: 0 4px 0 #000;
+    cursor: pointer;
+}
+
+.lessons-tab.active {
+    background: var(--cartoon-yellow);
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #000;
+}
+
+.lessons-section-title {
+    margin: 0.75rem 0 0.4rem;
+    font-family: 'Lilita One', cursive;
+    font-weight: normal;
+    font-size: 1.1rem;
+}
+
+/* ===== FONTES NO FIM DE CADA AULA (livro e tutorial) ===== */
+.book-sources {
+    clear: both;
+    margin-top: 1rem;
+    padding: 0.7rem 0.9rem;
+    border: 2px dashed #8a7350;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.55);
+    font-family: sans-serif;
+    font-size: 0.9rem;
+}
+
+.book-sources h5 {
+    margin: 0 0 0.35rem;
+    font-family: 'Lilita One', cursive;
+    font-weight: normal;
+    font-size: 1rem;
+    color: #5d3a1a;
+}
+
+.book-sources ul {
+    margin: 0;
+    padding-left: 1.1rem;
+}
+
+.book-sources a {
+    color: #0b5394;
+    word-break: break-word;
+}
+
+/* Texto do livro: mesma letra de leitura do tutorial (Lilita é só para títulos) */
+.book-text {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 500;
+}
+
+/* ===== TUTORIAL COM CARA DE LIVRO (padrão visual único com #lesson-book) =====
+   História: capa de madeira, página esquerda com o personagem, lombada e página direita com o texto.
+   Coach: o mesmo papel e a mesma madeira, em cartão pequeno (precisa deixar o botão apontado à vista). */
+#tutorial-container {
+    --tut-ink: #3b2a12;
+    --tut-muted: #7a6040;
+    --tut-line: #dccba3;
+}
+
+#tutorial-container .tut-card {
+    padding: 14px;
+    border: 5px solid #000;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #8b5a2b, #5d3a1a);
+    box-shadow: 0 12px 0 #000, inset 0 0 0 3px rgba(255, 255, 255, 0.15);
+    perspective: 1800px;
+}
+
+#tutorial-container .tut-portrait {
+    border-radius: 10px 0 0 10px;
+    background: linear-gradient(270deg, #e9dbb7, #fdf8ec 40%) !important; /* o retrato fica no papel */
+    box-shadow: inset 0 0 30px rgba(120, 80, 30, 0.25);
+}
+
+#tutorial-container .tut-name {
+    background: #5d3a1a;
+    color: #fdf8ec;
+}
+
+/* Página direita com a lombada na borda esquerda */
+#tutorial-container .tut-body {
+    border-radius: 0 10px 10px 0;
+    background:
+        linear-gradient(90deg, #c9b48a 0, #8a7350 7px, #c9b48a 14px, transparent 14px),
+        linear-gradient(90deg, #e9dbb7 14px, #fdf8ec 10%);
+    padding-left: calc(14px + 1.5rem);
+    box-shadow: inset 0 0 30px rgba(120, 80, 30, 0.25);
+    transform-origin: left center;
+}
+
+#tutorial-container #tutorial-title {
+    color: #5d3a1a;
+}
+
+#tutorial-container .tut-header {
+    border-bottom-color: rgba(93, 58, 26, 0.3);
+}
+
+#tutorial-container .tut-text {
+    color: var(--tut-ink);
+}
+
+#tutorial-container .tut-btn {
+    border: 3px solid #000;
+    border-radius: 12px;
+    font-family: 'Lilita One', cursive;
+    font-weight: normal;
+    box-shadow: 0 4px 0 #000;
+}
+
+#tutorial-container .tut-btn--primary {
+    background: var(--cartoon-green);
+    color: #000;
+}
+
+#tutorial-container .tut-btn--primary:disabled {
+    background: #cfc3a6;
+    color: #6b5a3a;
+    box-shadow: 0 4px 0 #000;
+}
+
+#tutorial-container .tut-btn--ghost {
+    background: #fdf8ec;
+    color: #3b2a12;
+}
+
+#tutorial-container .tut-btn--link {
+    border: none;
+    box-shadow: none;
+    background: none;
+    color: var(--tut-muted);
+}
+
+#tutorial-container #tutorial-progress-fill {
+    background: linear-gradient(90deg, var(--cartoon-yellow), var(--cartoon-green));
+}
+
+#tutorial-container .tut-progress-bar {
+    border: 2px solid #000;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Virada de página entre passos de história (TutorialSystem.renderCurrentStep) */
+#tutorial-container .tut-body.turn-in-next { animation: page-in-next 0.32s ease-out; }
+#tutorial-container .tut-body.turn-in-prev { animation: page-in-prev 0.32s ease-out; }
+
+/* Cartão pequeno (coach): mesma madeira e papel, mais fino */
+#tutorial-container.tutorial--coach .tut-card {
+    padding: 8px;
+    border-width: 4px;
+    box-shadow: 0 8px 0 #000;
+}
+
+#tutorial-container.tutorial--coach .tut-body {
+    background:
+        linear-gradient(90deg, #c9b48a 0, #8a7350 4px, #c9b48a 8px, transparent 8px),
+        linear-gradient(90deg, #e9dbb7 8px, #fdf8ec 10%);
+    padding-left: calc(8px + 1rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #tutorial-container .tut-body.turn-in-next,
+    #tutorial-container .tut-body.turn-in-prev { animation: none; }
+}
+
+@media (max-width: 768px) {
+    #tutorial-container .tut-card { padding: 8px; }
+    #tutorial-container .tut-portrait { border-radius: 10px 10px 0 0; }
+    #tutorial-container .tut-body,
+    #tutorial-container.tutorial--coach .tut-body {
+        border-radius: 0 0 10px 10px;
+        background: linear-gradient(180deg, #e9dbb7, #fdf8ec 8%);
+        padding-left: 1rem;
+    }
+}
