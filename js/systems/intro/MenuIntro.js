@@ -6,14 +6,13 @@
  *   MenuIntro.skip()             → Esc / clique / toque / botão "Pular": vai direto ao fim com o menu
  *   MenuIntro.dispose()          → ao iniciar/continuar o jogo: descarta cena, engine, canvas e listeners
  *
- * Quando toca: a abertura inteira (~21 s) na 1ª visita da sessão; depois (voltar ao menu recarrega a
- * página) só a grua final curta; com prefers-reduced-motion, direto na pose final e sem balanço.
+ * Quando toca: a abertura inteira (~21 s) toda vez que o menu abre (voltar ao menu recarrega a página);
+ * com prefers-reduced-motion, direto na pose final e sem balanço.
  * Sem a abertura (sem WebGL, falha ao montar, ou navegador automatizado — navigator.webdriver, os testes
  * E2E — sem ?intro na URL): o menu aparece na hora sobre o fundo em degradê, como antes.
  * ?intro força a abertura (teste E2E dela); ?nointro desliga.
  */
 const MenuIntro = {
-    SEEN_KEY: 'guardiao_intro_seen',
     cinematic: null,
     canvas: null,
     state: 'off', // off | ready | playing | menu | disposed
@@ -83,12 +82,7 @@ const MenuIntro = {
     },
 
     play() {
-        let mode = 'full';
-        try {
-            if (sessionStorage.getItem(this.SEEN_KEY)) mode = 'short';
-            sessionStorage.setItem(this.SEEN_KEY, '1');
-        } catch (e) { /* sem sessionStorage: toca inteira */ }
-        if (this.reducedMotion()) mode = 'final';
+        const mode = this.reducedMotion() ? 'final' : 'full';
 
         this.state = 'playing';
         document.body.classList.remove('menu-ready');

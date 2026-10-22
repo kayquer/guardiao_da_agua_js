@@ -12,7 +12,7 @@
  *
  *   const intro = new IntroCinematic(canvas, { fadeEl, quality: 'high' | 'low' });
  *   await intro.build(p => barra(p));                 // false se não deu (sem WebGL etc.)
- *   intro.play('full' | 'short' | 'final', { onShot(i, shot), onFinish() });
+ *   intro.play('full' | 'final', { onShot(i, shot), onFinish() });
  *   intro.skip();  intro.setOrbit(true|false);  intro.dispose();
  */
 class IntroCinematic {
@@ -763,12 +763,12 @@ class IntroCinematic {
     }
 
     /**
-     * Começa a abertura. mode: 'full' (todas as tomadas), 'short' (só a grua final) ou 'final' (já parada
+     * Começa a abertura. mode: 'full' (todas as tomadas) ou 'final' (já parada
      * na pose final — pular / movimento reduzido). onFinish é chamado uma vez, ao chegar na pose final.
      */
     play(mode = 'full', { onShot = () => {}, onFinish = () => {}, orbit = true } = {}) {
         const data = this.shotsData;
-        const shots = mode === 'full' ? data.shots : mode === 'short' ? [data.shortShot] : [];
+        const shots = mode === 'full' ? data.shots : [];
         this.orbitEnabled = orbit;
         this.director = { shots, index: -1, elapsed: 0, onShot, onFinish, finished: false };
         if (!shots.length) {

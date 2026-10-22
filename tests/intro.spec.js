@@ -61,10 +61,11 @@ test('abertura toca, "Pular" leva ao menu com logo, boas-vindas, Começar e dest
     await page.click('#btn-start');
     await expect(page.locator('#profile-screen')).toBeVisible();
 
-    // Mesma sessão: a próxima abertura é só a grua curta
+    // Toda vez que o menu abre, a abertura toca inteira (sem versão curta na mesma sessão)
     await page.reload();
     await playing(page);
-    expect(await page.evaluate(() => MenuIntro.cinematic.director.shots.length)).toBe(1);
+    const shots = await page.evaluate(() => [MenuIntro.cinematic.director.shots.length, INTRO_SHOTS.shots.length]);
+    expect(shots[0]).toBe(shots[1]);
 
     expect(problems).toEqual([]);
 });
