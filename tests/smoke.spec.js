@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { startGame } = require('./helpers');
 
 // Smoke de regressão: boot → novo jogo → construir → salvar/carregar → UI, e o fluxo do tutorial.
 // Qualquer erro de JS, console.error, diálogo nativo ou asset 4xx/falho entra em `problems`.
@@ -22,9 +23,7 @@ function watchProblems(page) {
 test('jogo roda de ponta a ponta sem erros', async ({ page }) => {
     const { problems, requested } = watchProblems(page);
 
-    await page.goto('/index.html');
-    await page.click('#btn-new-game');
-    await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
+    await startGame(page);
     // O jogo fica congelado até o tutorial acabar (o fluxo dele tem teste próprio no smoke)
     await page.evaluate(() => window.gameManager.tutorialSystem.complete());
     await expect(page.locator('#game-canvas')).toBeVisible();
@@ -50,7 +49,7 @@ test('jogo roda de ponta a ponta sem erros', async ({ page }) => {
     const reloaded = await page.evaluate(() => {
         const gm = window.gameManager;
         gm.saveGame();
-        const data = gm.saveSystem.loadGame();
+        const { data } = gm.saveSystem.load(PlayerProfile.getActive().id);
         gm.loadGame(data);
         return gm.buildingSystem.buildings.size;
     });
@@ -88,9 +87,7 @@ test('jogo roda de ponta a ponta sem erros', async ({ page }) => {
 // Tutorial: o jogo só começa no fim; a prefeitura sai de um passo obrigatório (e grátis).
 test('tutorial congela o jogo e guia a construção da prefeitura', async ({ page }) => {
     const { problems } = watchProblems(page);
-    await page.goto('/index.html');
-    await page.click('#btn-new-game');
-    await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
+    await startGame(page);
 
     const tutorial = page.locator('#tutorial-container');
     const next = page.locator('#tutorial-next-btn');
@@ -105,7 +102,10 @@ test('tutorial congela o jogo e guia a construção da prefeitura', async ({ pag
         halls: window.gameManager.buildingSystem.getBuildingsByType('city_hall').length
     }));
     expect(before).toEqual({ state: 'tutorial', time: 0, halls: 0 });
-    await page.waitForFunction(() => window.gameManager.tutorialSystem.portraitModel, null, { timeout: 30000 });
+    // Retrato animado da Cláudia (SVG em camadas, imagens locais): sem cena 3D
+    const portrait = page.locator('#tutorial-portrait .aportrait');
+    await expect(portrait).toBeVisible();
+    await expect(portrait).toHaveAttribute('data-character', 'claudia');
     expect(await page.evaluate(() => window.gameManager.gameTime)).toBe(0);
 
     // Escolha "aprender agora", ouve um trecho e pula o resto das aulas: elas passam a vir uma por missão
@@ -141,14 +141,29 @@ test('tutorial congela o jogo e guia a construção da prefeitura', async ({ pag
 
     // Partes opcionais: pula missões e interface; o final é obrigatório
     await next.click();
+    await expect(page.locator('#tutorial-title')).toHaveText('Cuidado com as árvores');
+    await next.click();
     await expect(page.locator('#tutorial-title')).toHaveText('Quer conhecer as missões?');
     await skip.click();
     await expect(page.locator('#tutorial-title')).toHaveText('Um tour pela tela?');
     await skip.click();
     await expect(tutorial).toHaveClass(/tutorial--story/);
     await expect(skip).toBeHidden();
+    // Final: a Pesquisadora Márcia troca de retrato animado, todas as camadas vindas de assets/characters/marcia/
+    await expect(page.locator('#tutorial-character-name')).toHaveText('Pesquisadora Márcia');
+    await expect(portrait).toHaveAttribute('data-character', 'marcia');
+    expect(await portrait.locator('image').evaluateAll(images => images.map(i => i.getAttribute('href'))
+        .filter(href => !href.startsWith('assets/characters/marcia/')))).toEqual([]);
+    // Todo passo tem personagem com retrato no manifesto (nenhum retrato vem da rede)
+    expect(await page.evaluate(() => window.gameManager.tutorialSystem.tutorialSteps
+        .filter(s => !PORTRAIT_MANIFEST[TutorialSystem.CHARACTERS[s.character]?.id])
+        .map(s => s.title))).toEqual([]);
     await next.click();
     await next.click();
+    // A Cláudia volta, feliz no recado final
+    await expect(page.locator('#tutorial-character-name')).toHaveText('Pesquisadora Cláudia');
+    await expect(portrait).toHaveAttribute('data-character', 'claudia');
+    await expect(portrait.locator('[data-layer="happy"]')).toHaveClass(/(^|\s)on(\s|$)/);
     await expect(next).toHaveText('Começar a jogar!');
     expect(await page.evaluate(() => window.gameManager.gameState)).toBe('tutorial');
     await next.click();
@@ -157,20 +172,33 @@ test('tutorial congela o jogo e guia a construção da prefeitura', async ({ pag
     expect(await page.evaluate(() => window.gameManager.gameState)).toBe('playing');
     await page.waitForFunction(() => window.gameManager.gameTime > 0);
 
-    // Missão concluída → aula 1 abre sozinha, com o jogo congelado; "Fechar aula" devolve o jogo
+    // Missão concluída → a próxima aula (a 1, só vista pela metade) abre sozinha no livro, com o jogo pausado
     await page.evaluate(() => window.gameManager.questSystem.completeQuest('tutorial_01'));
-    await expect(tutorial).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('#tutorial-progress')).toContainText('Aula 1');
-    expect(await page.evaluate(() => window.gameManager.gameState)).toBe('tutorial');
-    await skip.click();
-    await expect(tutorial).toBeHidden();
-    expect(await page.evaluate(() => window.gameManager.gameState)).toBe('playing');
+    const book = page.locator('#lesson-book');
+    await expect(book).toBeVisible({ timeout: 10000 });
+    await expect(book.locator('.book-chapter')).toContainText('Aula 1');
+    await page.waitForFunction(() => !window.gameManager.isSimulationRunning());
+    await book.locator('.book-close').click();
+    await expect(book).toBeHidden();
+    await page.waitForFunction(() => window.gameManager.isSimulationRunning());
 
-    // Botão 📚 reabre todas as aulas
+    // Botão 📚 abre a central de aulas: escolher o tema abre o livro, e a última página conclui a aula
     await page.evaluate(() => document.getElementById('btn-lessons').click());
-    await expect(tutorial).toBeVisible();
-    await expect(skip).toHaveText('Fechar aula');
-    await skip.click();
-    await expect(tutorial).toBeHidden();
+    const hub = page.locator('#lessons-hub');
+    await expect(hub.locator('.lesson-card')).toHaveCount(6);
+    await hub.locator('.lesson-card[data-chapter="1"]').click();
+    // Vira página por página esperando a animação acabar (clique no meio da virada é ignorado)
+    const pages = await book.locator('.book-dot').count();
+    for (let i = 1; i < pages; i++) {
+        await book.locator('.book-next').click();
+        await expect(book.locator('.book-dot').nth(i)).toHaveClass(/current/);
+        await expect(book.locator('.book-right')).not.toHaveClass(/turn-/);
+    }
+    await expect(book.locator('.book-next')).toHaveText('✓ Concluir aula');
+    await book.locator('.book-next').click();
+    await expect(hub.locator('.lesson-card[data-chapter="1"]')).toHaveClass(/done/);
+    await expect(hub.locator('.lessons-progress')).toContainText('1 de 6');
+    await hub.locator('.lessons-close').click();
+    await expect(hub).toBeHidden();
     expect(problems).toEqual([]);
 });

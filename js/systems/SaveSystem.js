@@ -1,295 +1,157 @@
 /**
  * GUARDIÃO DA ÁGUA - SAVE SYSTEM
- * Sistema de persistência usando localStorage
+ * Um jogo salvo por perfil de jogador (PlayerProfile), no localStorage: cada aluno continua o seu jogo.
+ * Sem DOM nem Babylon (testável em tests/unit). Quem monta o conteúdo é GameManager.getSaveData();
+ * quem aplica é GameManager.loadGame().
+ *
+ * Formato gravado (envelope):
+ *   { format: 'guardiao_agua_save', version, profileId, savedAt, kind: 'manual'|'auto', summary, game }
+ * - version: SaveSystem.VERSION. Save de outra versão (ou o formato antigo, sem prédios) é recusado
+ *   como 'incompatible'; JSON quebrado ou sem os campos essenciais, como 'corrupt'.
+ * - summary: o que a tela de perfis mostra sem abrir o jogo inteiro (data, nº de construções...).
  */
-
 class SaveSystem {
+    static VERSION = 2;
+    static FORMAT = 'guardiao_agua_save';
+    static KEY_PREFIX = 'guardiao_agua_save_';
+    // Chaves do formato antigo (um save só para todo mundo, sem prédios): nunca carregavam direito
+    static LEGACY_KEYS = ['guardiao_agua_autosave', 'guardiao_agua_save_manual_save', 'guardiao_agua_save_list'];
+
     constructor() {
-        log('💾 Inicializando SaveSystem...');
-        
-        // Configurações
-        this.saveKey = 'guardiao_agua_save';
-        this.autoSaveKey = 'guardiao_agua_autosave';
-        this.settingsKey = 'guardiao_agua_settings';
-        this.maxSaveSlots = 5;
-        this.compressionEnabled = true;
-        
-        // Verificar suporte
-        this.storageAvailable = this.checkStorageSupport();
-        
-        log('✅ SaveSystem inicializado');
+        this.storageAvailable = SaveSystem.checkStorageSupport();
+        if (this.storageAvailable) SaveSystem.clearLegacySaves();
+        log('💾 SaveSystem inicializado');
     }
-    
-    // ===== VERIFICAÇÃO DE SUPORTE =====
-    checkStorageSupport() {
+
+    static checkStorageSupport() {
         try {
-            const test = 'test';
+            const test = '__guardiao_teste__';
             localStorage.setItem(test, test);
             localStorage.removeItem(test);
             return true;
         } catch (e) {
-            console.warn('⚠️ localStorage não disponível');
+            console.warn('⚠️ localStorage não disponível: o jogo não poderá ser salvo');
             return false;
         }
     }
-    
-    // ===== SAVE MANUAL =====
-    saveGame(gameData, slotName = 'manual_save') {
-        if (!this.storageAvailable) {
-            console.error('❌ Sistema de save não disponível');
-            return false;
-        }
-        
-        try {
-            const saveData = this.prepareSaveData(gameData, slotName);
-            const key = `${this.saveKey}_${slotName}`;
-            
-            // Comprimir dados se habilitado
-            const dataToSave = this.compressionEnabled ? 
-                this.compressData(saveData) : 
-                JSON.stringify(saveData);
-            
-            localStorage.setItem(key, dataToSave);
-            
-            // Atualizar lista de saves
-            this.updateSaveList(slotName, saveData.metadata);
-            
-            log(`💾 Jogo salvo: ${slotName}`);
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Erro ao salvar jogo:', error);
-            return false;
-        }
+
+    static clearLegacySaves() {
+        SaveSystem.LEGACY_KEYS.forEach(key => localStorage.removeItem(key));
     }
-    
-    // ===== AUTO-SAVE =====
-    autoSave(gameData) {
-        if (!this.storageAvailable) return false;
-        
-        try {
-            const saveData = this.prepareSaveData(gameData, 'auto_save');
-            const dataToSave = this.compressionEnabled ? 
-                this.compressData(saveData) : 
-                JSON.stringify(saveData);
-            
-            localStorage.setItem(this.autoSaveKey, dataToSave);
-            
-            log('💾 Auto-save realizado');
-            return true;
-            
-        } catch (error) {
-            console.error('❌ Erro no auto-save:', error);
-            return false;
-        }
+
+    static keyFor(profileId) {
+        return `${SaveSystem.KEY_PREFIX}${profileId || 'sem_perfil'}`;
     }
-    
-    // ===== PREPARAÇÃO DOS DADOS =====
-    prepareSaveData(gameData, slotName) {
-        const now = new Date();
-        
+
+    // ===== Formato (puro: sem localStorage) =====
+
+    /** Monta o envelope que vai para o localStorage. */
+    static buildEnvelope(game, profileId, { kind = 'auto', now = Date.now() } = {}) {
         return {
-            metadata: {
-                version: '1.0.0',
-                slotName: slotName,
-                timestamp: now.getTime(),
-                dateString: now.toLocaleString('pt-BR'),
-                gameTime: gameData.gameTime || 0,
-                playerScore: gameData.quests?.totalScore || 0,
-                population: gameData.resources?.population?.current || 0,
-                buildingCount: gameData.buildings?.buildings?.length || 0
+            format: SaveSystem.FORMAT,
+            version: SaveSystem.VERSION,
+            profileId,
+            savedAt: now,
+            kind,
+            summary: {
+                gameTime: game.gameTime || 0,
+                gameClockTime: game.gameClockTime || null,
+                buildingCount: game.buildings?.buildings?.length || 0,
+                population: Math.round(game.resources?.resources?.population?.current || 0),
+                score: game.quests?.totalScore || 0,
+                completedQuests: game.quests?.completedQuests?.length || 0
             },
-            gameData: {
-                ...gameData,
-                saveVersion: '1.0.0'
-            }
+            game
         };
     }
-    
-    // ===== LOAD =====
-    loadGame(slotName = 'manual_save') {
-        if (!this.storageAvailable) {
-            console.error('❌ Sistema de save não disponível');
-            return null;
-        }
-        
+
+    /**
+     * Lê o texto gravado. Nunca lança: devolve { ok: true, envelope } ou { ok: false, reason }
+     * com reason 'missing' | 'corrupt' | 'incompatible'.
+     */
+    static parseEnvelope(raw, profileId = null) {
+        if (raw === null || raw === undefined || raw === '') return { ok: false, reason: 'missing' };
+        let envelope;
         try {
-            const key = `${this.saveKey}_${slotName}`;
-            const savedData = localStorage.getItem(key);
-            
-            if (!savedData) {
-                console.warn(`⚠️ Save não encontrado: ${slotName}`);
-                return null;
-            }
-            
-            // Descomprimir se necessário
-            const saveData = this.compressionEnabled ? 
-                this.decompressData(savedData) : 
-                JSON.parse(savedData);
-            
-            // Verificar versão
-            if (!this.isCompatibleVersion(saveData)) {
-                console.warn('⚠️ Versão do save incompatível');
-                return null;
-            }
-            
-            log(`📁 Jogo carregado: ${slotName}`);
-            return saveData.gameData;
-            
+            envelope = JSON.parse(raw);
         } catch (error) {
-            console.error('❌ Erro ao carregar jogo:', error);
-            return null;
+            return { ok: false, reason: 'corrupt' };
         }
-    }
-    
-    loadAutoSave() {
-        if (!this.storageAvailable) return null;
-        
-        try {
-            const savedData = localStorage.getItem(this.autoSaveKey);
-            
-            if (!savedData) {
-                console.warn('⚠️ Auto-save não encontrado');
-                return null;
-            }
-            
-            const saveData = this.compressionEnabled ? 
-                this.decompressData(savedData) : 
-                JSON.parse(savedData);
-            
-            if (!this.isCompatibleVersion(saveData)) {
-                console.warn('⚠️ Versão do auto-save incompatível');
-                return null;
-            }
-            
-            log('📁 Auto-save carregado');
-            return saveData.gameData;
-            
-        } catch (error) {
-            console.error('❌ Erro ao carregar auto-save:', error);
-            return null;
+        if (!envelope || typeof envelope !== 'object') return { ok: false, reason: 'corrupt' };
+        // Formato antigo (metadata/gameData) ou de outra versão do jogo
+        if (envelope.format !== SaveSystem.FORMAT) {
+            return { ok: false, reason: envelope.metadata || envelope.gameData ? 'incompatible' : 'corrupt' };
         }
-    }
-    
-    // ===== VERIFICAÇÕES =====
-    hasSaveData(slotName = 'manual_save') {
-        if (!this.storageAvailable) return false;
-        
-        const key = `${this.saveKey}_${slotName}`;
-        return localStorage.getItem(key) !== null;
-    }
-    
-    hasAutoSave() {
-        if (!this.storageAvailable) return false;
-        return localStorage.getItem(this.autoSaveKey) !== null;
-    }
-    
-    isCompatibleVersion(saveData) {
-        // Verificar compatibilidade de versão
-        const saveVersion = saveData.metadata?.version || '1.0.0';
-        const currentVersion = '1.0.0';
-        
-        // Por enquanto, aceitar apenas a mesma versão
-        return saveVersion === currentVersion;
-    }
-    
-    // ===== LISTA DE SAVES =====
-    updateSaveList(slotName, metadata) {
-        try {
-            const saveListKey = `${this.saveKey}_list`;
-            let saveList = JSON.parse(localStorage.getItem(saveListKey) || '{}');
-            
-            saveList[slotName] = metadata;
-            
-            localStorage.setItem(saveListKey, JSON.stringify(saveList));
-            
-        } catch (error) {
-            console.error('❌ Erro ao atualizar lista de saves:', error);
-        }
+        if (envelope.version !== SaveSystem.VERSION) return { ok: false, reason: 'incompatible' };
+        if (profileId && envelope.profileId !== profileId) return { ok: false, reason: 'corrupt' };
+
+        const game = envelope.game;
+        const valid = game && typeof game === 'object' &&
+            Number.isFinite(game.gameTime) &&
+            game.resources && typeof game.resources.resources === 'object' &&
+            game.buildings && Array.isArray(game.buildings.buildings) &&
+            game.trees && Array.isArray(game.trees.cells) &&
+            game.quests && typeof game.quests === 'object';
+        if (!valid) return { ok: false, reason: 'corrupt' };
+        return { ok: true, envelope };
     }
 
-    // ===== COMPRESSÃO =====
-    compressData(data) {
-        try {
-            // Compressão simples usando JSON.stringify com replacer
-            const jsonString = JSON.stringify(data);
-            
-            // Para uma compressão real, seria necessário usar uma biblioteca como pako
-            // Por enquanto, apenas retornar o JSON string
-            return jsonString;
-            
-        } catch (error) {
-            console.error('❌ Erro na compressão:', error);
-            return JSON.stringify(data);
-        }
+    /** Texto amigável para cada motivo de falha ao carregar. */
+    static reasonText(reason) {
+        return {
+            corrupt: 'O jogo salvo está danificado e não pôde ser aberto.',
+            incompatible: 'O jogo salvo é de uma versão antiga do Guardião da Água e não pode ser aberto nesta.',
+            missing: 'Não há jogo salvo para este jogador.'
+        }[reason] || 'Não foi possível abrir o jogo salvo.';
     }
-    
-    decompressData(compressedData) {
-        try {
-            // Descompressão correspondente
-            return JSON.parse(compressedData);
-            
-        } catch (error) {
-            console.error('❌ Erro na descompressão:', error);
-            throw error;
-        }
-    }
-    
-    // ===== CONFIGURAÇÕES =====
-    saveSettings(settings) {
+
+    // ===== localStorage =====
+
+    /** Grava o jogo do perfil. Retorna true se deu certo (cheio/bloqueado = false, com aviso). */
+    save(game, profileId, { kind = 'auto' } = {}) {
         if (!this.storageAvailable) return false;
-        
         try {
-            localStorage.setItem(this.settingsKey, JSON.stringify(settings));
-            log('💾 Configurações salvas');
+            const envelope = SaveSystem.buildEnvelope(game, profileId, { kind });
+            localStorage.setItem(SaveSystem.keyFor(profileId), JSON.stringify(envelope));
+            log(`💾 Jogo salvo (${kind}) para o perfil ${profileId}`);
             return true;
         } catch (error) {
-            console.error('❌ Erro ao salvar configurações:', error);
+            console.warn('⚠️ Não foi possível salvar o jogo:', error);
             return false;
         }
     }
-    
-    loadSettings() {
-        if (!this.storageAvailable) return null;
-        
-        try {
-            const settings = localStorage.getItem(this.settingsKey);
-            return settings ? JSON.parse(settings) : null;
-        } catch (error) {
-            console.error('❌ Erro ao carregar configurações:', error);
-            return null;
+
+    /** { ok: true, data } com o conteúdo do jogo, ou { ok: false, reason } (ver parseEnvelope). */
+    load(profileId) {
+        if (!this.storageAvailable) return { ok: false, reason: 'missing' };
+        const result = SaveSystem.parseEnvelope(localStorage.getItem(SaveSystem.keyFor(profileId)), profileId);
+        if (!result.ok) {
+            if (result.reason !== 'missing') console.warn(`⚠️ Save do perfil ${profileId} recusado: ${result.reason}`);
+            return result;
         }
+        log(`📁 Jogo carregado do perfil ${profileId}`);
+        return { ok: true, data: result.envelope.game };
     }
 
-    // ===== MÉTODOS ESTÁTICOS =====
-    static hasSaveData() {
-        const saveSystem = new SaveSystem();
-        return saveSystem.hasSaveData() || saveSystem.hasAutoSave();
-    }
-    
-    static loadGame() {
-        const saveSystem = new SaveSystem();
-        
-        // Tentar carregar save manual primeiro, depois auto-save
-        let gameData = saveSystem.loadGame();
-        if (!gameData) {
-            gameData = saveSystem.loadAutoSave();
-        }
-
-        return gameData;
+    hasSave(profileId) {
+        return this.storageAvailable && localStorage.getItem(SaveSystem.keyFor(profileId)) !== null;
     }
 
-    // ===== TUTORIAL COMPLETION TRACKING =====
-    // Tutorial persistence disabled - tutorial always shows on game start
-    setTutorialCompleted(completed = true) {
-        // No-op: Tutorial completion is not persisted
-        log(`📚 Tutorial completion not persisted (always shows on start)`);
-        return true;
+    /**
+     * Resumo para a tela de perfis, sem carregar o jogo: null se não houver save;
+     * { ok: false, reason } se estiver danificado/antigo; senão { ok: true, savedAt, summary }.
+     */
+    getSaveInfo(profileId) {
+        if (!this.hasSave(profileId)) return null;
+        const result = SaveSystem.parseEnvelope(localStorage.getItem(SaveSystem.keyFor(profileId)), profileId);
+        if (!result.ok) return { ok: false, reason: result.reason };
+        return { ok: true, savedAt: result.envelope.savedAt, kind: result.envelope.kind, summary: result.envelope.summary };
     }
 
-    isTutorialCompleted() {
-        // Always return false so tutorial shows every time
-        return false;
+    deleteSave(profileId) {
+        if (!this.storageAvailable) return;
+        localStorage.removeItem(SaveSystem.keyFor(profileId));
+        log(`🗑️ Jogo salvo do perfil ${profileId} apagado`);
     }
 }
 

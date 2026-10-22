@@ -1,0 +1,758 @@
+/* =========================================================================
+   Menu principal estilo SimCity (2013) + abertura cinematográfica
+   (index.html #main-menu / #intro-overlay, js/systems/intro/MenuIntro.js)
+   - body.has-intro    → a cidade 3D (#intro-canvas) está atrás do menu
+   - body.intro-playing → a abertura está tocando (menu escondido, tarjas, "Pular")
+   - body.menu-ready   → os painéis do menu entram (em cascata)
+   Sem abertura (testes E2E, sem WebGL) o menu aparece direto sobre o degradê de sempre.
+   ========================================================================= */
+
+:root {
+    --gda-ink: #1a1a1a;
+    --gda-aqua: #48ddfa;
+    --gda-aqua-2: #21bfef;
+    --gda-blue: #1187d9;
+    --gda-navy: #083f8a;
+    --gda-panel: rgba(13, 30, 70, 0.9);
+    --gda-panel-2: rgba(8, 18, 44, 0.92);
+    --gda-yellow: #ffd23f;
+    --gda-orange: #ff9a1f;
+    --menu-gutter: clamp(16px, 2.6vw, 40px);
+}
+
+/* ===== CIDADE DE FUNDO ===== */
+#intro-canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 1;
+    outline: none;
+    touch-action: none;
+}
+
+body.has-intro #main-menu,
+body.has-intro #profile-screen {
+    background: transparent;
+}
+
+/* Véu para a leitura do cadastro sobre a cidade */
+body.has-intro #profile-screen {
+    background: radial-gradient(ellipse at center, rgba(4, 16, 40, 0.35), rgba(4, 16, 40, 0.7));
+}
+
+/* ===== LAYOUT ===== */
+#main-menu.screen.active {
+    align-items: stretch;
+    justify-content: stretch;
+}
+
+#main-menu .menu-layout {
+    position: relative;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    padding: var(--menu-gutter);
+    display: grid;
+    grid-template-columns: minmax(300px, 400px) 1fr minmax(320px, 400px);
+    grid-template-areas: "main . side";
+    gap: 24px;
+    text-align: left;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Véu lateral: dá contraste ao menu sem apagar a cidade */
+body.has-intro #main-menu::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        linear-gradient(90deg, rgba(4, 18, 44, 0.55) 0%, rgba(4, 18, 44, 0.12) 34%, transparent 50%),
+        linear-gradient(270deg, rgba(4, 18, 44, 0.45) 0%, transparent 30%);
+    opacity: 0;
+    transition: opacity 1.2s ease;
+}
+
+body.has-intro.menu-ready #main-menu::before {
+    opacity: 1;
+}
+
+.menu-col {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+}
+
+.menu-col--main {
+    grid-area: main;
+}
+
+.menu-col--side {
+    grid-area: side;
+    align-self: start;
+}
+
+/* ===== LOGO NO CANTO ===== */
+#main-menu .menu-header {
+    margin: 0;
+}
+
+#main-menu h1.game-logo {
+    width: min(400px, 100%);
+    left: 0;
+    transform: none;
+    margin: -6px 0 2px -10px;
+    filter: drop-shadow(0 6px 10px rgba(0, 20, 50, 0.35));
+}
+
+/* ===== "COMEÇAR" (o "Getting Started") ===== */
+.menu-start-btn {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding: 16px 20px;
+    border: 4px solid var(--gda-ink);
+    border-radius: 24px;
+    background: linear-gradient(180deg, #ffe066 0%, var(--gda-yellow) 45%, var(--gda-orange) 100%);
+    box-shadow: 0 8px 0 var(--gda-ink), 0 14px 28px rgba(0, 0, 0, 0.3), inset 0 3px 0 rgba(255, 255, 255, 0.55);
+    color: var(--gda-ink);
+    cursor: pointer;
+    text-align: left;
+    position: relative;
+    top: 0;
+    transition: top 0.12s ease, box-shadow 0.12s ease, filter 0.15s ease;
+}
+
+.menu-start-btn:hover,
+.menu-start-btn:focus-visible {
+    filter: brightness(1.06) saturate(1.05);
+    top: -2px;
+    box-shadow: 0 10px 0 var(--gda-ink), 0 18px 30px rgba(0, 0, 0, 0.32), inset 0 3px 0 rgba(255, 255, 255, 0.55);
+    outline: none;
+}
+
+.menu-start-btn:focus-visible {
+    box-shadow: 0 10px 0 var(--gda-ink), 0 0 0 4px var(--gda-aqua), inset 0 3px 0 rgba(255, 255, 255, 0.55);
+}
+
+.menu-start-btn:active {
+    top: 6px;
+    box-shadow: 0 2px 0 var(--gda-ink), inset 0 3px 0 rgba(255, 255, 255, 0.4);
+}
+
+.menu-start-icon {
+    flex: none;
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 4px solid var(--gda-ink);
+    background: radial-gradient(circle at 35% 30%, var(--gda-aqua), var(--gda-blue) 70%, var(--gda-navy));
+    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.menu-start-icon .ui-icon {
+    width: 38px;
+    height: 38px;
+}
+
+.menu-start-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.menu-start-title {
+    font-family: 'Lilita One', cursive;
+    font-size: 2.3rem;
+    line-height: 1;
+    color: #fff;
+    letter-spacing: 1px;
+    text-shadow: 0 3px 0 var(--gda-ink), 2px 0 0 var(--gda-ink), -2px 0 0 var(--gda-ink), 0 -2px 0 var(--gda-ink),
+        2px 2px 0 var(--gda-ink), -2px 2px 0 var(--gda-ink), 2px -2px 0 var(--gda-ink), -2px -2px 0 var(--gda-ink);
+}
+
+.menu-start-sub {
+    margin-top: 4px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 0.98rem;
+    color: #3a2400;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ===== BOTÕES DO MENU (Novo Jogador / Sobre) ===== */
+#main-menu .menu-buttons {
+    flex-direction: row;
+    gap: 12px;
+}
+
+#main-menu .menu-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    gap: 8px;
+    padding: 12px 10px;
+    font-family: 'Lilita One', cursive;
+    font-weight: 400;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    border: 4px solid var(--gda-ink);
+    border-radius: 18px;
+    box-shadow: 0 6px 0 var(--gda-ink);
+    transform: none;
+}
+
+#main-menu .menu-btn.primary {
+    flex-grow: 1.4;
+    background: linear-gradient(180deg, var(--gda-aqua) 0%, var(--gda-aqua-2) 50%, var(--gda-blue) 100%);
+    color: #fff;
+    text-shadow: 0 2px 0 var(--gda-ink), 1px 0 0 var(--gda-ink), -1px 0 0 var(--gda-ink), 0 -1px 0 var(--gda-ink);
+}
+
+#main-menu .menu-btn.secondary {
+    background: linear-gradient(180deg, #23417f, #142a5c);
+    color: #fff;
+    text-shadow: 0 2px 0 var(--gda-ink);
+}
+
+#main-menu .menu-btn:hover:not(:disabled) {
+    top: -2px;
+    transform: none;
+    filter: brightness(1.08);
+    box-shadow: 0 8px 0 var(--gda-ink);
+}
+
+#main-menu .menu-btn:active:not(:disabled) {
+    top: 5px;
+    box-shadow: 0 1px 0 var(--gda-ink);
+}
+
+#main-menu .btn-icon {
+    font-size: 1rem;
+    filter: none;
+}
+
+/* ===== CARDS (boas-vindas e destaques) ===== */
+.menu-card {
+    position: relative;
+    padding: 18px 18px 16px;
+    border: 4px solid var(--gda-ink);
+    border-radius: 22px;
+    background: linear-gradient(165deg, var(--gda-panel), var(--gda-panel-2));
+    box-shadow: 0 8px 0 var(--gda-ink), 0 16px 30px rgba(0, 0, 0, 0.28), inset 0 0 0 2px rgba(72, 221, 250, 0.28);
+    color: #fff;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.welcome-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.welcome-badge {
+    flex: none;
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    border: 3px solid var(--gda-ink);
+    background: linear-gradient(180deg, var(--gda-yellow), var(--gda-orange));
+    transform: rotate(-6deg);
+}
+
+.welcome-badge .ui-icon {
+    width: 28px;
+    height: 28px;
+}
+
+.welcome-title {
+    font-family: 'Lilita One', cursive;
+    font-weight: 400;
+    font-size: 1.55rem;
+    line-height: 1.1;
+    color: #fff;
+    text-shadow: 0 2px 0 var(--gda-ink);
+    overflow-wrap: anywhere;
+}
+
+.welcome-name {
+    color: var(--gda-aqua);
+}
+
+.welcome-text {
+    margin-top: 10px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+#main-menu .profile-section {
+    margin: 14px 0 0;
+    max-width: none;
+}
+
+#main-menu .profile-title {
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+    color: var(--gda-yellow);
+    text-shadow: 0 2px 0 var(--gda-ink);
+}
+
+#main-menu .profile-list {
+    max-height: min(30vh, 240px);
+    gap: 8px;
+}
+
+#main-menu .profile-card {
+    border-width: 3px;
+    border-color: var(--gda-ink);
+    box-shadow: 0 4px 0 var(--gda-ink);
+    background: linear-gradient(145deg, #22427f, #152b5c);
+}
+
+/* Billboard: slides empilhados na mesma célula, troca com fade */
+.menu-billboard {
+    padding: 0;
+    overflow: hidden;
+}
+
+.billboard-slides {
+    display: grid;
+}
+
+.billboard-slide {
+    grid-area: 1 / 1;
+    display: flex;
+    gap: 14px;
+    padding: 16px 16px 8px;
+    opacity: 0;
+    transform: translateX(14px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    pointer-events: none;
+}
+
+.billboard-slide.is-active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+}
+
+.billboard-art {
+    flex: none;
+    width: 84px;
+    height: 84px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    border: 3px solid var(--gda-ink);
+    background: radial-gradient(circle at 40% 30%, #bff3ff, var(--gda-aqua) 45%, var(--gda-blue));
+    box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.18);
+}
+
+.billboard-art .ui-icon {
+    width: 58px;
+    height: 58px;
+}
+
+.billboard-copy {
+    min-width: 0;
+}
+
+.billboard-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 2px solid var(--gda-ink);
+    background: var(--gda-yellow);
+    color: var(--gda-ink);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.billboard-title {
+    margin-top: 6px;
+    font-family: 'Lilita One', cursive;
+    font-weight: 400;
+    font-size: 1.3rem;
+    line-height: 1.1;
+    color: #fff;
+    text-shadow: 0 2px 0 var(--gda-ink);
+}
+
+.billboard-text {
+    margin-top: 6px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 0.92rem;
+    line-height: 1.35;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.billboard-dots {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    padding: 4px 16px 12px;
+}
+
+.billboard-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--gda-ink);
+    background: rgba(255, 255, 255, 0.35);
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.billboard-dot.is-active {
+    background: var(--gda-aqua);
+    transform: scale(1.2);
+}
+
+/* ===== ENTRADA DO MENU DEPOIS DA ABERTURA ===== */
+body.has-intro #main-menu .menu-start-btn,
+body.has-intro #main-menu .menu-buttons,
+body.has-intro #main-menu .menu-card {
+    transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+body.has-intro:not(.menu-ready) #main-menu .menu-start-btn,
+body.has-intro:not(.menu-ready) #main-menu .menu-buttons {
+    opacity: 0;
+    transform: translateX(-40px);
+    pointer-events: none;
+}
+
+body.has-intro:not(.menu-ready) #main-menu .menu-card {
+    opacity: 0;
+    transform: translateX(50px);
+    pointer-events: none;
+}
+
+body.has-intro.menu-ready #main-menu .menu-start-btn { transition-delay: 0.9s; }
+body.has-intro.menu-ready #main-menu .menu-buttons { transition-delay: 1.05s; }
+body.has-intro.menu-ready #main-menu .welcome-card { transition-delay: 0.95s; }
+body.has-intro.menu-ready #main-menu .menu-billboard { transition-delay: 1.2s; }
+
+/* "Começar" chama atenção depois que o menu entra */
+body.menu-ready .menu-start-btn {
+    animation: menuStartPulse 2.8s ease-in-out 2.4s infinite;
+}
+
+@keyframes menuStartPulse {
+    0%, 100% { box-shadow: 0 8px 0 var(--gda-ink), 0 14px 28px rgba(0, 0, 0, 0.3), inset 0 3px 0 rgba(255, 255, 255, 0.55); }
+    50% { box-shadow: 0 8px 0 var(--gda-ink), 0 0 0 6px rgba(255, 210, 63, 0.45), inset 0 3px 0 rgba(255, 255, 255, 0.55); }
+}
+
+/* ===== ABERTURA: tarjas, fade, legenda, "Pular" ===== */
+#intro-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+#intro-overlay[hidden] {
+    display: none;
+}
+
+.intro-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 10vh;
+    background: #05080f;
+    transition: transform 0.9s cubic-bezier(0.6, 0, 0.3, 1);
+}
+
+.intro-bar--top { top: 0; transform: translateY(-100%); }
+.intro-bar--bottom { bottom: 0; transform: translateY(100%); }
+body.intro-letterbox .intro-bar { transform: none; }
+
+.intro-fade {
+    position: absolute;
+    inset: 0;
+    background: #05080f;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.intro-caption {
+    position: absolute;
+    left: clamp(16px, 6vw, 96px);
+    right: 16px;
+    bottom: calc(10vh + 28px);
+    margin: 0;
+    font-family: 'Lilita One', cursive;
+    font-weight: 400;
+    font-size: clamp(1.5rem, 3.2vw, 2.6rem);
+    line-height: 1.1;
+    color: #fff;
+    text-shadow: 0 3px 0 var(--gda-ink), 2px 0 0 var(--gda-ink), -2px 0 0 var(--gda-ink), 0 -2px 0 var(--gda-ink), 0 8px 24px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.intro-caption::before {
+    content: "";
+    display: block;
+    width: 56px;
+    height: 6px;
+    margin-bottom: 10px;
+    border-radius: 3px;
+    border: 2px solid var(--gda-ink);
+    background: var(--gda-aqua);
+}
+
+.intro-caption.is-on {
+    animation: introCaption 4.6s ease forwards;
+}
+
+@keyframes introCaption {
+    0% { opacity: 0; transform: translateY(14px); }
+    14% { opacity: 1; transform: none; }
+    80% { opacity: 1; transform: none; }
+    100% { opacity: 0; transform: translateY(-6px); }
+}
+
+.intro-skip {
+    position: absolute;
+    right: var(--menu-gutter);
+    bottom: max(16px, calc(5vh - 20px));
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px 8px 18px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-radius: 999px;
+    background: rgba(5, 8, 15, 0.45);
+    color: #fff;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.intro-skip:hover,
+.intro-skip:focus-visible {
+    background: rgba(72, 221, 250, 0.3);
+    border-color: var(--gda-aqua);
+    outline: none;
+}
+
+.intro-skip-key {
+    padding: 1px 7px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+    opacity: 0.85;
+}
+
+/* ===== CELULAR / TELAS ESTREITAS ===== */
+@media (max-width: 1100px) and (min-width: 769px) {
+    #main-menu .menu-layout {
+        grid-template-columns: minmax(280px, 360px) 1fr minmax(300px, 360px);
+    }
+}
+
+@media (max-width: 768px) {
+    #main-menu .menu-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px 16px 24px;
+    }
+
+    .menu-col {
+        gap: 14px;
+    }
+
+    #main-menu .menu-header {
+        text-align: center;
+    }
+
+    #main-menu h1.game-logo {
+        width: min(200px, 52vw);
+        margin: 0 auto;
+    }
+
+    /* Sobra de altura vai para o meio: a cidade aparece entre os botões e os cards */
+    .menu-col--side {
+        margin-top: auto;
+        /* align-self: start (desktop) deixava a coluna da largura do texto: sem o texto de boas-vindas encolhia */
+        align-self: stretch;
+    }
+
+    .menu-start-sub {
+        white-space: normal;
+        font-size: 0.88rem;
+    }
+
+    .menu-start-btn {
+        padding: 12px 14px;
+        gap: 12px;
+    }
+
+    .menu-start-icon {
+        width: 52px;
+        height: 52px;
+    }
+
+    .menu-start-icon .ui-icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .menu-start-title {
+        font-size: 1.9rem;
+    }
+
+    #main-menu .menu-btn {
+        font-size: 0.95rem;
+        padding: 10px 8px;
+    }
+
+    .menu-card {
+        padding: 12px 14px;
+    }
+
+    .welcome-badge {
+        width: 38px;
+        height: 38px;
+    }
+
+    .welcome-title {
+        font-size: 1.2rem;
+    }
+
+    .welcome-text {
+        margin-top: 6px;
+        font-size: 0.9rem;
+        line-height: 1.3;
+    }
+
+    /* Billboard compacto: uma linha (ícone + etiqueta + título), sem o texto */
+    .billboard-art {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+    }
+
+    .billboard-art .ui-icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    .billboard-slide {
+        padding: 8px 12px 2px;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .billboard-title {
+        font-size: 1.05rem;
+    }
+
+    .billboard-text {
+        display: none;
+    }
+
+    .billboard-dots {
+        padding: 2px 12px 8px;
+    }
+
+    /* Com vários perfis o essencial (logo, Começar, perfis) precisa caber na primeira tela:
+       logo menor, o texto de boas-vindas some (o "Quem vai jogar?" já diz o mesmo), cartões de perfil
+       compactos numa lista com rolagem própria e o billboard numa linha só (título, sem o texto) */
+    .welcome-card:has(#profile-section:not([hidden])) .welcome-text {
+        display: none;
+    }
+
+    #main-menu .profile-section {
+        margin-top: 8px;
+    }
+
+    #main-menu .profile-title {
+        font-size: 1rem;
+        margin-bottom: 6px;
+    }
+
+    #main-menu .profile-list {
+        max-height: min(26vh, 200px);
+        gap: 6px;
+        /* sombra no pé avisa que a lista rola */
+        -webkit-mask-image: linear-gradient(180deg, #000 85%, transparent);
+        mask-image: linear-gradient(180deg, #000 85%, transparent);
+        padding-bottom: 14px;
+    }
+
+    #main-menu .profile-card {
+        padding: 0.45rem 2.4rem 0.45rem 0.6rem;
+        gap: 0.6rem;
+        border-radius: 14px;
+    }
+
+    #main-menu .profile-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 1.15rem;
+    }
+
+    #main-menu .profile-name {
+        font-size: 1.05rem;
+    }
+
+    /* No celular o véu vai de cima para baixo (menu em coluna) */
+    body.has-intro #main-menu::before {
+        background: linear-gradient(180deg, rgba(4, 18, 44, 0.15) 0%, rgba(4, 18, 44, 0.35) 40%, rgba(4, 18, 44, 0.6) 100%);
+    }
+
+    .intro-bar {
+        height: 8vh;
+    }
+
+    .intro-caption {
+        bottom: calc(8vh + 64px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.has-intro #main-menu .menu-start-btn,
+    body.has-intro #main-menu .menu-buttons,
+    body.has-intro #main-menu .menu-card,
+    .billboard-slide {
+        transition: opacity 0.3s ease;
+        transition-delay: 0s !important;
+        transform: none !important;
+    }
+
+    body.menu-ready .menu-start-btn {
+        animation: none;
+    }
+}
+
+/* Toque: a dica da tecla Esc não faz sentido */
+@media (pointer: coarse) {
+    .intro-skip-key {
+        display: none;
+    }
+}

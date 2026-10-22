@@ -37,90 +37,94 @@ mixin(QuestSystem, {
         const detailsContent = document.getElementById('details-content');
         if (!detailsContent) return;
 
-        // Get all missions sorted by priority
+        // Três blocos, sem filtros: o que fazer agora, o que vem depois e o que já foi feito
         const allMissions = this.getAllMissionsSorted();
+        const active = allMissions.filter(m => this.activeQuests.has(m.id));
+        const completed = allMissions.filter(m => this.completedQuests.has(m.id));
+        const upcoming = allMissions.filter(m => !this.activeQuests.has(m.id) && !this.completedQuests.has(m.id) && m.status !== 'expired');
 
-        // TASK #1: Apply filter
-        const missions = this.filterMissions(allMissions, this.missionUI.currentFilter);
+        const upcomingList = upcoming.map(m => {
+            const pending = (m.prerequisites || []).filter(id => !this.completedQuests.has(id)).map(id => this.quests.get(id)?.title || id);
+            return `<li class="mission-mini">
+                <span class="mission-mini-icon">${uiIcon('status-locked')}</span>
+                <span class="mission-mini-text">${m.title}${pending.length ? `<small>Termine antes: ${pending.join(', ')}</small>` : ''}</span>
+            </li>`;
+        }).join('');
+        const completedList = completed.map(m => `<li class="mission-mini done">
+                <span class="mission-mini-icon">${uiIcon('status-done')}</span>
+                <span class="mission-mini-text">${m.title}</span>
+            </li>`).join('');
 
-        // TASK #1: Count missions by status
-        const activeMissions = allMissions.filter(m => this.activeQuests.has(m.id));
-        const completedMissions = allMissions.filter(m => this.completedQuests.has(m.id));
-        const lockedMissions = allMissions.filter(m =>
-            !this.activeQuests.has(m.id) &&
-            !this.completedQuests.has(m.id) &&
-            !this.canStartMission(m.id)
-        );
-
-        const content = `
-            <div class="mission-interface enhanced">
+        detailsContent.innerHTML = uiIconsIn(`
+            <div class="mission-interface simple">
                 <div class="mission-header">
-                    <h3>🎯 Sistema de Missões</h3>
-                    <button class="close-btn" onclick="window.gameManager.questSystem.closeMissionInterface()">✖️</button>
+                    <h3>${uiIcon('ui-target', 'lg')} Missões</h3>
+                    <button class="close-btn" onclick="window.gameManager.questSystem.closeMissionInterface()" aria-label="Fechar">${uiIcon('ui-close')}</button>
                 </div>
+                <p class="mission-intro">${PlayerProfile.personalize('{nome}, complete as missões para ganhar dinheiro e liberar novas construções!')}</p>
 
-                <div class="mission-content-area">
-                    <div class="mission-list-header">
-                        <h4>📋 Missões</h4>
-                        <div class="mission-list-stats">
-                            <span class="active-missions">${activeMissions.length} ativas</span>
-                            <span class="completed-missions">${completedMissions.length} completas</span>
-                        </div>
-                    </div>
+                <h4 class="mission-section-title">⭐ Agora</h4>
+                ${active.length
+                    ? active.map(m => this.renderMissionCard(m)).join('')
+                    : '<p class="mission-empty">Nenhuma missão agora. Continue cuidando da cidade!</p>'}
 
-                    <!-- TASK #1: Filter Buttons -->
-                    <div class="mission-filters">
-                        <button class="filter-btn ${this.missionUI.currentFilter === 'all' ? 'active' : ''}"
-                                onclick="window.gameManager.questSystem.setMissionFilter('all')">
-                            📋 Todas (${allMissions.length})
-                        </button>
-                        <button class="filter-btn ${this.missionUI.currentFilter === 'active' ? 'active' : ''}"
-                                onclick="window.gameManager.questSystem.setMissionFilter('active')">
-                            ✅ Ativas (${activeMissions.length})
-                        </button>
-                        <button class="filter-btn ${this.missionUI.currentFilter === 'completed' ? 'active' : ''}"
-                                onclick="window.gameManager.questSystem.setMissionFilter('completed')">
-                            🏆 Concluídas (${completedMissions.length})
-                        </button>
-                        <button class="filter-btn ${this.missionUI.currentFilter === 'locked' ? 'active' : ''}"
-                                onclick="window.gameManager.questSystem.setMissionFilter('locked')">
-                            🔒 Bloqueadas (${lockedMissions.length})
-                        </button>
-                    </div>
+                ${upcoming.length ? `
+                    <h4 class="mission-section-title">🔜 Próximas</h4>
+                    <ul class="mission-mini-list">${upcomingList}</ul>` : ''}
 
-                    <div class="mission-list-enhanced">
-                        ${missions.length > 0 ?
-                            missions.map(mission => this.renderMissionCard(mission)).join('') :
-                            `<div class="no-missions">
-                                <div class="no-missions-icon">📭</div>
-                                <div class="no-missions-text">Nenhuma missão nesta categoria</div>
-                                <div class="no-missions-hint">Tente outro filtro para ver mais missões</div>
-                            </div>`
-                        }
-                    </div>
-                </div>
-
-                <div class="mission-stats-compact">
-                    <div class="stat-item-compact">
-                        <span class="stat-icon">🎯</span>
-                        <span class="stat-value">${this.activeQuests.size}</span>
-                        <span class="stat-label">Ativas</span>
-                    </div>
-                    <div class="stat-item-compact">
-                        <span class="stat-icon">✅</span>
-                        <span class="stat-value">${this.completedQuests.size}</span>
-                        <span class="stat-label">Completas</span>
-                    </div>
-                    <div class="stat-item-compact">
-                        <span class="stat-icon">⭐</span>
-                        <span class="stat-value">${this.totalScore}</span>
-                        <span class="stat-label">Pontos</span>
-                    </div>
-                </div>
+                ${completed.length ? `
+                    <details class="mission-done-list">
+                        <summary>🏆 Concluídas (${completed.length}) · ⭐ ${this.totalScore} pontos</summary>
+                        <ul class="mission-mini-list">${completedList}</ul>
+                    </details>` : ''}
             </div>
-        `;
+        `);
+    },
 
-        detailsContent.innerHTML = content;
+    /**
+     * Metas da missão com ✓/○ e contagem (usado na lista e nos detalhes).
+     * Meta de construção ainda não cumprida vira link: leva ao prédio na aba de construções (goToBuildGoal).
+     */
+    renderMissionGoals(mission) {
+        const fmt = value => Number.isInteger(Number(value)) ? Number(value) : Math.round(Number(value));
+        const buildingTypes = this.gameManager.buildingSystem?.buildingTypes;
+        return `<ul class="mission-goals">
+            ${mission.objectives.map(obj => {
+                const done = obj.current >= obj.required;
+                const link = !done && obj.type === 'build' && buildingTypes?.has(obj.target);
+                const linkAttrs = link
+                    ? ` role="button" tabindex="0" title="Ir para ${buildingTypes.get(obj.target).name} nas construções"
+                        onclick="event.stopPropagation(); window.gameManager.questSystem.goToBuildGoal('${obj.target}')"
+                        onkeydown="if (event.key === 'Enter') window.gameManager.questSystem.goToBuildGoal('${obj.target}')"`
+                    : '';
+                return `<li class="mission-goal ${done ? 'done' : ''} ${link ? 'goal-link' : ''}"${linkAttrs}>
+                    <span class="goal-check">${done ? '✓' : ''}</span>
+                    <span class="goal-text">${obj.description}</span>
+                    <b class="goal-count">${fmt(Math.min(obj.current, obj.required))}/${fmt(obj.required)}</b>
+                    ${link ? '<span class="goal-go" aria-hidden="true">' + uiIcon('ui-build') + ' ›</span>' : ''}
+                </li>`;
+            }).join('')}
+        </ul>`;
+    },
+
+    /** Meta "Construir X" clicada: fecha as missões e mostra o prédio na aba de construções. */
+    goToBuildGoal(buildingId) {
+        this.closeMissionInterface();
+        document.getElementById('btn-missions')?.classList.remove('active');
+        this.gameManager.uiManager?.focusBuildingItem(buildingId);
+    },
+
+    /** Recompensas em selos curtos; desbloqueios com o nome do prédio. */
+    renderMissionRewards(mission) {
+        const rewards = mission.rewards || {};
+        const buildingName = id => this.gameManager.buildingSystem?.buildingTypes?.get(id)?.name || id;
+        const chips = [];
+        if (rewards.budget) chips.push(`${uiIcon('res-budget')} R$ ${Number(rewards.budget).toLocaleString('pt-BR')}`);
+        if (rewards.score) chips.push(`${uiIcon('status-star')} ${rewards.score} pontos`);
+        (rewards.unlock || []).forEach(id => chips.push(`${uiIcon('status-unlocked')} ${buildingName(id)}`));
+        return chips.length
+            ? `<div class="mission-rewards-chips">${chips.map(c => `<span class="reward-chip">${c}</span>`).join('')}</div>`
+            : '';
     },
 
     /**
@@ -204,135 +208,29 @@ mixin(QuestSystem, {
      * Renders a mission card
      */
     renderMissionCard(mission) {
-        const isActive = this.activeQuests.has(mission.id);
-        const isCompleted = this.completedQuests.has(mission.id);
-        const canStart = this.canStartMission(mission.id);
-        const category = this.missionCategories[mission.category];
-
-        let statusClass = 'available';
-        let statusText = 'Disponível';
-        let actionButton = '';
-
-        // ===== ENHANCED STATUS HANDLING =====
-        if (mission.status === 'expired') {
-            statusClass = 'expired';
-            statusText = 'Expirada';
-            actionButton = '<button class="mission-btn expired" disabled>⏰ Expirada</button>';
-        } else if (isCompleted) {
-            statusClass = 'completed';
-            statusText = 'Completa';
-            actionButton = '<button class="mission-btn completed" disabled>✓ Completa</button>';
-        } else if (isActive) {
-            statusClass = 'active';
-            statusText = 'Ativa';
-            actionButton = '<button class="mission-btn active" disabled>⏳ Em Progresso</button>';
-
-            // Add choice button if choices are available
-            if (mission.choices && mission.choices.length > 0) {
-                actionButton += `<button class="mission-btn choice" onclick="window.gameManager.questSystem.presentChoice('${mission.id}', '${mission.choices[0].id}')">🎭 Decidir</button>`;
-            }
-        } else if (canStart) {
-            statusClass = 'available';
-            statusText = 'Auto-ativada';
-            // ===== REMOVED: Start button no longer needed since missions auto-activate =====
-            // actionButton = `<button class="mission-btn start" onclick="window.gameManager.questSystem.startMission('${mission.id}')">▶️ Iniciar</button>`;
-            actionButton = ''; // No button needed - missions auto-activate
-        } else {
-            statusClass = 'locked';
-            statusText = 'Bloqueada';
-            actionButton = '<button class="mission-btn locked" disabled>🔒 Bloqueada</button>';
-        }
-
-        // ===== ENHANCED VISUAL INDICATORS =====
-
-        // Urgency indicator
-        let urgencyIndicator = '';
-        if (mission.urgency === 'critical') {
-            urgencyIndicator = '<span class="urgency-indicator critical">🚨 CRÍTICA</span>';
-            statusClass += ' critical-urgency';
-        } else if (mission.urgency === 'high') {
-            urgencyIndicator = '<span class="urgency-indicator high">⚡ URGENTE</span>';
-            statusClass += ' high-urgency';
-        }
-
-        // Chain indicator
-        let chainIndicator = '';
-        if (mission.chainId) {
-            chainIndicator = `<span class="chain-indicator">🔗 Parte ${mission.chainPosition}</span>`;
-        }
-
-        // Time window indicator
-        let timeWindowIndicator = '';
-        if (mission.timeWindow && mission.status === 'available') {
-            const timeLeft = mission.timeWindow.end - Date.now();
-            const hoursLeft = Math.ceil(timeLeft / (1000 * 60 * 60));
-            if (hoursLeft > 0) {
-                timeWindowIndicator = `<span class="time-window">⏰ ${hoursLeft}h restantes</span>`;
-            }
-        }
-
-        // Special features indicators
-        let featuresIndicators = '';
-        if (mission.scalingRewards) {
-            featuresIndicators += '<span class="feature-indicator scaling">⭐ Recompensas Dinâmicas</span>';
-        }
-        if (mission.choices && mission.choices.length > 0) {
-            featuresIndicators += '<span class="feature-indicator choices">🎭 Decisões</span>';
-        }
-        if (mission.stakeholders && mission.stakeholders.length > 0) {
-            featuresIndicators += '<span class="feature-indicator stakeholders">👥 Impacto Social</span>';
-        }
-
-        const progressPercent = isActive ? (mission.progress * 100) : (isCompleted ? 100 : 0);
+        const category = this.missionCategories[mission.category] || {};
+        const progressPercent = Math.round((mission.progress || 0) * 100);
+        const urgent = mission.urgency === 'critical' || mission.urgency === 'high';
+        const choice = mission.choices?.length
+            ? `<button class="mission-btn choice" onclick="event.stopPropagation(); window.gameManager.questSystem.presentChoice('${mission.id}', '${mission.choices[0].id}')">🎭 Decidir</button>`
+            : '';
 
         return `
-            <div class="mission-card ${statusClass}" onclick="window.gameManager.questSystem.selectMission('${mission.id}')">
-                <div class="mission-card-header">
-                    <div class="mission-title">
-                        <span class="mission-icon" style="color: ${category.color}">${mission.missionIcon || category.icon}</span>
-                        <h4>${mission.title}</h4>
-                    </div>
-                    <div class="mission-status-area">
-                        <div class="mission-status ${statusClass}">${statusText}</div>
-                        ${urgencyIndicator}
-                    </div>
+            <div class="mission-card simple ${urgent ? 'urgent' : ''}" onclick="window.gameManager.questSystem.showMissionDetails('${mission.id}')">
+                <div class="mission-card-top">
+                    <span class="mission-icon">${uiIcon(mission.missionIcon || category.icon || 'ui-target', 'lg')}</span>
+                    <h4 class="mission-card-title">${PlayerProfile.personalize(mission.title)}</h4>
+                    ${urgent ? `<span class="mission-urgent-tag">${uiIcon('res-energy')} Urgente</span>` : ''}
                 </div>
-
-                <div class="mission-indicators">
-                    ${chainIndicator}
-                    ${timeWindowIndicator}
-                    ${featuresIndicators}
+                ${this.renderMissionGoals(mission)}
+                <div class="mission-progress-simple">
+                    <div class="progress-bar"><div class="progress-fill" style="width: ${progressPercent}%"></div></div>
+                    <span class="progress-text">${progressPercent}%</span>
                 </div>
-
-                <div class="mission-description">
-                    <p>${mission.description}</p>
-                    ${this.renderMissionInfoCards(mission)}
-                </div>
-
-                <div class="mission-meta">
-                    <div class="mission-difficulty">
-                        <span class="meta-label">Dificuldade:</span>
-                        <span class="difficulty-${mission.difficulty}">${this.getDifficultyText(mission.difficulty)}</span>
-                    </div>
-                    <div class="mission-time">
-                        <span class="meta-label">Tempo estimado:</span>
-                        <span>${mission.estimatedTime || 'Variável'}</span>
-                    </div>
-                </div>
-
-                ${this.renderStakeholders(mission)}
-                ${this.renderPrerequisites(mission)}
-
-                <div class="mission-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${progressPercent}%"></div>
-                    </div>
-                    <span class="progress-text">${Math.round(progressPercent)}%</span>
-                </div>
-
+                ${this.renderMissionRewards(mission)}
                 <div class="mission-actions">
-                    ${actionButton}
-                    <button class="mission-btn info" onclick="window.gameManager.questSystem.showMissionDetails('${mission.id}')">ℹ️ Detalhes</button>
+                    ${choice}
+                    <button class="mission-btn info" onclick="event.stopPropagation(); window.gameManager.questSystem.showMissionDetails('${mission.id}')">${uiIcon('ui-book')} Ver detalhes</button>
                 </div>
             </div>
         `;
@@ -518,7 +416,7 @@ mixin(QuestSystem, {
 
         // Check for time windows
         if (mission.timeWindow && mission.status === 'available') {
-            const timeLeft = mission.timeWindow.end - Date.now();
+            const timeLeft = mission.timeWindow.end - this.simNow();
             const hoursLeft = Math.ceil(timeLeft / (1000 * 60 * 60));
 
             if (hoursLeft <= 2) {
@@ -594,6 +492,13 @@ mixin(QuestSystem, {
      * FIX #3: Updates the enhanced mission-info panel with carousel support
      * Shows ALL active/available missions with navigation
      */
+    /** Ícone do objetivo no HUD: só troca quando muda (o painel atualiza toda hora e reiniciaria a animação do SVG). */
+    setObjectiveIcon(element, emoji) {
+        if (element.dataset.icon === emoji) return;
+        element.dataset.icon = emoji;
+        element.innerHTML = uiIcon(emoji, 'lg');
+    },
+
     updateMissionInfoPanel() {
         const currentMissionElement = document.getElementById('current-mission');
         const progressTextElement = document.querySelector('.mission-info .progress-text');
@@ -642,7 +547,7 @@ mixin(QuestSystem, {
 
                 // Update objective icon based on type
                 if (objectiveIconElement) {
-                    objectiveIconElement.textContent = this.getObjectiveIcon(currentObjective, displayMission);
+                    this.setObjectiveIcon(objectiveIconElement, this.getObjectiveIcon(currentObjective, displayMission));
                 }
             } else {
                 currentMissionElement.textContent = displayMission.description;
@@ -650,7 +555,7 @@ mixin(QuestSystem, {
                     objectiveActionElement.textContent = 'Clique para ver detalhes';
                 }
                 if (objectiveIconElement) {
-                    objectiveIconElement.textContent = '🎯';
+                    this.setObjectiveIcon(objectiveIconElement, '🎯');
                 }
             }
 
@@ -689,7 +594,7 @@ mixin(QuestSystem, {
                 objectiveActionElement.textContent = 'Inicie uma missão';
             }
             if (objectiveIconElement) {
-                objectiveIconElement.textContent = '📋';
+                this.setObjectiveIcon(objectiveIconElement, '📋');
             }
             if (progressFillElement) {
                 progressFillElement.style.width = '0%';
@@ -910,13 +815,13 @@ mixin(QuestSystem, {
                 <div class="prerequisites-header">
                     <span class="meta-label">Pré-requisitos:</span>
                     <span class="prerequisites-status">
-                        ${allCompleted ? '✅ Completos' : '⏳ Pendentes'}
+                        ${uiIcon(allCompleted ? 'status-done' : 'status-pending')} ${allCompleted ? 'Completos' : 'Pendentes'}
                     </span>
                 </div>
                 <div class="prerequisites-list">
                     ${prerequisiteInfo.map(prereq => `
                         <div class="prerequisite-item ${prereq.completed ? 'completed' : 'pending'}">
-                            <span class="prerequisite-icon">${prereq.completed ? '✅' : '⏳'}</span>
+                            <span class="prerequisite-icon">${uiIcon(prereq.completed ? 'status-done' : 'status-pending')}</span>
                             <span class="prerequisite-title">${prereq.title}</span>
                         </div>
                     `).join('')}
@@ -953,94 +858,38 @@ mixin(QuestSystem, {
         const detailsContent = document.getElementById('details-content');
         if (!detailsContent) return;
 
-        const category = this.missionCategories[mission.category];
         const isActive = this.activeQuests.has(missionId);
         const isCompleted = this.completedQuests.has(missionId);
+        const status = isCompleted ? `${uiIcon('status-done')} Concluída`
+            : isActive ? `${uiIcon('status-star')} Em andamento` : `${uiIcon('status-locked')} Ainda não liberada`;
+        const edu = mission.educationalContent || {};
+        const fact = edu.facts?.[0];
+        const tips = edu.tips || [];
 
-        const content = `
-            <div class="mission-details">
+        // .mission-interface na raiz: o painel de detalhes também pausa o jogo (UIManager.syncPopupPause)
+        detailsContent.innerHTML = `
+            <div class="mission-interface mission-details simple">
                 <div class="mission-details-header">
                     <button class="back-btn" onclick="window.gameManager.questSystem.renderMissionInterface()">← Voltar</button>
-                    <h3>${mission.title}</h3>
+                    <button class="close-btn" onclick="window.gameManager.questSystem.closeMissionInterface()" aria-label="Fechar">${uiIcon('ui-close')}</button>
                 </div>
+                <h3 class="mission-details-title">${uiIcon(mission.missionIcon || 'ui-target', 'lg')} ${PlayerProfile.personalize(mission.title)}</h3>
+                <span class="mission-status-tag">${status}</span>
+                <p class="mission-details-text">${PlayerProfile.personalize(mission.description)}</p>
 
-                <div class="mission-info">
-                    <div class="mission-category">
-                        <span class="category-icon" style="color: ${category.color}">${category.icon}</span>
-                        <span>${category.name}</span>
-                    </div>
-                    <div class="mission-difficulty">Dificuldade: ${this.getDifficultyText(mission.difficulty)}</div>
-                    <div class="mission-time">Tempo estimado: ${mission.estimatedTime || 'Variável'}</div>
-                </div>
+                <h4 class="mission-section-title">O que fazer</h4>
+                ${this.renderMissionGoals(mission)}
 
-                <div class="mission-description">
-                    <h4>Descrição</h4>
-                    <p>${mission.description}</p>
-                </div>
+                <h4 class="mission-section-title">Você ganha</h4>
+                ${this.renderMissionRewards(mission) || '<p class="mission-empty">Experiência e uma cidade melhor!</p>'}
 
-                <div class="mission-objectives">
-    <h4>Objetivos</h4>
-    ${mission.objectives.map(obj => `
-        <div class="objective-item">
-            <span class="objective-icon">${obj.current >= obj.required ? '✅' : '⏳'}</span>
-            <span class="objective-text">${obj.description}</span>
-            <span class="objective-progress">Progresso: ${Number(obj.current).toFixed(1)}/${Number(obj.required).toFixed(1)}</span>
-        </div>
-    `).join('')}
-</div>
-
-                <div class="mission-rewards">
-                    <h4>Recompensas</h4>
-                    <div class="rewards-list">
-                        ${mission.rewards.score ? `<div class="reward-item">🏆 ${mission.rewards.score} pontos</div>` : ''}
-                        ${mission.rewards.budget ? `<div class="reward-item">💰 R$ ${mission.rewards.budget}</div>` : ''}
-                        ${mission.rewards.experience ? `<div class="reward-item">⭐ ${mission.rewards.experience} XP</div>` : ''}
-                        ${mission.rewards.unlock ? `<div class="reward-item">🔓 Desbloqueios: ${mission.rewards.unlock.join(', ')}</div>` : ''}
-                    </div>
-                </div>
-
-                ${mission.educationalContent ? `
-                    <div class="educational-content">
-                        <h4>Conteúdo Educacional</h4>
-
-                        ${mission.educationalContent.concepts ? `
-                            <div class="concepts">
-                                <h5>Conceitos Abordados:</h5>
-                                <div class="concept-tags">
-                                    ${mission.educationalContent.concepts.map(concept =>
-                                        `<span class="concept-tag">${concept}</span>`
-                                    ).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-
-                        <div class="facts">
-                            <h5>Fatos Interessantes:</h5>
-                            <ul>
-                                ${mission.educationalContent.facts.map(fact => `<li>${fact}</li>`).join('')}
-                            </ul>
-                        </div>
-
-                        <div class="tips">
-                            <h5>Dicas:</h5>
-                            <ul>
-                                ${mission.educationalContent.tips.map(tip => `<li>${tip}</li>`).join('')}
-                            </ul>
-                        </div>
-                    </div>
-                ` : ''}
-
-                <div class="mission-actions">
-                    ${!isCompleted && !isActive && this.canStartMission(missionId) ?
-                        `<div class="mission-auto-start-info" style="padding: 1rem; background: rgba(0,255,136,0.1); border-radius: 8px; text-align: center;">
-                            <p style="margin: 0; color: #00ff88; font-weight: 600;">✨ Esta missão será ativada automaticamente</p>
-                        </div>` :
-                        ''
-                    }
-                </div>
+                ${fact ? `<div class="mission-fact"><b>${uiIcon('status-tip')} Você sabia?</b> ${fact}</div>` : ''}
+                ${tips.length ? `
+                    <details class="mission-tips">
+                        <summary>${uiIcon('ui-compass')} Dicas</summary>
+                        <ul>${tips.map(tip => `<li>${tip}</li>`).join('')}</ul>
+                    </details>` : ''}
             </div>
         `;
-
-        detailsContent.innerHTML = content;
     },
 });

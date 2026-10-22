@@ -18,7 +18,7 @@ function setup() {
 function activate(qs, id, secondsAgo = 0) {
     const quest = qs.quests.get(id);
     quest.status = 'active';
-    quest.startTime = Date.now() - secondsAgo * 1000;
+    quest.startTime = qs.simNow() - secondsAgo * 1000;
     qs.activeQuests.add(id);
     return quest;
 }
@@ -57,6 +57,18 @@ test('Crise Hídrica falha se a água acabar', () => {
     qs.updateQuestProgress('challenge_01', 16);
     assert.strictEqual(qs.quests.get('challenge_01').status, 'failed');
     assert.ok(!qs.activeQuests.has('challenge_01'));
+});
+
+test('relógio das missões é o tempo de jogo: parado (pausa/tutorial/popup), a missão não envelhece', () => {
+    const { qs } = setup();
+    qs.gameManager.gameTime = 50000;
+    const quest = activate(qs, 'challenge_01', 100);
+    const survival = quest.objectives.find(o => o.type === 'survival');
+    assert.strictEqual(qs.checkObjectiveProgress(survival, quest), 100);
+    // Tempo real passa, gameTime não (jogo pausado): o progresso fica igual
+    assert.strictEqual(qs.checkObjectiveProgress(survival, quest), 100);
+    qs.gameManager.gameTime += 30000; // jogo voltou e rodou 30 s
+    assert.strictEqual(qs.checkObjectiveProgress(survival, quest), 130);
 });
 
 test('save antigo com missão removida carrega sem ela', () => {

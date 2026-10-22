@@ -3,6 +3,30 @@
  * Parte da classe UIManager (js/systems/UIManager.js), anexada via mixin(): use this.* normalmente.
  */
 mixin(UIManager, {
+    /**
+     * Lista de prédios agrupada por tipo: "5× Bomba de Água" com a soma do que eles fazem.
+     * value(building) = contribuição de um prédio; label(total) = texto da soma (ex.: '+250 L/min').
+     * cls = classe do valor (building-production / building-consumption / building-storage).
+     */
+    renderBuildingGroups(buildings, value, label, cls = 'building-production', extra = () => '') {
+        const groups = new Map();
+        buildings.forEach(building => {
+            if (!building.config) return;
+            const group = groups.get(building.type) || { config: building.config, count: 0, total: 0, sample: building };
+            group.count++;
+            group.total += Number(value(building)) || 0;
+            groups.set(building.type, group);
+        });
+        const rows = [...groups.values()].sort((a, b) => Math.abs(b.total) - Math.abs(a.total)).map(g => `
+            <li class="building-group">
+                <span class="building-icon">${buildingIcon(g.config)}</span>
+                <span class="building-name">${g.count > 1 ? `<b class="building-count">${g.count}×</b> ` : ''}${g.config.name}</span>
+                <span class="${cls}">${label(g.total, g.count)}</span>
+                ${extra(g.sample)}
+            </li>`).join('');
+        return `<ul>${rows}</ul>`;
+    },
+
     // ===== PAINÉIS DE DETALHES DE RECURSOS =====
     showResourcePanel(panelType) {
         // ===== ENHANCED RESOURCE PANEL DISPLAY SYSTEM =====
@@ -87,6 +111,15 @@ mixin(UIManager, {
         }
     },
 
+    // Botão no fim de cada painel de recurso: abre o tutorial curto daquela área (TutorialSystem.startTopic)
+    topicLessonButton(topic) {
+        const lesson = TutorialSystem.TOPICS[topic];
+        if (!lesson) return '';
+        return `<button class="topic-lesson-btn" onclick="window.gameManager.tutorialSystem.startTopic('${topic}')">
+            ${uiIcon('ui-books')} Aprender sobre ${lesson.name}
+        </button>`;
+    },
+
     closeResourcePanel() {
         try {
             // ===== ENHANCED RESOURCE PANEL CLOSING =====
@@ -147,18 +180,9 @@ mixin(UIManager, {
         `;
 
         if (waterProducers.length > 0) {
-            detailsHTML += '<ul>';
-            waterProducers.forEach(building => {
-                const production = building.config.waterProduction * building.efficiency;
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-production">+${this.formatNumber(production, 1)}L/min</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
+            detailsHTML += this.renderBuildingGroups(waterProducers,
+                b => b.config.waterProduction * (b.efficiency ?? 1),
+                (total, count) => `${count > 1 ? 'produzindo ' : ''}+${this.formatNumber(total, 1)} L/min`);
         } else {
             detailsHTML += '<p class="no-sources">Nenhuma fonte de água ativa</p>';
         }
@@ -166,22 +190,14 @@ mixin(UIManager, {
         // Edifícios de armazenamento
         const storageBuildings = buildings.filter(b => b.config.waterStorage && b.active);
         if (storageBuildings.length > 0) {
-            detailsHTML += '<h5>🛢️ Armazenamento</h5><ul>';
-            storageBuildings.forEach(building => {
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-storage">+${building.config.waterStorage}L</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
+            detailsHTML += '<h5>🛢️ Armazenamento</h5>' + this.renderBuildingGroups(storageBuildings,
+                b => b.config.waterStorage,
+                (total, count) => `${count > 1 ? 'guardando ' : ''}+${Math.round(total).toLocaleString('pt-BR')} L`, 'building-storage');
         }
 
         detailsHTML += '</div></div>';
 
-        this.elements.detailsContent.innerHTML = detailsHTML;
+        this.elements.detailsContent.innerHTML = uiIconsIn(detailsHTML) + this.topicLessonButton('water');
     },
 
     showBudgetDetailsPanel() {
@@ -274,7 +290,7 @@ mixin(UIManager, {
 
         detailsHTML += '</div></div>';
 
-        this.elements.detailsContent.innerHTML = detailsHTML;
+        this.elements.detailsContent.innerHTML = uiIconsIn(detailsHTML) + this.topicLessonButton('budget');
     },
 
     showEnergyDetailsPanel() {
@@ -317,49 +333,24 @@ mixin(UIManager, {
         `;
 
         if (powerGenerators.length > 0) {
-            detailsHTML += '<ul>';
-            powerGenerators.forEach(building => {
-                // ===== ZERO-ERROR POLICY FIX: Validar config antes de usar =====
-                if (!building.config) {
-                    console.warn('⚠️ Edifício sem configuração encontrado na lista de geradores:', building);
-                    return;
-                }
-
-                const isRenewable = ['hydroelectric_plant', 'solar_panel', 'wind_turbine'].includes(building.type);
-                const renewableIcon = isRenewable ? '🌱' : '🏭';
-                const renewableText = isRenewable ? ' (Renovável)' : ' (Não-renovável)';
-
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-production">+${building.config.powerGeneration}kW</span>
-                        <span class="renewable-indicator">${renewableIcon}${renewableText}</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
+            const renewable = building => ['hydroelectric_plant', 'solar_panel', 'wind_turbine'].includes(building.type);
+            detailsHTML += this.renderBuildingGroups(powerGenerators,
+                b => b.config.powerGeneration,
+                (total, count) => `${count > 1 ? 'gerando ' : ''}+${this.formatNumber(total, 1)} kW`, 'building-production',
+                b => `<span class="renewable-indicator">${renewable(b) ? '🌱 (Renovável)' : '🏭 (Não-renovável)'}</span>`);
         } else {
             detailsHTML += '<p class="no-sources">Nenhuma fonte de energia ativa</p>';
         }
 
         if (powerConsumers.length > 0) {
-            detailsHTML += '<h5>🔌 Consumidores de Energia</h5><ul>';
-            powerConsumers.forEach(building => {
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-consumption">-${building.config.powerConsumption}kW</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
+            detailsHTML += '<h5>🔌 Consumidores de Energia</h5>' + this.renderBuildingGroups(powerConsumers,
+                b => b.config.powerConsumption,
+                (total, count) => `${count > 1 ? 'usando ' : ''}-${this.formatNumber(total, 1)} kW`, 'building-consumption');
         }
 
         detailsHTML += '</div></div>';
 
-        this.elements.detailsContent.innerHTML = detailsHTML;
+        this.elements.detailsContent.innerHTML = uiIconsIn(detailsHTML) + this.topicLessonButton('electricity');
     },
 
     showSatisfactionDetailsPanel() {
@@ -406,30 +397,16 @@ mixin(UIManager, {
 
         const satisfactionBuildings = buildings.filter(b => b.config && b.config.satisfactionBonus && b.active);
         if (satisfactionBuildings.length > 0) {
-            detailsHTML += '<ul>';
-            satisfactionBuildings.forEach(building => {
-                // ===== ZERO-ERROR POLICY FIX: Validar config antes de usar =====
-                if (!building.config) {
-                    console.warn('⚠️ Edifício sem configuração encontrado na lista de satisfação:', building);
-                    return;
-                }
-
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-bonus">+${building.config.satisfactionBonus}%</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
+            detailsHTML += this.renderBuildingGroups(satisfactionBuildings,
+                b => b.config.satisfactionBonus,
+                total => `+${this.formatNumber(total, 1)}%`, 'building-bonus');
         } else {
             detailsHTML += '<p class="no-sources">Nenhum edifício de satisfação construído</p>';
         }
 
         detailsHTML += '</div></div>';
 
-        this.elements.detailsContent.innerHTML = detailsHTML;
+        this.elements.detailsContent.innerHTML = uiIconsIn(detailsHTML) + this.topicLessonButton('satisfaction');
     },
 
     showPopulationDetailsPanel() {
@@ -518,7 +495,7 @@ mixin(UIManager, {
             </div>
         `;
 
-        this.elements.detailsContent.innerHTML = detailsHTML;
+        this.elements.detailsContent.innerHTML = uiIconsIn(detailsHTML) + this.topicLessonButton('population');
     },
 
     showPollutionDetailsPanel() {
@@ -560,31 +537,29 @@ mixin(UIManager, {
         `;
 
         if (pollutionSources.length > 0) {
-            detailsHTML += '<h5>🏭 Fontes de Poluição</h5><ul>';
-            pollutionSources.forEach(building => {
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-consumption">+${building.config.pollutionGeneration}%/min</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
+            detailsHTML += '<h5>🏭 Fontes de Poluição</h5>' + this.renderBuildingGroups(pollutionSources,
+                b => b.config.pollutionGeneration,
+                (total, count) => `${count > 1 ? 'poluindo ' : ''}+${this.formatNumber(total, 1)}%/min`, 'building-consumption');
         }
 
         if (cleanupBuildings.length > 0) {
-            detailsHTML += '<h5>🌱 Sistemas de Limpeza</h5><ul>';
-            cleanupBuildings.forEach(building => {
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-production">-${building.config.pollutionReduction}%/min</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
+            detailsHTML += '<h5>🌱 Sistemas de Limpeza</h5>' + this.renderBuildingGroups(cleanupBuildings,
+                b => b.config.pollutionReduction,
+                (total, count) => `${count > 1 ? 'limpando ' : ''}-${this.formatNumber(total, 1)}%/min`);
+        }
+
+        const trees = this.gameManager.treeSystem;
+        if (trees) {
+            detailsHTML += `
+                    <h5>🌳 Árvores da cidade</h5>
+                    <ul>
+                        <li>
+                            <span class="building-icon">🌳</span>
+                            <span class="building-name">${trees.count} árvores em pé</span>
+                            <span class="building-production">-${this.formatNumber(trees.pollutionReduction, 1)}%/min</span>
+                        </li>
+                        <li>🪓 Construir em cima de árvores derruba as árvores: a poluição sobe e a cidade fica menos verde.</li>
+                    </ul>`;
         }
 
         detailsHTML += `
@@ -609,6 +584,6 @@ mixin(UIManager, {
             </div>
         `;
 
-        this.elements.detailsContent.innerHTML = detailsHTML;
+        this.elements.detailsContent.innerHTML = uiIconsIn(detailsHTML) + this.topicLessonButton('pollution');
     },
 });

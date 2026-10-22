@@ -40,6 +40,36 @@ const GAME_CONFIG = {
     }
 };
 
+// ===== DIFICULDADE PELA IDADE DO JOGADOR (perfil) =====
+// maxAge: até que idade vale. events = multiplicador da chance de evento (EventSystem.setDifficulty);
+// budget = multiplicador do orçamento inicial. Aplicado em GameManager.applyPlayerProfile().
+const DIFFICULTY_BY_AGE = [
+    { maxAge: 10, id: 'easy', label: 'Fácil', events: 0.6, budget: 1.3 },
+    { maxAge: 14, id: 'normal', label: 'Normal', events: 1.0, budget: 1.0 },
+    { maxAge: Infinity, id: 'hard', label: 'Difícil', events: 1.4, budget: 0.8 }
+];
+
+// ===== CLIMA (WeatherService, Open-Meteo: sem chave, CORS liberado) =====
+const WEATHER = {
+    FORECAST_URL: 'https://api.open-meteo.com/v1/forecast',
+    GEOCODING_URL: 'https://geocoding-api.open-meteo.com/v1/search',
+    CITIES_URL: 'https://servicodados.ibge.gov.br/api/v1/localidades/estados/{uf}/municipios?orderBy=nome',
+    CACHE_MS: 30 * 60 * 1000,   // reusa a previsão por 30 min (também é o intervalo de atualização no jogo)
+    FORECAST_DAYS: 5
+};
+
+// ===== ÁRVORES (TreeSystem) =====
+// Bosques sorteados no mapa. Cada árvore em pé limpa o ar (redução de poluição/min) e soma satisfação
+// (área verde, até GREEN_BONUS_MAX); construir em cima derruba: perde esse bônus e a poluição sobe na hora.
+const TREES = {
+    FOREST_CHANCE: 0.45,          // chance de árvore numa célula de bosque (ruído alto)
+    SCATTER_CHANCE: 0.04,         // chance de árvore solta fora dos bosques
+    START_AREA_CLEAR: 5,          // raio (células) sem árvores em volta da área inicial do tutorial
+    POLLUTION_REDUCTION: 0.04,    // poluição/min que cada árvore tira (~140 árvores ≈ 5/min, uma bomba d'água)
+    GREEN_BONUS_MAX: 8,           // satisfação extra com todas as árvores iniciais em pé
+    FELL_POLLUTION: 0.6           // poluição (%) que sobe na hora por árvore derrubada
+};
+
 // ===== FEATURE FLAGS (o que aparece na versão de release) =====
 const FEATURE_FLAGS = {
     HIDDEN_BUILDINGS: [

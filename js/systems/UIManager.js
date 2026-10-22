@@ -597,10 +597,74 @@ class UIManager {
     // ===== ATUALIZAÇÃO =====
     update(deltaTime) {
         this.updateTimer += deltaTime;
-        
+
         if (this.updateTimer >= this.updateInterval) {
             this.updateResourceDisplay();
             this.updateTimer = 0;
+        }
+
+        this.popupCheckTimer = (this.popupCheckTimer || 0) + deltaTime;
+        if (this.popupCheckTimer >= 200) {
+            this.popupCheckTimer = 0;
+            this.syncPopupPause();
+            this.flushDeferredAlerts();
+        }
+    }
+
+    // Livro de aulas, central de aulas, tutorial (story ou coach) ou livro de estudo visível
+    isReadingOverlayOpen() {
+        return ['#lessons-hub', '#lesson-book', '#study-book-overlay', '#tutorial-container']
+            .some(selector => (document.querySelector(selector)?.getClientRects().length || 0) > 0);
+    }
+
+    // Mostra os alertas que esperaram (showCentralAlert) assim que nada de leitura estiver na tela
+    flushDeferredAlerts() {
+        if (!this.deferredAlerts?.size || this.isReadingOverlayOpen()) return;
+        const pending = [...this.deferredAlerts.values()];
+        this.deferredAlerts.clear();
+        for (const args of pending) {
+            const options = args[4] || {};
+            if (options.stillRelevant && !options.stillRelevant()) continue;
+            this.showCentralAlert(...args);
+        }
+    }
+
+    // ===== PAUSA COM POPUP INFORMATIVO =====
+    // Fonte única: em vez de cada popup pausar/despausar (são muitos caminhos de abrir e fechar,
+    // e o mobile tem os seus), olha o que está visível na tela e segura a pausa leve enquanto houver algo.
+    syncPopupPause() {
+        const gm = this.gameManager;
+        if (!gm?.holdPause) return;
+        if (this.isInfoPopupOpen()) gm.holdPause('popup');
+        else gm.releasePause('popup');
+    }
+
+    isInfoPopupOpen() {
+        const shown = el => {
+            // getClientRects (não offsetParent, que é null em position: fixed): vazio = display none
+            if (!el || el.getClientRects().length === 0) return false;
+            // Mobile: o painel lateral sai da tela com transform, continua "visível" para o offsetParent
+            const side = el.closest('.hud-right');
+            return !(this.isMobile && side && !side.classList.contains('active'));
+        };
+        const popups = [
+            '.swal2-container', '.central-alert-overlay', '#study-book-overlay', '#controls-modal',
+            '#weather-modal', '#lessons-hub', '#lesson-book', '.mission-interface', '.choice-dialog', '.loan-interface',
+            '.resource-details-panel'
+        ];
+        return popups.some(selector => shown(document.querySelector(selector)));
+    }
+
+    updateSoftPauseBadge() {
+        const paused = this.gameManager?.pauseReasons?.size > 0 && this.gameManager.gameState === 'playing';
+        let badge = document.getElementById('soft-pause-badge');
+        if (paused && !badge) {
+            badge = document.createElement('div');
+            badge.id = 'soft-pause-badge';
+            badge.innerHTML = `${uiIcon('ui-pause')} Jogo pausado enquanto você lê`;
+            document.getElementById('game-screen')?.appendChild(badge);
+        } else if (!paused && badge) {
+            badge.remove();
         }
     }
     
@@ -669,8 +733,9 @@ class UIManager {
         // Relógio do jogo
         if (this.elements.gameClock && this.gameManager && typeof this.gameManager.formatGameTime === 'function') {
             try {
-                const timeString = this.gameManager.formatGameTime();
-                this.elements.gameClock.textContent = timeString;
+                // "dd/mm/aaaa hh:mm" → hora em destaque e data embaixo (o card divide espaço com o clima)
+                const [date, time] = this.gameManager.formatGameTime().split(' ');
+                this.elements.gameClock.innerHTML = `<b class="clock-time">${time}</b><small class="clock-date">${date}</small>`;
             } catch (error) {
                 console.warn('⚠️ Erro ao atualizar relógio:', error);
                 this.elements.gameClock.textContent = '00/00/0000 00:00';
@@ -920,18 +985,18 @@ class UIManager {
         }
 
         // Build the HTML content
-        let iconHTML = `<div class="building-icon">${buildingType.icon}</div>`;
+        let iconHTML = `<div class="building-icon">${buildingIcon(buildingType)}</div>`;
 
         // Add lock/study icon overlay if locked
         if (!isUnlocked && hasStudyContent) {
-            iconHTML += `<div class="study-icon">📚</div>`;
+            iconHTML += `<div class="study-icon">${uiIcon('ui-books')}</div>`;
         }
 
         item.innerHTML = `
             ${iconHTML}
             <div class="building-info">
                 <div class="building-name">${buildingType.name}</div>
-                <div class="building-cost">${!isUnlocked ? '🔒 Bloqueado' : 'R$ ' + buildingType.cost.toLocaleString()}</div>
+                <div class="building-cost">${!isUnlocked ? uiIcon('status-locked') + ' Bloqueado' : 'R$ ' + buildingType.cost.toLocaleString()}</div>
                 <div class="building-description">${!isUnlocked && hasStudyContent ? 'Clique para estudar' : buildingType.description}</div>
             </div>
         `;
@@ -942,13 +1007,48 @@ class UIManager {
         return item;
     }
     
+    /**
+     * Abre a categoria do prédio no painel de construções, rola até ele e o destaca (sem entrar no modo de
+     * construção: o aluno clica para construir). Usado pelas metas "Construir X" das missões.
+     */
+    focusBuildingItem(buildingTypeId) {
+        const buildingType = this.gameManager.buildingSystem?.buildingTypes.get(buildingTypeId);
+        if (!buildingType) return;
+
+        if (this.isMobile && !this.mobilePanelsVisible?.left) this.toggleMobilePanel('left');
+
+        // selectCategory fecha o acordeão se a categoria já estiver ativa: só reabre quando preciso
+        const itemsEl = this.elements.buildingItems;
+        const open = this.uiState.currentCategory === buildingType.category && itemsEl?.classList.contains('accordion-open');
+        if (!open) {
+            this.uiState.currentCategory = null;
+            this.uiState.isTransitioning = false;
+            this.selectCategory(buildingType.category);
+        }
+
+        const item = document.querySelector(`.building-item[data-building-type="${buildingTypeId}"]`);
+        if (!item) return;
+        item.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        item.classList.remove('goal-highlight');
+        void item.offsetWidth; // reinicia a animação se já estava destacado
+        item.classList.add('goal-highlight');
+        clearTimeout(this.goalHighlightTimer);
+        this.goalHighlightTimer = setTimeout(() => item.classList.remove('goal-highlight'), 4000);
+
+        const locked = item.dataset.locked === 'true';
+        this.showNotification(locked
+            ? `🔒 ${buildingType.name} ainda está bloqueado: clique nele para estudar e liberar.`
+            : `👉 Aqui está: ${buildingType.name}. Clique nele para construir!`, 'info', 4000);
+        AudioManager.playSound('sfx_click', 0.6);
+    }
+
     selectBuildingType(buildingTypeId) {
         // ===== ENHANCED BUILDING SELECTION WITH STATE MANAGEMENT =====
         if (!buildingTypeId) return;
 
         // Durante o tutorial só se constrói o que o passo atual pede
         const tutorial = this.gameManager.tutorialSystem;
-        if (tutorial?.isActive && buildingTypeId !== tutorial.allowedBuilding) {
+        if (tutorial?.isActive && !tutorial.allowsBuilding(buildingTypeId)) {
             this.showNotification('📚 Siga o tutorial: ainda não é hora de construir isso.', 'warning');
             return;
         }
@@ -1099,8 +1199,38 @@ class UIManager {
     // ===== OVERLAYS =====
     showPauseOverlay() {
         if (this.elements.pauseOverlay) {
+            this.renderPlayerPanel();
             this.elements.pauseOverlay.classList.remove('hidden');
         }
+    }
+
+    // Tela de pausa = perfil do jogador: dados, estatísticas da partida e os botões de pausa/ajuda
+    renderPlayerPanel() {
+        const gm = this.gameManager;
+        const profile = PlayerProfile.getActive();
+        const name = PlayerProfile.displayName();
+        document.getElementById('pp-avatar').textContent = name.charAt(0).toUpperCase();
+        document.getElementById('pp-name').textContent = name;
+        document.getElementById('pp-meta').textContent = profile
+            ? `${profile.age} anos · ${profile.city}/${profile.uf}`
+            : 'Sem perfil';
+
+        const qs = gm.questSystem;
+        const resources = gm.resourceManager?.resources || {};
+        const minutes = Math.floor((gm.gameTime || 0) / 60000);
+        const lessons = typeof LessonProgress !== 'undefined' ? LessonProgress.summary() : null;
+        const stats = [
+            ['⏱️', 'Tempo de jogo', minutes < 1 ? 'menos de 1 min' : `${minutes} min`],
+            ['🎯', 'Missões concluídas', `${qs?.completedQuests.size || 0} de ${qs?.quests.size || 0}`],
+            ['⭐', 'Pontos', `${qs?.totalScore || 0}`],
+            ['🏗️', 'Construções', `${gm.buildingSystem?.buildings.size || 0}`],
+            ['👥', 'População', `${Math.round(resources.population?.current || 0)}`],
+            ['😊', 'Satisfação', `${Math.round(resources.population?.satisfaction || 0)}%`]
+        ];
+        if (lessons) stats.push(['📚', 'Aulas concluídas', `${lessons.done} de ${lessons.total}`]);
+        document.getElementById('pp-stats').innerHTML = stats.map(([icon, label, value]) =>
+            `<div class="pp-stat"><span class="pp-stat-icon">${uiIcon(icon)}</span><span class="pp-stat-label">${label}</span><b class="pp-stat-value">${value}</b></div>`
+        ).join('');
     }
     
     hidePauseOverlay() {
@@ -1115,18 +1245,24 @@ class UIManager {
     }
     
     saveGame() {
-        this.gameManager.saveGame();
-        AudioManager.playSound('sfx_success');
+        const ok = this.gameManager.saveGame();
+        AudioManager.playSound(ok ? 'sfx_success' : 'sfx_build_error');
+        // Retorno visível também na tela de pausa (as notificações ficam atrás dela)
+        const button = this.elements.saveGameBtn;
+        if (ok && button) {
+            button.innerHTML = `${uiIcon('status-done')} Jogo salvo!`;
+            clearTimeout(this.saveButtonTimer);
+            this.saveButtonTimer = setTimeout(() => { button.innerHTML = `${uiIcon('ui-save')} Salvar jogo`; }, 2000);
+        }
     }
-    
+
     async returnToMainMenu() {
-        if (await gameConfirm('Voltar ao menu?', 'O jogo é salvo automaticamente antes de sair.', { confirmText: 'Voltar ao menu', icon: 'warning' })) {
-            // Salvar automaticamente
-            this.gameManager.autoSave();
-            
-            // Voltar ao menu
-            showScreen('main-menu');
+        const text = this.gameManager.canSave()
+            ? 'O jogo é salvo antes de sair: no menu, escolha o seu perfil e "Continuar".'
+            : 'O tutorial ainda não acabou, então este jogo não fica salvo.';
+        if (await gameConfirm('Voltar ao menu?', text, { confirmText: 'Voltar ao menu', icon: 'warning' })) {
             AudioManager.playSound('sfx_click');
+            leaveToMainMenu(); // main.js: salva e recarrega a página (um GameManager por página)
         }
     }
 
@@ -1193,7 +1329,7 @@ class UIManager {
         // Requisitos adicionais
         if (buildingType.requirements) {
             if (buildingType.requirements.nearWater) {
-                requirementsHTML += '<div class="additional-requirements"><h6>🌊 Requisitos Especiais</h6><ul><li>💧 Deve estar próximo à água</li></ul></div>';
+                requirementsHTML += '<div class="additional-requirements"><h6>💧 Requisitos Especiais</h6><ul><li>💧 Deve estar próximo à água</li></ul></div>';
             }
         }
 
@@ -1218,13 +1354,27 @@ class UIManager {
 
         requirementsHTML += '</ul></div></div>';
 
-        this.elements.detailsContent.innerHTML = requirementsHTML;
+        this.elements.detailsContent.innerHTML = uiIconsIn(requirementsHTML);
     }
 
     // ===== Painéis de detalhe de recursos: js/systems/ui/ResourcePanels.js (6 métodos) =====
 
     // ===== ALERTA CENTRAL (MODAL) =====
-    showCentralAlert(title, message, type = 'warning', details = '') {
+    // Alerta automático (energia, água baixa, sem dinheiro). Com livro de aulas, central de aulas, tutorial
+    // (story/coach) ou livro de estudo na tela, um modal por cima bloquearia os cliques neles: o alerta espera
+    // na fila (um por título, o mais recente) e aparece quando eles fecham (flushDeferredAlerts, pelo update).
+    // options.whenBusy = 'toast' troca a espera por uma notificação não bloqueante (resposta a um clique do
+    // jogador); options.stillRelevant() é conferido antes de mostrar o que esperou (ex.: a energia já voltou).
+    showCentralAlert(title, message, type = 'warning', details = '', options = {}) {
+        if (this.isReadingOverlayOpen()) {
+            if (options.whenBusy === 'toast') {
+                this.showNotification(message, type, 6000);
+            } else {
+                (this.deferredAlerts ||= new Map()).set(title, [title, message, type, details, options]);
+            }
+            return;
+        }
+
         // Cooldown de 30s para não spammar
         if (this.isOnCooldown('central-alert')) {
             this.showNotification(message, type, 6000);
@@ -1247,9 +1397,9 @@ class UIManager {
         overlay.className = 'central-alert-overlay';
         overlay.innerHTML = `
             <div class="central-alert-card ${type}">
-                <div class="central-alert-icon">${icons[type] || icons.warning}</div>
+                <div class="central-alert-icon">${uiIcon(icons[type] || icons.warning, 'lg')}</div>
                 <div class="central-alert-title">${title}</div>
-                <div class="central-alert-message">${message}</div>
+                <div class="central-alert-message">${uiIconsIn(message)}</div>
                 ${details ? `<div class="central-alert-details">${details}</div>` : ''}
                 <button class="central-alert-btn">Entendi</button>
             </div>
@@ -1276,8 +1426,8 @@ class UIManager {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.innerHTML = `
-            ${message}
-            <button class="notification-close">✕</button>
+            ${uiIconsIn(message)}
+            <button class="notification-close" aria-label="Fechar">${uiIcon('ui-close')}</button>
         `;
 
         if (this.elements.notifications) {
@@ -1315,12 +1465,12 @@ class UIManager {
 
         // Get icon based on type
         const icons = {
-            info: '📢',
-            warning: '⚠️',
-            error: '❌',
-            success: '✅'
+            info: 'status-info',
+            warning: 'status-warning',
+            error: 'status-error',
+            success: 'status-done'
         };
-        const icon = icons[type] || '📢';
+        const icon = uiIcon(icons[type] || 'status-info');
 
         // Get title based on type
         const titles = {
@@ -1335,7 +1485,7 @@ class UIManager {
             <div class="breaking-news-icon">${icon}</div>
             <div class="breaking-news-content">
                 <div class="breaking-news-title">${title}</div>
-                <div class="breaking-news-text">${message}</div>
+                <div class="breaking-news-text">${uiIconsIn(message)}</div>
             </div>
         `;
 
@@ -1530,7 +1680,8 @@ class UIManager {
             'Sem Dinheiro Suficiente',
             'Seu saldo atual (' + currentBudget + ') não é suficiente para essa construção.',
             'warning',
-            'Dica: Aumente a população e construa edifícios comerciais para gerar mais receita. Verifique a seção de ajuda para mais informações.'
+            'Dica: Aumente a população e construa edifícios comerciais para gerar mais receita. Verifique a seção de ajuda para mais informações.',
+            { whenBusy: 'toast' }
         );
     }
 
@@ -1591,8 +1742,8 @@ class UIManager {
         let content = `
             <div class="building-selection-info">
                 <div class="selection-header">
-                    <h3>🏢 ${building.config.name}</h3>
-                    <button class="deselect-btn" data-action="deselect">✖️ Desselecionar</button>
+                    <h3>${buildingIcon(building.config, 'lg')} ${building.config.name}</h3>
+                    <button class="deselect-btn" data-action="deselect">${uiIcon('ui-close')} Desselecionar</button>
                 </div>
 
                 <div class="building-details">
@@ -1711,7 +1862,7 @@ class UIManager {
             stats += `<div class="stat-item">🏭 Poluição: +${config.pollutionGeneration}/s</div>`;
         }
 
-        return stats;
+        return uiIconsIn(stats);
     }
 
     generateBuildingActions(building) {
@@ -1802,7 +1953,7 @@ class UIManager {
         this.cooldownIndicator.style.display = 'none';
 
         this.cooldownIndicator.innerHTML = `
-            <div class="cooldown-icon">🏗️</div>
+            <div class="cooldown-icon">${uiIcon('ui-build', 'lg')}</div>
             <div class="cooldown-text">Aguarde antes de construir novamente</div>
             <div class="cooldown-progress">
                 <div class="cooldown-progress-fill"></div>
@@ -1914,7 +2065,7 @@ class UIManager {
             if (!item.querySelector('.cooldown-overlay')) {
                 const overlay = document.createElement('div');
                 overlay.className = 'cooldown-overlay';
-                overlay.innerHTML = '⏱️';
+                overlay.innerHTML = uiIcon('ui-clock');
                 item.appendChild(overlay);
             }
         });
@@ -2161,12 +2312,17 @@ class UIManager {
             }
         });
 
-        // Enhanced help button
-        const helpBtn = document.getElementById('btn-help');
-        if (helpBtn) {
-            helpBtn.addEventListener('click', () => {
-                this.showHelpModal();
+        // Nome do jogador → tela de perfil + pausa (o ❓ de ajuda fica dentro dela; setupHelpModal liga o #btn-help)
+        const playerChip = document.getElementById('player-chip');
+        if (playerChip) {
+            const openPlayerPanel = () => {
+                if (this.gameManager.gameState !== 'playing') return;
+                this.gameManager.pauseGame();
                 AudioManager.playSound('sfx_click', 0.8);
+            };
+            playerChip.addEventListener('click', openPlayerPanel);
+            playerChip.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPlayerPanel(); }
             });
         }
 
@@ -2247,7 +2403,7 @@ class UIManager {
 
             let detailsHTML = `
                 <div class="terrain-info-panel">
-                    <h4>${terrain.icon} Informações do Terreno</h4>
+                    <h4>${uiIcon(terrain.icon, 'lg')} Informações do Terreno</h4>
                     <div class="terrain-details">
                         <div class="terrain-header">
                             <h5>${terrain.name}</h5>
@@ -2258,7 +2414,7 @@ class UIManager {
                             <div class="property">
                                 <span class="property-label">Construível:</span>
                                 <span class="property-value ${terrain.buildable ? 'positive' : 'negative'}">
-                                    ${terrain.buildable ? '✅ Sim' : '❌ Não'}
+                                    ${terrain.buildable ? uiIcon('status-done') + ' Sim' : uiIcon('status-error') + ' Não'}
                                 </span>
                             </div>
                         </div>
@@ -2320,12 +2476,6 @@ class UIManager {
             setTimeout(() => {
                 bookOverlay.remove();
             }, 300);
-        }
-
-        // Resume game
-        if (this.gameManager.previousTimeScale !== undefined) {
-            this.gameManager.setTimeScale(this.gameManager.previousTimeScale);
-            this.gameManager.previousTimeScale = undefined;
         }
 
         // Play close sound

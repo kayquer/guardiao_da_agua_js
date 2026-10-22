@@ -10,6 +10,9 @@
 html, body {
     height: 100%;
     font-family: 'Lilita One', cursive;
+    /* A Lilita One só tem peso 400: qualquer bold/600+ nela vira um negrito falso, inventado pelo navegador,
+       que borra a letra. Desligado no documento todo (fontes com negrito de verdade não são afetadas). */
+    font-synthesis: none;
     background: linear-gradient(135deg, #00d4ff 0%, #0099ff 50%, #0066ff 100%);
     color: #ffffff;
     overflow: hidden;
@@ -113,6 +116,29 @@ html, body {
     animation: float 3s ease-in-out infinite;
     font-weight: 900;
     -webkit-text-stroke: 1px #000000;
+}
+
+/* Logo em SVG (assets/logo): o próprio desenho traz contorno, extrusão e sombra, então zera o visual de
+   texto do h1 (.logo h1 / .menu-header h1). Largura limitada também pela altura, para caber em celular deitado. */
+h1.game-logo {
+    /* Pode passar da largura do .menu-container (centralizado pelo translate) */
+    width: min(660px, 94vw, 70vh);
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0 0 0.75rem;
+    line-height: 0;
+    text-shadow: none;
+    -webkit-text-stroke: 0;
+    animation: none;
+}
+
+.game-logo > svg,
+.game-logo__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1000 / 612;
 }
 
 .subtitle {
@@ -339,6 +365,12 @@ html, body {
 
 .swal2-popup.game-swal .swal2-actions .overlay-btn {
     margin: 0;
+}
+
+/* Resumo do jogo salvo no "Continuar?" da tela de perfis */
+.swal2-popup.game-swal .save-summary {
+    margin: 0.6rem 0;
+    font-size: 1rem;
 }
 
 .swal2-popup.game-swal .swal2-icon {

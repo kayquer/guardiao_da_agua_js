@@ -1,0 +1,1451 @@
+/* =========================================================================
+   Jogador, clima, pausa leve e missões simplificadas
+   (PlayerProfile + main.js, ui/WeatherUI.js, UIManager.syncPopupPause, ui/MissionUI.js)
+   ========================================================================= */
+
+/* ===== TELA INICIAL: PERFIS SALVOS ===== */
+.profile-section {
+    margin: 0 auto 1.5rem;
+    max-width: 460px;
+}
+
+.profile-title {
+    font-family: 'Lilita One', cursive;
+    color: #fff;
+    font-size: 1.6rem;
+    margin-bottom: 0.75rem;
+    text-shadow: 3px 3px 0 #000;
+}
+
+.profile-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-height: 40vh;
+    overflow-y: auto;
+    padding: 4px;
+}
+
+.profile-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.7rem 2.6rem 0.7rem 0.8rem;
+    background: linear-gradient(145deg, #2D3561, #1A1F3A);
+    border: 4px solid #000;
+    border-radius: 18px;
+    box-shadow: 0 6px 0 #000;
+    color: #fff;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.profile-card:hover,
+.profile-card:focus-visible {
+    transform: translateY(-2px) scale(1.02);
+    outline: 3px solid var(--cartoon-blue);
+}
+
+.profile-card:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #000;
+}
+
+.profile-avatar {
+    flex: none;
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: linear-gradient(145deg, var(--cartoon-yellow), var(--cartoon-orange));
+    border: 3px solid #000;
+    font-family: 'Lilita One', cursive;
+    font-size: 1.5rem;
+    color: #000;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.profile-name {
+    font-family: 'Lilita One', cursive;
+    font-size: 1.3rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-meta {
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+
+/* Perfil com jogo salvo (SaveSystem): ao clicar, oferece "Continuar" */
+.profile-save {
+    font-size: 0.8rem;
+    color: var(--cartoon-green);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-play {
+    margin-left: auto;
+    font-size: 1.4rem;
+    color: var(--cartoon-green);
+}
+
+.profile-delete {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #000;
+    background: var(--cartoon-red);
+    color: #fff;
+    font-weight: 900;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.profile-delete:hover {
+    opacity: 1;
+}
+
+/* ===== CADASTRO DO JOGADOR ===== */
+#profile-screen {
+    overflow-y: auto;
+}
+
+.profile-form-container .menu-header h1 {
+    font-size: 3rem;
+}
+
+.profile-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    max-width: 460px;
+    margin: 1rem auto 0;
+    padding: 1.2rem;
+    background: rgba(26, 31, 58, 0.92);
+    border: 5px solid #000;
+    border-radius: 22px;
+    box-shadow: 0 8px 0 #000;
+    text-align: left;
+}
+
+.profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex: 1 1 100%;
+    color: #fff;
+    font-weight: 700;
+}
+
+.profile-field--small {
+    flex-basis: 40%;
+}
+
+.profile-field input,
+.profile-field select {
+    font: inherit;
+    font-size: 1.1rem;
+    padding: 0.6rem 0.8rem;
+    border: 3px solid #000;
+    border-radius: 12px;
+    background: #fff;
+    color: #111;
+}
+
+.profile-field input:focus,
+.profile-field select:focus {
+    outline: 3px solid var(--cartoon-blue);
+}
+
+.profile-field input:disabled {
+    background: #ccc;
+}
+
+.profile-hint {
+    font-weight: 400;
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.profile-errors {
+    flex: 1 1 100%;
+    min-height: 1.2em;
+    color: var(--cartoon-yellow);
+    font-weight: 700;
+}
+
+.profile-form .menu-buttons {
+    flex: 1 1 100%;
+}
+
+.profile-form .menu-btn {
+    padding: 0.9rem 1.5rem;
+    font-size: 1.15rem;
+}
+
+/* ===== HUD: JOGADOR + CLIMA ===== */
+.player-hud {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    pointer-events: auto;
+}
+
+.player-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 150px;
+    padding: 0.3rem 0.7rem;
+    background: linear-gradient(145deg, var(--cartoon-purple), #7c3aed);
+    border: 3px solid #000;
+    border-radius: 50px;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4);
+    color: #fff;
+    font-family: 'Lilita One', cursive;
+    font-size: 1rem;
+}
+
+#player-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.weather-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    height: 46px;
+    min-width: 92px;
+    padding: 0 0.7rem 0 0.3rem;
+    border: 3px solid #000;
+    border-radius: 50px;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4);
+    background: linear-gradient(160deg, #4fc3f7, #0288d1);
+    color: #fff;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.15s ease;
+}
+
+.weather-card:hover {
+    transform: scale(1.06);
+}
+
+.weather-card--cloud,
+.weather-card--fog { background: linear-gradient(160deg, #90a4ae, #546e7a); }
+.weather-card--rain { background: linear-gradient(160deg, #5c7aa0, #2c3e66); }
+.weather-card--storm { background: linear-gradient(160deg, #4a4e69, #22223b); }
+.weather-card--snow { background: linear-gradient(160deg, #e3f2fd, #90caf9); color: #0d2b4a; }
+.weather-card--night { background: linear-gradient(160deg, #283593, #0d1240); }
+.weather-card--empty { background: linear-gradient(160deg, #607d8b, #37474f); justify-content: center; }
+
+.weather-temp {
+    font-family: 'Lilita One', cursive;
+    font-size: 1.3rem;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+/* Cena animada do tempo (40×40) */
+.wx-scene {
+    position: relative;
+    flex: none;
+    width: 40px;
+    height: 40px;
+}
+
+.wx-sun {
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff59d 30%, #ffca28 70%);
+    box-shadow: 0 0 10px 3px rgba(255, 213, 79, 0.8);
+    animation: wx-sun-pulse 3s ease-in-out infinite;
+}
+
+.wx-sun::before {
+    content: '';
+    position: absolute;
+    inset: -7px;
+    border-radius: 50%;
+    border: 3px dotted #ffe082;
+    animation: wx-spin 8s linear infinite;
+}
+
+.wx-moon {
+    position: absolute;
+    top: 7px;
+    left: 9px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    box-shadow: -6px 3px 0 0 #fff8e1;
+    transform: rotate(-20deg);
+    animation: wx-sun-pulse 4s ease-in-out infinite;
+}
+
+.wx-cloud {
+    position: absolute;
+    top: 13px;
+    left: 4px;
+    width: 28px;
+    height: 12px;
+    border-radius: 12px;
+    background: #f5f5f5;
+    animation: wx-drift 4s ease-in-out infinite alternate;
+}
+
+.wx-cloud::before,
+.wx-cloud::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    background: inherit;
+}
+
+.wx-cloud::before { width: 14px; height: 14px; top: -7px; left: 4px; }
+.wx-cloud::after { width: 11px; height: 11px; top: -5px; left: 14px; }
+
+.wx-cloud--small { top: 20px; left: 12px; transform: scale(0.75); }
+.wx-cloud--back { top: 8px; left: 12px; opacity: 0.7; animation-duration: 6s; }
+.wx-cloud--dark { background: #b0bec5; }
+
+.wx-drop {
+    position: absolute;
+    top: 26px;
+    left: calc(9px + var(--i) * 6px);
+    width: 2px;
+    height: 7px;
+    border-radius: 2px;
+    background: #b3e5fc;
+    animation: wx-fall 0.9s linear infinite;
+    animation-delay: calc(var(--i) * 0.22s);
+}
+
+.wx-flake {
+    position: absolute;
+    top: 26px;
+    left: calc(8px + var(--i) * 6px);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #fff;
+    animation: wx-fall 2s linear infinite;
+    animation-delay: calc(var(--i) * 0.45s);
+}
+
+.wx-bolt {
+    position: absolute;
+    top: 22px;
+    left: 16px;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 12px solid #ffeb3b;
+    animation: wx-flash 2.5s steps(1) infinite;
+}
+
+.wx-fog {
+    position: absolute;
+    left: 3px;
+    top: 27px;
+    width: 32px;
+    height: 3px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.8);
+    animation: wx-drift 3s ease-in-out infinite alternate;
+}
+
+.wx-fog--2 { top: 32px; left: 6px; animation-delay: 1s; }
+
+@keyframes wx-spin { to { transform: rotate(360deg); } }
+@keyframes wx-sun-pulse { 50% { transform: scale(1.08); } }
+@keyframes wx-drift { from { transform: translateX(-2px); } to { transform: translateX(3px); } }
+@keyframes wx-fall {
+    from { transform: translateY(0); opacity: 1; }
+    to { transform: translateY(12px); opacity: 0; }
+}
+@keyframes wx-flash {
+    0%, 70%, 80%, 100% { opacity: 0; }
+    72%, 78% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wx-scene *,
+    .wx-scene *::before { animation: none !important; }
+}
+
+/* ===== RELÓGIO + CLIMA (item do HUD) ===== */
+.resource-item.clock-weather {
+    gap: 0.45rem;
+    padding: 0.15em 0.7em 0.15em 0.15em;
+    cursor: pointer;
+}
+
+.clock-weather .weather-card {
+    height: 38px;
+    min-width: 0;
+    padding: 0 0.55rem 0 0.1rem;
+    border-width: 2px;
+    box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.25);
+    gap: 0.1rem;
+    pointer-events: none; /* o clique é do item inteiro */
+}
+
+.clock-weather .weather-card--empty {
+    padding: 0 0.5rem;
+}
+
+.clock-weather .wx-scene {
+    transform: scale(0.85);
+}
+
+.clock-weather .weather-temp {
+    font-size: 1.15rem;
+}
+
+.clock-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.05;
+}
+
+.clock-time {
+    font-size: 1.15rem;
+}
+
+.clock-date {
+    font-size: 0.72rem;
+    opacity: 0.85;
+}
+
+/* ===== POPUP DO CLIMA ===== */
+.weather-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 15000;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.weather-modal-card {
+    position: relative;
+    width: min(440px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 1.2rem;
+    background: linear-gradient(180deg, #2D3561, #1A1F3A);
+    border: 5px solid #000;
+    border-radius: 22px;
+    box-shadow: 0 8px 0 #000;
+    color: #fff;
+}
+
+.weather-modal-card h3 {
+    font-family: 'Lilita One', cursive;
+    font-size: 1.4rem;
+    margin: 0 2rem 0.8rem 0;
+}
+
+.weather-modal-close {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.7rem;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 3px solid #000;
+    background: var(--cartoon-red);
+    color: #fff;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.weather-now {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    border: 3px solid #000;
+    border-radius: 18px;
+    background: linear-gradient(160deg, #4fc3f7, #0288d1);
+}
+
+.weather-now .wx-scene {
+    transform: scale(1.8);
+    margin: 0.6rem 1rem 0.6rem 0.6rem;
+}
+
+.weather-now-main {
+    display: flex;
+    flex-direction: column;
+}
+
+.weather-now-temp {
+    font-family: 'Lilita One', cursive;
+    font-size: 2.6rem;
+    line-height: 1;
+    text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
+}
+
+.weather-now-label {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.weather-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+    margin: 0.8rem 0;
+    font-size: 0.9rem;
+}
+
+.weather-stats span {
+    padding: 0.4rem 0.6rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.weather-forecast-title {
+    font-family: 'Lilita One', cursive;
+    margin: 0.4rem 0;
+}
+
+.weather-forecast {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.4rem;
+}
+
+.weather-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.5rem 0.2rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.weather-day-name { font-weight: 700; text-transform: capitalize; }
+.weather-day-icon { font-size: 1.5rem; }
+.weather-day-rain { color: #b3e5fc; }
+
+.weather-tip {
+    margin-top: 0.8rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 12px;
+    background: rgba(0, 212, 255, 0.15);
+    border: 2px solid var(--cartoon-blue);
+    font-size: 0.95rem;
+}
+
+.weather-retry {
+    margin-top: 0.8rem;
+}
+
+/* ===== PAUSA LEVE (popup aberto) ===== */
+#soft-pause-badge {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 900;
+    padding: 0.35rem 0.9rem;
+    border: 3px solid #000;
+    border-radius: 50px;
+    background: var(--cartoon-yellow);
+    color: #000;
+    font-weight: 800;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 768px) {
+    .player-hud {
+        gap: 0.3rem;
+    }
+
+    .player-chip {
+        max-width: 90px;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .player-chip-icon {
+        display: none;
+    }
+
+    .weather-card {
+        height: 36px;
+        min-width: 72px;
+    }
+
+    .weather-card .wx-scene {
+        transform: scale(0.8);
+    }
+
+    .weather-temp {
+        font-size: 1rem;
+    }
+
+    #soft-pause-badge {
+        top: 70px;
+        font-size: 0.8rem;
+    }
+
+    .profile-form-container .menu-header h1 {
+        font-size: 2rem;
+    }
+
+    .weather-forecast {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .weather-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== MISSÕES SIMPLIFICADAS (ui/MissionUI.js) ===== */
+.mission-interface.simple {
+    gap: 0.6rem;
+    overflow-y: auto;
+    color: #fff;
+    padding-right: 4px;
+}
+
+.mission-interface.simple .mission-header h3 {
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+.mission-interface.simple .close-btn {
+    font-size: 1rem;
+    padding: 4px 10px;
+}
+
+.mission-intro {
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.mission-section-title {
+    margin: 0.4rem 0 0;
+    font-family: 'Lilita One', cursive;
+    font-size: 1.1rem;
+    color: var(--cartoon-yellow);
+}
+
+.mission-empty {
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.mission-card.simple {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.8rem;
+    border: 3px solid #000;
+    border-radius: 16px;
+    background: linear-gradient(145deg, #3b4a8a, #26305e);
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.mission-card.simple:hover {
+    transform: translateY(-2px);
+    outline: 3px solid var(--cartoon-blue);
+}
+
+.mission-card.simple.urgent {
+    border-color: var(--cartoon-red);
+}
+
+.mission-card-top {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mission-card-top .mission-icon {
+    font-size: 1.6rem;
+}
+
+.mission-card-title {
+    margin: 0;
+    font-family: 'Lilita One', cursive;
+    font-size: 1.15rem;
+    line-height: 1.15;
+}
+
+.mission-urgent-tag,
+.mission-status-tag {
+    margin-left: auto;
+    padding: 0.1rem 0.5rem;
+    border-radius: 50px;
+    background: var(--cartoon-red);
+    font-size: 0.75rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.mission-status-tag {
+    align-self: flex-start;
+    margin-left: 0;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.mission-goals {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.mission-goal {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.25);
+    font-size: 0.9rem;
+}
+
+.goal-check {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    border: 2px solid #fff;
+    border-radius: 6px;
+    font-weight: 900;
+    font-size: 0.85rem;
+}
+
+.mission-goal.done .goal-check {
+    background: var(--cartoon-green);
+    border-color: var(--cartoon-green);
+    color: #000;
+}
+
+.mission-goal.done .goal-text {
+    text-decoration: line-through;
+    opacity: 0.75;
+}
+
+.goal-count {
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+/* Meta "Construir X": leva ao prédio na aba de construções (MissionUI.goToBuildGoal) */
+.mission-goal.goal-link {
+    cursor: pointer;
+    border: 2px dashed rgba(255, 215, 0, 0.6);
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.mission-goal.goal-link:hover,
+.mission-goal.goal-link:focus-visible {
+    background: rgba(255, 215, 0, 0.18);
+    transform: translateX(2px);
+    outline: none;
+}
+
+.goal-go {
+    flex: none;
+    padding: 0.05rem 0.4rem;
+    border-radius: 50px;
+    background: var(--cartoon-yellow);
+    color: #000;
+    font-size: 0.75rem;
+}
+
+.building-item.goal-highlight {
+    animation: goal-highlight 0.8s ease-in-out 4;
+    outline: 4px solid var(--cartoon-yellow);
+    outline-offset: 2px;
+}
+
+@keyframes goal-highlight {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.9); }
+    50% { box-shadow: 0 0 18px 6px rgba(255, 215, 0, 0.9); }
+}
+
+.mission-progress-simple {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mission-progress-simple .progress-bar {
+    flex: 1;
+    height: 12px;
+    border: 2px solid #000;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+.mission-progress-simple .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cartoon-green), var(--cartoon-blue));
+    transition: width 0.4s ease;
+}
+
+.mission-progress-simple .progress-text {
+    font-weight: 800;
+    font-size: 0.85rem;
+    min-width: 2.5em;
+    text-align: right;
+}
+
+.mission-rewards-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.reward-chip {
+    padding: 0.15rem 0.55rem;
+    border: 2px solid #000;
+    border-radius: 50px;
+    background: var(--cartoon-yellow);
+    color: #000;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.mission-card.simple .mission-actions {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: flex-end;
+}
+
+.mission-card.simple .mission-btn {
+    padding: 0.35rem 0.8rem;
+    border: 3px solid #000;
+    border-radius: 12px;
+    background: var(--cartoon-blue);
+    color: #000;
+    font-weight: 800;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.mission-card.simple .mission-btn.choice {
+    background: var(--cartoon-pink);
+}
+
+.mission-mini-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.mission-mini {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    padding: 0.4rem 0.6rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.07);
+    font-size: 0.9rem;
+}
+
+.mission-mini-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.mission-mini-text small {
+    opacity: 0.7;
+    font-size: 0.78rem;
+}
+
+.mission-done-list summary,
+.mission-tips summary {
+    cursor: pointer;
+    padding: 0.4rem 0;
+    font-weight: 800;
+    color: var(--cartoon-green);
+}
+
+/* Detalhes da missão */
+.mission-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mission-interface .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.9rem;
+    border: 3px solid #000;
+    border-radius: 12px;
+    background: linear-gradient(145deg, var(--cartoon-yellow), var(--cartoon-orange));
+    color: #000;
+    font-family: 'Lilita One', cursive;
+    font-size: 1rem;
+    box-shadow: 0 4px 0 #000;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mission-interface .back-btn:hover {
+    transform: translateY(-2px);
+}
+
+.mission-interface .back-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #000;
+}
+
+.mission-interface .mission-details-title {
+    margin: 0;
+    color: #fff;
+    letter-spacing: 0;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
+    font-family: 'Lilita One', cursive;
+    font-size: 1.35rem;
+    text-align: left;
+}
+
+/* Peso normal: o <h3>/<h4> e os textos pequenos em negrito (Lilita One sintetizada em bold) ficavam difíceis de ler */
+.mission-interface .mission-details-title,
+.mission-interface .mission-section-title,
+.mission-interface .mission-card-title,
+.mission-interface .mission-goal,
+.mission-interface .goal-count,
+.mission-interface .reward-chip,
+.mission-interface .mission-status-tag,
+.mission-interface .mission-urgent-tag,
+.mission-interface .progress-text,
+.mission-interface .mission-fact,
+.mission-interface .mission-fact b,
+.mission-interface summary,
+.mission-interface .mission-tips li,
+.mission-interface .mission-mini,
+.mission-interface .mission-details-text {
+    font-weight: normal;
+}
+
+.mission-details-text {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.mission-fact {
+    padding: 0.6rem 0.8rem;
+    border: 2px solid var(--cartoon-blue);
+    border-radius: 12px;
+    background: rgba(0, 212, 255, 0.12);
+    font-size: 0.9rem;
+}
+
+.mission-tips ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.9rem;
+}
+
+/* ===== AULA RÁPIDA NOS PAINÉIS DE RECURSO (TutorialSystem.startTopic) ===== */
+.topic-lesson-btn {
+    display: block;
+    width: 100%;
+    margin-top: 0.8rem;
+    padding: 0.6rem 0.8rem;
+    border: 3px solid #000;
+    border-radius: 14px;
+    background: linear-gradient(145deg, var(--cartoon-green), #00c46a);
+    color: #000;
+    font-family: 'Lilita One', cursive;
+    font-size: 1.05rem;
+    box-shadow: 0 4px 0 #000;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.topic-lesson-btn:hover {
+    transform: translateY(-2px);
+}
+
+.topic-lesson-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #000;
+}
+
+/* ===== PERFIL + PAUSA (#pause-overlay, UIManager.renderPlayerPanel) ===== */
+.player-chip {
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.player-chip:hover,
+.player-chip:focus-visible {
+    transform: scale(1.06);
+    outline: 3px solid #fff;
+}
+
+.overlay-content.player-panel {
+    width: min(520px, calc(100vw - 32px));
+    max-width: none;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    padding: 1.5rem;
+    text-align: left;
+}
+
+.player-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.player-panel-head .profile-avatar {
+    width: 64px;
+    height: 64px;
+    font-size: 2rem;
+    background: linear-gradient(145deg, var(--cartoon-purple), #7c3aed);
+    color: #fff;
+}
+
+.player-panel-who {
+    min-width: 0;
+}
+
+.overlay-content.player-panel h2 {
+    margin: 0;
+    font-size: 2rem;
+    line-height: 1.1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#pp-meta {
+    margin: 0.2rem 0 0;
+    font-weight: 700;
+    color: #3d2a00;
+}
+
+.pp-paused {
+    margin-left: auto;
+    align-self: flex-start;
+    padding: 0.2rem 0.6rem;
+    border: 2px solid #000;
+    border-radius: 50px;
+    background: #fff;
+    color: #000;
+    text-shadow: none;
+    font-weight: 800;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.pp-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+}
+
+.pp-stat {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 0.5rem;
+    align-items: center;
+    padding: 0.5rem 0.7rem;
+    border: 3px solid #000;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.pp-stat-icon {
+    grid-row: span 2;
+    font-size: 1.5rem;
+}
+
+.pp-stat-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #3d2a00;
+}
+
+.pp-stat-value {
+    font-size: 1.1rem;
+    color: #000;
+}
+
+.pp-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+
+.pp-buttons #btn-resume {
+    grid-column: 1 / -1;
+}
+
+.pp-buttons .overlay-btn {
+    width: 100%;
+    margin: 0;
+    padding: 0.8rem 1rem;
+    font-size: 1.05rem;
+}
+
+@media (max-width: 480px) {
+    .pp-stats,
+    .pp-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    .overlay-content.player-panel h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* ===== FUNDO DO PAINEL LATERAL (#details-panel / .hud-right) =====
+   Antes: quase preto no mobile. Agora o tema da água: azul profundo com bolhas suaves. */
+.hud-right {
+    background:
+        radial-gradient(circle at 85% 12%, rgba(0, 212, 255, 0.18) 0 38px, transparent 39px),
+        radial-gradient(circle at 12% 78%, rgba(0, 212, 255, 0.12) 0 54px, transparent 55px),
+        radial-gradient(circle at 70% 92%, rgba(0, 255, 136, 0.1) 0 26px, transparent 27px),
+        linear-gradient(180deg, #23306a 0%, #16376b 55%, #0f4c6b 100%);
+}
+
+@media (max-width: 768px) {
+    .hud-right {
+        background:
+            radial-gradient(circle at 85% 10%, rgba(0, 212, 255, 0.18) 0 38px, transparent 39px),
+            radial-gradient(circle at 12% 70%, rgba(0, 212, 255, 0.12) 0 54px, transparent 55px),
+            linear-gradient(180deg, rgba(35, 48, 106, 0.97) 0%, rgba(15, 76, 107, 0.97) 100%);
+    }
+}
+
+/* ===== CANCELAR CONSTRUÇÃO (GameManager.showCancelBuildButton) ===== */
+.cancel-build-btn {
+    position: absolute;
+    left: 50%;
+    bottom: 160px;
+    transform: translateX(-50%);
+    z-index: 950;
+    padding: 0.6rem 1.3rem;
+    border: 4px solid #000;
+    border-radius: 50px;
+    background: linear-gradient(145deg, #FF6B9D, var(--cartoon-red));
+    color: #fff;
+    font-family: 'Lilita One', cursive;
+    font-size: 1.1rem;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
+    box-shadow: 0 6px 0 #000;
+    cursor: pointer;
+    animation: cancel-build-in 0.25s ease-out;
+}
+
+.cancel-build-btn small {
+    opacity: 0.8;
+    font-size: 0.8rem;
+}
+
+.cancel-build-btn:hover {
+    transform: translateX(-50%) translateY(-2px) scale(1.04);
+}
+
+.cancel-build-btn:active {
+    transform: translateX(-50%) translateY(4px);
+    box-shadow: 0 2px 0 #000;
+}
+
+@keyframes cancel-build-in {
+    from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+}
+
+@media (max-width: 768px) {
+    .cancel-build-btn {
+        top: 70px;
+        bottom: auto;
+        font-size: 0.95rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* ===== BOTÕES DE FECHAR =====
+   ui.css esconde todo .close-btn (display: none !important). Aqui voltam só os que o aluno precisa:
+   a ajuda (aberta pela tela de pausa) e o painel de missões. */
+#close-controls-modal,
+.mission-interface .close-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
+#close-controls-modal {
+    font-size: 1.2rem;
+    padding: 4px 12px;
+}
+
+/* ===== QUIZ: REVISÃO DOS ERROS (ui/StudyBookUI.js renderQuizReview) ===== */
+.quiz-review {
+    margin-top: 1rem;
+    text-align: left;
+}
+
+.quiz-review h4 {
+    margin: 0 0 0.5rem;
+    color: #8a1c27;
+    font-family: 'Lilita One', cursive;
+    font-weight: normal;
+    font-size: 1.2rem;
+}
+
+.quiz-review ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.quiz-review-item {
+    padding: 0.7rem 0.9rem;
+    border: 2px solid rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    background: #fff;
+    color: #333;
+    font-family: sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.35;
+}
+
+.quiz-review-item p {
+    margin: 0.15rem 0;
+}
+
+.quiz-review-question {
+    font-weight: 700;
+}
+
+.quiz-review-answer.wrong { color: #c62828; }
+.quiz-review-answer.right { color: #2e7d32; font-weight: 700; }
+
+.quiz-review-why {
+    margin-top: 0.35rem !important;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    background: #fff8e1;
+}
+
+.quiz-review-ask {
+    margin: 1rem 0 0;
+    color: #333;
+    font-size: 1.05rem;
+}
+
+.quiz-review-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.quiz-review-actions .retry-btn,
+.quiz-review-actions .continue-btn {
+    margin-top: 0.75rem;
+}
+
+.continue-btn {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #43a047, #2e7d32);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #1b5e20;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.continue-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 9px 0 #1b5e20;
+}
+
+/* Vento forte no modal de clima (WeatherUI.renderWeatherModal) */
+.weather-wind-alert {
+    margin: 0.5rem 0 0;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid #000;
+    border-radius: 12px;
+    background: #e0f2f1;
+    color: #004d40;
+    font-family: sans-serif;
+    font-size: 0.9rem;
+}
+
+.weather-day-wind {
+    font-size: 0.75rem;
+    opacity: 0.85;
+}
+
+/* Painéis de recurso: prédios iguais agrupados (ResourcePanels.renderBuildingGroups) */
+.building-count {
+    display: inline-block;
+    min-width: 1.8em;
+    padding: 0 0.3rem;
+    border-radius: 50px;
+    background: var(--cartoon-yellow);
+    color: #000;
+    font-weight: normal;
+    text-align: center;
+}
+
+/* ===== BÚSSOLA (ui/CompassUI.js): gira com a câmera; seta azul = para onde o vento sopra ===== */
+.compass {
+    position: absolute;
+    right: 16px;
+    bottom: 156px; /* acima da barra de baixo (140px) */
+    z-index: 40;
+    width: 84px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    pointer-events: auto;
+    cursor: pointer;
+    filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.35));
+}
+
+.compass:focus-visible { outline: 3px solid var(--cartoon-yellow); outline-offset: 4px; border-radius: 50%; }
+
+.compass-dial {
+    width: 84px;
+    height: 84px;
+    overflow: visible;
+}
+
+.compass-face {
+    fill: var(--cartoon-yellow);
+    stroke: #1a1a1a;
+    stroke-width: 4;
+}
+
+.compass-inner {
+    fill: #fffbe6;
+    stroke: #1a1a1a;
+    stroke-width: 2;
+}
+
+.compass-rose-settle {
+    animation: compass-settle 3.2s ease-in-out infinite; /* agulha "assentando", como bússola de verdade */
+    transform-origin: 50px 50px;
+    transform-box: view-box;
+}
+
+.compass-north { fill: var(--cartoon-red); stroke: #1a1a1a; stroke-width: 2; stroke-linejoin: round; }
+.compass-south { fill: #e8e8e8; stroke: #1a1a1a; stroke-width: 2; stroke-linejoin: round; }
+
+.compass-letter {
+    fill: #1a1a1a;
+    font-family: 'Lilita One', cursive;
+    font-size: 11px;
+    text-anchor: middle;
+}
+
+.compass-letter--n { fill: var(--cartoon-red); font-size: 14px; }
+
+.compass-wind-arrow {
+    fill: var(--cartoon-blue);
+    stroke: #0b3c5d;
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.85;
+    animation: compass-wind-pulse 1.6s ease-in-out infinite;
+}
+
+.compass--windy .compass-wind-arrow { animation-duration: 0.6s; stroke: #c62828; }
+
+.compass-pin { fill: #1a1a1a; }
+
+.compass-wind-label {
+    padding: 0 0.45rem;
+    border: 2px solid #1a1a1a;
+    border-radius: 50px;
+    background: #fff;
+    color: #1a1a1a;
+    font-size: 0.7rem;
+    white-space: nowrap;
+}
+
+.compass--windy .compass-wind-label { background: #ffe0e0; }
+
+@keyframes compass-settle {
+    0%, 100% { rotate: 0deg; }
+    25% { rotate: 2.5deg; }
+    75% { rotate: -2.5deg; }
+}
+
+@keyframes compass-wind-pulse {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .compass-rose-settle, .compass-wind-arrow { animation: none; }
+}
+
+@media (max-width: 768px) {
+    .compass { right: 12px; bottom: 158px; width: 60px; } /* acima do 🎯 de missões (bottom 95px + 50px) */
+    .compass-dial { width: 60px; height: 60px; }
+}

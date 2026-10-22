@@ -438,23 +438,7 @@ class SettingsManager {
                 }
             }
 
-            // Dificuldade
-            if (window.gameManager && window.gameManager.eventSystem) {
-                let difficultyMultiplier = 1.0;
-                switch (this.settings.gameplay.difficulty) {
-                    case 'easy':
-                        difficultyMultiplier = 0.7;
-                        break;
-                    case 'normal':
-                        difficultyMultiplier = 1.0;
-                        break;
-                    case 'hard':
-                        difficultyMultiplier = 1.5;
-                        break;
-                }
-                window.gameManager.eventSystem.setDifficulty(difficultyMultiplier);
-                log(`🎮 Dificuldade definida: ${this.settings.gameplay.difficulty} (${difficultyMultiplier}x)`);
-            }
+            // Dificuldade: interna, definida pela idade do perfil (GameManager.applyPlayerProfile)
 
             // Dicas do tutorial - removida dependência do TutorialManager obsoleto
             // As configurações de tutorial agora são gerenciadas pelo TutorialSystem

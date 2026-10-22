@@ -12,6 +12,8 @@ class GameManager {
         this.timeScale = 1;
         this.gameTime = 0;
         this.lastUpdateTime = 0;
+        // Pausa "leve" por motivo (popup, painel, diálogo): congela a simulação sem abrir o menu de pausa
+        this.pauseReasons = new Set();
 
         // Sistemas principais
         this.gridManager = null;
@@ -60,8 +62,9 @@ class GameManager {
         this.currentTerrainSelection = null;
         this.lastHoveredBuilding = null;
 
-        // Auto-save
+        // Auto-save (só depois do tutorial inicial: canSave)
         this.autoSaveTimer = 0;
+        this.tutorialDone = false;
         this.initialized = false;
 
         // Estado de renderização e recuperação de erros
@@ -134,6 +137,7 @@ class GameManager {
             // Inicializar sistemas de jogo
             this.gridManager = new GridManager(this.scene);
             this.resourceManager = new ResourceManager(this);
+            this.treeSystem = new TreeSystem(this);
             this.buildingSystem = new BuildingSystem(this.scene, this.gridManager, this);
             this.cityLifeSystem = new CityLifeSystem(this.scene, this.gridManager, this.buildingSystem);
             this.uiManager = new UIManager(this);
@@ -378,16 +382,8 @@ class GameManager {
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
 
-            // Convert screen coordinates to world coordinates using optimized ray casting
-            const terrainFilter = (mesh) => {
-                return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
-            };
-            const pickInfo = this.performRayCast(x, y, terrainFilter, 'terrain');
-
-            if (pickInfo.hit && pickInfo.pickedPoint) {
-                // Convert world position to grid coordinates
-                const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
-
+            const gridPos = this.pickTerrainCell(x, y);
+            if (gridPos) {
                 // Update building preview at this position
                 this.buildingSystem.updatePreview(gridPos.x, gridPos.z);
             }
@@ -425,16 +421,8 @@ class GameManager {
     }
 
     handleBuildingPlacement(x, y) {
-        // Convert screen coordinates to world coordinates using optimized ray casting
-        const terrainFilter = (mesh) => {
-            return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
-        };
-        const pickInfo = this.performRayCast(x, y, terrainFilter, 'terrain');
-
-        if (pickInfo.hit && pickInfo.pickedPoint) {
-            // Convert world position to grid coordinates
-            const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
-
+        const gridPos = this.pickTerrainCell(x, y);
+        if (gridPos) {
             // Attempt to place building at this position
             const success = this.buildingSystem.confirmPlacement(gridPos.x, gridPos.z);
 
@@ -452,10 +440,39 @@ class GameManager {
         }
     }
 
+    /**
+     * Pick para clique/toque: prédios primeiro, depois o resto. Plaquinhas de obra concluída, rótulos e
+     * árvores/decorações na frente não roubam o clique de um prédio (o chão "terrain" também roubava, quando
+     * subia acima dos blocos — corrigido em GridManager.applyElevationToTerrain).
+     */
+    pickBuildingFirst(x, y) {
+        const building = this.scene.pick(x, y, m => m.isPickable && m.isEnabled() && m.isVisible && !!m.metadata?.buildingId);
+        return building?.hit ? building : this.scene.pick(x, y);
+    }
+
+    /**
+     * Célula do terreno sob o ponto da tela (posicionamento, prévia, informações do terreno). Acerta o que
+     * aparece: os blocos voxel (topo e lados), a água e, nas frestas entre blocos, o chão "terrain" (sempre
+     * abaixo do topo dos blocos — GridManager.getTerrainFloorHeight). O ponto num bloco recua um pouco contra a
+     * normal, para o clique no lado de uma colina cair na célula dela e não na vizinha.
+     */
+    pickTerrainCell(x, y) {
+        const isTerrainMesh = (mesh) => mesh.isEnabled() && (mesh.name === 'terrain' || mesh.metadata?.terrain === true || mesh.name.startsWith('water_'));
+        const pickInfo = this.performRayCast(x, y, isTerrainMesh, 'terrain');
+        if (!pickInfo?.hit || !pickInfo.pickedPoint) return null;
+
+        let point = pickInfo.pickedPoint;
+        if (pickInfo.pickedMesh?.name !== 'terrain') {
+            const normal = pickInfo.getNormal(true, false);
+            if (normal) point = point.subtract(normal.scale(0.05));
+        }
+        return this.gridManager.worldToGrid(point);
+    }
+
     handleBuildingSelection(x, y) {
         // ===== UNIFIED BUILDING SELECTION (same approach as mobile/touch) =====
-        // Use scene.pick without filter, then check mesh metadata for buildingId
-        const pickInfo = this.scene.pick(x, y);
+        // Prédios primeiro (pickBuildingFirst), depois confere metadata.buildingId
+        const pickInfo = this.pickBuildingFirst(x, y);
 
         if (pickInfo && pickInfo.hit && pickInfo.pickedMesh) {
             // Primary: check metadata.buildingId (set by BuildingSystem on all buildings)
@@ -536,16 +553,8 @@ class GameManager {
     }
 
     handleTerrainClick(x, y) {
-        // Ray cast to terrain using optimized ray casting
-        const terrainFilter = (mesh) => {
-            return mesh.name === 'terrain' || mesh.name.includes('ground') || mesh.name.includes('grid');
-        };
-        const pickInfo = this.performRayCast(x, y, terrainFilter, 'terrain');
-
-        if (pickInfo.hit && pickInfo.pickedPoint) {
-            // Convert world position to grid coordinates
-            const gridPos = this.gridManager.worldToGrid(pickInfo.pickedPoint);
-
+        const gridPos = this.pickTerrainCell(x, y);
+        if (gridPos) {
             // Get terrain type
             const terrainType = this.gridManager.getTerrainType(gridPos.x, gridPos.z);
 
@@ -660,8 +669,9 @@ class GameManager {
     }
 
     update(deltaTime) {
-        // Durante o tutorial nada simula; só o HUD se atualiza (o tour mostra valores reais)
-        if (this.gameState === 'tutorial') {
+        // Durante o tutorial ou com popup aberto nada simula; só o HUD se atualiza (o tour mostra valores reais).
+        // gameTime também para: é o relógio das obras e missões.
+        if (this.gameState === 'tutorial' || (this.gameState === 'playing' && this.pauseReasons.size > 0)) {
             this.uiManager?.update(deltaTime);
             return;
         }
@@ -793,6 +803,16 @@ class GameManager {
 
             ambientLight.intensity = intensity;
         }
+
+        // Clima real por cima do dia/noite: nublado escurece, sol forte esquenta a luz, chuva acinzenta o céu
+        this.weatherEffects?.applyToLighting(ambientLight);
+    }
+
+    // Clima real da cidade do jogador no mundo 3D (WeatherEffects). current = WeatherService.parse(...).current
+    applyWeather(current) {
+        if (!this.scene) return;
+        if (!this.weatherEffects) this.weatherEffects = new WeatherEffects(this);
+        this.weatherEffects.apply(current);
     }
 
     getDayNightState() {
@@ -846,11 +866,13 @@ class GameManager {
         this.gameState = 'playing';
         this.gameTime = 0;
         this.timeScale = 1;
+        this.tutorialDone = false; // TutorialSystem.complete() libera o save
 
         this.initializeGameClock();
 
         if (this.resourceManager) {
             this.resourceManager.reset();
+            this.treeSystem?.applyEffects({ fresh: true }); // o reset zera a redução de poluição das árvores
         } else {
             console.error('❌ ResourceManager não inicializado');
             return false;
@@ -875,7 +897,13 @@ class GameManager {
             return false;
         }
 
+        this.applyPlayerProfile();
         this.handleResize();
+
+        // Começa olhando para a área inicial (≥ 80% construível, GridManager.findStartArea): é ali que o
+        // tutorial pede a Prefeitura, e o centro do mapa pode cair em colina ou água
+        const start = this.gridManager.startArea;
+        if (start) this.centerCameraOnCityHall(start.x, start.z);
 
         // Tutorial obrigatório: o jogo fica congelado ('tutorial') até ele terminar,
         // e é nele que o jogador constrói a prefeitura.
@@ -986,6 +1014,12 @@ class GameManager {
     }
 
     // ===== CONTROLES DE JOGO =====
+    /**
+     * Continua um jogo salvo (conteúdo de getSaveData, já validado por SaveSystem.load).
+     * Ordem importa: recursos → árvores → prédios (as árvores salvas não incluem as derrubadas pelas obras,
+     * e os recursos salvos já contêm o efeito de prédios, árvores e eventos: nada é reaplicado).
+     * O tutorial inicial não roda de novo. Se algo der errado, avisa e começa um jogo novo.
+     */
     loadGame(saveData) {
         log('📁 Carregando jogo...');
 
@@ -995,55 +1029,85 @@ class GameManager {
         }
 
         try {
-            this.gameTime = saveData.gameTime || 0;
-            this.timeScale = saveData.timeScale || 1;
+            this.gameState = 'loading'; // nada simula enquanto o mundo é remontado
+            this.pauseReasons.clear();
+            if (this.buildMode) this.exitBuildMode();
+            this.deselectBuilding?.();
 
-            if (saveData.gameStartTime) {
-                this.gameStartTime = new Date(saveData.gameStartTime);
-            }
+            // Tempo e relógio do jogo
+            this.gameTime = Number(saveData.gameTime) || 0;
+            this.timeScale = [1, 2, 3].includes(saveData.timeScale) ? saveData.timeScale : 1;
             if (saveData.gameClockTime) {
+                this.gameStartTime = new Date(saveData.gameStartTime || saveData.gameClockTime);
                 this.gameClockTime = new Date(saveData.gameClockTime);
+                const hours = this.gameClockTime.getHours() + this.gameClockTime.getMinutes() / 60;
+                this.dayNightCycle = hours / 24;
+            } else {
+                this.initializeGameClock();
             }
-            if (saveData.dayNightCycle !== undefined) {
-                this.dayNightCycle = saveData.dayNightCycle;
-                this.updateDayNightLighting();
-            }
+            this.lastDayNightState = null; // sem aviso de "amanheceu" ao carregar
+            this.updateDayNightLighting();
 
-            if (this.resourceManager && saveData.resources) {
-                this.resourceManager.loadData(saveData.resources);
-            }
+            // Perfil (dificuldade, clima, HUD) sem mexer no orçamento: ele vem do save
+            this.applyPlayerProfile({ resetBudget: false });
 
-            if (this.buildingSystem && saveData.buildings) {
-                this.buildingSystem.loadData(saveData.buildings);
+            this.resourceManager.loadData(saveData.resources);
+            this.treeSystem?.loadData(saveData.trees);
+            this.buildingSystem.loadData(saveData.buildings);
+            this.questSystem.loadData(saveData.quests);
+            this.eventSystem?.loadData(saveData.events);
+            this.studySystem?.loadSaveData(saveData.studies);
+            this.loanManager?.loadData(saveData.loans);
+            if (this.tutorialSystem && saveData.tutorial) {
+                this.tutorialSystem.lessonsDeferred = !!saveData.tutorial.lessonsDeferred;
             }
+            this.tutorialDone = true;
 
-            if (this.questSystem && saveData.quests) {
-                this.questSystem.loadData(saveData.quests);
-            }
-
-            if (this.studySystem && saveData.studies) {
-                this.studySystem.loadSaveData(saveData.studies);
-            }
-
-            if (this.buildingSystem) {
-                this.buildingSystem.rebuildFromData();
-            }
-
-            if (this.uiManager) {
-                this.uiManager.initialize();
-            }
-
-            this.gameState = 'playing';
+            this.uiManager?.initialize();
+            this.uiManager?.updateTimeScaleUI(this.timeScale);
+            this.questSystem.updateQuestUI();
             this.handleResize();
+            this.restoreCamera(saveData.camera);
 
+            this.autoSaveTimer = 0;
+            this.gameState = 'playing';
             log('✅ Jogo carregado');
             return true;
 
         } catch (error) {
-            console.error('❌ Erro ao carregar:', error);
-            gameAlert('Save com problema', 'Não foi possível carregar o jogo salvo. Começando um jogo novo.', 'error');
+            console.warn('⚠️ Erro ao carregar o jogo salvo, começando um novo:', error);
+            gameAlert('Jogo salvo com problema', 'Não foi possível abrir o jogo salvo. Vamos começar um jogo novo.', 'warning');
+            this.buildingSystem?.clearAllBuildings();
             return this.startNewGame();
         }
+    }
+
+    // Câmera: alvo (x, z), zoom e rotação, pelos alvos do SimCityCameraControls (o loop dele converge a câmera)
+    getCameraSaveData() {
+        const controls = this.cameraControls;
+        if (!controls?.targetPosition) return null;
+        return {
+            x: controls.targetPosition.x,
+            z: controls.targetPosition.z,
+            radius: controls.targetRadius,
+            alpha: controls.targetAlpha
+        };
+    }
+
+    restoreCamera(camera) {
+        const controls = this.cameraControls;
+        const valid = camera && [camera.x, camera.z, camera.radius, camera.alpha].every(Number.isFinite);
+        if (!valid || !controls) {
+            const start = this.gridManager.startArea;
+            if (start) this.centerCameraOnCityHall(start.x, start.z);
+            return;
+        }
+        controls.centerCameraOn(camera.x, camera.z, camera.radius);
+        controls.targetAlpha = camera.alpha;
+        // Já na posição: sem "voo" da câmera ao abrir o jogo
+        this.camera.setTarget(new BABYLON.Vector3(camera.x, 0, camera.z));
+        this.camera.radius = camera.radius;
+        this.camera.alpha = camera.alpha;
     }
 
     pauseGame() {
@@ -1060,6 +1124,36 @@ class GameManager {
             this.uiManager.hidePauseOverlay();
             log('▶️ Jogo retomado');
         }
+    }
+
+    // Perfil do jogador (PlayerProfile): a idade define a dificuldade (DIFFICULTY_BY_AGE) e a cidade, o clima do HUD
+    // resetBudget: false ao continuar um jogo salvo (o orçamento vem do save)
+    applyPlayerProfile({ resetBudget = true } = {}) {
+        const profile = PlayerProfile.getActive();
+        this.difficulty = PlayerProfile.difficultyForAge(profile ? profile.age : 12);
+        this.eventSystem?.setDifficulty(this.difficulty.events);
+        if (resetBudget) {
+            const budget = this.resourceManager.resources.budget;
+            budget.current = Math.round(GAME_CONFIG.resources.initialBudget * this.difficulty.budget);
+        }
+        log(`👤 Jogador: ${PlayerProfile.displayName()} · dificuldade ${this.difficulty.label}`);
+        this.uiManager?.initPlayerHud();
+    }
+
+    // Pausa leve: popups informativos chamam holdPause ao abrir e releasePause ao fechar.
+    // O jogo volta sozinho quando o último motivo sai; não mexe no gameState nem no menu de pausa.
+    holdPause(reason) {
+        this.pauseReasons.add(reason);
+        this.uiManager?.updateSoftPauseBadge?.();
+    }
+
+    releasePause(reason) {
+        this.pauseReasons.delete(reason);
+        this.uiManager?.updateSoftPauseBadge?.();
+    }
+
+    isSimulationRunning() {
+        return this.gameState === 'playing' && this.pauseReasons.size === 0;
     }
 
     setTimeScale(scale) {
@@ -1118,7 +1212,23 @@ class GameManager {
         this.canvas.style.cursor = 'crosshair';
         this.startBuildingPreview(buildingType);
         this.createPlacementOverlay(buildingType);
+        this.showCancelBuildButton(buildingType);
         log(`🏗️ Modo construção: ${buildingType}`);
+    }
+
+    // Botão visível para sair do modo construção (o mesmo que Esc e botão direito)
+    showCancelBuildButton(buildingType) {
+        let button = document.getElementById('cancel-build-btn');
+        if (!button) {
+            button = document.createElement('button');
+            button.id = 'cancel-build-btn';
+            button.className = 'cancel-build-btn';
+            button.addEventListener('click', () => this.exitBuildMode());
+            document.getElementById('game-screen')?.appendChild(button);
+        }
+        const name = this.buildingSystem?.buildingTypes.get(buildingType)?.name || 'construção';
+        const keyHint = this.uiManager?.isMobile ? '' : ' <small>(Esc)</small>';
+        button.innerHTML = `✖ Cancelar ${name}${keyHint}`;
     }
 
     exitBuildMode() {
@@ -1133,10 +1243,13 @@ class GameManager {
 
         // Clear placement overlay
         this.clearPlacementOverlay();
+        document.getElementById('cancel-build-btn')?.remove();
 
         // Clear UI selection and feedback
         this.uiManager.clearBuildingSelection();
         this.uiManager.hideBuildingPlacementFeedback();
+        // Sem obra, o painel "construction" não está mais aberto (senão o Esc nunca chega à pausa)
+        if (this.uiManager.uiState.currentOpenPanel === 'construction') this.uiManager.updatePanelState(null);
 
         log('🏗️ Modo construção desativado');
     }
@@ -1166,6 +1279,35 @@ class GameManager {
                 this.pauseGame();
             }
         });
+
+        // Esc cancela a construção de qualquer lugar (o teclado do Babylon só recebe a tecla com o canvas em foco,
+        // e depois de escolher o prédio no menu o foco fica no botão)
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && this.buildMode) {
+                this.exitBuildMode();
+                log('🚫 Construção cancelada pelo Esc');
+            }
+        });
+
+        // Esc sem nada aberto nem selecionado abre a pausa (tela de perfil); na pausa, volta ao jogo.
+        // Em captura, antes dos outros Esc: decide pelo estado de antes de eles fecharem algo
+        // (senão o Esc que fecha um painel também pausaria)
+        window.addEventListener('keydown', event => {
+            if (event.key !== 'Escape' || event.repeat) return;
+            if (this.gameState === 'paused') {
+                if (!this.uiManager?.isInfoPopupOpen()) this.resumeGame();
+            } else if (this.gameState === 'playing' && this.isIdleForEscPause()) {
+                this.pauseGame();
+            }
+        }, true);
+    }
+
+    /** Nada para o Esc fechar ou cancelar: sem construção, seleção, painel, popup, tutorial ou gaveta do mobile. */
+    isIdleForEscPause() {
+        const ui = this.uiManager;
+        return !this.buildMode && !this.buildingSystem?.previewMode && !this.selectedBuilding &&
+            !this.tutorialSystem?.isActive && !ui?.uiState?.currentOpenPanel && !ui?.isInfoPopupOpen() &&
+            !document.querySelector('.hud-left.active, .hud-right.active');
     }
 
     handleResize() {
@@ -1191,35 +1333,50 @@ class GameManager {
     }
 
     // ===== SAVE/LOAD =====
-    autoSave() {
-        if (this.gameState === 'playing') {
-            const saveData = this.getSaveData();
-            this.saveSystem.autoSave(saveData);
-            log('💾 Auto-save realizado');
-        }
+    // Um jogo salvo por perfil (SaveSystem). Só há o que salvar depois do tutorial inicial (antes dele a
+    // cidade nem tem prefeitura) e enquanto o jogo não acabou. Pausa, popup e aula aberta podem salvar:
+    // ao carregar, o jogo volta rodando.
+    canSave() {
+        return this.initialized && this.tutorialDone && !!PlayerProfile.getActive() &&
+            ['playing', 'paused', 'tutorial'].includes(this.gameState);
     }
 
+    autoSave() {
+        if (!this.canSave()) return false;
+        return this.saveSystem.save(this.getSaveData(), PlayerProfile.getActive().id, { kind: 'auto' });
+    }
+
+    /** Botão "💾 Salvar jogo" da tela de pausa. */
     saveGame() {
-        const saveData = this.getSaveData();
-        this.saveSystem.saveGame(saveData);
-        this.uiManager.showNotification('Jogo salvo com sucesso!', 'success');
-        log('💾 Jogo salvo manualmente');
+        if (!this.canSave()) {
+            this.uiManager?.showNotification('Termine o tutorial para poder salvar o jogo.', 'warning');
+            return false;
+        }
+        const ok = this.saveSystem.save(this.getSaveData(), PlayerProfile.getActive().id, { kind: 'manual' });
+        this.uiManager?.showNotification(ok
+            ? `💾 Jogo salvo! Na próxima vez, escolha ${PlayerProfile.personalize('{nome}')} e "Continuar".`
+            : '⚠️ Não foi possível salvar o jogo (o navegador está sem espaço ou bloqueou o salvamento).',
+        ok ? 'success' : 'error');
+        if (ok) this.autoSaveTimer = 0;
+        log(`💾 Jogo salvo manualmente: ${ok}`);
+        return ok;
     }
 
     getSaveData() {
         return {
-            version: '1.0.0',
-            timestamp: Date.now(),
             gameTime: this.gameTime,
             timeScale: this.timeScale,
-            gameStartTime: this.gameStartTime?.getTime(),
-            gameClockTime: this.gameClockTime?.getTime(),
-            dayNightCycle: this.dayNightCycle,
+            gameStartTime: this.gameStartTime?.getTime() ?? null,
+            gameClockTime: this.gameClockTime?.getTime() ?? null,
             resources: this.resourceManager.getSaveData(),
+            trees: this.treeSystem ? this.treeSystem.getSaveData() : { cells: [], initialCount: 0 },
             buildings: this.buildingSystem.getSaveData(),
             quests: this.questSystem.getSaveData(),
             events: this.eventSystem.getSaveData(),
-            studies: this.studySystem.getSaveData()
+            studies: this.studySystem.getSaveData(),
+            loans: this.loanManager?.saveData() ?? null,
+            tutorial: { lessonsDeferred: !!this.tutorialSystem?.lessonsDeferred },
+            camera: this.getCameraSaveData()
         };
     }
 

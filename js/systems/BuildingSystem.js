@@ -253,32 +253,26 @@ class BuildingSystem {
      * @returns {BABYLON.Mesh} - Mesh combinado visível
      */
     mergeVisibleMeshes(meshes, name, material = null) {
-        // ✅ FIX: Aplicar material temporário ANTES do merge para preservar visibilidade
-        if (material) {
-            meshes.forEach(mesh => {
-                if (mesh && mesh.material === undefined) {
-                    mesh.material = material;
-                }
-            });
-        } else {
-            // Criar material padrão se nenhum for fornecido
-            const defaultMaterial = new BABYLON.StandardMaterial(`temp_${name}`, this.scene);
-            defaultMaterial.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-            defaultMaterial.backFaceCulling = false;
-            meshes.forEach(mesh => {
-                if (mesh && !mesh.material) {
-                    mesh.material = defaultMaterial;
-                }
-            });
-        }
-        
+        // Peças sem material recebem o informado ou o cinza padrão ANTES do merge (sem material o merge some).
+        // O cinza padrão é um só: createBuildingMesh o reconhece e troca pelo material do prédio.
+        const fill = material || this.getDefaultMergeMaterial();
+        meshes.forEach(mesh => {
+            if (mesh && !mesh.material) {
+                mesh.material = fill;
+            }
+        });
+
+        // MultiMaterial só quando as peças têm materiais diferentes: com material único o mesh fica com um
+        // StandardMaterial, que os efeitos por prédio (falta de energia, destaque) conseguem alterar
+        const multiMaterial = new Set(meshes.filter(Boolean).map(mesh => mesh.material)).size > 1;
+
         const merged = BABYLON.Mesh.MergeMeshes(
             meshes,
             true,  // disposeSource - libera memória dos originais
             false, // allow32BitsIndices
             undefined, // meshSubclass
             false, // subdivideWithSubMeshes
-            true   // multiMultiMaterials - preserva materiais
+            multiMaterial // multiMultiMaterials - preserva materiais diferentes
         );
         
         if (merged) {
@@ -289,7 +283,18 @@ class BuildingSystem {
         
         return merged;
     }
-    
+
+    getDefaultMergeMaterial() {
+        let material = this.materials.get('mergeDefault');
+        if (!material) {
+            material = new BABYLON.StandardMaterial('mergeDefault', this.scene);
+            material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+            material.backFaceCulling = false;
+            this.materials.set('mergeDefault', material);
+        }
+        return material;
+    }
+
     // ===== CONSTRUÇÃO =====
     canPlaceBuilding(gridX, gridZ, buildingTypeId) {
         const buildingType = this.buildingTypes.get(buildingTypeId);
@@ -437,7 +442,7 @@ class BuildingSystem {
             connections: new Set(), // Para infraestrutura conectável
             underConstruction: true,
             constructionDuration: constructionTime,
-            constructionStartTime: Date.now()
+            constructionStartTime: this.simNow()
         };
 
         // ===== FIX: Update mesh metadata with buildingId for touch interaction =====
@@ -471,13 +476,16 @@ class BuildingSystem {
             this.gridManager.clearDecorationsInArea(gridX, gridZ, buildingType.size);
         }
 
+        // Árvores no terreno caem com a obra (piora poluição e satisfação: TreeSystem)
+        this.gameManager?.treeSystem?.fellTreesInArea(gridX, gridZ, buildingType.size);
+
         // Verificar e criar conexões para infraestrutura
         if (this.isInfrastructureBuilding(buildingType)) {
             this.updateInfrastructureConnections(buildingData);
         }
 
-        // Aplicar efeitos nos recursos
-        this.applyBuildingEffects(buildingData, true);
+        // Efeitos nos recursos só quando a obra termina (completeConstruction): aplicar aqui também
+        // contava manutenção, poluição e consumo em dobro
 
         // ===== RESEARCH CENTERS AND UNIVERSITIES: Deduct actual cost with bonuses =====
         if (window.gameManager && gameManager.resourceManager) {
@@ -508,11 +516,16 @@ class BuildingSystem {
         // Mostrar notificação de sucesso
         this.showNotification(`${buildingType.name} construído com sucesso!`, 'success');
 
-        // Verificar balanço de energia após construção
+        // Avisar já na colocação se faltará energia quando a obra terminar (o consumo só entra na conclusão)
         if (buildingType.powerConsumption && window.gameManager && gameManager.resourceManager) {
             const electricity = gameManager.resourceManager.getElectricity();
-            if (electricity.consumption > electricity.generation) {
-                this.showEnergyShortageNotification(electricity);
+            const consumption = electricity.consumption + buildingType.powerConsumption;
+            if (consumption > electricity.generation) {
+                this.showEnergyShortageNotification({
+                    ...electricity,
+                    consumption,
+                    efficiency: electricity.generation / consumption
+                });
             }
         }
 
@@ -540,6 +553,13 @@ class BuildingSystem {
         // Remover conexões de infraestrutura
         if (this.isInfrastructureBuilding(building.config)) {
             this.removeInfrastructureConnections(building);
+        }
+
+        // Obra em andamento: barra/plaquinha de progresso, partículas e material de obra saem junto
+        // (antes ficavam no mapa, e a obra "terminava" depois para um prédio que já não existia)
+        if (building.underConstruction || this.constructionQueue.has(buildingId)) {
+            this.constructionQueue.delete(buildingId);
+            this.removeConstructionVisuals(building);
         }
 
         // Remover label do edifício e outros elementos visuais
@@ -666,8 +686,11 @@ class BuildingSystem {
                 this.dynamicTextures.delete(shadowTexKey);
             }
 
-            // Remover mesh principal
+            // Remover mesh principal (e o material próprio dele; a textura é compartilhada e fica)
             if (mesh && !mesh.isDisposed()) {
+                if (mesh.material?.metadata?.perBuilding) {
+                    mesh.material.dispose(false, false);
+                }
                 mesh.dispose();
             }
 
@@ -679,7 +702,11 @@ class BuildingSystem {
     // ===== EFEITOS NOS RECURSOS =====
     applyBuildingEffects(building, add = true) {
         const config = building.config;
-        
+
+        // Cada prédio soma uma vez e tira uma vez: remover uma obra (sem efeitos ainda) não desconta nada
+        if (!!building.effectsApplied === add) return;
+        building.effectsApplied = add;
+
         // Aplicar efeitos se ResourceManager estiver disponível
         if (window.gameManager && gameManager.resourceManager) {
             const resourceManager = gameManager.resourceManager;
@@ -987,7 +1014,7 @@ class BuildingSystem {
 
         for (const [buildingId, buildingData] of constructionsToUpdate) {
             try {
-                const elapsed = Date.now() - buildingData.constructionStartTime;
+                const elapsed = this.simNow() - buildingData.constructionStartTime;
                 const progress = Math.min(1, elapsed / buildingData.constructionDuration);
 
                 // Atualizar indicador de progresso
@@ -1055,7 +1082,7 @@ class BuildingSystem {
 
     // ===== VALIDAÇÃO E RECUPERAÇÃO =====
     validateConstructionState() {
-        const currentTime = Date.now();
+        const currentTime = this.simNow();
 
         // Verificar se há construções órfãs ou travadas
         if (this.constructionQueue.size === 0) {
@@ -1076,6 +1103,12 @@ class BuildingSystem {
         log('🔄 Forçando reset do estado de construção...');
         this.constructionQueue.clear();
         this.showNotification('Sistema de construção reiniciado', 'info');
+    }
+
+    // Relógio das obras = tempo de jogo (gameTime): a obra não avança com o jogo pausado,
+    // no tutorial ou com popup aberto (com Date.now() ela "pulava" ao voltar)
+    simNow() {
+        return this.gameManager?.gameTime || 0;
     }
 
     // ===== SISTEMA DE COOLDOWN =====
@@ -1160,12 +1193,12 @@ class BuildingSystem {
         // Só reaplicar efeitos se a eficiência realmente mudou
         if (Math.abs(building.efficiency - efficiency) > 0.01) {
             const oldEfficiency = building.efficiency;
-            building.efficiency = efficiency;
 
-            // Reaplicar efeitos com nova eficiência de forma otimizada
+            // Reaplicar efeitos: tira com a eficiência antiga (a que foi somada), soma com a nova
             try {
-                this.applyBuildingEffects(building, false); // Remover efeitos antigos
-                this.applyBuildingEffects(building, true);  // Aplicar novos efeitos
+                this.applyBuildingEffects(building, false);
+                building.efficiency = efficiency;
+                this.applyBuildingEffects(building, true);
 
                 log(`🔧 Eficiência atualizada para ${building.config.name}: ${oldEfficiency.toFixed(2)} -> ${efficiency.toFixed(2)}`);
             } catch (error) {
@@ -1323,36 +1356,134 @@ class BuildingSystem {
     getAllBuildings() { return Array.from(this.buildings.values()); }
     
     // ===== SAVE/LOAD =====
-    getSaveData() {
-        const buildingsData = [];
-        this.buildings.forEach(building => {
-            buildingsData.push({
-                id: building.id,
-                type: building.type,
-                gridX: building.gridX,
-                gridZ: building.gridZ,
-                constructionTime: building.constructionTime,
-                active: building.active,
-                efficiency: building.efficiency
-            });
-        });
-        
+    /** O que vai para o save de um prédio (puro: testável sem Babylon). Obra em andamento conta pelo gameTime. */
+    static serializeBuilding(building) {
         return {
-            buildings: buildingsData,
-            buildingCounter: this.buildingCounter
+            id: building.id,
+            type: building.type,
+            gridX: building.gridX,
+            gridZ: building.gridZ,
+            active: !!building.active,
+            efficiency: Number.isFinite(building.efficiency) ? building.efficiency : 0,
+            underConstruction: !!building.underConstruction,
+            constructionStartTime: building.constructionStartTime || 0,
+            constructionDuration: building.constructionDuration || 0,
+            constructionTime: building.constructionTime || null,
+            isRented: !!building.isRented,
+            // Se os efeitos estão nos totais salvos do ResourceManager. Quase sempre = pronto, mas um prédio
+            // danificado por evento (EventSystem.disableRandomBuilding) fica pronto e sem efeitos
+            effectsApplied: !!building.effectsApplied
         };
     }
-    
-    loadData(data) {
-        if (data && data.buildings) {
-            this.buildingCounter = data.buildingCounter || 0;
-            // Buildings serão recriados pelo rebuildFromData
-        }
+
+    getSaveData() {
+        return {
+            buildings: Array.from(this.buildings.values(), building => BuildingSystem.serializeBuilding(building)),
+            buildingCounter: this.buildingCounter,
+            // Desbloqueios por recompensa de missão (QuestSystem.applyQuestRewards marca o tipo)
+            unlockedTypes: Array.from(this.buildingTypes.values()).filter(type => type.unlocked).map(type => type.id)
+        };
     }
-    
-    rebuildFromData() {
-        // TODO: Implementar reconstrução de edifícios a partir de dados salvos
-        log('🔄 Reconstruindo edifícios...');
+
+    /**
+     * Recria os prédios do save, na ordem em que foram construídos (as conexões de infraestrutura dependem dela).
+     * Não cobra, não derruba árvores, não mexe nos recursos (os totais salvos já têm os efeitos), não toca som,
+     * não mostra notificação/celebração nem chama os ganchos do tutorial. Obra em andamento continua de onde parou.
+     */
+    loadData(data) {
+        if (!data || !Array.isArray(data.buildings)) return;
+        this.clearAllBuildings();
+        (data.unlockedTypes || []).forEach(id => {
+            const type = this.buildingTypes.get(id);
+            if (type) type.unlocked = true;
+        });
+
+        let restored = 0;
+        let highestId = -1;
+        for (const saved of data.buildings) {
+            try {
+                if (this.restoreBuilding(saved)) restored++;
+            } catch (error) {
+                console.warn(`⚠️ Prédio do save ignorado (${saved?.type} em ${saved?.gridX},${saved?.gridZ}):`, error);
+            }
+            const number = Number(String(saved?.id || '').replace('building_', ''));
+            if (Number.isInteger(number)) highestId = Math.max(highestId, number);
+        }
+        this.buildingCounter = Math.max(data.buildingCounter || 0, highestId + 1);
+        this.buildingCooldown.active = false;
+        this.lastEfficiencyUpdate = 0;
+        this.gameManager?.cityLifeSystem?.onRoadBuilt();
+        log(`🔄 ${restored}/${data.buildings.length} prédios restaurados do save`);
+    }
+
+    restoreBuilding(saved) {
+        const buildingType = this.buildingTypes.get(saved?.type);
+        if (!buildingType) {
+            console.warn(`⚠️ Tipo de prédio desconhecido no save: ${saved?.type}`);
+            return null;
+        }
+        const { gridX, gridZ } = saved;
+        const size = buildingType.size || 1;
+        if (!Number.isInteger(gridX) || !Number.isInteger(gridZ) || !this.isPlacementWithinBounds(gridX, gridZ, size)) {
+            console.warn(`⚠️ Posição inválida no save: ${saved.type} em (${gridX}, ${gridZ})`);
+            return null;
+        }
+        if (this.buildings.has(saved.id)) return null;
+
+        const mesh = this.createBuildingMesh(gridX, gridZ, buildingType);
+        if (!mesh) return null;
+
+        const buildingData = {
+            id: saved.id,
+            type: saved.type,
+            gridX,
+            gridZ,
+            mesh,
+            config: buildingType,
+            constructionTime: saved.constructionTime || Date.now(),
+            active: !!saved.active,
+            efficiency: Number.isFinite(saved.efficiency) ? saved.efficiency : (saved.underConstruction ? 0 : 1),
+            connections: new Set(),
+            underConstruction: !!saved.underConstruction,
+            constructionDuration: saved.constructionDuration || this.calculateConstructionTime(buildingType.cost),
+            constructionStartTime: saved.constructionStartTime || 0,
+            isRented: !!saved.isRented,
+            // Os totais salvos do ResourceManager já contam esses efeitos: marca sem somar de novo.
+            // Save antigo (sem o campo): prédio pronto = com efeitos
+            effectsApplied: typeof saved.effectsApplied === 'boolean' ? saved.effectsApplied : !saved.underConstruction
+        };
+        mesh.metadata = { ...(mesh.metadata || {}), building: true, buildingId: saved.id, buildingType: buildingType.id, gridX, gridZ };
+
+        this.buildings.set(saved.id, buildingData);
+        this.gridManager.occupyArea(gridX, gridZ, size);
+        this.gridManager.clearDecorationsInArea?.(gridX, gridZ, size);
+        if (this.isInfrastructureBuilding(buildingType)) this.updateInfrastructureConnections(buildingData);
+
+        if (buildingData.underConstruction) {
+            this.startConstruction(buildingData); // barra de progresso + visual de obra; o progresso sai do gameTime salvo
+        } else if (buildingData.type === 'city_hall') {
+            this.gameManager?.addCityHallLightingEffects(buildingData);
+        }
+        if (buildingData.isRented) this.updateRentalIcon(buildingData);
+        return buildingData;
+    }
+
+    /** Tira todos os prédios do mapa (antes de carregar um save por cima de um jogo aberto). */
+    clearAllBuildings() {
+        for (const building of Array.from(this.buildings.values())) {
+            if (building.underConstruction) this.removeConstructionVisuals(building);
+            const effects = building.lightingEffects;
+            if (effects) {
+                effects.particles?.dispose();
+                effects.light?.dispose();
+                building.lightingEffects = null;
+            }
+            this.removeBuilding(building.id);
+        }
+        this.constructionQueue.clear();
+        // Descarte já, não nos próximos frames: o nome do mesh é por tipo (não por prédio), e a fila
+        // apagaria a sombra do prédio recriado com o mesmo nome logo em seguida (performDisposal busca pelo nome)
+        while (this.disposalQueue.length) this.performDisposal(this.disposalQueue.shift());
     }
 
     // ===== SISTEMA DE PREVIEW =====
@@ -1397,27 +1528,30 @@ class BuildingSystem {
         if (!buildingType) return;
 
         try {
-            // Criar mesh especializado ou básico
-            this.previewMesh = this.createSpecializedMesh(buildingType);
+            // O mesmo modelo .glb do prédio final (BuildingModels.js); sem ele pronto, o procedural antigo
+            // é a reserva e upgradePreviewToModel troca o fantasma quando o arquivo terminar de carregar
+            this.previewMesh = this.createBuildingModelPreviewMesh(buildingType);
 
             if (!this.previewMesh) {
-                this.previewMesh = this.createBasicMesh(buildingType);
+                this.previewMesh = this.createSpecializedMesh(buildingType) || this.createBasicMesh(buildingType);
+                if (this.previewMesh) {
+                    // Material próprio da prévia: o de createBuildingMaterial é cacheado por tipo, e a cor
+                    // de válido/inválido abaixo não pode vazar para ele
+                    const material = new BABYLON.StandardMaterial(`previewMat_${buildingTypeId}_${this.previewMesh.uniqueId}`, this.scene);
+                    material.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+                    material.metadata = { preview: true };
+                    this.previewMesh.material = material;
+                    this.previewMesh.metadata = { preview: true, buildingType: buildingTypeId };
+                }
             }
 
             if (this.previewMesh) {
-                // Tornar semi-transparente
-                const material = this.createBuildingMaterial(buildingType);
-                material.alpha = 0.6;
-                this.previewMesh.material = material;
+                this.previewMesh.material.alpha = 0.6;
 
-                // Desabilitar colisões
+                // Desabilitar colisões e clique (o fantasma não pode ser escolhido no lugar do prédio/terreno)
                 this.previewMesh.checkCollisions = false;
-
-                // Metadados
-                this.previewMesh.metadata = {
-                    preview: true,
-                    buildingType: buildingTypeId
-                };
+                this.previewMesh.isPickable = false;
+                this.previewMesh.getChildMeshes().forEach(child => { child.isPickable = false; });
 
                 // Inicialmente invisível
                 this.previewMesh.setEnabled(false);
@@ -1492,14 +1626,21 @@ class BuildingSystem {
 
         // Atualizar posição dos meshes
         if (this.previewMesh) {
-            const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
-            this.previewMesh.position = worldPos;
-            this.previewMesh.position.y += this.previewMesh.getBoundingInfo().boundingBox.extendSize.y;
+            // Mesmo lugar do prédio final: centro da área (multi-célula) e base no bloco mais alto dela
+            this.applyStandardizedPositioning(this.previewMesh, gridX, gridZ, buildingType);
+            const terrainHeight = this.getBuildingAreaTerrainHeight(gridX, gridZ, buildingType.size || 1);
+            this.previewMesh.position.y = terrainHeight + Math.abs(this.previewMesh.getBoundingInfo().boundingBox.minimum.y) + 0.02;
             this.previewMesh.setEnabled(true);
 
             // ===== ENHANCED PREVIEW MESH VISUAL FEEDBACK =====
             if (this.previewMesh.material) {
-                if (isValid) {
+                // Laranja: pode construir, mas derruba árvores (TreeSystem)
+                const treesHere = this.gameManager?.treeSystem?.countTreesInArea(gridX, gridZ, buildingType.size) || 0;
+                if (isValid && treesHere) {
+                    this.previewMesh.material.diffuseColor = new BABYLON.Color3(1, 0.6, 0);
+                    this.previewMesh.material.alpha = 0.7;
+                    this.previewMesh.material.emissiveColor = new BABYLON.Color3(0.25, 0.12, 0);
+                } else if (isValid) {
                     this.previewMesh.material.diffuseColor = new BABYLON.Color3(0, 1, 0); // Verde para válido
                     this.previewMesh.material.alpha = 0.6;
                     this.previewMesh.material.emissiveColor = new BABYLON.Color3(0, 0.2, 0);
@@ -1570,11 +1711,18 @@ class BuildingSystem {
         }
     }
 
+    /** Descarta o fantasma da prévia e o material próprio dele (a textura é do modelo-base: fica). */
+    disposePreviewMesh() {
+        const mesh = this.previewMesh;
+        this.previewMesh = null;
+        if (!mesh) return;
+        const materials = [mesh, ...mesh.getChildMeshes()].map(m => m.material).filter(m => m?.metadata?.preview);
+        mesh.dispose(false, false);
+        new Set(materials).forEach(m => m.dispose(false, false));
+    }
+
     clearPreview() {
-        if (this.previewMesh) {
-            this.previewMesh.dispose();
-            this.previewMesh = null;
-        }
+        this.disposePreviewMesh();
 
         if (this.previewMarker) {
             this.previewMarker.dispose();
@@ -2098,12 +2246,11 @@ class BuildingSystem {
             return false;
         }
 
-        // Alternar status de aluguel
+        // Tira os efeitos com o status antigo (o que foi somado), alterna e soma com o novo
+        const hadEffects = !!building.effectsApplied;
+        this.applyBuildingEffects(building, false);
         building.isRented = !building.isRented;
-
-        // Reaplicar efeitos com novo status
-        this.applyBuildingEffects(building, false); // Remover efeitos antigos
-        this.applyBuildingEffects(building, true);  // Aplicar novos efeitos
+        if (hadEffects) this.applyBuildingEffects(building, true);
 
         // Atualizar ícone de aluguel
         this.updateRentalIcon(building);
@@ -2211,11 +2358,17 @@ class BuildingSystem {
         if (!buildingData.mesh || !buildingData.mesh.material) return;
 
         try {
-            // Armazenar material original
-            buildingData.originalMaterial = buildingData.mesh.material.clone();
+            // Armazenar material original (o próprio, não uma cópia: é ele que volta no fim da obra)
+            const originalMaterial = buildingData.originalMaterial || buildingData.mesh.material;
+            buildingData.originalMaterial = originalMaterial;
 
-            // Criar material de construção
-            const constructionMaterial = buildingData.mesh.material.clone();
+            // Criar material de construção. clone() também clona as texturas, e a cópia de uma
+            // DynamicTexture nunca fica pronta (o mesh não é desenhado) — reaproveita a original.
+            const constructionMaterial = originalMaterial.clone(`construction_${buildingData.id}`);
+            if (constructionMaterial.diffuseTexture && constructionMaterial.diffuseTexture !== originalMaterial.diffuseTexture) {
+                constructionMaterial.diffuseTexture.dispose();
+                constructionMaterial.diffuseTexture = originalMaterial.diffuseTexture;
+            }
             constructionMaterial.alpha = 0.7;
             constructionMaterial.emissiveColor = new BABYLON.Color3(0.2, 0.2, 0.8);
             constructionMaterial.wireframe = false;
@@ -2315,20 +2468,27 @@ class BuildingSystem {
                     return;
                 }
 
-                const elapsed = Date.now() - buildingData.constructionStartTime;
+                const elapsed = this.simNow() - buildingData.constructionStartTime;
                 const progress = Math.min(1, elapsed / buildingData.constructionDuration);
 
-                // Interpolação suave da escala
-                const currentScale = BABYLON.Vector3.Lerp(
-                    buildingData.constructionAnimationData.startScale,
-                    buildingData.constructionAnimationData.targetScale,
-                    this.easeOutCubic(progress)
-                );
+                // Modelo .glb (base em y = 0): só a altura cresce, sem girar — a planta já bate com o
+                // prédio final. Procedural (centrado): crescimento por igual com o giro de antes.
+                // Vale a cada quadro porque o mesh pode virar modelo no meio da obra (replaceBuildingMesh).
+                if (buildingData.mesh.metadata?.fromModel) {
+                    buildingData.mesh.scaling = this.getConstructionScaling(buildingData.mesh, this.easeOutCubic(progress),
+                        buildingData.constructionAnimationData.targetScale);
+                    buildingData.mesh.rotation.copyFrom(buildingData.constructionAnimationData.originalRotation);
+                } else {
+                    // Interpolação suave da escala
+                    buildingData.mesh.scaling = BABYLON.Vector3.Lerp(
+                        buildingData.constructionAnimationData.startScale,
+                        buildingData.constructionAnimationData.targetScale,
+                        this.easeOutCubic(progress)
+                    );
 
-                buildingData.mesh.scaling = currentScale;
-
-                // Rotação sutil durante construção
-                buildingData.mesh.rotation.y += rotationSpeed;
+                    // Rotação sutil durante construção
+                    buildingData.mesh.rotation.y += rotationSpeed;
+                }
 
                 // ✅ FIX: Ao finalizar, restaurar rotação original
                 if (progress >= 1) {
@@ -2347,6 +2507,17 @@ class BuildingSystem {
         } catch (error) {
             console.warn('⚠️ Erro ao iniciar animação de construção:', error);
         }
+    }
+
+    /**
+     * Escala da obra para o progresso t (0..1, já suavizado). Modelo .glb: planta inteira e altura
+     * de 15% a 100% (cresce a partir da base); procedural: de 0.3 a 1 por igual (centrado em y).
+     */
+    getConstructionScaling(mesh, t, target = new BABYLON.Vector3(1, 1, 1)) {
+        if (mesh?.metadata?.fromModel) {
+            return new BABYLON.Vector3(target.x, target.y * (0.15 + 0.85 * t), target.z);
+        }
+        return BABYLON.Vector3.Lerp(new BABYLON.Vector3(0.3, 0.3, 0.3), target, t);
     }
 
     easeOutCubic(t) {

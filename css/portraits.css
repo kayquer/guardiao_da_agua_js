@@ -1,0 +1,165 @@
+/* ===== RETRATOS ANIMADOS (js/ui/AnimatedPortrait.js) =====
+   SVG em camadas: base + recortes que aparecem com a classe .on (olhos, bocas, expressões).
+   O tamanho vem de quem usa (tutorial, livro de aulas, fim de jogo); aqui só o comportamento. */
+.aportrait {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    flex: none;
+}
+
+.aportrait-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #f6f1e1; /* mesmo creme do fundo das ilustrações */
+}
+
+.aportrait--face .aportrait-svg { border-radius: 50%; }
+
+.aportrait-layer { opacity: 0; }
+.aportrait-layer.on { opacity: 1; }
+/* Expressão troca devagar; olhos e boca trocam na hora (piscar e falar) */
+.aportrait-layer[data-layer="worried"],
+.aportrait-layer[data-layer="happy"] { transition: opacity 0.45s ease; }
+
+/* Respira (sobe e alarga um pouco) e balança, a partir dos ombros */
+.aportrait-breath {
+    transform-box: view-box;
+    transform-origin: 50% 100%;
+    animation: aportrait-breathe 4.2s ease-in-out infinite;
+}
+
+.aportrait-sway {
+    transform-box: view-box;
+    transform-origin: 50% 100%;
+    animation: aportrait-sway 7.5s ease-in-out infinite;
+}
+
+.aportrait[data-character="marcia"] .aportrait-breath { animation-duration: 3.8s; animation-delay: -1.2s; }
+.aportrait[data-character="jose"] .aportrait-breath { animation-duration: 4.8s; animation-delay: -2.1s; }
+
+@keyframes aportrait-breathe {
+    0%, 100% { transform: scale(1, 1); }
+    50% { transform: scale(1.01, 1.016); }
+}
+
+@keyframes aportrait-sway {
+    0%, 100% { transform: rotate(0deg); }
+    30% { transform: rotate(-0.6deg); }
+    70% { transform: rotate(0.45deg); }
+}
+
+/* Entrada em cena: sobe com um pulinho */
+.aportrait--enter { animation: aportrait-enter 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+
+@keyframes aportrait-enter {
+    from { transform: translateY(18px) scale(0.92); opacity: 0.2; }
+    to { transform: none; opacity: 1; }
+}
+
+/* Balão de fala curto (entrada do personagem) */
+.aportrait-balloon {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% - 14px);
+    z-index: 2;
+    width: max-content;
+    max-width: 220px;
+    transform: translateX(-50%);
+    padding: 0.4rem 0.75rem;
+    border: 3px solid #1a1a1a;
+    border-radius: 14px;
+    background: #fff;
+    color: #1a1a1a;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 500;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    text-align: center;
+    box-shadow: 0 4px 0 #1a1a1a;
+    pointer-events: none;
+}
+
+.aportrait-balloon::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    width: 14px;
+    height: 14px;
+    border-right: 3px solid #1a1a1a;
+    border-bottom: 3px solid #1a1a1a;
+    background: #fff;
+    transform: translate(-50%, -6px) rotate(45deg);
+}
+
+.aportrait-balloon[hidden] { display: none; }
+.aportrait-balloon.pop { animation: aportrait-pop 0.35s cubic-bezier(0.2, 1.6, 0.4, 1); }
+
+@keyframes aportrait-pop {
+    from { transform: translateX(-50%) scale(0.8); opacity: 0.3; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .aportrait-breath,
+    .aportrait-sway,
+    .aportrait--enter,
+    .aportrait-balloon.pop { animation: none; }
+}
+
+/* ===== ONDE APARECEM ===== */
+
+/* Tutorial, modo história: busto num quadro de papel (o retrato ocupa a página esquerda do livro) */
+#tutorial-container .tut-portrait .aportrait {
+    width: min(240px, 100%);
+    border: 4px solid #3b2a12;
+    border-radius: 18px;
+    box-shadow: 0 6px 0 #3b2a12;
+}
+
+/* Modo coach e celular: só o rosto, em círculo */
+#tutorial-container .tut-portrait .aportrait--face {
+    width: 80px;
+    border-width: 3px;
+    border-radius: 50%;
+    box-shadow: none;
+}
+
+#tutorial-container .tut-portrait .aportrait--face .aportrait-balloon { display: none; }
+
+@media (max-width: 768px) {
+    #tutorial-container .tut-portrait .aportrait--face { width: 64px; }
+    #tutorial-container.tutorial--coach .tut-portrait .aportrait--face { width: 48px; }
+}
+
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    #tutorial-container.tutorial--story .tut-portrait .aportrait--face { width: 96px; }
+}
+
+/* Livro de aulas: busto na página esquerda; no celular, rosto em círculo na faixa de cima */
+.book-left .aportrait {
+    width: min(220px, 80%);
+    margin: 0.4rem auto 0.2rem;
+    border: 4px solid #3b2a12;
+    border-radius: 18px;
+    box-shadow: 0 5px 0 #3b2a12;
+}
+
+.book-left .aportrait--face {
+    width: 56px;
+    margin: 0;
+    border-width: 3px;
+    border-radius: 50%;
+    box-shadow: none;
+}
+
+/* Fim de jogo: a Cláudia preocupada (o círculo é o #gameover-portrait de css/tutorial.css) */
+#gameover-portrait { overflow: hidden; }
+
+#gameover-portrait .aportrait {
+    width: 100%;
+    height: 100%;
+}

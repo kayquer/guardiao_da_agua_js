@@ -10,7 +10,11 @@ const ROOT = path.join(__dirname, '..');
 const INDEX = path.join(ROOT, 'index.html');
 const ASSET = /(<(?:script|link)\b[^>]*?\b(?:src|href)=")((?:js|css)\/[^"?]+)(?:\?v=[^"]*)?(")/g;
 
-const hash = file => crypto.createHash('sha1').update(fs.readFileSync(path.join(ROOT, file))).digest('hex').slice(0, 8);
+// CRLF → LF antes do hash: no Windows (core.autocrlf) o checkout vem com CRLF e o hash
+// não bateria com o do CI (Linux, LF), que reprova o --check.
+const hash = file => crypto.createHash('sha1')
+    .update(fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/\r\n/g, '\n'))
+    .digest('hex').slice(0, 8);
 
 const html = fs.readFileSync(INDEX, 'utf8');
 const stale = [];

@@ -1,0 +1,623 @@
+{
+  "_readme": "Registro das imagens geradas por IA no jogo. Toda imagem nova segue o mesmo padrão: cena específica do lugar onde ela aparece (em inglês, no começo) + o estilo comum em 'style'. Personagens: edite a base com input_references para manter o rosto. Proporção 16:9 para fundos e figuras, 1:1 para retratos; quality medium; WebP com lado maior 1280 px (fundos, qualidade 68) ou 960 px (figuras, qualidade 74).",
+  "model": "openai/gpt-image-2.5-flare-20260908",
+  "quality": "medium",
+  "date": "2026-10-22",
+  "style": "A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+  "images": {
+    "assets/images/tutorial/bg-rio-boas-vindas.webp": {
+      "usedIn": "Tutorial: boas-vindas, aula 1 e recado final (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide cinematic landscape of a clean winding river in the Brazilian Atlantic Forest in golden morning light, lush riparian forest on both banks, a small sustainable town with red-tile roofs and discreet solar panels in the distance, clear turquoise water reflecting the sky, white egrets flying. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-ciclo-agua.webp": {
+      "usedIn": "Aula 2 - ciclo hidrologico (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide landscape of the water cycle in nature: the sun warming a lake, soft vapor rising, big white cumulus clouds over green hills, a curtain of rain falling on a distant mountain, a river flowing back into the lake, Brazilian countryside. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-bacia.webp": {
+      "usedIn": "Aula 2 - bacia hidrografica (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "High aerial wide view of a Brazilian river basin shaped like a giant green bowl: ridges of hills forming the rim, many small streams joining into one main river that winds toward the horizon, patches of forest and small farms, morning mist in the valleys. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-agua-para-todos.webp": {
+      "usedIn": "Aula 3 - recursos hidricos (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide view of a Brazilian river valley shared by many uses: a small town with a water treatment plant, irrigated vegetable fields, a small factory, a riverside park with families, all along the same blue river under a bright sky. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-centro-pesquisa.webp": {
+      "usedIn": "Aula 3 - centros de pesquisa (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide interior of a bright modern water research laboratory: benches with microscopes, racks of test tubes with clear, greenish and brownish water samples, potted plants, large windows showing a river and tropical forest outside. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-agricultura.webp": {
+      "usedIn": "Aula 3 - agricultura (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide rural Brazilian landscape: sugarcane fields and grazing cattle on rolling hills, a river protected by a wide strip of riparian forest between the fields and the water, contour farming lines, warm afternoon light. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-rio-pescador.webp": {
+      "usedIn": "Aula 4 - Jose e a mata ciliar (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide view of a calm Brazilian river at dawn with dense riparian forest on the banks, a small wooden fishing canoe tied to a tree root, a fishing net hanging to dry on a branch, fish visible in the clear water, soft mist over the surface. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-erosao.webp": {
+      "usedIn": "Aula 4 - erosao e assoreamento (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide river landscape showing erosion: on one bank the trees were cut and bare reddish soil collapses into a muddy brown river with a sandbank in the middle; on the opposite bank a healthy forest holds the soil; dramatic cloudy sky. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-coleta-rio.webp": {
+      "usedIn": "Aula 4 - Marcia e o esgoto (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide riverside scene of water-quality fieldwork: a field kit open on a rock with empty sample bottles, binoculars and rubber boots on the muddy bank, herons standing in the shallow water, and far away a town pipe darkening part of the river. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-agua-subterranea.webp": {
+      "usedIn": "Aula 5 - agua subterranea (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide cutaway landscape: green fields, a small farm and a well on the surface, and below the ground layers of soil, sand and rock holding a glowing blue aquifer of groundwater, a spring emerging on a hillside and feeding a stream. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-cidade-rio.webp": {
+      "usedIn": "Aula 5 - cidades e enchentes (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide view of a Brazilian city that respects its river: a green floodplain park with trees, wetlands and bike paths along the river, buildings set back from the banks, just after rain with puddles reflecting the sky. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-solucoes-verdes.webp": {
+      "usedIn": "Aula 6 - infraestrutura verde (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide view of a sustainable Brazilian neighborhood: buildings with green roofs and green walls, rain gardens along the sidewalks, permeable paving, many trees, teenagers riding bikes, a rainbow in the sky after the rain. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-jardins-flutuantes.webp": {
+      "usedIn": "Aula 6 - jardins flutuantes (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide view of a lake in a Brazilian city park with several floating garden islands covered in native plants and flowers, roots visible under the clear water, small fish among the roots, a heron and a frog on the leaves. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-causa-efeito.webp": {
+      "usedIn": "Final - causa e efeito (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide landscape of one river showing cause and effect: on the left a healthy stretch with forest and clear water full of fish, on the right a degraded stretch with a sewage pipe, trash and murky water; the river flows between both halves. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/tutorial/bg-caderno-campo.webp": {
+      "usedIn": "Final - dicas da Marcia (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide cozy field-station desk by a window overlooking a river and forest: an open field notebook with sketches of leaves and fish, water sample bottles, a magnifying glass, binoculars, colored pencils, warm afternoon light. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/gameover/bg-sem-agua.webp": {
+      "usedIn": "Fim de jogo - cidade sem agua (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide dramatic scene of a Brazilian city reservoir in a severe drought: cracked dry mud bed with a last small puddle, an exposed water intake pipe, dry yellow vegetation, an empty water tower and the city under a hot hazy orange sky; serious mood, suitable for teenagers. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/gameover/bg-poluicao.webp": {
+      "usedIn": "Fim de jogo - poluicao critica (fundo)",
+      "aspect": "16:9",
+      "size": [
+        1280,
+        720
+      ],
+      "prompt": "Wide dramatic scene of a heavily polluted river in a generic Brazilian industrial city (no famous landmarks): the whole river is dark brownish-grey with dirty foam, floating plastic bottles and trash, sewage pipes pouring black water, factory chimneys releasing smoke under a grey-green smoggy sky, withered plants on the banks, no clean water anywhere and no animals; serious mood, not gory, suitable for teenagers. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/guardiao-da-agua.webp": {
+      "usedIn": "Aula 1 - Boas-vindas (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Two Brazilian teenagers, a boy and a girl in casual clothes, kneeling by a clear stream and gently cupping water in their hands, a small town and green hills behind them, feeling of care and responsibility for water. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/hidrosfera.webp": {
+      "usedIn": "Aula 1 - Hidrosfera (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Panoramic educational illustration of the three states of water on Earth in one scene: a snowy glacier mountain (ice), rivers, a lake and the ocean (liquid), clouds and rising vapor (gas), and a cutaway of groundwater under the ground; a tortoise walking slowly by the lake while a quick rain shower falls. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/ciclo-da-agua.webp": {
+      "usedIn": "Aula 2 - Ciclo hidrologico (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Clear educational illustration of the water cycle without labels: the sun heating a river, curling vapor rising, clouds forming and growing heavy and dark, rain falling on green hills, water running down into the river and soaking into the ground, gentle curved arrows showing the loop. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/bacia-hidrografica.webp": {
+      "usedIn": "Aula 2 - Bacia hidrografica (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational illustration of a river basin seen from above at an angle like a giant bowl: a spring high in the hills, small tributaries joining the main river, the ridges as the rim of the bowl, the river mouth at the sea; a dirty discharge upstream tinting the water downstream. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/agua-para-todos.webp": {
+      "usedIn": "Aula 3 - Recursos hidricos (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of one river sharing its water with everyone in a Brazilian town: a child drinking from a home tap, a farm irrigating crops, a small factory and a fisherman, all connected to the same river by blue pipes and channels. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/laboratorio.webp": {
+      "usedIn": "Aula 3 - Centros de pesquisa (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Close-up of a water research lab bench: a microscope, a petri dish with tiny bacteria shapes, test tubes with clear, greenish and brown water samples, a thermometer in a beaker, gloved hands of a young scientist holding a sample. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/agricultura.webp": {
+      "usedIn": "Aula 3 - Agricultura (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of sugarcane fields and cattle pasture next to a river: on the left a protected strip of riparian forest keeps the river clean, on the right a tractor spraying pesticide drifting toward the water and cattle walking in the stream making it muddy. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/mata-ciliar.webp": {
+      "usedIn": "Aula 4 - Mata ciliar (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of riparian forest along a clear river: tree shade over the water, roots holding the riverbank, fruits and insects falling into the water, fish swimming in the cool shade, a kingfisher on a branch. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/erosao.webp": {
+      "usedIn": "Aula 4 - Erosao (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a deforested riverbank where rain washes reddish soil into the river, forming a sandbar and brown muddy water, a wooden canoe stranded on the sandbar, a few fish struggling in the murky water. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/esgoto-oxigenio.webp": {
+      "usedIn": "Aula 4 - Esgoto e oxigenio (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a sewage pipe discharging dark water into a river at the edge of a generic small Brazilian town (no famous landmarks), oxygen bubbles fading away near the discharge, fish gasping at the surface, and in the foreground a gloved hand holding up a sample bottle of murky water. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/agua-subterranea.webp": {
+      "usedIn": "Aula 5 - Agua subterranea (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational cutaway of underground water: on the surface a farm, a landfill leaking dark liquid and a small generic fuel station painted plain white and green with no brand; below, layers of soil and rock, the water table and a blue aquifer, a well pumping water up and a spring on the hillside, with a dark contamination plume sinking toward the aquifer. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/enchente.webp": {
+      "usedIn": "Aula 5 - Cidades e enchentes (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of an urban flood in Brazil: houses built on the river floodplain with water up to the windows and asphalt streets where rain cannot soak in, while in the background a green floodplain park safely absorbs the overflow. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/infraestrutura-verde.webp": {
+      "usedIn": "Aula 6 - Solucoes verdes (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of green infrastructure on a Brazilian street during light rain: a rain garden soaking up water from the sidewalk, a building with a green roof full of plants, permeable paving with water seeping through into the soil. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/jardim-flutuante.webp": {
+      "usedIn": "Aula 6 - Jardins flutuantes (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Close illustration of a floating garden island on a lake, half above and half below the waterline: native plants and flowers on top, long roots hanging into clear water with tiny fish hiding and laying eggs among them, a frog catching an insect on a leaf, a small bird nest. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/causa-e-efeito.webp": {
+      "usedIn": "Final - Causa e efeito (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of cause and effect along a river: upstream a group of teenagers planting riparian trees and the water downstream turns clear with fish, while further along an untreated sewage pipe turns the water murky and the fish disappear. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/caderno-de-campo.webp": {
+      "usedIn": "Final - Dicas da Marcia (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Top-down illustration of a field researcher's open notebook on a wooden table by a river, with sketches of a tree, a water drop, a fish and a magnifying glass but no writing, colored pencils, a water sample bottle and binoculars beside it. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/lessons/cidade-sustentavel.webp": {
+      "usedIn": "Final - Voce esta pronto (figura no texto)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Hopeful illustration of a small sustainable Brazilian city at sunrise beside a clean river: a city hall with a green roof, solar panels, wind turbines on a hill, riparian forest along the river and people walking in a riverside park. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/bomba-de-agua.webp": {
+      "usedIn": "Estudo - Bomba de agua, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational cutaway illustration of a water pump station drawing groundwater: a small pump house with an electric motor on the surface, pipes going down through soil and rock layers into a blue aquifer, water flowing up to a town water tower. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/jardim-de-chuva.webp": {
+      "usedIn": "Estudo - Jardim de chuva, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational cutaway illustration of a rain garden: a shallow planted depression beside a sidewalk and a house, rainwater from the roof and the street flowing into it, and below the layers of mulch, loose soil mix and gravel with water soaking into the ground; native Brazilian plants. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/plantas-nativas.webp": {
+      "usedIn": "Estudo - Jardim de chuva, pag. 3 (plantas)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of native wetland plants for a rain garden in Brazil: cattails with brown spikes, tall grasses, ferns and lilies, dragonflies and a butterfly, in a sunny garden with a wet soil patch. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/jardim-flutuante.webp": {
+      "usedIn": "Estudo - Jardim flutuante, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational split-view illustration of a floating garden: a floating platform made of recycled material carrying plants, a porous mat where roots attach and hang into the water, shown half above and half below the waterline. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/lagoa-recuperada.webp": {
+      "usedIn": "Estudo - Jardim flutuante, pag. 3",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a recovered urban pond in Brazil: floating gardens with water hyacinths and other plants, clear water, fish and water birds returning, teenagers watching from a wooden deck. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/estacao-monitoramento.webp": {
+      "usedIn": "Estudo - Estacao de monitoramento, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of an automatic water monitoring station on a Brazilian riverbank: a small weatherproof cabinet on a platform with sensors dipped in the water, an antenna sending signal waves to the city in the distance, a solar panel on top. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/laboratorio-qualidade.webp": {
+      "usedIn": "Estudo - Monitor de qualidade, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a water testing laboratory: young technicians in lab coats analyzing water samples with modern instruments, a centrifuge, colored sample vials, a microscope and a monitor showing a simple line chart shape without numbers. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/poco-artesiano.webp": {
+      "usedIn": "Estudo - Poco artesiano, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational cutaway illustration of an artesian well: a small drilling rig and well head on the surface of a Brazilian farm, a protective casing tube going deep down through soil, sand and rock layers into a blue confined aquifer between two rock layers, water rising naturally up the tube, a small electric pump and a water tank next to the house. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/estacao-de-filtros.webp": {
+      "usedIn": "Estudo - Estacao de filtros, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational cutaway illustration of a water filter station: a big transparent filter column showing layers from top to bottom (fine sand, coarse sand, gravel, activated charcoal), muddy brown water entering at the top and clear blue water coming out at the bottom, tiny dirt particles and microbe shapes trapped in the layers, pipes and valves around it. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/estacao-de-tratamento.webp": {
+      "usedIn": "Estudo - Estacao de tratamento, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational aerial illustration of a water treatment plant beside a river, seen from above at an angle: river water enters, then open concrete tanks in sequence where the water color changes step by step from muddy brown (mixing and flocculation tanks), to settling tanks, to sand filter beds, to a clear blue treated water reservoir, and pipes leaving toward a town. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/reservatorio.webp": {
+      "usedIn": "Estudo - Reservatorio, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a city water storage system: a large round ground-level reservoir tank and a tall elevated reservoir on a hill, with a cutaway showing clean treated water inside, blue pipes running down into a neighborhood where a kid opens a kitchen tap. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/caixa-dagua.webp": {
+      "usedIn": "Estudo - Caixa d'agua, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of water stored up high using gravity: a house with a blue water tank on its roof and a cutaway showing pipes going down to the shower and sink, and behind it a tall concrete water tower supplying a whole neighborhood, gentle arrows showing water flowing downhill. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/centro-de-pesquisa.webp": {
+      "usedIn": "Estudo - Centro de pesquisa, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a modern research center for water solutions: young scientists and engineers of diverse backgrounds testing a prototype water filter on a workbench, a scale model of a river and city on a table, water samples, a computer showing a simple graph shape without numbers, plants on the windowsill. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/universidade.webp": {
+      "usedIn": "Estudo - Universidade, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a Brazilian university campus focused on water: students in a field class at a campus creek measuring the water with a teacher, a modern building with solar panels and a green roof in the background, students carrying notebooks and sample kits. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/centro-pesquisas-hidricas.webp": {
+      "usedIn": "Estudo - Centro de pesquisas hidricas, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a hydrological research center on a riverbank: scientists in boots collecting river water samples with a small boat, a building with a lab and a weather station, a cutaway of a test well showing the groundwater level, a small model of a new filter being tested. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/parque-linear.webp": {
+      "usedIn": "Estudo - Parque linear, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a linear park: a long narrow green strip following a small urban stream through a city, with native trees on both banks, a walking and bike path, benches, families walking, a wooden footbridge, buildings kept at a safe distance from the water. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/muro-verde.webp": {
+      "usedIn": "Estudo - Muro verde, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a green wall (vertical garden) on a city building: a tall wall covered with living plants, leaves and flowers, with a small cutaway corner showing the support panel, the pockets of coconut fiber where the roots grow and a thin drip irrigation pipe; birds and butterflies around, people walking on the sidewalk. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/telhado-verde.webp": {
+      "usedIn": "Estudo - Telhado verde, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational illustration of a green roof on a building with a cutaway showing its layers like a cake: waterproof layer, drainage layer, filter fabric, soil, and plants and a small vegetable garden on top; rain falling and being held by the plants, the building below cool and dry. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/parque-eolico.webp": {
+      "usedIn": "Estudo - Parque eolico, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a wind farm on green coastal hills in northeastern Brazil: several tall white wind turbines with spinning blades, curved arrows showing the wind pushing the blades, a cutaway of one turbine nacelle showing the shaft and generator, power lines carrying electricity to a small town. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/fazenda-solar.webp": {
+      "usedIn": "Estudo - Fazenda solar, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a solar farm in the Brazilian countryside: rows of dark blue solar panels tilted toward a bright sun, sunlight rays hitting the panels, a small inverter cabin, power lines leading to a town, sheep grazing between the rows and native trees around. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/usina-hidreletrica.webp": {
+      "usedIn": "Estudo - Usina hidreletrica, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational cutaway illustration of a hydroelectric power plant: a concrete dam closing a river and forming a large reservoir lake, water rushing down through a big penstock pipe to a turbine and generator inside the powerhouse, the river continuing below, power lines leaving to the city. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/characters/claudia/portrait.webp": {
+      "usedIn": "Retrato animado (tutorial, livro de aulas, fim de jogo): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's right, looking at the viewer with a big joyful open smile. CLÁUDIA, a friendly Brazilian environmental researcher and the guide of the game: round full soft face with rosy cheeks and light freckles, fair skin, long voluminous very dark curly hair parted to the side with a thin dark headband, warm dark-brown eyes, small round stud earrings and a delicate gold necklace, light turquoise button-up field shirt with rolled sleeves over a black top, a small badge with a water-drop symbol, a green backpack strap, holding a notebook with a leaf sketch. Plain flat soft cream background (#F6F1E1), no scenery, no text. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "note": "A base veio de uma edição guiada por foto de referência do usuário (a foto não fica no repo e não deve ser reenviada). Para imagens novas da Cláudia, use assets/characters/claudia/portrait.webp como input_references."
+    },
+    "assets/characters/claudia/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/claudia/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/claudia/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/claudia/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/claudia/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/claudia/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/claudia/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/claudia/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile, eyes happily squinting into cheerful crescents, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/claudia/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/claudia/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/jose/portrait.webp": {
+      "usedIn": "Retrato animado (tutorial, livro de aulas, fim de jogo): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a kind welcoming smile, mouth closed. JOSÉ, a 60-year-old Brazilian artisanal river fisherman: deeply tanned brown skin with friendly wrinkles, short gray stubble beard, bushy gray eyebrows, worn woven straw hat, faded blue button-up cotton shirt with rolled sleeves, a fishing net folded over one shoulder. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the hat. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue accents, warm greens and sunny yellow touches, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus."
+    },
+    "assets/characters/jose/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/jose/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, hat, net, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/jose/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/jose/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, hat, net, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/jose/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/jose/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, hat, net, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/jose/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/jose/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and proud: a big warm open smile showing teeth, eyes happily squinting with smile wrinkles, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/jose/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/jose/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hat, net, colors and background, but change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else."
+    },
+    "assets/characters/marcia/portrait.webp": {
+      "usedIn": "Retrato animado (tutorial, livro de aulas, fim de jogo): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's right, looking at the viewer with a calm confident closed-mouth smile. MÁRCIA, a young Brazilian water-quality field researcher who collects river samples: warm brown skin, dark curly hair pulled up in a high puff with a turquoise patterned headband, gold hoop earrings, khaki multi-pocket field vest over a turquoise t-shirt, binoculars hanging on a black strap around her neck, holding a clipboard with a pressed leaf sample. Plain flat soft cream background (#F6F1E1), no scenery, no text. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "note": "Descrição reconstruída a partir da base aprovada (o texto original não foi guardado). Para imagens novas da Márcia, use a base como input_references."
+    },
+    "assets/characters/marcia/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/marcia/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/marcia/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/marcia/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/marcia/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/marcia/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/marcia/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/marcia/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/marcia/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/marcia/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    }
+  }
+}

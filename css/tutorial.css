@@ -39,14 +39,6 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-#gameover-portrait-canvas {
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    outline: none;
-    border: none;
-}
-
 #gameover-text {
     font-family: 'Fredoka', sans-serif;
     font-size: 1.2rem;
@@ -54,6 +46,25 @@
     color: #2D3561;
     margin-bottom: 1.5rem;
     font-weight: 500;
+}
+
+/* Título no cartão claro: o h2 global é branco (feito para fundo escuro) e sumia aqui.
+   Lilita One só tem peso 400 (sem negrito falso), cor escura do jogo e sem contorno branco. */
+#gameover-title {
+    margin: 0;
+    font-family: 'Lilita One', cursive;
+    font-weight: normal;
+    font-size: 2rem;
+    line-height: 1.15;
+    color: #b3261e;
+    -webkit-text-stroke: 0;
+    text-shadow: 2px 2px 0 rgba(26, 26, 26, 0.18);
+}
+
+@media screen and (max-width: 768px) {
+    #gameover-title {
+        font-size: 1.5rem;
+    }
 }
 
 #gameover-menu-btn {
@@ -231,11 +242,6 @@
         height: 100px;
     }
 
-    #gameover-portrait-canvas {
-        width: 150px;
-        height: 150px;
-    }
-
     #gameover-text {
         font-size: 1rem;
         line-height: 1.5;
@@ -258,17 +264,11 @@
         height: 80px;
     }
 
-    #gameover-portrait-canvas {
-        width: 120px;
-        height: 120px;
-    }
-
     #gameover-text {
         font-size: 0.9rem;
         margin-bottom: 1rem;
     }
 }
-
 
 /* =====================================================================
    TUTORIAL (TutorialSystem.js)
@@ -336,22 +336,6 @@
     transition: background-image 0.4s ease;
 }
 
-#tutorial-portrait-canvas {
-    width: 240px;
-    height: 240px;
-    outline: none;
-    touch-action: none;
-}
-
-#tutorial-portrait {
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    border: 5px solid rgba(255, 255, 255, 0.9);
-    object-fit: cover;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
 .tut-name {
     font-family: 'Lilita One', cursive;
     font-size: 1.25rem;
@@ -407,8 +391,9 @@
     clear: both;
 }
 
-/* as imagens vêm inline no texto dos passos com width:100%: no desktop ficam ao lado do texto */
-.tut-text img {
+/* as imagens vêm inline no texto dos passos com width:100%: no desktop ficam ao lado do texto
+   (:not(.ui-icon): os ícones SVG de uiIconsIn ficam na linha, do tamanho da letra) */
+.tut-text img:not(.ui-icon) {
     float: right;
     width: 45% !important;
     margin: 0.25rem 0 1rem 1.5rem !important;
@@ -576,17 +561,6 @@
     gap: 0.4rem;
 }
 
-.tutorial--coach #tutorial-portrait-canvas {
-    width: 100px;
-    height: 100px;
-}
-
-.tutorial--coach #tutorial-portrait {
-    width: 80px;
-    height: 80px;
-    border-width: 3px;
-}
-
 .tutorial--coach .tut-name {
     font-size: 0.8rem;
     padding: 0.2rem 0.6rem;
@@ -691,17 +665,6 @@
         padding: 0.6rem 1rem;
     }
 
-    #tutorial-portrait-canvas {
-        width: 88px;
-        height: 88px;
-    }
-
-    #tutorial-portrait {
-        width: 64px;
-        height: 64px;
-        border-width: 3px;
-    }
-
     .tut-name {
         font-size: 1rem;
     }
@@ -720,7 +683,7 @@
         padding-right: 0;
     }
 
-    .tut-text img {
+    .tut-text img:not(.ui-icon) {
         float: none;
         width: 100% !important;
         margin: 0.5rem 0 !important;
@@ -790,16 +753,6 @@
 
     .tutorial--coach .tut-btn--link {
         padding-inline: 0.2rem;
-    }
-
-    .tutorial--coach #tutorial-portrait-canvas {
-        width: 56px;
-        height: 56px;
-    }
-
-    .tutorial--coach #tutorial-portrait {
-        width: 48px;
-        height: 48px;
     }
 
     .tutorial--coach .tut-body {

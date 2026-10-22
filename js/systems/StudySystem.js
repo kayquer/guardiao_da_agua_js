@@ -249,18 +249,16 @@ class StudySystem {
     }
 
     loadSaveData(data) {
-        if (data && data.unlockedBuildings) {
-            this.unlockedBuildings = new Set(data.unlockedBuildings);
+        if (data && Array.isArray(data.unlockedBuildings)) {
+            // Soma aos padrões (e aos sem estudo, já liberados no initialize): nada que era livre volta a travar
+            data.unlockedBuildings.forEach(id => this.unlockedBuildings.add(id));
             log(`📁 ${this.unlockedBuildings.size} edifícios desbloqueados carregados`);
         }
     }
 
+    // Desbloquear por estudo é progresso que o aluno não quer perder: salva na hora (autosave)
     saveProgress() {
-        // Salvar automaticamente através do GameManager
-        if (this.gameManager && this.gameManager.saveSystem) {
-            // Trigger autosave
-            log('💾 Progresso de estudos salvo');
-        }
+        this.gameManager?.autoSave?.();
     }
 
     // ===== QUIZ MANAGEMENT =====
@@ -303,6 +301,21 @@ class StudySystem {
         log(`📊 Quiz Score: ${correctAnswers}/${totalQuestions} (${this.quizScore}%)`);
 
         return this.quizScore;
+    }
+
+    /** Questões erradas com a resposta dada, a certa e a explicação: o livro mostra ao aluno onde ele errou. */
+    getWrongAnswers() {
+        const quiz = this.getQuiz();
+        if (!quiz || !quiz.questions) return [];
+        return quiz.questions
+            .map((question, index) => ({ question, chosen: this.currentQuizAnswers[question.id ?? index] }))
+            .filter(({ question, chosen }) => chosen !== question.correctAnswer)
+            .map(({ question, chosen }) => ({
+                question: question.question,
+                chosen: question.options[chosen] ?? '(sem resposta)',
+                correct: question.options[question.correctAnswer],
+                explanation: question.explanation || ''
+            }));
     }
 
     isQuizPassed() {
