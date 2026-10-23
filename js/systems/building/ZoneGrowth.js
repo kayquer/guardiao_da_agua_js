@@ -104,6 +104,56 @@ mixin(BuildingSystem, {
         return stage + 1;
     },
 
+    /**
+     * Tempo de jogo (ms) até a próxima fase no ritmo `rate` (o de agora, se omitido). null = fase final ou não é
+     * zona; Infinity = parada (sem água). O painel divide pelo timeScale (2x/3x) para mostrar o tempo real.
+     */
+    getZoneTimeToNextStage(building, rate = this.computeZoneGrowthRate(this.getZoneGrowthConditions())) {
+        const stage = this.getZoneStage(building);
+        if (stage === null || stage >= 3) return null;
+        const effective = rate * (building.efficiency > 0 ? building.efficiency : 1);
+        if (!(effective > 0)) return Infinity;
+        return (1 - this.getZoneStageProgress(building)) * ZONE_GROWTH.stageMs[stage] / effective;
+    },
+
+    /**
+     * Indicador do painel: quanto falta para a próxima fase e o que está acelerando/freando.
+     * @returns {{eta: string, reason: string}|null} null na fase final
+     */
+    describeZoneGrowth(building) {
+        const c = this.getZoneGrowthConditions();
+        const ms = this.getZoneTimeToNextStage(building, this.computeZoneGrowthRate(c));
+        if (ms === null) return null;
+        if (ms === Infinity) return { eta: 'Crescimento parado', reason: 'Falta água na cidade: a zona só cresce com água.' };
+        const scale = this.gameManager?.timeScale > 0 ? this.gameManager.timeScale : 1;
+        const sec = Math.max(1, Math.ceil(ms / scale / 1000));
+        const eta = sec < 60 ? `~${sec} s` : `~${Math.floor(sec / 60)} min${sec % 60 ? ` ${sec % 60} s` : ''}`;
+        let reason = '';
+        if (c.energyEfficiency < 1) reason = 'Mais devagar: falta energia.';
+        else if (c.satisfaction < 40) reason = 'Mais devagar: moradores insatisfeitos.';
+        else if (c.satisfaction >= 70) reason = 'Mais rápido: a cidade está satisfeita.';
+        return { eta: `Próxima fase em ${eta}`, reason };
+    },
+
+    /** Painel do prédio selecionado: barra, fase e tempo restante, sem redesenhar o painel inteiro. */
+    updateZoneStagePanel() {
+        const selected = this.gameManager?.selectedBuilding;
+        if (!selected || typeof document === 'undefined' || this.getZoneStage(selected) === null) return;
+        const bar = document.getElementById(`zone-stage-bar-${selected.id}`);
+        if (bar) bar.style.width = `${Math.round(this.getZoneStageProgress(selected) * 100)}%`;
+        const name = document.getElementById(`zone-stage-name-${selected.id}`);
+        const stage = this.getZoneStage(selected);
+        if (name) name.textContent = `${ZONE_GROWTH.stageNames[stage]} (${stage + 1}/4)`;
+        const eta = document.getElementById(`zone-stage-eta-${selected.id}`);
+        if (eta) {
+            const info = this.describeZoneGrowth(selected);
+            eta.textContent = info ? info.eta : 'Zona completa';
+            eta.title = info?.reason || '';
+            const why = document.getElementById(`zone-stage-why-${selected.id}`);
+            if (why) why.textContent = info?.reason || '';
+        }
+    },
+
     /** Progresso 0-1 da fase atual (para a barra no painel). Fase final = 1. */
     getZoneStageProgress(building) {
         const stage = this.getZoneStage(building);
@@ -162,7 +212,7 @@ mixin(BuildingSystem, {
         if (dt < 500) return;
         this.lastZoneGrowthTime = now;
         const rate = this.computeZoneGrowthRate(this.getZoneGrowthConditions());
-        if (rate <= 0) return;
+        if (rate <= 0) return this.updateZoneStagePanel();
         for (const building of this.buildings.values()) {
             if (!building.active || !this.isZoneBuilding(building)) continue;
             const next = this.advanceZoneProgress(building, dt, rate * (building.efficiency > 0 ? building.efficiency : 1));
@@ -170,12 +220,7 @@ mixin(BuildingSystem, {
                 AudioManager.playSound('sfx_zone_grow'); // casinhas brotando (gap no manifesto: várias zonas juntas = um som)
             }
         }
-        // Barra da fase no painel do prédio selecionado (sem redesenhar o painel inteiro)
-        const selected = this.gameManager?.selectedBuilding;
-        if (selected && typeof document !== 'undefined' && this.getZoneStage(selected) !== null) {
-            const bar = document.getElementById(`zone-stage-bar-${selected.id}`);
-            if (bar) bar.style.width = `${Math.round(this.getZoneStageProgress(selected) * 100)}%`;
-        }
+        this.updateZoneStagePanel();
     },
 
     /** Debug/testes: põe a zona direto numa fase (?debug: gameManager.buildingSystem.forceZoneStage(id, 2)). */

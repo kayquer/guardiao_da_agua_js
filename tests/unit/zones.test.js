@@ -116,7 +116,7 @@ test('lotes: arquivos existem, peças válidas e dentro de size × size células
 
 test('crescimento: ZONE_GROWTH coerente (3 durações, 4 escalas crescentes até 1, 4 nomes)', () => {
     assert.strictEqual(GROWTH.stageMs.length, 3);
-    GROWTH.stageMs.forEach(ms => assert.ok(ms >= 30000 && ms <= 120000, `fase de ${ms} ms fora de 30-120 s`));
+    GROWTH.stageMs.forEach(ms => assert.ok(ms >= 15000 && ms <= 60000, `fase de ${ms} ms fora de 15-60 s`));
     assert.strictEqual(JSON.stringify(GROWTH.effectScale), JSON.stringify([0.25, 0.5, 0.75, 1]));
     assert.strictEqual(GROWTH.stageNames.length, 4);
 });
@@ -168,6 +168,30 @@ test('crescimento: tempo de jogo → fase (0 → 3) e para na fase final', () =>
     // Obra em andamento e prédio comum não têm fase
     assert.strictEqual(bs.getZoneStage({ ...b, underConstruction: true }), null);
     assert.strictEqual(bs.getZoneStage({ config: { ...BUILDINGS.house, id: 'house' } }), null);
+});
+
+test('indicador: tempo até a próxima fase (ritmo e 2x/3x) e o motivo', () => {
+    const { bs } = system();
+    const b = zone('zone_residential_light', { zoneStage: 0, zoneProgress: 0.5 });
+    assert.strictEqual(bs.getZoneTimeToNextStage(b, 1), GROWTH.stageMs[0] / 2);
+    assert.strictEqual(bs.getZoneTimeToNextStage(b, 2), GROWTH.stageMs[0] / 4, 'ritmo 2 = metade');
+    assert.strictEqual(bs.getZoneTimeToNextStage(b, 0), Infinity, 'sem água: parada');
+    assert.strictEqual(bs.getZoneTimeToNextStage({ ...b, zoneStage: 3 }, 1), null, 'fase final');
+
+    bs.getZoneGrowthConditions = () => ({ satisfaction: 50, waterShortage: false, energyEfficiency: 1 });
+    assert.strictEqual(bs.describeZoneGrowth(b).eta, `Próxima fase em ~${GROWTH.stageMs[0] / 2000} s`);
+    bs.gameManager.timeScale = 2;
+    assert.strictEqual(bs.describeZoneGrowth(b).eta, `Próxima fase em ~${GROWTH.stageMs[0] / 4000} s`, '2x conta o tempo real');
+    bs.gameManager.timeScale = 1;
+    bs.getZoneGrowthConditions = () => ({ satisfaction: 0, waterShortage: false, energyEfficiency: 1 });
+    const slow = bs.describeZoneGrowth({ ...b, zoneProgress: 0, zoneStage: 2 });
+    assert.match(slow.eta, /~\d+ min/, 'acima de 1 minuto mostra minutos');
+    assert.match(slow.reason, /insatisfeitos/);
+    bs.getZoneGrowthConditions = () => ({ satisfaction: 50, waterShortage: false, energyEfficiency: 0.5 });
+    assert.match(bs.describeZoneGrowth(b).reason, /falta energia/);
+    bs.getZoneGrowthConditions = () => ({ satisfaction: 50, waterShortage: true, energyEfficiency: 1 });
+    assert.deepStrictEqual({ ...bs.describeZoneGrowth(b) }, { eta: 'Crescimento parado', reason: 'Falta água na cidade: a zona só cresce com água.' });
+    assert.strictEqual(bs.describeZoneGrowth({ ...b, zoneStage: 3 }), null);
 });
 
 test('crescimento: updateZoneGrowth usa o relógio do jogo (simNow), não Date.now', () => {

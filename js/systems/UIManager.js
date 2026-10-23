@@ -610,6 +610,12 @@ class UIManager {
             this.updateTimer = 0;
         }
 
+        this.itemStateTimer = (this.itemStateTimer || 0) + deltaTime;
+        if (this.itemStateTimer >= 500) {
+            this.itemStateTimer = 0;
+            this.refreshBuildingItemStates();
+        }
+
         this.popupCheckTimer = (this.popupCheckTimer || 0) + deltaTime;
         if (this.popupCheckTimer >= 200) {
             this.popupCheckTimer = 0;
@@ -989,42 +995,13 @@ class UIManager {
         const item = document.createElement('div');
         item.className = 'building-item';
         item.dataset.buildingType = buildingType.id;
+        this.applyBuildingItemState(item, buildingType);
 
-        // Check if building is unlocked
-        const isUnlocked = this.gameManager.buildingSystem.isBuildingUnlocked(buildingType.id);
-        const hasStudyContent = this.gameManager.studySystem &&
-                                this.gameManager.studySystem.hasStudyContent(buildingType.id);
-
-        // Verificar se pode pagar
-        const canAfford = !this.gameManager.resourceManager ||
-                         this.gameManager.resourceManager.canAfford(buildingType.cost);
-
-        if (!isUnlocked) {
-            item.classList.add('locked');
-            item.dataset.locked = 'true';
-        } else if (!canAfford) {
-            item.classList.add('disabled');
-        }
-
-        // Build the HTML content
-        let iconHTML = `<div class="building-icon">${buildingIcon(buildingType)}</div>`;
-
-        // Add lock/study icon overlay if locked
-        if (!isUnlocked && hasStudyContent) {
-            iconHTML += `<div class="study-icon">${uiIcon('ui-books')}</div>`;
-        }
-
-        item.innerHTML = `
-            ${iconHTML}
-            <div class="building-info">
-                <div class="building-name">${buildingType.name}</div>
-                <div class="building-cost">${!isUnlocked ? uiIcon('status-locked') + ' Bloqueado' : 'R$ ' + buildingType.cost.toLocaleString()}</div>
-                <div class="building-description">${!isUnlocked && hasStudyContent ? 'Clique para estudar' : buildingType.description}</div>
-            </div>
-        `;
-
-        if (!isUnlocked && hasStudyContent && !this.isMobile) {
-            item.addEventListener('mouseenter', () => this.showStudyTooltip(item, buildingType));
+        // Dica "clique para estudar" só enquanto o card estiver bloqueado (o estado muda sem recriar o card)
+        if (!this.isMobile) {
+            item.addEventListener('mouseenter', () => {
+                if (item.dataset.locked === 'true' && item.dataset.study === 'true') this.showStudyTooltip(item, buildingType);
+            });
             item.addEventListener('mouseleave', () => this.hideStudyTooltip());
             item.addEventListener('click', () => this.hideStudyTooltip());
         }
@@ -1034,7 +1011,59 @@ class UIManager {
 
         return item;
     }
-    
+
+    /** Estado do card agora: 'locked' (falta estudo), 'disabled' (falta dinheiro) ou 'ok'. */
+    getBuildingItemState(buildingType) {
+        if (!this.gameManager.buildingSystem.isBuildingUnlocked(buildingType.id)) return 'locked';
+        const rm = this.gameManager.resourceManager;
+        return !rm || rm.canAfford(buildingType.cost) ? 'ok' : 'disabled';
+    }
+
+    /** Classes e textos do card conforme o estado (criação e refreshBuildingItemStates). */
+    applyBuildingItemState(item, buildingType, state = this.getBuildingItemState(buildingType)) {
+        const hasStudyContent = !!this.gameManager.studySystem?.hasStudyContent(buildingType.id);
+        const locked = state === 'locked';
+        item.dataset.state = state;
+        item.dataset.study = String(hasStudyContent);
+        item.classList.toggle('locked', locked);
+        item.classList.toggle('disabled', state === 'disabled');
+        if (locked) item.dataset.locked = 'true';
+        else delete item.dataset.locked;
+
+        let iconHTML = `<div class="building-icon">${buildingIcon(buildingType)}</div>`;
+        if (locked && hasStudyContent) iconHTML += `<div class="study-icon">${uiIcon('ui-books')}</div>`;
+
+        // Overlay da espera entre obras (disableBuildingButtons) sobrevive à troca do conteúdo
+        const cooldown = item.querySelector('.cooldown-overlay');
+        item.innerHTML = `
+            ${iconHTML}
+            <div class="building-info">
+                <div class="building-name">${buildingType.name}</div>
+                <div class="building-cost">${locked ? uiIcon('status-locked') + ' Bloqueado' : 'R$ ' + buildingType.cost.toLocaleString()}</div>
+                <div class="building-description">${locked && hasStudyContent ? 'Clique para estudar' : buildingType.description}</div>
+            </div>
+        `;
+        if (cooldown) item.appendChild(cooldown);
+    }
+
+    /**
+     * Cards abertos acompanham o jogo: o dinheiro voltou (ou acabou) ou o estudo liberou o prédio. Antes o card
+     * só era montado ao abrir a categoria e ficava cinza/bloqueado mesmo com dinheiro. Chamado por update().
+     */
+    refreshBuildingItemStates() {
+        const container = this.elements.buildingItems;
+        const bs = this.gameManager?.buildingSystem;
+        if (!container || !bs) return;
+        container.querySelectorAll('.building-item[data-building-type]').forEach(item => {
+            const buildingType = bs.buildingTypes.get(item.dataset.buildingType);
+            if (!buildingType) return;
+            const state = this.getBuildingItemState(buildingType);
+            if (state === item.dataset.state) return;
+            if (state !== 'locked') this.hideStudyTooltip();
+            this.applyBuildingItemState(item, buildingType, state);
+        });
+    }
+
     /**
      * Abre a categoria do prédio no painel de construções, rola até ele e o destaca (sem entrar no modo de
      * construção: o aluno clica para construir). Usado pelas metas "Construir X" das missões.
@@ -1943,11 +1972,15 @@ class UIManager {
         if (stage === null || stage === undefined) return '';
         const percent = Math.round(bs.getZoneStageProgress(building) * 100);
         const effect = Math.round(bs.getZoneEffectScale(building) * 100);
+        // Tempo até a próxima fase + o que acelera/freia; atualizado ao vivo por ZoneGrowth.updateZoneStagePanel
+        const growth = bs.describeZoneGrowth?.(building);
         return `
-            <div class="stat-item zone-stage" data-zone-stage="${stage}">🏗️ Fase: ${ZONE_GROWTH.stageNames[stage]} (${stage + 1}/4)</div>
+            <div class="stat-item zone-stage" data-zone-stage="${stage}">🏗️ Fase: <span id="zone-stage-name-${building.id}">${ZONE_GROWTH.stageNames[stage]} (${stage + 1}/4)</span></div>
             <div class="zone-stage-track" style="height:8px;border-radius:4px;background:rgba(0,0,0,0.25);margin:2px 0 6px;overflow:hidden">
                 <div id="zone-stage-bar-${building.id}" class="zone-stage-bar" style="height:100%;width:${percent}%;background:${building.config.color || '#4CAF50'};transition:width 0.4s"></div>
             </div>
+            <div class="stat-item zone-stage-eta">⏱️ <span id="zone-stage-eta-${building.id}" title="${growth?.reason || ''}">${growth ? growth.eta : 'Zona completa'}</span></div>
+            <div id="zone-stage-why-${building.id}" class="zone-stage-why" style="font-size:0.85em;opacity:0.8;margin:-2px 0 4px">${growth?.reason || ''}</div>
             <div class="stat-item">📈 Ocupação da zona: ${effect}%</div>`;
     }
 

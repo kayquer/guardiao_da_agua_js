@@ -27,7 +27,7 @@
 const ZONE_LOT_MODEL_SCALE = 0.65; // células por unidade dos modelos da Kenney (casa ≈ 0,85 × 0,65 célula)
 
 const ZONE_GROWTH = {
-    stageMs: [50000, 65000, 80000],        // fase 0→1, 1→2, 2→3 (tempo de jogo com ritmo 1)
+    stageMs: [20000, 30000, 40000],        // fase 0→1, 1→2, 2→3 (tempo de jogo com ritmo 1; ~1,5 min no total)
     effectScale: [0.25, 0.5, 0.75, 1],     // fração de população/empregos/receita por fase
     stageNames: ['Área livre', 'Início', 'Desenvolvimento', 'Completa'],
     growMs: 900                            // animação das peças novas subindo do chão
