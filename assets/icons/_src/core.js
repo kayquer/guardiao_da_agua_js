@@ -14,6 +14,8 @@ const P = {
     green: ['#00FF88', '#00C46A'],
     grass: ['#5EE08A', '#2FB463'],
     leaf: ['#2FCB5F', '#1E9A45'],
+    lime: ['#B4E65A', '#86C232'],
+    soil: ['#6B4A2E', '#4E341F'],
     yellow: ['#FFD700', '#E5A800'],
     orange: ['#FF8C00', '#D96F00'],
     red: ['#FF4757', '#D42F3F'],

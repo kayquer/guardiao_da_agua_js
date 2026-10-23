@@ -469,7 +469,7 @@ mixin(BuildingSystem, {
         this.replaceZoneLotMesh(building);
 
         if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_zone_grow');
-        this.showNotification(`${oldConfig.name} evoluiu para ${evo.nextConfig.name}!`, 'success');
+        this.showNotification(`⬆️ ${oldConfig.name} evoluiu para ${evo.nextConfig.name}!`, 'success');
         // Lugar/tamanho novo: rua e energia contam de novo no próximo update (BuildingEfficiency.js)
         this.markEfficiencyDirty?.();
         // Gasta mais energia no peso novo? Avisa já (como na colocação)

@@ -165,14 +165,27 @@ module.exports = [
             g(drop(16, 28.5, 1.9, 'water', { noHl: true, w: 1.3 }), { a: A('drip', 2, 0, 'center', 'ease-in') }),
         [ST + ' (filter_station)']),
     B('water-tank', 'water_tank', 'Reservatório', '🛢️',
-        () => ground() + path('M18 42v54a46 12 0 0 0 92 0V42', P.concrete[0]) + path('M84 52v55a46 12 0 0 0 26-11V42z', P.concrete[1], { s: 'none' }) +
-            path('M18 42v54a46 12 0 0 0 92 0V42') + line('M18 70a46 12 0 0 0 92 0', { w: 2 }) + ell(64, 42, 46, 12, P.white[0]) +
-            ell(64, 42, 36, 8, P.water[0], { w: 2 }) + g(ell(64, 42, 18, 4, 'none', { s: '#fff', w: 2 }), { a: A('ripple', 2.6, 0, 'center', 'ease-out') }) +
-            rect(28, 54, 14, 46, '#fff', { rx: 3 }) + g(rect(30.5, 62, 9, 35.5, P.water[0], { s: 'none', rx: 2 }), { a: A('grows', 4, 0, '50% 100%') }) +
-            line('M94 54v50M102 52v50M94 62h8M94 72h8M94 82h8M94 92h8', { w: 2.5 }) +
-            g(drop(66, 82, 10), { a: A('bob', 3) }) + spark(112, 24, 6, 3.4),
-        () => path('M5 9v15a11 3.5 0 0 0 22 0V9', P.concrete[0]) + ell(16, 9, 11, 3.5, '#fff') + ell(16, 9, 7, 1.8, P.water[0], { w: 1.2 }) +
-            g(drop(16, 20, 4.2, 'water', { w: 1.6 }), { a: A('bobs', 3) }),
+        // Igual ao modelo 3D (blender/water_tank.glb): cilindro metálico cinza com faixas azuis, telhado cônico azul com
+        // respiro, escada amarela à direita, medidor de nível turquesa, cano com válvula vermelha e base de concreto.
+        () => ground() + path('M18 94v8a46 10 0 0 0 92 0v-8', P.concrete[1]) + ell(64, 94, 46, 10, P.concrete[0]) +
+            thick('M30 86H14v14', P.gray[0], 7, { ow: 5 }) + line('M22 86v-7', { w: 3 }) +
+            g(ell(22, 77, 8, 2.8, P.red[0], { w: 2.5 }), { a: A('coin', 3) }) +
+            g(drop(14, 109, 3.5, 'water', { noHl: true, w: 2 }), { a: A('drip', 1.8, 0, 'center', 'ease-in') }) +
+            path('M30 42v50a34 8 0 0 0 68 0V42', P.gray[0], { s: 'none' }) + path('M80 48v51a34 8 0 0 0 18-7V42z', P.gray[1], { s: 'none' }) +
+            [56, 76].map(y => path(`M30 ${y}a34 8 0 0 0 68 0v6a34 8 0 0 1-68 0z`, P.water[0], { w: 2 })).join('') +
+            path('M30 42v50a34 8 0 0 0 68 0V42') + line('M64 50v8M64 70v4M64 90v10', { w: 1.8, op: 0.5 }) +
+            rect(38, 48, 12, 44, '#fff', { rx: 4, w: 2.5 }) + g(rect(40.5, 56, 7, 33.5, '#2EE6D6', { s: 'none', rx: 2 }), { a: A('grows', 4, 0, '50% 100%') }) +
+            line('M41 62h3M41 72h3M41 82h3', { w: 1.5 }) +
+            path('M26 42L64 14l38 28a38 9 0 0 1-76 0z', P.water[0], { s: 'none' }) + path('M64 14l38 28a38 9 0 0 1-22 8z', P.water[1], { s: 'none' }) +
+            path('M26 42L64 14l38 28a38 9 0 0 1-76 0z') + line('M64 14L52 50M64 14l12 36', { w: 1.8, op: 0.6 }) +
+            rect(59, 6, 10, 10, P.dark[0], { w: 2.5 }) + rect(55, 3, 18, 5, P.gray[0], { rx: 2, w: 2.5 }) +
+            thick('M102 36v62M112 36v62', P.yellow[0], 3, { ow: 2.5 }) + line('M102 46h10M102 56h10M102 66h10M102 76h10M102 86h10', { s: P.yellow[1], w: 3 }) +
+            spark(114, 22, 6, 3.4) + spark(36, 26, 4.5, 3.4, 1.7),
+        () => ell(16, 27, 12, 3, P.concrete[0], { w: 1.5 }) + path('M8 12v13a8 2.5 0 0 0 16 0V12', P.gray[0]) +
+            path('M8 17a8 2.5 0 0 0 16 0v2.5a8 2.5 0 0 1-16 0z', P.water[0], { w: 1.2 }) +
+            rect(10.5, 15, 3, 9, '#fff', { w: 1 }) + g(rect(11.2, 18, 1.6, 5.4, '#2EE6D6', { s: 'none' }), { a: A('grows', 4, 0, '50% 100%') }) +
+            path('M5.5 12L16 4l10.5 8a10.5 2.8 0 0 1-21 0z', P.water[0], { w: 1.6 }) + rect(14.5, 1.8, 3, 2.6, P.dark[0], { w: 1 }) +
+            line('M27.5 9v18', { s: P.yellow[1], w: 1.8 }) + line('M26.5 13h2M26.5 18h2M26.5 23h2', { s: P.yellow[1], w: 1.2 }),
         [ST + ' (water_tank)']),
     B('water-tower', 'water_tower', "Caixa d'Água", '🗼',
         () => ground() + thick('M44 106L52 60M84 106L76 60M49 84h30M47 98l32-16', P.gray[0], 4, { ow: 4 }) +
@@ -576,5 +589,24 @@ module.exports = [
                 path('M56 46c-2-12 6-20 18-22 0 12-6 20-18 22z', P.green[0], { w: 2.5 }) + line('M56 46c4-6 8-10 14-16', { w: 2 }), { a: A('bob', 3) }) +
             g(drop(108, 84, 4, 'water', { noHl: true, w: 2 }), { a: A('hop', 2) }),
         () => g(path('M16 3l11 4v7c0 7-5 12-11 15-6-3-11-8-11-15V7z', P.blue[0]) +
-            path('M12 20c-1-6 3-10 9-11 0 6-3 10-9 11z', P.green[0], { w: 1.4 }) + line('M12 20c2-3 4-5 7-8', { w: 1.2 }), { a: A('breathe', 3) }))
+            path('M12 20c-1-6 3-10 9-11 0 6-3 10-9 11z', P.green[0], { w: 1.4 }) + line('M12 20c2-3 4-5 7-8', { w: 1.2 }), { a: A('breathe', 3) })),
+    // Igual à muda no 3D (building/TreeGrowth.js): cova com terra escura, tutor de madeira amarrado e copa verde-limão.
+    B('tree-sapling', 'tree_sapling', 'Muda de Árvore', '🌱',
+        () => ground() + ell(60, 100, 34, 9, P.soil[1]) + ell(60, 99, 26, 6, P.soil[0], { w: 2 }) +
+            [[44, 99], [52, 102], [70, 101], [77, 98], [62, 96], [48, 96]].map(([x, y]) => ell(x, y, 2.6, 1.4, P.brown[0], { w: 1.2 })).join('') +
+            g(ell(60, 99, 12, 3, 'none', { s: P.water[0], w: 2.5 }), { a: A('ripple', 2.4, 0, 'center', 'ease-out') }) +
+            poly('80,32 84,26 88,32', P.brown[0], { w: 2.5 }) + box(80, 32, 8, 68, 'brown', { k: 0.4 }) +
+            path('M58 98c0-14 1-30 5-44', 'none', { w: 9 }) + path('M58 98c0-14 1-30 5-44', 'none', { s: P.brown[0], w: 5 }) +
+            line('M61 72h19', { s: P.sand[1], w: 3.5 }) + ell(62, 72, 3, 4, 'none', { s: P.sand[1], w: 2.5 }) +
+            g(path('M62 58c-8-2-14-8-14-16 4-2 12 2 14 16z', P.leaf[0], { w: 2.5 }) +
+                ball(64, 38, 16, 'lime', { w: 3 }) + ball(50, 46, 9, 'lime', { w: 3 }) + ball(77, 47, 8, 'lime', { w: 3 }) +
+                circ(58, 32, 3.5, '#fff', { s: 'none', op: 0.45 }), { a: A('sway', 4, 0, '50% 100%') }) +
+            g(drop(32, 64, 4.5, 'water', { noHl: true, w: 2 }), { a: A('fall', 2.2, 0, 'center', 'ease-in') }) +
+            g(drop(24, 80, 3.5, 'water', { noHl: true, w: 2 }), { a: A('fall', 2.2, 1.1, 'center', 'ease-in') }) +
+            spark(108, 28, 6, 3.4) + spark(100, 70, 4, 3.4, 1.7),
+        () => ell(15, 27, 11, 3.2, P.soil[0], { w: 1.6 }) + rect(21, 6, 3, 21, P.brown[0], { w: 1.4 }) +
+            line('M14.5 27c0-4 .3-8 1.3-12', { w: 3.4 }) + line('M14.5 27c0-4 .3-8 1.3-12', { s: P.brown[0], w: 1.6 }) +
+            line('M15.5 20h5.5', { s: P.sand[1], w: 1.4 }) +
+            g(ball(15, 10, 7, 'lime', { w: 1.6 }) + circ(13, 8, 1.5, '#fff', { s: 'none', op: 0.45 }), { a: A('sway', 4, 0, '50% 100%') }),
+        [UI + ' (TreeInfoUI: árvore plantada, linha no painel de poluição)'])
 ];

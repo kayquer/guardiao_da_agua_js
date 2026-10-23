@@ -456,6 +456,49 @@ module.exports = [
                 circ(16, 16, 3.2, P.yellow[0], { w: 1.6 }), { a: A('spin', 14, 0, 'center', 'linear') })
     },
     {
+        id: 'ui-history', area: 'ui', emoji: ['📜'], title: 'Histórico de notificações',
+        used: [HTML + ' (#btn-notifications, #nh-title)', UI + ' (setupNotificationHistory)'],
+        sm: () => box(8, 6, 16, 20, 'sand', { k: 0.25 }) +
+            rect(5, 3, 22, 5, P.sand[1], { rx: 2.5, w: 1.8 }) + rect(5, 24, 22, 5, P.sand[1], { rx: 2.5, w: 1.8 }) +
+            line('M12 11.5h8M12 15h8M12 18.5h5', { w: 1.5 }) +
+            g(line('M12 21.5h8', { s: P.red[0], w: 1.8 }), { a: A('fade', 2.2) })
+    },
+    {
+        id: 'ui-faucet', area: 'ui', emoji: ['🚰'], title: 'Torneira / rega',
+        used: [RP + ' (quem consome água)', UI + ' (consumo do prédio)', 'js/systems/ui/TreeInfoUI.js (rega da muda)'],
+        sm: () => rect(3, 9, 5, 9, P.gray[0], { rx: 1, w: 1.6 }) +
+            path('M8 11h12a6 6 0 0 1 6 6v2h-6v-2H8z', P.concrete[0], { w: 1.8 }) + path('M20 17v-3a4 4 0 0 1 3.5 4H20z', P.concrete[1], { s: 'none' }) +
+            line('M15 11V7', { w: 2.2 }) + rect(10, 4.5, 10, 3, P.blue[0], { rx: 1.5, w: 1.5 }) +
+            g(drop(23, 26.5, 2.4, 'water', { noHl: true, w: 1.4 }), { a: A('drip', 1.8, 0, 'center', 'ease-in') })
+    },
+    {
+        id: 'ui-upgrade', area: 'ui', emoji: ['⬆️'], title: 'Evoluir',
+        used: ['js/systems/building/ZoneGrowth.js (botão Evoluir e aviso)'],
+        sm: () => box(3, 3, 26, 26, 'green', { rx: 6 }) +
+            g(path('M16 6.5l8 8.5h-5v10h-6V15H8z', '#fff', { w: 1.8 }), { a: A('hop', 2.4) })
+    },
+    {
+        id: 'ui-document', area: 'ui', emoji: ['📄'], title: 'Documento / outras despesas',
+        used: ['js/core/ResourceManager.js (getExpenseBreakdown: outras despesas)', RP],
+        sm: () => g(path('M7 3h12l7 7v19H7z', '#fff') + path('M21 10h5v19h-5z', P.white[1], { s: 'none' }) + path('M7 3h12l7 7v19H7z') +
+            path('M19 3v7h7', P.white[1]) + line('M11 15h11M11 19h11M11 23h7', { w: 1.5 }), { a: A('bobs', 3) })
+    },
+    {
+        id: 'ui-pick', area: 'ui', emoji: ['⛏️'], title: 'Cavando a cova',
+        used: ['js/systems/ui/TreeInfoUI.js (abrindo a cova da muda)'],
+        sm: () => [[6, 27, 0], [11, 28.5, 0.6]].map(([x, y, d]) => g(ell(x, y, 2.4, 1.5, P.soil[0], { w: 1.2 }), { a: A('hop', 1.6, d) })).join('') +
+            g(thick('M10 27L22 9', P.brown[0], 3) + path('M8 9c5-5 13-6 21-2-6-1-11 0-15 3z', P.gray[0], { w: 1.6 }) +
+                line('M10 8.5c5-3.5 11-4 17-2', { s: '#fff', w: 1, op: 0.8 }), { a: A('tilt', 1.6, 0, '0% 100%') })
+    },
+    {
+        id: 'ui-native-tree', area: 'ui', emoji: ['🌲'], title: 'Árvore nativa',
+        used: ['js/systems/ui/TreeInfoUI.js (árvores nativas no mapa)'],
+        sm: () => rect(14, 23, 4, 6, P.brown[0], { w: 1.5 }) + line('M8 29h16') +
+            g(poly('16,3 23,12 9,12', P.leaf[0], { w: 1.6 }) + poly('16,8 25,18 7,18', P.leaf[0], { w: 1.6 }) +
+                poly('16,13 27,24 5,24', P.leaf[0], { w: 1.6 }) + path('M16 13l11 11h-6z', P.leaf[1], { s: 'none' }) +
+                circ(13, 10, 1.3, '#fff', { s: 'none', op: 0.45 }), { a: A('sway', 4, 0, '50% 100%') })
+    },
+    {
         id: 'weather-wind', area: 'weather', emoji: ['💨', '🌬️'], title: 'Vento',
         used: [WU + ' (vento e rajadas)', 'data/building-studies.json (studyIcon wind_farm)'],
         sm: () => g(thick('M4 11h13a3.5 3.5 0 1 0-3.5-3.5', P.blue[0], 2.2), { a: A('drift', 3) }) +

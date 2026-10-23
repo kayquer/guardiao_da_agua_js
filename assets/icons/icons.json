@@ -917,6 +917,94 @@
       "sm": "svg/ui-biohazard.svg"
     }
   },
+  "ui-history": {
+    "title": "Histórico de notificações",
+    "area": "ui",
+    "emoji": [
+      "📜"
+    ],
+    "usedIn": [
+      "index.html (#btn-notifications, #nh-title)",
+      "js/systems/UIManager.js (setupNotificationHistory)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-history.svg"
+    }
+  },
+  "ui-faucet": {
+    "title": "Torneira / rega",
+    "area": "ui",
+    "emoji": [
+      "🚰"
+    ],
+    "usedIn": [
+      "js/systems/ui/ResourcePanels.js (quem consome água)",
+      "js/systems/UIManager.js (consumo do prédio)",
+      "js/systems/ui/TreeInfoUI.js (rega da muda)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-faucet.svg"
+    }
+  },
+  "ui-upgrade": {
+    "title": "Evoluir",
+    "area": "ui",
+    "emoji": [
+      "⬆️"
+    ],
+    "usedIn": [
+      "js/systems/building/ZoneGrowth.js (botão Evoluir e aviso)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-upgrade.svg"
+    }
+  },
+  "ui-document": {
+    "title": "Documento / outras despesas",
+    "area": "ui",
+    "emoji": [
+      "📄"
+    ],
+    "usedIn": [
+      "js/core/ResourceManager.js (getExpenseBreakdown: outras despesas)",
+      "js/systems/ui/ResourcePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-document.svg"
+    }
+  },
+  "ui-pick": {
+    "title": "Cavando a cova",
+    "area": "ui",
+    "emoji": [
+      "⛏️"
+    ],
+    "usedIn": [
+      "js/systems/ui/TreeInfoUI.js (abrindo a cova da muda)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-pick.svg"
+    }
+  },
+  "ui-native-tree": {
+    "title": "Árvore nativa",
+    "area": "ui",
+    "emoji": [
+      "🌲"
+    ],
+    "usedIn": [
+      "js/systems/ui/TreeInfoUI.js (árvores nativas no mapa)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-native-tree.svg"
+    }
+  },
   "weather-wind": {
     "title": "Vento",
     "area": "weather",
@@ -1041,6 +1129,22 @@
     "size": "sm",
     "files": {
       "sm": "svg/cat-infrastructure.svg"
+    }
+  },
+  "cat-roads": {
+    "title": "Categoria Asfalto",
+    "area": "cat",
+    "emoji": [
+      "🛣️"
+    ],
+    "usedIn": [
+      "index.html (.category-btn[data-category=\"roads\"])",
+      "js/systems/UIManager.js",
+      "js/systems/ui/MobilePanels.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/cat-roads.svg"
     }
   },
   "cat-zoning": {
@@ -2226,6 +2330,24 @@
     "files": {
       "lg": "svg/erosion-control.svg",
       "sm": "svg/erosion-control-sm.svg"
+    }
+  },
+  "tree-sapling": {
+    "title": "Muda de Árvore",
+    "area": "building",
+    "emoji": [
+      "🌱"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (tree_sapling.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "js/systems/UIManager.js (TreeInfoUI: árvore plantada, linha no painel de poluição)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/tree-sapling.svg",
+      "sm": "svg/tree-sapling-sm.svg"
     }
   },
   "lesson-planet": {
