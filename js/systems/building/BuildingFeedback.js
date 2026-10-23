@@ -23,6 +23,9 @@ mixin(BuildingSystem, {
         if (this._energyWarningCooldown && now < this._energyWarningCooldown) return;
         this._energyWarningCooldown = now + 30000;
 
+        // Primeira falta de energia do jogador: o guia 'energy' da Cláudia (TutorialSystem.GUIDES) no lugar do alerta
+        if (window.gameManager?.tutorialSystem?.requestEnergyGuide?.()) return;
+
         const efficiencyPercent = Math.round((electricity.efficiency || 0) * 100);
         const generation = Math.round(electricity.generation || 0);
         const consumption = Math.round(electricity.consumption || 0);
@@ -376,9 +379,8 @@ mixin(BuildingSystem, {
             // Restore original scaling immediately
             buildingData.mesh.scaling = buildingData.originalScaling || new BABYLON.Vector3(1, 1, 1);
 
-            // ✅ FIX: FORÇAR rotação para (0, 0, 0) para alinhamento perfeito com grid
-            buildingData.mesh.rotation = BABYLON.Vector3.Zero();
-            log(`🎯 Rotação FORÇADA para (0, 0, 0) - alinhamento perfeito ao grid`);
+            // Rotação do prédio (quarto de volta alinhado ao grid)
+            this.applyBuildingRotation(buildingData);
 
             // ✅ FIX: Restaurar material original SEM sobrescrever com novo material
             if (buildingData.originalMaterial) {
@@ -400,12 +402,12 @@ mixin(BuildingSystem, {
 
     applyConstructionVisuals(buildingData) {
         if (buildingData.mesh) {
-            // ✅ FIX: Garantir que a rotação esteja zerada antes de salvar
-            buildingData.mesh.rotation = BABYLON.Vector3.Zero();
-            
+            // Rotação do prédio (quarto de volta alinhado ao grid) antes de salvar
+            this.applyBuildingRotation(buildingData);
+
             // Aplicar efeito de construção aprimorado (modelo .glb: cresce de baixo pra cima, base no chão)
             buildingData.mesh.scaling = this.getConstructionScaling(buildingData.mesh, 0);
-            buildingData.originalRotation = BABYLON.Vector3.Zero(); // Sempre (0, 0, 0) para grid
+            buildingData.originalRotation = this.getBuildingRotationVector(buildingData);
             buildingData.originalScaling = new BABYLON.Vector3(1, 1, 1);
 
             // ✅ FIX: Salvar material original ANTES de aplicar efeitos de construção
@@ -662,7 +664,6 @@ mixin(BuildingSystem, {
 
     animateBuildingCompletion(buildingData) {
         try {
-            const mesh = buildingData.mesh;
             const targetScale = buildingData.originalScaling || new BABYLON.Vector3(1, 1, 1);
 
             // Animação de "pop" de conclusão
@@ -670,14 +671,17 @@ mixin(BuildingSystem, {
             const duration = 800;
 
             const animateCompletion = () => {
-                if (mesh.isDisposed()) return;
+                // Mesh atual a cada quadro: se o .glb chegar no meio do pop (replaceBuildingMesh), o novo
+                // termina na escala e na rotação certas em vez de ficar parado no meio do balanço
+                const mesh = buildingData.mesh;
+                if (!mesh || mesh.isDisposed()) return;
 
                 const elapsed = Date.now() - startTime;
                 const progress = elapsed / duration;
 
                 if (progress >= 1) {
                     mesh.scaling = targetScale;
-                    mesh.rotation = buildingData.originalRotation || BABYLON.Vector3.Zero();
+                    this.applyBuildingRotation(buildingData);
                     return;
                 }
 
@@ -695,9 +699,11 @@ mixin(BuildingSystem, {
 
                 mesh.scaling = scale;
 
-                // Parar rotação gradualmente
-                const rotationFactor = 1 - progress;
-                mesh.rotation.y = (buildingData.originalRotation?.y || 0) + (rotationFactor * 0.1);
+                // Leve balanço em torno da rotação do prédio, que some no fim (não briga com o botão "girar")
+                if (!buildingData.rotateAnimation) {
+                    const rotationFactor = 1 - progress;
+                    mesh.rotation.y = this.getBuildingRotationVector(buildingData).y + (rotationFactor * 0.1);
+                }
 
                 requestAnimationFrame(animateCompletion);
             };

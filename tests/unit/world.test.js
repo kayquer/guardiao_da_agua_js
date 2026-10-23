@@ -63,6 +63,58 @@ test('terreno: o chão "terrain" nunca passa acima do topo dos blocos (nem perto
     assert.ok(Math.abs(c - (gm.getTerrainBlockHeight(hill[0], hill[1]) - 0.15)) < 1e-9);
 });
 
+// Blocos voxel encostados (antes 98% da célula: pela fresta aparecia o chão escuro) e laterais só onde aparecem
+test('terreno: blocos e água ocupam a célula inteira, sem fresta, e só têm as laterais visíveis', () => {
+    const gm = grid();
+    gm.cellSize = 2;
+    const half = 40;
+    const quads = geo => {
+        const list = [];
+        for (let i = 0; i < geo.indices.length; i += 6) {
+            const v = [0, 1, 2, 5].map(k => geo.indices[i + k]).map(n => geo.positions.slice(n * 3, n * 3 + 3));
+            list.push({ v, n: geo.normals.slice(geo.indices[i] * 3, geo.indices[i] * 3 + 3) });
+        }
+        return list;
+    };
+    const cellOf = q => {
+        const cx = q.v.reduce((s, p) => s + p[0], 0) / 4, cz = q.v.reduce((s, p) => s + p[2], 0) / 4;
+        return [Math.floor((cx + half) / 2), Math.floor((cz + half) / 2)];
+    };
+    const land = quads(gm.buildTerrainGeometry(0, 0, 40, 40));
+    const water = quads(gm.buildWaterGeometry(0, 0, 40, 40));
+    // Topo (normal para cima, inclusive o chanfro) de cada célula cobre a célula toda: área = 2 × 2
+    const area = new Map();
+    for (const q of [...land, ...water]) {
+        if (q.n[1] <= 0.5) continue;
+        const [a, b, c, d] = q.v; // quad plano em xz (trapézio ou retângulo): área pela fórmula do polígono
+        const xz = [a, b, c, d].map(p => [p[0], p[2]]);
+        let s = 0;
+        for (let i = 0; i < 4; i++) s += xz[i][0] * xz[(i + 1) % 4][1] - xz[(i + 1) % 4][0] * xz[i][1];
+        const key = cellOf(q).join(',');
+        area.set(key, (area.get(key) || 0) + Math.abs(s) / 2);
+    }
+    assert.strictEqual(area.size, 1600);
+    for (const [key, a] of area) assert.ok(Math.abs(a - 4) < 1e-6, `célula ${key} com topo ${a}`);
+    // Laterais da terra: só onde o vizinho é mais baixo, e descem até o topo dele (água = 0, borda = 0)
+    const top = (x, z) => (x < 0 || z < 0 || x >= 40 || z >= 40) ? 0 : gm.terrainGrid[x][z] === 'water' ? 0 : gm.getTerrainBlockHeight(x, z);
+    let sides = 0;
+    for (const q of land) {
+        if (Math.abs(q.n[1]) > 1e-9) continue;
+        sides++;
+        const [x, z] = cellOf({ v: q.v.map(p => [p[0] - q.n[0] * 0.01, p[1], p[2] - q.n[2] * 0.01]) });
+        const bottom = Math.min(...q.v.map(p => p[1]));
+        const nTop = top(x + Math.round(q.n[0]), z + Math.round(q.n[2]));
+        assert.ok(Math.abs(bottom - nTop) < 1e-9, `lateral de ${x},${z} desce até ${bottom}, vizinho ${nTop}`);
+        assert.ok(nTop < gm.getTerrainBlockHeight(x, z), `lateral escondida em ${x},${z}`);
+    }
+    assert.ok(sides > 0 && sides < 1600 * 4, `${sides} laterais`);
+    // Cor coerente: nenhuma face lateral escura demais (antes as de costas para o sol ficavam pretas)
+    const geo = gm.buildTerrainGeometry(0, 0, 40, 40);
+    for (let i = 0; i < geo.colors.length; i += 4) {
+        assert.ok(Math.max(geo.colors[i], geo.colors[i + 1], geo.colors[i + 2]) > 0.3, 'cor de vértice escura');
+    }
+});
+
 test('vento: rajada ou média alta liga o vento forte; direção vira vetor para onde sopra', () => {
     const g = load('js/systems/WeatherService.js', 'js/systems/WeatherEffects.js');
     const WeatherEffects = g('WeatherEffects');

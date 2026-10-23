@@ -194,6 +194,10 @@ class QuestSystem {
                 'info'
             );
         }
+        // Som só com o jogo rodando (no boot as missões se ativam sozinhas, atrás da tela de carregamento)
+        if (typeof AudioManager !== 'undefined' && this.gameManager.gameState === 'playing') {
+            AudioManager.playSound('sfx_mission_new');
+        }
         
         log(`🎯 Missão iniciada: ${quest.title}`);
         return true;
@@ -382,6 +386,8 @@ class QuestSystem {
         
         let allObjectivesComplete = true;
         let totalProgress = 0;
+        const objectiveDone = o => (o.required > 0 ? (o.current || 0) >= o.required : !o.violated);
+        const doneBefore = quest.objectives.filter(objectiveDone).length;
         
         quest.objectives.forEach(objective => {
             const progress = this.checkObjectiveProgress(objective, quest);
@@ -403,6 +409,12 @@ class QuestSystem {
         // Update UI if progress changed
         if (Math.abs(oldProgress - quest.progress) > 0.01) {
             this.updateQuestUI();
+        }
+
+        // Um objetivo a mais cumprido (sem ser o último: esse toca o jingle da missão)
+        if (!allObjectivesComplete && quest.objectives.filter(objectiveDone).length > doneBefore &&
+            typeof AudioManager !== 'undefined' && this.gameManager.gameState === 'playing') {
+            AudioManager.playSound('sfx_mission_progress');
         }
 
         // Objetivo 'avoid' violado (ex.: água acabou) reprova na hora
@@ -988,124 +1000,12 @@ class QuestSystem {
         });
     }
 
-    // ===== ENHANCED MISSION COMPLETION AUDIO FEEDBACK =====
+    // ===== SOM DA MISSÃO CONCLUÍDA =====
+    // Jingle com a música abaixada (AudioManager.onMissionComplete); desempenho excelente ganha a conquista.
     playMissionCompletionAudio(quest, performanceMultiplier) {
-        try {
-            // Determine audio based on mission importance and performance
-            let primarySound = 'sfx_success';
-            let celebrationLevel = 'normal';
-
-            // Check mission importance
-            if (quest.priority === 'high' || quest.urgency === 'urgent') {
-                celebrationLevel = 'important';
-            }
-
-            // Check performance multiplier
-            if (performanceMultiplier >= 1.5) {
-                celebrationLevel = 'excellent';
-            } else if (performanceMultiplier >= 1.2) {
-                celebrationLevel = 'good';
-            }
-
-            // Play primary completion sound
-            AudioManager.playSound(primarySound, 0.8);
-
-            // Add celebration effects based on level
-            setTimeout(() => {
-                switch (celebrationLevel) {
-                    case 'excellent':
-                        // Excellent performance - fanfare
-                        AudioManager.playSound('sfx_pickup', 0.6);
-                        setTimeout(() => {
-                            AudioManager.playSound('sfx_item', 0.4);
-                        }, 200);
-                        setTimeout(() => {
-                            AudioManager.playSound('sfx_success', 0.5);
-                        }, 400);
-                        break;
-
-                    case 'important':
-                        // Important mission - double celebration
-                        AudioManager.playSound('sfx_pickup', 0.7);
-                        setTimeout(() => {
-                            AudioManager.playSound('sfx_success', 0.6);
-                        }, 300);
-                        break;
-
-                    case 'good':
-                        // Good performance - bonus sound
-                        AudioManager.playSound('sfx_pickup', 0.5);
-                        break;
-
-                    default:
-                        // Normal completion - single sound already played
-                        break;
-                }
-            }, 150);
-
-            // Create procedural victory sound for special occasions
-            if (celebrationLevel === 'excellent') {
-                setTimeout(() => {
-                    this.createProceduralVictorySound();
-                }, 600);
-            }
-
-            log(`🔊 Mission completion audio played: ${celebrationLevel} level for "${quest.title}"`);
-
-        } catch (error) {
-            console.warn('⚠️ Error playing mission completion audio:', error);
-            // Fallback to simple success sound
-            AudioManager.playSound('sfx_success', 0.8);
-        }
-    }
-
-    createProceduralVictorySound() {
-        try {
-            if (typeof AudioManager === 'undefined' || !AudioManager.getInstance().audioContext) {
-                return;
-            }
-
-            const audioContext = AudioManager.getInstance().audioContext;
-            const masterVolume = AudioManager.getInstance().masterVolume;
-            const sfxVolume = AudioManager.getInstance().sfxVolume;
-
-            // Create a celebratory chord progression
-            const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5 (C major chord)
-            const duration = 0.8;
-
-            frequencies.forEach((freq, index) => {
-                setTimeout(() => {
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-
-                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
-                    oscillator.type = 'sine';
-
-                    // Envelope for musical sound
-                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                    gainNode.gain.linearRampToValueAtTime(
-                        masterVolume * sfxVolume * 0.3,
-                        audioContext.currentTime + 0.1
-                    );
-                    gainNode.gain.exponentialRampToValueAtTime(
-                        0.001,
-                        audioContext.currentTime + duration
-                    );
-
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + duration);
-
-                }, index * 100);
-            });
-
-            log('🎵 Procedural victory sound created');
-
-        } catch (error) {
-            console.warn('⚠️ Error creating procedural victory sound:', error);
-        }
+        if (typeof AudioManager === 'undefined') return;
+        AudioManager.onMissionComplete(performanceMultiplier >= 1.5);
+        log(`🔊 Som de missão concluída: "${quest.title}"`);
     }
 }
 

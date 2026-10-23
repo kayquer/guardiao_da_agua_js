@@ -26,3 +26,30 @@
 	• Twitter:	 twitter.com/KenneyNL
 	• BlueSky:	 kenney.bsky.social
 	• Instagram: instagram.com/kenney_nl
+
+	------------------------------
+
+	Uso no Guardião da Água (10/2026)
+
+	Fonte: https://kenney.nl/assets/city-kit-industrial (versão 2.0, formato GLB)
+	Só os .glb usados ficam no repositório: prédios da tabela BUILDING_MODELS
+	(js/data/buildingModels.js) e peças dos lotes das zonas que crescem
+	(ZONE_LOTS em js/data/zoneLots.js). Arquivos nesta pasta:
+	  building-d.glb
+	  building-e.glb
+	  building-g.glb
+	  building-h.glb
+	  building-i.glb
+	  building-k.glb
+	  building-n.glb
+	  building-o.glb
+	  building-p.glb
+	  building-s.glb
+	  chimney-large.glb
+	  chimney-medium.glb
+	  detail-tank-large.glb
+	  detail-tank.glb
+	  shipping-container-a.glb
+	  shipping-container-b.glb
+	  shipping-container-c.glb
+	  water-tower.glb

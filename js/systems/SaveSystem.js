@@ -13,6 +13,9 @@
 class SaveSystem {
     static VERSION = 2;
     static FORMAT = 'guardiao_agua_save';
+    // Partida sem volta (isLostGame): água abaixo de 5% da capacidade ou poluição a partir de 90
+    static LOST_WATER_RATIO = 0.05;
+    static LOST_POLLUTION = 90;
     static KEY_PREFIX = 'guardiao_agua_save_';
     // Chaves do formato antigo (um save só para todo mundo, sem prédios): nunca carregavam direito
     static LEGACY_KEYS = ['guardiao_agua_autosave', 'guardiao_agua_save_manual_save', 'guardiao_agua_save_list'];
@@ -94,6 +97,20 @@ class SaveSystem {
             game.quests && typeof game.quests === 'object';
         if (!valid) return { ok: false, reason: 'corrupt' };
         return { ok: true, envelope };
+    }
+
+    /**
+     * Partida sem volta: game over, água abaixo de LOST_WATER_RATIO da capacidade ou poluição a partir de
+     * LOST_POLLUTION. Continuar um jogo assim terminaria em segundos, então o menu oferece só um jogo novo.
+     * Recebe o `game` do envelope (o mesmo de getSaveData).
+     */
+    static isLostGame(game) {
+        const r = game?.resources?.resources;
+        if (!r) return false;
+        const water = r.water || {};
+        const capacity = water.max || water.storage || 0;
+        if (Number.isFinite(water.current) && (water.current <= 0 || (capacity > 0 && water.current / capacity < SaveSystem.LOST_WATER_RATIO))) return true;
+        return Number.isFinite(r.pollution?.current) && r.pollution.current >= SaveSystem.LOST_POLLUTION;
     }
 
     /** Texto amigável para cada motivo de falha ao carregar. */

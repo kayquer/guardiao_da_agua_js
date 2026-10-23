@@ -38,7 +38,7 @@ async function mockExternalApis(page, { forecast = FORECAST } = {}) {
 /** Perfil salvo + clique nele na tela inicial → espera o jogo inicializar (fica no tutorial). */
 // Guias progressivos (TutorialSystem.GUIDES) já feitos: senão eles abrem sozinhos quando o teste constrói
 // água + energia e congelam o jogo. O teste dos guias passa guides: [].
-const ALL_GUIDES = ['storage', 'zoning', 'public', 'tourism', 'industrial', 'commercial'];
+const ALL_GUIDES = ['energy', 'roads', 'storage', 'zoning', 'public', 'tourism', 'industrial', 'commercial'];
 
 async function startGame(page, { profile = TEST_PROFILE, forecast, url = '/index.html', guides = ALL_GUIDES } = {}) {
     await mockExternalApis(page, { forecast });

@@ -31,7 +31,7 @@ const UI_ICON_FILES = {
     'ui-no-water': 's', 'ui-construction': 's', 'ui-recycle': 's', 'ui-axe': 's', 'ui-sick': 's',
     'ui-bus': 's', 'ui-tree': 's', 'ui-river': 's', 'ui-farm': 's', 'ui-bricks': 's', 'ui-microscope': 's',
     'ui-biohazard': 's', 'weather-wind': 's', 'weather-humidity': 's', 'cat-water': 's',
-    'cat-treatment': 's', 'cat-storage': 's', 'cat-public': 's', 'cat-power': 's', 'cat-infrastructure': 's',
+    'cat-treatment': 's', 'cat-storage': 's', 'cat-public': 's', 'cat-power': 's', 'cat-infrastructure': 's', 'cat-roads': 's',
     'cat-zoning': 's', 'cat-commercial': 's', 'cat-tourism': 's', 'cat-industrial': 's', 'weather-sun': 'b',
     'weather-moon': 'b', 'weather-partly': 'b', 'weather-cloud': 'b', 'weather-fog': 'b',
     'weather-drizzle': 'b', 'weather-rain': 'b', 'weather-heavy-rain': 'b', 'weather-snow': 'b',

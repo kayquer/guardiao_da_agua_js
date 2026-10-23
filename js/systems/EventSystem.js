@@ -464,14 +464,8 @@ class EventSystem {
             }
         }
         
-        // Som baseado na severidade
-        if (event.config.severity === 'high') {
-            AudioManager.playSound('sfx_error');
-        } else if (event.config.severity === 'positive') {
-            AudioManager.playSound('sfx_success');
-        } else {
-            AudioManager.playSound('sfx_click');
-        }
+        // Som do tipo de evento (sting de abertura + seca/enchente/poluição...; bons eventos: som alegre)
+        if (typeof AudioManager !== 'undefined') AudioManager.onEventStart(event);
     }
     
     notifyEventEnd(event) {
@@ -482,6 +476,7 @@ class EventSystem {
                 3000
             );
         }
+        if (typeof AudioManager !== 'undefined') AudioManager.onEventEnd(event);
     }
     
     showEducationalContent(content) {

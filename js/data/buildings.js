@@ -109,16 +109,16 @@ const BUILDING_TYPES = {
         }
     },
 
-    // CATEGORIA: INFRAESTRUTURA
+    // CATEGORIA: ASFALTO (ruas: obra instantânea e barata, auto-encaixe de curvas/T/cruzamentos — js/systems/roads/)
     paved_road: {
         name: 'Rua Asfaltada',
-        description: 'Estrada pavimentada que conecta edifícios eficientemente',
-        category: 'infrastructure',
-        cost: 500,
+        description: 'Arraste para traçar. Liga sozinha nas curvas e cruzamentos',
+        category: 'roads',
+        cost: 40,
         size: 1,
         roadType: 'paved',
         efficiency: 1.0,
-        maintenanceCost: 10,
+        maintenanceCost: 1,
         icon: '🛣️',
         color: '#424242',
         requirements: {
@@ -129,13 +129,12 @@ const BUILDING_TYPES = {
 
     dirt_road: {
         name: 'Estrada de Terra',
-        description: 'Estrada básica de baixo custo',
-        category: 'infrastructure',
-        cost: 200,
+        description: 'Mais barata e sobe colinas, mas a chuva leva a terra',
+        category: 'roads',
+        cost: 20,
         size: 1,
         roadType: 'dirt',
         efficiency: 0.7,
-        maintenanceCost: 5,
         icon: '🛤️',
         color: '#8D6E63',
         requirements: {

@@ -218,6 +218,7 @@ class BuildingSystem {
             residential: new BABYLON.Color3(0.55, 0.35, 0.20), // Marrom madeira
             power: new BABYLON.Color3(1.0, 1.0, 0.0),         // Amarelo energia
             infrastructure: new BABYLON.Color3(0.5, 0.5, 0.5), // Cinza concreto
+            roads: new BABYLON.Color3(0.3, 0.31, 0.33),       // Asfalto
             zoning: new BABYLON.Color3(0.8, 0.8, 0.8),        // Cinza claro
             commercial: new BABYLON.Color3(0.2, 0.8, 0.2),    // Verde comercial
             tourism: new BABYLON.Color3(0.8, 0.2, 0.8),       // Magenta turismo
@@ -363,8 +364,11 @@ class BuildingSystem {
     }
 
     placeBuilding(gridX, gridZ, buildingTypeId) {
+        // Rua é instantânea e barata: sem espera entre construções, sem fila de obras e sem canteiro
+        const isRoad = !!this.buildingTypes.get(buildingTypeId)?.roadType;
+
         // Verificar cooldown de construção
-        if (this.isBuildingOnCooldown()) {
+        if (!isRoad && this.isBuildingOnCooldown()) {
             const remainingSeconds = Math.ceil(this.buildingCooldown.remainingTime / 1000);
             this.showNotification(`Aguarde ${remainingSeconds} segundos antes de construir novamente...`, 'warning');
             console.warn(`⚠️ Construção em cooldown: ${remainingSeconds}s restantes`);
@@ -409,7 +413,7 @@ class BuildingSystem {
         // Verificar se atingiu o limite de construções simultâneas
         // (verificado depois de canPlaceBuilding e budget para que o aviso só apareça
         // quando o local e o orçamento estão corretos, mas a fila está cheia)
-        if (this.constructionQueue.size >= this.maxSimultaneousConstructions) {
+        if (!isRoad && this.constructionQueue.size >= this.maxSimultaneousConstructions) {
             // Verificar se há construções travadas antes de bloquear
             this.validateConstructionState();
 
@@ -423,8 +427,9 @@ class BuildingSystem {
         // Calcular tempo de construção baseado no custo
         const constructionTime = this.calculateConstructionTime(buildingType.cost);
 
-        // Criar edifício em estado de construção
-        const building = this.createBuildingMesh(gridX, gridZ, buildingType);
+        // Criar edifício em estado de construção, de frente para a câmera (quarto de volta, ver getDefaultBuildingRotation)
+        const rotation = this.getDefaultBuildingRotation(buildingType);
+        const building = this.createBuildingMesh(gridX, gridZ, buildingType, rotation);
         if (!building) return null;
 
         // Registrar no sistema
@@ -436,6 +441,7 @@ class BuildingSystem {
             gridZ,
             mesh: building,
             config: buildingType,
+            rotation, // quartos de volta (0-3); a fachada dos modelos olha para -Z com 0
             constructionTime: Date.now(),
             active: false, // Inativo durante construção
             efficiency: 0.0, // Sem eficiência durante construção
@@ -465,19 +471,16 @@ class BuildingSystem {
 
         this.buildings.set(buildingId, buildingData);
 
-        // Iniciar processo de construção
-        this.startConstruction(buildingData);
+        // Iniciar processo de construção (rua: pronta na hora, efeitos pela via normal, sem animação)
+        if (isRoad) this.completeConstruction(buildingData, { quiet: true });
+        else this.startConstruction(buildingData);
 
         // Ocupar área no grid
         this.gridManager.occupyArea(gridX, gridZ, buildingType.size);
 
-        // Limpar decorações na área de construção
-        if (this.gridManager.clearDecorationsInArea) {
-            this.gridManager.clearDecorationsInArea(gridX, gridZ, buildingType.size);
-        }
-
         // Árvores no terreno caem com a obra (piora poluição e satisfação: TreeSystem)
-        this.gameManager?.treeSystem?.fellTreesInArea(gridX, gridZ, buildingType.size);
+        const felled = this.gameManager?.treeSystem?.fellTreesInArea(gridX, gridZ, buildingType.size);
+        if (felled && typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_axe');
 
         // Verificar e criar conexões para infraestrutura
         if (this.isInfrastructureBuilding(buildingType)) {
@@ -502,16 +505,20 @@ class BuildingSystem {
             }
         }
 
+        // Rua num traçado (placeRoadLine): som, aviso, encaixe das peças, trânsito e tutorial uma vez só no fim
+        if (isRoad && this.roadBatch) return buildingData;
+
         // ===== AUDIO FEEDBACK PARA COLOCAÇÃO =====
         this.playBuildingPlacementAudio(buildingType);
 
-        // Notificar sistema de vida urbana se for uma estrada
-        if (buildingType.id === 'road' && window.gameManager && window.gameManager.cityLifeSystem) {
-            window.gameManager.cityLifeSystem.onRoadBuilt();
+        if (isRoad) {
+            // Peça certa nesta célula e nas vizinhas (curva, T, cruzamento...) e trânsito
+            this.refreshRoadPieces([{ x: gridX, z: gridZ }]);
+            this.gameManager?.cityLifeSystem?.onRoadBuilt();
+        } else {
+            // Ativar cooldown de construção
+            this.activateBuildingCooldown();
         }
-
-        // Ativar cooldown de construção
-        this.activateBuildingCooldown();
 
         // Mostrar notificação de sucesso
         this.showNotification(`${buildingType.name} construído com sucesso!`, 'success');
@@ -540,6 +547,9 @@ class BuildingSystem {
     removeBuilding(buildingId) {
         const building = this.buildings.get(buildingId);
         if (!building) return false;
+        if (!this.clearingAll && typeof AudioManager !== 'undefined' && this.gameManager?.gameState === 'playing') {
+            AudioManager.playSound('sfx_demolish');
+        }
 
         // Remover efeitos nos recursos imediatamente
         this.applyBuildingEffects(building, false);
@@ -578,6 +588,12 @@ class BuildingSystem {
         // Adicionar à fila de disposal para processamento assíncrono
         if (building.mesh) {
             this.queueForDisposal(building.mesh);
+        }
+
+        // Rua demolida: as vizinhas trocam de peça (reta vira ponta, T vira curva...) e o trânsito se refaz
+        if (building.config?.roadType && !this.clearingAll) {
+            this.refreshRoadPieces([{ x: building.gridX, z: building.gridZ }]);
+            this.gameManager?.cityLifeSystem?.onRoadBuilt();
         }
 
         // ===== ZERO-ERROR POLICY FIX: Validar config antes de acessar propriedades =====
@@ -803,7 +819,9 @@ class BuildingSystem {
 
                 if (!isRented) {
                     // Só gera receita se não estiver alugado
-                    const incomeAmount = config.incomeGeneration * building.efficiency;
+                    // Zona: só a fração da fase (ZoneGrowth.js); ao tirar, a fração que foi somada
+                    const zoneScale = this.getZoneIncomeScale ? this.getZoneIncomeScale(building, add) : 1;
+                    const incomeAmount = config.incomeGeneration * building.efficiency * zoneScale;
                     if (add) {
                         resourceManager.addIncome(incomeAmount);
                         log(`💰 Receita adicionada: +R$ ${incomeAmount}/min de ${config.name}`);
@@ -969,6 +987,13 @@ class BuildingSystem {
                 this.forceResetConstructionState();
             }
 
+            // Zonas prontas crescem pelo tempo de jogo (ZoneGrowth.js)
+            try {
+                this.updateZoneGrowth();
+            } catch (error) {
+                console.warn('⚠️ Erro ao atualizar o crescimento das zonas:', error);
+            }
+
             // Validação periódica do estado de construção (a cada 5 segundos)
             this.lastConstructionCheck += deltaTime;
             if (this.lastConstructionCheck >= 5000) {
@@ -1051,7 +1076,8 @@ class BuildingSystem {
         }
     }
 
-    completeConstruction(buildingData) {
+    /** @param {{quiet?: boolean}} options - quiet: obra instantânea (ruas), sem canteiro, som nem celebração */
+    completeConstruction(buildingData, { quiet = false } = {}) {
         log(`✅ Construção concluída: ${buildingData.config.name}`);
 
         // Remover da fila de construção
@@ -1063,10 +1089,14 @@ class BuildingSystem {
         buildingData.underConstruction = false;
 
         // Remover visuais de construção
-        this.removeConstructionVisuals(buildingData);
+        if (!quiet) this.removeConstructionVisuals(buildingData);
+
+        // Zona: vira área livre (fase 0) e passa a crescer sozinha (ZoneGrowth.js); efeitos na escala da fase
+        this.onZoneConstructionComplete?.(buildingData);
 
         // Aplicar efeitos nos recursos (agora que está ativo)
         this.applyBuildingEffects(buildingData, true);
+        if (quiet) return;
 
         // ===== AUDIO FEEDBACK PARA CONCLUSÃO =====
         this.playConstructionCompletionAudio(buildingData);
@@ -1356,6 +1386,12 @@ class BuildingSystem {
     getAllBuildings() { return Array.from(this.buildings.values()); }
     
     // ===== SAVE/LOAD =====
+    /** Rotação do prédio em quartos de volta: inteiro 0-3 (valor inválido/ausente = 0, como nos saves antigos). */
+    static normalizeRotation(rotation) {
+        const quarter = Math.round(Number(rotation));
+        return Number.isFinite(quarter) ? ((quarter % 4) + 4) % 4 : 0;
+    }
+
     /** O que vai para o save de um prédio (puro: testável sem Babylon). Obra em andamento conta pelo gameTime. */
     static serializeBuilding(building) {
         return {
@@ -1363,6 +1399,7 @@ class BuildingSystem {
             type: building.type,
             gridX: building.gridX,
             gridZ: building.gridZ,
+            rotation: BuildingSystem.normalizeRotation(building.rotation),
             active: !!building.active,
             efficiency: Number.isFinite(building.efficiency) ? building.efficiency : 0,
             underConstruction: !!building.underConstruction,
@@ -1372,7 +1409,12 @@ class BuildingSystem {
             isRented: !!building.isRented,
             // Se os efeitos estão nos totais salvos do ResourceManager. Quase sempre = pronto, mas um prédio
             // danificado por evento (EventSystem.disableRandomBuilding) fica pronto e sem efeitos
-            effectsApplied: !!building.effectsApplied
+            effectsApplied: !!building.effectsApplied,
+            // Zona pronta: fase (0-3) e progresso da fase (ZoneGrowth.js)
+            ...(Number.isInteger(building.zoneStage) ? {
+                zoneStage: building.zoneStage,
+                zoneProgress: Math.round((building.zoneProgress || 0) * 1000) / 1000
+            } : {})
         };
     }
 
@@ -1412,6 +1454,8 @@ class BuildingSystem {
         this.buildingCounter = Math.max(data.buildingCounter || 0, highestId + 1);
         this.buildingCooldown.active = false;
         this.lastEfficiencyUpdate = 0;
+        // Ruas: cada uma foi criada sem as vizinhas que vieram depois no save → encaixa todas de novo
+        this.refreshAllRoadPieces?.();
         this.gameManager?.cityLifeSystem?.onRoadBuilt();
         log(`🔄 ${restored}/${data.buildings.length} prédios restaurados do save`);
     }
@@ -1430,7 +1474,8 @@ class BuildingSystem {
         }
         if (this.buildings.has(saved.id)) return null;
 
-        const mesh = this.createBuildingMesh(gridX, gridZ, buildingType);
+        const rotation = BuildingSystem.normalizeRotation(saved.rotation); // save antigo sem o campo = 0
+        const mesh = this.createBuildingMesh(gridX, gridZ, buildingType, rotation);
         if (!mesh) return null;
 
         const buildingData = {
@@ -1440,6 +1485,7 @@ class BuildingSystem {
             gridZ,
             mesh,
             config: buildingType,
+            rotation,
             constructionTime: saved.constructionTime || Date.now(),
             active: !!saved.active,
             efficiency: Number.isFinite(saved.efficiency) ? saved.efficiency : (saved.underConstruction ? 0 : 1),
@@ -1456,20 +1502,23 @@ class BuildingSystem {
 
         this.buildings.set(saved.id, buildingData);
         this.gridManager.occupyArea(gridX, gridZ, size);
-        this.gridManager.clearDecorationsInArea?.(gridX, gridZ, size);
         if (this.isInfrastructureBuilding(buildingType)) this.updateInfrastructureConnections(buildingData);
 
-        if (buildingData.underConstruction) {
+        if (buildingData.underConstruction && buildingType.roadType) {
+            this.completeConstruction(buildingData, { quiet: true }); // rua é instantânea (save antigo com rua "em obra")
+        } else if (buildingData.underConstruction) {
             this.startConstruction(buildingData); // barra de progresso + visual de obra; o progresso sai do gameTime salvo
         } else if (buildingData.type === 'city_hall') {
             this.gameManager?.addCityHallLightingEffects(buildingData);
         }
         if (buildingData.isRented) this.updateRentalIcon(buildingData);
+        this.restoreZoneState?.(buildingData, saved); // fase da zona (save antigo: começa em 0)
         return buildingData;
     }
 
     /** Tira todos os prédios do mapa (antes de carregar um save por cima de um jogo aberto). */
     clearAllBuildings() {
+        this.clearingAll = true; // removeBuilding não reencaixa as ruas uma a uma
         for (const building of Array.from(this.buildings.values())) {
             if (building.underConstruction) this.removeConstructionVisuals(building);
             const effects = building.lightingEffects;
@@ -1480,6 +1529,7 @@ class BuildingSystem {
             }
             this.removeBuilding(building.id);
         }
+        this.clearingAll = false;
         this.constructionQueue.clear();
         // Descarte já, não nos próximos frames: o nome do mesh é por tipo (não por prédio), e a fila
         // apagaria a sombra do prédio recriado com o mesmo nome logo em seguida (performDisposal busca pelo nome)
@@ -1496,11 +1546,29 @@ class BuildingSystem {
         // Limpar preview anterior
         this.clearPreview();
 
+        // Rua: prévia própria do traçado (células + custo total, js/systems/roads/RoadPlacement.js)
+        if (this.isRoadType(buildingTypeId)) return;
+
         // Criar preview mesh
         this.createPreviewMesh(buildingTypeId);
 
         // Criar marcador de posição
         this.createPreviewMarker(buildingTypeId);
+
+        // O fantasma mostra a rotação que o prédio vai ter (de frente para a câmera), mesmo girando a câmera parado
+        if (!this.previewRotationObserver && this.scene?.onBeforeRenderObservable) {
+            this.previewRotationObserver = this.scene.onBeforeRenderObservable.add(() => this.syncPreviewRotation());
+        }
+        this.syncPreviewRotation();
+    }
+
+    /** Fantasma da prévia na mesma rotação que placeBuilding vai usar (getDefaultBuildingRotation). */
+    syncPreviewRotation() {
+        const mesh = this.previewMesh;
+        if (!this.previewMode || !mesh || mesh.isDisposed()) return;
+        const type = this.buildingTypes.get(this.selectedBuildingType);
+        const angle = this.rotationToRadians(this.getDefaultBuildingRotation(type));
+        if (mesh.rotation.y !== angle) mesh.rotation.y = angle;
     }
 
     stopPreviewMode() {
@@ -1508,6 +1576,10 @@ class BuildingSystem {
 
         this.previewMode = false;
         this.selectedBuildingType = null;
+        if (this.previewRotationObserver) {
+            this.scene?.onBeforeRenderObservable?.remove(this.previewRotationObserver);
+            this.previewRotationObserver = null;
+        }
 
         // Limpar preview
         this.clearPreview();
@@ -1600,6 +1672,7 @@ class BuildingSystem {
 
     updatePreview(gridX, gridZ) {
         if (!this.previewMode || !this.selectedBuildingType) return;
+        if (this.isRoadType(this.selectedBuildingType)) return this.updateRoadPreview(Math.floor(gridX), Math.floor(gridZ));
 
         // Forçar alinhamento ao grid - garantir que as coordenadas sejam inteiras
         gridX = Math.floor(gridX);
@@ -1653,9 +1726,13 @@ class BuildingSystem {
         }
 
         if (this.previewMarker) {
-            const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
-            this.previewMarker.position.x = worldPos.x;
-            this.previewMarker.position.z = worldPos.z;
+            // Centro da área (como o fantasma) e logo acima do topo do bloco mais alto dela
+            const size = buildingType.size || 1;
+            const first = this.gridManager.gridToWorld(gridX, gridZ);
+            const offset = (size - 1) * this.gridManager.cellSize / 2;
+            this.previewMarker.position.x = first.x + offset;
+            this.previewMarker.position.z = first.z + offset;
+            this.previewMarker.position.y = this.getBuildingAreaTerrainHeight(gridX, gridZ, size) + 0.04;
 
             // ===== ENHANCED MARKER VISUAL FEEDBACK =====
             const material = this.previewMarker.material;
@@ -1676,9 +1753,9 @@ class BuildingSystem {
 
         // ===== AUDIO FEEDBACK FOR INVALID PLACEMENT =====
         if (!isValid && this.lastPreviewWasValid) {
-            // Play subtle error sound when moving from valid to invalid position
+            // Toque bem discreto ao entrar num lugar inválido (o vermelho já avisa)
             if (typeof AudioManager !== 'undefined') {
-                AudioManager.playSound('sfx_click', 0.2);
+                AudioManager.playSound('sfx_ui_hover', 0.6);
             }
         }
         this.lastPreviewWasValid = isValid;
@@ -1731,6 +1808,7 @@ class BuildingSystem {
 
         // Limpar indicadores de células múltiplas
         this.clearMultiCellPreview();
+        this.clearRoadPreview?.();
 
         this.lastPreviewPosition = { x: -1, z: -1 };
     }
@@ -1791,7 +1869,7 @@ class BuildingSystem {
 
             indicator.position.x = worldPos.x;
             indicator.position.z = worldPos.z;
-            indicator.position.y = 0.02; // Ligeiramente acima do terreno
+            indicator.position.y = this.gridManager.getTerrainBlockHeight(gridX, gridZ) + 0.05; // Logo acima do topo do bloco
 
             // Material baseado na validade
             const material = new BABYLON.StandardMaterial(`cell_indicator_mat_${gridX}_${gridZ}`, this.scene);
@@ -1941,9 +2019,10 @@ class BuildingSystem {
 
     // ===== CONECTIVIDADE DE INFRAESTRUTURA =====
     isInfrastructureBuilding(buildingType) {
+        // Ruas se ligam pelo auto-encaixe (js/systems/roads/RoadMeshes.js), não por peças de conexão
+        if (buildingType.roadType) return false;
         return buildingType.category === 'infrastructure' ||
                buildingType.category === 'zoning' ||
-               buildingType.roadType ||
                buildingType.zoneType;
     }
 
@@ -2450,8 +2529,8 @@ class BuildingSystem {
             const targetScale = buildingData.originalScaling || new BABYLON.Vector3(1, 1, 1);
             const startScale = new BABYLON.Vector3(0.3, 0.3, 0.3);
 
-            // ✅ FIX: Usar rotação já salva (sempre 0,0,0 para grid) ou criar nova zerada
-            const originalRotation = buildingData.originalRotation || BABYLON.Vector3.Zero();
+            // Rotação do prédio (quartos de volta, building.rotation): a obra não gira mais
+            const originalRotation = this.getBuildingRotationVector(buildingData);
 
             buildingData.constructionAnimationData = {
                 startTime: Date.now(),
@@ -2461,8 +2540,6 @@ class BuildingSystem {
                 isAnimating: true
             };
 
-            // Rotação suave durante construção
-            const rotationSpeed = 0.001;
             const animateConstruction = () => {
                 if (!buildingData.mesh || buildingData.mesh.isDisposed() || !buildingData.constructionAnimationData?.isAnimating) {
                     return;
@@ -2471,13 +2548,12 @@ class BuildingSystem {
                 const elapsed = this.simNow() - buildingData.constructionStartTime;
                 const progress = Math.min(1, elapsed / buildingData.constructionDuration);
 
-                // Modelo .glb (base em y = 0): só a altura cresce, sem girar — a planta já bate com o
-                // prédio final. Procedural (centrado): crescimento por igual com o giro de antes.
+                // Modelo .glb (base em y = 0): só a altura cresce. Procedural (centrado): crescimento por igual.
+                // Nenhum dos dois gira: a rotação é a do prédio (e o botão "girar" pode mudá-la no meio da obra).
                 // Vale a cada quadro porque o mesh pode virar modelo no meio da obra (replaceBuildingMesh).
                 if (buildingData.mesh.metadata?.fromModel) {
                     buildingData.mesh.scaling = this.getConstructionScaling(buildingData.mesh, this.easeOutCubic(progress),
                         buildingData.constructionAnimationData.targetScale);
-                    buildingData.mesh.rotation.copyFrom(buildingData.constructionAnimationData.originalRotation);
                 } else {
                     // Interpolação suave da escala
                     buildingData.mesh.scaling = BABYLON.Vector3.Lerp(
@@ -2485,14 +2561,10 @@ class BuildingSystem {
                         buildingData.constructionAnimationData.targetScale,
                         this.easeOutCubic(progress)
                     );
-
-                    // Rotação sutil durante construção
-                    buildingData.mesh.rotation.y += rotationSpeed;
                 }
 
-                // ✅ FIX: Ao finalizar, restaurar rotação original
                 if (progress >= 1) {
-                    buildingData.mesh.rotation.copyFrom(buildingData.constructionAnimationData.originalRotation);
+                    this.applyBuildingRotation(buildingData);
                     buildingData.mesh.scaling.copyFrom(targetScale);
                     buildingData.constructionAnimationData.isAnimating = false;
                     log(`✅ Animação de construção finalizada - rotação restaurada para ${buildingData.config.name} rotação: ${buildingData.mesh.rotation}`);
@@ -2556,7 +2628,7 @@ class BuildingSystem {
             // Restaurar escala final
             if (buildingData.mesh) {
                 buildingData.mesh.scaling = buildingData.originalScaling || new BABYLON.Vector3(1, 1, 1);
-                buildingData.mesh.rotation = buildingData.originalRotation || BABYLON.Vector3.Zero();
+                this.applyBuildingRotation(buildingData);
             }
 
         } catch (error) {
@@ -2565,49 +2637,19 @@ class BuildingSystem {
     }
 
     // ===== SISTEMA DE ÁUDIO PARA CONSTRUÇÃO =====
+    // Chaves em js/data/audioManifest.js. Conclusão: "ta-da" + o som do tipo (água limpa, caixa enchendo,
+    // energia ligando); prédio caro ganha aplausos. Zonas não: elas tocam sfx_zone_grow a cada fase (ZoneGrowth).
     playConstructionCompletionAudio(buildingData) {
         if (typeof AudioManager === 'undefined') return;
-
-        try {
-            const buildingType = buildingData.config;
-
-            // Som principal de conclusão (novo som procedural)
-            AudioManager.playSound('sfx_build_complete', 1.0);
-
-            // Som específico baseado no tipo de edifício
-            setTimeout(() => {
-                switch (buildingType.category) {
-                    case 'water':
-                        AudioManager.playSound('sfx_water', 0.6);
-                        break;
-                    case 'power':
-                        AudioManager.playSound('sfx_item', 0.5);
-                        break;
-                    case 'infrastructure':
-                        AudioManager.playSound('sfx_build', 0.4);
-                        break;
-                    case 'residential':
-                    case 'commercial':
-                    case 'industrial':
-                        AudioManager.playSound('sfx_pickup', 0.5);
-                        break;
-                    default:
-                        AudioManager.playSound('sfx_success', 0.3);
-                }
-            }, 300);
-
-            // Som de celebração extra para edifícios importantes
-            if (buildingType.cost > 10000) {
-                setTimeout(() => {
-                    AudioManager.playSound('sfx_build_complete', 0.5);
-                }, 600);
-            }
-
-            log(`🔊 Audio de conclusão aprimorado reproduzido para ${buildingType.name}`);
-
-        } catch (error) {
-            console.warn('⚠️ Erro ao reproduzir áudio de conclusão:', error);
-        }
+        const type = buildingData.config;
+        AudioManager.playSound('sfx_build_complete');
+        const id = type.id || '';
+        const flavor = /tank|tower|reservoir|cistern|storage/.test(id) ? 'sfx_reservoir_fill'
+            : type.category === 'water' ? 'sfx_water_clean'
+                : id === 'solar_farm' ? 'sfx_solar_on'
+                    : type.category === 'power' ? 'sfx_power_on' : null;
+        if (flavor) setTimeout(() => AudioManager.playSound(flavor, 0.8), 350);
+        if (type.cost > 10000) setTimeout(() => AudioManager.playSound('sfx_crowd_cheer', 0.7), 700);
     }
 
     playConstructionProgressAudio(buildingData, progress) {
@@ -2624,7 +2666,7 @@ class BuildingSystem {
             );
 
             if (currentMilestone && now - (buildingData.lastProgressSound || 0) > 1500) {
-                // Usar novo som procedural de progresso
+                // Canteiro de obra, baixinho, a cada 25 %
                 AudioManager.playSound('sfx_build_progress', 0.4);
                 buildingData.lastProgressAudio = currentMilestone;
                 buildingData.lastProgressSound = now;
@@ -2637,29 +2679,21 @@ class BuildingSystem {
         }
     }
 
+    /** Rua: "tum" de asfalto em rajada (variações); zona: giz no chão; prédio: bloco assentado + obra começando. */
     playBuildingPlacementAudio(buildingType) {
         if (typeof AudioManager === 'undefined') return;
-
-        try {
-            // Som principal de colocação (novo som procedural)
-            AudioManager.playSound('sfx_build_place', 0.8);
-
-            // Som adicional baseado no tipo
-            setTimeout(() => {
-                if (buildingType.category === 'infrastructure') {
-                    AudioManager.playSound('sfx_axe', 0.4);
-                } else if (buildingType.category === 'water') {
-                    AudioManager.playSound('sfx_water', 0.3);
-                } else {
-                    AudioManager.playSound('sfx_pickup', 0.3);
-                }
-            }, 200);
-
-            log(`🔊 Audio de colocação aprimorado reproduzido para ${buildingType.name}`);
-
-        } catch (error) {
-            console.warn('⚠️ Erro ao reproduzir áudio de colocação:', error);
+        if (buildingType.roadType) {
+            AudioManager.playSound('sfx_road_place');
+            setTimeout(() => AudioManager.playSound('sfx_road_place', 0.7), 70);
+            setTimeout(() => AudioManager.playSound('sfx_road_curve', 0.6), 160);
+            return;
         }
+        if (typeof ZONE_LOTS !== 'undefined' && ZONE_LOTS[buildingType.id]) {
+            AudioManager.playSound('sfx_zone_mark');
+            return;
+        }
+        AudioManager.playSound('sfx_build_place');
+        setTimeout(() => AudioManager.playSound('sfx_build'), 250);
     }
 }
 

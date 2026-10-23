@@ -23,7 +23,10 @@ mixin(UIManager, {
             hub.addEventListener('click', event => {
                 if (event.target === hub || event.target.closest('.lessons-close')) return this.closeLessonsHub();
                 const tabBtn = event.target.closest('[data-lessons-tab]');
-                if (tabBtn) return this.openLessonsHub(null, tabBtn.dataset.lessonsTab);
+                if (tabBtn) {
+                    AudioManager.playSound('sfx_tab_switch');
+                    return this.openLessonsHub(null, tabBtn.dataset.lessonsTab);
+                }
                 const card = event.target.closest('[data-chapter]');
                 if (card) return this.openLessonBook(Number(card.dataset.chapter), { fromHub: true });
                 const replay = event.target.closest('[data-replay]');
@@ -153,6 +156,7 @@ mixin(UIManager, {
         this.closeLessonBook({ toHub: false });
 
         this.lessonBook = { chapter, pages, page: 0, fromHub, turning: false };
+        AudioManager.playSound('sfx_book_open');
         const book = document.createElement('div');
         book.id = 'lesson-book';
         book.className = 'lessons-overlay';
@@ -262,7 +266,7 @@ mixin(UIManager, {
                 state.turning = false;
             }, 260);
         }, 260);
-        AudioManager.playSound?.('sfx_click', 0.5);
+        AudioManager.playSound('sfx_book_page');
     },
 
     finishLesson() {
@@ -283,6 +287,7 @@ mixin(UIManager, {
         Object.values(this.lessonBook?.portraits || {}).forEach(portrait => portrait.destroy());
         const fromHub = this.lessonBook?.fromHub;
         book.remove();
+        AudioManager.playSound('sfx_book_close');
         this.lessonBook = null;
         if (toHub && fromHub) this.openLessonsHub();
     }

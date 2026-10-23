@@ -6,10 +6,8 @@
  * @version 1.0.0
  */
 
-// ===== CONFIGURAÇÕES GLOBAIS =====
 // ===== VARIÁVEIS GLOBAIS =====
 let gameManager = null;
-let settingsManager = null;
 let isGameInitialized = false;
 let currentScreen = 'loading';
 
@@ -133,6 +131,38 @@ function initializeMenuSystem() {
     document.getElementById('btn-about').addEventListener('click', showAbout);
     document.getElementById('btn-start').addEventListener('click', onStartClick);
     initializeProfileScreen();
+    initializeGraphicsPickers();
+}
+
+// ===== QUALIDADE GRÁFICA (GraphicsQuality) =====
+// Seletor Baixa/Média/Alta no menu principal e na pausa ([data-gfx-picker]); a escolha fica salva no navegador
+// e o jogo aplica na hora (GameManager.applyGraphicsQuality). Sem escolha, mostra a detectada para o aparelho.
+function initializeGraphicsPickers() {
+    const pickers = document.querySelectorAll('[data-gfx-picker]');
+    const render = () => {
+        const level = GraphicsQuality.current();
+        let hint = GraphicsQuality.HINTS[level];
+        if (GraphicsQuality.isAuto()) hint += ' Escolhida pelo jogo para este aparelho.';
+        if (gameManager?.engine && GraphicsQuality.needsRestart(level, gameManager.engineAntialias)) {
+            hint += ' A suavização das bordas muda quando você abrir o jogo de novo.';
+        }
+        pickers.forEach(picker => {
+            picker.querySelectorAll('[data-quality]').forEach(button => {
+                const on = button.dataset.quality === level;
+                button.classList.toggle('active', on);
+                button.setAttribute('aria-checked', String(on));
+            });
+            picker.querySelector('.gfx-hint').textContent = hint;
+        });
+    };
+    pickers.forEach(picker => picker.addEventListener('click', event => {
+        const button = event.target.closest('[data-quality]');
+        if (!button || button.dataset.quality === GraphicsQuality.current() && !GraphicsQuality.isAuto()) return;
+        GraphicsQuality.set(button.dataset.quality);
+        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_click', 0.6);
+    }));
+    GraphicsQuality.onChange(render);
+    render();
 }
 
 // ===== PERFIS DE JOGADOR (PlayerProfile) =====
@@ -223,6 +253,17 @@ async function chooseGameForProfile(profileId) {
     const name = escapeHtml(profile.name);
     if (!info.ok) {
         await gameAlert('Jogo salvo com problema', `${SaveSystem.reasonText(info.reason)} Vamos começar um jogo novo para ${profile.name}.`, 'warning');
+        saves.deleteSave(profileId);
+        return startNewGame();
+    }
+
+    // Água quase no fim ou poluição quase no máximo: continuar acabaria o jogo em segundos
+    const saved = saves.load(profileId);
+    if (saved.ok && SaveSystem.isLostGame(saved.data)) {
+        await gameAlert('Essa cidade não tem mais volta',
+            `A última partida de ${name} parou com a água quase acabando ou a poluição quase no máximo. ` +
+            'Se continuasse, o jogo terminaria logo em seguida. Vamos começar um jogo novo, e desta vez você já sabe o que evitar!',
+            'warning');
         saves.deleteSave(profileId);
         return startNewGame();
     }
@@ -409,18 +450,10 @@ function showScreen(screenId) {
         MenuIntro.onMenuShown(previousScreen);
     }
 
-    // BGM por tela
-    // (playMusic recomeça a faixa mesmo se já estiver tocando: menu ↔ cadastro não troca de música)
-    if (typeof AudioManager !== 'undefined' && AudioManager.playMusic) {
-        const bgm = screenId === 'game-screen' ? 'bgm_gameplay' : 'bgm_menu';
-        if (bgm !== currentBgm) {
-            currentBgm = bgm;
-            if (bgm === 'bgm_gameplay') AudioManager.playMusic('bgm_gameplay', true, 0.3);
-            else AudioManager.playMusic('bgm_menu');
-        }
-    }
+    // Música por tela: menu/cadastro = tema do menu (a abertura toca a dela); partida = diretor de som
+    // (js/utils/audio/SoundDirector.js: dia/noite, chuva, alerta, cidade prosperando)
+    if (typeof AudioManager !== 'undefined') AudioManager.onScreen(screenId);
 }
-let currentBgm = null;
 
 // ===== AÇÕES DO MENU =====
 // saveData (de SaveSystem.load): continua o jogo salvo em vez de começar um novo (sem tutorial)
@@ -471,6 +504,8 @@ async function startNewGame({ saveData = null } = {}) {
 
         if (success) {
             showScreen('game-screen');
+            // O engine nasceu com o canvas escondido: só agora o tamanho real (e a escala da qualidade gráfica) vale
+            gameManager.handleResize();
             armBackGuard();
             isGameInitialized = true;
 

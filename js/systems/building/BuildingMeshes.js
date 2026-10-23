@@ -3,7 +3,11 @@
  * Parte da classe BuildingSystem (js/systems/BuildingSystem.js), anexada via mixin(): use this.* normalmente.
  */
 mixin(BuildingSystem, {
-    createBuildingMesh(gridX, gridZ, buildingType) {
+    /** @param {number} rotation - quartos de volta (0-3) em torno do centro da área; 0 = fachada para -Z */
+    createBuildingMesh(gridX, gridZ, buildingType, rotation = 0) {
+        // Rua: peça de auto-encaixe (js/systems/roads/RoadMeshes.js), sem rótulo, sombra falsa nem rotação manual
+        if (buildingType.roadType) return this.createRoadMesh(gridX, gridZ, buildingType);
+
         // ===== STANDARDIZED BUILDING GRAPHICS SYSTEM =====
         const standardizedMesh = this.createStandardizedBuildingMesh(buildingType);
 
@@ -19,9 +23,8 @@ mixin(BuildingSystem, {
         // ===== STANDARDIZED POSITIONING SYSTEM =====
         this.applyStandardizedPositioning(standardizedMesh, gridX, gridZ, buildingType);
 
-        // ✅ FIX: Garantir que a rotação inicial seja sempre (0, 0, 0) alinhada ao grid
-        standardizedMesh.rotation = BABYLON.Vector3.Zero();
-        log(`🎯 Rotação do mesh definida para (0, 0, 0) - alinhada ao grid`);
+        // Sempre alinhada aos 4 eixos do grid: só quartos de volta em Y (size > 1 é quadrado, a ocupação não muda)
+        standardizedMesh.rotation = new BABYLON.Vector3(0, this.rotationToRadians(rotation), 0);
 
         // ===== STANDARDIZED MATERIAL APPLICATION ===
         // Sem material ou com o cinza padrão do merge → material com a cor do prédio.
@@ -58,6 +61,9 @@ mixin(BuildingSystem, {
      * @returns {BABYLON.Mesh} - The standardized building mesh
      */
     createStandardizedBuildingMesh(buildingType) {
+        // Zona: laje do lote; as peças de cada fase entram como filhas (ZoneGrowth.js)
+        if (this.isZoneBuilding(buildingType)) return this.createZoneLotMesh(buildingType);
+
         // Modelo .glb da tabela (js/data/buildingModels.js), se já carregou; senão o procedural abaixo
         // é a reserva e BuildingModels.js troca o mesh quando o modelo ficar pronto
         const modelMesh = this.createBuildingModelMesh(buildingType);
@@ -725,9 +731,10 @@ mixin(BuildingSystem, {
         const SHADOW_HEIGHT_OFFSET = BUILDING_CONSTANTS.SHADOW_HEIGHT_OFFSET || 0.005;
         const SHADOW_ALPHA = BUILDING_CONSTANTS.SHADOW_ALPHA || 0.3;
 
-        // Position shadow exactly under building center
+        // Position shadow exactly under building center (girada junto com o prédio: planta não quadrada)
         shadow.position.x = buildingMesh.position.x;
         shadow.position.z = buildingMesh.position.z;
+        shadow.rotation.y = buildingMesh.rotation.y;
         shadow.position.y = terrainHeight + SHADOW_HEIGHT_OFFSET;
 
         // Standardized shadow material
@@ -840,6 +847,91 @@ mixin(BuildingSystem, {
             }
         }
         return height;
+    },
+
+    // ===== ROTAÇÃO (quartos de volta, building.rotation 0-3) =====
+    rotationToRadians(rotation) {
+        return BuildingSystem.normalizeRotation(rotation) * Math.PI / 2;
+    },
+
+    getBuildingRotationVector(building) {
+        return new BABYLON.Vector3(0, this.rotationToRadians(building?.rotation), 0);
+    },
+
+    /** Põe o mesh na rotação do prédio, a não ser que a animação do botão "girar" esteja no meio. */
+    applyBuildingRotation(building) {
+        const mesh = building?.mesh;
+        if (!mesh || mesh.isDisposed?.() || building.rotateAnimation) return;
+        mesh.rotation = this.getBuildingRotationVector(building);
+        if (mesh.shadowMesh) mesh.shadowMesh.rotation.y = mesh.rotation.y;
+    },
+
+    /**
+     * Quarto de volta cuja fachada (-Z dos modelos) aponta mais para a câmera. Na ArcRotateCamera a
+     * câmera fica em alvo + (cos α, sin α) no chão; a frente girada por θ em Y vira (-sin θ, -cos θ),
+     * então θ = -α - π/2. Na diagonal (a câmera padrão, α = -π/4) dois quartos empatam: o desempate (+0.05)
+     * escolhe o que deixa a câmera vendo a fachada e o lado +X, os dois lados caprichados dos modelos.
+     * Ruas (roadType) não giram: o encaixe automático decide.
+     */
+    getDefaultBuildingRotation(buildingType) {
+        if (buildingType?.roadType) return 0;
+        const alpha = this.gameManager?.camera?.alpha;
+        if (!Number.isFinite(alpha)) return 0;
+        return BuildingSystem.normalizeRotation(Math.round((-alpha - Math.PI / 2) / (Math.PI / 2) + 0.05));
+    },
+
+    canRotateBuilding(building) {
+        return !!building?.config && !building.config.roadType;
+    },
+
+    /**
+     * Gira o prédio um quarto de volta (+1 = direita/horário visto de cima, -1 = esquerda) com animação suave.
+     * Prédios size > 1 são quadrados e giram no centro: grid e ocupação não mudam.
+     */
+    rotateBuilding(buildingId, direction = 1) {
+        const building = this.buildings?.get(buildingId);
+        if (!this.canRotateBuilding(building) || !building.mesh || building.mesh.isDisposed()) return false;
+        building.rotation = BuildingSystem.normalizeRotation((building.rotation || 0) + (direction < 0 ? -1 : 1));
+        this.animateBuildingRotation(building);
+        log(`🔄 ${building.config.name} girado para ${building.rotation * 90}°`);
+        return true;
+    },
+
+    animateBuildingRotation(building) {
+        const startMesh = building.mesh;
+        const start = startMesh.rotation.y;
+        const target = this.rotationToRadians(building.rotation);
+        let diff = (target - start) % (2 * Math.PI);
+        if (diff > Math.PI) diff -= 2 * Math.PI;
+        if (diff <= -Math.PI) diff += 2 * Math.PI;
+        const reduceMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        const duration = reduceMotion ? 0 : 380;
+        const token = {};
+        building.rotateAnimation = token;
+        const startTime = performance.now();
+
+        const finish = () => {
+            if (building.rotateAnimation !== token) return;
+            building.rotateAnimation = null;
+            this.applyBuildingRotation(building);
+            const gm = this.gameManager;
+            if (gm?.selectedBuilding === building && building.mesh) {
+                gm.removeSelectionIndicator?.(building);
+                gm.addSelectionIndicator?.(building);
+            }
+        };
+        const step = () => {
+            if (building.rotateAnimation !== token) return; // outro giro começou
+            const mesh = building.mesh; // pode ter virado modelo .glb no meio (replaceBuildingMesh copia a rotação)
+            if (!mesh || mesh.isDisposed()) { building.rotateAnimation = null; return; }
+            const t = duration ? Math.min(1, (performance.now() - startTime) / duration) : 1;
+            const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            mesh.rotation.y = start + diff * eased;
+            if (mesh.shadowMesh) mesh.shadowMesh.rotation.y = mesh.rotation.y;
+            if (t >= 1) { finish(); return; }
+            requestAnimationFrame(step);
+        };
+        step();
     },
 
     // Assenta o edifício no bloco mais alto da área que ele ocupa (size × size a partir de gridX/gridZ),

@@ -95,7 +95,7 @@ class WeatherService {
             const cached = WeatherService.readCache(lat, lon);
             if (cached) return cached;
         }
-        const response = await fetch(WeatherService.buildUrl(lat, lon));
+        const response = await fetch(WeatherService.buildUrl(lat, lon), { signal: AbortSignal.timeout?.(WEATHER.FETCH_TIMEOUT_MS) });
         if (!response.ok) throw new Error(`Open-Meteo respondeu ${response.status}`);
         const data = WeatherService.parse(await response.json());
         try {

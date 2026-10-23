@@ -26,3 +26,25 @@
 	• Twitter:	 twitter.com/KenneyNL
 	• BlueSky:	 kenney.bsky.social
 	• Instagram: instagram.com/kenney_nl
+
+	------------------------------
+
+	Uso no Guardião da Água (10/2026)
+
+	Fonte: https://kenney.nl/assets/city-kit-suburban (versão 2.0, formato GLB)
+	Só os .glb usados ficam no repositório: prédios da tabela BUILDING_MODELS
+	(js/data/buildingModels.js) e peças dos lotes das zonas que crescem
+	(ZONE_LOTS em js/data/zoneLots.js). Arquivos nesta pasta:
+	  building-type-a.glb
+	  building-type-c.glb
+	  building-type-g.glb
+	  building-type-h.glb
+	  building-type-i.glb
+	  building-type-j.glb
+	  building-type-m.glb
+	  building-type-o.glb
+	  building-type-q.glb
+	  building-type-s.glb
+	  planter.glb
+	  tree-large.glb
+	  tree-small.glb

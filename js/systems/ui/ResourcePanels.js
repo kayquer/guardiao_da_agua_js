@@ -453,7 +453,7 @@ mixin(UIManager, {
                     <li>
                         <span class="building-icon">${building.config.icon}</span>
                         <span class="building-name">${building.config.name}</span>
-                        <span class="building-production">+${building.config.populationCapacity} hab</span>
+                        <span class="building-production">+${this.gameManager.buildingSystem.getEffectivePopulationCapacity(building)} hab</span>
                     </li>
                 `;
             });

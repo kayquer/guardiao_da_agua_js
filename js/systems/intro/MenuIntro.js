@@ -30,10 +30,10 @@ const MenuIntro = {
         return !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     },
 
+    // A mesma qualidade gráfica do jogo (GraphicsQuality: escolhida no menu/pausa ou detectada pelo aparelho).
+    // IntroCinematic trata tudo que não é 'high' como a versão leve; 'low' ainda renderiza menos pixels.
     quality() {
-        const small = Math.min(window.innerWidth, window.innerHeight) <= 768;
-        const coarse = !!window.matchMedia?.('(pointer: coarse)').matches;
-        return small || coarse ? 'low' : 'high';
+        return GraphicsQuality.current();
     },
 
     /** Monta a cidade atrás da tela de carregamento. Nunca lança: sem abertura, o menu segue normal. */
@@ -92,6 +92,8 @@ const MenuIntro = {
         const overlay = document.getElementById('intro-overlay');
         if (overlay) overlay.hidden = false;
         this.bindSkip();
+        // Música da abertura começa junto com a 1ª tomada (movimento reduzido: direto o tema do menu)
+        if (typeof AudioManager !== 'undefined') AudioManager.onIntroStart(mode);
 
         this.cinematic.play(mode, {
             orbit: !this.reducedMotion(),
@@ -112,6 +114,7 @@ const MenuIntro = {
         if (typeof GameLogo !== 'undefined') GameLogo.play();
         document.body.classList.add('menu-ready');
         document.getElementById('btn-start')?.focus({ preventScroll: true });
+        if (typeof AudioManager !== 'undefined') AudioManager.onIntroDone(); // crossfade para o tema do menu
     },
 
     skip() {

@@ -17,7 +17,7 @@ description: Como trabalhar com o 3D (Babylon.js) do Guardião da Água — mesh
 |---|---|
 | Engine, cena, câmera `ArcRotateCamera`, luzes (Hemispheric + Directional), `ShadowGenerator` | `js/core/GameManager.js` (`gm.scene`, `gm.camera`, `gm.shadowGenerator`) |
 | Controle da câmera (pan/zoom/rotação, suavização) | `js/systems/SimCityCameraControls.js` — o loop faz `camera.target` convergir para `targetPosition` e trava `beta = π/3.5`; mexer direto em `camera.target` é desfeito no frame seguinte, use `cameraControls.centerCameraOn(x, z, raio)` |
-| Grid 40×40, terreno, água (ShaderMaterial), decorações | `js/core/GridManager.js` — `cellSize` = 2 (`GAME_CONFIG.grid`), `gridToWorld(x, z)`, `worldToGrid(pos)` |
+| Grid 40×40, terreno (blocos voxel em pedaços 10×10, cor de vértice), água (um ShaderMaterial) | `js/core/GridManager.js` — `cellSize` = 2 (`GAME_CONFIG.grid`), `gridToWorld(x, z)`, `worldToGrid(pos)` |
 | Mesh e material de cada prédio | `js/systems/building/BuildingMeshes.js` (mixin de `BuildingSystem`) |
 | Rótulos, plaquinhas, celebração, indicadores de obra | `js/systems/building/BuildingFeedback.js` |
 | Escala/altura dos prédios | `BUILDINGS` em `js/config/GameConstants.js` (`SCALE_FACTOR`, `BASE_HEIGHT`, `CATEGORY_HEIGHT_MODIFIERS`) |
@@ -55,11 +55,12 @@ description: Como trabalhar com o 3D (Babylon.js) do Guardião da Água — mesh
 6. **Overlays 3D** (rótulos, plaquinhas) usam `renderingGroupId = 2` e `billboardMode = BILLBOARDMODE_ALL`; use `createCartoonTextPlate(id, posição, texto, opções)` em vez de criar outro sistema de texto. Nomeie meshes com prefixo + id do prédio (`cartoonText_completion_building_3`) — o script de screenshots e a limpeza dependem disso.
 7. **Logs** com `log(...)`, nunca `console.log`; `console.error` reprova o smoke test.
 8. **Modelos OBJ** ficam em `models/`; as animações procedurais dos retratos acham partes pelo **nome do mesh** (`eye/olho`, `hair/cabelo`, `arm/braco`, `head/cabeca`, `body/torso`).
+9. **Luz nova recompila o shader de todos os materiais** (engasgo): não crie/apague luz por ação — reaproveite uma e limite com `includedOnlyMeshes` (veja `getSelectionLight` em `SelectionVisuals.js`). Efeito pesado novo deve respeitar a qualidade gráfica (`GraphicsQuality.preset()`: sombras, partículas, nuvens; aplicado ao vivo em `GameManager.applyGraphicsQuality`).
 
 ## Terreno e altura dos prédios
 
 - Colinas são ~5% do mapa (`determineTerrainType` + `removeIsolatedHills`); a câmera começa em `gridManager.startArea` (`findStartArea`, ≥ 80% construível).
-- Os blocos cinza altos são **colinas** (`hill`, cor de pedra), não água — a água é azul e fica nas bordas. O mesh `terrain` é o chão sob os blocos voxel (aparece só nas frestas e sob a água): cada vértice fica `GridManager.TERRAIN_FLOOR_GAP` abaixo do topo mais baixo dos blocos que toca (`getTerrainFloorHeight`), então nunca passa por cima de um bloco. Mudou vértice de um mesh do `CreateGround`? Use `setVerticesData` (o buffer não é atualizável: `updateVerticesData` só muda a cópia da CPU, que o pick usa e a GPU não desenha) e `refreshBoundingInfo()`.
+- Os blocos cinza altos são **colinas** (`hill`, cor de pedra), não água — a água é azul e fica nas bordas. Os blocos ocupam a célula inteira (sem fresta; a borda escura do topo é um chanfro em cor de vértice) e são montados sem Babylon em `buildTerrainGeometry`/`buildWaterGeometry` (testados em `world.test.js`), um mesh por pedaço de 10×10 células. O mesh `terrain` é o chão sob os blocos voxel (aparece só sob a água): cada vértice fica `GridManager.TERRAIN_FLOOR_GAP` abaixo do topo mais baixo dos blocos que toca (`getTerrainFloorHeight`), então nunca passa por cima de um bloco. Mudou vértice de um mesh do `CreateGround`? Use `setVerticesData` (o buffer não é atualizável: `updateVerticesData` só muda a cópia da CPU, que o pick usa e a GPU não desenha) e `refreshBoundingInfo()`.
 - Pick de célula do terreno (posicionar, prévia, informações): `GameManager.pickTerrainCell(x, y)` — acerta os blocos, a água e o chão; não filtre por nome de mesh à mão.
 - A altura de cada bloco vem de `GridManager.getTerrainBlockHeight(x, z)` (colina ≫ pastagem > planície). `adjustBuildingToTerrain` assenta o prédio no bloco **mais alto da área que ele ocupa** — use sempre essa função, nunca uma fórmula de elevação própria.
 - Sombras: casters vão em `gameManager.shadowGenerator` (não existe `scene.shadowGenerator`).

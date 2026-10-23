@@ -163,6 +163,7 @@ mixin(UIManager, {
         const result = this.gameManager.loanManager.requestLoan(amount, termMonths);
 
         if (result.approved) {
+            AudioManager.playSound('sfx_cash_register');
             this.showNotification(
                 `✅ Empréstimo aprovado! R$ ${amount} a ${(result.interestRate * 100).toFixed(2)}% ao ano`,
                 'success'
@@ -171,6 +172,7 @@ mixin(UIManager, {
             // Atualizar interface
             this.showLoanInterface();
         } else {
+            AudioManager.playSound('sfx_error');
             this.showNotification(`❌ Empréstimo rejeitado: ${result.reason}`, 'error');
         }
     },

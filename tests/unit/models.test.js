@@ -6,9 +6,12 @@ const fs = require('fs');
 const path = require('path');
 const { load, ROOT } = require('./load');
 
-const g = load('js/data/buildings.js', 'js/data/buildingModels.js');
+const g = load('js/data/buildings.js', 'js/data/buildingModels.js', 'js/data/zoneLots.js');
 const BUILDINGS = g('BUILDING_TYPES');
 const MODELS = g('BUILDING_MODELS');
+// Peças dos lotes das zonas (js/data/zoneLots.js) também são modelos da Kenney em uso
+const ZONE_FILES = new Set(Object.values(g('ZONE_LOTS')).flatMap(lot => lot.stages.flat())
+    .map(piece => piece.file).filter(file => file.endsWith('.glb')));
 const MODELS_DIR = path.join(ROOT, 'models', 'buildings');
 const MAX_TRIANGLES = 1500;
 
@@ -103,12 +106,26 @@ test('todo kit da Kenney no repositório leva a licença CC0', () => {
     }
 });
 
+test('peças dos lotes das zonas existem, são da Kenney e cabem no orçamento de triângulos', () => {
+    assert.ok(ZONE_FILES.size > 0);
+    for (const file of ZONE_FILES) {
+        assert.ok(file.startsWith('kenney/'), `zona usa modelo de kit da Kenney: ${file}`);
+        const full = path.join(MODELS_DIR, file);
+        assert.ok(fs.existsSync(full), `${file} não existe`);
+        const { json, triangles } = readGlb(full);
+        assert.ok(triangles <= MAX_TRIANGLES, `${file}: ${triangles} triângulos (máximo ${MAX_TRIANGLES})`);
+        for (const image of json.images || []) {
+            if (image.uri) assert.ok(fs.existsSync(path.join(path.dirname(full), decodeURIComponent(image.uri))), `${file}: textura ${image.uri}`);
+        }
+    }
+});
+
 test('nenhum .glb da Kenney sobrando sem uso na tabela', () => {
-    const used = new Set(Object.values(MODELS).map(e => e.file));
+    const used = new Set([...Object.values(MODELS).map(e => e.file), ...ZONE_FILES]);
     const kenney = path.join(MODELS_DIR, 'kenney');
     for (const kit of fs.readdirSync(kenney)) {
         for (const f of fs.readdirSync(path.join(kenney, kit)).filter(f => f.endsWith('.glb'))) {
-            assert.ok(used.has(`kenney/${kit}/${f}`), `kenney/${kit}/${f} não é usado em BUILDING_MODELS`);
+            assert.ok(used.has(`kenney/${kit}/${f}`), `kenney/${kit}/${f} não é usado em BUILDING_MODELS nem em ZONE_LOTS`);
         }
     }
 });

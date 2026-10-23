@@ -126,9 +126,17 @@ class PlayerProfile {
 
     // ===== Dados externos (rede) =====
 
+    /**
+     * Sinal que aborta a requisição depois de WEATHER.FETCH_TIMEOUT_MS. A Open-Meteo às vezes segura a conexão
+     * até o limite do navegador (~60 s): sem isso o cadastro ficava parado em "Procurando sua cidade no mapa".
+     */
+    static timeoutSignal() {
+        return typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(WEATHER.FETCH_TIMEOUT_MS) : undefined;
+    }
+
     /** Municípios do estado (API do IBGE). Lança erro se a rede falhar — a tela cai para texto livre. */
     static async fetchCities(uf) {
-        const response = await fetch(WEATHER.CITIES_URL.replace('{uf}', encodeURIComponent(uf)));
+        const response = await fetch(WEATHER.CITIES_URL.replace('{uf}', encodeURIComponent(uf)), { signal: PlayerProfile.timeoutSignal() });
         if (!response.ok) throw new Error(`IBGE respondeu ${response.status}`);
         const cities = await response.json();
         return cities.map(c => c.nome);
@@ -137,7 +145,7 @@ class PlayerProfile {
     /** Latitude/longitude da cidade (Open-Meteo), conferindo o estado. null se não achar. */
     static async geocode(city, uf) {
         const url = `${WEATHER.GEOCODING_URL}?name=${encodeURIComponent(city)}&count=10&language=pt&countryCode=BR`;
-        const response = await fetch(url);
+        const response = await fetch(url, { signal: PlayerProfile.timeoutSignal() });
         if (!response.ok) throw new Error(`Geocodificação respondeu ${response.status}`);
         const { results = [] } = await response.json();
         const stateName = BRAZIL_STATES[uf];

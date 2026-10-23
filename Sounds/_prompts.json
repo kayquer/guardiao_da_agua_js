@@ -1,0 +1,1307 @@
+{
+  "_readme": "Registro dos áudios gerados por IA no jogo (Sounds/). Músicas: Google Lyria 3 via OpenRouter (pro = faixas longas, clip = abertura e jingles, cortados com fade). Efeitos: ElevenLabs Sound Effects v2 (eleven_text_to_sound_v2, prompt em inglês, loop=true nos ambientes). Pós-produção com ffmpeg: músicas normalizadas a -16 LUFS integrado / pico -1,5 dBTP (loudnorm em duas passadas, linear), silêncio das pontas cortado e fade de 1,5 s no fim dos loops, MP3 128 kbps estéreo 44,1 kHz. Efeitos: interface/ações/eventos -16 LUFS, hover/digitação/câmera -24, vozes -18, trovões -18, trânsito -20, ambientes e loops -22 (ganho máximo +18/+20 dB para não subir chiado; limitador a -1,5 dBFS só em efeitos curtos), mono 96 kbps (interface/ações) ou estéreo 128 kbps (ambientes, clima, eventos e fanfarras). Chaves e volumes de uso: js/data/audioManifest.js. Novo som = novo prompt no mesmo estilo (amigável, cartoon, marimba/glockenspiel/madeira/gotas, Ré maior, nada assustador) e registro aqui.",
+  "date": "2026-10-22",
+  "music": {
+    "Sounds/BGM/menu.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Calm, welcoming main menu music for an educational city-building game about water and sustainability. Instrumental, no vocals, about 2 minutes, loopable. Light acoustic nylon guitar arpeggios, soft marimba, airy flute melody, warm pads, gentle shaker and subtle water drop percussion. Relaxed but curious, inviting the player to start, not too busy. 90 BPM, D major. Subtle Brazilian bossa feel, clean modern mix.",
+      "date": "2026-10-22",
+      "chosenVersion": "v1",
+      "source": "bgm_menu_v1.mp3",
+      "why": "v1: termina em fade limpo (a v2 corta quase seco no fim, depois de uma queda e volta) e entra mais firme.",
+      "loudness": "-11.57 → -15.96 LUFS, pico -4.43 dBTP",
+      "seconds": 116.3
+    },
+    "Sounds/BGM/gameplay-day-1.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Background gameplay music for a relaxing city-building game, daytime, building a green city by a river. Instrumental, no vocals, about 3 minutes, loopable. Light pizzicato strings, marimba, acoustic guitar, soft glockenspiel, gentle hand percussion, warm bass. Steady, productive, cheerful but unobtrusive, low dynamic range so it sits under sound effects. 105 BPM, G major.",
+      "date": "2026-10-22",
+      "chosenVersion": "v1",
+      "source": "bgm_gameplay_day_v1.mp3",
+      "why": "v1 e v2 em playlist (é a faixa mais tocada): as duas sem corte no fim e com dinâmica baixa.",
+      "loudness": "-12.35 → -15.96 LUFS, pico -3.65 dBTP",
+      "seconds": 174.6
+    },
+    "Sounds/BGM/gameplay-day-2.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Background gameplay music for a relaxing city-building game, daytime, building a green city by a river. Instrumental, no vocals, about 3 minutes, loopable. Light pizzicato strings, marimba, acoustic guitar, soft glockenspiel, gentle hand percussion, warm bass. Steady, productive, cheerful but unobtrusive, low dynamic range so it sits under sound effects. 105 BPM, G major.",
+      "date": "2026-10-22",
+      "chosenVersion": "v2",
+      "source": "bgm_gameplay_day_v2.mp3",
+      "why": "v1 e v2 em playlist (é a faixa mais tocada): as duas sem corte no fim e com dinâmica baixa.",
+      "loudness": "-12.21 → -15.97 LUFS, pico -3.79 dBTP",
+      "seconds": 177.5
+    },
+    "Sounds/BGM/gameplay-night.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Night-time ambient music for a city-building game. Instrumental, no vocals, about 3 minutes, loopable. Soft Rhodes electric piano, mellow nylon guitar, warm sustained pads, very light brushed drums. Peaceful, reflective, cozy, city lights over a calm river. 80 BPM. Low dynamics, no sudden changes.",
+      "date": "2026-10-22",
+      "chosenVersion": "v2",
+      "source": "bgm_gameplay_night_v2.mp3",
+      "why": "v2: mais longa (3 min), termina em fade até o silêncio; v1 acaba ainda soando.",
+      "loudness": "-12.54 → -15.96 LUFS, pico -3.46 dBTP",
+      "seconds": 179.6
+    },
+    "Sounds/BGM/gameplay-rain.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Gentle rainy-day music for a water-themed city-building game. Instrumental, no vocals, about 3 minutes, loopable. Soft piano, harp ripples, cello pad, delicate plucked textures like raindrops, subtle low percussion. Calm, slightly melancholic but hopeful: rain fills the reservoirs. 85 BPM, A minor resolving to C major. Unobtrusive background mix.",
+      "date": "2026-10-22",
+      "chosenVersion": "v1",
+      "source": "bgm_gameplay_rain_v1.mp3",
+      "why": "v1: menor faixa dinâmica (LRA 7,3 contra 8,8) e sem pico acima de 0 dBFS; a v2 tem um buraco no meio (~100 s).",
+      "loudness": "-11.73 → -15.96 LUFS, pico -4.35 dBTP",
+      "seconds": 162.4
+    },
+    "Sounds/BGM/gameplay-alert.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Tense but kid-friendly background music for a city-building game when water is running out or pollution is high. Instrumental, no vocals, about 2 minutes, loopable. Pulsing staccato strings, low marimba ostinato, ticking clock-like percussion, rising synth pad, occasional hopeful horn phrase suggesting the player can fix it. Urgent, focused, never scary or dark. 115 BPM, D minor. No loud hits.",
+      "date": "2026-10-22",
+      "chosenVersion": "v1",
+      "source": "bgm_gameplay_alert_v1.mp3",
+      "why": "v1: fade de saída suave (-51 LUFS no fim) contra fim mais alto da v2.",
+      "loudness": "-11.48 → -15.96 LUFS, pico -4.52 dBTP",
+      "seconds": 118.3
+    },
+    "Sounds/BGM/gameplay-thriving.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Upbeat, proud background music for a thriving sustainable city in a city-building game. Instrumental, no vocals, about 3 minutes, loopable. Bright acoustic guitar strumming, marimba melody, light samba-inspired percussion with pandeiro and shaker, warm bass, soft brass accents. Joyful, accomplished, clean energy and clean rivers. 110 BPM, A major. Balanced mix for background play.",
+      "date": "2026-10-22",
+      "chosenVersion": "v1",
+      "source": "bgm_gameplay_thriving_v1.mp3",
+      "why": "v1: fim em fade (-20 LUFS aos 170 s); a v2 ainda está alta ao cortar.",
+      "loudness": "-12.08 → -15.96 LUFS, pico -3.92 dBTP",
+      "seconds": 174.2
+    },
+    "Sounds/BGM/intro.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-clip-preview",
+      "prompt": "Cinematic orchestral opening for a family-friendly city-building game about protecting water. Instrumental, no vocals. Starts with soft flowing water textures, gentle harp and glassy marimba, a warm string pad rises as the camera flies over a green Brazilian river city, light percussion and nylon guitar join with a hopeful melody, swelling to a bright, triumphant but gentle brass and flute peak around 18 seconds, ending on a clean, satisfying final chord with a soft shimmer at 22 seconds. Optimistic, wonder, discovery, clean nature, sustainable future. 100 BPM, D major.",
+      "date": "2026-10-22",
+      "chosenVersion": "v1",
+      "source": "bgm_intro_22s_v1.mp3",
+      "why": "v1 (corte de 22 s): sobe de forma contínua até o pico perto dos 18 s; a v2 tem um vazio quase mudo por volta dos 8 s.",
+      "loudness": "-12.04 → -16.00 LUFS, pico -4.12 dBTP",
+      "seconds": 22.0
+    },
+    "Sounds/BGM/jingle-mission-complete.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-clip-preview",
+      "prompt": "Short victory jingle of about 4 seconds then silence: marimba and flute with a soft brass hit and sparkle, cheerful, kid-friendly, D major, ends cleanly. Instrumental, no vocals.",
+      "date": "2026-10-22",
+      "chosenVersion": "v2",
+      "source": "jingle_mission_complete_5s_v2.mp3",
+      "why": "v2 (corte de 5 s): ataque de metais mais claro no começo, final limpo.",
+      "loudness": "-13.57 → -15.27 LUFS, pico -2.49 dBTP",
+      "seconds": 5.0
+    },
+    "Sounds/BGM/jingle-study-unlock.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-clip-preview",
+      "prompt": "Very short discovery chime of about 3 seconds then silence: glockenspiel and harp ascending arpeggio, aha moment, bright, clean. Instrumental, no vocals.",
+      "date": "2026-10-22",
+      "chosenVersion": "v1",
+      "source": "jingle_study_unlock_3s_v1.mp3",
+      "why": "v1 (corte de 3,5 s): começa mais definido e termina mais baixo (-36 dB) que a v2.",
+      "loudness": "-9.68 → -15.74 LUFS, pico -7.19 dBTP",
+      "seconds": 3.5
+    },
+    "Sounds/BGM/jingle-game-over.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-clip-preview",
+      "prompt": "Gentle, sad but encouraging game over theme of about 10 seconds then silence: solo piano and soft strings, slow, ends on a hopeful major chord inviting the player to try again. Not dramatic or scary. Instrumental, no vocals.",
+      "date": "2026-10-22",
+      "chosenVersion": "v2",
+      "source": "jingle_game_over_10s_v2.mp3",
+      "why": "v2 (corte de 10 s): dinâmica mais estável e cauda final mais baixa.",
+      "loudness": "-11.30 → -15.46 LUFS, pico -4.82 dBTP",
+      "seconds": 10.0
+    }
+  },
+  "sfx": {
+    "Sounds/SFX/Environment/amb_city_day.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Gentle small Brazilian river town ambience during the day: distant birds (sabiá, bem-te-vi style chirps), soft wind in trees, far-away children playing, very light distant traffic, calm and pleasant, seamless loop, 30 seconds, wide stereo, low intensity.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (+20 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/amb_city_night.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Calm tropical night ambience: crickets, soft frogs near a river, a very distant car, light breeze in leaves, peaceful, seamless loop, 30 seconds, wide stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (-0.3 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/amb_fog.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Damp misty morning: soft distant water drips, muffled quiet air, a far-away bird, seamless loop, 15 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (+20 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/amb_rain_heavy.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Heavy steady rain on city rooftops and streets, water running in gutters and splashing, intense but calm, seamless loop, 20 seconds, wide stereo, no thunder.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (+2.7 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/amb_rain_light.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Light gentle rain on leaves and roof tiles, soft dripping from gutters, cozy, steady, seamless loop, 20 seconds, wide stereo, no thunder.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (+11.7 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/amb_river.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Peaceful flowing river with small ripples over stones and a soft gurgle, steady, seamless loop, 15 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (+5.6 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/amb_snow.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Very quiet winter ambience, soft muffled wind, faint snow flurries, hushed, seamless loop, 15 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (+20 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/amb_storm.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Thunderstorm ambience: heavy rain, gusty wind, occasional distant rolling thunder every 8–10 seconds, dramatic but kid-friendly, seamless loop, 30 seconds, wide stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (-10.9 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/amb_sun_hot.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Hot dry afternoon: cicadas buzzing in trees, still air, faint distant heat haze hum, seamless loop, 15 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (-12.4 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/amb_traffic_loop.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Light distant small-town traffic, occasional soft car passing, gentle and unobtrusive, seamless loop, 20 seconds, wide stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (+1.4 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/amb_wind_light.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Soft breeze through leaves, light and relaxing, seamless loop, 15 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (-0.3 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/amb_wind_strong.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Strong gusty wind through trees and between buildings, gentle whistling in gaps, leaves rustling, seamless loop, 15 seconds, wide stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (+1.7 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/sfx_car_horn.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Short friendly cartoon car horn \"beep-beep\", 400 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-20 LUFS (-14.1 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Environment/sfx_lightning_flash.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Sharp electric crackle snap, quick zap, 400 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS (-4.5 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Environment/sfx_thunder_far_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Distant rolling thunder, low soft rumble far away, 3.5 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS (+0.7 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/sfx_thunder_far_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Distant rolling thunder, low soft rumble far away, 3.5 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS (-6.0 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/sfx_thunder_far_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Distant rolling thunder, low soft rumble far away, 3.5 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS (-5.2 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/sfx_thunder_near_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Close lightning strike: sharp electric crack, a deep boom, then thunder rolling away, powerful but not painful, 3 seconds, wide stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 1 de 2",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS (-7.9 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/sfx_thunder_near_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Close lightning strike: sharp electric crack, a deep boom, then thunder rolling away, powerful but not painful, 3 seconds, wide stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 2 de 2",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS (-8.4 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/sfx_traffic_car_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Small cute cartoon car passing by from left to right, soft electric-like engine hum with a doppler swoosh, 2 seconds, stereo pan left to right.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-20 LUFS (-9.8 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/sfx_traffic_car_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Small cute cartoon car passing by from left to right, soft electric-like engine hum with a doppler swoosh, 2 seconds, stereo pan left to right.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-20 LUFS (-6.2 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/sfx_traffic_car_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Small cute cartoon car passing by from left to right, soft electric-like engine hum with a doppler swoosh, 2 seconds, stereo pan left to right.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-20 LUFS (+1.6 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Environment/sfx_traffic_truck.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Small delivery truck passing by left to right, low gentle engine with a light rattle of cargo, doppler, 2.5 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-20 LUFS (-10.6 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Player/sfx_achievement.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Achievement unlocked: shiny medal \"ding\" with magical sparkle and a short triumphant brass flourish, 1.8 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+2.2 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Player/sfx_alert_critical.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Urgent but child-friendly critical alert: two-tone pulsing synth bell pattern played twice (high-low, high-low), clear and attention-grabbing, firm but not harsh, 1.2 seconds, mono. No siren, no horror.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+3.1 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_warning.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Attention chime for a kids city game warning: three quick mid-pitch marimba notes (repeated note then a step down) with a soft bell underneath, slightly urgent but friendly, 800 ms, short tail, mono. Not a siren, not scary.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-4.4 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_axe.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Two soft cartoon axe chops on wood, a creaking trunk, then a light tree falling with leaves rustling and a soft thump, not harsh, 1.5 seconds, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+5.0 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_book_close.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Hardcover book closing softly, quick paper flutter then a soft padded thump, 450 ms, dry, close-mic.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+15.6 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_book_open.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Old hardcover book opening on a wooden table: gentle leather creak, pages settling with a soft rustle, light thump at the end, cozy library feel, 700 ms, close-mic, dry, stereo narrow.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+18 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_book_page.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Single crisp page turn of a thick paper book, quick flip with a light swoosh of air, satisfying, 400 ms, close-mic, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+17.9 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_build.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Cartoon construction start: two light hammer hits on wood, a short burst of a toy electric drill, a wheelbarrow squeak, cheerful and busy, 1.1 seconds, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-7.6 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_build_complete.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Cheerful construction complete: rising glockenspiel sparkle, then a bright two-note marimba \"ta-da\" (low then high), tiny bell shimmer tail, 1 second, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+2.0 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_build_place_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Satisfying placement sound: a wooden toy block set firmly on soft ground, warm low thud, a tiny dust puff, and a small click like snapping into place, 400 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 1 de 2",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-2.4 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_build_place_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Satisfying placement sound: a wooden toy block set firmly on soft ground, warm low thud, a tiny dust puff, and a small click like snapping into place, 400 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 2 de 2",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+4.8 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_build_progress.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Distant cartoon construction site loop: soft rhythmic hammering, an occasional small drill, light machinery hum, faint workers' tools clinking, gentle, seamless loop, 4 seconds, stereo, low intensity.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (+15.1 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Player/sfx_camera_rotate.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Very soft airy swoosh, like a gentle breeze passing, 300 ms, smooth fade in and out, quiet, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-24 LUFS (+18 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_cash_register.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Cartoon cash register \"ka-ching\" with drawer opening and a bell, 800 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+12.4 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_click_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Very short soft UI click for a cozy kids city-building game: a rounded wooden tap layered with a tiny water-bubble pop, warm and neutral, mid pitch, 70 milliseconds, instant attack, very short decay, no reverb, no echo, mono, clean.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-1.7 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_click_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Very short soft UI click for a cozy kids city-building game: a rounded wooden tap layered with a tiny water-bubble pop, warm and neutral, mid pitch, 70 milliseconds, instant attack, very short decay, no reverb, no echo, mono, clean.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-1.7 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_click_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Very short soft UI click for a cozy kids city-building game: a rounded wooden tap layered with a tiny water-bubble pop, warm and neutral, mid pitch, 70 milliseconds, instant attack, very short decay, no reverb, no echo, mono, clean.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-2.7 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_coin_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Cheerful single coin collect, bright metallic ding with a tiny sparkle, 300 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-0.5 dB)",
+      "channels": 1,
+      "alsoUsedAs": [
+        "sfx_pickup"
+      ]
+    },
+    "Sounds/SFX/Player/sfx_coin_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Cheerful single coin collect, bright metallic ding with a tiny sparkle, 300 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+5.9 dB)",
+      "channels": 1,
+      "alsoUsedAs": [
+        "sfx_pickup"
+      ]
+    },
+    "Sounds/SFX/Player/sfx_coin_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Cheerful single coin collect, bright metallic ding with a tiny sparkle, 300 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-2.3 dB)",
+      "channels": 1,
+      "alsoUsedAs": [
+        "sfx_pickup"
+      ]
+    },
+    "Sounds/SFX/Player/sfx_crowd_cheer.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Small-town crowd cheering and clapping happily, families and kids, 3 seconds, wide stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-5.7 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Player/sfx_demolish.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Cartoon toy building collapse: a wooden crack, small bricks tumbling like toy blocks, a soft dust whoosh settling, light and playful, not violent, 1.2 seconds, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-0.7 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_error_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Gentle cartoon \"oops\" error sound: two soft descending notes on a mellow synth-bassoon, with a hollow wooden bonk, friendly not harsh, 300 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 1 de 2",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+2.0 dB)",
+      "channels": 1,
+      "alsoUsedAs": [
+        "sfx_build_error"
+      ]
+    },
+    "Sounds/SFX/Player/sfx_error_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Gentle cartoon \"oops\" error sound: two soft descending notes on a mellow synth-bassoon, with a hollow wooden bonk, friendly not harsh, 300 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 2 de 2",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+7.8 dB)",
+      "channels": 1,
+      "alsoUsedAs": [
+        "sfx_build_error"
+      ]
+    },
+    "Sounds/SFX/Player/sfx_fireworks.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Cartoon fireworks: rising whistles and soft colorful pops with crackling sparkles, 4 seconds, wide stereo, not too loud.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-6.4 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Player/sfx_game_over.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Gentle sad descending piano phrase ending in a hopeful soft major chord, not scary, 3 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-3.4 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Player/sfx_item.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Soft magical pickup pop with a rising sparkle, 400 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+18 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_level_up.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Rising arpeggio power-up (marimba and synth) ending with a bright bell chime, 1.5 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-5.0 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Player/sfx_loan_payment.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Few coins dropping onto a counter with a soft paper stamp, 600 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+4.2 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_mission_complete.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Victory jingle for a kids game: cheerful marimba and flute melody with soft brass and a sparkle cymbal, triumphant and warm, ends cleanly, 2.5 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-6.9 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Player/sfx_mission_new.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Adventure quest-start sting: pizzicato strings and flute rising, curious and exciting, 1 second, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-4.9 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Player/sfx_mission_progress.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Small positive tick with a soft bell, like checking a box on a list, 300 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+0.4 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_modal_open.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Soft pop-up appear sound, a bubble inflating into a gentle bell ping, friendly, 300 ms, short tail, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+18 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_new_day.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Morning rooster-free wake-up: birds chirping with a soft rising harp, 1.5 s.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-5.8 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_night_falls.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Evening crickets fading in with a soft low chime, 1.5 s.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+18 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_no_money.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Cartoon empty piggy bank shaken with only two little coins rattling inside, followed by a soft descending \"bwomp\", humorous and gentle, 550 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+2.7 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_notification.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Soft bubbly notification: a water-drop pop followed by a light glockenspiel ping, friendly, 400 ms, short tail, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+12.2 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_panel_close.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Short soft paper swish going away, slightly lower pitch than an opening sound, 250 ms, gentle fade, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+18 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_panel_open.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Soft paper slide whoosh ending with a gentle small wooden thud, like a card sliding onto a wooden desk, 300 ms, warm, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+5.7 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_power_off.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Electric hum dropping in pitch and fading with a soft click, lights going out, 800 ms, mono, gentle.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+8.5 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_power_on.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Electric hum rising in pitch with a satisfying click, lights turning on, 800 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+4.5 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_quality_change.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Soft futuristic UI confirm, short glassy shimmer rising, 350 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+8.8 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_quiz_right.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Bright correct-answer \"ding-ding\" on two bells, rising, 500 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+9.9 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_quiz_wrong.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Soft gentle \"hmm\" two-note descending on a mellow wooden instrument, kind and encouraging, 500 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+9.5 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_reservoir_fill.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Water filling a large tank with rising pitch as it fills, ending with a soft satisfied slosh, 1.5 seconds, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+3.9 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_road_curve.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Tiny satisfying snap with a soft glassy ping, like puzzle pieces connecting, 200 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+6.0 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_road_drag.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Light rolling road roller compactor, soft repetitive tick-tick of gravel under a small roller, gentle, seamless loop, 1 second, mono, quiet.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (+17.1 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_road_place_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Quick soft asphalt tile placement, a short rubbery thump with a faint gravel crunch, 120 ms, very short decay, dry, mono, suitable for rapid repetition.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 1 de 4",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+18 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_road_place_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Quick soft asphalt tile placement, a short rubbery thump with a faint gravel crunch, 120 ms, very short decay, dry, mono, suitable for rapid repetition.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 2 de 4",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+18 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_road_place_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Quick soft asphalt tile placement, a short rubbery thump with a faint gravel crunch, 120 ms, very short decay, dry, mono, suitable for rapid repetition.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 3 de 4",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+18 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_road_place_4.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Quick soft asphalt tile placement, a short rubbery thump with a faint gravel crunch, 120 ms, very short decay, dry, mono, suitable for rapid repetition.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 4 de 4",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+18 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_rotate_building_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Quick toy ratchet turning (four tiny plastic clicks) with a short whoosh, playful, 280 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 1 de 2",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+3.0 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_rotate_building_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Quick toy ratchet turning (four tiny plastic clicks) with a short whoosh, playful, 280 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 2 de 2",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+3.3 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_solar_on.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Soft electric shimmer power-up with a warm sunny glassy tone, 600 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-4.1 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_study_unlock.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Discovery \"aha\" chime: ascending glockenspiel and harp arpeggio with a soft shimmer, 1.2 seconds, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-0.6 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_success.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Bright success chime: three quick ascending marimba notes (D, F sharp, A) with a light sparkle tail, 600 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+6.7 dB)",
+      "channels": 1,
+      "alsoUsedAs": [
+        "sfx_ui_success"
+      ]
+    },
+    "Sounds/SFX/Player/sfx_tab_switch.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Tiny soft swish with a muted wooden click at the end, quick tab change, 140 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+17.0 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_toggle_off.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Small toy switch flipped down, lower muted tick with a tiny falling chirp, 100 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+3.8 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_toggle_on.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Small toy switch flipped up, bright short tick with a tiny rising chirp, 100 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+4.9 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_tree_plant.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Soft soil digging scoop, a leafy pop as a sapling springs up, small bright chime, 600 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+16.4 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_tutorial_next.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Soft friendly page blip, a light paper flick with a tiny bell tick, 150 ms, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+4.6 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_typewriter_tick_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Tiny soft typing tick, like a pencil tap on paper, 30 ms, very quiet, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 1 de 4",
+      "loop": false,
+      "loudnessTarget": "-24 LUFS (+8.9 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_typewriter_tick_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Tiny soft typing tick, like a pencil tap on paper, 30 ms, very quiet, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 2 de 4",
+      "loop": false,
+      "loudnessTarget": "-24 LUFS (+10.4 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_typewriter_tick_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Tiny soft typing tick, like a pencil tap on paper, 30 ms, very quiet, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 3 de 4",
+      "loop": false,
+      "loudnessTarget": "-24 LUFS (+9.4 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_typewriter_tick_4.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Tiny soft typing tick, like a pencil tap on paper, 30 ms, very quiet, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 4 de 4",
+      "loop": false,
+      "loudnessTarget": "-24 LUFS (+8.3 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_ui_click_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Light plastic toy button press with a soft bright tick on top, playful mobile game interface, 100 ms, crisp attack, gentle, no reverb, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 1 de 2",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+3.5 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_ui_click_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Light plastic toy button press with a soft bright tick on top, playful mobile game interface, 100 ms, crisp attack, gentle, no reverb, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 2 de 2",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+8.1 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_ui_hover_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Extremely subtle soft tick, like a tiny wooden bead touching glass, barely audible texture, 40 ms, very quiet, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-24 LUFS (+7.1 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_ui_hover_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Extremely subtle soft tick, like a tiny wooden bead touching glass, barely audible texture, 40 ms, very quiet, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-24 LUFS (-4.7 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_ui_hover_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Extremely subtle soft tick, like a tiny wooden bead touching glass, barely audible texture, 40 ms, very quiet, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-24 LUFS (+2.6 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_ui_select.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selection blip made of two quick rising marimba notes, D then A, bright and friendly, slight sparkle tail, 220 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+4.3 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_victory.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Big celebratory fanfare: orchestral brass, strings and cymbal swell, with kids cheering softly in the distance, joyful finale, 5 seconds, wide stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-6.6 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Player/sfx_water.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Clean fresh water splash and short pour into a tank, bright clear droplets, 800 ms, close, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+13.5 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_water_clean.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Sparkling clean water shimmer with a bright harp gliss and a single water drop, 1 second, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+1.6 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_water_pump_loop.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Gentle small water pump hum with a rhythmic soft gurgle and water flowing through pipes, seamless loop, 3 seconds, mono, low intensity.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (-6.8 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_water_treatment.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Bubbling clean water in tanks, soft filter flow, light mechanical hum, seamless loop, 3 seconds, stereo, calm.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (+2.4 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Player/sfx_wind_turbine.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Slow rhythmic large wind turbine blades whooshing (about one whoosh per second), soft breeze underneath, calm, seamless loop, 4 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": true,
+      "loudnessTarget": "-22 LUFS (-3.1 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/Player/sfx_zone_grow.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Magical growth swoosh rising, with three soft wooden pop-ups like little houses springing from the ground, ending on a gentle bell chord, 1.2 seconds, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-2.9 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_zone_mark.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Soft chalk line drawn on the ground with a light stake tap, 400 ms, dry, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+13.2 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_claudia_hello.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Friendly adult Brazilian woman's short cheerful \"hm-hm!\" acknowledgement, warm and smiling, no words, 600 ms, close-mic, dry.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS (-5.7 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_claudia_worried.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Adult woman's soft concerned \"hmm...\" sigh, gentle, no words, 800 ms, dry.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS (-7.3 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_jose_hello.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Warm older man's friendly soft chuckle \"heh-heh\", relaxed, no words, 700 ms, close-mic, dry.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS (+9.4 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_marcia_hello.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Curious adult woman's pleasant surprised \"oh!\", bright and interested, no words, 500 ms, close-mic, dry.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS (+5.5 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/RSE/sfx_event_blackout.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Electric power-down whine dropping, a click, then silence, 1.5 seconds, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-3.2 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/RSE/sfx_event_drought.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Dry hot wind gust, cracking dry earth, a single low descending flute note, 2 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-8.8 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/RSE/sfx_event_fire.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Small crackling fire with a quick whoosh and a distant friendly fire-truck bell, 1.5 seconds, stereo. Not scary.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+5.1 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/RSE/sfx_event_flood.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Rushing water surge rising with big splashes and gurgling, 2 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-5.7 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/RSE/sfx_event_good_news.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Happy fanfare sting, bright brass and glockenspiel, upbeat, 1.2 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-8.0 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/RSE/sfx_event_heatwave.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Shimmering heat haze synth swell with cicadas rising in intensity, 2 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-6.0 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/RSE/sfx_event_pollution.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Murky bubbling sludge, thick glugging bubbles with a low comical \"uh-oh\" synth, 1.5 seconds, mono.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+3.8 dB)",
+      "channels": 1
+    },
+    "Sounds/SFX/RSE/sfx_event_resolved.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Relief sound: soft ascending harp glissando into a warm gentle major chord, 1.2 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-5.7 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/RSE/sfx_event_start.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Friendly breaking-news sting: soft timpani roll into a short orchestral hit with a bell, attention-grabbing but warm, 1.2 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (+12.7 dB)",
+      "channels": 2
+    },
+    "Sounds/SFX/RSE/sfx_event_storm.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Wind gust building up quickly into a thunder clap, then heavy rain beginning, 2.5 seconds, stereo.",
+      "date": "2026-10-22",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS (-4.6 dB)",
+      "channels": 2
+    }
+  }
+}

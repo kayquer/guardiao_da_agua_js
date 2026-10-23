@@ -37,6 +37,7 @@ function gameDialog(options) {
             cancelButton: 'overlay-btn secondary'
         },
         confirmButtonText: 'OK',
+        didOpen: () => { if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_modal_open'); },
         ...options
     });
 }

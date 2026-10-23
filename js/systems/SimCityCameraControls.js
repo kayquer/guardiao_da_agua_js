@@ -72,13 +72,11 @@ class SimCityCameraControls {
         this.targetAlpha = this.camera.alpha;
         this.targetRadius = this.camera.radius;
         
-        // Animation frame tracking
-        this.animationFrame = null;
+        // Atualização da câmera a cada quadro renderizado (startUpdateLoop)
+        this.renderObserver = null;
+        this.lerpTargets = [new BABYLON.Vector3(), new BABYLON.Vector3()];
+        this.lerpIndex = 0;
         this.lastUpdateTime = performance.now();
-        
-        // Reusable objects for memory optimization
-        this._tempVector = new BABYLON.Vector3();
-        this._tempQuaternion = new BABYLON.Quaternion();
         
         // Store bound event handlers for proper cleanup
         this.boundHandlers = {};
@@ -277,6 +275,11 @@ class SimCityCameraControls {
 
         // Touch move
         this.boundHandlers.touchmove = (event) => {
+            // Traçando rua com o dedo (BuildingSystem.handleRoadPointer): o arrasto é da rua, não da câmera
+            if (this.gameManager.buildingSystem?.roadDrag && event.touches.length === 1) {
+                event.preventDefault();
+                return;
+            }
             // Calculate movement distance from start position
             if (event.touches.length === 1 && this.touchStartPositions.length === 1) {
                 const deltaX = Math.abs(event.touches[0].clientX - this.touchStartPositions[0].x);
@@ -392,33 +395,13 @@ class SimCityCameraControls {
         const deltaTime = (now - this.lastUpdateTime) / 1000;
         const moveSpeed = this.config.edgePanSpeed * deltaTime;
         
-        let moved = false;
-        
-        // Left edge
-        if (event.clientX - rect.left < threshold) {
-            this.targetPosition.x -= moveSpeed;
-            moved = true;
-        }
-        // Right edge
-        else if (rect.right - event.clientX < threshold) {
-            this.targetPosition.x += moveSpeed;
-            moved = true;
-        }
-        
-        // Top edge
-        if (event.clientY - rect.top < threshold) {
-            this.targetPosition.z += moveSpeed;
-            moved = true;
-        }
-        // Bottom edge
-        else if (rect.bottom - event.clientY < threshold) {
-            this.targetPosition.z -= moveSpeed;
-            moved = true;
-        }
-        
-        if (moved) {
-            this.enforceTargetBounds();
-        }
+        // Borda esquerda/direita/cima/baixo da tela, relativo a para onde a câmera olha
+        let right = 0, forward = 0;
+        if (event.clientX - rect.left < threshold) right = -moveSpeed;
+        else if (rect.right - event.clientX < threshold) right = moveSpeed;
+        if (event.clientY - rect.top < threshold) forward = moveSpeed;
+        else if (rect.bottom - event.clientY < threshold) forward = -moveSpeed;
+        this.moveRelativeToView(right, forward);
     }
     
     handleTouchPan(event) {
@@ -485,30 +468,36 @@ class SimCityCameraControls {
      * Pan camera with optimized vector operations
      */
     panCamera(deltaX, deltaY, sensitivity) {
-        // Reuse temp vector
-        this._tempVector.set(
-            -deltaX * sensitivity,
-            0,
-            deltaY * sensitivity
-        );
-        
-        // Apply camera rotation to pan vector
-        BABYLON.Quaternion.RotationAxisToRef(
-            BABYLON.Vector3.Up(),
-            this.camera.alpha,
-            this._tempQuaternion
-        );
-        
-        this._tempVector.rotateByQuaternionToRef(this._tempQuaternion, this._tempVector);
-        
-        // Move camera target
-        this.targetPosition.addInPlace(this._tempVector);
-        
-        // Apply bounds
+        // Arrastar leva o mapa junto com o dedo/mouse: para a esquerda = câmera vai para a direita da tela
+        const scale = sensitivity * this.zoomPanScale();
+        this.moveRelativeToView(-deltaX * scale, deltaY * scale);
+    }
+
+    /**
+     * Move o alvo da câmera na direção da tela, não nos eixos do mapa: `right` para a direita de quem olha,
+     * `forward` para a frente (para onde a câmera aponta, no chão). Na ArcRotateCamera a câmera fica em
+     * alvo + (cos α, ·, sin α), então a frente no chão é (-cos α, -sin α) e a direita (-sin α, cos α)
+     * (a mesma base da bússola, ui/CompassUI.js). Antes o vetor era girado por α, o que só acertava no
+     * ângulo inicial: com a câmera virada, "para a direita" andava de lado ou para trás.
+     */
+    moveRelativeToView(right, forward) {
+        if (!right && !forward) return;
+        const a = this.camera.alpha;
+        const cos = Math.cos(a), sin = Math.sin(a);
+        this.targetPosition.x += -sin * right - cos * forward;
+        this.targetPosition.z += cos * right - sin * forward;
         this.enforceTargetBounds();
+    }
+
+    /** Com a câmera longe, o mesmo gesto anda mais (o mapa parece menor); perto, anda menos. */
+    zoomPanScale() {
+        return Math.min(2.5, Math.max(0.5, (this.camera.radius || 30) / 30));
     }
     
     handleKeyDown(event) {
+        // Digitando num campo (nome, cidade...): W/A/S/D/R são letras, não comandos de câmera
+        const el = event.target;
+        if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
         switch (event.code) {
             case 'KeyW':
             case 'ArrowUp':
@@ -565,12 +554,9 @@ class SimCityCameraControls {
         }
     }
     
+    // Roda dentro do render do Babylon (antes era um requestAnimationFrame próprio, um segundo laço por quadro)
     startUpdateLoop() {
-        const update = () => {
-            this.updateCamera();
-            this.animationFrame = requestAnimationFrame(update);
-        };
-        update();
+        this.renderObserver = this.scene.onBeforeRenderObservable.add(() => this.updateCamera());
     }
     
     /**
@@ -584,20 +570,23 @@ class SimCityCameraControls {
         // Update keyboard movement
         this.updateKeyboardMovement(deltaTime);
         
-        // Apply smoothing to camera position
-        this.camera.target = BABYLON.Vector3.Lerp(
-            this.camera.target,
-            this.targetPosition,
-            this.config.smoothing
-        );
-        
+        // Suavização igual em qualquer FPS: config.smoothing é o passo de um quadro a 60 FPS
+        const smoothing = 1 - Math.pow(1 - this.config.smoothing, Math.min(deltaTime, 0.25) * 60);
+
+        // Apply smoothing to camera position (dois vetores alternados: sem alocar um Vector3 por quadro, e o
+        // setter de target continua recebendo outro objeto, como antes)
+        let next = this.lerpTargets[this.lerpIndex = 1 - this.lerpIndex];
+        if (next === this.camera.target) next = this.lerpTargets[this.lerpIndex = 1 - this.lerpIndex];
+        BABYLON.Vector3.LerpToRef(this.camera.target, this.targetPosition, smoothing, next);
+        this.camera.target = next;
+
         // Apply smoothing to rotation
         const alphaDiff = this.targetAlpha - this.camera.alpha;
-        this.camera.alpha += alphaDiff * this.config.smoothing;
-        
+        this.camera.alpha += alphaDiff * smoothing;
+
         // Apply smoothing to zoom
         const radiusDiff = this.targetRadius - this.camera.radius;
-        this.camera.radius += radiusDiff * this.config.smoothing;
+        this.camera.radius += radiusDiff * smoothing;
         
         // Maintain isometric angle
         this.camera.beta = Math.PI / 3.5;
@@ -610,41 +599,11 @@ class SimCityCameraControls {
         const moveSpeed = this.config.keyboardMoveSpeed * deltaTime;
         const rotateSpeed = this.config.keyboardRotateSpeed * deltaTime;
 
-        // Calculate movement vector relative to camera rotation
-        this._tempVector.set(0, 0, 0);
-
-        // Forward/backward movement (relative to camera facing direction)
-        if (this.keys.w) {
-            this._tempVector.z += moveSpeed;
-        }
-        if (this.keys.s) {
-            this._tempVector.z -= moveSpeed;
-        }
-
-        // Left/right movement (relative to camera facing direction)
-        if (this.keys.a) {
-            this._tempVector.x -= moveSpeed;
-        }
-        if (this.keys.d) {
-            this._tempVector.x += moveSpeed;
-        }
-
-        // Apply camera rotation to movement vector if there's any movement
-        if (this._tempVector.length() > 0) {
-            BABYLON.Quaternion.RotationAxisToRef(
-                BABYLON.Vector3.Up(),
-                this.camera.alpha,
-                this._tempQuaternion
-            );
-            
-            this._tempVector.rotateByQuaternionToRef(this._tempQuaternion, this._tempVector);
-
-            // Apply the rotated movement to target position
-            this.targetPosition.addInPlace(this._tempVector);
-
-            // Apply bounds after movement
-            this.enforceTargetBounds();
-        }
+        // W/S = frente/trás e A/D = esquerda/direita de quem olha (relativo à câmera, não ao mapa)
+        const step = moveSpeed * this.zoomPanScale();
+        const forward = (this.keys.w ? step : 0) - (this.keys.s ? step : 0);
+        const right = (this.keys.d ? step : 0) - (this.keys.a ? step : 0);
+        this.moveRelativeToView(right, forward);
 
         // Rotation (independent of movement)
         if (this.keys.q) {
@@ -713,10 +672,9 @@ class SimCityCameraControls {
     // ===== CLEANUP =====
     
     dispose() {
-        // Cancel animation frame
-        if (this.animationFrame) {
-            cancelAnimationFrame(this.animationFrame);
-            this.animationFrame = null;
+        if (this.renderObserver) {
+            this.scene.onBeforeRenderObservable.remove(this.renderObserver);
+            this.renderObserver = null;
         }
         
         // Remove all canvas event listeners

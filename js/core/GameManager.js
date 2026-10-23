@@ -153,6 +153,8 @@ class GameManager {
             await this.studySystem.initialize();
 
             this.setupEventListeners();
+            // Trocar a qualidade gráfica no menu de pausa aplica na hora
+            GraphicsQuality.onChange(level => this.applyGraphicsQuality(level));
             if (DEBUG) this.exposeDebugFunctions();
 
             log('✅ Sistemas inicializados com sucesso');
@@ -175,13 +177,20 @@ class GameManager {
 
         this.setupCanvas();
 
-        this.engine = new BABYLON.Engine(this.canvas, true, {
-            antialias: GAME_CONFIG.canvas.antialias,
-            preserveDrawingBuffer: GAME_CONFIG.canvas.preserveDrawingBuffer
+        // Qualidade gráfica (GraphicsQuality): MSAA só se escolhe ao criar o engine; o resto
+        // (escala de render, sombras, partículas...) muda ao vivo em applyGraphicsQuality
+        this.engineAntialias = GraphicsQuality.preset().antialias;
+        this.engine = new BABYLON.Engine(this.canvas, this.engineAntialias, {
+            preserveDrawingBuffer: GAME_CONFIG.canvas.preserveDrawingBuffer,
+            stencil: false,
+            powerPreference: 'high-performance'
         });
 
         this.scene = new BABYLON.Scene(this.engine);
         this.scene.clearColor = new BABYLON.Color3(0.2, 0.6, 0.9);
+        // O jogo faz os próprios picks (pickTerrainCell/pickBuildingFirst); o pick automático do Babylon a cada
+        // movimento do mouse testava todos os meshes à toa
+        this.scene.skipPointerMovePicking = true;
         
         this.setupCamera();
         this.setupLighting();
@@ -274,18 +283,45 @@ class GameManager {
         sunLight.intensity = 0.8;
         sunLight.diffuse = new BABYLON.Color3(1, 0.95, 0.8);
         
-        const quality = this.settingsManager?.settings?.graphics?.quality || 'medium';
-        const shadowMapSize = quality === 'low' ? 512 : quality === 'high' ? 2048 : 1024;
-        const shadowGenerator = new BABYLON.ShadowGenerator(shadowMapSize, sunLight);
+        // Filtro da sombra (suave / simples / desligada): applyGraphicsQuality
+        this.shadowGenerator = new BABYLON.ShadowGenerator(1024, sunLight);
+        this.applyGraphicsQuality();
+    }
 
-        if (quality === 'low') {
-            shadowGenerator.useBlurExponentialShadowMap = false;
-        } else {
-            shadowGenerator.useBlurExponentialShadowMap = true;
-            shadowGenerator.blurKernel = quality === 'high' ? 32 : 16;
+    /**
+     * Aplica a qualidade gráfica (GraphicsQuality) com o jogo rodando: escala de render, sombras, FXAA, água,
+     * partículas/nuvens/árvores (WeatherEffects). Chamado na criação da cena e quando o jogador troca no
+     * menu ou na pausa. O MSAA fica como o engine nasceu (needsRestart avisa "ao reabrir o jogo").
+     */
+    applyGraphicsQuality(level = GraphicsQuality.current()) {
+        const p = GraphicsQuality.preset(level);
+        this.graphicsQuality = level;
+        if (!this.engine || !this.scene) return;
+        this.engine.setHardwareScalingLevel(1 / p.resolution);
+
+        // Sem sombra dinâmica fica só a sombra falsa no chão; o mapa de sombra nem é renderizado
+        this.scene.shadowsEnabled = p.shadows !== 'off';
+        const sg = this.shadowGenerator;
+        if (sg && p.shadows === 'blur') {
+            sg.useBlurExponentialShadowMap = true;
+            sg.blurKernel = 16;
+        } else if (sg && p.shadows === 'pcf') {
+            sg.usePercentageCloserFiltering = true;
+            sg.filteringQuality = BABYLON.ShadowGenerator.QUALITY_LOW;
         }
 
-        this.shadowGenerator = shadowGenerator;
+        // FXAA (um passe barato) quando não há MSAA: na média, ou na alta escolhida depois de abrir o jogo sem MSAA
+        const wantFxaa = (p.fxaa || p.antialias) && !this.engineAntialias && !!this.camera;
+        if (wantFxaa && !this.fxaaPostProcess) {
+            this.fxaaPostProcess = new BABYLON.FxaaPostProcess('fxaa', 1.0, this.camera);
+        } else if (!wantFxaa && this.fxaaPostProcess) {
+            this.fxaaPostProcess.dispose(this.camera);
+            this.fxaaPostProcess = null;
+        }
+
+        this.gridManager?.setWaterAnimated(p.waterShader);
+        this.weatherEffects?.setQuality(p);
+        log(`🎨 Qualidade gráfica: ${GraphicsQuality.LABELS[level]}`);
     }
     
     setupControls() {
@@ -310,18 +346,6 @@ class GameManager {
             // Configure camera bounds based on grid size
             this.cameraControls.setBounds(-20, 60, -20, 60);
             this.cameraControls.setZoomLimits(15, 80);
-
-            // Apply settings if available
-            if (this.settingsManager) {
-                const settings = this.settingsManager.getSettings();
-                if (settings.controls) {
-                    this.cameraControls.setSensitivity(
-                        settings.controls.cameraSensitivity * 0.02,
-                        settings.controls.cameraSensitivity * 0.008,
-                        settings.controls.zoomSpeed * 0.15
-                    );
-                }
-            }
 
             log('🎮 SimCity-style camera controls initialized');
         } else {
@@ -357,6 +381,29 @@ class GameManager {
         // Mouse click for building placement
         this.canvas.addEventListener('click', (event) => {
             this.handleBuildingPlacementClick(event);
+        });
+
+        // Rua: clicar e arrastar traça a linha (mouse e dedo); o pan da câmera já fica parado no modo construção
+        const roadPointer = (kind, event) => {
+            if (!this.buildMode || !this.buildingSystem?.handleRoadPointer) return false;
+            const rect = this.canvas.getBoundingClientRect();
+            const cell = this.pickTerrainCell(event.clientX - rect.left, event.clientY - rect.top);
+            return this.buildingSystem.handleRoadPointer(kind, cell);
+        };
+        const onRoadMove = event => roadPointer('move', event);
+        const onRoadEnd = event => {
+            document.removeEventListener('pointermove', onRoadMove);
+            document.removeEventListener('pointerup', onRoadEnd);
+            document.removeEventListener('pointercancel', onRoadEnd);
+            roadPointer(event.type === 'pointercancel' ? 'cancel' : 'up', event);
+        };
+        this.canvas.addEventListener('pointerdown', event => {
+            if (event.button !== 0 || !event.isPrimary) return;
+            if (roadPointer('down', event)) {
+                document.addEventListener('pointermove', onRoadMove);
+                document.addEventListener('pointerup', onRoadEnd);
+                document.addEventListener('pointercancel', onRoadEnd);
+            }
         });
 
         // Right click to cancel building mode
@@ -407,7 +454,10 @@ class GameManager {
             const y = event.clientY - rect.top;
 
             // ===== ENHANCED 3D INTERACTION SYSTEM =====
-            if (this.buildMode && this.buildingSystem && this.buildingSystem.previewMode) {
+            if (this.buildMode && this.buildingSystem?.previewMode && this.buildingSystem.isRoadType?.(this.buildingSystem.selectedBuildingType)) {
+                // Rua: o traçado já construiu no pointerup; aqui só o toque sintetizado do mobile (uma célula)
+                this.buildingSystem.placeRoadAtClick(this.pickTerrainCell(x, y));
+            } else if (this.buildMode && this.buildingSystem && this.buildingSystem.previewMode) {
                 // Building placement mode
                 this.handleBuildingPlacement(x, y);
             } else {
@@ -689,9 +739,8 @@ class GameManager {
         }
 
         if (this.cityLifeSystem) {
-            this.cityLifeSystem.update(deltaTime);
-            const population = this.resourceManager.getResource('population');
-            this.cityLifeSystem.updateDensity(population);
+            // Trânsito anda no tempo de jogo (acelera com 2x/3x, para na pausa: só roda aqui)
+            this.cityLifeSystem.update(deltaTime * this.timeScale);
         }
 
         if (this.questSystem) {
@@ -1307,7 +1356,7 @@ class GameManager {
         const ui = this.uiManager;
         return !this.buildMode && !this.buildingSystem?.previewMode && !this.selectedBuilding &&
             !this.tutorialSystem?.isActive && !ui?.uiState?.currentOpenPanel && !ui?.isInfoPopupOpen() &&
-            !document.querySelector('.hud-left.active, .hud-right.active');
+            !document.querySelector('.hud-left.active, .hud-right.active') && !ui?.isHudRightVisible?.();
     }
 
     handleResize() {
@@ -1343,7 +1392,10 @@ class GameManager {
 
     autoSave() {
         if (!this.canSave()) return false;
-        return this.saveSystem.save(this.getSaveData(), PlayerProfile.getActive().id, { kind: 'auto' });
+        // Partida sem volta (água quase no fim/poluição quase no máximo) não sobrescreve o save: ele não seria jogável
+        const data = this.getSaveData();
+        if (SaveSystem.isLostGame(data)) return false;
+        return this.saveSystem.save(data, PlayerProfile.getActive().id, { kind: 'auto' });
     }
 
     /** Botão "💾 Salvar jogo" da tela de pausa. */
