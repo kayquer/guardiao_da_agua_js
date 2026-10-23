@@ -48,9 +48,22 @@ mixin(BuildingSystem, {
         return Math.round(full * this.getZoneEffectScale(building));
     },
 
-    /** Empregos que a zona oferece agora (pela fase). */
+    /**
+     * Empregos que a zona oferece agora: pela fase e pela eficiência (até 100%; zona funcionando mal emprega
+     * menos). A moradia (getEffectivePopulationCapacity) não cai com a eficiência: as casas continuam lá.
+     */
     getEffectiveJobCapacity(building) {
-        return Math.round((building?.config?.jobCapacity || 0) * this.getZoneEffectScale(building));
+        const efficiency = Number.isFinite(building?.efficiency) && !building.underConstruction
+            ? Math.max(0, Math.min(1, building.efficiency)) : 1;
+        return Math.round((building?.config?.jobCapacity || 0) * this.getZoneEffectScale(building) * efficiency);
+    },
+
+    /** Receita por minuto que a zona dá agora: valor cheio × eficiência × fração da fase (como applyBuildingEffects). */
+    getEffectiveZoneIncome(building) {
+        const config = building?.config || {};
+        if (!config.incomeGeneration || building.isRented) return 0;
+        const efficiency = Number.isFinite(building.efficiency) ? Math.max(0, building.efficiency) : 1;
+        return Math.round(config.incomeGeneration * efficiency * this.getZoneEffectScale(building));
     },
 
     /**
@@ -67,15 +80,34 @@ mixin(BuildingSystem, {
     },
 
     /**
-     * Ritmo de crescimento (multiplica o tempo que passa): satisfação 0-100 vai de 0,5× a 1,5×; energia em
-     * falta (eficiência < 1) freia na mesma proporção, até 0,25×; sem água a zona para (0).
-     * @param {{satisfaction:number, waterShortage:boolean, energyEfficiency:number}} c
+     * Ritmo de crescimento (multiplica o tempo que passa) = satisfação × eficiência da zona:
+     * satisfação 0-100 vai de 0,5× a 1,5×; eficiência (c.efficiency, 0-2; sem ela, a da energia da cidade)
+     * freia ou acelera na mesma proporção, nunca abaixo de 0,25×; sem água a zona para (0).
+     * @param {{satisfaction:number, waterShortage:boolean, energyEfficiency:number, efficiency?:number}} c
      */
     computeZoneGrowthRate(c) {
         if (c.waterShortage) return 0;
         const satisfaction = Math.max(0, Math.min(100, Number.isFinite(c.satisfaction) ? c.satisfaction : 50));
-        const energy = Number.isFinite(c.energyEfficiency) ? Math.max(0, Math.min(1, c.energyEfficiency)) : 1;
-        return (0.5 + satisfaction / 100) * Math.max(0.25, energy);
+        const efficiency = Number.isFinite(c.efficiency) ? Math.max(0, Math.min(2, c.efficiency))
+            : Number.isFinite(c.energyEfficiency) ? Math.max(0, Math.min(1, c.energyEfficiency)) : 1;
+        return (0.5 + satisfaction / 100) * Math.max(0.25, efficiency);
+    },
+
+    /**
+     * Eficiência da zona para crescer = building.efficiency, calculada em building/BuildingEfficiency.js
+     * (dano × rua × energia da cidade + pesquisa) — a energia já está nela, então NÃO é descontada de novo.
+     * Sem aquele arquivo (testes unitários), limita pela energia da cidade com o MÍNIMO, nunca o produto.
+     */
+    getZoneEfficiency(building, c = this.getZoneGrowthConditions()) {
+        const own = Number.isFinite(building?.efficiency) ? Math.max(0, building.efficiency) : 1;
+        if (typeof this.computeBuildingEfficiency === 'function') return own;
+        const energy = Number.isFinite(c?.energyEfficiency) ? Math.max(0, Math.min(1, c.energyEfficiency)) : 1;
+        return energy < 1 ? Math.min(own, energy) : own;
+    },
+
+    /** Ritmo de crescimento desta zona agora (cidade + eficiência da zona). */
+    getZoneGrowthRate(building, c = this.getZoneGrowthConditions()) {
+        return this.computeZoneGrowthRate({ ...c, efficiency: this.getZoneEfficiency(building, c) });
     },
 
     /** Condições da cidade agora (ResourceManager) para computeZoneGrowthRate. */
@@ -87,8 +119,20 @@ mixin(BuildingSystem, {
             satisfaction: rm.resources.population?.satisfaction,
             waterShortage: !!rm.hasWaterShortage?.(),
             // sem consumo nenhum a eficiência fica 1; zona que gasta energia sente a falta
-            energyEfficiency: electricity.consumption > 0 ? electricity.efficiency : 1
+            energyEfficiency: electricity.consumption > 0 ? electricity.efficiency : 1,
+            // produção × gasto de água (L/min) para o painel dizer quanto falta
+            water: rm.getWaterBalance?.() || null
         };
+    },
+
+    /** Texto para crianças: por que a zona parou sem água e quanta água falta (L/min). */
+    describeZoneWaterShortage(c = this.getZoneGrowthConditions()) {
+        const w = c?.water || this.gameManager?.resourceManager?.getWaterBalance?.();
+        if (!w || !(w.demand > w.production)) return 'Falta água na cidade: a zona só cresce com água.';
+        const fmt = n => Math.round(n).toLocaleString('pt-BR');
+        const missing = Math.max(1, Math.round(w.demand) - Math.round(w.production));
+        return `Falta água! A cidade gasta ${fmt(w.demand)} L/min e só produz ${fmt(w.production)} L/min. ` +
+            `Precisa de mais ${fmt(missing)} L/min: construa uma bomba d'água ou um poço.`;
     },
 
     /**
@@ -108,12 +152,11 @@ mixin(BuildingSystem, {
      * Tempo de jogo (ms) até a próxima fase no ritmo `rate` (o de agora, se omitido). null = fase final ou não é
      * zona; Infinity = parada (sem água). O painel divide pelo timeScale (2x/3x) para mostrar o tempo real.
      */
-    getZoneTimeToNextStage(building, rate = this.computeZoneGrowthRate(this.getZoneGrowthConditions())) {
+    getZoneTimeToNextStage(building, rate = this.getZoneGrowthRate(building)) {
         const stage = this.getZoneStage(building);
         if (stage === null || stage >= 3) return null;
-        const effective = rate * (building.efficiency > 0 ? building.efficiency : 1);
-        if (!(effective > 0)) return Infinity;
-        return (1 - this.getZoneStageProgress(building)) * ZONE_GROWTH.stageMs[stage] / effective;
+        if (!(rate > 0)) return Infinity;
+        return (1 - this.getZoneStageProgress(building)) * ZONE_GROWTH.stageMs[stage] / rate;
     },
 
     /**
@@ -122,14 +165,17 @@ mixin(BuildingSystem, {
      */
     describeZoneGrowth(building) {
         const c = this.getZoneGrowthConditions();
-        const ms = this.getZoneTimeToNextStage(building, this.computeZoneGrowthRate(c));
+        const efficiency = this.getZoneEfficiency(building, c);
+        const ms = this.getZoneTimeToNextStage(building, this.computeZoneGrowthRate({ ...c, efficiency }));
         if (ms === null) return null;
-        if (ms === Infinity) return { eta: 'Crescimento parado', reason: 'Falta água na cidade: a zona só cresce com água.' };
+        if (ms === Infinity) return { eta: 'Crescimento parado', reason: this.describeZoneWaterShortage(c) };
         const scale = this.gameManager?.timeScale > 0 ? this.gameManager.timeScale : 1;
         const sec = Math.max(1, Math.ceil(ms / scale / 1000));
         const eta = sec < 60 ? `~${sec} s` : `~${Math.floor(sec / 60)} min${sec % 60 ? ` ${sec % 60} s` : ''}`;
+        const percent = Math.round(Math.max(0, efficiency) * 100);
         let reason = '';
-        if (c.energyEfficiency < 1) reason = 'Mais devagar: falta energia.';
+        if (c.energyEfficiency < 1) reason = `Mais devagar: falta energia (zona funcionando a ${percent}%).`;
+        else if (efficiency < 0.99) reason = `Mais devagar: a zona está funcionando a ${percent}%.`;
         else if (c.satisfaction < 40) reason = 'Mais devagar: moradores insatisfeitos.';
         else if (c.satisfaction >= 70) reason = 'Mais rápido: a cidade está satisfeita.';
         return { eta: `Próxima fase em ${eta}`, reason };
@@ -152,6 +198,7 @@ mixin(BuildingSystem, {
             const why = document.getElementById(`zone-stage-why-${selected.id}`);
             if (why) why.textContent = info?.reason || '';
         }
+        this.updateZoneEvolvePanel(selected);
     },
 
     /** Progresso 0-1 da fase atual (para a barra no painel). Fase final = 1. */
@@ -211,11 +258,11 @@ mixin(BuildingSystem, {
         const dt = now - this.lastZoneGrowthTime;
         if (dt < 500) return;
         this.lastZoneGrowthTime = now;
-        const rate = this.computeZoneGrowthRate(this.getZoneGrowthConditions());
-        if (rate <= 0) return this.updateZoneStagePanel();
+        const conditions = this.getZoneGrowthConditions();
+        if (conditions.waterShortage) return this.updateZoneStagePanel();
         for (const building of this.buildings.values()) {
             if (!building.active || !this.isZoneBuilding(building)) continue;
-            const next = this.advanceZoneProgress(building, dt, rate * (building.efficiency > 0 ? building.efficiency : 1));
+            const next = this.advanceZoneProgress(building, dt, this.getZoneGrowthRate(building, conditions));
             if (next !== null && this.setZoneStage(building, next) && typeof AudioManager !== 'undefined') {
                 AudioManager.playSound('sfx_zone_grow'); // casinhas brotando (gap no manifesto: várias zonas juntas = um som)
             }
@@ -229,6 +276,240 @@ mixin(BuildingSystem, {
         if (!building || building.underConstruction) return false;
         building.zoneProgress = 0;
         return this.setZoneStage(building, stage);
+    },
+
+    // ===== EVOLUIR PARA O PRÓXIMO PESO (leve → equilibrada → pesada) =====
+
+    /** Valor cheio de um efeito que a evolução preserva (ZONE_EVOLUTION.keepStats). */
+    getZoneStatValue(config, stat) {
+        if (stat === 'population') return config?.populationCapacity || config?.population || 0;
+        if (stat === 'jobs') return config?.jobCapacity || 0;
+        if (stat === 'income') return config?.incomeGeneration || 0;
+        return 0;
+    },
+
+    /** Próximo peso da zona (zone_<tipo>_light → _balanced → _heavy); null na pesada ou se não é zona. */
+    getNextZoneTypeId(buildingOrType) {
+        const config = buildingOrType?.config || buildingOrType;
+        const match = /^zone_(.+)_([a-z]+)$/.exec(config?.id || '');
+        if (!match || !this.isZoneBuilding(config)) return null;
+        const weights = ZONE_EVOLUTION.weights;
+        const index = weights.indexOf(match[2]);
+        if (index < 0 || index >= weights.length - 1) return null;
+        const next = `zone_${match[1]}_${weights[index + 1]}`;
+        return ZONE_LOTS[next] && this.buildingTypes?.get(next) ? next : null;
+    },
+
+    /**
+     * Fase em que a zona começa no novo peso: a MENOR fase em que moradores, empregos e receita do novo peso
+     * são pelo menos os de agora (nada cai). Ex.: residencial leve completa (50 moradores) → equilibrada
+     * na fase 1 (50 de 100); industrial equilibrada completa (60 empregos) → pesada na fase 2 (75 de 100).
+     */
+    getZoneEvolutionStartStage(fromConfig, fromStage, toConfig) {
+        const scale = ZONE_GROWTH.effectScale;
+        const now = scale[Math.max(0, Math.min(3, fromStage))] ?? 1;
+        for (let stage = 0; stage < scale.length; stage++) {
+            const keeps = ZONE_EVOLUTION.keepStats.every(stat => {
+                const before = this.getZoneStatValue(fromConfig, stat) * now;
+                return !(before > 0) || this.getZoneStatValue(toConfig, stat) * scale[stage] >= before - 1e-9;
+            });
+            if (keeps) return stage;
+        }
+        return scale.length - 1;
+    },
+
+    /** Custo da evolução: a diferença entre os custos dos dois pesos (o que falta pagar). */
+    getZoneEvolutionCost(fromConfig, toConfig) {
+        return Math.max(0, Math.round((toConfig?.cost || 0) - (fromConfig?.cost || 0)));
+    },
+
+    /**
+     * Onde a zona maior cabe (a pesada pode ocupar 3 × 3): canto {x, z} de uma área size × size que contém a
+     * zona atual e cujas células novas estão livres (sem prédio/rua, sem água, terreno permitido). Tenta
+     * primeiro o mesmo canto. null se não há espaço.
+     */
+    findZoneEvolutionAnchor(building, toConfig) {
+        const from = building.config.size || 1;
+        const to = toConfig.size || 1;
+        if (to <= from) return { x: building.gridX, z: building.gridZ };
+        const grid = this.gridManager;
+        const allowed = toConfig.requirements?.terrain;
+        const grow = to - from;
+        const anchors = [];
+        for (let dx = 0; dx <= grow; dx++) for (let dz = 0; dz <= grow; dz++) anchors.push([building.gridX - dx, building.gridZ - dz]);
+        for (const [ax, az] of anchors) {
+            if (!this.isPlacementWithinBounds(ax, az, to)) continue;
+            let free = true;
+            for (let x = ax; x < ax + to && free; x++) {
+                for (let z = az; z < az + to && free; z++) {
+                    const inside = x >= building.gridX && x < building.gridX + from && z >= building.gridZ && z < building.gridZ + from;
+                    if (inside) continue;
+                    const terrain = grid.getTerrainType?.(x, z);
+                    if (grid.isCellOccupied(x, z) || terrain === 'water' || (allowed && terrain && !allowed.includes(terrain))) free = false;
+                }
+            }
+            if (free) return { x: ax, z: az };
+        }
+        return null;
+    },
+
+    /**
+     * Pode evoluir agora? Só zona pronta na fase final, com próximo peso liberado, dinheiro e espaço.
+     * @returns {{ok:boolean, reason:string, next?:string, nextConfig?:object, cost?:number, startStage?:number, anchor?:object}|null}
+     *          null = não mostra o botão (não é zona, em obra, pesada ou ainda crescendo)
+     */
+    getZoneEvolution(building) {
+        const stage = this.getZoneStage(building);
+        if (stage === null || stage < 3) return null;
+        const next = this.getNextZoneTypeId(building);
+        if (!next) return null;
+        const nextConfig = this.buildingTypes.get(next);
+        const cost = this.getZoneEvolutionCost(building.config, nextConfig);
+        const startStage = this.getZoneEvolutionStartStage(building.config, stage, nextConfig);
+        const info = { ok: false, reason: '', next, nextConfig, cost, startStage };
+        if (!this.isBuildingUnlocked(next)) {
+            info.reason = `Estude a ${nextConfig.name} para liberar a evolução.`;
+            return info;
+        }
+        const rm = this.gameManager?.resourceManager;
+        if (rm && !rm.canAfford(cost)) {
+            info.reason = `Falta dinheiro: precisa de R$ ${cost.toLocaleString('pt-BR')}.`;
+            return info;
+        }
+        info.anchor = this.findZoneEvolutionAnchor(building, nextConfig);
+        if (!info.anchor) {
+            const size = nextConfig.size || 1;
+            info.reason = `Falta espaço: a ${nextConfig.name} ocupa ${size} × ${size} quadrados. Deixe livres os quadrados ao lado desta zona (sem ruas, prédios ou água).`;
+            return info;
+        }
+        info.ok = true;
+        info.reason = `Ela continua com o que já tem e volta a crescer como ${nextConfig.name}, a partir da fase ${ZONE_GROWTH.stageNames[startStage]}.`;
+        return info;
+    },
+
+    /**
+     * Extras do painel da zona (UIManager.generateZoneStageStats): o que ela dá AGORA (fase × eficiência)
+     * e o botão "Evoluir" na fase final.
+     */
+    getZonePanelExtrasHtml(building) {
+        if (this.getZoneStage(building) === null) return '';
+        const parts = [];
+        const fmt = n => Math.round(n).toLocaleString('pt-BR');
+        const jobs = this.getEffectiveJobCapacity(building);
+        const income = this.getEffectiveZoneIncome(building);
+        if (building.config.jobCapacity) parts.push(`💼 ${fmt(jobs)} empregos`);
+        if (building.config.incomeGeneration) parts.push(`💵 R$ ${fmt(income)}/min`);
+        const now = parts.length ? `<div class="stat-item zone-effects" id="zone-effects-${building.id}">Agora: ${parts.join(' · ')}</div>` : '';
+        return now + this.getZoneEvolveHtml(building);
+    },
+
+    /** HTML do bloco "Evoluir" no painel da zona (UIManager.generateZoneStageStats); '' quando não se aplica. */
+    getZoneEvolveHtml(building) {
+        const evo = this.getZoneEvolution(building);
+        if (!evo) return '';
+        const weight = ZONE_EVOLUTION.weightNames[ZONE_EVOLUTION.weights.find(w => evo.next.endsWith(`_${w}`))] || '';
+        return `
+            <div class="zone-evolve" style="margin:6px 0 4px">
+                <button id="zone-evolve-btn-${building.id}" class="action-btn zone-evolve-btn" data-building-id="${building.id}"
+                    ${evo.ok ? '' : 'disabled'} style="width:100%"
+                    onclick="window.gameManager.buildingSystem.evolveZone('${building.id}')">
+                    ⬆️ Evoluir para ${weight} — R$ ${evo.cost.toLocaleString('pt-BR')}
+                </button>
+                <div id="zone-evolve-why-${building.id}" class="zone-evolve-why" style="font-size:0.85em;opacity:0.85;margin-top:3px">${evo.reason}</div>
+            </div>`;
+    },
+
+    /** Atualiza o botão "Evoluir" ao vivo (dinheiro/espaço mudam) sem redesenhar o painel. */
+    updateZoneEvolvePanel(building) {
+        if (typeof document === 'undefined') return;
+        const button = document.getElementById(`zone-evolve-btn-${building.id}`);
+        if (!button) return;
+        const evo = this.getZoneEvolution(building);
+        button.disabled = !evo?.ok;
+        const why = document.getElementById(`zone-evolve-why-${building.id}`);
+        if (why && evo && why.textContent !== evo.reason) why.textContent = evo.reason;
+    },
+
+    /**
+     * Evolui a zona (botão do painel): cobra a diferença, troca o tipo para o próximo peso e recomeça o
+     * crescimento na fase de getZoneEvolutionStartStage (progresso 0). Efeitos: tira os do peso antigo e
+     * soma os do novo (como setZoneStage). Lote novo (cor, moldura, rótulo, tamanho); a pesada 3 × 3 ocupa as
+     * células novas e derruba as árvores delas. Salvar/carregar: o save já leva type + zoneStage.
+     * @returns {boolean} se evoluiu
+     */
+    evolveZone(buildingId) {
+        const building = this.buildings.get(buildingId);
+        const evo = building && this.getZoneEvolution(building);
+        if (!evo?.ok) {
+            if (evo?.reason) this.showNotification(evo.reason, 'warning');
+            return false;
+        }
+        const rm = this.gameManager?.resourceManager;
+        if (rm && !rm.spendBudget(evo.cost)) return false;
+
+        const oldConfig = building.config;
+        const powerOf = b => (this.getBuildingPowerConsumption ? this.getBuildingPowerConsumption(b) : (b.config.powerConsumption || 0));
+        const powerBefore = powerOf(building);
+        const hadEffects = !!building.effectsApplied;
+        if (hadEffects) this.applyBuildingEffects(building, false);
+        building.type = evo.next;
+        building.config = evo.nextConfig;
+        building.zoneStage = evo.startStage;
+        building.zoneProgress = 0;
+
+        const size = evo.nextConfig.size || 1;
+        if (size !== (oldConfig.size || 1) || evo.anchor.x !== building.gridX || evo.anchor.z !== building.gridZ) {
+            building.gridX = evo.anchor.x;
+            building.gridZ = evo.anchor.z;
+            this.gridManager.occupyArea(building.gridX, building.gridZ, size);
+            const felled = this.gameManager?.treeSystem?.fellTreesInArea?.(building.gridX, building.gridZ, size);
+            if (felled && typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_axe');
+        }
+        if (hadEffects) this.applyBuildingEffects(building, true);
+        this.replaceZoneLotMesh(building);
+
+        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_zone_grow');
+        this.showNotification(`${oldConfig.name} evoluiu para ${evo.nextConfig.name}!`, 'success');
+        // Lugar/tamanho novo: rua e energia contam de novo no próximo update (BuildingEfficiency.js)
+        this.markEfficiencyDirty?.();
+        // Gasta mais energia no peso novo? Avisa já (como na colocação)
+        if (powerOf(building) > powerBefore && rm?.getElectricity) {
+            const electricity = rm.getElectricity();
+            if (electricity.consumption > electricity.generation) {
+                this.showEnergyShortageNotification?.({ ...electricity, efficiency: electricity.generation / electricity.consumption });
+            }
+        }
+        const gm = this.gameManager;
+        if (gm?.selectedBuilding === building) {
+            gm.addSelectionIndicator?.(building);
+            gm.updateSelectionInfo?.(building);
+        }
+        log(`⬆️ ${oldConfig.name} (${building.id}) evoluiu para ${evo.nextConfig.name}, fase ${evo.startStage}`);
+        return true;
+    },
+
+    /** Troca a laje do lote pela do tipo novo (cor, moldura, rótulo, tamanho) e põe as peças da fase. */
+    replaceZoneLotMesh(building) {
+        const old = building.mesh;
+        const gm = this.gameManager;
+        if (gm?.selectedBuilding === building) gm.removeSelectionIndicator?.(building);
+        (building.zonePieces || []).forEach(item => this.disposeZonePiece(item));
+        building.zonePieces = [];
+        if (old && !old.isDisposed()) {
+            this.removeBuildingNameLabel(old);
+            this.removeRentalIcon(building);
+            this.removePowerShortageIcon(building);
+            gm?.shadowGenerator?.removeShadowCaster(old);
+            this.queueForDisposal(old);
+        }
+        const mesh = this.createBuildingMesh(building.gridX, building.gridZ, building.config, building.rotation || 0);
+        if (!mesh) return;
+        mesh.metadata = { ...(mesh.metadata || {}), building: true, buildingId: building.id, buildingType: building.type, gridX: building.gridX, gridZ: building.gridZ };
+        building.mesh = mesh;
+        building.originalMaterial = mesh.material; // a cor do chão da fase vai no material próprio do lote
+        building.hasPowerShortage = false; // o próximo updateBuildingEfficiency refaz o aviso de energia no lote novo
+        this.refreshZoneLot(building, { animate: true });
+        if (building.isRented) this.updateRentalIcon(building);
     },
 
     // ===== MALHA DO LOTE =====

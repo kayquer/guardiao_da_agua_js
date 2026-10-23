@@ -63,6 +63,8 @@ mixin(BuildingSystem, {
     createStandardizedBuildingMesh(buildingType) {
         // Zona: laje do lote; as peças de cada fase entram como filhas (ZoneGrowth.js)
         if (this.isZoneBuilding(buildingType)) return this.createZoneLotMesh(buildingType);
+        // Muda de árvore: cova com tutor; a árvore de cada etapa entra como filha (TreeGrowth.js)
+        if (this.isPlantedTree?.(buildingType)) return this.createPlantedTreeMesh(buildingType);
 
         // Modelo .glb da tabela (js/data/buildingModels.js), se já carregou; senão o procedural abaixo
         // é a reserva e BuildingModels.js troca o mesh quando o modelo ficar pronto

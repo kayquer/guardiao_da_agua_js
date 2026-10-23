@@ -1,0 +1,280 @@
+/* ===== NOTIFICAÇÕES EM TOAST + HISTÓRICO NA PAUSA (UIManager.showNotification / openNotificationHistory) =====
+   Computador: canto superior direito, logo abaixo da barra de recursos (90px) — longe do meio da tela, onde o
+   jogador clica para construir; com o painel da direita aberto (.hud-right, 346px) a pilha anda para a esquerda dele.
+   Celular: topo, abaixo dos recursos, do 📚 e do chip do jogador. O contêiner não recebe clique (pointer-events: none):
+   só o próprio toast, então o canvas ao redor continua clicável.
+   z-index 99: acima do HUD (50) e abaixo da tela de pausa (.overlay, 100) e dos alertas centrais. */
+.toast-stack {
+    position: fixed;
+    top: 104px;
+    right: 16px;
+    width: min(360px, calc(100vw - 378px));
+    z-index: 99;
+    display: flex;
+    flex-direction: column-reverse; /* o mais novo fica em cima, perto da barra */
+    align-items: stretch;
+    gap: 0.5rem;
+    pointer-events: none; /* só os toasts recebem clique: o jogo atrás continua clicável */
+}
+
+.toast {
+    pointer-events: auto;
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.6rem 0.6rem 0.9rem;
+    border-radius: 16px;
+    border: 3px solid;
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3), 0 8px 18px rgba(0, 0, 0, 0.25);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.3;
+    cursor: pointer;
+    animation: toastIn 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.toast.toast-leaving {
+    animation: toastOut 0.22s ease-in forwards;
+    pointer-events: none;
+}
+
+.toast-icon {
+    flex: none;
+    display: flex;
+}
+
+.toast-text {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.toast .notification-close {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 2px solid rgba(0, 0, 0, 0.35);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.35);
+    cursor: pointer;
+}
+
+.toast .notification-close:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+}
+
+.toast.info {
+    background: linear-gradient(145deg, #00D4FF, #00A8CC);
+    border-color: #0096C7;
+    color: #fff;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.toast.success {
+    background: linear-gradient(145deg, #2EE59D, #00B866);
+    border-color: #00894B;
+    color: #fff;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.toast.warning {
+    background: linear-gradient(145deg, #FFD700, #FFA500);
+    border-color: #FF8C00;
+    color: #2D3561;
+}
+
+.toast.error {
+    background: linear-gradient(145deg, #FF6B9D, #FF4757);
+    border-color: #D50032;
+    color: #fff;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateX(24px) scale(0.96); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes toastOut {
+    to { opacity: 0; transform: translateY(8px) scale(0.96); }
+}
+
+/* Painel da direita aberto (showHudRight põe display: flex): a pilha fica à esquerda dele */
+@media screen and (min-width: 769px) {
+    body:has(.hud-right[style*="flex"]) .toast-stack {
+        right: 362px;
+        width: min(360px, calc(100vw - 724px));
+    }
+}
+
+/* Celular: topo, abaixo da barra de recursos; o mais novo fica em cima (perto da borda) */
+@media screen and (max-width: 768px) {
+    .toast-stack {
+        top: 156px; /* abaixo dos recursos, do 📚 e do chip do jogador */
+        left: 16px;
+        right: 16px;
+        width: auto;
+    }
+
+    .toast {
+        font-size: 0.85rem;
+        padding: 0.45rem 0.45rem 0.45rem 0.7rem;
+    }
+
+    @keyframes toastIn {
+        from { opacity: 0; transform: translateY(-16px) scale(0.96); }
+        to { opacity: 1; transform: none; }
+    }
+}
+
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    .toast-stack {
+        top: 56px;
+        left: auto;
+        right: 16px;
+        width: min(300px, 45vw);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toast,
+    .toast.toast-leaving {
+        animation: none;
+    }
+    .toast.toast-leaving {
+        opacity: 0;
+    }
+}
+
+/* ===== HISTÓRICO (dentro de #pause-overlay, troca com o painel do jogador) ===== */
+#pause-overlay .player-panel[hidden],
+#notification-history[hidden] {
+    display: none !important;
+}
+
+.overlay-content.notif-history {
+    width: min(560px, calc(100vw - 32px));
+    max-width: none;
+    max-height: calc(100vh - 32px);
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem;
+    text-align: left;
+}
+
+.notif-history .nh-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.overlay-content.notif-history h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    line-height: 1.1;
+}
+
+.nh-count {
+    margin-left: auto;
+    padding: 0.2rem 0.6rem;
+    border: 2px solid #000;
+    border-radius: 50px;
+    background: #fff;
+    font-weight: 800;
+    font-size: 0.8rem;
+    color: #000;
+    text-shadow: none;
+    white-space: nowrap;
+}
+
+.nh-hint {
+    margin: 0.5rem 0 0.75rem;
+    font-weight: 700;
+    color: #3d2a00;
+    font-size: 0.9rem;
+}
+
+.nh-list {
+    list-style: none;
+    margin: 0;
+    padding: 0.25rem;
+    flex: 1;
+    min-height: 120px;
+    max-height: min(55vh, 460px);
+    overflow-y: auto;
+    border: 3px solid #000;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.55);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.nh-list:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+}
+
+.nh-item {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    padding: 0.5rem 0.6rem;
+    border-radius: 10px;
+    border-left: 6px solid #00A8CC;
+    background: #fff;
+    color: #1A1F3A;
+}
+
+.nh-item.nh-success { border-left-color: #00B866; }
+.nh-item.nh-warning { border-left-color: #FF8C00; background: #FFF8E1; }
+.nh-item.nh-error { border-left-color: #FF1744; background: #FFEBEE; }
+
+.nh-icon {
+    flex: none;
+    display: flex;
+    padding-top: 2px;
+}
+
+.nh-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.nh-text {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.nh-time {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.2rem;
+    font-size: 0.78rem;
+    color: #555;
+}
+
+.nh-empty {
+    padding: 1rem;
+    text-align: center;
+    font-weight: 700;
+    color: #3d2a00;
+}
+
+.nh-buttons {
+    margin-top: 0.9rem;
+}
+
+.nh-buttons .overlay-btn {
+    width: 100%;
+    margin: 0;
+}

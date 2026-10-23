@@ -7,6 +7,10 @@
  * Árvores em pé limpam o ar (redução de poluição) e deixam a cidade mais verde (satisfação, via
  * ResourceManager.greenBonus). Construir em cima derruba (fellTreesInArea, chamado por placeBuilding):
  * perde o bônus e a poluição sobe na hora. Valores em TREES (GameConstants).
+ *
+ * Estas são as árvores NATIVAS (geradas com o mapa). As PLANTADAS pelo jogador são prédios ("Muda de Árvore",
+ * js/systems/building/TreeGrowth.js) e usam o modelo getPlantedTemplate (copa verde-limão). Clicar numa nativa
+ * seleciona (selectAt: anel no pé + painel UIManager.showNativeTreeInfo).
  */
 class TreeSystem {
     constructor(gameManager) {
@@ -136,6 +140,7 @@ class TreeSystem {
             for (let z = gridZ; z < gridZ + size; z++) {
                 const tree = this.trees.get(`${x},${z}`);
                 if (!tree) continue;
+                if (tree === this.selectedTree) this.clearSelection();
                 tree.dispose();
                 this.trees.delete(`${x},${z}`);
                 felled++;
@@ -164,6 +169,90 @@ class TreeSystem {
         return count;
     }
 
+    // ===== Árvores plantadas (Muda de Árvore: js/systems/building/TreeGrowth.js) =====
+
+    /**
+     * Modelo-base das árvores PLANTADAS: mesma técnica das nativas, mas com a copa verde-limão (folhas novas),
+     * para o jogador distinguir de longe. Criado na primeira muda; escondido, cada muda é uma instância.
+     */
+    getPlantedTemplate() {
+        if (this.plantedTemplate && !this.plantedTemplate.isDisposed()) return this.plantedTemplate;
+        const trunkMat = new BABYLON.StandardMaterial('plantedTreeTrunkMat', this.scene);
+        trunkMat.diffuseColor = new BABYLON.Color3(0.5, 0.33, 0.17);
+        trunkMat.specularColor = BABYLON.Color3.Black();
+        const leafMat = new BABYLON.StandardMaterial('plantedTreeLeafMat', this.scene);
+        leafMat.diffuseColor = new BABYLON.Color3(0.52, 0.8, 0.22);
+        leafMat.emissiveColor = new BABYLON.Color3(0.06, 0.1, 0.02);
+        leafMat.specularColor = BABYLON.Color3.Black();
+        this.plantedTemplate = this.createTreeTemplate('treePlanted', { crown: 1.25, trunk: 0.75, crownY: 1.15 }, trunkMat, leafMat);
+        return this.plantedTemplate;
+    }
+
+    // ===== Seleção de árvore nativa (clique/toque) =====
+
+    /** Árvore nativa sob o ponto da tela (x/y relativos ao canvas, que ocupa a tela toda), ou null. */
+    pickTreeAt(x, y) {
+        if (!this.trees.size) return null;
+        const pick = this.scene.pick(x, y, m => m.metadata?.tree === true && m.isEnabled() && !m.isDisposed());
+        return pick?.hit ? pick.pickedMesh : null;
+    }
+
+    /** Clique numa árvore nativa: seleciona (anel no pé) e mostra o painel. Devolve se havia árvore ali. */
+    selectAt(x, y) {
+        const tree = this.pickTreeAt(x, y);
+        if (!tree) return false;
+        const gm = this.gameManager;
+        gm.deselectBuilding?.(); // limpa a seleção anterior (prédio ou árvore)
+        this.select(tree);
+        gm.uiManager?.showNativeTreeInfo?.(this.getNativeTreeInfo(tree));
+        gm.uiManager?.toggleMobilePanel?.('right');
+        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_click', 0.8);
+        return true;
+    }
+
+    /** Dados da árvore nativa para o painel (sem Babylon). */
+    getNativeTreeInfo(tree) {
+        const { gridX, gridZ } = tree.metadata;
+        return {
+            gridX,
+            gridZ,
+            pollutionReduction: TREES.POLLUTION_REDUCTION,
+            fellPollution: TREES.FELL_POLLUTION,
+            count: this.trees.size
+        };
+    }
+
+    select(tree) {
+        this.clearSelection();
+        const ring = BABYLON.MeshBuilder.CreateTorus('treeSelectionRing', { diameter: 1.5, thickness: 0.12, tessellation: 28 }, this.scene);
+        const material = new BABYLON.StandardMaterial('treeSelectionRingMat', this.scene);
+        material.diffuseColor = new BABYLON.Color3(1, 0.8, 0);
+        material.emissiveColor = new BABYLON.Color3(0.8, 0.6, 0);
+        material.specularColor = BABYLON.Color3.Black();
+        ring.material = material;
+        ring.isPickable = false;
+        ring.position.set(tree.position.x, tree.position.y + 0.08, tree.position.z);
+        this.selectedTree = tree;
+        this.selectionRing = ring;
+        // Pulsa devagar enquanto estiver selecionada (some sozinho quando o anel é descartado)
+        const start = performance.now();
+        const pulse = () => {
+            if (ring.isDisposed()) return;
+            ring.scaling.setAll(1 + 0.08 * Math.sin((performance.now() - start) / 250));
+            requestAnimationFrame(pulse);
+        };
+        requestAnimationFrame(pulse);
+    }
+
+    clearSelection() {
+        if (this.selectionRing) {
+            this.selectionRing.material?.dispose();
+            this.selectionRing.dispose();
+        }
+        this.selectionRing = null;
+        this.selectedTree = null;
+    }
+
     // ===== Save/load =====
     // O mapa sorteia os bosques a cada jogo: o save guarda quais células têm árvore (as derrubadas não estão lá)
     // e initialCount (base do bônus verde).
@@ -180,6 +269,7 @@ class TreeSystem {
      */
     loadData(data) {
         if (!data || !Array.isArray(data.cells)) return;
+        this.clearSelection();
         this.trees.forEach(tree => tree.dispose());
         this.trees.clear();
         const size = this.gridManager.gridSize;
@@ -196,8 +286,10 @@ class TreeSystem {
     }
 
     dispose() {
+        this.clearSelection();
         this.trees.forEach(tree => tree.dispose());
         this.trees.clear();
         this.templates.forEach(template => template.dispose(false, true));
+        this.plantedTemplate?.dispose(false, true);
     }
 }

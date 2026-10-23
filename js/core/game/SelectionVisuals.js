@@ -35,6 +35,7 @@ mixin(GameManager, {
     },
 
     clearBuildingSelection() {
+        this.treeSystem?.clearSelection?.(); // árvore nativa selecionada (TreeSystem.selectAt)
         if (this.selectedBuilding) {
             this.removeSelectionIndicator(this.selectedBuilding);
             this.selectedBuilding = null;

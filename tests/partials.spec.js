@@ -57,6 +57,15 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         gm.buildingSystem.getEffectivePopulationCapacity(building);
         gm.buildingSystem.updateZoneGrowth();
 
+        // building/BuildingEfficiency (o fluxo completo está em tests/efficiency.spec.js): rua, energia, aviso
+        gm.buildingSystem.updateAllBuildingEfficiency();
+        gm.buildingSystem.generateEfficiencyWarnings(building);
+
+        // building/TreeGrowth + ui/TreeInfoUI (o fluxo completo está em tests/trees.spec.js)
+        gm.buildingSystem.updateTreeGrowth();
+        gm.uiManager.generatePlantedTreeStats(building);
+        gm.uiManager.plantedTreesLine();
+
         // core/game/CameraGuard
         gm.validateCameraStateWithBreaker();
         gm.getCameraState();

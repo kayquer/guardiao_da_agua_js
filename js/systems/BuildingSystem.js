@@ -168,38 +168,8 @@ class BuildingSystem {
         return nearbyBuildings;
     }
 
-    calculateBuildingEfficiency(building) {
-        if (!building || !building.config) return 1.0;
+    // Eficiência (dano × rua × energia + bônus de pesquisa): js/systems/building/BuildingEfficiency.js
 
-        let baseEfficiency = building.efficiency || 1.0;
-        let bonusEfficiency = 0;
-
-        // Find nearby research buildings that provide efficiency bonuses
-        const nearbyResearchBuildings = this.findNearbyResearchBuildings(building.gridX, building.gridZ);
-
-        for (const researchBuilding of nearbyResearchBuildings) {
-            const config = researchBuilding.config;
-            if (config.nearbyEfficiencyBonus) {
-                // Add some randomness within the specified range
-                const baseBonus = config.nearbyEfficiencyBonus;
-                const randomVariation = (Math.random() - 0.5) * 0.1; // ±5% variation
-                const actualBonus = Math.max(0, baseBonus + randomVariation);
-                bonusEfficiency += actualBonus;
-            }
-        }
-
-        // Cap total efficiency bonus at 50% to prevent abuse
-        bonusEfficiency = Math.min(bonusEfficiency, 0.5);
-
-        const finalEfficiency = baseEfficiency + bonusEfficiency;
-
-        if (bonusEfficiency > 0) {
-            log(`🎓 Building efficiency bonus: +${(bonusEfficiency * 100).toFixed(1)}% for ${building.config.name}`);
-        }
-
-        return Math.min(finalEfficiency, 2.0); // Cap at 200% efficiency
-    }
-    
     createMaterials() {
         log('🎨 Criando materiais estilo Minecraft para edifícios...');
 
@@ -355,6 +325,11 @@ class BuildingSystem {
             }
         }
 
+        // Muda de árvore não vai em cima de árvore nativa (plantar derrubaria a árvore que já limpa o ar)
+        if (buildingType.plantedTree && this.gameManager?.treeSystem?.countTreesInArea(gridX, gridZ, 1)) {
+            return { canPlace: false, reason: 'Já existe uma árvore nativa aqui: plante a muda num espaço livre.', userFriendly: true };
+        }
+
         log(`✅ Pode construir ${buildingType.name} em (${gridX}, ${gridZ})`);
         return {
             canPlace: true,
@@ -477,6 +452,7 @@ class BuildingSystem {
 
         // Ocupar área no grid
         this.gridManager.occupyArea(gridX, gridZ, buildingType.size);
+        if (!isRoad) this.refreshRoadAccesses?.(); // ruas vizinhas ganham o acesso ao lote (RoadMeshes.js)
 
         // Árvores no terreno caem com a obra (piora poluição e satisfação: TreeSystem)
         const felled = this.gameManager?.treeSystem?.fellTreesInArea(gridX, gridZ, buildingType.size);
@@ -526,7 +502,7 @@ class BuildingSystem {
         // Avisar já na colocação se faltará energia quando a obra terminar (o consumo só entra na conclusão)
         if (buildingType.powerConsumption && window.gameManager && gameManager.resourceManager) {
             const electricity = gameManager.resourceManager.getElectricity();
-            const consumption = electricity.consumption + buildingType.powerConsumption;
+            const consumption = electricity.consumption + this.getInitialPowerConsumption(buildingType); // zona: fase 0
             if (consumption > electricity.generation) {
                 this.showEnergyShortageNotification({
                     ...electricity,
@@ -577,6 +553,7 @@ class BuildingSystem {
             this.removeBuildingNameLabel(building.mesh);
             this.removeRentalIcon(building);
             this.removePowerShortageIcon(building);
+            this.removeNoRoadIcon(building);
 
             // Remover indicador de seleção se existir
             if (window.gameManager && window.gameManager.selectedBuilding === building) {
@@ -594,7 +571,10 @@ class BuildingSystem {
         if (building.config?.roadType && !this.clearingAll) {
             this.refreshRoadPieces([{ x: building.gridX, z: building.gridZ }]);
             this.gameManager?.cityLifeSystem?.onRoadBuilt();
+        } else if (!this.clearingAll) {
+            this.refreshRoadAccesses?.(); // prédio demolido: some o acesso das ruas vizinhas
         }
+        if (building.config?.roadType) this.markEfficiencyDirty(); // vizinhos podem ficar sem rua
 
         // ===== ZERO-ERROR POLICY FIX: Validar config antes de acessar propriedades =====
         const buildingName = (building.config && building.config.name)
@@ -723,6 +703,9 @@ class BuildingSystem {
         if (!!building.effectsApplied === add) return;
         building.effectsApplied = add;
 
+        // Árvore plantada: água ou redução de poluição conforme a etapa (TreeGrowth.js)
+        if (this.isPlantedTree?.(building)) return this.applyPlantedTreeEffects(building, add);
+
         // Aplicar efeitos se ResourceManager estiver disponível
         if (window.gameManager && gameManager.resourceManager) {
             const resourceManager = gameManager.resourceManager;
@@ -757,13 +740,10 @@ class BuildingSystem {
                 }
             }
             
-            // Custos de manutenção
-            if (config.maintenanceCost) {
-                if (add) {
-                    resourceManager.addExpense(config.maintenanceCost);
-                } else {
-                    resourceManager.addExpense(-config.maintenanceCost);
-                }
+            // Custos de manutenção (mesmo valor que o painel 💰 lista: ResourceManager.getExpenseBreakdown)
+            const maintenance = ResourceManager.buildingMaintenance(building);
+            if (maintenance) {
+                resourceManager.addExpense(add ? maintenance : -maintenance);
             }
             
             // População (para edifícios residenciais)
@@ -794,12 +774,14 @@ class BuildingSystem {
                 }
             }
 
-            // Consumo de energia
+            // Consumo de energia (zona: pela fase). Ao tirar, o que foi somado (appliedPowerConsumption)
             if (config.powerConsumption) {
                 if (add) {
-                    resourceManager.addElectricityConsumption(config.powerConsumption);
+                    building.appliedPowerConsumption = this.getBuildingPowerConsumption(building);
+                    resourceManager.addElectricityConsumption(building.appliedPowerConsumption);
                 } else {
-                    resourceManager.removeElectricityConsumption(config.powerConsumption);
+                    resourceManager.removeElectricityConsumption(Number.isFinite(building.appliedPowerConsumption)
+                        ? building.appliedPowerConsumption : config.powerConsumption);
                 }
             }
 
@@ -854,12 +836,13 @@ class BuildingSystem {
                 }
             }
 
-            // Consumo de água
-            if (config.waterConsumption) {
+            // Consumo de água (mesmo valor que o painel 💧 lista: ResourceManager.getWaterConsumers)
+            const waterUse = ResourceManager.buildingWaterUse(building);
+            if (waterUse) {
                 if (add) {
-                    resourceManager.addWaterConsumption(config.waterConsumption);
+                    resourceManager.addWaterConsumption(waterUse);
                 } else {
-                    resourceManager.removeWaterConsumption(config.waterConsumption);
+                    resourceManager.removeWaterConsumption(waterUse);
                 }
             }
         }
@@ -948,16 +931,9 @@ class BuildingSystem {
             // Atualizar efeitos de escassez de energia
             this.updatePowerShortageEffects(deltaTime);
 
-            // Atualizar eficiência dos edifícios baseado em condições (com throttling)
+            // Eficiência (rua, energia, dano, pesquisa) a cada 5 s ou logo após markEfficiencyDirty (BuildingEfficiency.js)
             if (!this.lastEfficiencyUpdate || Date.now() - this.lastEfficiencyUpdate > 5000) {
-                this.buildings.forEach(building => {
-                    try {
-                        this.updateBuildingEfficiency(building);
-                    } catch (error) {
-                        console.error(`❌ Erro ao atualizar eficiência do edifício ${building.id}:`, error);
-                    }
-                });
-                this.lastEfficiencyUpdate = Date.now();
+                this.updateAllBuildingEfficiency();
             }
 
             // Processar fila de disposal se necessário
@@ -992,6 +968,13 @@ class BuildingSystem {
                 this.updateZoneGrowth();
             } catch (error) {
                 console.warn('⚠️ Erro ao atualizar o crescimento das zonas:', error);
+            }
+
+            // Árvores plantadas crescem em 4 etapas pelo tempo de jogo (TreeGrowth.js)
+            try {
+                this.updateTreeGrowth?.();
+            } catch (error) {
+                console.warn('⚠️ Erro ao atualizar o crescimento das árvores plantadas:', error);
             }
 
             // Validação periódica do estado de construção (a cada 5 segundos)
@@ -1093,6 +1076,11 @@ class BuildingSystem {
 
         // Zona: vira área livre (fase 0) e passa a crescer sozinha (ZoneGrowth.js); efeitos na escala da fase
         this.onZoneConstructionComplete?.(buildingData);
+        this.onTreeConstructionComplete?.(buildingData); // muda de árvore: etapa 0 (TreeGrowth.js)
+
+        // Eficiência já com rua/energia (BuildingEfficiency.js); ruas/prédios vizinhos recalculam no próximo update
+        buildingData.efficiency = this.getEfficiencyOnCompletion(buildingData);
+        this.markEfficiencyDirty();
 
         // Aplicar efeitos nos recursos (agora que está ativo)
         this.applyBuildingEffects(buildingData, true);
@@ -1181,63 +1169,7 @@ class BuildingSystem {
 
     // ===== Notificações, indicadores de obra, celebração e rótulos: js/systems/building/BuildingFeedback.js (19 métodos) =====
 
-    // ===== EFICIÊNCIA DOS EDIFÍCIOS =====
-    updateBuildingEfficiency(building) {
-        // Só atualizar eficiência para edifícios ativos
-        if (!building.active || building.underConstruction) {
-            return;
-        }
-
-        let efficiency = 1.0;
-        let hasPowerShortage = false;
-
-        // Verificar se o edifício consome energia
-        if (building.config.powerConsumption && window.gameManager && window.gameManager.resourceManager) {
-            const electricityData = window.gameManager.resourceManager.getElectricity();
-
-            // Se a eficiência elétrica está baixa, há escassez de energia
-            if (electricityData.efficiency < 1.0) {
-                hasPowerShortage = true;
-                efficiency *= electricityData.efficiency; // Reduzir eficiência baseado na disponibilidade de energia
-            }
-        }
-
-        // ===== RESEARCH CENTERS AND UNIVERSITIES: Apply efficiency bonuses =====
-        efficiency = this.calculateBuildingEfficiency(building);
-
-        // Atualizar status de escassez de energia
-        const hadPowerShortage = building.hasPowerShortage || false;
-        building.hasPowerShortage = hasPowerShortage;
-
-        // Aplicar efeitos visuais de escassez de energia
-        if (hasPowerShortage !== hadPowerShortage) {
-            this.updatePowerShortageVisuals(building, hasPowerShortage);
-        }
-
-        // Reduzir eficiência baseado na poluição local
-        // TODO: Implementar cálculo de poluição local
-
-        // Reduzir eficiência se falta manutenção
-        // TODO: Implementar sistema de manutenção
-
-        // Só reaplicar efeitos se a eficiência realmente mudou
-        if (Math.abs(building.efficiency - efficiency) > 0.01) {
-            const oldEfficiency = building.efficiency;
-
-            // Reaplicar efeitos: tira com a eficiência antiga (a que foi somada), soma com a nova
-            try {
-                this.applyBuildingEffects(building, false);
-                building.efficiency = efficiency;
-                this.applyBuildingEffects(building, true);
-
-                log(`🔧 Eficiência atualizada para ${building.config.name}: ${oldEfficiency.toFixed(2)} -> ${efficiency.toFixed(2)}`);
-            } catch (error) {
-                console.error(`❌ Erro ao atualizar eficiência do edifício ${building.id}:`, error);
-                // Restaurar eficiência anterior em caso de erro
-                building.efficiency = oldEfficiency;
-            }
-        }
-    }
+    // ===== Eficiência dos edifícios (updateBuildingEfficiency, acesso por rua): js/systems/building/BuildingEfficiency.js =====
 
     // ===== EFEITOS VISUAIS DE ESCASSEZ DE ENERGIA =====
     updatePowerShortageVisuals(building, hasPowerShortage) {
@@ -1410,10 +1342,18 @@ class BuildingSystem {
             // Se os efeitos estão nos totais salvos do ResourceManager. Quase sempre = pronto, mas um prédio
             // danificado por evento (EventSystem.disableRandomBuilding) fica pronto e sem efeitos
             effectsApplied: !!building.effectsApplied,
+            // Energia que está nos totais (zona: pela fase) e dano de evento (BuildingEfficiency.js)
+            ...(Number.isFinite(building.appliedPowerConsumption) ? { appliedPowerConsumption: building.appliedPowerConsumption } : {}),
+            ...(Number.isFinite(building.damageFactor) ? { damageFactor: building.damageFactor } : {}),
             // Zona pronta: fase (0-3) e progresso da fase (ZoneGrowth.js)
             ...(Number.isInteger(building.zoneStage) ? {
                 zoneStage: building.zoneStage,
                 zoneProgress: Math.round((building.zoneProgress || 0) * 1000) / 1000
+            } : {}),
+            // Árvore plantada pronta: etapa (0-3) e progresso da etapa (TreeGrowth.js)
+            ...(Number.isInteger(building.treeStage) ? {
+                treeStage: building.treeStage,
+                treeProgress: Math.round((building.treeProgress || 0) * 1000) / 1000
             } : {})
         };
     }
@@ -1456,6 +1396,7 @@ class BuildingSystem {
         this.lastEfficiencyUpdate = 0;
         // Ruas: cada uma foi criada sem as vizinhas que vieram depois no save → encaixa todas de novo
         this.refreshAllRoadPieces?.();
+        this.ensureBuildingFx?.(); // fumaça das zonas industriais carregadas (BuildingFeedback.js)
         this.gameManager?.cityLifeSystem?.onRoadBuilt();
         log(`🔄 ${restored}/${data.buildings.length} prédios restaurados do save`);
     }
@@ -1498,6 +1439,13 @@ class BuildingSystem {
             // Save antigo (sem o campo): prédio pronto = com efeitos
             effectsApplied: typeof saved.effectsApplied === 'boolean' ? saved.effectsApplied : !saved.underConstruction
         };
+        if (Number.isFinite(saved.damageFactor)) buildingData.damageFactor = saved.damageFactor;
+        // Energia nos totais salvos. Save antigo: só a zona residencial pesada consumia (cheio); as outras zonas, nada
+        if (Number.isFinite(saved.appliedPowerConsumption)) buildingData.appliedPowerConsumption = saved.appliedPowerConsumption;
+        else if (buildingData.effectsApplied && buildingType.powerConsumption) {
+            buildingData.appliedPowerConsumption = buildingType.category === 'zoning' && saved.type !== 'zone_residential_heavy'
+                ? 0 : buildingType.powerConsumption;
+        }
         mesh.metadata = { ...(mesh.metadata || {}), building: true, buildingId: saved.id, buildingType: buildingType.id, gridX, gridZ };
 
         this.buildings.set(saved.id, buildingData);
@@ -1513,6 +1461,7 @@ class BuildingSystem {
         }
         if (buildingData.isRented) this.updateRentalIcon(buildingData);
         this.restoreZoneState?.(buildingData, saved); // fase da zona (save antigo: começa em 0)
+        this.restoreTreeState?.(buildingData, saved); // etapa da árvore plantada (TreeGrowth.js)
         return buildingData;
     }
 

@@ -27,6 +27,25 @@ mixin(UIManager, {
         return `<ul>${rows}</ul>`;
     },
 
+    /**
+     * Lista já agrupada (ResourceManager.getWaterConsumers / getExpenseBreakdown): "3× Casa" com o total do grupo.
+     * Grupo sem config (ex.: "Moradores sem zona", "Outras despesas") usa icon/name próprios. Fecha com a linha Total.
+     */
+    renderBreakdownGroups(groups, label, cls, totalLabel, listClass) {
+        const rows = groups.map(g => `
+            <li class="building-group" data-group="${g.key}">
+                <span class="building-icon">${g.config ? buildingIcon(g.config) : uiIcon(g.icon)}</span>
+                <span class="building-name">${g.count > 1 ? `<b class="building-count">${g.count}×</b> ` : ''}${g.config ? g.config.name : g.name}</span>
+                <span class="${cls}">${label(g)}</span>
+            </li>`).join('');
+        return `<ul class="${listClass}">${rows}
+            <li class="breakdown-total" style="border-top: 2px solid rgba(0,0,0,0.2); margin-top: 8px; padding-top: 8px;">
+                <span class="building-icon">📊</span>
+                <span class="building-name"><strong>${totalLabel.name}</strong></span>
+                <span class="${cls}"><strong>${totalLabel.value}</strong></span>
+            </li></ul>`;
+    },
+
     // ===== PAINÉIS DE DETALHES DE RECURSOS =====
     showResourcePanel(panelType) {
         // ===== ENHANCED RESOURCE PANEL DISPLAY SYSTEM =====
@@ -187,6 +206,23 @@ mixin(UIManager, {
             detailsHTML += '<p class="no-sources">Nenhuma fonte de água ativa</p>';
         }
 
+        // Quem consome: prédios (consumo fixo) + moradores divididos pelas zonas/casas, agrupados por tipo
+        const rm = this.gameManager.resourceManager;
+        const bs = this.gameManager.buildingSystem;
+        const consumers = rm.getWaterConsumers(buildings, bs.getEffectivePopulationCapacity
+            ? b => bs.getEffectivePopulationCapacity(b)
+            : undefined);
+        detailsHTML += '<h5>🚰 Quem Consome Água</h5>';
+        if (consumers.groups.length > 0) {
+            detailsHTML += this.renderBreakdownGroups(consumers.groups,
+                g => `${g.people >= 1 ? `<small class="breakdown-people">${Math.round(g.people).toLocaleString('pt-BR')} pessoas · </small>` : ''}-${this.formatNumber(g.total, 1)} L/min`,
+                'building-consumption',
+                { name: 'Total de Consumo', value: `-${this.formatNumber(consumers.total, 1)} L/min` },
+                'water-consumers');
+        } else {
+            detailsHTML += '<p class="no-sources">Ninguém está consumindo água agora</p>';
+        }
+
         // Edifícios de armazenamento
         const storageBuildings = buildings.filter(b => b.config.waterStorage && b.active);
         if (storageBuildings.length > 0) {
@@ -271,19 +307,14 @@ mixin(UIManager, {
                     <h5>💸 Fontes de Despesa</h5>
         `;
 
-        const expenseBuildings = buildings.filter(b => b.config.maintenanceCost && b.active);
-        if (expenseBuildings.length > 0) {
-            detailsHTML += '<ul>';
-            expenseBuildings.forEach(building => {
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-cost">-R$ ${building.config.maintenanceCost}/min</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
+        // Agrupadas por tipo (mesma fonte do total: ResourceManager.getExpenseBreakdown)
+        const expenses = this.gameManager.resourceManager.getExpenseBreakdown(buildings);
+        if (expenses.groups.length > 0) {
+            detailsHTML += this.renderBreakdownGroups(expenses.groups,
+                g => `-R$ ${this.formatNumber(g.total, 0)}/min`,
+                'building-cost',
+                { name: 'Total de Despesas', value: `-R$ ${this.formatNumber(expenses.total, 0)}/min` },
+                'expense-groups');
         } else {
             detailsHTML += '<p class="no-sources">Nenhuma despesa de manutenção</p>';
         }
@@ -301,7 +332,9 @@ mixin(UIManager, {
 
         // Filtrar edifícios que geram energia
         const powerGenerators = buildings.filter(b => b.config.powerGeneration && b.active);
-        const powerConsumers = buildings.filter(b => b.config.powerConsumption && b.active);
+        // Consumo de cada um agora (zona: pela fase, BuildingEfficiency.getBuildingPowerConsumption)
+        const powerOf = b => this.gameManager.buildingSystem.getBuildingPowerConsumption(b);
+        const powerConsumers = buildings.filter(b => b.active && powerOf(b) > 0);
 
         let detailsHTML = `
             <div class="resource-details-panel">
@@ -344,7 +377,7 @@ mixin(UIManager, {
 
         if (powerConsumers.length > 0) {
             detailsHTML += '<h5>🔌 Consumidores de Energia</h5>' + this.renderBuildingGroups(powerConsumers,
-                b => b.config.powerConsumption,
+                powerOf,
                 (total, count) => `${count > 1 ? 'usando ' : ''}-${this.formatNumber(total, 1)} kW`, 'building-consumption');
         }
 
@@ -557,7 +590,7 @@ mixin(UIManager, {
                             <span class="building-icon">🌳</span>
                             <span class="building-name">${trees.count} árvores em pé</span>
                             <span class="building-production">-${this.formatNumber(trees.pollutionReduction, 1)}%/min</span>
-                        </li>
+                        </li>${this.plantedTreesLine()}
                         <li>🪓 Construir em cima de árvores derruba as árvores: a poluição sobe e a cidade fica menos verde.</li>
                     </ul>`;
         }

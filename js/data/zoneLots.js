@@ -33,6 +33,18 @@ const ZONE_GROWTH = {
     growMs: 900                            // animação das peças novas subindo do chão
 };
 
+/**
+ * Evoluir a zona para o próximo peso (leve → equilibrada → pesada), no painel da zona na fase final.
+ * ids: zone_<tipo>_<peso>. Custo = diferença entre os custos dos dois pesos. A zona troca de tipo sem
+ * perder nada: começa na MENOR fase do novo peso em que moradores, empregos e receita são pelo menos os
+ * de agora (keepStats), com o progresso da fase zerado (BuildingSystem.getZoneEvolutionStartStage).
+ */
+const ZONE_EVOLUTION = {
+    weights: ['light', 'balanced', 'heavy'],
+    weightNames: { light: 'Leve', balanced: 'Equilibrada', heavy: 'Pesada' },
+    keepStats: ['population', 'jobs', 'income']
+};
+
 // Peças de obra procedurais (BuildingSystem.createZonePropTemplate). Tamanho base em células (w × d × h)
 const ZONE_PROPS = {
     stake:      { w: 0.06, d: 0.06, h: 0.3 },   // estaca de madeira com ponta laranja

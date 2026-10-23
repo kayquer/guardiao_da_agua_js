@@ -62,6 +62,7 @@ mixin(BuildingSystem, {
             const building = byCell.get(key);
             if (building) this.applyRoadPiece(building, net.pieceAt(cell.x, cell.z));
         }
+        this.refreshRoadAccesses();
     },
 
     refreshAllRoadPieces() {
@@ -69,6 +70,132 @@ mixin(BuildingSystem, {
         for (const b of this.buildings.values()) {
             if (b.config?.roadType) this.applyRoadPiece(b, net.pieceAt(b.gridX, b.gridZ));
         }
+        this.refreshRoadAccesses();
+    },
+
+    // ===== ACESSOS (entrada de garagem/rebaixo de calçada entre a rua e o prédio vizinho) =====
+    // Rua com prédio (não rua) ao lado ganha, daquele lado, uma faixa de concreto atravessando a calçada
+    // e o meio-fio até o lote: parece que o prédio "sai" na rua. Uma instância de uma peça-modelo
+    // escondida por tipo de rua (≤ 2 draw calls no total), refeita por diferença a cada mudança.
+
+    /** Distância (em meias células) do centro da célula até o fim do asfalto + meio-fio, no lado canônico. */
+    getRoadAccessReach(tipo, canonicalSide) {
+        const { A, CURB } = this.ROAD_SHAPE;
+        if (tipo === 'isolada') return A + 0.1 + CURB;
+        if (tipo === 'curva') return Math.sqrt((1 + A + CURB) ** 2 - 1) - 1; // lado de fora do arco (meio-fio no eixo do lado)
+        if (tipo === 'ponta' && canonicalSide === 2) return null; // o arremate redondo já encosta no lote
+        return A + CURB; // reta, ponta (lados), T (lado sem braço)
+    },
+
+    /** Lados (0=N, 1=L, 2=S, 3=O) de cada rua que encostam num prédio. */
+    computeRoadAccesses() {
+        const lots = new Map();
+        const roads = [];
+        for (const b of this.buildings.values()) {
+            if (b.config?.roadType) { roads.push(b); continue; }
+            const size = b.config?.size || 1;
+            for (let x = b.gridX; x < b.gridX + size; x++) {
+                for (let z = b.gridZ; z < b.gridZ + size; z++) lots.set(RoadNetwork.key(x, z), b);
+            }
+        }
+        if (!roads.length || !lots.size) return [];
+        const net = this.getRoadNetwork();
+        const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+        // Um acesso por prédio e lado da rua: o mais perto do meio da fachada (prédio grande não vira estacionamento)
+        const best = new Map();
+        for (const road of roads) {
+            const piece = net.pieceAt(road.gridX, road.gridZ);
+            dirs.forEach(([dx, dz], side) => {
+                const nx = road.gridX + dx, nz = road.gridZ + dz;
+                const lot = lots.get(RoadNetwork.key(nx, nz));
+                if (!lot || net.has(nx, nz)) return;
+                const reach = this.getRoadAccessReach(piece.tipo, ((side - piece.rotacao) % 4 + 4) % 4);
+                if (reach === null) return;
+                const half = ((lot.config?.size || 1) - 1) / 2;
+                const dist = Math.abs(nx - (lot.gridX + half)) + Math.abs(nz - (lot.gridZ + half));
+                const key = `${lot.id}|${side}`;
+                const current = best.get(key);
+                if (!current || dist < current.dist) best.set(key, { road, side, nx, nz, reach, dist });
+            });
+        }
+        return [...best.values()];
+    },
+
+    /** Cria/remove as instâncias de acesso para casar com o mapa atual (chamado ao mudar ruas ou prédios). */
+    refreshRoadAccesses() {
+        if (!this.scene || !this.gridManager) return;
+        if (!this.roadAccesses) this.roadAccesses = new Map();
+        const h = this.gridManager.cellSize / 2;
+        const wanted = new Map();
+        for (const a of this.computeRoadAccesses()) {
+            const { road, side, nx, nz, reach } = a;
+            const roadY = this.getRoadSurfaceHeight(road.gridX, road.gridZ);
+            // Avança um pouco para dentro do lote só se o chão do vizinho estiver na mesma altura
+            const lotY = this.getBuildingAreaTerrainHeight(nx, nz, 1) + this.ROAD_SHAPE.SLAB * h + 0.02;
+            const ext = Math.abs(lotY - roadY) < 0.06 ? 0.16 : 0;
+            const key = `${road.gridX},${road.gridZ},${side}`;
+            wanted.set(key, { road, side, reach, ext, roadY, sig: `${road.config.roadType}|${reach.toFixed(3)}|${ext}|${roadY.toFixed(3)}` });
+        }
+        for (const [key, entry] of this.roadAccesses) {
+            if (wanted.get(key)?.sig === entry.sig && !entry.mesh.isDisposed()) continue;
+            entry.mesh.dispose();
+            this.roadAccesses.delete(key);
+        }
+        for (const [key, w] of wanted) {
+            if (this.roadAccesses.has(key)) continue;
+            const template = this.getRoadAccessTemplate(w.road.config.roadType);
+            const mesh = template.createInstance(`roadAccess_${key}`);
+            const world = this.gridManager.gridToWorld(w.road.gridX, w.road.gridZ);
+            const dir = [[0, 1], [1, 0], [0, -1], [-1, 0]][w.side];
+            const start = (w.reach - 0.03) * h;
+            mesh.position.set(world.x + dir[0] * start, w.roadY, world.z + dir[1] * start);
+            mesh.rotation.y = w.side * Math.PI / 2;
+            mesh.scaling.z = (1 - w.reach + 0.03 + w.ext) * h; // peça-modelo tem comprimento 1
+            mesh.isPickable = false;
+            mesh.metadata = { roadAccess: true, gridX: w.road.gridX, gridZ: w.road.gridZ, side: w.side };
+            mesh.freezeWorldMatrix();
+            this.roadAccesses.set(key, { mesh, sig: w.sig });
+        }
+    },
+
+    /** Peça-modelo do acesso: faixa de z = 0 (asfalto) a z = 1 (lote), largura fixa, abas de rampa nas laterais. */
+    getRoadAccessTemplate(roadType) {
+        if (!this.roadAccessTemplates) this.roadAccessTemplates = new Map();
+        const cached = this.roadAccessTemplates.get(roadType);
+        if (cached && !cached.isDisposed()) return cached;
+        const h = this.gridManager.cellSize / 2;
+        const colors = roadType === 'dirt'
+            ? { pad: '#b4905f', wing: '#9a7a4e', line: '#8a6a45' }
+            : { pad: '#d9d5cc', wing: '#bdb8ad', line: '#a7a297' };
+        const W = 0.3 * h, F = 0.1 * h, Y = 0.034; // meia largura, aba da rampa, acima do meio-fio (0,03)
+        const positions = [], indices = [], vcolors = [], normals = [];
+        const quad = (pts, color, y = Y) => {
+            const c = BABYLON.Color3.FromHexString(color);
+            const base = positions.length / 3;
+            pts.forEach(([x, z]) => { positions.push(x, y, z); normals.push(0, 1, 0); vcolors.push(c.r, c.g, c.b, 1); });
+            indices.push(base, base + 2, base + 1, base, base + 3, base + 2);
+        };
+        quad([[-W, 0], [-W, 1], [W, 1], [W, 0]], colors.pad);                 // faixa central
+        quad([[-W - F, 0], [-W - F * 0.2, 0.55], [-W, 0.55], [-W, 0]], colors.wing); // aba esquerda (rampa)
+        quad([[W, 0], [W, 0.55], [W + F * 0.2, 0.55], [W + F, 0]], colors.wing);    // aba direita
+        quad([[-W, 0], [-W, 0.06], [W, 0.06], [W, 0]], colors.line, Y + 0.002);    // junta junto ao asfalto
+        const mesh = new BABYLON.Mesh(`roadAccessPiece_${roadType}`, this.scene);
+        const data = new BABYLON.VertexData();
+        data.positions = positions;
+        data.indices = indices;
+        data.colors = vcolors;
+        data.normals = normals;
+        data.applyToMesh(mesh);
+        const mat = new BABYLON.StandardMaterial(`roadAccessMat_${roadType}`, this.scene);
+        mat.specularColor = new BABYLON.Color3(0.03, 0.03, 0.03);
+        mat.backFaceCulling = false;
+        mesh.material = mat;
+        mesh.receiveShadows = true;
+        mesh.isPickable = false;
+        mesh.isVisible = false; // modelo escondido: só as instâncias aparecem
+        mesh.metadata = { roadTemplate: true };
+        this.roadAccessTemplates.set(roadType, mesh);
+        return mesh;
     },
 
     applyRoadPiece(building, piece) {

@@ -435,13 +435,12 @@ class EventSystem {
         
         for (let i = 0; i < buildingsToAffect; i++) {
             const randomBuilding = buildings[Math.floor(Math.random() * buildings.length)];
-            if (randomBuilding.efficiency > 0.5) {
-                // Tira os efeitos com a eficiência antiga e soma com a nova, senão a conta dos recursos desanda
-                const buildingSystem = this.gameManager.buildingSystem;
-                const hadEffects = !!randomBuilding.effectsApplied;
-                buildingSystem.applyBuildingEffects(randomBuilding, false);
-                randomBuilding.efficiency = Math.max(0.5, randomBuilding.efficiency - 0.2);
-                if (hadEffects) buildingSystem.applyBuildingEffects(randomBuilding, true);
+            const damage = Number.isFinite(randomBuilding.damageFactor) ? randomBuilding.damageFactor : 1;
+            if (damage > 0.5) {
+                // O dano entra na conta da eficiência (BuildingEfficiency.js), que tira os efeitos com a
+                // eficiência antiga e soma com a nova; o recálculo periódico não apaga o dano
+                randomBuilding.damageFactor = Math.max(0.5, damage - 0.2);
+                this.gameManager.buildingSystem.updateBuildingEfficiency(randomBuilding);
             }
         }
     }

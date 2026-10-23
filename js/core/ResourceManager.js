@@ -373,7 +373,7 @@ class ResourceManager {
         const water = this.resources.water;
         
         // população + consumo fixo dos edifícios (add/removeWaterConsumption)
-        water.consumption = population.current * 2 + (water.buildingConsumption || 0);
+        water.consumption = population.current * ResourceManager.WATER_PER_PERSON + (water.buildingConsumption || 0);
         water.waste = water.consumption * 0.1;
         
         this.consumptionCache.cachedConsumption = water.consumption;
@@ -467,6 +467,91 @@ class ResourceManager {
         this.notifyChange('water', 'consumption', -amount);
     }
 
+    // ===== DE ONDE VEM O CONSUMO E A DESPESA (painéis 💧 e 💰) =====
+    // Mesma fonte que o cálculo: applyBuildingEffects soma buildingWaterUse/buildingMaintenance de cada prédio
+    // com efeitos aplicados; updateConsumption soma WATER_PER_PERSON por morador. O que entrou nos totais por outro
+    // caminho (ex.: add/removeWaterConsumption ou addExpense direto) aparece numa linha "Outros", e a soma bate.
+    static WATER_PER_PERSON = 2;
+
+    /** L/min que um prédio pronto consome (fixo, fora os moradores). Muda plantada: o que está aplicado na etapa. */
+    static buildingWaterUse(building) {
+        if (building?.treeApplied) return Number(building.treeApplied.water) || 0;
+        return Number(building?.config?.waterConsumption) || 0;
+    }
+
+    /** R$/min de manutenção de um prédio pronto. */
+    static buildingMaintenance(building) {
+        return Number(building?.config?.maintenanceCost) || 0;
+    }
+
+    /** Agrupa por tipo: [{ key, config, count, total, people }] do maior para o menor total. */
+    static groupByType(items) {
+        const groups = new Map();
+        items.forEach(({ building, value, people = 0 }) => {
+            if (!building?.config) return;
+            const key = building.type || building.config.id;
+            const g = groups.get(key) || { key, config: building.config, count: 0, total: 0, people: 0 };
+            g.count++;
+            g.total += value;
+            g.people += people;
+            groups.set(key, g);
+        });
+        return [...groups.values()].sort((a, b) => b.total - a.total);
+    }
+
+    /**
+     * Quem consome água agora, agrupado por tipo de prédio. Moradores (população × WATER_PER_PERSON) são divididos
+     * entre os prédios pela capacidade de moradia de cada um (popCapacityOf, a mesma de updatePopulationCapacity);
+     * a parte da capacidade base da cidade vira o grupo "Moradores sem zona". Devolve { groups, total }.
+     */
+    getWaterConsumers(buildings = [], popCapacityOf = b => b.config?.populationCapacity || b.config?.population || 0) {
+        const population = this.resources.population;
+        const water = this.resources.water;
+        const perPerson = ResourceManager.WATER_PER_PERSON;
+        const people = Math.max(0, population.current || 0);
+        const housing = buildings.filter(b => b.active).map(b => ({ building: b, cap: Math.max(0, popCapacityOf(b) || 0) }));
+        const capSum = housing.reduce((sum, h) => sum + h.cap, 0);
+        const totalCap = Math.max(population.max || 0, capSum, 1);
+        const share = new Map(housing.filter(h => h.cap > 0).map(h => [h.building, people * h.cap / totalCap]));
+
+        const items = [];
+        let fixedSum = 0;
+        let housedPeople = 0;
+        buildings.forEach(b => {
+            const fixed = b.effectsApplied ? ResourceManager.buildingWaterUse(b) : 0;
+            const residents = share.get(b) || 0;
+            if (fixed <= 0 && residents <= 0) return;
+            fixedSum += fixed;
+            housedPeople += residents;
+            items.push({ building: b, value: fixed + residents * perPerson, people: residents });
+        });
+        const groups = ResourceManager.groupByType(items);
+
+        const otherPeople = people - housedPeople;
+        if (otherPeople > 0.5) {
+            groups.push({ key: 'residents', icon: '👥', name: 'Moradores sem zona', count: 1, people: otherPeople, total: otherPeople * perPerson });
+        }
+        const other = (water.buildingConsumption || 0) - fixedSum;
+        if (other > 0.05) groups.push({ key: 'other', icon: '💧', name: 'Outros consumos', count: 1, people: 0, total: other });
+        groups.sort((a, b) => b.total - a.total);
+        return { groups, total: people * perPerson + (water.buildingConsumption || 0) };
+    }
+
+    /** Despesas por minuto agrupadas por tipo de prédio (+ "Outras despesas" fora dos prédios). { groups, total }. */
+    getExpenseBreakdown(buildings = []) {
+        const items = buildings
+            .filter(b => b.effectsApplied && ResourceManager.buildingMaintenance(b) > 0)
+            .map(b => ({ building: b, value: ResourceManager.buildingMaintenance(b) }));
+        const groups = ResourceManager.groupByType(items);
+        const total = this.resources.budget.expenses || 0;
+        const other = total - items.reduce((sum, i) => sum + i.value, 0);
+        if (other > 0.5) {
+            groups.push({ key: 'other', icon: '📄', name: 'Outras despesas', count: 1, people: 0, total: other });
+            groups.sort((a, b) => b.total - a.total);
+        }
+        return { groups, total };
+    }
+
     // ===== GESTÃO DE ARMAZENAMENTO DE ÁGUA =====
     addWaterStorage(amount) {
         this.resources.water.storage += amount;
@@ -489,9 +574,31 @@ class ResourceManager {
         return this.resources.budget.current >= amount;
     }
     
-    hasWaterShortage() {
+    /**
+     * Balanço de água em L/min (como production/consumption): gasto = consumo + desperdício,
+     * falta = quanto o gasto passa da produção (0 se a produção dá conta).
+     */
+    getWaterBalance() {
         const water = this.resources.water;
-        return water.current < (water.consumption * 10); // Menos de 10 segundos de reserva
+        const production = Math.max(0, water.production || 0);
+        const demand = Math.max(0, (water.consumption || 0) + (water.waste || 0));
+        return {
+            production,
+            demand,
+            deficit: Math.max(0, demand - production),
+            current: Math.max(0, water.current || 0),
+            storage: water.storage || water.max || 0
+        };
+    }
+
+    /**
+     * Falta água = a produção não cobre o gasto E a caixa tem menos de 10 segundos do gasto.
+     * (Antes comparava a reserva com consumo × 10, mas o consumo é por MINUTO: pedia 10 minutos de
+     * reserva e acusava falta com a caixa enchendo — as zonas paravam de crescer "sem motivo".)
+     */
+    hasWaterShortage() {
+        const { demand, deficit, current } = this.getWaterBalance();
+        return deficit > 0 && current < demand / 60 * 10;
     }
     
     hasCriticalPollution() {

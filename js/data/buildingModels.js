@@ -20,7 +20,7 @@
  * ficariam gigantes perto do resto da cidade).
  *
  * Modelos: Kenney (www.kenney.nl), City Kit Commercial 2.1, Suburban 2.0 e Industrial 2.0 — CC0
- * (models/buildings/kenney/<kit>/License.txt). "Water Tank.glb" já era do projeto.
+ * (models/buildings/kenney/<kit>/License.txt).
  * Modelos próprios (blender/<id>.glb): feitos no Blender por script, regeráveis por
  * models/buildings/blender/_src/<id>.py (estilo Kenney: low poly facetado, cores chapadas, sem textura).
  * Água, tratamento e energia só podem usar modelo próprio — o pack não tem nada fiel a essas peças.
@@ -41,9 +41,9 @@ const BUILDING_MODELS = {
     treatment_plant:       { file: 'blender/treatment_plant.glb', tris: 1142 },
     filter_station:        { file: 'blender/filter_station.glb', tris: 984 },
 
-    // ===== ARMAZENAMENTO =====
+    // ===== ARMAZENAMENTO (reservatório = modelo próprio) =====
     water_tower:           { file: 'kenney/industrial/water-tower.glb', tris: 968 },
-    water_tank:            { file: 'Water Tank.glb', tris: 872 },
+    water_tank:            { file: 'blender/water_tank.glb', tris: 868 },
 
     // ===== ENERGIA (modelos próprios; as pás da eólica são nós "pas_N" no .glb) =====
     hydroelectric_plant:   { file: 'blender/hydroelectric_plant.glb', tris: 972 },
