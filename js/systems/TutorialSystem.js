@@ -654,6 +654,22 @@ class TutorialSystem {
         return step?.waitForCategory ? building.config?.category === step.waitForCategory : building.type === step?.waitFor;
     }
 
+    /** Passo que manda construir algo pago (guias, aulas): o jogador age no jogo, então ele não pode estar congelado. */
+    isActionStep(step) {
+        return !!(step?.waitFor || step?.waitForCategory) && !step.free;
+    }
+
+    /**
+     * Guias/aulas/revisões congelam o jogo ('tutorial') só nas falas; no passo de ação ele roda ('playing'),
+     * para a obra andar e a fila de obras esvaziar. O tutorial inicial fica sempre congelado (prefeitura grátis
+     * e pronta na hora). Pausa (Espaço) ou fim de jogo no meio do guia não são mexidos.
+     */
+    syncActionStepClock(step) {
+        const gm = this.gameManager;
+        if (this.run === 'tutorial' || !['playing', 'tutorial'].includes(gm.gameState)) return;
+        gm.gameState = this.isActionStep(step) ? 'playing' : 'tutorial';
+    }
+
     isStepDone(step) {
         const bs = this.gameManager.buildingSystem;
         if (step.waitForCategory) return bs.getAllBuildings().some(b => b.config?.category === step.waitForCategory);
@@ -669,6 +685,7 @@ class TutorialSystem {
 
         stopSpeaking();
         step.enter?.(this.gameManager);
+        this.syncActionStepClock(step);
 
         const container = document.getElementById('tutorial-container');
         const mode = step.mode || 'story';

@@ -419,6 +419,9 @@ async function startLoading() {
         log('✅ Carregamento concluído');
         updateLoadingProgress(100);
 
+        // Aviso inicial (js/ui/StartNotice.js): menu e abertura só depois de "Aceitar"
+        await StartNotice.accepted;
+
         setTimeout(() => {
             showScreen('main-menu');
         }, MenuIntro.cinematic ? 300 : 1000);

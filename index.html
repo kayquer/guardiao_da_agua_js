@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
     <link rel="stylesheet" href="css/player.css?v=8b928c2c">
     <link rel="stylesheet" href="css/menu.css?v=2aac1344">
+    <link rel="stylesheet" href="css/notice.css?v=69e40dc2">
 
     <!-- Babylon.js CDN -->
     <script src="https://cdn.babylonjs.com/v9.31.2/babylon.js"></script>
@@ -31,6 +32,69 @@
     <!-- Preload de recursos críticos -->
 </head>
 <body>
+    <!-- Aviso inicial (js/ui/StartNotice.js): a primeira coisa na tela. O jogo carrega por trás e o menu/abertura
+         só aparecem depois de "Aceitar"; "Recusar" leva ao Google. -->
+    <div id="start-notice" class="start-notice" role="dialog" aria-modal="true" aria-labelledby="start-notice-title">
+        <div class="start-notice__card" tabindex="-1">
+            <header class="start-notice__header">
+                <img class="start-notice__logo" src="assets/images/institucional/unesp-logo.png" alt="Unesp — Universidade Estadual Paulista" width="850" height="918">
+                <div class="start-notice__inst">
+                    <p class="start-notice__inst-name">Universidade Estadual Paulista</p>
+                    <p>Faculdade de Ciências e Tecnologia — Campus de Presidente Prudente/SP</p>
+                    <p>Programa de Pós-Graduação em Geografia — Mestrado Profissional — Recursos Hídricos e Meio Ambiente</p>
+                </div>
+            </header>
+
+            <h1 id="start-notice-title" class="start-notice__title">Antes de começar</h1>
+            <p class="start-notice__lead">
+                <strong>Guardião da Água</strong> é um jogo educativo de simulação. O jogador administra uma cidade e
+                aprende, na prática, de onde vem a água, por que ela pode faltar ou ficar poluída e como as escolhas
+                de uma cidade afetam rios, nascentes e pessoas.
+            </p>
+
+            <dl class="start-notice__facts">
+                <div>
+                    <dt>Objetivo</dt>
+                    <dd>Apoiar a Educação Ambiental com foco nos recursos hídricos: captar, tratar e economizar água,
+                        controlar a poluição e equilibrar o crescimento da cidade com o meio ambiente.</dd>
+                </div>
+                <div>
+                    <dt>Público-alvo</dt>
+                    <dd>Estudantes do Ensino Fundamental — anos finais (6º ao 9º ano).</dd>
+                </div>
+                <div>
+                    <dt>Idade de foco</dt>
+                    <dd>De 11 a 14 anos.</dd>
+                </div>
+            </dl>
+
+            <div class="start-notice__note">
+                <p><strong>Melhor com um adulto por perto.</strong> O jogo funciona melhor com a mediação de um
+                    professor ou de um adulto responsável, que pode conversar sobre o que acontece na cidade, tirar
+                    dúvidas e relacionar o jogo com a realidade do lugar onde a criança vive.</p>
+            </div>
+
+            <p class="start-notice__research">
+                Este jogo é parte da pesquisa de mestrado <cite>Desenvolvimento de aplicativo para Educação Ambiental
+                (EA) no Ensino Fundamental: recursos hídricos em foco</cite>, de <strong>Cláudia Dias Roxinol</strong>
+                (Unesp, Presidente Prudente, 2026).
+            </p>
+            <p class="start-notice__privacy">
+                O apelido, a idade e a cidade do jogador ficam salvos só neste navegador; a cidade é usada para mostrar
+                o clima real.
+            </p>
+
+            <footer class="start-notice__footer">
+                <div class="start-notice__actions">
+                    <button id="btn-notice-decline" class="start-notice__btn start-notice__btn--decline" type="button">Recusar</button>
+                    <button id="btn-notice-accept" class="start-notice__btn start-notice__btn--accept" type="button">Aceitar e continuar</button>
+                </div>
+                <p class="start-notice__hint">Ao recusar, você será levado à página inicial do Google.</p>
+            </footer>
+        </div>
+    </div>
+    <script src="js/ui/StartNotice.js?v=289d9a4b"></script>
+
     <!-- Tela de Loading -->
     <div id="loading-screen" class="screen active">
         <div class="loading-container">
@@ -626,7 +690,7 @@
     <script src="js/utils/Icons.js?v=88d854e8"></script>
     <script src="js/utils/GameLogo.js?v=f238ea7b"></script>
     <script src="js/utils/AssetLoader.js?v=92c41b47"></script>
-    <script src="js/utils/AudioManager.js?v=aa50a878"></script>
+    <script src="js/utils/AudioManager.js?v=bc85f67c"></script>
     <script src="js/utils/audio/SoundDirector.js?v=3a433478"></script>
     <script src="js/ui/AnimatedPortrait.js?v=7a5cbd3d"></script>
 
@@ -638,7 +702,7 @@
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=845fd95d"></script>
 
-    <script src="js/core/GameManager.js?v=e6c473ce"></script>
+    <script src="js/core/GameManager.js?v=89669f75"></script>
     <script src="js/core/game/Diagnostics.js?v=7a3bbf0a"></script>
     <script src="js/core/game/SelectionVisuals.js?v=d489c455"></script>
     <script src="js/core/game/CameraGuard.js?v=47e1747c"></script>
@@ -669,7 +733,7 @@
     <script src="js/systems/EventSystem.js?v=19130053"></script>
     <script src="js/systems/SaveSystem.js?v=62eb9f81"></script>
     <script src="js/systems/StudySystem.js?v=8823cd07"></script>
-    <script src="js/systems/TutorialSystem.js?v=a6d73714"></script>
+    <script src="js/systems/TutorialSystem.js?v=d15c2f24"></script>
     <script src="js/systems/GameOverSystem.js?v=6c7d619e"></script>
     <script src="js/systems/PlayerProfile.js?v=cd0a9a04"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
@@ -683,6 +747,6 @@
     <script src="js/systems/intro/MenuIntro.js?v=83e477fc"></script>
 
     <!-- Main initialization -->
-    <script src="js/main.js?v=645766ad"></script>
+    <script src="js/main.js?v=cb703422"></script>
 </body>
 </html>

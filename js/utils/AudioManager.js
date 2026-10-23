@@ -136,7 +136,7 @@ class AudioManager {
         this.muted = false;
         this.masterVolume = 1.0;
         this.musicVolume = 0.6;
-        this.sfxVolume = 0.8;
+        this.sfxVolume = 0.9;
         this.ambientVolume = 0.6;
 
         // Web Audio (criado no 1º gesto) e arquivos curtos
