@@ -10,7 +10,7 @@ mixin(UIManager, {
         const bs = this.gameManager?.buildingSystem;
         if (!bs?.isPlantedTree?.(building)) return '';
         const fmt = (n) => Number(n).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
-        const tag = '<div class="stat-item tree-kind" data-tree-kind="planted">🌱 Árvore plantada por você (tutor de madeira e copa verde-clara)</div>';
+        const tag = `<div class="stat-item tree-kind" data-tree-kind="planted">${buildingIcon('tree_sapling')} Árvore plantada por você (tutor de madeira e copa verde-clara)</div>`;
         const stage = bs.getTreeStage(building);
         if (stage === null) {
             const first = building.config.treeStages[0];
@@ -40,7 +40,7 @@ mixin(UIManager, {
         const saplings = summary.saplings ? ` (${summary.saplings} ainda ${summary.saplings === 1 ? 'muda' : 'mudas'}, bebendo ${this.formatNumber(summary.water, 1)} L/min)` : '';
         return `
                         <li class="planted-trees-line">
-                            <span class="building-icon">🌱</span>
+                            <span class="building-icon">${buildingIcon('tree_sapling')}</span>
                             <span class="building-name">${summary.count} ${summary.count === 1 ? 'árvore plantada' : 'árvores plantadas'}${saplings}</span>
                             <span class="building-production">-${this.formatNumber(summary.pollution, 1)}%/min</span>
                         </li>`;
@@ -53,7 +53,8 @@ mixin(UIManager, {
         if (!detailsPanel || !detailsContent || !info) return;
         const fmt = (n) => Number(n).toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 
-        detailsContent.innerHTML = `
+        // uiIconsIn: os emojis do painel viram os ícones SVG, como no painel de prédio (só texto fixo + números aqui)
+        detailsContent.innerHTML = uiIconsIn(`
             <div class="building-selection-info tree-info" id="native-tree-info" data-tree-kind="native">
                 <div class="selection-header">
                     <h3>🌳 Árvore nativa</h3>
@@ -75,9 +76,9 @@ mixin(UIManager, {
                     <div class="stat-item">😊 Deixa a cidade mais verde (moradores mais satisfeitos)</div>
                     <div class="stat-item">🌲 ${info.count} árvores nativas em pé no mapa</div>
                     <div class="stat-item tree-warning">🪓 Construir em cima derruba esta árvore: a poluição sobe na hora (+${fmt(info.fellPollution)}%) e a cidade fica menos verde.</div>
-                    <div class="stat-note">Quer mais verde? Plante uma 🌱 Muda de Árvore (categoria Tratamento).</div>
+                    <div class="stat-note">Quer mais verde? Plante uma ${buildingIcon('tree_sapling')} Muda de Árvore (categoria Tratamento).</div>
                 </div>
-            </div>`;
+            </div>`);
         detailsPanel.style.display = 'flex';
         this.updatePanelState('selection'); // Esc e "Desselecionar" fecham como a seleção de prédio
         this.showHudRight();

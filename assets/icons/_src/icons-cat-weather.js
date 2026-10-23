@@ -84,6 +84,14 @@ module.exports = [
             g(line('M16 4v24', { s: P.yellow[0], w: 2.2, da: '3 3' }), { a: A('march', 1.4, 0, 'center', 'linear') })
     },
     {
+        // Existia só como SVG feito à mão (sem definição aqui): o gerador apagava o arquivo ao regerar.
+        id: 'cat-roads', area: 'cat', emoji: ['🛣️'], title: 'Categoria Asfalto', used: CAT('roads'),
+        sm: () => line('M9 31V20A11 11 0 0 1 20 9H31', { w: 12, x: 'stroke-linecap="butt"' }) +
+            line('M9 31V20A11 11 0 0 1 20 9H31', { s: P.dark[0], w: 9, x: 'stroke-linecap="butt"' }) +
+            g(line('M9 31V20A11 11 0 0 1 20 9H31', { s: P.yellow[0], w: 1.8, da: '3 3', x: 'stroke-linecap="butt"' }), { a: A('march', 1.4, 0, 'center', 'linear') }) +
+            rect(2.5, 2.5, 8, 8, '#6CC04A', { rx: 1.5, w: 1.6 }) + rect(22, 21, 7.5, 8.5, '#6CC04A', { rx: 1.5, w: 1.6 })
+    },
+    {
         id: 'cat-zoning', area: 'cat', emoji: ['🏘️'], title: 'Categoria Zoneamento', used: CAT('zoning'),
         sm: () => rect(4.5, 4.5, 11.5, 11.5, P.green[0], { w: 1.5 }) + rect(16, 4.5, 11.5, 11.5, P.yellow[0], { w: 1.5 }) +
             rect(4.5, 16, 11.5, 11.5, P.blue[0], { w: 1.5 }) + rect(16, 16, 11.5, 11.5, P.green[0], { w: 1.5 }) +

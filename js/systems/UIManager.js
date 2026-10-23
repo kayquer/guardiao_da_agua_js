@@ -665,7 +665,10 @@ class UIManager {
     }
 
     updateSoftPauseBadge() {
-        const paused = this.gameManager?.pauseReasons?.size > 0 && this.gameManager.gameState === 'playing';
+        // Na tela de pausa (e no histórico de notificações dela) o jogo já está parado: o selo só cobriria o título
+        const pauseScreen = ['#pause-overlay', '#notification-history']
+            .some(sel => document.querySelector(sel)?.getClientRects().length > 0);
+        const paused = this.gameManager?.pauseReasons?.size > 0 && this.gameManager.gameState === 'playing' && !pauseScreen;
         let badge = document.getElementById('soft-pause-badge');
         if (paused && !badge) {
             badge = document.createElement('div');
