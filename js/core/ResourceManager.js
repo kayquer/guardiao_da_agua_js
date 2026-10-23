@@ -303,13 +303,16 @@ class ResourceManager {
             return;
         }
 
-        const buildings = this.gameManager.buildingSystem.getAllBuildings();
+        const buildingSystem = this.gameManager.buildingSystem;
+        const buildings = buildingSystem.getAllBuildings();
         let totalCapacity = 500; // Capacidade base
 
-        // Somar capacidade de edifícios residenciais e zonas
+        // Somar capacidade de edifícios residenciais e zonas (zona: a fração da fase em que está)
         buildings.forEach(building => {
             if (building.active) {
-                if (building.config.populationCapacity) {
+                if (buildingSystem.getEffectivePopulationCapacity) {
+                    totalCapacity += buildingSystem.getEffectivePopulationCapacity(building);
+                } else if (building.config.populationCapacity) {
                     totalCapacity += building.config.populationCapacity;
                 } else if (building.config.population) {
                     totalCapacity += building.config.population;

@@ -234,10 +234,16 @@ class UIManager {
         // ===== COMPACT RESOURCE INDICATORS CLICK HANDLERS (MOBILE) =====
         this.setupCompactResourceClickHandlers();
 
-        // ESC key para fechar painéis
+        // Esc fecha o painel da direita (recurso, terreno, missões ou prédio selecionado) junto com o conteúdo
         document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && this.uiState.currentOpenPanel) {
+            if (event.key !== 'Escape') return;
+            const panel = this.uiState.currentOpenPanel;
+            if (panel === 'missions') this.closeMissionPanel();
+            else if (panel === 'selection') this.gameManager.deselectBuilding?.();
+            else if (panel) this.closeCurrentPanel();
+            if (panel || this.isHudRightVisible()) {
                 this.closeResourcePanel();
+                this.hideHudRight();
             }
         });
 
@@ -576,6 +582,7 @@ class UIManager {
             { id: 'storage', name: '🏗️ Armazenamento', icon: '🏗️' },
             { id: 'public', name: '🏛️ Prédios Públicos', icon: '🏛️' },
             { id: 'power', name: '⚡ Energia', icon: '⚡' },
+            { id: 'roads', name: '🛣️ Asfalto', icon: '🛣️' },
             { id: 'infrastructure', name: '🛣️ Infraestrutura', icon: '🛣️' },
             { id: 'zoning', name: '🏘️ Zoneamento', icon: '🏘️' }
         ];
@@ -734,8 +741,19 @@ class UIManager {
         if (this.elements.gameClock && this.gameManager && typeof this.gameManager.formatGameTime === 'function') {
             try {
                 // "dd/mm/aaaa hh:mm" → hora em destaque e data embaixo (o card divide espaço com o clima)
+                // Só o texto muda: refazer o innerHTML a cada 100 ms trocava o elemento sob o mouse entre o
+                // mousedown e o mouseup, e o clique no relógio não abria a previsão (só o do balão do clima)
                 const [date, time] = this.gameManager.formatGameTime().split(' ');
-                this.elements.gameClock.innerHTML = `<b class="clock-time">${time}</b><small class="clock-date">${date}</small>`;
+                const clock = this.elements.gameClock;
+                let timeEl = clock.querySelector('.clock-time');
+                let dateEl = clock.querySelector('.clock-date');
+                if (!timeEl || !dateEl) {
+                    clock.innerHTML = '<b class="clock-time"></b><small class="clock-date"></small>';
+                    timeEl = clock.querySelector('.clock-time');
+                    dateEl = clock.querySelector('.clock-date');
+                }
+                if (timeEl.textContent !== time) timeEl.textContent = time;
+                if (dateEl.textContent !== date) dateEl.textContent = date;
             } catch (error) {
                 console.warn('⚠️ Erro ao atualizar relógio:', error);
                 this.elements.gameClock.textContent = '00/00/0000 00:00';
@@ -832,6 +850,7 @@ class UIManager {
     selectCategory(category) {
         // ===== ENHANCED CATEGORY SELECTION WITH STATE MANAGEMENT =====
         if (!category) return;
+        this.hideStudyTooltip(); // a lista é refeita: o mouseleave do item removido não chega
 
         const itemsEl = this.elements.buildingItems;
 
@@ -888,6 +907,9 @@ class UIManager {
             }
 
             log(`🏗️ Categoria selecionada: ${category}`);
+
+            // Primeira vez no Asfalto: o guia das ruas (TutorialSystem.GUIDES 'roads') abre já, sem esperar os 2 s
+            if (category === 'roads') setTimeout(() => this.gameManager?.tutorialSystem?.checkGuides(), 350);
 
         } catch (error) {
             console.error('❌ Error in category selection:', error);
@@ -1001,6 +1023,12 @@ class UIManager {
             </div>
         `;
 
+        if (!isUnlocked && hasStudyContent && !this.isMobile) {
+            item.addEventListener('mouseenter', () => this.showStudyTooltip(item, buildingType));
+            item.addEventListener('mouseleave', () => this.hideStudyTooltip());
+            item.addEventListener('click', () => this.hideStudyTooltip());
+        }
+
         // ===== LATERAL MENU STABILITY FIX: Event listeners now handled centrally =====
         // Event listener will be added by setupBuildingItemListeners()
 
@@ -1104,7 +1132,7 @@ class UIManager {
             }
 
             // Audio feedback
-            AudioManager.playSound('sfx_click');
+            AudioManager.playSound('sfx_ui_select');
 
             log(`🏗️ Building type selected: ${buildingTypeId}`);
 
@@ -1241,7 +1269,7 @@ class UIManager {
     
     resumeGame() {
         this.gameManager.resumeGame();
-        AudioManager.playSound('sfx_click');
+        AudioManager.playSound('sfx_panel_close');
     }
     
     saveGame() {
@@ -1368,6 +1396,7 @@ class UIManager {
     showCentralAlert(title, message, type = 'warning', details = '', options = {}) {
         if (this.isReadingOverlayOpen()) {
             if (options.whenBusy === 'toast') {
+                if (options.sound && typeof AudioManager !== 'undefined') AudioManager.playSound(options.sound);
                 this.showNotification(message, type, 6000);
             } else {
                 (this.deferredAlerts ||= new Map()).set(title, [title, message, type, details, options]);
@@ -1405,6 +1434,10 @@ class UIManager {
             </div>
         `;
 
+        if (typeof AudioManager !== 'undefined') {
+            AudioManager.playSound(options.sound || (type === 'error' ? 'sfx_alert_critical' : 'sfx_alert_warning'));
+        }
+
         const closeAlert = () => overlay.remove();
         overlay.querySelector('.central-alert-btn').addEventListener('click', closeAlert);
         overlay.addEventListener('click', (e) => {
@@ -1416,6 +1449,10 @@ class UIManager {
 
     // ===== NOTIFICAÇÕES =====
     showNotification(message, type = 'info', duration = 5000) {
+        // Bolha baixinha só com o jogo rodando e se nenhum outro som acabou de tocar (a ação já tem o dela)
+        if (typeof AudioManager !== 'undefined' && this.gameManager?.gameState === 'playing') {
+            AudioManager.playSound('sfx_notification', 1, { ifQuiet: 500 });
+        }
         // ===== BREAKING NEWS SYSTEM FOR MOBILE =====
         if (this.isMobile) {
             this.showBreakingNews(message, type, duration);
@@ -1681,7 +1718,7 @@ class UIManager {
             'Seu saldo atual (' + currentBudget + ') não é suficiente para essa construção.',
             'warning',
             'Dica: Aumente a população e construa edifícios comerciais para gerar mais receita. Verifique a seção de ajuda para mais informações.',
-            { whenBusy: 'toast' }
+            { whenBusy: 'toast', sound: 'sfx_no_money' }
         );
     }
 
@@ -1713,13 +1750,24 @@ class UIManager {
     showHudRight() {
         if (this.isMobile) return;
         const hudRight = document.querySelector('.hud-right');
-        if (hudRight) hudRight.style.display = 'flex';
+        if (!hudRight) return;
+        if (hudRight.style.display !== 'flex' && typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_panel_open');
+        hudRight.style.display = 'flex';
     }
 
     hideHudRight() {
         if (this.isMobile) return;
         const hudRight = document.querySelector('.hud-right');
-        if (hudRight) hudRight.style.display = 'none';
+        if (!hudRight) return;
+        if (hudRight.style.display === 'flex' && typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_panel_close');
+        hudRight.style.display = 'none';
+    }
+
+    /** O painel da direita está na tela (desktop: display; mobile: gaveta .active). */
+    isHudRightVisible() {
+        const hudRight = document.querySelector('.hud-right');
+        if (!hudRight) return false;
+        return this.isMobile ? hudRight.classList.contains('active') : hudRight.style.display === 'flex';
     }
 
     // ===== INFORMAÇÕES DE SELEÇÃO DE EDIFÍCIOS =====
@@ -1808,6 +1856,26 @@ class UIManager {
             newDeselectBtn.addEventListener('touchend', handleDeselect, { passive: false });
         }
 
+        // Girar para a esquerda/direita (quarto de volta, animado no mundo 3D)
+        detailsContent.querySelectorAll('.rotate-btn').forEach(btn => {
+            const handleRotate = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.isOnCooldown('rotate-building')) return;
+                this.setCooldown('rotate-building', 300);
+                const direction = Number(btn.dataset.direction) || 1;
+                const rotated = this.gameManager?.buildingSystem?.rotateBuilding(btn.dataset.buildingId, direction);
+                if (!rotated) return;
+                btn.classList.remove('spin');
+                void btn.offsetWidth; // reinicia a animação do giro rápido
+                btn.classList.add('spin');
+                if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_rotate_building');
+            };
+            btn.addEventListener('click', handleRotate);
+            btn.addEventListener('touchend', handleRotate, { passive: false });
+            btn.addEventListener('animationend', () => btn.classList.remove('spin'));
+        });
+
         log(`📋 Informações de seleção exibidas para ${building.config.name}`);
 
         // Update selection counter badge (1 building selected)
@@ -1862,12 +1930,89 @@ class UIManager {
             stats += `<div class="stat-item">🏭 Poluição: +${config.pollutionGeneration}/s</div>`;
         }
 
+        stats += this.generateResidentStats(building);
+        stats += this.generateZoneStageStats(building);
+
         return uiIconsIn(stats);
+    }
+
+    /** Zona pronta: fase de crescimento (ZoneGrowth.js) com barra de progresso da fase. */
+    generateZoneStageStats(building) {
+        const bs = this.gameManager?.buildingSystem;
+        const stage = bs?.getZoneStage?.(building);
+        if (stage === null || stage === undefined) return '';
+        const percent = Math.round(bs.getZoneStageProgress(building) * 100);
+        const effect = Math.round(bs.getZoneEffectScale(building) * 100);
+        return `
+            <div class="stat-item zone-stage" data-zone-stage="${stage}">🏗️ Fase: ${ZONE_GROWTH.stageNames[stage]} (${stage + 1}/4)</div>
+            <div class="zone-stage-track" style="height:8px;border-radius:4px;background:rgba(0,0,0,0.25);margin:2px 0 6px;overflow:hidden">
+                <div id="zone-stage-bar-${building.id}" class="zone-stage-bar" style="height:100%;width:${percent}%;background:${building.config.color || '#4CAF50'};transition:width 0.4s"></div>
+            </div>
+            <div class="stat-item">📈 Ocupação da zona: ${effect}%</div>`;
+    }
+
+    /** Capacidade de moradores da zona/prédio: usa a fase da zona (outro sistema) se existir. */
+    getBuildingPopulationCapacity(building) {
+        const bs = this.gameManager?.buildingSystem;
+        const rm = this.gameManager?.resourceManager;
+        for (const owner of [bs, rm]) {
+            if (typeof owner?.getEffectivePopulationCapacity === 'function') {
+                const value = Number(owner.getEffectivePopulationCapacity(building));
+                if (Number.isFinite(value)) return Math.max(0, Math.round(value));
+            }
+        }
+        return Math.max(0, Math.round(Number(building.config.populationCapacity || building.config.population) || 0));
+    }
+
+    /** Linha "Moradores" das zonas residenciais: estimativa proporcional à ocupação da cidade. */
+    generateResidentStats(building) {
+        const config = building.config;
+        const residential = String(config.zoneType || '').startsWith('residential') || config.category === 'residential';
+        const capacity = this.getBuildingPopulationCapacity(building);
+        if (!residential || capacity <= 0) return '';
+
+        const population = this.gameManager?.resourceManager?.resources?.population;
+        const cityMax = Math.round(population?.max || 0);
+        const fmt = (n) => Math.round(n).toLocaleString('pt-BR');
+
+        if (building.underConstruction || !building.active) {
+            const limitText = cityMax > 0
+                ? `Quando ficar pronta, o limite da cidade sobe de ${fmt(cityMax)} para ${fmt(cityMax + capacity)}.`
+                : `Quando ficar pronta, soma +${fmt(capacity)} ao limite de moradores da cidade.`;
+            return `<div class="stat-item residents-stat">👥 Vai abrigar até ${fmt(capacity)} moradores</div>
+                <div class="stat-note residents-note">${limitText}</div>`;
+        }
+
+        const current = population?.current || 0;
+        const estimate = population?.max > 0 ? Math.min(capacity, Math.round(current * capacity / population.max)) : 0;
+        return `<div class="stat-item residents-stat">👥 Moradores: ~${fmt(estimate)} de ${fmt(capacity)} (limite da zona)</div>
+            <div class="stat-note residents-note">Esta zona soma +${fmt(capacity)} ao limite da cidade (${fmt(cityMax)} moradores no total).</div>`;
     }
 
     generateBuildingActions(building) {
         let actions = '';
         const config = building.config;
+
+        // Girar o prédio (quartos de volta). Ruas (roadType) não giram: o encaixe automático decide
+        if (this.gameManager?.buildingSystem?.canRotateBuilding?.(building)) {
+            const arrow = (mirror) => `
+                <svg class="rotate-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"${mirror ? ' style="transform: scaleX(-1)"' : ''}>
+                    <g class="rotate-icon-spin">
+                        <path d="M19 12a7 7 0 1 1-2.05-4.95" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+                        <path d="M19.6 3.6v4.8h-4.8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </g>
+                </svg>`;
+            actions += `
+                <div class="rotate-actions">
+                    <button class="action-btn rotate-btn rotate-left" data-direction="-1" data-building-id="${building.id}" title="Girar para a esquerda" aria-label="Girar para a esquerda">
+                        <span class="rotate-icon-wrap">${arrow(true)}</span> Girar para a esquerda
+                    </button>
+                    <button class="action-btn rotate-btn rotate-right" data-direction="1" data-building-id="${building.id}" title="Girar para a direita" aria-label="Girar para a direita">
+                        <span class="rotate-icon-wrap">${arrow(false)}</span> Girar para a direita
+                    </button>
+                </div>
+            `;
+        }
 
         // ===== FEATURE FLAGS: Hide rental button in release version =====
         const showRentalButton = FEATURE_FLAGS.isUIFeatureVisible('rentalButton');
@@ -1893,6 +2038,7 @@ class UIManager {
             'storage': 'Armazenamento',
             'residential': 'Residencial',
             'power': 'Energia',
+            'roads': 'Asfalto',
             'infrastructure': 'Infraestrutura',
             'zoning': 'Zoneamento',
             'commercial': 'Comercial',
@@ -2173,6 +2319,33 @@ class UIManager {
         }, 0);
     }
 
+    /** Dica ao lado de uma construção que precisa de estudo: clicar abre o livro e o quiz libera. */
+    showStudyTooltip(item, buildingType) {
+        let tooltip = document.getElementById('study-tooltip');
+        if (!tooltip) {
+            tooltip = document.createElement('div');
+            tooltip.id = 'study-tooltip';
+            tooltip.className = 'hover-tooltip resource-tooltip study-tooltip';
+            tooltip.setAttribute('role', 'tooltip');
+            document.body.appendChild(tooltip);
+        }
+        tooltip.innerHTML = `<div class="tooltip-header">${uiIcon('ui-books')} Precisa de estudo</div>
+            <div class="tooltip-description">Clique em <b>${buildingType.name}</b> para estudar. Depois do estudo, a construção fica liberada.</div>`;
+        const rect = item.getBoundingClientRect();
+        tooltip.style.display = 'block';
+        tooltip.style.transform = 'translateY(-50%)';
+        tooltip.style.left = (rect.right + 12) + 'px';
+        tooltip.style.top = (rect.top + rect.height / 2) + 'px';
+        const tipRect = tooltip.getBoundingClientRect();
+        if (tipRect.right > window.innerWidth - 8) tooltip.style.left = (window.innerWidth - tipRect.width - 8) + 'px';
+        if (tipRect.top < 8) tooltip.style.top = (8 + tipRect.height / 2) + 'px';
+    }
+
+    hideStudyTooltip() {
+        const tooltip = document.getElementById('study-tooltip');
+        if (tooltip) tooltip.style.display = 'none';
+    }
+
     hideResourceTooltip() {
         const tooltip = document.getElementById('resource-tooltip');
         if (tooltip) {
@@ -2318,7 +2491,7 @@ class UIManager {
             const openPlayerPanel = () => {
                 if (this.gameManager.gameState !== 'playing') return;
                 this.gameManager.pauseGame();
-                AudioManager.playSound('sfx_click', 0.8);
+                AudioManager.playSound('sfx_panel_open');
             };
             playerChip.addEventListener('click', openPlayerPanel);
             playerChip.addEventListener('keydown', e => {
@@ -2346,7 +2519,7 @@ class UIManager {
                         log('🎯 Mission interface opened (toggle)');
                     }
 
-                    AudioManager.playSound('sfx_click', 0.8);
+                    AudioManager.playSound(missionsBtn.classList.contains('active') ? 'sfx_panel_open' : 'sfx_panel_close');
                 }
             });
         }
@@ -2478,10 +2651,7 @@ class UIManager {
             }, 300);
         }
 
-        // Play close sound
-        if (this.gameManager.audioManager) {
-            this.gameManager.audioManager.playSound('sfx_ui_click');
-        }
+        AudioManager.playSound('sfx_book_close');
     }
 }
 

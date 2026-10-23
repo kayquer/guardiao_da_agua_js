@@ -542,10 +542,23 @@ class TutorialSystem {
         return TutorialSystem.GUIDES.find(g => !done.includes(g.id) && (!g.after || done.includes(g.after)) && g.when(gm)) || null;
     }
 
+    /**
+     * Primeira falta de energia do jogador (BuildingFeedback.showEnergyShortageNotification): em vez do alerta
+     * central, abre o guia 'energy' assim que o jogo estiver livre (checkGuides). Retorna true se o guia vai
+     * aparecer (quem chamou não mostra o alerta); false se o jogador já viu o guia.
+     */
+    requestEnergyGuide() {
+        if (TutorialSystem.guidesDone().includes('energy')) return false;
+        if (this.isActive && this.run === 'guide' && this.guideId === 'energy') return true;
+        this.energyGuidePending = true;
+        return true;
+    }
+
     startGuide(id) {
         const gm = this.gameManager;
         const guide = TutorialSystem.GUIDES.find(g => g.id === id);
         if (!guide || this.isActive || !['playing', 'tutorial'].includes(gm.gameState)) return false;
+        if (id === 'energy') this.energyGuidePending = false;
         gm.uiManager.closeResourcePanel?.();
         const steps = guide.steps.map(s => ({
             mode: 'coach', group: 'guide', chapter: guide.id, character: 'Claudia',
@@ -733,6 +746,8 @@ class TutorialSystem {
         if (portrait.el.parentNode !== slot) slot.replaceChildren(portrait.el);
         if (this.portraitShown !== step.character) {
             this.portraitShown = step.character;
+            // "Oi" curto do personagem que entra em cena (preocupado se a expressão for worried)
+            AudioManager.onSpeaker(TutorialSystem.CHARACTERS[step.character]?.id, portrait.expression);
             const hello = TutorialSystem.CHARACTERS[step.character]?.hello;
             portrait.enter(!small && hello ? PlayerProfile.personalize(hello) : '');
         }
@@ -911,6 +926,7 @@ class TutorialSystem {
             LessonProgress.markDone(step.chapter);
         }
         if (this.currentStep < this.steps.length - 1) {
+            AudioManager.playSound(this.mode === 'story' ? 'sfx_book_page' : 'sfx_tutorial_next');
             this.goTo(this.currentStep + 1);
         } else {
             this.complete();
@@ -918,7 +934,10 @@ class TutorialSystem {
     }
 
     previous() {
-        if (this.currentStep > 0) this.goTo(this.currentStep - 1);
+        if (this.currentStep > 0) {
+            AudioManager.playSound(this.mode === 'story' ? 'sfx_book_page' : 'sfx_tutorial_next');
+            this.goTo(this.currentStep - 1);
+        }
     }
 
     /**
@@ -951,6 +970,7 @@ class TutorialSystem {
         stopSpeaking();
         Object.values(this.portraits).forEach(p => p.hideBalloon());
         this.portraitShown = null;
+        AudioManager.resetSpeaker(); // na próxima aula/guia o personagem cumprimenta de novo
 
         const gm = this.gameManager;
         gm.gameState = 'playing';
@@ -1020,13 +1040,14 @@ TutorialSystem.portraitOf = character => {
 };
 
 /**
- * Expressão do retrato num passo: `step.expression` se o passo define (inclusive null); nos passos coach depois
- * do tutorial inicial (guias, aulas rápidas, partes refeitas), preocupado se falta água ou a poluição está
- * crítica; feliz nos passos de comemoração (🎉/🏆).
+ * Expressão do retrato num passo: `step.expression` se o passo define (inclusive null); nos guias (coach depois
+ * do tutorial inicial), preocupado se falta água ou a poluição está crítica; feliz nos passos de comemoração
+ * (🎉/🏆). Aulas rápidas e o livro não olham o estado da cidade: a aula explica, não dá bronca.
  */
 TutorialSystem.expressionFor = (step, gm) => {
     if (step.expression !== undefined) return step.expression;
-    if (step.mode === 'coach' && gm?.tutorialDone) {
+    const ts = gm?.tutorialSystem;
+    if (step.mode === 'coach' && gm?.tutorialDone && ts?.isActive && ts.run === 'guide') {
         const rm = gm?.resourceManager;
         if (rm?.hasWaterShortage?.() || rm?.hasCriticalPollution?.()) return 'worried';
     }
@@ -1080,9 +1101,10 @@ TutorialSystem.TOPICS = {
     electricity: {
         name: 'a energia', title: 'Energia', icon: '⚡',
         steps: [
-            { title: 'Energia gerada e usada', text: 'Aqui você vê a energia que a cidade produz e a que ela gasta. Bombas e estações de tratamento <b>precisam de energia</b>.', targets: ['.resource-item:has(#electricity-amount)', '#compact-energy'] },
-            { title: 'Como gerar', text: 'Na categoria <b>⚡ Energia</b> ficam as usinas. Prefira as <b>limpas</b>, como a solar e a eólica: elas não poluem a água.', targets: ['.category-btn[data-category="power"]'] },
-            { title: 'Se faltar energia', text: 'Sem energia, os prédios trabalham devagar e produzem <b>menos água</b>. Gere um pouco mais do que a cidade usa!' }
+            { title: 'Geração x consumo', text: 'Aqui você vê a energia da cidade. <b>Geração</b> é o que as usinas produzem; <b>consumo</b> é o que bombas, estações de tratamento e zonas gastam. A conta precisa fechar: geração <b>maior ou igual</b> ao consumo.', targets: ['.resource-item:has(#electricity-amount)', '#compact-energy'] },
+            { title: 'Eficiência baixa', expression: 'worried', text: 'Se a cidade gasta mais do que gera, a energia é dividida e <b>todos os prédios trabalham mais devagar</b>: com metade da energia, as bombas tiram metade da água e o tratamento limpa menos. A eficiência mostra isso.' },
+            { title: 'Como gerar', text: 'Na categoria <b>⚡ Energia</b> ficam as usinas. Prefira as <b>limpas</b>: o <b>Campo Eólico</b> usa o vento para girar as pás e um gerador, sem poluir a água nem o ar.<img src="assets/images/studies/parque-eolico.webp" alt="Campo eólico: o vento gira as pás e o gerador manda energia para a cidade" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin:8px 0;"/>', targets: ['.category-btn[data-category="power"]'] },
+            { title: 'Sempre uma folga', text: 'Gere um pouco <b>mais</b> do que a cidade usa: cada obra nova de água, tratamento ou moradia aumenta o consumo. Usina bloqueada? Clique nela para estudar e liberar!' }
         ]
     }
 };
@@ -1100,10 +1122,55 @@ TutorialSystem.buildTargets = (typeId, category, label) => [
     { selector: '.mobile-toggle.left', text: '👆 Toque em <b>🏗️</b> para abrir as construções.' }
 ];
 
+// Eficiência elétrica abaixo de 100% (ResourceManager.updateElectricity) com algum consumo
+TutorialSystem.isEnergyShort = (gm) => {
+    const electricity = gm?.resourceManager?.resources?.electricity;
+    return !!electricity && electricity.consumption > 0 && electricity.efficiency < 1;
+};
+
 TutorialSystem.completedBuildings = (gm, test) =>
     gm.buildingSystem.getAllBuildings().some(b => !b.underConstruction && b.config && test(b.config));
 
 TutorialSystem.GUIDES = [
+    {
+        // Primeira falta de energia (alerta "Energia Insuficiente" ou eficiência < 100%): substitui o alerta
+        // central nessa primeira vez (requestEnergyGuide). Sem 'after': vale a qualquer momento, uma vez por jogador.
+        id: 'energy', title: 'Energia', icon: '⚡',
+        when: gm => !!gm.tutorialSystem?.energyGuidePending || TutorialSystem.isEnergyShort(gm),
+        steps: [
+            { title: 'Faltou energia!', expression: 'worried', text: '{nome}, a cidade está gastando mais energia do que produz. <b>Geração</b> é o que as usinas produzem; <b>consumo</b> é o que bombas, estações de tratamento e zonas gastam.', targets: ['.resource-item:has(#electricity-amount)', '#compact-energy'] },
+            { title: 'O que acontece agora', text: 'Com menos energia do que precisa, <b>todos os prédios trabalham mais devagar</b>: a eficiência cai, as bombas tiram menos água, o tratamento limpa menos e os moradores ficam insatisfeitos.' },
+            { title: 'O vento pode ajudar', text: 'Um <b>Campo Eólico</b> transforma vento em energia: o vento gira as pás, as pás giram um gerador e a energia vai pelos fios até a cidade. Não polui a água nem o ar!<img src="assets/images/studies/parque-eolico.webp" alt="Campo eólico: o vento gira as pás e o gerador manda energia para a cidade" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin:8px 0;"/>' },
+            {
+                title: 'Construa um Campo Eólico', waitFor: 'wind_farm',
+                text: 'Abra <b>⚡ Energia</b> e construa um <b>Campo Eólico</b>. Está bloqueado? Clique nele para <b>estudar</b> e liberar. Sem dinheiro agora? Use <b>Fazer depois</b>.',
+                placingHint: '👆 Escolha um terreno livre: colinas também servem, lá venta mais!',
+                enter: gm => gm.uiManager.uiState.currentCategory !== 'power' && gm.uiManager.selectCategory('power'),
+                targets: TutorialSystem.buildTargets('wind_farm', 'power', 'o 💨 Campo Eólico')
+            },
+            { title: 'Energia a caminho!', expression: 'happy', text: 'Quando a obra terminar, a geração sobe e a eficiência volta a <b>100%</b>. Dica: gere sempre um pouco <b>mais</b> do que a cidade usa, porque cada obra nova aumenta o consumo.', targets: ['.resource-item:has(#electricity-amount)', '#compact-energy'] }
+        ]
+    },
+    {
+        // Primeira vez que abre a categoria 🛣️ Asfalto (UIManager.selectCategory chama checkGuides na hora)
+        // ou já tem rua. Sem 'after': vale a qualquer momento, uma vez por jogador.
+        id: 'roads', title: 'Ruas', icon: '🛣️',
+        when: gm => gm.uiManager?.uiState?.currentCategory === 'roads' ||
+            gm.buildingSystem.getAllBuildings().some(b => b.config?.roadType),
+        steps: [
+            { title: 'Hora de abrir ruas!', text: 'Ruas levam as pessoas de casa até a escola, o trabalho e o hospital. Aqui no <b>🛣️ Asfalto</b> elas ficam <b>prontas na hora</b> e custam <b>bem pouco</b>: nada de esperar obra!', targets: ['.category-btn[data-category="roads"]'] },
+            {
+                title: 'Trace uma rua', waitForCategory: 'roads',
+                text: 'Escolha a <b>Rua Asfaltada</b>. Depois, no mapa, <b>segure e arraste</b> (com o mouse ou o dedo): a rua segue em linha reta e o custo total aparece embaixo. Um clique só faz um bloco.',
+                placingHint: '👆 Segure e arraste no mapa. <b>Verde</b> = vira rua; <b>vermelho</b> = ocupado, água ou falta dinheiro.',
+                enter: gm => gm.uiManager.uiState.currentCategory !== 'roads' && gm.uiManager.selectCategory('roads'),
+                targets: TutorialSystem.buildTargets('paved_road', 'roads', 'a 🛣️ Rua Asfaltada')
+            },
+            { title: 'Curvas e cruzamentos sozinhos', expression: 'happy', text: 'Encoste uma rua na outra e ela se liga sozinha: vira <b>curva</b>, <b>bifurcação</b> ou <b>cruzamento</b>, com faixa no meio e calçada nas bordas. Não precisa girar nada!' },
+            { title: 'Cadê os carros?', text: 'Quando a cidade tiver <b>20 blocos de rua ligados</b>, carros e caminhões começam a circular. Quanto mais ruas, mais movimento, {nome}!' },
+            { title: 'Rua também mexe com a água', expression: 'worried', text: 'O <b>asfalto</b> não deixa a chuva entrar no chão: a água corre por cima, vira <b>enxurrada</b> e leva lixo para o rio. A <b>estrada de terra</b> deixa a água entrar, mas a chuva arrasta a terra (<b>erosão</b>) e o rio fica barrento. Plante árvores e jardins de chuva perto das ruas!' }
+        ]
+    },
     {
         id: 'storage', title: 'Guardar água', icon: '🛢️',
         // água e energia funcionando: hora de guardar para os dias secos

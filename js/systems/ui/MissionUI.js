@@ -338,7 +338,8 @@ mixin(QuestSystem, {
             }
         } else if (objective.type === 'resource') {
             if (remaining > 0) {
-                return `Colete ${remaining} unidades de ${objective.resourceType || 'recursos'}`;
+                // O progresso de recurso é contínuo (7,27...): o texto mostra o que falta arredondado para cima
+                return `Colete ${Math.ceil(remaining).toLocaleString('pt-BR')} unidades de ${objective.resourceType || 'recursos'}`;
             } else {
                 return `✅ ${objective.description}`;
             }

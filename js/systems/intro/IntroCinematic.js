@@ -10,7 +10,7 @@
  * então a cor, a textura e o encaixe são os mesmos do jogo. A eólica é a exceção: é lida aqui mesmo para
  * manter os rotores (nós "pas_N") separados e girando.
  *
- *   const intro = new IntroCinematic(canvas, { fadeEl, quality: 'high' | 'low' });
+ *   const intro = new IntroCinematic(canvas, { fadeEl, quality: 'high' | 'medium' | 'low' }); // GraphicsQuality
  *   await intro.build(p => barra(p));                 // false se não deu (sem WebGL etc.)
  *   intro.play('full' | 'final', { onShot(i, shot), onFinish() });
  *   intro.skip();  intro.setOrbit(true|false);  intro.dispose();
@@ -46,9 +46,10 @@ class IntroCinematic {
             console.warn('IntroCinematic: sem WebGL para a abertura', error?.message || error);
             return false;
         }
-        // Celular: não renderiza na resolução nativa inteira (3x) — 1.5x já fica nítido
+        // Celular: não renderiza na resolução nativa inteira (3x) — 1.5x já fica nítido; qualidade baixa: menos ainda
         const dpr = window.devicePixelRatio || 1;
-        this.engine.setHardwareScalingLevel(1 / Math.min(dpr, this.quality === 'high' ? 2 : 1.5));
+        const pixels = Math.min(dpr, this.quality === 'high' ? 2 : 1.5) * (this.quality === 'low' ? 0.625 : 1);
+        this.engine.setHardwareScalingLevel(1 / pixels);
 
         const scene = new BABYLON.Scene(this.engine);
         this.scene = scene;
@@ -421,21 +422,7 @@ class IntroCinematic {
 
     /** Mesh com cor de vértice a partir de peças (cada uma com sua cor), juntas num só. */
     coloredMesh(name, parts) {
-        parts.forEach(([mesh, color]) => {
-            const count = mesh.getTotalVertices();
-            const c = IntroCinematic.hex(color);
-            const colors = new Float32Array(count * 4);
-            for (let i = 0; i < count; i++) colors.set([c.r, c.g, c.b, 1], i * 4);
-            mesh.setVerticesData(BABYLON.VertexBuffer.ColorKind, colors);
-        });
-        const merged = BABYLON.Mesh.MergeMeshes(parts.map(p => p[0]), true, true);
-        merged.name = name;
-        merged.convertToFlatShadedMesh();
-        const mat = new BABYLON.StandardMaterial(`${name}Mat`, this.scene);
-        mat.specularColor = new BABYLON.Color3(0.04, 0.04, 0.04);
-        merged.material = mat;
-        merged.isPickable = false;
-        return merged;
+        return VehicleMeshes.coloredMesh(this.scene, name, parts);
     }
 
     createTrees() {
@@ -517,17 +504,11 @@ class IntroCinematic {
     createCars() {
         const scene = this.scene;
         const L = this.layout;
-        const colors = ['#e74c3c', '#f1c40f', '#3498db', '#ecf0f1', '#2ecc71', '#e67e22', '#9b59b6'];
         const lanes = this.city.roads.filter(([x0, z0, x1, z1]) => Math.abs(x1 - x0) + Math.abs(z1 - z0) >= 20);
         const rand = IntroLayout.prng(5);
-        const templates = colors.map(color => {
-            const body = BABYLON.MeshBuilder.CreateBox('b', { width: 0.5, height: 0.22, depth: 0.95 }, scene);
-            body.position.y = 0.17;
-            body.bakeCurrentTransformIntoVertices();
-            const cabin = BABYLON.MeshBuilder.CreateBox('c', { width: 0.44, height: 0.18, depth: 0.5 }, scene);
-            cabin.position.set(0, 0.36, -0.05);
-            cabin.bakeCurrentTransformIntoVertices();
-            const car = this.coloredMesh(`introCar_${color}`, [[body, color], [cabin, '#dfe9ef']]);
+        // Mesmo modelo do trânsito do jogo (js/systems/shared/VehicleMeshes.js)
+        const templates = VehicleMeshes.CAR_COLORS.map(color => {
+            const car = VehicleMeshes.createCar(scene, color, `introCar_${color}`);
             car.setEnabled(false);
             return car;
         });

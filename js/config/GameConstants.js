@@ -16,14 +16,12 @@ function log(...args) {
 // ===== CONFIGURAÇÃO DO JOGO (balanceamento) =====
 const GAME_CONFIG = {
     canvas: {
-        antialias: true,
-        preserveDrawingBuffer: false
+        preserveDrawingBuffer: false // antialias: GraphicsQuality (por qualidade gráfica)
     },
 
     grid: {
         size: 40,        // células por lado
-        cellSize: 2,
-        height: 0.1
+        cellSize: 2
     },
 
     resources: {
@@ -55,7 +53,8 @@ const WEATHER = {
     GEOCODING_URL: 'https://geocoding-api.open-meteo.com/v1/search',
     CITIES_URL: 'https://servicodados.ibge.gov.br/api/v1/localidades/estados/{uf}/municipios?orderBy=nome',
     CACHE_MS: 30 * 60 * 1000,   // reusa a previsão por 30 min (também é o intervalo de atualização no jogo)
-    FORECAST_DAYS: 5
+    FORECAST_DAYS: 5,
+    FETCH_TIMEOUT_MS: 5000 // limite de cada chamada externa (geocodificação, IBGE, previsão)
 };
 
 // ===== ÁRVORES (TreeSystem) =====

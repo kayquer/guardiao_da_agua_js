@@ -23,29 +23,9 @@ class AssetLoader {
         try {
             // Lista de assets para carregar
             const assetList = [
-                // ===== BACKGROUND MUSIC =====
-                { type: 'audio', key: 'bgm_menu', path: 'Sounds/BGM/green-future-menu-theme-lively.mp3', optional: true },
-                { type: 'audio', key: 'bgm_gameplay', path: 'Sounds/BGM/green-city-gameplay-ambient.mp3', optional: true },
-
-                // ===== RSE SOUNDFX COLLECTION =====
-                // Core RSE SoundFX Effects
-                { type: 'audio', key: 'sfx_click1', path: 'Sounds/SFX/RSE/click1.mp3', optional: true },
-                { type: 'audio', key: 'sfx_beep1', path: 'Sounds/SFX/RSE/beep1.mp3', optional: true },
-                { type: 'audio', key: 'sfx_bling1', path: 'Sounds/SFX/RSE/bling1.mp3', optional: true },
-                { type: 'audio', key: 'sfx_error1', path: 'Sounds/SFX/RSE/error1.mp3', optional: true },
-                { type: 'audio', key: 'sfx_chime1', path: 'Sounds/SFX/RSE/chime1.mp3', optional: true },
-                { type: 'audio', key: 'sfx_splash1', path: 'Sounds/SFX/RSE/splash1.mp3', optional: true },
-
+                // Áudio: AudioManager (js/data/audioManifest.js) baixa os efeitos depois do boot; músicas em streaming
                 // Modelos 3D dos prédios: carregados sob demanda por BuildingSystem (js/data/buildingModels.js)
 
-                // ===== LEGACY SOUND EFFECTS (Existing) =====
-                { type: 'audio', key: 'sfx_pickup', path: 'Sounds/SFX/Environment/pickup.wav', optional: true },
-                { type: 'audio', key: 'sfx_item', path: 'Sounds/SFX/Environment/item_sound.wav', optional: true },
-                { type: 'audio', key: 'sfx_walk', path: 'Sounds/SFX/Environment/walk.wav', optional: true },
-                { type: 'audio', key: 'sfx_watering', path: 'Sounds/SFX/Player/watering.wav', optional: true },
-                { type: 'audio', key: 'sfx_dig', path: 'Sounds/SFX/Player/dig.ogg', optional: true },
-                { type: 'audio', key: 'sfx_axe', path: 'Sounds/SFX/Player/axe.wav', optional: true },
-                
                 // Texturas procedurais (criadas em código)
                 { type: 'procedural', key: 'water_texture' },
                 { type: 'procedural', key: 'grass_texture' },
@@ -78,9 +58,6 @@ class AssetLoader {
             switch (type) {
                 case 'image':
                     asset = await this.loadImage(path);
-                    break;
-                case 'audio':
-                    asset = await this.loadAudio(path);
                     break;
                 case 'model':
                     asset = await this.loadModel(path);
@@ -141,31 +118,6 @@ class AssetLoader {
         });
     }
     
-    // ===== CARREGAMENTO DE ÁUDIO =====
-    loadAudio(path) {
-        return new Promise((resolve, reject) => {
-            const audio = new Audio();
-            
-            audio.oncanplaythrough = () => {
-                resolve({
-                    audio: audio,
-                    duration: audio.duration,
-                    play: () => audio.play(),
-                    pause: () => audio.pause(),
-                    setVolume: (volume) => { audio.volume = Math.max(0, Math.min(1, volume)); },
-                    setLoop: (loop) => { audio.loop = loop; }
-                });
-            };
-            
-            audio.onerror = () => {
-                reject(new Error(`Falha ao carregar áudio: ${path}`));
-            };
-            
-            audio.src = path;
-            audio.load();
-        });
-    }
-
     // ===== CARREGAMENTO DE MODELOS 3D =====
     loadModel(path) {
         return new Promise((resolve, reject) => {
@@ -327,9 +279,6 @@ class AssetLoader {
             case 'image':
                 this.loadedAssets.set(key, this.createFallbackImage());
                 break;
-            case 'audio':
-                this.loadedAssets.set(key, this.createFallbackAudio());
-                break;
         }
     }
     
@@ -352,17 +301,6 @@ class AssetLoader {
             context: ctx,
             width: 64,
             height: 64
-        };
-    }
-    
-    createFallbackAudio() {
-        return {
-            audio: null,
-            duration: 0,
-            play: () => log('🔇 Audio fallback - sem som'),
-            pause: () => {},
-            setVolume: () => {},
-            setLoop: () => {}
         };
     }
     

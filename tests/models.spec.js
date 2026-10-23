@@ -67,7 +67,9 @@ function inspect(page, id) {
         const screen = BABYLON.Vector3.Project(center, BABYLON.Matrix.Identity(), gm.scene.getTransformMatrix(),
             gm.camera.viewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight()));
         gm.selectedBuilding = null;
-        gm.handleBuildingSelection(screen.x, screen.y);
+        // Project dá pixels de render; o clique é em pixels da tela (qualidade gráfica baixa/média renderiza menos)
+        const scale = engine.getHardwareScalingLevel();
+        gm.handleBuildingSelection(screen.x * scale, screen.y * scale);
         return {
             fromModel: !!mesh.metadata?.fromModel,
             metadata: { buildingId: mesh.metadata?.buildingId, buildingType: mesh.metadata?.buildingType, gridX: mesh.metadata?.gridX, gridZ: mesh.metadata?.gridZ },

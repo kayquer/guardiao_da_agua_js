@@ -30,7 +30,8 @@ class StudySystem {
         // Edifícios desbloqueados por padrão (tutorial/básicos)
         this.defaultUnlockedBuildings = [
             'city_hall',      // Prefeitura (sempre disponível)
-            'road',           // Estradas (básico)
+            'paved_road',     // Ruas (Asfalto): nunca pedem estudo
+            'dirt_road',
             'park'            // Parque (básico)
         ];
 

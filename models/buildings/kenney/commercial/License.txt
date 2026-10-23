@@ -26,3 +26,21 @@
 	• Twitter:	 twitter.com/KenneyNL
 	• BlueSky:	 kenney.bsky.social
 	• Instagram: instagram.com/kenney_nl
+
+	------------------------------
+
+	Uso no Guardião da Água (10/2026)
+
+	Fonte: https://kenney.nl/assets/city-kit-commercial (versão 2.1, formato GLB)
+	Só os .glb usados ficam no repositório: prédios da tabela BUILDING_MODELS
+	(js/data/buildingModels.js) e peças dos lotes das zonas que crescem
+	(ZONE_LOTS em js/data/zoneLots.js). Arquivos nesta pasta:
+	  building-a.glb
+	  building-b.glb
+	  building-c.glb
+	  building-d.glb
+	  building-skyscraper-a.glb
+	  building-skyscraper-e.glb
+	  detail-awning-wide.glb
+	  detail-parasol-a.glb
+	  detail-parasol-b.glb

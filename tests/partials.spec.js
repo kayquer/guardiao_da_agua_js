@@ -44,6 +44,19 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         gm.enterBuildMode('water_well');
         gm.exitBuildMode();
 
+        // roads/RoadPlacement + RoadMeshes: prévia do traçado e uma rua instantânea com peças encaixadas
+        const bs = gm.buildingSystem, s = gm.gridManager.startArea;
+        gm.enterBuildMode('paved_road');
+        bs.updateRoadPreview(s.x, s.z);
+        bs.showRoadLinePreview({ x: s.x, z: s.z }, { x: s.x + 3, z: s.z });
+        gm.exitBuildMode();
+        bs.placeRoadLine(RoadNetwork.linePath(s.x, s.z + 7, s.x + 2, s.z + 7), 'dirt_road');
+
+        // building/ZoneGrowth (o fluxo completo está em tests/zones.spec.js): ritmo e regra de quem é zona
+        gm.buildingSystem.computeZoneGrowthRate(gm.buildingSystem.getZoneGrowthConditions());
+        gm.buildingSystem.getEffectivePopulationCapacity(building);
+        gm.buildingSystem.updateZoneGrowth();
+
         // core/game/CameraGuard
         gm.validateCameraStateWithBreaker();
         gm.getCameraState();

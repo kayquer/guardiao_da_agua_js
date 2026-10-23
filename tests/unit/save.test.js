@@ -121,10 +121,30 @@ test('prédio: o save guarda tipo, posição, obra (pelo gameTime), aluguel e ef
         constructionStartTime: 5000, constructionDuration: 7000, constructionTime: 99, isRented: false
     });
     same(data, {
-        id: 'building_3', type: 'water_well', gridX: 4, gridZ: 9, active: false, efficiency: 0,
+        id: 'building_3', type: 'water_well', gridX: 4, gridZ: 9, rotation: 0, active: false, efficiency: 0,
         underConstruction: true, constructionStartTime: 5000, constructionDuration: 7000, constructionTime: 99, isRented: false,
         effectsApplied: false
     });
+});
+
+test('prédio: a rotação (quartos de volta 0-3) vai e volta do save; save antigo sem o campo = 0', () => {
+    const g = load('js/systems/BuildingSystem.js');
+    const { bs, BuildingSystem } = restorer(g);
+    const meshRotations = [];
+    bs.createBuildingMesh = (x, z, type, rotation) => { meshRotations.push(rotation); return { metadata: {} }; };
+    const base = { type: 'water_well', gridZ: 3, active: true, efficiency: 1, underConstruction: false, effectsApplied: true };
+    const saves = [
+        { ...base, id: 'building_0', gridX: 1, rotation: 3 },
+        { ...base, id: 'building_1', gridX: 2, rotation: 1 },
+        { ...base, id: 'building_2', gridX: 3 }, // save antigo
+        { ...base, id: 'building_3', gridX: 4, rotation: 'lixo' },
+        { ...base, id: 'building_4', gridX: 5, rotation: -1 } // normaliza para 0-3
+    ];
+    for (const saved of saves) bs.restoreBuilding(roundTrip(saved));
+    same([...bs.buildings.values()].map(b => b.rotation), [3, 1, 0, 0, 3]);
+    same(meshRotations, [3, 1, 0, 0, 3], 'o mesh nasce já girado');
+    same([...bs.buildings.values()].map(b => roundTrip(BuildingSystem.serializeBuilding(b)).rotation), [3, 1, 0, 0, 3]);
+    same([0, 1, 2, 3, 4, 5, -2, 2.4, null, undefined].map(r => BuildingSystem.normalizeRotation(r)), [0, 1, 2, 3, 0, 1, 2, 2, 0, 0]);
 });
 
 // restoreBuilding sem Babylon: mesh, grid e obra trocados por stubs (o resto é a regra do save)
@@ -171,6 +191,33 @@ test('prédio: efeitos aplicados voltam como estavam (pronto, obra e danificado 
     const keep = b => ({ id: b.id, x: b.gridX, z: b.gridZ, active: b.active, efficiency: b.efficiency, obra: b.underConstruction,
         start: b.constructionStartTime, duration: b.constructionDuration, effects: b.effectsApplied });
     same([...again.bs.buildings.values()].map(keep), [...bs.buildings.values()].map(keep));
+});
+
+test('zona: fase e progresso voltam do save; save antigo sem o campo começa na área livre (fase 0)', () => {
+    const g = load('js/utils/GameUtils.js', 'js/data/buildings.js', 'js/data/zoneLots.js',
+        'js/systems/BuildingSystem.js', 'js/systems/building/ZoneGrowth.js');
+    const zoneType = { ...g('BUILDING_TYPES').zone_residential_light, id: 'zone_residential_light' };
+    const setup = () => {
+        const r = restorer(g);
+        r.bs.buildingTypes.set(zoneType.id, zoneType);
+        r.bs.refreshZoneLot = b => r.calls.occupied.push(['lote', b.id, b.zoneStage]);
+        return r;
+    };
+    const { bs, calls, BuildingSystem } = setup();
+    const base = { type: 'zone_residential_light', gridZ: 3, active: true, efficiency: 1, effectsApplied: true, constructionStartTime: 0, constructionDuration: 5000 };
+    bs.restoreBuilding(roundTrip({ ...base, id: 'building_0', gridX: 1, underConstruction: false, zoneStage: 2, zoneProgress: 0.25 }));
+    bs.restoreBuilding(roundTrip({ ...base, id: 'building_1', gridX: 4, underConstruction: false })); // save antigo
+    bs.restoreBuilding(roundTrip({ ...base, id: 'building_2', gridX: 7, underConstruction: true, active: false, effectsApplied: false }));
+    const [a, old, obra] = [...bs.buildings.values()];
+    same([a.zoneStage, a.zoneProgress, old.zoneStage, old.zoneProgress, obra.zoneStage], [2, 0.25, 0, 0, undefined]);
+    assert.ok(calls.occupied.some(c => c[0] === 'lote' && c[1] === 'building_0' && c[2] === 2), 'lote redesenhado na fase salva');
+    assert.strictEqual(old.zoneAppliedScale, 1, 'save antigo: totais com a receita cheia');
+    assert.strictEqual(bs.getEffectivePopulationCapacity(a), Math.round(zoneType.populationCapacity * 0.75));
+
+    // Vaivém: serializeBuilding → JSON → restoreBuilding mantém a fase
+    const again = setup();
+    for (const b of bs.buildings.values()) again.bs.restoreBuilding(roundTrip(BuildingSystem.serializeBuilding(b)));
+    same([...again.bs.buildings.values()].map(b => [b.zoneStage, b.zoneProgress]), [[2, 0.25], [0, 0], [undefined, undefined]]);
 });
 
 test('missões: status, progresso dos objetivos, prazos, escolhas e reputação voltam', () => {
@@ -263,4 +310,16 @@ test('eventos, estudos e empréstimos: voltam do save (evento ativo sem reaplica
     assert.strictEqual(loans2.loans.get('loan_1').nextPaymentDate.getTime(), 10);
     assert.strictEqual(loans2.loans.get('loan_1').paymentHistory[0].date.getTime(), 7);
     assert.strictEqual(loans2.loanCounter, 1);
+});
+
+test('save: partida sem volta (água < 5% ou poluição ≥ 90) não é continuável', () => {
+    const SaveSystem = load('js/systems/SaveSystem.js')('SaveSystem');
+    const game = (water, max, pollution) => ({ resources: { resources: { water: { current: water, max }, pollution: { current: pollution } } } });
+    assert.strictEqual(SaveSystem.isLostGame(game(500, 1000, 30)), false);
+    assert.strictEqual(SaveSystem.isLostGame(game(60, 1000, 30)), false, '6% ainda dá para salvar');
+    assert.strictEqual(SaveSystem.isLostGame(game(40, 1000, 30)), true, 'água abaixo de 5%');
+    assert.strictEqual(SaveSystem.isLostGame(game(0, 1000, 10)), true, 'água acabou');
+    assert.strictEqual(SaveSystem.isLostGame(game(800, 1000, 89)), false);
+    assert.strictEqual(SaveSystem.isLostGame(game(800, 1000, 90)), true, 'poluição quase no máximo');
+    assert.strictEqual(SaveSystem.isLostGame(GAME), false, 'save sem água/poluição no resumo não é tratado como perdido');
 });

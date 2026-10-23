@@ -91,7 +91,7 @@ test('iniciar o jogo descarta a cena da abertura e o jogo roda normal', async ({
     await page.addInitScript(p => {
         if (!localStorage.getItem('guardiao_agua_profiles')) {
             localStorage.setItem('guardiao_agua_profiles', JSON.stringify({ profiles: [p], activeId: p.id }));
-            localStorage.setItem('guardiao_agua_guides', JSON.stringify({ [p.id]: ['storage', 'zoning', 'public', 'tourism', 'industrial', 'commercial'] }));
+            localStorage.setItem('guardiao_agua_guides', JSON.stringify({ [p.id]: ['energy', 'storage', 'zoning', 'public', 'tourism', 'industrial', 'commercial'] }));
         }
     }, TEST_PROFILE);
     await page.goto('/index.html?intro');

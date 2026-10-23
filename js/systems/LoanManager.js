@@ -241,6 +241,7 @@ class LoanManager {
         
         // Atualizar estado financeiro da cidade
         this.cityFinancialHealth.totalDebt -= principalPayment;
+        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_loan_payment'); // parcela paga
         
         return { success: true, amount: paymentAmount };
     }

@@ -1,1039 +1,625 @@
 /**
  * GUARDIÃO DA ÁGUA - AUDIO MANAGER
- * Gerencia todos os sons e música do jogo
+ * Toca tudo pelas chaves de SOUND_MANIFEST (js/data/audioManifest.js).
+ *
+ * - Efeitos curtos (sfx/loop/voice/jingle): Web Audio. Os arquivos são baixados aos poucos depois do boot
+ *   (fetch → ArrayBuffer) e decodificados quando o AudioContext existe (só depois do 1º gesto: autoplay).
+ *   Sem Web Audio, HTMLAudio. Variações: sorteio sem repetir a última; `gap` evita metralhar o mesmo som.
+ * - Música e ambientes: streaming (HTMLAudio), nada de baixar ~20 MB no boot. Loop com crossfade
+ *   (StreamTrack), troca de música com crossfade, jingle abaixa a música (ducking).
+ * - Volumes separados música / efeitos / ambiente + geral + mudo, salvos em localStorage (guardiao_agua_audio).
+ * - Pausa do jogo: música baixa, ambientes calam. Aba oculta: silêncio total.
+ * O diretor (que música/ambiente toca em cada contexto e os ganchos de eventos) está em js/utils/audio/SoundDirector.js.
  */
+
+/** Uma faixa em streaming (música ou ambiente) com fade e loop por crossfade entre dois <audio>. */
+class StreamTrack {
+    constructor(manager, key, entry, category) {
+        this.manager = manager;
+        this.key = key;
+        this.entry = entry;
+        this.category = category; // 'music' | 'ambient'
+        this.files = entry.files;
+        this.loop = entry.loop !== false;
+        this.index = Math.floor(Math.random() * this.files.length);
+        this.level = 1; // multiplicador pedido (ex.: intensidade da chuva)
+        this.voices = []; // { el, fade, target, rate }
+        this.stopped = false;
+        this.onEnded = null;
+    }
+
+    start(fadeMs = 1500) {
+        this.spawn(this.files[this.index], fadeMs);
+    }
+
+    spawn(file, fadeMs) {
+        const el = new Audio();
+        el.preload = 'auto';
+        el.src = file;
+        const voice = { el, fade: fadeMs > 0 ? 0 : 1, target: 1, rate: fadeMs > 0 ? 1000 / fadeMs : Infinity, next: false };
+        el.addEventListener('ended', () => this.onVoiceEnded(voice));
+        el.addEventListener('error', () => {
+            console.warn(`⚠️ Áudio não carregou: ${file}`);
+            this.dropVoice(voice);
+        });
+        this.voices.push(voice);
+        this.apply(voice);
+        this.manager.playElement(el);
+        return voice;
+    }
+
+    onVoiceEnded(voice) {
+        this.dropVoice(voice);
+        if (this.stopped) return;
+        if (!this.voices.length) {
+            if (this.loop) this.start(0);
+            else this.onEnded?.();
+        }
+    }
+
+    dropVoice(voice) {
+        const i = this.voices.indexOf(voice);
+        if (i >= 0) this.voices.splice(i, 1);
+        StreamTrack.release(voice.el);
+    }
+
+    static release(el) {
+        try {
+            el.pause();
+            el.removeAttribute('src');
+            el.load();
+        } catch (e) { /* elemento já liberado */ }
+    }
+
+    stop(fadeMs = 1500) {
+        this.stopped = true;
+        this.voices.forEach(v => {
+            v.target = 0;
+            v.rate = fadeMs > 0 ? 1000 / fadeMs : Infinity;
+        });
+    }
+
+    get finished() {
+        return this.stopped && this.voices.length === 0;
+    }
+
+    /** A cada tick: fades, crossfade do loop e volume. */
+    update(dt) {
+        const xf = StreamTrack.CROSSFADE_S;
+        for (const v of [...this.voices]) {
+            if (v.fade !== v.target) {
+                const step = v.rate === Infinity ? 1 : v.rate * dt;
+                v.fade = v.fade < v.target ? Math.min(v.target, v.fade + step) : Math.max(v.target, v.fade - step);
+            }
+            if (v.target === 0 && v.fade <= 0) {
+                this.dropVoice(v);
+                continue;
+            }
+            // Perto do fim: a próxima volta (ou a próxima faixa da playlist) entra por baixo
+            const d = v.el.duration;
+            if (this.loop && !this.stopped && !v.next && d > xf * 3 && d - v.el.currentTime < xf) {
+                v.next = true;
+                v.target = 0;
+                v.rate = 1 / xf;
+                if (this.files.length > 1) this.index = (this.index + 1) % this.files.length;
+                this.spawn(this.files[this.index], xf * 1000);
+            }
+            this.apply(v);
+        }
+    }
+
+    apply(voice) {
+        const vol = this.manager.trackVolume(this) * voice.fade;
+        voice.el.volume = Math.max(0, Math.min(1, vol));
+    }
+
+    pauseAll() { this.voices.forEach(v => v.el.pause()); }
+    resumeAll() { this.voices.forEach(v => this.manager.playElement(v.el)); }
+
+    dispose() {
+        this.stopped = true;
+        this.voices.forEach(v => StreamTrack.release(v.el));
+        this.voices = [];
+    }
+}
+
+StreamTrack.CROSSFADE_S = 2; // segundos de crossfade na emenda do loop
 
 class AudioManager {
     constructor() {
         log('🔊 Inicializando AudioManager...');
-        
-        // Estado do áudio
+        this.manifest = typeof SOUND_MANIFEST !== 'undefined' ? SOUND_MANIFEST : {};
+        this.aliases = typeof SOUND_ALIASES !== 'undefined' ? SOUND_ALIASES : {};
+
+        // Volumes (0-1) e mudo
         this.enabled = true;
-        this.musicVolume = 0.7;
-        this.sfxVolume = 0.8;
+        this.muted = false;
         this.masterVolume = 1.0;
-        
-        // Áudios carregados
-        this.sounds = new Map();
-        this.music = new Map();
-        
-        // Controle de reprodução
-        this.currentMusic = null;
-        this.musicFadeInterval = null;
-        
-        // Pool de sons para evitar sobreposição
-        this.soundPools = new Map();
-        this.maxPoolSize = 5;
-        
-        // Configurações
-        this.fadeTime = 1000; // 1 segundo
-        
-        this.initializeAudio();
-    }
-    
-    // ===== INICIALIZAÇÃO =====
-    initializeAudio() {
-        // Verificar suporte de áudio
-        if (!window.Audio) {
+        this.musicVolume = 0.6;
+        this.sfxVolume = 0.8;
+        this.ambientVolume = 0.6;
+
+        // Web Audio (criado no 1º gesto) e arquivos curtos
+        this.audioContext = null;
+        this.rawFiles = new Map();   // file → Promise<ArrayBuffer>
+        this.buffers = new Map();    // file → AudioBuffer
+        this.decoding = new Map();   // file → Promise<AudioBuffer>
+        this.lastVariant = new Map(); // key → índice tocado por último
+        this.lastPlayAt = new Map();  // key → performance.now()
+        this.lastSfxAt = -Infinity;
+        this.activeLoops = new Map(); // key → { source, gain }
+
+        // Música / ambiente
+        this.musicTrack = null;
+        this.currentMusicKey = null;
+        this.musicMultiplier = 1;
+        this.fadingTracks = new Set();
+        this.ambientTracks = new Map(); // key → StreamTrack
+        this.duck = 1;
+        this.duckUntil = 0;
+        this.pendingElements = new Set(); // <audio> que o autoplay barrou
+
+        this.loadSettings();
+        this.initialized = !!window.Audio;
+        if (!this.initialized) {
             console.warn('⚠️ Áudio não suportado neste navegador');
             this.enabled = false;
             return;
         }
 
-        // Carregar configurações salvas
-        this.loadSettings();
-
-        // Carregar sons do AssetLoader se disponível
-        this.loadFromAssetLoader();
-
-        // Criar sons procedurais se não houver assets
-        this.createProceduralSounds();
-
+        this.lastTick = performance.now();
+        this.ticker = setInterval(() => this.tick(), 50);
+        document.addEventListener('visibilitychange', () => this.onVisibility());
+        this._setupAutoplayResume();
+        // Baixa os efeitos curtos aos poucos, depois que a tela de carregamento já andou
+        setTimeout(() => this.preloadEffects(), 1500);
+        this.initDirector?.();
         log('✅ AudioManager inicializado');
     }
 
-    // ===== CARREGAMENTO DE ASSETS =====
-    loadFromAssetLoader() {
-        if (typeof AssetLoader === 'undefined' || !AssetLoader.instance) {
-            log('📦 AssetLoader não disponível, carregando sons RSE/SoundFX');
-            this.loadRSESoundFX();
+    // ===== MANIFESTO =====
+    resolve(key) {
+        return this.aliases[key] || key;
+    }
+
+    getEntry(key) {
+        return this.manifest[this.resolve(key)] || null;
+    }
+
+    /** Sorteia uma variação sem repetir a última. */
+    pickFile(key, files) {
+        if (files.length === 1) return files[0];
+        const last = this.lastVariant.get(key);
+        let i = Math.floor(Math.random() * files.length);
+        if (i === last) i = (i + 1 + Math.floor(Math.random() * (files.length - 1))) % files.length;
+        this.lastVariant.set(key, i);
+        return files[i];
+    }
+
+    // ===== CARREGAMENTO DOS CURTOS =====
+    async preloadEffects() {
+        const files = [];
+        Object.values(this.manifest).forEach(entry => {
+            if (entry.kind !== 'music' && entry.kind !== 'ambient') files.push(...entry.files);
+        });
+        // 4 de cada vez: não disputa banda com o resto do boot
+        let next = 0;
+        const worker = async () => {
+            while (next < files.length) {
+                const file = files[next++];
+                await this.fetchFile(file).catch(() => {});
+            }
+        };
+        await Promise.all([worker(), worker(), worker(), worker()]);
+        if (this.audioContext) files.forEach(f => this.decodeFile(f));
+    }
+
+    fetchFile(file) {
+        if (!this.rawFiles.has(file)) {
+            const p = fetch(file).then(r => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.arrayBuffer();
+            });
+            p.catch(err => console.warn(`⚠️ Som não carregou: ${file} (${err.message})`));
+            this.rawFiles.set(file, p);
+        }
+        return this.rawFiles.get(file);
+    }
+
+    decodeFile(file) {
+        if (!this.audioContext) return null;
+        if (this.buffers.has(file)) return Promise.resolve(this.buffers.get(file));
+        if (!this.decoding.has(file)) {
+            const p = this.fetchFile(file)
+                // decodeAudioData consome o ArrayBuffer: decodifica uma cópia
+                .then(data => this.audioContext.decodeAudioData(data.slice(0)))
+                .then(buffer => {
+                    this.buffers.set(file, buffer);
+                    return buffer;
+                })
+                .catch(err => {
+                    console.warn(`⚠️ Som não decodificou: ${file}`, err?.message || err);
+                    return null;
+                });
+            this.decoding.set(file, p);
+        }
+        return this.decoding.get(file);
+    }
+
+    ensureContext() {
+        if (this.audioContext || !(window.AudioContext || window.webkitAudioContext)) return this.audioContext;
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            // O que já foi baixado decodifica agora
+            this.rawFiles.forEach((p, file) => this.decodeFile(file));
+        } catch (error) {
+            console.warn('⚠️ Web Audio indisponível, usando HTMLAudio', error);
+        }
+        return this.audioContext;
+    }
+
+    // ===== VOLUME EFETIVO =====
+    categoryVolume(kind) {
+        if (!this.enabled || this.muted || document.hidden) return 0;
+        if (kind === 'music' || kind === 'jingle') return this.musicVolume * this.masterVolume;
+        if (kind === 'ambient') return this.ambientVolume * this.masterVolume;
+        return this.sfxVolume * this.masterVolume;
+    }
+
+    /** Música: 0-1 · pausa do jogo: música a 35 %, ambientes calados. */
+    gamePauseFactor(category) {
+        const gm = typeof gameManager !== 'undefined' ? gameManager : null;
+        const paused = gm && (gm.gameState === 'paused' || gm.gameState === 'gameover');
+        if (!paused) return 1;
+        if (category === 'ambient') return 0;
+        return gm.gameState === 'gameover' ? 1 : 0.35;
+    }
+
+    trackVolume(track) {
+        const base = (track.entry.volume ?? 1) * track.level;
+        if (track.category === 'music') {
+            return base * this.musicMultiplier * this.categoryVolume('music') * this.duck * this.gamePauseFactor('music');
+        }
+        return base * this.categoryVolume('ambient') * this.gamePauseFactor('ambient');
+    }
+
+    // ===== EFEITOS =====
+    /** Pode tocar efeito agora? Durante a abertura do menu só a música toca. */
+    canPlayEffects() {
+        if (!this.enabled || this.muted || document.hidden) return false;
+        if (typeof MenuIntro !== 'undefined' && MenuIntro.state === 'playing') return false;
+        return true;
+    }
+
+    /**
+     * @param {string} key chave do manifesto (ou alias antigo)
+     * @param {number} volume 0-1 relativo
+     * @param {{ifQuiet?: number, pan?: number, rate?: number}} opts ifQuiet: não toca se outro efeito tocou há menos de N ms
+     */
+    playSound(key, volume = 1.0, opts = {}) {
+        const k = this.resolve(key);
+        const entry = this.manifest[k];
+        if (!entry) {
+            log(`🔇 Som ${key} não existe no manifesto`);
+            return false;
+        }
+        if (!this.canPlayEffects()) return false;
+        const now = performance.now();
+        if (entry.gap && now - (this.lastPlayAt.get(k) ?? -Infinity) < entry.gap) return false;
+        if (opts.ifQuiet && now - this.lastSfxAt < opts.ifQuiet) return false;
+        this.lastPlayAt.set(k, now);
+        this.lastSfxAt = now;
+        const file = this.pickFile(k, entry.files);
+        const gain = (volume ?? 1) * (entry.volume ?? 1) * this.categoryVolume(entry.kind);
+        if (gain <= 0) return false;
+        return this.playFile(file, gain, opts);
+    }
+
+    playFile(file, gain, opts = {}) {
+        const ctx = this.audioContext;
+        const buffer = this.buffers.get(file);
+        if (ctx && buffer && ctx.state !== 'closed') {
+            this.startBuffer(buffer, gain, opts);
+            return true;
+        }
+        if (ctx) {
+            // Ainda decodificando: toca quando ficar pronto, se for logo (senão o som chegaria atrasado)
+            const asked = performance.now();
+            this.decodeFile(file)?.then(buf => {
+                if (buf && performance.now() - asked < 400) this.startBuffer(buf, gain, opts);
+            });
+            return true;
+        }
+        // Antes do 1º gesto o navegador não deixa tocar: nem tenta (cada tentativa seria um download)
+        if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return false;
+        // Sem Web Audio: HTMLAudio (o autoplay ainda pode recusar, sem erro)
+        const el = new Audio(file);
+        el.volume = Math.max(0, Math.min(1, gain));
+        el.play().catch(() => {});
+        return true;
+    }
+
+    startBuffer(buffer, gain, { pan = 0, rate = 1, loop = false } = {}) {
+        const ctx = this.audioContext;
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.loop = loop;
+        source.playbackRate.value = rate;
+        const g = ctx.createGain();
+        g.gain.value = Math.max(0, Math.min(1.5, gain));
+        let node = source.connect(g);
+        if (pan && ctx.createStereoPanner) {
+            const p = ctx.createStereoPanner();
+            p.pan.value = Math.max(-1, Math.min(1, pan));
+            node = node.connect(p);
+        }
+        node.connect(ctx.destination);
+        source.start();
+        return { source, gain: g };
+    }
+
+    /** Efeito curto em loop (ex.: rolo compactador ao arrastar rua). stopLoop para com fade curto. */
+    playLoop(key, volume = 1) {
+        const k = this.resolve(key);
+        const entry = this.manifest[k];
+        if (!entry || this.activeLoops.has(k) || !this.canPlayEffects()) return;
+        const ctx = this.audioContext;
+        const buffer = ctx && this.buffers.get(entry.files[0]);
+        if (!buffer) {
+            if (ctx) this.decodeFile(entry.files[0]);
             return;
         }
-
-        // Lista de sons para carregar (RSE SoundFX)
-        const soundKeys = [
-            // Background Music
-            'bgm_menu', 'bgm_gameplay',
-
-            // RSE SoundFX Effects
-            'sfx_click1', 'sfx_beep1', 'sfx_bling1', 'sfx_error1', 'sfx_chime1',
-            'sfx_splash1', 'sfx_whoosh1', 'sfx_fanfare1', 'sfx_alarm1',
-
-            // Legacy Sound Effects
-            'sfx_pickup', 'sfx_item', 'sfx_walk', 'sfx_watering', 'sfx_dig', 'sfx_axe'
-        ];
-
-        soundKeys.forEach(key => {
-            const asset = AssetLoader.getAsset(key);
-            if (asset && asset.audio) {
-                if (key.startsWith('bgm_')) {
-                    this.music.set(key, asset);
-                    log(`🎵 Música carregada: ${key}`);
-                } else {
-                    this.sounds.set(key, asset);
-                    log(`🔊 Som carregado: ${key}`);
-                }
-            } else {
-                log(`⚠️ Asset de áudio não encontrado: ${key}, usando fallback`);
-            }
-        });
-
-        // Load RSE SoundFX as fallback
-        this.loadRSESoundFX();
+        const handle = this.startBuffer(buffer, volume * (entry.volume ?? 1) * this.categoryVolume(entry.kind), { loop: true });
+        this.activeLoops.set(k, handle);
     }
 
-    // ===== SONS PROCEDURAIS =====
-    createProceduralSounds() {
-        log('🎵 Criando sons procedurais...');
-
-        // Sons básicos usando Web Audio API (fallbacks para sons não encontrados)
-        this.createBeepSound('sfx_click', 800, 0.1);
-        this.createBeepSound('sfx_build', 600, 0.2);
-        this.createBeepSound('sfx_error', 300, 0.3);
-        this.createBeepSound('sfx_success', 1000, 0.2);
-
-        // ===== SONS ESPECÍFICOS PARA CONSTRUÇÃO =====
-        this.createConstructionSounds();
-
-        // Som de água (ruído branco filtrado)
-        this.createWaterSound('sfx_water');
-
-        // Sons ambientes para ciclo dia/noite
-        this.createAmbientSounds();
-
-        // Criar mapeamentos para compatibilidade com código existente
-        this.createSoundMappings();
-    }
-
-    createSoundMappings() {
-        // Mapear sons antigos para novos arquivos existentes
-        const soundMappings = {
-            'sfx_click': 'sfx_pickup',    // Usar pickup como click
-            'sfx_build': 'sfx_axe',       // Usar axe como build
-            'sfx_water': 'sfx_watering'   // Usar watering como water
-        };
-
-        // Criar aliases para manter compatibilidade
-        Object.entries(soundMappings).forEach(([oldKey, newKey]) => {
-            const newSound = this.sounds.get(newKey);
-            if (newSound && !this.sounds.has(oldKey)) {
-                this.sounds.set(oldKey, newSound);
-                log(`🔗 Mapeamento criado: ${oldKey} -> ${newKey}`);
-            }
-        });
-    }
-    
-    createBeepSound(key, frequency, duration) {
-        if (!window.AudioContext && !window.webkitAudioContext) return;
-        
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
-        const playSound = () => {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-            oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-            gainNode.gain.linearRampToValueAtTime(this.sfxVolume * this.masterVolume * 0.3, audioContext.currentTime + 0.01);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + duration);
-        };
-        
-        this.sounds.set(key, {
-            play: playSound,
-            setVolume: () => {}, // Implementado no playSound
-            pause: () => {},
-            audio: null
-        });
-    }
-    
-    createWaterSound(key) {
-        if (!window.AudioContext && !window.webkitAudioContext) return;
-        
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
-        const playSound = () => {
-            const bufferSize = audioContext.sampleRate * 2; // 2 segundos
-            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-            const data = buffer.getChannelData(0);
-            
-            // Gerar ruído branco
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 2 - 1;
-            }
-            
-            const source = audioContext.createBufferSource();
-            const filter = audioContext.createBiquadFilter();
-            const gainNode = audioContext.createGain();
-            
-            source.buffer = buffer;
-            source.loop = true;
-            
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(800, audioContext.currentTime);
-            
-            gainNode.gain.setValueAtTime(this.sfxVolume * this.masterVolume * 0.2, audioContext.currentTime);
-            
-            source.connect(filter);
-            filter.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            source.start();
-            
-            // Parar após 3 segundos
-            setTimeout(() => {
-                source.stop();
-            }, 3000);
-        };
-        
-        this.sounds.set(key, {
-            play: playSound,
-            setVolume: () => {},
-            pause: () => {},
-            audio: null
-        });
-    }
-
-    // ===== SONS AMBIENTES =====
-    createAmbientSounds() {
-        log('🌅 Criando sons ambientes para ciclo dia/noite...');
-
-        // Tentar carregar sons de arquivo primeiro
-        this.loadEnvironmentSounds();
-
-        // Criar sons procedurais como fallback
-        this.createProceduralAmbientSounds();
-    }
-
-    loadEnvironmentSounds() {
-        // Verificar se os arquivos de som existem
-        const environmentSounds = [
-            'morning-sound',
-            'night-sound'
-        ];
-
-        environmentSounds.forEach(soundName => {
-            // Tentar carregar do AssetLoader se disponível
-            if (typeof AssetLoader !== 'undefined' && AssetLoader.instance) {
-                const asset = AssetLoader.getAsset(`sfx_${soundName}`);
-                if (asset && asset.audio) {
-                    this.sounds.set(`sfx_${soundName}`, asset);
-                    log(`🌅 Som ambiente carregado: ${soundName}`);
-                    return;
-                }
-            }
-
-            // Tentar carregar diretamente
-            this.loadEnvironmentSoundFile(soundName);
-        });
-    }
-
-    loadSoundFile(key, filepath, onError = null) {
+    stopLoop(key) {
+        const k = this.resolve(key);
+        const handle = this.activeLoops.get(k);
+        if (!handle) return;
+        this.activeLoops.delete(k);
+        const ctx = this.audioContext;
         try {
-            const audio = new Audio(filepath);
-            audio.preload = 'auto';
-
-            audio.addEventListener('canplaythrough', () => {
-                this.sounds.set(key, {
-                    play: () => {
-                        audio.currentTime = 0;
-                        audio.volume = this.sfxVolume * this.masterVolume;
-                        audio.play().catch(error => {
-                            console.warn(`⚠️ Erro ao reproduzir ${key}:`, error);
-                        });
-                    },
-                    setVolume: (volume) => {
-                        audio.volume = volume * this.sfxVolume * this.masterVolume;
-                    },
-                    pause: () => {
-                        audio.pause();
-                        audio.currentTime = 0;
-                    },
-                    audio: audio
-                });
-                log(`🔊 Som carregado: ${key}`);
-            });
-
-            audio.addEventListener('error', () => {
-                log(`⚠️ Arquivo ${filepath} não encontrado`);
-                if (onError) onError();
-            });
-
-        } catch (error) {
-            log(`⚠️ Erro ao carregar ${key}:`, error);
-            if (onError) onError();
-        }
+            handle.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
+            handle.source.stop(ctx.currentTime + 0.3);
+        } catch (e) { /* já parou */ }
     }
 
-    loadEnvironmentSoundFile(soundName) {
-        this.loadSoundFile(
-            `sfx_${soundName}`,
-            `Sounds/SFX/Environment/${soundName}.mp3`
-        );
+    stopAllLoops() {
+        [...this.activeLoops.keys()].forEach(k => this.stopLoop(k));
     }
 
-    // ===== RSE SOUNDFX LOADING =====
-    loadRSESoundFX() {
-        log('🎵 Carregando RSE SoundFX...');
-
-        // Load individual sound files
-        const rseSounds = [
-            { key: 'sfx_click1', file: 'click1.mp3', category: 'ui' },
-            { key: 'sfx_beep1', file: 'beep1.mp3', category: 'ui' },
-            { key: 'sfx_bling1', file: 'bling1.mp3', category: 'success' },
-            { key: 'sfx_error1', file: 'error1.mp3', category: 'error' },
-            { key: 'sfx_chime1', file: 'chime1.mp3', category: 'notification' },
-            { key: 'sfx_splash1', file: 'splash1.mp3', category: 'water' }
-        ];
-
-        rseSounds.forEach(soundInfo => {
-            this.loadRSESoundFile(soundInfo.key, soundInfo.file, soundInfo.category);
-        });
-
-        // Create sound mappings for compatibility
-        this.createRSESoundMappings();
+    // ===== JINGLES =====
+    /** Jingle curto por cima da música: ela abaixa enquanto ele toca (duck = false para não abaixar). */
+    playJingle(key, { duck = true, volume = 1 } = {}) {
+        const k = this.resolve(key);
+        const entry = this.manifest[k];
+        if (!entry || !this.enabled || this.muted || document.hidden) return false;
+        if (typeof MenuIntro !== 'undefined' && MenuIntro.state === 'playing') return false;
+        const file = entry.files[0];
+        const gain = volume * (entry.volume ?? 1) * this.categoryVolume('jingle');
+        const seconds = this.buffers.get(file)?.duration || 3;
+        if (duck) this.duckUntil = performance.now() + seconds * 1000 + 300;
+        this.lastSfxAt = performance.now();
+        return this.playFile(file, gain);
     }
 
-    loadRSESoundFile(key, filename, category) {
-        this.loadSoundFile(
-            key,
-            `Sounds/SFX/RSE/${filename}`,
-            () => this.createProceduralSound(key, category)
-        );
-    }
-
-    createRSESoundMappings() {
-        // Map old Archive.org sound names to new RSE sounds
-        const soundMappings = {
-            // UI Sounds
-            'sfx_ui_click': 'sfx_click1',
-            'sfx_ui_hover': 'sfx_beep1',
-            'sfx_ui_select': 'sfx_bling1',
-            'sfx_ui_error': 'sfx_error1',
-            'sfx_ui_success': 'sfx_chime1',
-
-            // Construction Sounds
-            'sfx_construction_start': 'sfx_click1',
-            'sfx_construction_progress': 'sfx_beep1',
-            'sfx_construction_complete': 'sfx_chime1',
-            'sfx_building_place': 'sfx_bling1',
-
-            // Environmental Sounds
-            'sfx_water_flow': 'sfx_splash1',
-            'sfx_water_splash': 'sfx_splash1',
-
-            // Alert/Notification Sounds
-            'sfx_mission_start': 'sfx_chime1',
-            'sfx_mission_complete': 'sfx_bling1',
-            'sfx_warning_alert': 'sfx_error1',
-            'sfx_resource_low': 'sfx_error1',
-
-            // Legacy mappings
-            'sfx_click': 'sfx_click1',
-            'sfx_build': 'sfx_bling1',
-            'sfx_water': 'sfx_splash1',
-            'sfx_success': 'sfx_chime1',
-            'sfx_error': 'sfx_error1'
-        };
-
-        // Create aliases for compatibility
-        Object.entries(soundMappings).forEach(([oldKey, newKey]) => {
-            const newSound = this.sounds.get(newKey);
-            if (newSound && !this.sounds.has(oldKey)) {
-                this.sounds.set(oldKey, newSound);
-                log(`🔗 RSE Mapeamento criado: ${oldKey} -> ${newKey}`);
-            }
-        });
-    }
-
-    createProceduralSound(key, category) {
-        // Create procedural fallback sounds based on category
-        const frequencies = {
-            'ui': 800,
-            'success': 1200,
-            'error': 400,
-            'notification': 1000,
-            'water': 600
-        };
-
-        const frequency = frequencies[category] || 800;
-        this.createBeepSound(key, frequency, 0.2);
-    }
-
-    createProceduralAmbientSounds() {
-        // Criar som de manhã (pássaros cantando)
-        this.createMorningSoundProcedural();
-
-        // Criar som de noite (grilos e vento)
-        this.createNightSoundProcedural();
-    }
-
-    createMorningSoundProcedural() {
-        if (!window.AudioContext && !window.webkitAudioContext) return;
-
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-        const playMorningSound = () => {
-            // Simular pássaros com tons aleatórios
-            const birdFrequencies = [800, 1200, 1600, 2000];
-
-            birdFrequencies.forEach((freq, index) => {
-                setTimeout(() => {
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-
-                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
-                    oscillator.type = 'sine';
-
-                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-                    gainNode.gain.linearRampToValueAtTime(this.sfxVolume * this.masterVolume * 0.05, audioContext.currentTime + 0.1);
-                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
-
-                    oscillator.start(audioContext.currentTime);
-                    oscillator.stop(audioContext.currentTime + 0.5);
-                }, index * 200);
-            });
-        };
-
-        this.sounds.set('sfx_morning-sound', {
-            play: playMorningSound,
-            setVolume: () => {},
-            pause: () => {},
-            audio: null
-        });
-
-        log('🌅 Som procedural de manhã criado');
-    }
-
-    createNightSoundProcedural() {
-        if (!window.AudioContext && !window.webkitAudioContext) return;
-
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-        const playNightSound = () => {
-            // Simular grilos com ruído filtrado
-            const duration = 2.0;
-
-            // Criar ruído branco para simular grilos
-            const bufferSize = audioContext.sampleRate * duration;
-            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-            const data = buffer.getChannelData(0);
-
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = (Math.random() * 2 - 1) * 0.1;
-            }
-
-            const source = audioContext.createBufferSource();
-            const filter = audioContext.createBiquadFilter();
-            const gainNode = audioContext.createGain();
-
-            source.buffer = buffer;
-            filter.type = 'bandpass';
-            filter.frequency.setValueAtTime(3000, audioContext.currentTime);
-            filter.Q.setValueAtTime(10, audioContext.currentTime);
-
-            source.connect(filter);
-            filter.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-
-            gainNode.gain.setValueAtTime(this.sfxVolume * this.masterVolume * 0.025, audioContext.currentTime);
-
-            source.start(audioContext.currentTime);
-            source.stop(audioContext.currentTime + duration);
-        };
-
-        this.sounds.set('sfx_night-sound', {
-            play: playNightSound,
-            setVolume: () => {},
-            pause: () => {},
-            audio: null
-        });
-
-        log('🌙 Som procedural de noite criado');
-    }
-
-    // ===== SONS ESPECÍFICOS PARA CONSTRUÇÃO =====
-    createConstructionSounds() {
-        log('🏗️ Criando sons de construção procedurais...');
-
-        // Som de colocação de edifício (martelo + clique)
-        this.createConstructionPlacementSound('sfx_build_place');
-
-        // Som de progresso de construção (marteladas rítmicas)
-        this.createConstructionProgressSound('sfx_build_progress');
-
-        // Som de conclusão (fanfarra simples)
-        this.createConstructionCompletionSound('sfx_build_complete');
-
-        // Som de erro de construção (buzzer)
-        this.createConstructionErrorSound('sfx_build_error');
-
-        log('✅ Sons de construção procedurais criados');
-    }
-
-    createConstructionPlacementSound(key) {
-        if (!window.AudioContext && !window.webkitAudioContext) return;
-
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-            const createPlacementSound = () => {
-                const duration = 0.3;
-                const sampleRate = audioContext.sampleRate;
-                const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
-                const data = buffer.getChannelData(0);
-
-                for (let i = 0; i < data.length; i++) {
-                    const t = i / sampleRate;
-
-                    // Combinação de frequências para simular martelo
-                    const hammer = Math.sin(2 * Math.PI * 200 * t) * Math.exp(-t * 8);
-                    const click = Math.sin(2 * Math.PI * 800 * t) * Math.exp(-t * 15);
-                    const thud = Math.sin(2 * Math.PI * 80 * t) * Math.exp(-t * 5);
-
-                    data[i] = (hammer * 0.4 + click * 0.3 + thud * 0.3) * 0.5;
-                }
-
-                return buffer;
-            };
-
-            this.sounds.set(key, {
-                play: () => {
-                    try {
-                        const source = audioContext.createBufferSource();
-                        const gainNode = audioContext.createGain();
-
-                        source.buffer = createPlacementSound();
-                        gainNode.gain.value = this.sfxVolume * this.masterVolume * 0.6;
-
-                        source.connect(gainNode);
-                        gainNode.connect(audioContext.destination);
-                        source.start();
-                    } catch (error) {
-                        console.warn(`⚠️ Erro ao reproduzir ${key}:`, error);
-                    }
-                },
-                setVolume: (volume) => { /* Implementado no play */ }
-            });
-
-        } catch (error) {
-            console.warn(`⚠️ Erro ao criar som de colocação ${key}:`, error);
-        }
-    }
-
-    createConstructionProgressSound(key) {
-        if (!window.AudioContext && !window.webkitAudioContext) return;
-
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-            const createProgressSound = () => {
-                const duration = 0.4;
-                const sampleRate = audioContext.sampleRate;
-                const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
-                const data = buffer.getChannelData(0);
-
-                for (let i = 0; i < data.length; i++) {
-                    const t = i / sampleRate;
-
-                    // Som de martelada com eco
-                    const beat1 = Math.sin(2 * Math.PI * 150 * t) * Math.exp(-t * 6);
-                    const beat2 = Math.sin(2 * Math.PI * 300 * t) * Math.exp(-t * 8);
-                    const echo = Math.sin(2 * Math.PI * 100 * t) * Math.exp(-t * 3) * 0.3;
-
-                    // Adicionar ruído para textura
-                    const noise = (Math.random() - 0.5) * 0.1 * Math.exp(-t * 10);
-
-                    data[i] = (beat1 * 0.4 + beat2 * 0.3 + echo + noise) * 0.4;
-                }
-
-                return buffer;
-            };
-
-            this.sounds.set(key, {
-                play: () => {
-                    try {
-                        const source = audioContext.createBufferSource();
-                        const gainNode = audioContext.createGain();
-
-                        source.buffer = createProgressSound();
-                        gainNode.gain.value = this.sfxVolume * this.masterVolume * 0.4;
-
-                        source.connect(gainNode);
-                        gainNode.connect(audioContext.destination);
-                        source.start();
-                    } catch (error) {
-                        console.warn(`⚠️ Erro ao reproduzir ${key}:`, error);
-                    }
-                },
-                setVolume: (volume) => { /* Implementado no play */ }
-            });
-
-        } catch (error) {
-            console.warn(`⚠️ Erro ao criar som de progresso ${key}:`, error);
-        }
-    }
-
-    createConstructionCompletionSound(key) {
-        if (!window.AudioContext && !window.webkitAudioContext) return;
-
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-            const createCompletionSound = () => {
-                const duration = 1.0;
-                const sampleRate = audioContext.sampleRate;
-                const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
-                const data = buffer.getChannelData(0);
-
-                for (let i = 0; i < data.length; i++) {
-                    const t = i / sampleRate;
-
-                    // Fanfarra ascendente
-                    const note1 = Math.sin(2 * Math.PI * 440 * t) * Math.exp(-t * 2); // A
-                    const note2 = Math.sin(2 * Math.PI * 554 * t) * Math.exp(-t * 1.5); // C#
-                    const note3 = Math.sin(2 * Math.PI * 659 * t) * Math.exp(-t * 1); // E
-
-                    // Envelope para criar efeito de fanfarra
-                    const envelope = Math.sin(Math.PI * t / duration) * Math.exp(-t * 0.8);
-
-                    data[i] = (note1 * 0.3 + note2 * 0.3 + note3 * 0.4) * envelope * 0.6;
-                }
-
-                return buffer;
-            };
-
-            this.sounds.set(key, {
-                play: () => {
-                    try {
-                        const source = audioContext.createBufferSource();
-                        const gainNode = audioContext.createGain();
-
-                        source.buffer = createCompletionSound();
-                        gainNode.gain.value = this.sfxVolume * this.masterVolume * 0.7;
-
-                        source.connect(gainNode);
-                        gainNode.connect(audioContext.destination);
-                        source.start();
-                    } catch (error) {
-                        console.warn(`⚠️ Erro ao reproduzir ${key}:`, error);
-                    }
-                },
-                setVolume: (volume) => { /* Implementado no play */ }
-            });
-
-        } catch (error) {
-            console.warn(`⚠️ Erro ao criar som de conclusão ${key}:`, error);
-        }
-    }
-
-    createConstructionErrorSound(key) {
-        if (!window.AudioContext && !window.webkitAudioContext) return;
-
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-            const createErrorSound = () => {
-                const duration = 0.5;
-                const sampleRate = audioContext.sampleRate;
-                const buffer = audioContext.createBuffer(1, duration * sampleRate, sampleRate);
-                const data = buffer.getChannelData(0);
-
-                for (let i = 0; i < data.length; i++) {
-                    const t = i / sampleRate;
-
-                    // Som de buzzer descendente
-                    const freq = 400 - (t * 200); // De 400Hz para 200Hz
-                    const buzz = Math.sin(2 * Math.PI * freq * t);
-                    const envelope = Math.exp(-t * 3);
-
-                    data[i] = buzz * envelope * 0.4;
-                }
-
-                return buffer;
-            };
-
-            this.sounds.set(key, {
-                play: () => {
-                    try {
-                        const source = audioContext.createBufferSource();
-                        const gainNode = audioContext.createGain();
-
-                        source.buffer = createErrorSound();
-                        gainNode.gain.value = this.sfxVolume * this.masterVolume * 0.5;
-
-                        source.connect(gainNode);
-                        gainNode.connect(audioContext.destination);
-                        source.start();
-                    } catch (error) {
-                        console.warn(`⚠️ Erro ao reproduzir ${key}:`, error);
-                    }
-                },
-                setVolume: (volume) => { /* Implementado no play */ }
-            });
-
-        } catch (error) {
-            console.warn(`⚠️ Erro ao criar som de erro ${key}:`, error);
-        }
-    }
-
-    // ===== REPRODUÇÃO DE SONS =====
-    playSound(key, volume = 1.0) {
-        if (!this.enabled) return;
-
-        // Tentar usar pool primeiro
-        if (this.soundPools.has(key)) {
-            return this.playSoundFromPool(key, volume);
-        }
-
-        // Usar som direto
-        const sound = this.sounds.get(key);
-        if (sound) {
-            try {
-                sound.setVolume(this.sfxVolume * this.masterVolume * volume);
-                sound.play();
-
-            } catch (error) {
-                console.warn(`⚠️ Erro ao reproduzir som ${key}:`, error);
-            }
-        } else {
-            // Som não encontrado - tentar fallback silencioso
-            log(`🔇 Som ${key} não disponível (usando fallback silencioso)`);
-        }
-    }
-    
-    playSoundFromPool(key, volume = 1.0) {
-        const pool = this.soundPools.get(key);
-        if (!pool) return;
-        
-        // Encontrar áudio disponível no pool
-        const availableAudio = pool.find(item => !item.inUse);
-        
-        if (availableAudio) {
-            availableAudio.inUse = true;
-            availableAudio.audio.volume = this.sfxVolume * this.masterVolume * volume;
-            
-            const playPromise = availableAudio.audio.play();
-            
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    // Som reproduzido com sucesso
-                }).catch(error => {
-                    console.warn(`⚠️ Erro ao reproduzir som do pool ${key}:`, error);
-                });
-            }
-            
-            // Marcar como disponível quando terminar
-            availableAudio.audio.onended = () => {
-                availableAudio.inUse = false;
-            };
-            
-            return availableAudio.audio;
-        }
-    }
-    
     // ===== MÚSICA =====
+    /**
+     * Troca a música com crossfade. Mesma chave já tocando = nada muda (só o multiplicador).
+     * Assinatura antiga mantida: playMusic(key, fadeIn = true, volumeMultiplier = 1).
+     */
     playMusic(key, fadeIn = true, volumeMultiplier = 1.0) {
-        if (!this.enabled) return;
-
-        const music = this.music.get(key);
-        if (!music) {
+        const k = this.resolve(key);
+        const entry = this.manifest[k];
+        if (!entry || entry.kind !== 'music') {
             console.warn(`⚠️ Música não encontrada: ${key}`);
             return;
         }
-
-        // Parar música atual
-        if (this.currentMusic) {
-            this.stopMusic(fadeIn);
+        this.musicMultiplier = volumeMultiplier ?? 1;
+        if (this.currentMusicKey === k && this.musicTrack && !this.musicTrack.stopped) return;
+        const xfade = fadeIn ? 2000 : 0;
+        if (this.musicTrack) {
+            this.musicTrack.stop(xfade || 300);
+            this.fadingTracks.add(this.musicTrack);
         }
-
-        this.currentMusic = music;
-        this.currentMusicKey = key;
-        this.currentMusicVolumeMultiplier = volumeMultiplier;
-        music.setVolume(fadeIn ? 0 : this.musicVolume * this.masterVolume * volumeMultiplier);
-
-        const playPromise = music.play();
-        if (playPromise && typeof playPromise.catch === 'function') {
-            playPromise.catch((error) => {
-                if (error.name === 'NotAllowedError') {
-                    console.warn('⚠️ Autoplay bloqueado pelo navegador. Aguardando interação do usuário...');
-                    this._pendingMusicKey = key;
-                    this._pendingMusicFadeIn = fadeIn;
-                    this._pendingMusicVolume = volumeMultiplier;
-                    this._setupAutoplayResume();
-                } else {
-                    console.error(`❌ Erro ao reproduzir música ${key}:`, error);
-                }
-            });
+        this.currentMusicKey = k;
+        this.musicStartedAt = performance.now();
+        if (!this.enabled) {
+            this.musicTrack = null;
+            return;
         }
-
-        if (fadeIn) {
-            this.fadeInMusic();
-        }
-
-        log(`🎵 Reproduzindo música: ${key} (volume: ${Math.round(volumeMultiplier * 100)}%)`);
-    }
-
-    _setupAutoplayResume() {
-        if (this._autoplayListenerAdded) return;
-        this._autoplayListenerAdded = true;
-
-        const resumeAudio = () => {
-            if (this._pendingMusicKey) {
-                const key = this._pendingMusicKey;
-                const fadeIn = this._pendingMusicFadeIn;
-                const vol = this._pendingMusicVolume;
-                this._pendingMusicKey = null;
-                this.playMusic(key, fadeIn, vol);
+        const track = new StreamTrack(this, k, entry, 'music');
+        track.onEnded = () => {
+            if (this.musicTrack === track) {
+                this.musicTrack = null;
+                this.onMusicEnded?.(k);
             }
-            document.removeEventListener('click', resumeAudio);
-            document.removeEventListener('touchstart', resumeAudio);
-            document.removeEventListener('keydown', resumeAudio);
-            this._autoplayListenerAdded = false;
         };
-
-        document.addEventListener('click', resumeAudio, { once: false });
-        document.addEventListener('touchstart', resumeAudio, { once: false });
-        document.addEventListener('keydown', resumeAudio, { once: false });
+        this.musicTrack = track;
+        track.start(xfade);
+        log(`🎵 Música: ${k}`);
     }
 
     stopMusic(fadeOut = true) {
-        if (!this.currentMusic) return;
-        const musicToStop = this.currentMusic;
-        this.currentMusic = null;
-
-        if (this.musicFadeInterval) {
-            clearInterval(this.musicFadeInterval);
-            this.musicFadeInterval = null;
+        if (this.musicTrack) {
+            this.musicTrack.stop(fadeOut ? 1500 : 0);
+            this.fadingTracks.add(this.musicTrack);
         }
+        this.musicTrack = null;
+        this.currentMusicKey = null;
+    }
 
-        if (fadeOut) {
-            this.fadeOutMusic(() => {
-                musicToStop.pause();
-            }, musicToStop);
+    /** <audio>.play() que o autoplay barrou volta no 1º gesto. */
+    playElement(el) {
+        const p = el.play();
+        if (p && typeof p.catch === 'function') {
+            p.catch(error => {
+                if (error?.name === 'NotAllowedError') this.pendingElements.add(el);
+                // AbortError: o elemento foi liberado antes de tocar (troca rápida de faixa)
+            });
+        }
+    }
+
+    _setupAutoplayResume() {
+        const resume = () => {
+            this.ensureContext();
+            if (this.audioContext?.state === 'suspended' && !document.hidden) this.audioContext.resume().catch(() => {});
+            this.pendingElements.forEach(el => {
+                if (el.src) el.play().catch(() => {});
+            });
+            this.pendingElements.clear();
+        };
+        ['pointerdown', 'keydown', 'touchstart', 'click'].forEach(type => document.addEventListener(type, resume, { capture: true, passive: true }));
+    }
+
+    // ===== AMBIENTES =====
+    /**
+     * Liga/desliga camadas de ambiente: { amb_rain_light: 0.8, amb_river: 1 } (nível 0-1).
+     * Quem não está no mapa sai com fade; quem entra, entra com fade.
+     */
+    setAmbientLayers(layers, fadeMs = 2500) {
+        const wanted = new Map(Object.entries(layers).filter(([k, level]) => level > 0 && this.manifest[k]?.kind === 'ambient'));
+        this.ambientTracks.forEach((track, k) => {
+            if (!wanted.has(k)) {
+                track.stop(fadeMs);
+                this.fadingTracks.add(track);
+                this.ambientTracks.delete(k);
+            }
+        });
+        wanted.forEach((level, k) => {
+            let track = this.ambientTracks.get(k);
+            if (!track) {
+                if (!this.enabled) return;
+                track = new StreamTrack(this, k, this.manifest[k], 'ambient');
+                this.ambientTracks.set(k, track);
+                track.level = level;
+                track.start(fadeMs);
+            }
+            track.level = level;
+        });
+    }
+
+    getAmbientKeys() {
+        return [...this.ambientTracks.keys()].sort();
+    }
+
+    // ===== RELÓGIO =====
+    tick() {
+        const now = performance.now();
+        const dt = Math.min(0.25, (now - this.lastTick) / 1000);
+        this.lastTick = now;
+        // Ducking: desce rápido, volta devagar
+        const duckTarget = now < this.duckUntil ? 0.25 : 1;
+        this.duck += (duckTarget - this.duck) * Math.min(1, dt * (duckTarget < this.duck ? 8 : 1.2));
+        this.musicTrack?.update(dt);
+        this.fadingTracks.forEach(t => {
+            t.update(dt);
+            if (t.finished) this.fadingTracks.delete(t);
+        });
+        this.ambientTracks.forEach(t => t.update(dt));
+        this.tickDirector?.(now, dt);
+    }
+
+    onVisibility() {
+        const all = [this.musicTrack, ...this.fadingTracks, ...this.ambientTracks.values()].filter(Boolean);
+        if (document.hidden) {
+            all.forEach(t => t.pauseAll());
+            this.stopAllLoops();
+            this.audioContext?.suspend().catch(() => {});
         } else {
-            musicToStop.pause();
+            this.audioContext?.resume().catch(() => {});
+            all.forEach(t => t.resumeAll());
         }
     }
-    
-    fadeInMusic() {
-        if (!this.currentMusic) return;
 
-        const multiplier = this.currentMusicVolumeMultiplier || 1.0;
-        const targetVolume = this.musicVolume * this.masterVolume * multiplier;
-        const steps = 20;
-        const stepTime = this.fadeTime / steps;
-        const volumeStep = targetVolume / steps;
-        
-        let currentStep = 0;
-        
-        this.musicFadeInterval = setInterval(() => {
-            currentStep++;
-            const newVolume = volumeStep * currentStep;
-            
-            if (this.currentMusic) {
-                this.currentMusic.setVolume(newVolume);
-            }
-            
-            if (currentStep >= steps) {
-                clearInterval(this.musicFadeInterval);
-                this.musicFadeInterval = null;
-            }
-        }, stepTime);
-    }
-    
-    fadeOutMusic(callback, musicRef = null) {
-        const music = musicRef || this.currentMusic;
-        if (!music) {
-            if (callback) callback();
-            return;
-        }
-
-        const startVolume = this.musicVolume * this.masterVolume;
-        const steps = 20;
-        const stepTime = this.fadeTime / steps;
-        const volumeStep = startVolume / steps;
-
-        let currentStep = 0;
-
-        const fadeInterval = setInterval(() => {
-            currentStep++;
-            const newVolume = startVolume - (volumeStep * currentStep);
-
-            try {
-                music.setVolume(Math.max(0, newVolume));
-            } catch (e) { /* music may have been disposed */ }
-
-            if (currentStep >= steps) {
-                clearInterval(fadeInterval);
-                if (callback) callback();
-            }
-        }, stepTime);
-    }
-    
     // ===== CONTROLE DE VOLUME =====
     setMasterVolume(volume) {
         this.masterVolume = Math.max(0, Math.min(1, volume));
-        this.updateAllVolumes();
         this.saveSettings();
     }
-    
+
     setMusicVolume(volume) {
         this.musicVolume = Math.max(0, Math.min(1, volume));
-        if (this.currentMusic) {
-            this.currentMusic.setVolume(this.musicVolume * this.masterVolume);
-        }
         this.saveSettings();
     }
-    
+
     setSfxVolume(volume) {
         this.sfxVolume = Math.max(0, Math.min(1, volume));
-        this.updateSfxVolumes();
         this.saveSettings();
     }
-    
-    updateAllVolumes() {
-        // Atualizar música atual
-        if (this.currentMusic) {
-            this.currentMusic.setVolume(this.musicVolume * this.masterVolume);
-        }
-        
-        // Atualizar pools de SFX
-        this.updateSfxVolumes();
+
+    setAmbientVolume(volume) {
+        this.ambientVolume = Math.max(0, Math.min(1, volume));
+        this.saveSettings();
     }
-    
-    updateSfxVolumes() {
-        this.soundPools.forEach(pool => {
-            pool.forEach(item => {
-                if (item.audio) {
-                    item.audio.volume = this.sfxVolume * this.masterVolume;
-                }
-            });
-        });
+
+    setMuted(muted) {
+        this.muted = !!muted;
+        if (this.muted) this.stopAllLoops();
+        this.saveSettings();
+    }
+
+    toggleMute() {
+        this.setMuted(!this.muted);
+        return this.muted;
     }
 
     saveSettings() {
         const settings = {
             enabled: this.enabled,
+            muted: this.muted,
             masterVolume: this.masterVolume,
             musicVolume: this.musicVolume,
-            sfxVolume: this.sfxVolume
+            sfxVolume: this.sfxVolume,
+            ambientVolume: this.ambientVolume
         };
-        
-        localStorage.setItem('guardiao_agua_audio', JSON.stringify(settings));
+        try {
+            localStorage.setItem('guardiao_agua_audio', JSON.stringify(settings));
+        } catch (error) {
+            console.warn('⚠️ Não deu para salvar o volume:', error);
+        }
     }
-    
+
     loadSettings() {
         try {
             const saved = localStorage.getItem('guardiao_agua_audio');
-            if (saved) {
-                const settings = JSON.parse(saved);
-                this.enabled = settings.enabled !== undefined ? settings.enabled : true;
-                this.masterVolume = settings.masterVolume || 1.0;
-                this.musicVolume = settings.musicVolume || 0.7;
-                this.sfxVolume = settings.sfxVolume || 0.8;
-            }
+            if (!saved) return;
+            const s = JSON.parse(saved);
+            const num = (v, d) => (Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : d);
+            this.enabled = s.enabled !== false;
+            this.muted = !!s.muted;
+            this.masterVolume = num(s.masterVolume, this.masterVolume);
+            this.musicVolume = num(s.musicVolume, this.musicVolume);
+            this.sfxVolume = num(s.sfxVolume, this.sfxVolume);
+            this.ambientVolume = num(s.ambientVolume, this.ambientVolume);
         } catch (error) {
             console.warn('⚠️ Erro ao carregar configurações de áudio:', error);
         }
     }
-    
-    // ===== RSE SOUNDFX AUDIO METHODS =====
 
     // ===== CLEANUP =====
     dispose() {
-        this.stopMusic(false);
-        
-        if (this.musicFadeInterval) {
-            clearInterval(this.musicFadeInterval);
-        }
-        
-        this.sounds.clear();
-        this.music.clear();
-        this.soundPools.clear();
-
+        clearInterval(this.ticker);
+        this.stopAllLoops();
+        [this.musicTrack, ...this.fadingTracks, ...this.ambientTracks.values()].forEach(t => t?.dispose());
+        this.musicTrack = null;
+        this.fadingTracks.clear();
+        this.ambientTracks.clear();
+        this.audioContext?.close().catch(() => {});
         log('🗑️ AudioManager disposed');
     }
 
-    // ===== SONS DE TRANSIÇÃO DIA/NOITE =====
+    // ===== DIA/NOITE =====
     playDayNightTransition(transitionType) {
-        if (!this.enabled) return;
-
-        let soundKey;
-        if (transitionType === 'morning' || transitionType === 'dawn') {
-            soundKey = 'sfx_morning-sound';
-        } else if (transitionType === 'night' || transitionType === 'dusk') {
-            soundKey = 'sfx_night-sound';
-        } else {
-            console.warn(`⚠️ Tipo de transição desconhecido: ${transitionType}`);
-            return;
-        }
-
-        // Reproduzir som com fade-in suave (volume reduzido para 50%)
-        this.playAmbientSoundWithFade(soundKey, 0.15);
-
-        log(`🌅 Som de transição reproduzido: ${transitionType}`);
-    }
-
-    playAmbientSoundWithFade(soundKey, targetVolume = 0.15) {
-        const sound = this.sounds.get(soundKey);
-        if (!sound) {
-            console.warn(`⚠️ Som ambiente não encontrado: ${soundKey}`);
-            return;
-        }
-
-        try {
-            // Configurar volume inicial baixo
-            sound.setVolume(0.01);
-            sound.play();
-
-            // Fade-in gradual
-            const fadeSteps = 20;
-            const fadeTime = 1500; // 1.5 segundos
-            const stepTime = fadeTime / fadeSteps;
-            const volumeStep = (targetVolume * this.sfxVolume * this.masterVolume) / fadeSteps;
-
-            let currentStep = 0;
-            const fadeInterval = setInterval(() => {
-                currentStep++;
-                const newVolume = volumeStep * currentStep;
-                sound.setVolume(newVolume / (this.sfxVolume * this.masterVolume));
-
-                if (currentStep >= fadeSteps) {
-                    clearInterval(fadeInterval);
-                }
-            }, stepTime);
-
-        } catch (error) {
-            console.error(`❌ Erro ao reproduzir som ambiente ${soundKey}:`, error);
-        }
+        if (transitionType === 'morning' || transitionType === 'dawn') this.playSound('sfx_new_day');
+        else if (transitionType === 'night' || transitionType === 'dusk') this.playSound('sfx_night_falls');
     }
 }
 
 // Instância singleton
 AudioManager.instance = null;
 
-// Métodos estáticos para acesso global
 AudioManager.getInstance = function() {
     if (!AudioManager.instance) {
         AudioManager.instance = new AudioManager();
@@ -1041,12 +627,16 @@ AudioManager.getInstance = function() {
     return AudioManager.instance;
 };
 
-AudioManager.playSound = function(key, volume) {
-    AudioManager.getInstance().playSound(key, volume);
+AudioManager.playSound = function(key, volume, opts) {
+    return AudioManager.getInstance().playSound(key, volume, opts);
 };
 
 AudioManager.playMusic = function(key, fadeIn, volumeMultiplier) {
     AudioManager.getInstance().playMusic(key, fadeIn, volumeMultiplier);
+};
+
+AudioManager.playJingle = function(key, opts) {
+    return AudioManager.getInstance().playJingle(key, opts);
 };
 
 AudioManager.playDayNightTransition = function(transitionType) {

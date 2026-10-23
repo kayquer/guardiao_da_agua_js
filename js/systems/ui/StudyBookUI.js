@@ -31,10 +31,7 @@ mixin(UIManager, {
         // Create and show the book interface
         this.showStudyBookInterface(studyContent);
 
-        // Play book opening sound
-        if (this.gameManager.audioManager) {
-            this.gameManager.audioManager.playSound('sfx_ui_select');
-        }
+        AudioManager.playSound('sfx_book_open');
     },
 
     /**
@@ -204,10 +201,7 @@ mixin(UIManager, {
                     });
                     e.target.closest('.quiz-option').classList.add('selected');
 
-                    // Play selection sound
-                    if (this.gameManager.audioManager) {
-                        this.gameManager.audioManager.playSound('sfx_ui_click');
-                    }
+                    AudioManager.playSound('sfx_ui_click');
                 });
             });
         }, 100);
@@ -218,10 +212,7 @@ mixin(UIManager, {
             const studyContent = this.gameManager.studySystem.getStudyContent(this.gameManager.studySystem.currentStudy);
             this.showStudyBookInterface(studyContent, 'next');
 
-            // Play page turn sound
-            if (this.gameManager.audioManager) {
-                this.gameManager.audioManager.playSound('sfx_ui_click');
-            }
+            AudioManager.playSound('sfx_book_page');
         }
     },
 
@@ -230,10 +221,7 @@ mixin(UIManager, {
             const studyContent = this.gameManager.studySystem.getStudyContent(this.gameManager.studySystem.currentStudy);
             this.showStudyBookInterface(studyContent, 'prev');
 
-            // Play page turn sound
-            if (this.gameManager.audioManager) {
-                this.gameManager.audioManager.playSound('sfx_ui_click');
-            }
+            AudioManager.playSound('sfx_book_page');
         }
     },
 
@@ -255,9 +243,7 @@ mixin(UIManager, {
                     3000
                 );
 
-                if (this.gameManager.audioManager) {
-                    this.gameManager.audioManager.playSound('sfx_build_error');
-                }
+                AudioManager.playSound('sfx_error');
 
                 // Scroll to quiz section
                 const quizContainer = document.querySelector('.quiz-container');
@@ -296,10 +282,7 @@ mixin(UIManager, {
             if (!passed) {
                 // Quiz failed - show results and allow retry
                 this.showQuizResults(false, score, quiz.passingScore);
-
-                if (this.gameManager.audioManager) {
-                    this.gameManager.audioManager.playSound('sfx_build_error');
-                }
+                AudioManager.playSound('sfx_quiz_wrong');
                 return;
             }
 
@@ -307,10 +290,9 @@ mixin(UIManager, {
             this.showQuizResults(true, score, quiz.passingScore);
             studySystem.completeStudy(buildingId);
 
-            // Play success sound
-            if (this.gameManager.audioManager) {
-                this.gameManager.audioManager.playSound('sfx_ui_success');
-            }
+            // Acertou: "ding" e, logo depois, o prédio liberado (efeito + jingle)
+            AudioManager.playSound('sfx_quiz_right');
+            setTimeout(() => AudioManager.onStudyUnlock(), 700);
 
             // Close book after a delay to show results
             setTimeout(() => {
@@ -322,10 +304,7 @@ mixin(UIManager, {
             // No quiz - complete study directly
             studySystem.completeStudy(buildingId);
 
-            // Play success sound
-            if (this.gameManager.audioManager) {
-                this.gameManager.audioManager.playSound('sfx_ui_success');
-            }
+            AudioManager.onStudyUnlock();
 
             // Close book
             this.closeStudyBook();
@@ -411,9 +390,7 @@ mixin(UIManager, {
 
         this.showNotification('📚 Responda de novo: você consegue!', 'info', 3000);
 
-        if (this.gameManager.audioManager) {
-            this.gameManager.audioManager.playSound('sfx_ui_click');
-        }
+        AudioManager.playSound('sfx_book_page');
     },
 
     /** Depois de ver os erros, o aluno pode seguir: o prédio é liberado mesmo sem a nota mínima. */
@@ -422,7 +399,7 @@ mixin(UIManager, {
         const buildingId = studySystem.currentStudy;
         if (!buildingId) return;
         studySystem.completeStudy(buildingId);
-        this.gameManager.audioManager?.playSound('sfx_ui_success');
+        AudioManager.onStudyUnlock();
         this.closeStudyBook();
         this.loadBuildingItemsWithStateManagement();
         const name = this.gameManager.buildingSystem.buildingTypes.get(buildingId)?.name || 'Prédio';

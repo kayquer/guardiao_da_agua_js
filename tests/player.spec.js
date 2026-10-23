@@ -212,7 +212,8 @@ test('tutorial das missões avança quando o aluno clica no que está destacado'
 test('guias em sequência: água + energia → reservatório → zoneamento → públicos', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'mesma lógica; alvos do desktop');
     const problems = watchErrors(page);
-    await startGame(page, { guides: [] });
+    // 'energy' já visto: a bomba sem usina deixa a eficiência < 100% e abriria o guia de energia (tests/energy-guide)
+    await startGame(page, { guides: ['energy'] });
     const title = page.locator('#tutorial-title');
     // Constrói direto (sem o modo de construção) e termina a obra na hora
     const build = (type, finish = true) => page.evaluate(({ type, finish }) => {
@@ -261,7 +262,10 @@ test('guias em sequência: água + energia → reservatório → zoneamento → 
     await expect(title).toHaveText('Novos moradores a caminho');
     await page.click('#tutorial-next-btn');
 
-    // Públicos só depois de uma zona pronta
+    // Públicos só depois de uma zona pronta. A obra da zona (R$ 1000) leva ~3 s: estica para ela não terminar
+    // sozinha durante a espera (o guia é checado a cada 2 s)
+    await page.evaluate(() => window.gameManager.buildingSystem.getAllBuildings()
+        .filter(b => b.config.category === 'zoning' && b.underConstruction).forEach(b => { b.constructionDuration = 1e9; }));
     await page.waitForTimeout(4000);
     expect(await page.evaluate(() => window.gameManager.tutorialSystem.isActive)).toBe(false);
     await page.evaluate(() => {
@@ -272,7 +276,7 @@ test('guias em sequência: água + energia → reservatório → zoneamento → 
     await page.click('#tutorial-skip-btn'); // "Fazer depois" também conta como visto
     await expect(title).toHaveText('Visitantes trazem dinheiro', { timeout: 8000 });
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem('guardiao_agua_guides')).p_teste))
-        .toEqual(['storage', 'zoning', 'public']);
+        .toEqual(['energy', 'storage', 'zoning', 'public']);
     expect(problems).toEqual([]);
 });
 
@@ -376,7 +380,7 @@ test('central de aulas: abas Como jogar / Conteúdo / Guias, refazer partes e fo
 
     // Guias: os 6 guias da cidade + as aulas rápidas dos indicadores
     await page.evaluate(() => window.gameManager.uiManager.openLessonsHub(null, 'guides'));
-    await expect(page.locator('[data-replay="guide"]')).toHaveCount(6);
+    await expect(page.locator('[data-replay="guide"]')).toHaveCount(await page.evaluate(() => TutorialSystem.GUIDES.length));
     await expect(page.locator('[data-replay="topic"]')).toHaveCount(6);
     expect(problems).toEqual([]);
 });

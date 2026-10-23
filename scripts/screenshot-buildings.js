@@ -45,6 +45,8 @@ async function main() {
         page.on('pageerror', e => errors.push(e.message));
         page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
 
+        // Qualidade gráfica alta (no headless o jogo detectaria a placa de software e cairia na baixa: sem sombra)
+        await page.addInitScript(() => localStorage.setItem('guardiao_agua_graphics', 'high'));
         // Perfil de teste + clima simulado (tests/helpers.js); sem nuvem/chuva na frente do prédio
         await startGame(page, { url: `${URL}/index.html`, forecast: CLEAR_SKY });
         await page.evaluate(() => {

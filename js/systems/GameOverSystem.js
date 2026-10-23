@@ -120,6 +120,11 @@ class GameOverSystem {
 
         // Pause the game
         this.gameManager.gameState = 'gameover';
+        if (typeof AudioManager !== 'undefined') AudioManager.onGameOver(); // música para, toca o fim triste
+
+        // O último autosave é de segundos antes da derrota: "Continuar" acabaria de novo na hora
+        const profile = typeof PlayerProfile !== 'undefined' ? PlayerProfile.getActive() : null;
+        if (profile) this.gameManager.saveSystem?.deleteSave(profile.id);
 
         // Show game over dialog
         this.showGameOverDialog();

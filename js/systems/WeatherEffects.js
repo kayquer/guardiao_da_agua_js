@@ -16,6 +16,9 @@ class WeatherEffects {
         this.time = 0;
         this.nextLightning = 6;
         this.flash = 0;
+        this.quality = GraphicsQuality.preset(); // partículas, nuvens e balanço das árvores (setQuality)
+        this.swayFrame = 0;
+        this.swayDt = 0;
         this.observer = this.scene.onBeforeRenderObservable.add(() => this.update());
     }
 
@@ -62,8 +65,7 @@ class WeatherEffects {
 
     apply(current) {
         this.profile = WeatherEffects.profileFor(current);
-        const quality = this.gameManager.settingsManager?.settings?.graphics?.quality || 'medium';
-        this.particleScale = quality === 'low' || this.gameManager.uiManager?.isMobile ? 0.4 : quality === 'high' ? 1.3 : 1;
+        this.particleScale = this.quality.particleScale;
 
         this.wind = WeatherEffects.windVector(this.profile.windDir);
         this.setupPrecipitation();
@@ -149,7 +151,7 @@ class WeatherEffects {
 
     // ===== Nuvens =====
     setupClouds() {
-        const wanted = this.profile.clouds;
+        const wanted = this.quality.clouds ? this.profile.clouds : 0;
         const shade = 1 - this.profile.sky * 0.55; // nuvem de chuva é mais escura
         if (!this.cloudMaterial) {
             this.cloudMaterial = new BABYLON.StandardMaterial('weatherCloudMat', this.scene);
@@ -233,7 +235,15 @@ class WeatherEffects {
         }
 
         // Árvores balançam com o vento (decorações do GridManager)
-        this.updateTrees(dt);
+        // (qualidade gráfica: a cada N quadros, com o tempo somado; 0 = paradas)
+        const every = this.quality.treeSway;
+        if (every) {
+            this.swayDt += dt;
+            if (++this.swayFrame % every === 0) {
+                this.updateTrees(this.swayDt);
+                this.swayDt = 0;
+            }
+        }
 
         // Relâmpago na tempestade: o céu e a luz piscam
         if (p.lightning) {
@@ -241,6 +251,7 @@ class WeatherEffects {
             if (this.nextLightning <= 0) {
                 this.flash = 0.18;
                 this.nextLightning = 4 + Math.random() * 8;
+                if (typeof AudioManager !== 'undefined') AudioManager.onLightning(); // estalo + trovão junto do clarão
             }
         }
         const ambient = this.scene.getLightByName('ambientLight');
@@ -260,6 +271,19 @@ class WeatherEffects {
     }
 
     /** Árvores (TreeSystem e decorações) inclinam para onde o vento sopra, mais nas rajadas. */
+    /** Qualidade gráfica trocada (GameManager.applyGraphicsQuality): refaz chuva/vento/nuvens na nova escala. */
+    setQuality(preset) {
+        this.quality = preset;
+        if (!preset.treeSway) {
+            this.gameManager.treeSystem?.trees.forEach(tree => { tree.rotation.x = 0; tree.rotation.z = 0; });
+        }
+        if (this.profile.kind === 'none') return; // clima ainda não chegou: apply() usa a qualidade nova
+        this.particleScale = preset.particleScale;
+        this.setupPrecipitation();
+        this.setupClouds();
+        this.setupWindParticles();
+    }
+
     updateTrees(dt) {
         const p = this.profile;
         const w = this.wind || WeatherEffects.windVector(p.windDir);
@@ -280,9 +304,6 @@ class WeatherEffects {
             tree.rotation.x = (w.x * s + w.z * c) * amount;
         };
         this.gameManager.treeSystem?.trees.forEach(sway);
-        (this.gameManager.gridManager?.decorationMeshes || []).forEach(d => {
-            if (d?.metadata?.decorationType?.includes('tree')) sway(d);
-        });
     }
 
     /** Vento forte: riscos brancos cruzando o mapa e folhas voando na direção do vento. */

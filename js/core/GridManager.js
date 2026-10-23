@@ -6,6 +6,11 @@
 class GridManager {
     // Quanto o chão (mesh "terrain") fica abaixo do topo dos blocos voxel: escondido na fresta entre eles
     static TERRAIN_FLOOR_GAP = 0.15;
+    // Blocos voxel: largura do chanfro na borda do topo (fração da célula), realce da cor de vértice e lado
+    // dos pedaços do mapa (em células)
+    static TERRAIN_BEVEL = 0.045;
+    static TERRAIN_BRIGHTNESS = 1.3;
+    static TERRAIN_CHUNK = 10;
 
     constructor(scene) {
         log('🗂️ Inicializando GridManager...');
@@ -13,7 +18,6 @@ class GridManager {
         this.scene = scene;
         this.gridSize = GAME_CONFIG.grid.size;
         this.cellSize = GAME_CONFIG.grid.cellSize;
-        this.gridHeight = GAME_CONFIG.grid.height;
         
         // Grid de ocupação (true = ocupado, false = livre)
         this.occupationGrid = [];
@@ -24,34 +28,17 @@ class GridManager {
         // Grid de tipos de terreno
         this.terrainGrid = [];
         
-        // Meshes visuais
-        this.gridMesh = null;
-        this.terrainMesh = null;
-        this.waterMesh = null;
-        
-        // Materiais
-        this.gridMaterial = null;
+        // Meshes visuais (blocos de terra e água em pedaços do mapa: createVoxelTerrainBlocks/createWaterBodies)
+        this.terrainMesh = null; // chão sob os blocos (aparece sob a água)
         this.terrainMaterial = null;
-        this.waterMaterial = null;
-        
-        // Configurações visuais
-        this.showGrid = true;
-        this.gridOpacity = 0.3;
+        this.terrainBlocks = [];
+        this.waterMeshes = [];
 
-        // Qualidade gráfica
-        this.graphicsQuality = this.getGraphicsQuality();
-        
+        // Água animada (shader) ou simples: segue a qualidade gráfica (GraphicsQuality), pode trocar ao vivo
+        this.waterAnimated = typeof GraphicsQuality === 'undefined' ? true : GraphicsQuality.preset().waterShader;
+
         this.initializeGrid();
-        this.createVisualGrid();
         this.createTerrain();
-    }
-    
-    getGraphicsQuality() {
-        try {
-            return window.gameManager?.settingsManager?.settings?.graphics?.quality || 'medium';
-        } catch (e) {
-            return 'medium';
-        }
     }
 
     // ===== INICIALIZAÇÃO =====
@@ -218,56 +205,14 @@ class GridManager {
     }
     
     // ===== CRIAÇÃO VISUAL =====
-    createVisualGrid() {
-        log('🎨 Criando grid visual...');
-        
-        // Material do grid
-        this.gridMaterial = new BABYLON.StandardMaterial("gridMaterial", this.scene);
-        this.gridMaterial.diffuseColor = new BABYLON.Color3(1, 1, 1);
-        this.gridMaterial.alpha = this.gridOpacity;
-        this.gridMaterial.wireframe = true;
-        
-        // Criar linhas do grid
-        const lines = [];
-        const halfSize = (this.gridSize * this.cellSize) / 2;
-        
-        // Linhas horizontais
-        for (let i = 0; i <= this.gridSize; i++) {
-            const z = (i * this.cellSize) - halfSize;
-            lines.push([
-                new BABYLON.Vector3(-halfSize, this.gridHeight, z),
-                new BABYLON.Vector3(halfSize, this.gridHeight, z)
-            ]);
-        }
-        
-        // Linhas verticais
-        for (let i = 0; i <= this.gridSize; i++) {
-            const x = (i * this.cellSize) - halfSize;
-            lines.push([
-                new BABYLON.Vector3(x, this.gridHeight, -halfSize),
-                new BABYLON.Vector3(x, this.gridHeight, halfSize)
-            ]);
-        }
-        
-        // Criar mesh das linhas
-        this.gridMesh = BABYLON.MeshBuilder.CreateLineSystem("grid", {
-            lines: lines
-        }, this.scene);
-        
-        this.gridMesh.color = new BABYLON.Color3(0.8, 0.8, 0.8);
-        this.gridMesh.alpha = this.gridOpacity;
-    }
-    
     createTerrain() {
         log('🏔️ Criando terreno procedural...');
 
         try {
-            // Criar terreno com subdivisões baseadas na qualidade gráfica
-            const subdivMultiplier = this.graphicsQuality === 'low' ? 1 : 2;
             this.terrainMesh = BABYLON.MeshBuilder.CreateGround("terrain", {
                 width: this.gridSize * this.cellSize,
                 height: this.gridSize * this.cellSize,
-                subdivisions: this.gridSize * subdivMultiplier
+                subdivisions: this.gridSize * 2
             }, this.scene);
 
             // Aplicar elevação customizada aos vértices
@@ -353,239 +298,294 @@ class GridManager {
         return Math.max(0, lowest - GridManager.TERRAIN_FLOOR_GAP);
     }
 
-    createWaterBodies() {
-        log('💧 Criando corpos d\'água estilo Minecraft...');
+    // ===== BLOCOS VOXEL E ÁGUA =====
+    // Cada célula é um bloco do tamanho inteiro da célula (sem fresta: pela fresta de 2% aparecia o chão,
+    // mais escuro, e de lado as frestas viravam linhas pretas). A leitura de "blocos" vem de um chanfro
+    // escuro na borda do topo (cor de vértice). Tudo vira poucos meshes por pedaço do mapa (TERRAIN_CHUNK ×
+    // TERRAIN_CHUNK células), com um material só: antes eram ~1.600 caixas, cada uma com material próprio.
+    // Só as faces laterais que aparecem são geradas (onde o vizinho é mais baixo, água ou a borda do mapa).
+    // A geometria é montada sem Babylon (buildTerrainGeometry/buildWaterGeometry, testadas em world.test.js).
 
-        // Encontrar áreas de água e criar blocos individuais
-        this.waterMeshes = [];
-        this.waterAnimationInitialized = false;
+    /** Topo do bloco de terra (null fora do mapa; água = 0, para a lateral da margem descer até o fundo). */
+    landTop(x, z) {
+        if (x < 0 || z < 0 || x >= this.gridSize || z >= this.gridSize) return null;
+        return this.getTerrainType(x, z) === 'water' ? 0 : this.getTerrainBlockHeight(x, z);
+    }
 
-        for (let x = 0; x < this.gridSize; x++) {
-            for (let z = 0; z < this.gridSize; z++) {
-                if (this.terrainGrid[x][z] === 'water') {
-                    this.createWaterBlock(x, z);
+    /** Profundidade do bloco de água da célula (mais funda onde a elevação é baixa). */
+    getWaterDepth(x, z) {
+        const elevation = this.elevationGrid[x]?.[z] || 0;
+        return Math.max(0.2, 0.5 - elevation * 0.8);
+    }
+
+    // Leve variação de cor por célula, sempre a mesma para a célula (antes: Math.random por bloco)
+    cellShade(x, z) {
+        const h = Math.abs(Math.sin(x * 127.1 + z * 311.7) * 43758.5453) % 1;
+        return (h - 0.5) * 0.1;
+    }
+
+    /**
+     * Geometria dos blocos de terra das células [x0, x1) × [z0, z1): topo com chanfro (borda ~6% da célula,
+     * um pouco mais baixa e mais escura) e laterais visíveis com a cor do bloco um pouco mais escura.
+     * Retorna arrays simples { positions, normals, colors, indices }.
+     */
+    buildTerrainGeometry(x0, z0, x1, z1) {
+        const out = { positions: [], normals: [], colors: [], indices: [] };
+        const cs = this.cellSize;
+        const half = (this.gridSize * cs) / 2;
+        const inset = cs * GridManager.TERRAIN_BEVEL;
+        for (let x = x0; x < x1; x++) {
+            for (let z = z0; z < z1; z++) {
+                const type = this.getTerrainType(x, z);
+                if (type === 'water' || type === 'unknown') continue;
+                const h = this.getTerrainBlockHeight(x, z, type);
+                const drop = Math.min(0.04, h * 0.4);
+                const base = this.getMinecraftTerrainColor(type);
+                const v = this.cellShade(x, z);
+                // × TERRAIN_BRIGHTNESS: a cor de vértice entra depois do clamp da luz do StandardMaterial; sem ela o
+                // topo ficava mais escuro que o antigo (cor no diffuseColor, com luz > 1 saturando)
+                const c = [base.r / 255 + v, base.g / 255 + v, base.b / 255 + v].map(n => Math.max(0, Math.min(1, n)) * GridManager.TERRAIN_BRIGHTNESS);
+                const shade = k => [c[0] * k, c[1] * k, c[2] * k];
+                const ax = x * cs - half, bx = ax + cs, az = z * cs - half, bz = az + cs;
+                const ix0 = ax + inset, ix1 = bx - inset, iz0 = az + inset, iz1 = bz - inset;
+                const e = h - drop;
+                const top = shade(1), rim = shade(0.94), edge = shade(0.8);
+                // Centro do topo
+                GridManager.pushQuad(out, [[ix0, h, iz0], [ix1, h, iz0], [ix1, h, iz1], [ix0, h, iz1]], [0, 1, 0], [top, top, top, top]);
+                // Chanfro nos 4 lados (borda externa mais baixa e mais escura)
+                const ring = [
+                    [[ax, e, az], [bx, e, az], [ix1, h, iz0], [ix0, h, iz0]],   // -z
+                    [[bx, e, az], [bx, e, bz], [ix1, h, iz1], [ix1, h, iz0]],   // +x
+                    [[bx, e, bz], [ax, e, bz], [ix0, h, iz1], [ix1, h, iz1]],   // +z
+                    [[ax, e, bz], [ax, e, az], [ix0, h, iz0], [ix0, h, iz1]]    // -x
+                ];
+                for (const quad of ring) {
+                    GridManager.pushQuad(out, quad, GridManager.faceNormal(quad), [edge, edge, rim, rim]);
+                }
+                // Laterais: só onde o vizinho é mais baixo (ou é água, ou a borda do mapa). O último número clareia
+                // as faces de costas para o sol (-z, -x: a direcional não as ilumina e só a hemisférica sobra —
+                // ficavam quase pretas); as de frente para o sol já recebem luz.
+                const sides = [
+                    [x, z - 1, [[bx, az], [ax, az]], [0, 0, -1], 1.6],
+                    [x + 1, z, [[bx, bz], [bx, az]], [1, 0, 0], 1],
+                    [x, z + 1, [[ax, bz], [bx, bz]], [0, 0, 1], 1.25],
+                    [x - 1, z, [[ax, az], [ax, bz]], [-1, 0, 0], 1.5]
+                ];
+                for (const [nx, nz, [[px, pz], [qx, qz]], normal, light] of sides) {
+                    const nTop = this.landTop(nx, nz);
+                    const bottom = nTop === null ? 0 : nTop;
+                    if (bottom >= e - 1e-6) continue;
+                    const sideTop = shade(0.86 * light), sideBottom = shade(0.7 * light);
+                    GridManager.pushQuad(out, [[px, e, pz], [qx, e, qz], [qx, bottom, qz], [px, bottom, pz]], normal,
+                        [sideTop, sideTop, sideBottom, sideBottom]);
                 }
             }
         }
+        return out;
+    }
 
-        // Inicializar animação de água apenas em qualidade média ou alta
-        if (this.waterMeshes.length > 0 && this.graphicsQuality !== 'low') {
-            this.initializeWaterAnimation();
+    /**
+     * Geometria da água das células [x0, x1) × [z0, z1): uma lâmina por célula do tamanho inteiro dela (topo em
+     * profundidade + 0,05) e laterais onde o vizinho é mais baixo. Além de positions/normals/colors/indices,
+     * `cells` (vec4 por vértice: célula x, z, profundidade, 1 = topo que ondula) alimenta o shader da água.
+     */
+    buildWaterGeometry(x0, z0, x1, z1) {
+        const out = { positions: [], normals: [], colors: [], indices: [], cells: [] };
+        const cs = this.cellSize;
+        const half = (this.gridSize * cs) / 2;
+        const waterTop = (x, z) => this.getWaterDepth(x, z) + 0.05;
+        for (let x = x0; x < x1; x++) {
+            for (let z = z0; z < z1; z++) {
+                if (this.getTerrainType(x, z) !== 'water') continue;
+                const depth = this.getWaterDepth(x, z);
+                const t = waterTop(x, z);
+                // Mesma cor/transparência do material antigo por bloco: mais funda = mais escura e opaca
+                const k = Math.min(1, depth / 0.5);
+                const rgba = [0.15 + 0.1 * (1 - k), 0.45 + 0.11 * (1 - k), 0.8 + 0.2 * (1 - k), 0.6 + k * 0.2];
+                const ax = x * cs - half, bx = ax + cs, az = z * cs - half, bz = az + cs;
+                const start = out.positions.length / 3;
+                GridManager.pushQuad(out, [[ax, t, az], [bx, t, az], [bx, t, bz], [ax, t, bz]], [0, 1, 0], [rgba, rgba, rgba, rgba]);
+                const sides = [
+                    [x, z - 1, [[bx, az], [ax, az]], [0, 0, -1]],
+                    [x + 1, z, [[bx, bz], [bx, az]], [1, 0, 0]],
+                    [x, z + 1, [[ax, bz], [bx, bz]], [0, 0, 1]],
+                    [x - 1, z, [[ax, az], [ax, bz]], [-1, 0, 0]]
+                ];
+                for (const [nx, nz, [[px, pz], [qx, qz]], normal] of sides) {
+                    const type = this.getTerrainType(nx, nz);
+                    const bottom = type === 'unknown' ? 0.05 : type === 'water' ? waterTop(nx, nz) : this.getTerrainBlockHeight(nx, nz);
+                    if (bottom >= t - 1e-6) continue;
+                    GridManager.pushQuad(out, [[px, t, pz], [qx, t, qz], [qx, bottom, qz], [px, bottom, pz]], normal, [rgba, rgba, rgba, rgba]);
+                }
+                // Atributo do shader: só os 4 vértices do topo ondulam
+                const count = out.positions.length / 3 - start;
+                for (let i = 0; i < count; i++) out.cells.push(x, z, depth, i < 4 ? 1 : 0);
+            }
+        }
+        return out;
+    }
+
+    /** Quad (4 cantos em ordem) com normal e cor por vértice ([r, g, b] ou [r, g, b, a]). */
+    static pushQuad(out, corners, normal, colors) {
+        const start = out.positions.length / 3;
+        corners.forEach((p, i) => {
+            out.positions.push(p[0], p[1], p[2]);
+            out.normals.push(normal[0], normal[1], normal[2]);
+            const col = colors[i];
+            out.colors.push(col[0], col[1], col[2], col.length > 3 ? col[3] : 1);
+        });
+        // Ordem dos cantos: anti-horária vista de fora (de cima no topo) = face da frente no Babylon
+        out.indices.push(start, start + 1, start + 2, start, start + 2, start + 3);
+    }
+
+    /** Normal (unitária) de um quad plano a partir dos 3 primeiros cantos, apontando para fora/cima. */
+    static faceNormal(q) {
+        const u = [q[1][0] - q[0][0], q[1][1] - q[0][1], q[1][2] - q[0][2]];
+        const w = [q[3][0] - q[0][0], q[3][1] - q[0][1], q[3][2] - q[0][2]];
+        let n = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]];
+        if (n[1] < 0) n = n.map(v => -v);
+        const len = Math.hypot(n[0], n[1], n[2]) || 1;
+        return n.map(v => v / len);
+    }
+
+    /** Pedaços do mapa (TERRAIN_CHUNK × TERRAIN_CHUNK células): poucos draw calls e o pick só testa o pedaço certo. */
+    forEachChunk(fn) {
+        const n = GridManager.TERRAIN_CHUNK;
+        for (let x0 = 0; x0 < this.gridSize; x0 += n) {
+            for (let z0 = 0; z0 < this.gridSize; z0 += n) {
+                fn(x0, z0, Math.min(this.gridSize, x0 + n), Math.min(this.gridSize, z0 + n));
+            }
         }
     }
 
-    createWaterBlock(gridX, gridZ) {
-        const worldPos = this.gridToWorld(gridX, gridZ);
-        const elevation = this.elevationGrid[gridX][gridZ];
+    static toMesh(name, geometry, scene) {
+        if (!geometry.indices.length) return null;
+        const mesh = new BABYLON.Mesh(name, scene);
+        const data = new BABYLON.VertexData();
+        data.positions = geometry.positions;
+        data.normals = geometry.normals;
+        data.colors = geometry.colors;
+        data.indices = geometry.indices;
+        data.applyToMesh(mesh, false);
+        return mesh;
+    }
 
-        // Calcular profundidade da água baseada na elevação
-        const waterDepth = Math.max(0.2, 0.5 - elevation * 0.8);
+    createVoxelTerrainBlocks() {
+        log('🧱 Criando blocos de terreno estilo voxel...');
+        const material = new BABYLON.StandardMaterial('terrainBlocksMat', this.scene);
+        material.diffuseColor = new BABYLON.Color3(1, 1, 1); // a cor vem dos vértices
+        material.specularColor = new BABYLON.Color3(0.06, 0.06, 0.06);
+        this.terrainBlocksMaterial = material;
 
-        // Criar bloco de água estilo Minecraft com profundidade variável
-        const waterBlock = BABYLON.MeshBuilder.CreateBox(`water_${gridX}_${gridZ}`, {
-            width: this.cellSize * 0.98,
-            height: waterDepth,
-            depth: this.cellSize * 0.98
-        }, this.scene);
+        this.terrainBlocks = [];
+        this.forEachChunk((x0, z0, x1, z1) => {
+            const mesh = GridManager.toMesh(`terrainBlocks_${x0}_${z0}`, this.buildTerrainGeometry(x0, z0, x1, z1), this.scene);
+            if (!mesh) return;
+            mesh.material = material;
+            mesh.receiveShadows = true;
+            mesh.metadata = { terrain: true };
+            mesh.freezeWorldMatrix();
+            this.terrainBlocks.push(mesh);
+        });
+        log(`🧱 Terreno: ${this.terrainBlocks.length} meshes`);
+    }
 
-        waterBlock.position = worldPos;
-        waterBlock.position.y = waterDepth / 2 + 0.05; // Posicionar baseado na profundidade
+    createWaterBodies() {
+        log('💧 Criando água...');
+        this.waterMeshes = [];
+        this.forEachChunk((x0, z0, x1, z1) => {
+            const geometry = this.buildWaterGeometry(x0, z0, x1, z1);
+            // "water_": GameManager.pickTerrainCell reconhece a água pelo nome
+            const mesh = GridManager.toMesh(`water_${x0}_${z0}`, geometry, this.scene);
+            if (!mesh) return;
+            mesh.setVerticesData('waterCell', geometry.cells, false, 4);
+            mesh.hasVertexAlpha = true;
+            mesh.receiveShadows = true;
+            mesh.freezeWorldMatrix();
+            this.waterMeshes.push(mesh);
+        });
+        this.setWaterAnimated(this.waterAnimated);
+    }
 
-        // Material de água melhorado com efeitos de profundidade
-        const waterMaterial = new BABYLON.StandardMaterial(`waterMat_${gridX}_${gridZ}`, this.scene);
-
-        // Cor baseada na profundidade - água mais profunda é mais escura
-        const depthFactor = Math.min(1, waterDepth / 0.5);
-        waterMaterial.diffuseColor = new BABYLON.Color3(
-            0.15 + (0.25 - 0.15) * (1 - depthFactor), // Azul mais escuro para água profunda
-            0.45 + (0.56 - 0.45) * (1 - depthFactor),
-            0.8 + (1.0 - 0.8) * (1 - depthFactor)
-        );
-
-        // Transparência baseada na profundidade
-        waterMaterial.alpha = 0.6 + depthFactor * 0.2;
-
-        if (this.graphicsQuality === 'low') {
-            waterMaterial.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+    /**
+     * Água animada (shader com ondas, um material para toda a água) ou simples (cor de vértice translúcida,
+     * para a qualidade gráfica baixa). Pode trocar com o jogo rodando.
+     */
+    setWaterAnimated(animated) {
+        this.waterAnimated = animated;
+        if (!this.waterMeshes?.length) return;
+        let material;
+        if (animated) {
+            if (!this.waterShaderMaterial) this.waterShaderMaterial = this.createWaterShaderMaterial();
+            material = this.waterShaderMaterial;
         } else {
-            waterMaterial.specularColor = new BABYLON.Color3(0.8, 0.8, 1.0);
-            waterMaterial.specularPower = 64;
-
-            // Adicionar reflexão se disponível
-            if (this.scene.environmentTexture) {
-                waterMaterial.reflectionTexture = this.scene.environmentTexture;
-                waterMaterial.reflectionFresnelParameters = new BABYLON.FresnelParameters();
-                waterMaterial.reflectionFresnelParameters.bias = 0.1;
-                waterMaterial.reflectionFresnelParameters.power = 0.5;
-                waterMaterial.reflectionFresnelParameters.leftColor = BABYLON.Color3.White();
-                waterMaterial.reflectionFresnelParameters.rightColor = BABYLON.Color3.Black();
+            if (!this.waterSimpleMaterial) {
+                const simple = new BABYLON.StandardMaterial('waterSimpleMat', this.scene);
+                simple.diffuseColor = new BABYLON.Color3(1, 1, 1);
+                simple.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+                this.waterSimpleMaterial = simple;
             }
+            material = this.waterSimpleMaterial;
         }
-
-        // Armazenar dados para animação centralizada
-        waterBlock.animationData = {
-            gridX: gridX,
-            gridZ: gridZ,
-            baseY: waterDepth / 2 + 0.05,
-            depth: waterDepth
-        };
-
-        waterBlock.material = waterMaterial;
-        this.waterMeshes.push(waterBlock);
-    }
-
-    initializeWaterAnimation() {
-        if (this.waterAnimationInitialized) return;
-
-        const shaderMaterial = this.createWaterShaderMaterial();
-        
-        this.waterMeshes.forEach(waterBlock => {
-            if (waterBlock && waterBlock.animationData) {
-                const clonedMaterial = shaderMaterial.clone(`waterShader_${waterBlock.animationData.gridX}_${waterBlock.animationData.gridZ}`);
-                clonedMaterial.setVector2("gridPosition", new BABYLON.Vector2(waterBlock.animationData.gridX, waterBlock.animationData.gridZ));
-                clonedMaterial.setFloat("baseY", waterBlock.animationData.baseY);
-                clonedMaterial.setFloat("depth", waterBlock.animationData.depth);
-                waterBlock.material = clonedMaterial;
-            }
-        });
-
-        this.scene.registerBeforeRender(() => {
-            const time = Date.now() * 0.001;
-            shaderMaterial.setFloat("time", time);
-        });
-
-        this.waterAnimationInitialized = true;
+        this.waterMeshes.forEach(mesh => { mesh.material = material; });
     }
 
     createWaterShaderMaterial() {
-        const shaderMaterial = new BABYLON.ShaderMaterial("waterShader", this.scene, {
+        const shaderMaterial = new BABYLON.ShaderMaterial('waterShader', this.scene, {
             vertexSource: `
                 precision highp float;
                 attribute vec3 position;
                 attribute vec3 normal;
+                attribute vec4 waterCell; // célula x, z, profundidade, 1 = topo
                 uniform mat4 worldViewProjection;
                 uniform mat4 world;
-                uniform vec2 gridPosition;
                 uniform float time;
-                uniform float baseY;
-                uniform float depth;
-                varying vec3 vPosition;
                 varying vec3 vNormal;
-                
+                varying vec3 vCell;
+
                 void main() {
                     vec3 p = position;
-                    float waveAmplitude = min(0.03, depth * 0.1);
-                    float wave1 = sin(time + gridPosition.x * 0.5 + gridPosition.y * 0.3) * waveAmplitude;
-                    float wave2 = cos(time * 1.3 + gridPosition.x * 0.3 + gridPosition.y * 0.5) * waveAmplitude * 0.5;
-                    p.y += wave1 + wave2;
-                    
-                    vPosition = vec3(world * vec4(p, 1.0));
+                    float waveAmplitude = min(0.03, waterCell.z * 0.1);
+                    float wave1 = sin(time + waterCell.x * 0.5 + waterCell.y * 0.3) * waveAmplitude;
+                    float wave2 = cos(time * 1.3 + waterCell.x * 0.3 + waterCell.y * 0.5) * waveAmplitude * 0.5;
+                    p.y += (wave1 + wave2) * waterCell.w;
                     vNormal = normalize(vec3(world * vec4(normal, 0.0)));
+                    vCell = waterCell.xyz;
                     gl_Position = worldViewProjection * vec4(p, 1.0);
                 }
             `,
             fragmentSource: `
                 precision highp float;
-                uniform vec2 gridPosition;
                 uniform float time;
-                uniform float depth;
-                varying vec3 vPosition;
                 varying vec3 vNormal;
-                
+                varying vec3 vCell;
+
                 void main() {
+                    float depth = vCell.z;
                     float depthFactor = min(1.0, depth / 0.5);
                     vec3 waterColor = vec3(
                         0.15 + (0.25 - 0.15) * (1.0 - depthFactor),
                         0.45 + (0.56 - 0.45) * (1.0 - depthFactor),
                         0.8 + (1.0 - 0.8) * (1.0 - depthFactor)
                     );
-                    
-                    float alphaVariation = sin(time * 2.0 + gridPosition.x + gridPosition.y) * 0.1;
+                    float alphaVariation = sin(time * 2.0 + vCell.x + vCell.y) * 0.1;
                     float alpha = 0.6 + depth * 0.2 + alphaVariation;
-                    
                     vec3 lightDir = normalize(vec3(1.0, 1.0, 0.5));
                     float diffuse = max(dot(vNormal, lightDir), 0.0);
-                    vec3 finalColor = waterColor * (0.6 + 0.4 * diffuse);
-                    
-                    gl_FragColor = vec4(finalColor, alpha);
+                    gl_FragColor = vec4(waterColor * (0.6 + 0.4 * diffuse), alpha);
                 }
             `
         }, {
-            attributes: ["position", "normal"],
-            uniforms: ["worldViewProjection", "world", "gridPosition", "time", "baseY", "depth"]
+            attributes: ['position', 'normal', 'waterCell'],
+            uniforms: ['worldViewProjection', 'world', 'time'],
+            needAlphaBlending: true
         });
-
-        shaderMaterial.backFaceCulling = false;
-        shaderMaterial.transparencyMode = BABYLON.Material.MATERIAL_ALPHABLEND;
-        
+        // Um material para toda a água: o tempo anda aqui (antes cada bloco tinha um clone que nunca recebia
+        // o tempo, e a água ficava parada). performance.now: Date.now() * 0,001 perde precisão no float da GPU.
+        this.waterTimeObserver = this.scene.onBeforeRenderObservable.add(() => {
+            shaderMaterial.setFloat('time', performance.now() * 0.001);
+        });
         return shaderMaterial;
-    }
-
-    createVoxelTerrainBlocks() {
-        log('🧱 Criando blocos de terreno estilo voxel...');
-
-        this.terrainBlocks = [];
-        this.decorationMeshes = [];
-
-        // Criar blocos individuais para áreas não-água
-        for (let x = 0; x < this.gridSize; x++) {
-            for (let z = 0; z < this.gridSize; z++) {
-                const terrainType = this.terrainGrid[x][z];
-
-                if (terrainType !== 'water') {
-                    this.createTerrainBlock(x, z, terrainType);
-                }
-            }
-        }
-
-        // Criar decorações apenas em qualidade média ou alta
-        if (this.graphicsQuality !== 'low') {
-            this.createTerrainDecorations();
-        }
-
-        // Merge de meshes do terreno para reduzir draw calls
-        if (this.graphicsQuality === 'low' || this.graphicsQuality === 'medium') {
-            this.mergeTerrainBlocks();
-        }
-    }
-
-    createTerrainBlock(gridX, gridZ, terrainType) {
-        const worldPos = this.gridToWorld(gridX, gridZ);
-        const blockHeight = this.getTerrainBlockHeight(gridX, gridZ, terrainType);
-
-        const terrainBlock = BABYLON.MeshBuilder.CreateBox(`terrain_${gridX}_${gridZ}`, {
-            width: this.cellSize * 0.98,
-            height: blockHeight,
-            depth: this.cellSize * 0.98
-        }, this.scene);
-
-        terrainBlock.position = worldPos;
-        terrainBlock.position.y = blockHeight / 2;
-
-        // Material baseado no tipo de terreno
-        const material = new BABYLON.StandardMaterial(`terrainBlockMat_${terrainType}_${gridX}_${gridZ}`, this.scene);
-        const color = this.getMinecraftTerrainColor(terrainType);
-        material.diffuseColor = new BABYLON.Color3(color.r / 255, color.g / 255, color.b / 255);
-        material.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
-
-        // Adicionar variação de cor para realismo
-        const variation = (Math.random() - 0.5) * 0.1;
-        material.diffuseColor.r = Math.max(0, Math.min(1, material.diffuseColor.r + variation));
-        material.diffuseColor.g = Math.max(0, Math.min(1, material.diffuseColor.g + variation));
-        material.diffuseColor.b = Math.max(0, Math.min(1, material.diffuseColor.b + variation));
-
-        terrainBlock.material = material;
-        terrainBlock.receiveShadows = true;
-
-        // Metadados para identificação
-        terrainBlock.metadata = {
-            terrain: true,
-            terrainType: terrainType,
-            gridX: gridX,
-            gridZ: gridZ
-        };
-
-        this.terrainBlocks.push(terrainBlock);
     }
 
     // Altura do bloco de terreno da célula (= topo dele, já que a base fica em y = 0).
@@ -609,287 +609,6 @@ class GridManager {
         }
         // Pastagem e outros terrenos têm altura padrão
         return Math.max(0.1, elevation * 0.5 + 0.1);
-    }
-
-    mergeTerrainBlocks() {
-        if (!this.terrainBlocks || this.terrainBlocks.length === 0) return;
-
-        log('🔧 Merging terrain blocks para otimização...');
-
-        // Agrupar blocos por tipo de terreno
-        const blocksByType = {};
-        this.terrainBlocks.forEach(block => {
-            const type = block.metadata?.terrainType || 'unknown';
-            if (!blocksByType[type]) blocksByType[type] = [];
-            blocksByType[type].push(block);
-        });
-
-        const mergedBlocks = [];
-        for (const [type, blocks] of Object.entries(blocksByType)) {
-            if (blocks.length <= 1) {
-                mergedBlocks.push(...blocks);
-                continue;
-            }
-
-            // Usar material compartilhado do primeiro bloco
-            const sharedMaterial = blocks[0].material;
-
-            const merged = BABYLON.Mesh.MergeMeshes(blocks, true, true, undefined, false, true);
-            if (merged) {
-                merged.material = sharedMaterial;
-                merged.receiveShadows = true;
-                merged.metadata = { terrain: true, terrainType: type, merged: true };
-                mergedBlocks.push(merged);
-            }
-        }
-
-        this.terrainBlocks = mergedBlocks;
-        log(`🔧 Terreno otimizado: ${mergedBlocks.length} meshes (era ~1600)`);
-    }
-
-    // ===== SISTEMA DE DECORAÇÃO =====
-    createTerrainDecorations() {
-        log('🌿 Criando decorações do terreno...');
-
-        // Criar decorações apenas em terreno de terra/grama
-        for (let x = 0; x < this.gridSize; x++) {
-            for (let z = 0; z < this.gridSize; z++) {
-                const terrainType = this.terrainGrid[x][z];
-
-                // Não decorar área da cidade inicial
-                if (x >= 5 && x <= 16 && z >= 5 && z <= 16) continue;
-
-                // Apenas decorar terreno de terra
-                if (terrainType === 'dirt') {
-                    this.createRandomDecoration(x, z);
-                }
-            }
-        }
-    }
-
-    createRandomDecoration(gridX, gridZ) {
-        // Chance de ter decoração (30%)
-        if (Math.random() > 0.3) return;
-
-        // Verificar se está próximo à água para diferentes tipos de vegetação
-        const nearWater = this.isNearWater(gridX, gridZ);
-
-        // Escolher tipo de decoração baseado na proximidade com água
-        let decorationType;
-        const rand = Math.random();
-
-        if (nearWater) {
-            // Vegetação aquática
-            if (rand < 0.4) decorationType = 'reeds';
-            else if (rand < 0.7) decorationType = 'water_grass';
-            else decorationType = 'small_tree';
-        } else {
-            // Vegetação terrestre
-            if (rand < 0.3) decorationType = 'grass_patch';
-            else if (rand < 0.5) decorationType = 'flowers';
-            else if (rand < 0.8) decorationType = 'bush';
-            else decorationType = 'tree';
-        }
-
-        this.createDecorationMesh(gridX, gridZ, decorationType);
-    }
-
-    isNearWater(gridX, gridZ) {
-        // Verificar células adjacentes para água
-        for (let dx = -2; dx <= 2; dx++) {
-            for (let dz = -2; dz <= 2; dz++) {
-                const checkX = gridX + dx;
-                const checkZ = gridZ + dz;
-
-                if (checkX >= 0 && checkX < this.gridSize &&
-                    checkZ >= 0 && checkZ < this.gridSize) {
-                    if (this.terrainGrid[checkX][checkZ] === 'water') {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    createDecorationMesh(gridX, gridZ, decorationType) {
-        const worldPos = this.gridToWorld(gridX, gridZ);
-        const terrainHeight = Math.max(0.1, this.elevationGrid[gridX][gridZ] * 0.5 + 0.1);
-
-        let decoration;
-
-        switch (decorationType) {
-            case 'grass_patch':
-                decoration = this.createGrassPatch(gridX, gridZ);
-                break;
-            case 'flowers':
-                decoration = this.createFlowers(gridX, gridZ);
-                break;
-            case 'bush':
-                decoration = this.createBush(gridX, gridZ);
-                break;
-            case 'tree':
-                decoration = this.createTree(gridX, gridZ);
-                break;
-            case 'small_tree':
-                decoration = this.createSmallTree(gridX, gridZ);
-                break;
-            case 'reeds':
-                decoration = this.createReeds(gridX, gridZ);
-                break;
-            case 'water_grass':
-                decoration = this.createWaterGrass(gridX, gridZ);
-                break;
-        }
-
-        if (decoration) {
-            decoration.position.x = worldPos.x;
-            decoration.position.z = worldPos.z;
-            decoration.position.y = terrainHeight;
-
-            // Adicionar variação na rotação
-            decoration.rotation.y = Math.random() * Math.PI * 2;
-
-            // Metadados para identificação
-            decoration.metadata = {
-                decoration: true,
-                decorationType: decorationType,
-                gridX: gridX,
-                gridZ: gridZ
-            };
-
-            this.decorationMeshes.push(decoration);
-        }
-    }
-
-    // ===== CRIAÇÃO DE DECORAÇÕES ESPECÍFICAS =====
-    createDecoration(type, gridX, gridZ) {
-        const config = {
-            grass: {
-                mesh: () => BABYLON.MeshBuilder.CreateBox(`grass_${gridX}_${gridZ}`, {
-                    width: 0.3, height: 0.2, depth: 0.3
-                }, this.scene),
-                color: new BABYLON.Color3(0.2, 0.6, 0.1),
-                alpha: 0.8
-            },
-            flower: {
-                mesh: () => BABYLON.MeshBuilder.CreateCylinder(`flower_${gridX}_${gridZ}`, {
-                    height: 0.3, diameterTop: 0.1, diameterBottom: 0.05
-                }, this.scene),
-                color: [
-                    new BABYLON.Color3(1, 0.2, 0.2),
-                    new BABYLON.Color3(1, 1, 0.2),
-                    new BABYLON.Color3(0.8, 0.2, 1),
-                    new BABYLON.Color3(1, 0.6, 0.8)
-                ][Math.floor(Math.random() * 4)]
-            },
-            bush: {
-                mesh: () => {
-                    const bush = BABYLON.MeshBuilder.CreateSphere(`bush_${gridX}_${gridZ}`, {
-                        diameter: 0.6
-                    }, this.scene);
-                    bush.scaling.y = 0.7;
-                    return bush;
-                },
-                color: new BABYLON.Color3(0.15, 0.4, 0.1)
-            },
-            tree: {
-                mesh: () => {
-                    const trunk = BABYLON.MeshBuilder.CreateCylinder(`trunk_${gridX}_${gridZ}`, {
-                        height: 1.2, diameter: 0.2
-                    }, this.scene);
-                    const crown = BABYLON.MeshBuilder.CreateSphere(`crown_${gridX}_${gridZ}`, {
-                        diameter: 1.0
-                    }, this.scene);
-                    crown.position.y = 1.0;
-                    
-                    const trunkMat = new BABYLON.StandardMaterial(`trunkMat_${gridX}_${gridZ}`, this.scene);
-                    trunkMat.diffuseColor = new BABYLON.Color3(0.4, 0.2, 0.1);
-                    trunk.material = trunkMat;
-                    
-                    const crownMat = new BABYLON.StandardMaterial(`crownMat_${gridX}_${gridZ}`, this.scene);
-                    crownMat.diffuseColor = new BABYLON.Color3(0.1, 0.5, 0.1);
-                    crown.material = crownMat;
-                    
-                    const tree = BABYLON.Mesh.MergeMeshes([trunk, crown]);
-                    tree.name = `tree_${gridX}_${gridZ}`;
-                    return tree;
-                }
-            }
-        };
-
-        const decorConfig = config[type];
-        if (!decorConfig) return null;
-
-        const mesh = decorConfig.mesh();
-        
-        if (type !== 'tree') {
-            const material = new BABYLON.StandardMaterial(`${type}Mat_${gridX}_${gridZ}`, this.scene);
-            material.diffuseColor = decorConfig.color;
-            if (decorConfig.alpha) material.alpha = decorConfig.alpha;
-            mesh.material = material;
-        }
-
-        return mesh;
-    }
-
-    createGrassPatch(gridX, gridZ) { return this.createDecoration('grass', gridX, gridZ); }
-    createFlowers(gridX, gridZ) { return this.createDecoration('flower', gridX, gridZ); }
-    createBush(gridX, gridZ) { return this.createDecoration('bush', gridX, gridZ); }
-    createTree(gridX, gridZ) { return this.createDecoration('tree', gridX, gridZ); }
-
-    createSmallTree(gridX, gridZ) {
-        // Árvore menor para perto da água
-        const trunk = BABYLON.MeshBuilder.CreateCylinder(`smallTrunk_${gridX}_${gridZ}`, {
-            height: 0.8, diameter: 0.15
-        }, this.scene);
-
-        const crown = BABYLON.MeshBuilder.CreateSphere(`smallCrown_${gridX}_${gridZ}`, {
-            diameter: 0.7
-        }, this.scene);
-        crown.position.y = 0.6;
-
-        // Materiais
-        const trunkMaterial = new BABYLON.StandardMaterial(`smallTrunkMat_${gridX}_${gridZ}`, this.scene);
-        trunkMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.2, 0.1);
-        trunk.material = trunkMaterial;
-
-        const crownMaterial = new BABYLON.StandardMaterial(`smallCrownMat_${gridX}_${gridZ}`, this.scene);
-        crownMaterial.diffuseColor = new BABYLON.Color3(0.2, 0.6, 0.2);
-        crown.material = crownMaterial;
-
-        // Combinar meshes
-        const tree = BABYLON.Mesh.MergeMeshes([trunk, crown]);
-        tree.name = `smallTree_${gridX}_${gridZ}`;
-
-        return tree;
-    }
-
-    createReeds(gridX, gridZ) {
-        // Juncos para perto da água
-        const reed = BABYLON.MeshBuilder.CreateCylinder(`reed_${gridX}_${gridZ}`, {
-            height: 0.8, diameterTop: 0.02, diameterBottom: 0.05
-        }, this.scene);
-
-        const material = new BABYLON.StandardMaterial(`reedMat_${gridX}_${gridZ}`, this.scene);
-        material.diffuseColor = new BABYLON.Color3(0.3, 0.5, 0.2);
-        reed.material = material;
-
-        return reed;
-    }
-
-    createWaterGrass(gridX, gridZ) {
-        // Grama aquática
-        const grass = BABYLON.MeshBuilder.CreateBox(`waterGrass_${gridX}_${gridZ}`, {
-            width: 0.2, height: 0.4, depth: 0.2
-        }, this.scene);
-
-        const material = new BABYLON.StandardMaterial(`waterGrassMat_${gridX}_${gridZ}`, this.scene);
-        material.diffuseColor = new BABYLON.Color3(0.2, 0.7, 0.3);
-        material.alpha = 0.9;
-        grass.material = material;
-
-        return grass;
     }
 
     // ===== CONVERSÕES DE COORDENADAS =====
@@ -1134,70 +853,20 @@ class GridManager {
         return colors[terrainType] || colors['dirt'];
     }
 
-    // ===== LIMPEZA DE DECORAÇÕES =====
-    clearDecorationsInArea(gridX, gridZ, size = 1) {
-        // Remove decorações em uma área específica (para construção)
-        const decorationsToRemove = [];
-
-        this.decorationMeshes.forEach((decoration, index) => {
-            if (decoration.metadata && decoration.metadata.decoration) {
-                const decX = decoration.metadata.gridX;
-                const decZ = decoration.metadata.gridZ;
-
-                // Verificar se a decoração está na área
-                if (decX >= gridX && decX < gridX + size &&
-                    decZ >= gridZ && decZ < gridZ + size) {
-                    decoration.dispose();
-                    decorationsToRemove.push(index);
-                }
-            }
-        });
-
-        // Remover das arrays (em ordem reversa para não afetar índices)
-        decorationsToRemove.reverse().forEach(index => {
-            this.decorationMeshes.splice(index, 1);
-        });
-    }
-
     // ===== LIMPEZA GERAL =====
     dispose() {
-        // Limpar meshes de água
-        if (this.waterMeshes) {
-            this.waterMeshes.forEach(mesh => {
-                if (mesh && !mesh.isDisposed()) {
-                    mesh.dispose();
-                }
-            });
-            this.waterMeshes = [];
-        }
-
-        // Limpar blocos de terreno
-        if (this.terrainBlocks) {
-            this.terrainBlocks.forEach(block => {
-                if (block && !block.isDisposed()) {
-                    block.dispose();
-                }
-            });
-            this.terrainBlocks = [];
-        }
-
-        // Limpar decorações
-        if (this.decorationMeshes) {
-            this.decorationMeshes.forEach(decoration => {
-                if (decoration && !decoration.isDisposed()) {
-                    decoration.dispose();
-                }
-            });
-            this.decorationMeshes = [];
-        }
-
-        // Limpar mesh principal do terreno
+        [...(this.waterMeshes || []), ...(this.terrainBlocks || [])].forEach(mesh => {
+            if (mesh && !mesh.isDisposed()) mesh.dispose();
+        });
+        this.waterMeshes = [];
+        this.terrainBlocks = [];
+        if (this.waterTimeObserver) this.scene.onBeforeRenderObservable.remove(this.waterTimeObserver);
+        [this.waterShaderMaterial, this.waterSimpleMaterial, this.terrainBlocksMaterial].forEach(m => m?.dispose());
         if (this.terrainMesh) {
             this.terrainMesh.dispose();
             this.terrainMesh = null;
         }
-
-        log('🗑️ GridManager disposed - Terreno e decorações limpos');
+        log('🗑️ GridManager disposed - terreno e água limpos');
     }
 }
 

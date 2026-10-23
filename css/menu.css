@@ -426,15 +426,111 @@ body.has-intro.menu-ready #main-menu::before {
     transform: scale(1.2);
 }
 
+/* ===== QUALIDADE GRÁFICA (menu principal e pausa: [data-gfx-picker], main.js) ===== */
+.gfx-picker {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 6px 10px;
+    padding: 10px 12px;
+    border: 4px solid var(--gda-ink);
+    border-radius: 18px;
+    background: var(--gda-panel);
+    box-shadow: 0 6px 0 var(--gda-ink);
+    color: #fff;
+}
+
+.gfx-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Lilita One', cursive;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 0 var(--gda-ink);
+}
+
+.gfx-seg {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 3px solid var(--gda-ink);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #142a5c;
+}
+
+.gfx-seg button {
+    min-width: 0;
+    padding: 6px 4px;
+    border: 0;
+    border-left: 3px solid var(--gda-ink);
+    background: transparent;
+    color: #cfe6ff;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 0.92rem;
+    cursor: pointer;
+}
+
+.gfx-seg button:first-child {
+    border-left: 0;
+}
+
+.gfx-seg button:hover:not(.active) {
+    background: rgba(72, 221, 250, 0.18);
+    color: #fff;
+}
+
+.gfx-seg button:focus-visible {
+    outline: 3px solid var(--gda-yellow);
+    outline-offset: -3px;
+}
+
+.gfx-seg button.active {
+    background: linear-gradient(180deg, #ffe066 0%, var(--gda-yellow) 55%, var(--gda-orange) 100%);
+    color: var(--gda-ink);
+}
+
+.gfx-hint {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 0.82rem;
+    line-height: 1.3;
+    color: #cfe6ff;
+}
+
+/* Na pausa (painel claro do jogador) */
+.gfx-picker--panel {
+    margin-bottom: 1rem;
+    border-width: 3px;
+    border-color: #000;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.55);
+    box-shadow: none;
+    color: #000;
+}
+
+.gfx-picker--panel .gfx-title {
+    text-shadow: none;
+    color: #000;
+}
+
+.gfx-picker--panel .gfx-hint {
+    color: #3d2a00;
+}
+
 /* ===== ENTRADA DO MENU DEPOIS DA ABERTURA ===== */
 body.has-intro #main-menu .menu-start-btn,
 body.has-intro #main-menu .menu-buttons,
+body.has-intro #main-menu .gfx-picker,
 body.has-intro #main-menu .menu-card {
     transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.2);
 }
 
 body.has-intro:not(.menu-ready) #main-menu .menu-start-btn,
-body.has-intro:not(.menu-ready) #main-menu .menu-buttons {
+body.has-intro:not(.menu-ready) #main-menu .menu-buttons,
+body.has-intro:not(.menu-ready) #main-menu .gfx-picker {
     opacity: 0;
     transform: translateX(-40px);
     pointer-events: none;
@@ -448,6 +544,7 @@ body.has-intro:not(.menu-ready) #main-menu .menu-card {
 
 body.has-intro.menu-ready #main-menu .menu-start-btn { transition-delay: 0.9s; }
 body.has-intro.menu-ready #main-menu .menu-buttons { transition-delay: 1.05s; }
+body.has-intro.menu-ready #main-menu .gfx-picker { transition-delay: 1.15s; }
 body.has-intro.menu-ready #main-menu .welcome-card { transition-delay: 0.95s; }
 body.has-intro.menu-ready #main-menu .menu-billboard { transition-delay: 1.2s; }
 
@@ -738,6 +835,7 @@ body.intro-letterbox .intro-bar { transform: none; }
 @media (prefers-reduced-motion: reduce) {
     body.has-intro #main-menu .menu-start-btn,
     body.has-intro #main-menu .menu-buttons,
+    body.has-intro #main-menu .gfx-picker,
     body.has-intro #main-menu .menu-card,
     .billboard-slide {
         transition: opacity 0.3s ease;

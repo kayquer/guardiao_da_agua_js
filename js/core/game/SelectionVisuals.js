@@ -72,7 +72,9 @@ mixin(GameManager, {
         const selectionParent = new BABYLON.TransformNode(`selection_parent_${building.id}`, this.scene);
         selectionParent.position.x = buildingMesh.position.x;
         selectionParent.position.z = buildingMesh.position.z;
-        selectionParent.position.y = 0;
+        // Base no topo do bloco mais alto da área do prédio (o mesmo que adjustBuildingToTerrain usa);
+        // em y = 0 o anel ficava escondido dentro dos blocos de pastagem/colina.
+        selectionParent.position.y = this.getSelectionBaseHeight(building);
 
         // 1. Main selection ring (torus)
         const selectionRing = BABYLON.MeshBuilder.CreateTorus(`selection_ring_${building.id}`, {
@@ -107,14 +109,16 @@ mixin(GameManager, {
         aura.material = auraMaterial;
 
         // 3. Point light for glow effect
-        const light = new BABYLON.PointLight(`selection_light_${building.id}`,
-            new BABYLON.Vector3(buildingMesh.position.x, buildingMesh.position.y + 2, buildingMesh.position.z),
-            this.scene);
-        light.diffuse = new BABYLON.Color3(1, 0.8, 0);
-        light.specular = new BABYLON.Color3(1, 0.9, 0.5);
+        // Uma luz só, reaproveitada, e que ilumina só o prédio e o chão: criar/apagar uma luz por seleção (ou
+        // uma luz que pega tudo) recompilava o shader de todos os materiais da cena — o jogo engasgava ao clicar.
+        // Posição local ao selectionParent (que já está no centro do prédio, no topo do terreno)
+        const light = this.getSelectionLight();
+        light.position.set(0, Math.max(2, buildingMesh.position.y - selectionParent.position.y + 2), 0);
         light.intensity = 0.5;
         light.range = averageSize * 3;
         light.parent = selectionParent;
+        light.includedOnlyMeshes = [buildingMesh, ...(this.gridManager?.terrainBlocks || [])];
+        light.setEnabled(true);
 
         // Store references for animation
         selectionParent.selectionRing = selectionRing;
@@ -122,6 +126,27 @@ mixin(GameManager, {
         selectionParent.selectionLight = light;
 
         return selectionParent;
+    },
+
+    getSelectionLight() {
+        if (!this.selectionLight || this.selectionLight.isDisposed()) {
+            const light = new BABYLON.PointLight('selection_light', BABYLON.Vector3.Zero(), this.scene);
+            light.diffuse = new BABYLON.Color3(1, 0.8, 0);
+            light.specular = new BABYLON.Color3(1, 0.9, 0.5);
+            this.selectionLight = light;
+        }
+        return this.selectionLight;
+    },
+
+    // Topo do terreno sob o prédio (bloco mais alto da área size × size)
+    getSelectionBaseHeight(building) {
+        const bs = this.buildingSystem;
+        if (!bs || typeof bs.getBuildingAreaTerrainHeight !== 'function'
+            || !Number.isFinite(building?.gridX) || !Number.isFinite(building?.gridZ)) {
+            return 0;
+        }
+        const size = building.config?.size || 1;
+        return bs.getBuildingAreaTerrainHeight(building.gridX, building.gridZ, size) || 0;
     },
 
     removeSelectionIndicator(building) {
@@ -160,9 +185,11 @@ mixin(GameManager, {
                     indicator.selectionAura.dispose();
                 }
 
-                // Dispose light
+                // Light: reaproveitada na próxima seleção (getSelectionLight); só desliga e solta do indicador
                 if (indicator.selectionLight && !indicator.selectionLight.isDisposed()) {
-                    indicator.selectionLight.dispose();
+                    indicator.selectionLight.animations = [];
+                    indicator.selectionLight.parent = null;
+                    indicator.selectionLight.setEnabled(false);
                 }
 
                 // Dispose parent node
@@ -369,10 +396,12 @@ mixin(GameManager, {
 
                 // Position the plane slightly above the terrain
                 const worldPos = this.gridManager.gridToWorld(x, z);
-                const elevation = this.gridManager.getElevation(x, z);
+                // Logo acima do topo real do bloco (GridManager.getTerrainBlockHeight); a fórmula antiga
+                // (elevação × gridHeight + 0.75) flutuava sobre a planície e afundava nas colinas.
+                const blockTop = this.gridManager.getTerrainBlockHeight(x, z);
                 plane.position = new BABYLON.Vector3(
                     worldPos.x,
-                    elevation * this.gridManager.gridHeight + 0.75, // Slightly higher for visibility
+                    blockTop + 0.06,
                     worldPos.z
                 );
 

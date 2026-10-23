@@ -72,7 +72,7 @@ mixin(UIManager, {
         controls.targetAlpha = from + delta;
         const next = facingNorth ? 'norte' : 'sul'; // depois do giro, o próximo clique vai para o outro lado
         this.compassEls?.root.setAttribute('aria-label', `Virar a câmera para o ${next}`);
-        AudioManager.playSound('sfx_click', 0.6);
+        AudioManager.playSound('sfx_camera_rotate');
     },
 
     /** Ângulo na tela (graus, horário a partir do "para cima") de uma direção do mundo {x, z}. */
