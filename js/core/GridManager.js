@@ -524,6 +524,7 @@ class GridManager {
                 simple.diffuseColor = new BABYLON.Color3(1, 1, 1);
                 simple.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
                 this.waterSimpleMaterial = simple;
+                this.setWaterPollution(this.waterPollution || 0);
             }
             material = this.waterSimpleMaterial;
         }
@@ -557,6 +558,7 @@ class GridManager {
             fragmentSource: `
                 precision highp float;
                 uniform float time;
+                uniform float pollution; // 0 limpa, 1 suja (PollutionVisuals, poluição > 70%)
                 varying vec3 vNormal;
                 varying vec3 vCell;
 
@@ -570,6 +572,10 @@ class GridManager {
                     );
                     float alphaVariation = sin(time * 2.0 + vCell.x + vCell.y) * 0.1;
                     float alpha = 0.6 + depth * 0.2 + alphaVariation;
+                    // Poluída: turva, verde-marrom e quase opaca, com manchas que se mexem devagar
+                    float scum = 0.5 + 0.5 * sin(vCell.x * 1.7 + vCell.y * 2.3 + time * 0.4);
+                    waterColor = mix(waterColor, vec3(0.4, 0.4, 0.16) + scum * 0.06, pollution * 0.9);
+                    alpha = mix(alpha, 0.93, pollution * 0.7);
                     vec3 lightDir = normalize(vec3(1.0, 1.0, 0.5));
                     float diffuse = max(dot(vNormal, lightDir), 0.0);
                     gl_FragColor = vec4(waterColor * (0.6 + 0.4 * diffuse), alpha);
@@ -577,7 +583,7 @@ class GridManager {
             `
         }, {
             attributes: ['position', 'normal', 'waterCell'],
-            uniforms: ['worldViewProjection', 'world', 'time'],
+            uniforms: ['worldViewProjection', 'world', 'time', 'pollution'],
             needAlphaBlending: true
         });
         // Um material para toda a água: o tempo anda aqui (antes cada bloco tinha um clone que nunca recebia
@@ -585,7 +591,17 @@ class GridManager {
         this.waterTimeObserver = this.scene.onBeforeRenderObservable.add(() => {
             shaderMaterial.setFloat('time', performance.now() * 0.001);
         });
+        shaderMaterial.setFloat('pollution', this.waterPollution || 0);
         return shaderMaterial;
+    }
+
+    /** Água suja com a poluição (PollutionVisuals): 0 = limpa, 1 = turva. Vale para os dois materiais. */
+    setWaterPollution(level) {
+        this.waterPollution = level;
+        this.waterShaderMaterial?.setFloat('pollution', level);
+        if (this.waterSimpleMaterial) {
+            this.waterSimpleMaterial.diffuseColor = new BABYLON.Color3(1 - 0.38 * level, 1 - 0.42 * level, 1 - 0.64 * level);
+        }
     }
 
     // Altura do bloco de terreno da célula (= topo dele, já que a base fica em y = 0).

@@ -148,6 +148,7 @@ class GameManager {
             this.studySystem = new StudySystem(this);
             this.tutorialSystem = new TutorialSystem(this);
             this.gameOverSystem = new GameOverSystem(this);
+            this.pollutionVisuals = new PollutionVisuals(this);
 
             // Aguardar carregamento do conteúdo educacional
             await this.studySystem.initialize();
@@ -736,6 +737,9 @@ class GameManager {
         if (this.resourceManager) {
             this.resourceManager.update(deltaTime * this.timeScale);
         }
+
+        // Água, ruas e ar sujos com a poluição alta
+        this.pollutionVisuals?.update(deltaTime);
         
         if (this.buildingSystem) {
             this.buildingSystem.update(deltaTime * this.timeScale);
@@ -858,6 +862,8 @@ class GameManager {
 
         // Clima real por cima do dia/noite: nublado escurece, sol forte esquenta a luz, chuva acinzenta o céu
         this.weatherEffects?.applyToLighting(ambientLight);
+        // Poluição acima de 70%: céu e ar com fumaça, sol mais fraco (PollutionVisuals)
+        this.pollutionVisuals?.applyToLighting(ambientLight);
     }
 
     // Clima real da cidade do jogador no mundo 3D (WeatherEffects). current = WeatherService.parse(...).current
@@ -1345,7 +1351,17 @@ class GameManager {
         // Em captura, antes dos outros Esc: decide pelo estado de antes de eles fecharem algo
         // (senão o Esc que fecha um painel também pausaria)
         window.addEventListener('keydown', event => {
-            if (event.key !== 'Escape' || event.repeat) return;
+            if (event.key !== 'Escape') return;
+            // Tutorial interativo (modo coach: guias, aulas rápidas, partes do tutorial inicial) não fecha pelo Esc,
+            // nem os painéis que ele destaca: só cancela a construção em andamento (fecha-se pelos botões do cartão)
+            const tut = this.tutorialSystem;
+            if (tut?.isActive && tut.mode === 'coach' && !document.querySelector('.swal2-container')) {
+                if (this.buildMode) this.exitBuildMode();
+                event.stopImmediatePropagation();
+                event.preventDefault();
+                return;
+            }
+            if (event.repeat) return;
             if (this.gameState === 'paused') {
                 if (!this.uiManager?.isInfoPopupOpen()) this.resumeGame();
             } else if (this.gameState === 'playing' && this.isIdleForEscPause()) {
