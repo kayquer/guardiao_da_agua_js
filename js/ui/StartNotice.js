@@ -5,20 +5,16 @@
  * É a primeira coisa na tela: este script roda logo depois do HTML do aviso, antes do Babylon e do resto.
  * O carregamento segue por trás; main.js espera `StartNotice.accepted` para mostrar o menu (e a abertura).
  * Aceitar: botão (já focado, Enter aceita), com fade. "Recusar" leva ao Google.
- * Aceito, não volta nesta aba (voltar ao menu recarrega a página, ver leaveToMainMenu).
+ * Aparece sempre que o jogo abre (também ao voltar ao menu, que recarrega a página).
  * Testes E2E (navigator.webdriver): desligado, a não ser com ?aviso na URL (tests/notice.spec.js).
  */
 const StartNotice = {
-    STORAGE_KEY: 'guardiao_agua_aviso_aceito',
     DECLINE_URL: 'https://www.google.com.br/',
     FADE_MS: 450,
     el: document.getElementById('start-notice'),
     accepted: null,
 
     enabled() {
-        try {
-            if (sessionStorage.getItem(StartNotice.STORAGE_KEY) === '1') return false;
-        } catch { /* sem sessionStorage: mostra */ }
         return /[?&]aviso\b/.test(location.search) || !navigator.webdriver;
     },
 
@@ -31,7 +27,6 @@ const StartNotice = {
         const acceptBtn = document.getElementById('btn-notice-accept');
         StartNotice.accepted = new Promise(resolve => {
             const accept = () => {
-                try { sessionStorage.setItem(StartNotice.STORAGE_KEY, '1'); } catch { /* aba privada: aparece de novo */ }
                 const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
                 StartNotice.el.classList.add('is-leaving');
                 setTimeout(() => {

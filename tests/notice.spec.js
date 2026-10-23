@@ -4,7 +4,7 @@ const { mockExternalApis } = require('./helpers');
 // Aviso inicial (js/ui/StartNotice.js). Nos outros testes ele não aparece (navigator.webdriver);
 // aqui ?aviso força: é a primeira tela, o menu e a abertura esperam o "Aceitar", "Recusar" vai ao Google.
 
-test('aviso aparece primeiro, segura menu e abertura até "Aceitar" e não volta na mesma aba', async ({ page }) => {
+test('aviso aparece primeiro, segura menu e abertura até "Aceitar" e volta a cada abertura', async ({ page }) => {
     await mockExternalApis(page);
     await page.goto('/index.html?aviso&intro');
 
@@ -26,10 +26,9 @@ test('aviso aparece primeiro, segura menu e abertura até "Aceitar" e não volta
     await expect(notice).toHaveCount(0);
     await page.waitForFunction(() => document.body.classList.contains('intro-playing'), null, { timeout: 30000 });
 
-    // Voltar ao menu recarrega a página: na mesma aba o aviso não se repete
+    // Sempre no início: recarregar (voltar ao menu recarrega a página) mostra o aviso de novo
     await page.goto('/index.html?aviso&nointro');
-    await expect(page.locator('#start-notice')).toHaveCount(0);
-    await expect(page.locator('#main-menu')).toHaveClass(/active/, { timeout: 30000 });
+    await expect(page.locator('#start-notice')).toBeVisible();
 });
 
 test('"Recusar" leva à página inicial do Google', async ({ page }) => {
