@@ -8,7 +8,7 @@
     <meta name="keywords" content="água, educação, sustentabilidade, jogo, simulação">
     <!-- Ícone embutido: sem ele o navegador pede /favicon.ico (404, reprova o E2E com navegador visível) -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
     <!-- CSS -->
     <link rel="stylesheet" href="css/styles.css?v=479ea2e3">
     <link rel="stylesheet" href="css/ui.css?v=b51ef868">
@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
     <link rel="stylesheet" href="css/player.css?v=8b928c2c">
     <link rel="stylesheet" href="css/menu.css?v=2aac1344">
-    <link rel="stylesheet" href="css/notice.css?v=69e40dc2">
+    <link rel="stylesheet" href="css/notice.css?v=86b1e0da">
 
     <!-- Babylon.js CDN -->
     <script src="https://cdn.babylonjs.com/v9.31.2/babylon.js"></script>
@@ -32,68 +32,77 @@
     <!-- Preload de recursos críticos -->
 </head>
 <body>
-    <!-- Aviso inicial (js/ui/StartNotice.js): a primeira coisa na tela. O jogo carrega por trás e o menu/abertura
-         só aparecem depois de "Aceitar"; "Recusar" leva ao Google. -->
+    <!-- Aviso inicial no estilo da tela de aviso do Nintendo Wii (js/ui/StartNotice.js, css/notice.css): a primeira
+         coisa na tela. O jogo carrega por trás e o menu/abertura só aparecem depois de "Aceitar"; "Recusar" leva ao Google. -->
     <div id="start-notice" class="start-notice" role="dialog" aria-modal="true" aria-labelledby="start-notice-title">
-        <div class="start-notice__card" tabindex="-1">
-            <header class="start-notice__header">
-                <img class="start-notice__logo" src="assets/images/institucional/unesp-logo.png" alt="Unesp — Universidade Estadual Paulista" width="850" height="918">
+        <div class="start-notice__scroll">
+            <div class="start-notice__card" tabindex="-1">
+                <h1 id="start-notice-title" class="start-notice__title">
+                    <span class="start-notice__warn" aria-hidden="true">⚠</span>AVISO — LEIA ANTES DE JOGAR
+                </h1>
+                <hr class="start-notice__rule">
+
+                <p class="start-notice__lead">
+                    <strong>Guardião da Água</strong> é um jogo educativo de simulação. O jogador administra uma cidade e
+                    aprende, na prática, de onde vem a água, por que ela pode faltar ou ficar poluída e como as escolhas
+                    de uma cidade afetam rios, nascentes e pessoas. O objetivo é apoiar a Educação Ambiental com foco nos
+                    recursos hídricos.
+                </p>
+
+                <dl class="start-notice__facts">
+                    <div class="start-notice__tile">
+                        <dt>Público-alvo</dt>
+                        <dd>Ensino Fundamental<br>anos finais (6º ao 9º ano)</dd>
+                    </div>
+                    <div class="start-notice__tile">
+                        <dt>Idade de foco</dt>
+                        <dd>11 a 14 anos</dd>
+                    </div>
+                    <div class="start-notice__tile">
+                        <dt>Supervisão</dt>
+                        <dd>Professor ou adulto responsável</dd>
+                    </div>
+                </dl>
+
+                <p class="start-notice__note">
+                    O jogo funciona melhor com a mediação de um <strong>professor ou de um adulto responsável</strong>, que
+                    pode conversar sobre o que acontece na cidade, tirar dúvidas e relacionar o jogo com a realidade do
+                    lugar onde a criança vive.
+                </p>
+
+                <hr class="start-notice__rule">
                 <div class="start-notice__inst">
-                    <p class="start-notice__inst-name">Universidade Estadual Paulista</p>
-                    <p>Faculdade de Ciências e Tecnologia — Campus de Presidente Prudente/SP</p>
-                    <p>Programa de Pós-Graduação em Geografia — Mestrado Profissional — Recursos Hídricos e Meio Ambiente</p>
+                    <img class="start-notice__logo" src="assets/images/institucional/unesp-logo.png" alt="Unesp — Universidade Estadual Paulista" width="850" height="918">
+                    <div>
+                        <p class="start-notice__research">
+                            Este jogo é parte da pesquisa de mestrado <cite>Desenvolvimento de aplicativo para Educação
+                            Ambiental (EA) no Ensino Fundamental: recursos hídricos em foco</cite>, de
+                            <strong>Cláudia Dias Roxinol</strong>.
+                        </p>
+                        <p class="start-notice__inst-lines">
+                            Universidade Estadual Paulista · Faculdade de Ciências e Tecnologia · Campus de Presidente
+                            Prudente/SP · Programa de Pós-Graduação em Geografia — Mestrado Profissional — Recursos
+                            Hídricos e Meio Ambiente · 2026
+                        </p>
+                    </div>
                 </div>
-            </header>
-
-            <h1 id="start-notice-title" class="start-notice__title">Antes de começar</h1>
-            <p class="start-notice__lead">
-                <strong>Guardião da Água</strong> é um jogo educativo de simulação. O jogador administra uma cidade e
-                aprende, na prática, de onde vem a água, por que ela pode faltar ou ficar poluída e como as escolhas
-                de uma cidade afetam rios, nascentes e pessoas.
-            </p>
-
-            <dl class="start-notice__facts">
-                <div>
-                    <dt>Objetivo</dt>
-                    <dd>Apoiar a Educação Ambiental com foco nos recursos hídricos: captar, tratar e economizar água,
-                        controlar a poluição e equilibrar o crescimento da cidade com o meio ambiente.</dd>
-                </div>
-                <div>
-                    <dt>Público-alvo</dt>
-                    <dd>Estudantes do Ensino Fundamental — anos finais (6º ao 9º ano).</dd>
-                </div>
-                <div>
-                    <dt>Idade de foco</dt>
-                    <dd>De 11 a 14 anos.</dd>
-                </div>
-            </dl>
-
-            <div class="start-notice__note">
-                <p><strong>Melhor com um adulto por perto.</strong> O jogo funciona melhor com a mediação de um
-                    professor ou de um adulto responsável, que pode conversar sobre o que acontece na cidade, tirar
-                    dúvidas e relacionar o jogo com a realidade do lugar onde a criança vive.</p>
+                <p class="start-notice__privacy">
+                    O apelido, a idade e a cidade do jogador ficam salvos só neste navegador; a cidade é usada para mostrar
+                    o clima real.
+                </p>
             </div>
-
-            <p class="start-notice__research">
-                Este jogo é parte da pesquisa de mestrado <cite>Desenvolvimento de aplicativo para Educação Ambiental
-                (EA) no Ensino Fundamental: recursos hídricos em foco</cite>, de <strong>Cláudia Dias Roxinol</strong>
-                (Unesp, Presidente Prudente, 2026).
-            </p>
-            <p class="start-notice__privacy">
-                O apelido, a idade e a cidade do jogador ficam salvos só neste navegador; a cidade é usada para mostrar
-                o clima real.
-            </p>
-
-            <footer class="start-notice__footer">
-                <div class="start-notice__actions">
-                    <button id="btn-notice-decline" class="start-notice__btn start-notice__btn--decline" type="button">Recusar</button>
-                    <button id="btn-notice-accept" class="start-notice__btn start-notice__btn--accept" type="button">Aceitar e continuar</button>
-                </div>
-                <p class="start-notice__hint">Ao recusar, você será levado à página inicial do Google.</p>
-            </footer>
         </div>
+
+        <!-- Barra de baixo, como a do menu do Wii -->
+        <footer class="start-notice__dock">
+            <div class="start-notice__actions">
+                <button id="btn-notice-decline" class="start-notice__btn start-notice__btn--decline" type="button">Recusar</button>
+                <button id="btn-notice-accept" class="start-notice__btn start-notice__btn--accept" type="button">Aceitar e continuar</button>
+            </div>
+            <p class="start-notice__hint">Ao recusar, você será levado à página inicial do Google.</p>
+        </footer>
     </div>
-    <script src="js/ui/StartNotice.js?v=289d9a4b"></script>
+    <script src="js/ui/StartNotice.js?v=0bb8b839"></script>
 
     <!-- Tela de Loading -->
     <div id="loading-screen" class="screen active">
