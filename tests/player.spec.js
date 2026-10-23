@@ -248,11 +248,17 @@ test('guias em sequência: água + energia → reservatório → zoneamento → 
     await page.click('#tutorial-next-btn');
     await expect(title).toHaveText('Construa um Reservatório');
     await expect(page.locator('#tutorial-next-btn')).toBeDisabled();
-    const budget = () => page.evaluate(() => window.gameManager.resourceManager.resources.budget.current);
+    // Passo de ação (construir): o jogo roda, as obras andam e a fila de obras esvazia
+    expect(await page.evaluate(() => window.gameManager.gameState)).toBe('playing');
+    const budget =() => page.evaluate(() => window.gameManager.resourceManager.resources.budget.current);
     const before = await budget();
     expect(await build('water_tank', false)).toBe(true);
     await expect(title).toHaveText('Reservatório em obra!');
     expect(await budget()).toBeLessThan(before); // obra do guia é paga (só a prefeitura é grátis)
+    // De volta à fala: congela de novo, mas a espera entre obras corre em tempo real (não trava o "Construir")
+    expect(await page.evaluate(() => window.gameManager.gameState)).toBe('tutorial');
+    await page.evaluate(() => window.gameManager.buildingSystem.activateBuildingCooldown());
+    await page.waitForFunction(() => !window.gameManager.buildingSystem.buildingCooldown.active, null, { timeout: 3000 });
     await page.click('#tutorial-next-btn');
 
     await expect(title).toHaveText('Onde as pessoas vão morar?', { timeout: 8000 });

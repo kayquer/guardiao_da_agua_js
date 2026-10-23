@@ -723,6 +723,9 @@ class GameManager {
         // gameTime também para: é o relógio das obras e missões.
         if (this.gameState === 'tutorial' || (this.gameState === 'playing' && this.pauseReasons.size > 0)) {
             this.uiManager?.update(deltaTime);
+            // A espera entre obras corre em tempo real: congelada, ela travava o "Construir" durante guias e popups
+            // (a obra colocada fica em 0% até o jogo voltar a rodar)
+            this.buildingSystem?.updateBuildingCooldown(deltaTime);
             return;
         }
         if (this.gameState !== 'playing') return;
