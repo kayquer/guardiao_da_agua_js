@@ -54,7 +54,7 @@ mixin(BuildingSystem, {
         let consumption = electricity.consumption, generation = electricity.generation;
         this.buildings.forEach(b => {
             if (b.effectsApplied || !b.underConstruction) return;
-            consumption += b.config?.powerConsumption || 0;
+            consumption += this.getInitialPowerConsumption(b.config); // zona entra na fase 0
             if (!b.isRented) generation += b.config?.powerGeneration || 0;
         });
         return consumption > generation;
@@ -398,6 +398,7 @@ mixin(BuildingSystem, {
 
         // Remover efeitos visuais aprimorados
         this.removeConstructionEffects(buildingData);
+        this.stopConstructionFx(buildingData);
     },
 
     applyConstructionVisuals(buildingData) {
@@ -419,8 +420,8 @@ mixin(BuildingSystem, {
             // Aplicar material de construção semi-transparente
             this.applyConstructionMaterial(buildingData);
 
-            // Criar efeitos de partículas de construção
-            this.createConstructionParticles(buildingData);
+            // Canteiro: poeira, fumacinha, marteladas e luzinhas de obra (startConstructionFx, abaixo)
+            this.startConstructionFx(buildingData);
 
             // Adicionar animação de rotação suave durante construção
             this.startConstructionAnimation(buildingData);
@@ -586,80 +587,445 @@ mixin(BuildingSystem, {
         }
     },
 
-    createCompletionParticles(buildingData, worldPos) {
-        try {
-            const particleCount = 12;
-            const particles = [];
+    // ===== EFEITOS DE OBRA E DE CONCLUSÃO (partículas sutis) =====
+    // Três sistemas de partículas COMPARTILHADOS por todos os canteiros (poeira, fumacinha, faíscas): a cada
+    // quadro o emissor pula para um canteiro sorteado, então 1 ou 10 obras custam o mesmo número de draw
+    // calls. Luzinhas âmbar e o clarão da martelada são instâncias de peças-modelo escondidas (sem PointLight).
+    // Tudo escala com GraphicsQuality.particleScale (baixa: só faíscas pequenas e luzinhas).
+    // A fumaça das zonas industriais (só na Alta) usa o mesmo observador: updateIndustrialSmoke.
 
-            for (let i = 0; i < particleCount; i++) {
-                const particle = BABYLON.MeshBuilder.CreateSphere(`completionParticle_${buildingData.id}_${i}`, {
-                    diameter: 0.15
-                }, this.scene);
+    /** Escala de partículas do preset gráfico atual (1 alta, 0,6 média, 0,3 baixa). */
+    getFxParticleScale() {
+        const level = this.gameManager?.graphicsQuality || (typeof GraphicsQuality !== 'undefined' ? GraphicsQuality.current() : 'high');
+        return typeof GraphicsQuality !== 'undefined' ? GraphicsQuality.preset(level).particleScale : 1;
+    },
 
-                // Posição inicial no centro
-                particle.position = worldPos.clone();
-                particle.position.y += 2;
+    /** isDisposed é método nos meshes e propriedade (boolean) em ParticleSystem/texturas. */
+    isFxDisposed(obj) {
+        return typeof obj.isDisposed === 'function' ? obj.isDisposed() : !!obj.isDisposed;
+    },
 
-                // Material brilhante colorido
-                const particleMaterial = new BABYLON.StandardMaterial(`completionParticleMat_${buildingData.id}_${i}`, this.scene);
-                const hue = (i / particleCount) * 360;
-                const color = this.hslToRgb(hue, 0.8, 0.6);
-                particleMaterial.emissiveColor = new BABYLON.Color3(color.r, color.g, color.b);
-                particleMaterial.disableLighting = true;
-                particle.material = particleMaterial;
-
-                particles.push({ mesh: particle, material: particleMaterial });
-
-                // Animação de explosão
-                const angle = (i / particleCount) * Math.PI * 2;
-                const velocity = {
-                    x: Math.cos(angle) * (2 + Math.random()),
-                    y: 3 + Math.random() * 2,
-                    z: Math.sin(angle) * (2 + Math.random())
-                };
-
-                this.animateCompletionParticle(particle, particleMaterial, velocity, worldPos);
+    /** Textura gerada (DynamicTexture), criada uma vez e compartilhada: 'puff' (mancha redonda) ou 'spark' (estrela). */
+    getFxTexture(kind) {
+        if (!this.fxTextures) this.fxTextures = new Map();
+        const cached = this.fxTextures.get(kind);
+        if (cached && cached.getInternalTexture()) return cached; // descartada por fora (ex.: ps.dispose()) → refaz
+        const size = 64;
+        const tex = new BABYLON.DynamicTexture(`fxTex_${kind}`, { width: size, height: size }, this.scene, false);
+        const ctx = tex.getContext();
+        ctx.clearRect(0, 0, size, size);
+        const c = size / 2;
+        if (kind === 'spark') {
+            const g = ctx.createRadialGradient(c, c, 0, c, c, c);
+            g.addColorStop(0, 'rgba(255,255,255,1)');
+            g.addColorStop(0.25, 'rgba(255,240,200,0.8)');
+            g.addColorStop(1, 'rgba(255,200,120,0)');
+            ctx.fillStyle = g;
+            ctx.beginPath(); // estrela de quatro pontas
+            for (let i = 0; i < 8; i++) {
+                const r = i % 2 ? c * 0.18 : c;
+                const a = i * Math.PI / 4;
+                ctx.lineTo(c + Math.cos(a) * r, c + Math.sin(a) * r);
             }
+            ctx.closePath();
+            ctx.fill();
+        } else {
+            const g = ctx.createRadialGradient(c, c, 0, c, c, c);
+            g.addColorStop(0, 'rgba(255,255,255,1)');
+            g.addColorStop(0.45, 'rgba(255,255,255,0.55)');
+            g.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, size, size);
+        }
+        tex.hasAlpha = true;
+        tex.update();
+        this.fxTextures.set(kind, tex);
+        return tex;
+    },
 
-        } catch (error) {
-            console.warn('⚠️ Erro ao criar partículas de conclusão:', error);
+    /** Peça-modelo escondida dos efeitos (instanciada por canteiro): poste, lâmpada, brilho e clarão. */
+    getFxTemplate(kind) {
+        if (!this.fxTemplates) this.fxTemplates = new Map();
+        const cached = this.fxTemplates.get(kind);
+        if (cached && !cached.isDisposed()) return cached;
+        let mesh;
+        const mat = new BABYLON.StandardMaterial(`fxMat_${kind}`, this.scene);
+        mat.specularColor = BABYLON.Color3.Black();
+        if (kind === 'pole') {
+            mesh = BABYLON.MeshBuilder.CreateCylinder('fxTpl_pole', { height: 0.55, diameter: 0.05, tessellation: 5 }, this.scene);
+            mesh.bakeTransformIntoVertices(BABYLON.Matrix.Translation(0, 0.275, 0));
+            mat.diffuseColor = new BABYLON.Color3(0.35, 0.36, 0.4);
+        } else if (kind === 'lamp') {
+            mesh = BABYLON.MeshBuilder.CreateSphere('fxTpl_lamp', { diameter: 0.13, segments: 4 }, this.scene);
+            mat.diffuseColor = BABYLON.Color3.Black();
+            mat.emissiveColor = new BABYLON.Color3(1, 0.62, 0.12);
+            mat.disableLighting = true;
+        } else { // 'glow' (luzinha âmbar acesa) e 'flash' (clarão da martelada): plano virado para a câmera, aditivo
+            mesh = BABYLON.MeshBuilder.CreatePlane(`fxTpl_${kind}`, { size: 1 }, this.scene);
+            mesh.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+            mat.diffuseColor = BABYLON.Color3.Black();
+            mat.emissiveColor = kind === 'flash' ? new BABYLON.Color3(1, 0.92, 0.7) : new BABYLON.Color3(1, 0.6, 0.12);
+            mat.opacityTexture = this.getFxTexture(kind === 'flash' ? 'spark' : 'puff');
+            mat.alphaMode = BABYLON.Engine.ALPHA_ADD;
+            mat.disableLighting = true;
+            mat.backFaceCulling = false;
+        }
+        mesh.material = mat;
+        mesh.isPickable = false;
+        mesh.isVisible = false; // modelo escondido: só as instâncias aparecem
+        mesh.metadata = { fxTemplate: true };
+        this.fxTemplates.set(kind, mesh);
+        return mesh;
+    },
+
+    /** Sistema de partículas compartilhado dos canteiros ('dust', 'smoke', 'sparks'), criado sob demanda. */
+    getSiteParticleSystem(kind) {
+        if (!this.fxSystems) this.fxSystems = {};
+        const existing = this.fxSystems[kind];
+        if (existing && !this.isFxDisposed(existing)) return existing;
+        const capacity = { dust: 120, smoke: 60, sparks: 80 }[kind];
+        const ps = new BABYLON.ParticleSystem(`fx_site_${kind}`, capacity, this.scene);
+        ps.particleTexture = this.getFxTexture(kind === 'sparks' ? 'spark' : 'puff');
+        ps.emitter = new BABYLON.Vector3(0, -50, 0);
+        ps.minEmitBox = new BABYLON.Vector3(0, 0, 0);
+        ps.maxEmitBox = new BABYLON.Vector3(0, 0, 0);
+        ps.emitRate = 0;
+        if (kind === 'dust') { // poeira de terra baixinha, subindo devagar
+            ps.color1 = new BABYLON.Color4(0.66, 0.55, 0.4, 0.7);
+            ps.color2 = new BABYLON.Color4(0.58, 0.48, 0.35, 0.45);
+            ps.colorDead = new BABYLON.Color4(0.66, 0.57, 0.44, 0);
+            ps.minSize = 0.45; ps.maxSize = 1;
+            ps.minLifeTime = 1.4; ps.maxLifeTime = 2.4;
+            ps.minEmitPower = 0.15; ps.maxEmitPower = 0.4;
+            ps.direction1 = new BABYLON.Vector3(-0.5, 0.6, -0.5);
+            ps.direction2 = new BABYLON.Vector3(0.5, 1, 0.5);
+            ps.minAngularSpeed = -0.6; ps.maxAngularSpeed = 0.6;
+            ps.blendMode = BABYLON.ParticleSystem.BLENDMODE_STANDARD;
+        } else if (kind === 'smoke') { // fumacinha cinza clara do gerador/betoneira
+            ps.color1 = new BABYLON.Color4(0.5, 0.5, 0.53, 0.6);
+            ps.color2 = new BABYLON.Color4(0.42, 0.42, 0.45, 0.5);
+            ps.colorDead = new BABYLON.Color4(0.7, 0.7, 0.72, 0);
+            ps.minSize = 0.18; ps.maxSize = 0.4;
+            ps.minLifeTime = 1.6; ps.maxLifeTime = 2.6;
+            ps.minEmitPower = 0.5; ps.maxEmitPower = 0.8;
+            ps.direction1 = new BABYLON.Vector3(-0.15, 1, -0.15);
+            ps.direction2 = new BABYLON.Vector3(0.15, 1, 0.15);
+            ps.addSizeGradient(0, 0.5);
+            ps.addSizeGradient(1, 1.8);
+            ps.blendMode = BABYLON.ParticleSystem.BLENDMODE_STANDARD;
+        } else { // faíscas da martelada: rajada curta (manualEmitCount), caem com a gravidade
+            ps.color1 = new BABYLON.Color4(1, 0.9, 0.5, 1);
+            ps.color2 = new BABYLON.Color4(1, 0.65, 0.2, 1);
+            ps.colorDead = new BABYLON.Color4(1, 0.4, 0.05, 0);
+            ps.minSize = 0.08; ps.maxSize = 0.16;
+            ps.minLifeTime = 0.25; ps.maxLifeTime = 0.5;
+            ps.minEmitPower = 1.2; ps.maxEmitPower = 2.4;
+            ps.direction1 = new BABYLON.Vector3(-1, 1.2, -1);
+            ps.direction2 = new BABYLON.Vector3(1, 2, 1);
+            ps.gravity = new BABYLON.Vector3(0, -9, 0);
+            ps.manualEmitCount = 0;
+            ps.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
+        }
+        ps.start();
+        this.fxSystems[kind] = ps;
+        return ps;
+    },
+
+    /** Liga o observador único dos efeitos (canteiros, conclusões, fumaça industrial) e o aviso de qualidade. */
+    ensureBuildingFx() {
+        if (!this.scene) return;
+        if (!this.fxSites) this.fxSites = new Map();
+        if (!this.fxBursts) this.fxBursts = [];
+        if (!this.fxObserver) {
+            this.fxObserver = this.scene.onBeforeRenderObservable.add(() => {
+                try {
+                    this.updateBuildingFx();
+                } catch (error) {
+                    console.warn('⚠️ Erro nos efeitos de obra:', error);
+                }
+            });
+        }
+        if (!this.fxQualityUnsub && typeof GraphicsQuality !== 'undefined') {
+            this.fxQualityUnsub = GraphicsQuality.onChange(() => this.updateIndustrialSmoke(true));
         }
     },
 
-    animateCompletionParticle(particle, material, velocity, startPos) {
-        const startTime = Date.now();
-        const duration = 2000;
-        const gravity = -0.01;
+    /** Centro do lote no chão e meia largura (unidades do mundo). */
+    getBuildingFootprint(buildingData) {
+        const size = buildingData.config?.size || 1;
+        const cell = this.gridManager.cellSize;
+        const w = this.gridManager.gridToWorld(buildingData.gridX, buildingData.gridZ);
+        const y = this.getBuildingAreaTerrainHeight(buildingData.gridX, buildingData.gridZ, size);
+        return { center: new BABYLON.Vector3(w.x + (size - 1) * cell / 2, y, w.z + (size - 1) * cell / 2), half: size * cell / 2 };
+    },
 
-        const animateParticle = () => {
-            if (particle.isDisposed()) return;
+    startConstructionFx(buildingData) {
+        try {
+            this.ensureBuildingFx();
+            this.stopConstructionFx(buildingData);
+            const { center, half } = this.getBuildingFootprint(buildingData);
+            const site = { building: buildingData, center, half, parts: [], glows: [], nextHit: performance.now() + 600 + Math.random() * 800, flash: null, flashAt: 0 };
+            // Duas luzinhas âmbar em cantos opostos do lote (piscam alternadas)
+            const corners = [[-1, -1], [1, 1]];
+            corners.forEach(([sx, sz], i) => {
+                const base = center.add(new BABYLON.Vector3(sx * half * 0.86, 0.02, sz * half * 0.86));
+                const pole = this.getFxTemplate('pole').createInstance(`fxPole_${buildingData.id}_${i}`);
+                pole.position.copyFrom(base);
+                const lamp = this.getFxTemplate('lamp').createInstance(`fxLamp_${buildingData.id}_${i}`);
+                lamp.position.copyFrom(base).addInPlaceFromFloats(0, 0.6, 0);
+                const glow = this.getFxTemplate('glow').createInstance(`fxGlow_${buildingData.id}_${i}`);
+                glow.position.copyFrom(lamp.position);
+                glow.scaling.setAll(0.42);
+                [pole, lamp, glow].forEach(m => { m.isPickable = false; });
+                site.parts.push(pole, lamp, glow);
+                site.glows.push(glow);
+            });
+            const flash = this.getFxTemplate('flash').createInstance(`fxFlash_${buildingData.id}`);
+            flash.isPickable = false;
+            flash.setEnabled(false);
+            site.flash = flash;
+            site.parts.push(flash);
+            this.fxSites.set(buildingData.id, site);
+            buildingData.constructionFx = site;
+        } catch (error) {
+            console.warn('⚠️ Erro ao criar efeitos de obra:', error);
+        }
+    },
 
-            const elapsed = Date.now() - startTime;
-            const progress = elapsed / duration;
+    /** Tira luzinhas/clarão do canteiro (obra concluída, demolida, cancelada ou save recarregado). */
+    stopConstructionFx(buildingData) {
+        const site = buildingData?.constructionFx || this.fxSites?.get(buildingData?.id);
+        if (!site) return;
+        site.parts.forEach(m => { if (!m.isDisposed()) m.dispose(); });
+        site.parts.length = 0;
+        this.fxSites?.delete(buildingData.id);
+        delete buildingData.constructionFx;
+    },
 
-            if (progress >= 1) {
-                material.dispose();
-                particle.dispose();
-                return;
+    /** Topo do prédio em obra (o mesh cresce de baixo pra cima): onde as marteladas acontecem. */
+    getSiteHitPoint(site) {
+        const mesh = site.building.mesh;
+        let top = site.center.y + 0.3;
+        if (mesh && !mesh.isDisposed()) {
+            try {
+                top = Math.max(top, mesh.getHierarchyBoundingVectors(true).max.y);
+            } catch (e) { /* mesh trocando (replaceBuildingMesh): usa o chão */ }
+        }
+        const r = site.half * 0.55;
+        return new BABYLON.Vector3(site.center.x + (Math.random() * 2 - 1) * r, top, site.center.z + (Math.random() * 2 - 1) * r);
+    },
+
+    updateBuildingFx() {
+        const now = performance.now();
+        const scale = this.getFxParticleScale();
+        const sites = this.fxSites ? [...this.fxSites.values()] : [];
+        const running = this.gameManager?.isSimulationRunning ? this.gameManager.isSimulationRunning() : true;
+
+        // Canteiro sem prédio (removido por um caminho que não passou por removeConstructionVisuals)
+        sites.forEach(site => {
+            if (!this.buildings.has(site.building.id) || !site.building.underConstruction) this.stopConstructionFx(site.building);
+        });
+        const live = this.fxSites ? [...this.fxSites.values()] : [];
+
+        if (live.length || this.fxSystems) {
+            const dust = this.getSiteParticleSystem('dust');
+            const smoke = this.getSiteParticleSystem('smoke');
+            const sparks = this.getSiteParticleSystem('sparks');
+            const heavy = scale >= 0.5; // baixa: sem poeira nem fumaça
+            dust.emitRate = live.length && heavy && running ? 10 * live.length * scale : 0;
+            smoke.emitRate = live.length && heavy && running ? 2.5 * live.length * scale : 0;
+            if (live.length) {
+                const site = live[Math.floor(Math.random() * live.length)];
+                const h = site.half * 0.85;
+                dust.emitter.copyFrom(site.center);
+                dust.minEmitBox.set(-h, 0.2, -h);
+                dust.maxEmitBox.set(h, 0.5, h);
+                const s2 = live[Math.floor(Math.random() * live.length)];
+                smoke.emitter.copyFromFloats(s2.center.x + s2.half * 0.6, s2.center.y + 0.3, s2.center.z - s2.half * 0.6);
+                const w = this.gameManager?.weatherEffects?.wind;
+                smoke.gravity.set((w?.x || 0) * 0.25, 0, (w?.z || 0) * 0.25);
             }
+            // Martelada: rajada de faíscas + clarão rápido num ponto do topo, a cada 0,7-1,9 s por canteiro
+            for (const site of live) {
+                if (running && now >= site.nextHit) {
+                    site.nextHit = now + 700 + Math.random() * 1200;
+                    if (sparks.manualEmitCount > 0) continue; // outra rajada neste quadro: fica para o próximo
+                    const p = this.getSiteHitPoint(site);
+                    sparks.emitter.copyFrom(p);
+                    sparks.manualEmitCount = Math.max(2, Math.round(9 * scale));
+                    site.flash.position.copyFrom(p).addInPlaceFromFloats(0, 0.05, 0);
+                    site.flash.setEnabled(true);
+                    site.flashAt = now;
+                }
+                const t = (now - site.flashAt) / 160;
+                if (site.flash.isEnabled()) {
+                    if (t >= 1) site.flash.setEnabled(false);
+                    else site.flash.scaling.setAll(0.25 + 0.45 * Math.sin(t * Math.PI));
+                }
+                // Luzinhas: piscam alternadas (meio segundo cada)
+                const phase = Math.floor(now / 520) % 2;
+                site.glows.forEach((g, i) => g.setEnabled(i === phase));
+            }
+        }
 
-            // Física simples
-            const time = elapsed / 1000;
-            particle.position.x = startPos.x + velocity.x * time;
-            particle.position.z = startPos.z + velocity.z * time;
-            particle.position.y = startPos.y + velocity.y * time + 0.5 * gravity * time * time;
+        // Conclusões em andamento (poeira se abrindo + brilho no chão)
+        if (this.fxBursts?.length) {
+            this.fxBursts = this.fxBursts.filter(burst => {
+                const t = (now - burst.start) / burst.duration;
+                if (t >= 1) {
+                    burst.systems.forEach(ps => ps.dispose(false)); // false: a textura é compartilhada
+                    if (!burst.glow.isDisposed()) burst.glow.dispose();
+                    return false;
+                }
+                const k = Math.min(1, t * 1.6);
+                burst.glow.scaling.setAll(burst.size * (0.4 + 1.1 * k));
+                burst.glow.visibility = Math.max(0, 1 - t) * 0.9;
+                return true;
+            });
+        }
 
-            // Fade out
-            material.alpha = 1 - progress;
+        this.updateIndustrialSmoke(false, now);
+    },
 
-            // Rotação
-            particle.rotation.x += 0.1;
-            particle.rotation.y += 0.1;
+    /** Efeito de conclusão: anel de poeira se abrindo no chão, faíscas subindo e um brilho rápido. */
+    createCompletionParticles(buildingData) {
+        try {
+            this.ensureBuildingFx();
+            const scale = this.getFxParticleScale();
+            const { center, half } = this.getBuildingFootprint(buildingData);
+            const systems = [];
+            const dust = new BABYLON.ParticleSystem(`fx_completion_dust_${buildingData.id}`, 60, this.scene);
+            dust.particleTexture = this.getFxTexture('puff');
+            dust.emitter = center.add(new BABYLON.Vector3(0, 0.4, 0));
+            dust.particleEmitterType = new BABYLON.CylinderParticleEmitter(half * 0.75, 0.05, 1, 0);
+            dust.color1 = new BABYLON.Color4(0.74, 0.64, 0.49, 0.65);
+            dust.color2 = new BABYLON.Color4(0.66, 0.57, 0.44, 0.55);
+            dust.colorDead = new BABYLON.Color4(0.8, 0.74, 0.6, 0);
+            dust.minSize = 0.5; dust.maxSize = 1.1;
+            dust.minLifeTime = 0.8; dust.maxLifeTime = 1.4;
+            dust.minEmitPower = 1.2; dust.maxEmitPower = 2.2;
+            dust.addSizeGradient(0, 0.6);
+            dust.addSizeGradient(1, 1.6);
+            dust.manualEmitCount = Math.round(40 * scale);
+            dust.blendMode = BABYLON.ParticleSystem.BLENDMODE_STANDARD;
+            dust.start();
+            systems.push(dust);
 
-            requestAnimationFrame(animateParticle);
+            const glints = new BABYLON.ParticleSystem(`fx_completion_glints_${buildingData.id}`, 30, this.scene);
+            glints.particleTexture = this.getFxTexture('spark');
+            glints.emitter = center.clone();
+            glints.minEmitBox = new BABYLON.Vector3(-half * 0.7, 0.2, -half * 0.7);
+            glints.maxEmitBox = new BABYLON.Vector3(half * 0.7, 1.4, half * 0.7);
+            glints.direction1 = new BABYLON.Vector3(-0.1, 0.6, -0.1);
+            glints.direction2 = new BABYLON.Vector3(0.1, 1, 0.1);
+            glints.color1 = new BABYLON.Color4(1, 0.95, 0.7, 1);
+            glints.color2 = new BABYLON.Color4(0.7, 1, 0.85, 1);
+            glints.colorDead = new BABYLON.Color4(1, 1, 1, 0);
+            glints.minSize = 0.1; glints.maxSize = 0.2;
+            glints.minLifeTime = 0.6; glints.maxLifeTime = 1.1;
+            glints.minEmitPower = 0.5; glints.maxEmitPower = 1;
+            glints.manualEmitCount = Math.max(4, Math.round(16 * scale));
+            glints.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
+            glints.start();
+            systems.push(glints);
+
+            // Brilho no chão (plano deitado, aditivo) que se abre e some
+            const glow = BABYLON.MeshBuilder.CreatePlane(`fx_completion_glow_${buildingData.id}`, { size: 1 }, this.scene);
+            glow.rotation.x = Math.PI / 2;
+            glow.position.copyFrom(center).addInPlaceFromFloats(0, 0.05, 0);
+            glow.material = this.getFxTemplate('glow').material; // material compartilhado (não descartar)
+            glow.isPickable = false;
+            this.fxBursts.push({ systems, glow, start: performance.now(), duration: 1800, size: half * 3.4 });
+        } catch (error) {
+            console.warn('⚠️ Erro ao criar efeito de conclusão:', error);
+        }
+    },
+
+    // ===== FUMAÇA DAS ZONAS INDUSTRIAIS (só na qualidade Alta) =====
+    // Um único sistema de partículas: a cada quadro o emissor vai para uma chaminé sorteada (peso = fase da
+    // zona), no topo das peças mais altas do lote. Fase 1 = 1 chaminé, fase 3 = 3 e mais fumaça.
+
+    /** Chaminés das zonas industriais prontas: [{ building, pos, weight }]. */
+    collectIndustrialChimneys() {
+        const list = [];
+        for (const b of this.buildings.values()) {
+            if (!/^industrial/.test(b.config?.zoneType || '') || b.underConstruction || !b.active) continue;
+            const stage = Number(b.zoneStage) || 0;
+            if (stage < 1) continue;
+            const pieces = (b.zonePieces || []).filter(p => p.node && !p.node.isDisposed() && !p.key.startsWith('prop:'));
+            const tops = pieces.map(p => {
+                try {
+                    const { min, max } = p.node.getHierarchyBoundingVectors(true);
+                    return { pos: new BABYLON.Vector3((min.x + max.x) / 2, max.y + 0.05, (min.z + max.z) / 2), h: max.y };
+                } catch (e) { return null; }
+            }).filter(Boolean).sort((a, b) => b.h - a.h).slice(0, stage);
+            tops.forEach(t => list.push({ building: b, pos: t.pos, weight: stage }));
+        }
+        return list;
+    },
+
+    /** Liga/desliga e alimenta a fumaça industrial. force: qualidade mudou (refaz na hora). */
+    updateIndustrialSmoke(force = false, now = performance.now()) {
+        const level = this.gameManager?.graphicsQuality || (typeof GraphicsQuality !== 'undefined' ? GraphicsQuality.current() : 'high');
+        const wanted = level === 'high';
+        if (!wanted) {
+            if (this.industrialSmoke) {
+                this.industrialSmoke.dispose(false);
+                this.industrialSmoke = null;
+                this.industrialChimneys = [];
+            }
+            return;
+        }
+        if (force || !this.industrialChimneysAt || now - this.industrialChimneysAt > 2000) {
+            this.industrialChimneys = this.collectIndustrialChimneys();
+            this.industrialChimneysAt = now;
+        }
+        const chimneys = (this.industrialChimneys || []).filter(c => this.buildings.has(c.building.id) && c.building.active);
+        if (!chimneys.length && !this.industrialSmoke) return;
+        if (!this.industrialSmoke) {
+            const ps = new BABYLON.ParticleSystem('fx_industrial_smoke', 400, this.scene);
+            ps.particleTexture = this.getFxTexture('puff');
+            ps.emitter = new BABYLON.Vector3(0, -50, 0);
+            ps.minEmitBox = new BABYLON.Vector3(-0.06, 0, -0.06);
+            ps.maxEmitBox = new BABYLON.Vector3(0.06, 0, 0.06);
+            ps.color1 = new BABYLON.Color4(0.58, 0.58, 0.6, 0.42);
+            ps.color2 = new BABYLON.Color4(0.45, 0.45, 0.48, 0.36);
+            ps.colorDead = new BABYLON.Color4(0.65, 0.65, 0.68, 0);
+            ps.minSize = 0.25; ps.maxSize = 0.45;
+            ps.addSizeGradient(0, 0.5);
+            ps.addSizeGradient(1, 2.6);
+            ps.minLifeTime = 2.5; ps.maxLifeTime = 4;
+            ps.minEmitPower = 0.6; ps.maxEmitPower = 0.9;
+            ps.direction1 = new BABYLON.Vector3(-0.08, 1, -0.08);
+            ps.direction2 = new BABYLON.Vector3(0.08, 1, 0.08);
+            ps.minAngularSpeed = -0.4; ps.maxAngularSpeed = 0.4;
+            ps.blendMode = BABYLON.ParticleSystem.BLENDMODE_STANDARD;
+            ps.start();
+            this.industrialSmoke = ps;
+        }
+        const ps = this.industrialSmoke;
+        const totalWeight = chimneys.reduce((s, c) => s + c.weight, 0);
+        ps.emitRate = totalWeight * 2.2;
+        if (totalWeight) {
+            let r = Math.random() * totalWeight;
+            const pick = chimneys.find(c => (r -= c.weight) <= 0) || chimneys[0];
+            ps.emitter.copyFrom(pick.pos);
+        }
+        const w = this.gameManager?.weatherEffects?.wind;
+        ps.gravity.set((w?.x || 0) * 0.35, 0.05, (w?.z || 0) * 0.35);
+    },
+
+    /** Para testes/depuração: quantos canteiros com efeito, bursts de conclusão e chaminés ativas. */
+    getBuildingFxStats() {
+        return {
+            sites: this.fxSites?.size || 0,
+            bursts: this.fxBursts?.length || 0,
+            siteParts: [...(this.fxSites?.values() || [])].reduce((s, site) => s + site.parts.length, 0),
+            dustRate: this.fxSystems?.dust?.emitRate || 0,
+            industrialSmoke: !!this.industrialSmoke,
+            chimneys: (this.industrialChimneys || []).length,
+            smokeRate: this.industrialSmoke?.emitRate || 0
         };
-
-        animateParticle();
     },
 
     animateBuildingCompletion(buildingData) {

@@ -11,14 +11,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
     <!-- CSS -->
     <link rel="stylesheet" href="css/styles.css?v=479ea2e3">
-    <link rel="stylesheet" href="css/ui.css?v=b51ef868">
-    <link rel="stylesheet" href="css/responsive.css?v=5ca8d06b">
+    <link rel="stylesheet" href="css/ui.css?v=e40c3a6e">
+    <link rel="stylesheet" href="css/responsive.css?v=c86a8e7e">
     <link rel="stylesheet" href="css/tutorial.css?v=3a0ecf72">
     <link rel="stylesheet" href="css/lessons.css?v=75823501">
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
     <link rel="stylesheet" href="css/player.css?v=8b928c2c">
     <link rel="stylesheet" href="css/menu.css?v=2aac1344">
     <link rel="stylesheet" href="css/notice.css?v=86b1e0da">
+    <link rel="stylesheet" href="css/toasts.css?v=bcd03933">
 
     <!-- Babylon.js CDN -->
     <script src="https://cdn.babylonjs.com/v9.31.2/babylon.js"></script>
@@ -370,10 +371,6 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="notifications" id="notifications">
-                        <!-- Notificações aparecerão aqui -->
-                    </div>
                 </div>
             </div>
 
@@ -413,8 +410,21 @@
                 <div class="overlay-buttons pp-buttons">
                     <button id="btn-resume" class="overlay-btn primary">▶ Continuar</button>
                     <button id="btn-help" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-help.svg" alt="" aria-hidden="true" draggable="false"> Ajuda e controles</button>
+                    <button id="btn-notifications" class="overlay-btn secondary" aria-haspopup="dialog">📜 Notificações</button>
                     <button id="btn-save-game" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-save.svg" alt="" aria-hidden="true" draggable="false"> Salvar jogo</button>
                     <button id="btn-main-menu" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-home.svg" alt="" aria-hidden="true" draggable="false"> Menu principal</button>
+                </div>
+            </div>
+            <!-- Histórico de notificações da partida (UIManager.openNotificationHistory; dados em NotificationLog) -->
+            <div id="notification-history" class="overlay-content notif-history" role="dialog" aria-modal="true" aria-labelledby="nh-title" hidden>
+                <div class="nh-head">
+                    <h2 id="nh-title">📜 Notificações</h2>
+                    <span class="nh-count" id="nh-count"></span>
+                </div>
+                <p class="nh-hint">Todos os avisos desta partida, na ordem em que chegaram (o mais novo fica no fim).</p>
+                <ol id="nh-list" class="nh-list" tabindex="0" aria-label="Notificações em ordem de chegada"></ol>
+                <div class="overlay-buttons nh-buttons">
+                    <button id="btn-notifications-back" class="overlay-btn primary">⬅ Voltar</button>
                 </div>
             </div>
         </div>
@@ -613,9 +623,9 @@
 
     <!-- Clean Code Refactoring: Game Constants (loaded first) -->
     <script src="js/config/GameConstants.js?v=6d402c62"></script>
-    <script src="js/data/buildings.js?v=fe1747ef"></script>
-    <script src="js/data/buildingModels.js?v=cd78dbb9"></script>
-    <script src="js/data/zoneLots.js?v=f3db567b"></script>
+    <script src="js/data/buildings.js?v=27bfbfb2"></script>
+    <script src="js/data/buildingModels.js?v=4705b2b2"></script>
+    <script src="js/data/zoneLots.js?v=6509f3b0"></script>
     <script src="js/data/missions.js?v=32aa1b5d"></script>
     <script src="js/data/brazil.js?v=c0fa1745"></script>
     <script src="js/data/lessons.js?v=06e4cea9"></script>
@@ -706,48 +716,52 @@
     <!-- Core systems - ordem de dependência -->
     <script src="js/systems/GraphicsQuality.js?v=082950a2"></script>
     <script src="js/core/GridManager.js?v=1782dd90"></script>
-    <script src="js/core/ResourceManager.js?v=0d623f9e"></script>
+    <script src="js/core/ResourceManager.js?v=dcc0ad92"></script>
 
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=845fd95d"></script>
 
-    <script src="js/core/GameManager.js?v=fb6c283e"></script>
+    <script src="js/core/GameManager.js?v=71badec8"></script>
     <script src="js/core/game/Diagnostics.js?v=7a3bbf0a"></script>
-    <script src="js/core/game/SelectionVisuals.js?v=d489c455"></script>
+    <script src="js/core/game/SelectionVisuals.js?v=4ce5ba4f"></script>
     <script src="js/core/game/CameraGuard.js?v=47e1747c"></script>
 
     <!-- Game systems -->
-    <script src="js/systems/BuildingSystem.js?v=35389ebc"></script>
-    <script src="js/systems/building/BuildingMeshes.js?v=ad893688"></script>
-    <script src="js/systems/building/BuildingFeedback.js?v=4aad97af"></script>
+    <script src="js/systems/BuildingSystem.js?v=2514c6ec"></script>
+    <script src="js/systems/building/BuildingMeshes.js?v=a95bab25"></script>
+    <script src="js/systems/building/BuildingFeedback.js?v=bc4c9b74"></script>
     <script src="js/systems/building/BuildingModels.js?v=1f5361b0"></script>
-    <script src="js/systems/building/ZoneGrowth.js?v=c700bc4a"></script>
+    <script src="js/systems/building/ZoneGrowth.js?v=51a5d5d1"></script>
+    <script src="js/systems/building/TreeGrowth.js?v=c997c09b"></script>
+    <script src="js/systems/building/BuildingEfficiency.js?v=72da8913"></script>
     <script src="js/systems/roads/RoadNetwork.js?v=3f427dee"></script>
-    <script src="js/systems/roads/RoadMeshes.js?v=ca2ff414"></script>
+    <script src="js/systems/roads/RoadMeshes.js?v=59096103"></script>
     <script src="js/systems/roads/RoadPlacement.js?v=dad65faf"></script>
     <script src="js/systems/shared/VehicleMeshes.js?v=53516ed0"></script>
     <script src="js/systems/CityLifeSystem.js?v=75ebc9a1"></script>
-    <script src="js/systems/UIManager.js?v=9c5e7bba"></script>
-    <script src="js/systems/ui/MobileTouch.js?v=8bdbbd37"></script>
+    <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
+    <script src="js/systems/UIManager.js?v=4eea0972"></script>
+    <script src="js/systems/ui/MobileTouch.js?v=107709dc"></script>
     <script src="js/systems/ui/StudyBookUI.js?v=af06ca77"></script>
     <script src="js/systems/ui/LoanUI.js?v=aa261551"></script>
-    <script src="js/systems/ui/ResourcePanels.js?v=3f301848"></script>
-    <script src="js/systems/ui/MobilePanels.js?v=32975648"></script>
+    <script src="js/systems/ui/ResourcePanels.js?v=6500428f"></script>
+    <script src="js/systems/ui/MobilePanels.js?v=a6989c98"></script>
     <script src="js/systems/ui/WeatherUI.js?v=f5c4df70"></script>
     <script src="js/systems/ui/CompassUI.js?v=9e3e44fa"></script>
     <script src="js/systems/ui/LessonBookUI.js?v=e895679f"></script>
+    <script src="js/systems/ui/TreeInfoUI.js?v=ea5f108b"></script>
     <script src="js/systems/LoanManager.js?v=ba076174"></script>
     <script src="js/systems/QuestSystem.js?v=9641c073"></script>
     <script src="js/systems/ui/MissionUI.js?v=212a9e61"></script>
-    <script src="js/systems/EventSystem.js?v=19130053"></script>
+    <script src="js/systems/EventSystem.js?v=0cdfa8b3"></script>
     <script src="js/systems/SaveSystem.js?v=62eb9f81"></script>
-    <script src="js/systems/StudySystem.js?v=8823cd07"></script>
+    <script src="js/systems/StudySystem.js?v=dc3813ed"></script>
     <script src="js/systems/TutorialSystem.js?v=d15c2f24"></script>
     <script src="js/systems/GameOverSystem.js?v=6c7d619e"></script>
     <script src="js/systems/PlayerProfile.js?v=cd0a9a04"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
-    <script src="js/systems/TreeSystem.js?v=99c82675"></script>
+    <script src="js/systems/TreeSystem.js?v=a35a8ad1"></script>
     <script src="js/systems/WeatherService.js?v=ece5b194"></script>
     <script src="js/systems/LessonProgress.js?v=442710af"></script>
 

@@ -40,7 +40,6 @@ class UIManager {
             missionProgress: document.getElementById('mission-progress'),
             
             // Notificações
-            notifications: document.getElementById('notifications'),
             
             // Overlays
             pauseOverlay: document.getElementById('pause-overlay'),
@@ -67,8 +66,9 @@ class UIManager {
         this.currentCategory = this.uiState.currentCategory;
         this.selectedBuilding = this.uiState.selectedBuilding;
 
-        this.notifications = [];
-        this.maxNotifications = 5;
+        // Toasts e histórico de notificações da partida (NotificationLog: salvo com o jogo)
+        this.maxVisibleToasts = 4;
+        this.notificationLog = new NotificationLog();
 
         // Timers
         this.updateTimer = 0;
@@ -221,12 +221,8 @@ class UIManager {
         // ===== LATERAL MENU STABILITY FIX: Improved category button handling =====
         this.setupCategoryButtons();
         
-        // Fechar notificações
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('notification-close')) {
-                this.removeNotification(e.target.parentElement);
-            }
-        });
+        // Histórico de notificações na tela de pausa (o toast fecha pelo próprio clique, em showNotification)
+        this.setupNotificationHistory();
 
         // ===== ENHANCED RESOURCE PANEL INTERACTION SYSTEM =====
         this.setupEnhancedResourcePanelInteractions();
@@ -663,7 +659,7 @@ class UIManager {
         const popups = [
             '.swal2-container', '.central-alert-overlay', '#study-book-overlay', '#controls-modal',
             '#weather-modal', '#lessons-hub', '#lesson-book', '.mission-interface', '.choice-dialog', '.loan-interface',
-            '.resource-details-panel'
+            '.resource-details-panel', '#notification-history'
         ];
         return popups.some(selector => shown(document.querySelector(selector)));
     }
@@ -1257,6 +1253,7 @@ class UIManager {
     showPauseOverlay() {
         if (this.elements.pauseOverlay) {
             this.renderPlayerPanel();
+            this.closeNotificationHistory({ focus: false });
             this.elements.pauseOverlay.classList.remove('hidden');
         }
     }
@@ -1476,148 +1473,181 @@ class UIManager {
         document.body.appendChild(overlay);
     }
 
-    // ===== NOTIFICAÇÕES =====
+    // ===== NOTIFICAÇÕES (toasts) =====
+    // Toasts flutuantes empilhados em #toast-stack (css/toasts.css): no computador, no centro, logo acima da barra
+    // inferior (não cobre o menu de construção nem o painel da direita); no celular, no topo, logo abaixo dos recursos.
+    // Somem sozinhos, clique fecha, no máximo maxVisibleToasts na tela (o mais antigo sai). Cada aviso também vai
+    // para o histórico da partida (notificationLog, salvo com o jogo), revisto na pausa em "📜 Notificações".
     showNotification(message, type = 'info', duration = 5000) {
         // Bolha baixinha só com o jogo rodando e se nenhum outro som acabou de tocar (a ação já tem o dela)
         if (typeof AudioManager !== 'undefined' && this.gameManager?.gameState === 'playing') {
             AudioManager.playSound('sfx_notification', 1, { ifQuiet: 500 });
         }
-        // ===== BREAKING NEWS SYSTEM FOR MOBILE =====
-        if (this.isMobile) {
-            this.showBreakingNews(message, type, duration);
-            return;
-        }
+        this.recordNotification(message, type);
 
-        // Desktop notification system
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            ${uiIconsIn(message)}
-            <button class="notification-close" aria-label="Fechar">${uiIcon('ui-close')}</button>
+        const stack = this.getToastStack();
+        const toast = document.createElement('div');
+        toast.className = `notification toast ${NotificationLog.normalizeType(type)}`;
+        const { icon, text } = this.splitNotificationIcon(message, type);
+        toast.innerHTML = `
+            <span class="toast-icon" aria-hidden="true">${uiIcon(icon)}</span>
+            <div class="toast-text">${uiIconsIn(text)}</div>
+            <button type="button" class="notification-close" aria-label="Fechar aviso">${uiIcon('ui-close')}</button>
         `;
-
-        if (this.elements.notifications) {
-            this.elements.notifications.appendChild(notification);
-        }
-
-        // Remover automaticamente
-        setTimeout(() => {
-            this.removeNotification(notification);
-        }, duration);
-
-        // Limitar número de notificações
-        this.limitNotifications();
-    }
-
-    // ===== BREAKING NEWS NOTIFICATION SYSTEM (MOBILE) =====
-    showBreakingNews(message, type = 'info', duration = 4000) {
-        // Create container if it doesn't exist
-        let container = document.querySelector('.breaking-news-container');
-        if (!container) {
-            container = document.createElement('div');
-            container.className = 'breaking-news-container';
-            document.body.appendChild(container);
-        }
-
-        // FIX: Remove any existing notifications before showing new one (max 1 at a time)
-        const existingNotifications = container.querySelectorAll('.breaking-news');
-        existingNotifications.forEach(notification => {
-            notification.remove();
+        // Clique em qualquer parte fecha (menos em link dentro do texto, que tem a própria ação)
+        toast.addEventListener('click', event => {
+            if (event.target.closest('a')) return;
+            this.removeNotification(toast);
         });
-
-        // Create breaking news element
-        const breakingNews = document.createElement('div');
-        breakingNews.className = `breaking-news ${type}`;
-
-        // Get icon based on type
-        const icons = {
-            info: 'status-info',
-            warning: 'status-warning',
-            error: 'status-error',
-            success: 'status-done'
-        };
-        const icon = uiIcon(icons[type] || 'status-info');
-
-        // Get title based on type
-        const titles = {
-            info: 'Informação',
-            warning: 'Atenção',
-            error: 'Erro',
-            success: 'Sucesso'
-        };
-        const title = titles[type] || 'Notícia';
-
-        breakingNews.innerHTML = `
-            <div class="breaking-news-icon">${icon}</div>
-            <div class="breaking-news-content">
-                <div class="breaking-news-title">${title}</div>
-                <div class="breaking-news-text">${uiIconsIn(message)}</div>
-            </div>
-        `;
-
-        // Add to container
-        container.appendChild(breakingNews);
-
-        // Auto-dismiss after duration
-        setTimeout(() => {
-            breakingNews.classList.add('slide-out');
-            setTimeout(() => {
-                if (breakingNews.parentElement) {
-                    breakingNews.parentElement.removeChild(breakingNews);
-                }
-            }, 400); // Match slide-out animation duration
-        }, duration);
-
-        log(`📱 Breaking news displayed: ${message}`);
+        stack.appendChild(toast);
+        toast.dismissTimer = setTimeout(() => this.removeNotification(toast), duration);
+        this.limitNotifications();
+        return toast;
     }
-    
-    removeNotification(notification, immediate = false) {
-        if (!notification || !notification.parentElement) return;
 
+    notificationIcon(type) {
+        return { info: 'status-info', warning: 'status-warning', error: 'status-error', success: 'status-done' }[type] || 'status-info';
+    }
+
+    /** Aviso que já começa com emoji usa esse emoji como ícone (sem repetir); senão, o ícone do tipo. */
+    splitNotificationIcon(message, type) {
+        const match = String(message ?? '').match(/^\s*((?:\p{Extended_Pictographic}|\p{Regional_Indicator})(?:️|‍\p{Extended_Pictographic}|\p{Emoji_Modifier})*)\s*/u);
+        return match
+            ? { icon: match[1], text: String(message).slice(match[0].length) }
+            : { icon: this.notificationIcon(type), text: String(message ?? '') };
+    }
+
+    /** Contêiner dos toasts (criado na primeira notificação). aria-live: leitores de tela anunciam sem roubar o foco. */
+    getToastStack() {
+        let stack = document.getElementById('toast-stack');
+        if (!stack) {
+            stack = document.createElement('div');
+            stack.id = 'toast-stack';
+            stack.className = 'toast-stack';
+            stack.setAttribute('role', 'region');
+            stack.setAttribute('aria-label', 'Avisos');
+            stack.setAttribute('aria-live', 'polite');
+            // Dentro de #game-screen (z-index 10): acima do HUD (50) e abaixo da pausa (.overlay, 100)
+            (document.getElementById('game-screen') || document.body).appendChild(stack);
+        }
+        return stack;
+    }
+
+    /** Guarda no histórico da partida com a hora do jogo (gameTime + relógio) e a hora real. */
+    recordNotification(message, type) {
+        const gm = this.gameManager;
+        return this.notificationLog.add(message, type, {
+            game: gm?.gameTime || 0,
+            clock: gm?.gameClockTime ? gm.gameClockTime.getTime() : null,
+            real: Date.now()
+        });
+    }
+
+    removeNotification(notification, immediate = false) {
+        if (!notification || !notification.parentElement || notification.classList.contains('toast-leaving')) return;
+        clearTimeout(notification.dismissTimer);
         if (immediate) {
-            // Immediate removal without animation (used for cleanup)
-            notification.parentElement.removeChild(notification);
+            notification.remove();
             return;
         }
-
-        // Animated removal (used for user interactions)
-        notification.style.animation = 'slideOutRight 0.3s ease';
-        setTimeout(() => {
-            if (notification && notification.parentElement) {
-                notification.parentElement.removeChild(notification);
-            }
-        }, 300);
+        // Saída animada (com movimento reduzido o CSS tira a animação; o timeout remove do mesmo jeito)
+        notification.classList.add('toast-leaving');
+        setTimeout(() => notification.remove(), 250);
     }
-    
+
     limitNotifications() {
-        if (!this.elements.notifications) return;
-
-        const notifications = this.elements.notifications.children;
-
-        // Prevent infinite loops by using a counter and immediate removal for excess notifications
-        let removalCount = 0;
-        const maxRemovals = 10; // Safety limit to prevent infinite loops
-
-        while (notifications.length > this.maxNotifications && removalCount < maxRemovals) {
-            const notificationToRemove = notifications[0];
-
-            // Immediately remove excess notifications without animation to prevent infinite loop
-            if (notificationToRemove && notificationToRemove.parentElement) {
-                notificationToRemove.parentElement.removeChild(notificationToRemove);
-                removalCount++;
-                log(`🗑️ Removed excess notification (${removalCount}/${notifications.length + removalCount})`);
-            } else {
-                // Safety break if we can't remove the element
-                console.warn('⚠️ Could not remove notification, breaking loop to prevent freeze');
-                break;
-            }
-        }
-
-        if (removalCount >= maxRemovals) {
-            console.warn('⚠️ Hit maximum removal limit in limitNotifications() - potential infinite loop prevented');
-        }
+        const stack = document.getElementById('toast-stack');
+        if (!stack) return;
+        const max = this.isMobile ? 2 : this.maxVisibleToasts;
+        const visible = [...stack.querySelectorAll('.toast:not(.toast-leaving)')];
+        visible.slice(0, Math.max(0, visible.length - max)).forEach(t => this.removeNotification(t, true));
     }
-    
+
+    // ===== HISTÓRICO DE NOTIFICAÇÕES (tela de pausa) =====
+    setupNotificationHistory() {
+        const openBtn = document.getElementById('btn-notifications');
+        const backBtn = document.getElementById('btn-notifications-back');
+        if (openBtn) openBtn.innerHTML = `${uiIcon('📜')} Notificações`;
+        if (backBtn) backBtn.innerHTML = `${uiIcon('⬅')} Voltar`;
+        const title = document.getElementById('nh-title');
+        if (title) title.innerHTML = `${uiIcon('📜')} Notificações`;
+        openBtn?.addEventListener('click', () => this.openNotificationHistory());
+        backBtn?.addEventListener('click', () => this.closeNotificationHistory());
+        // Esc volta para a pausa. O Esc da pausa (GameManager, em captura) não retoma o jogo enquanto o histórico
+        // está aberto, porque ele está na lista de isInfoPopupOpen()
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape' && this.isNotificationHistoryOpen()) {
+                event.preventDefault();
+                this.closeNotificationHistory();
+            }
+        });
+    }
+
+    isNotificationHistoryOpen() {
+        const panel = document.getElementById('notification-history');
+        return !!panel && !panel.hidden;
+    }
+
+    openNotificationHistory() {
+        const panel = document.getElementById('notification-history');
+        const playerPanel = this.elements.pauseOverlay?.querySelector('.player-panel');
+        if (!panel) return;
+        if (playerPanel) playerPanel.hidden = true;
+        panel.hidden = false;
+        this.renderNotificationHistory(); // depois de mostrar: <img> criado em display none ficava sem carregar
+        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_panel_open');
+        // Mais antiga em cima, mais nova no fim: a rolagem já começa no fim (o que acabou de chegar)
+        const list = document.getElementById('nh-list');
+        if (list) list.scrollTop = list.scrollHeight;
+        document.getElementById('btn-notifications-back')?.focus();
+    }
+
+    closeNotificationHistory({ focus = true } = {}) {
+        const panel = document.getElementById('notification-history');
+        const playerPanel = this.elements.pauseOverlay?.querySelector('.player-panel');
+        if (!panel || panel.hidden) return;
+        panel.hidden = true;
+        if (playerPanel) playerPanel.hidden = false;
+        if (focus) document.getElementById('btn-notifications')?.focus();
+    }
+
+    renderNotificationHistory() {
+        const list = document.getElementById('nh-list');
+        if (!list) return;
+        const entries = this.notificationLog.list();
+        const count = document.getElementById('nh-count');
+        if (count) count.textContent = entries.length === 1 ? '1 aviso' : `${entries.length} avisos`;
+        if (entries.length === 0) {
+            list.innerHTML = '<li class="nh-empty">Nenhuma notificação ainda nesta partida.</li>';
+            return;
+        }
+        const labels = { info: 'Informação', success: 'Sucesso', warning: 'Atenção', error: 'Problema' };
+        const escape = text => String(text).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+        const two = n => String(n).padStart(2, '0');
+        const clockText = ms => {
+            const d = new Date(ms);
+            return `${two(d.getDate())}/${two(d.getMonth() + 1)} ${two(d.getHours())}:${two(d.getMinutes())}`;
+        };
+        const realText = ms => {
+            const d = new Date(ms);
+            return `${two(d.getHours())}:${two(d.getMinutes())}`;
+        };
+        list.innerHTML = entries.map(e => {
+            const { icon, text } = this.splitNotificationIcon(e.text, e.type);
+            return `
+            <li class="nh-item nh-${e.type}">
+                <span class="nh-icon" role="img" aria-label="${labels[e.type]}">${uiIcon(icon)}</span>
+                <div class="nh-body">
+                    <div class="nh-text">${uiIconsIn(escape(text))}</div>
+                    <div class="nh-time">
+                        ${e.clock ? `<span>No jogo: <b>${clockText(e.clock)}</b></span>` : ''}
+                        <span>Hora real: <b>${realText(e.real)}</b></span>
+                    </div>
+                </div>
+            </li>`;
+        }).join('');
+    }
+
     // ===== Controles, HUD e painéis do mobile: js/systems/ui/MobilePanels.js (6 métodos) =====
     
     // ===== ENHANCED RESPONSIVIDADE =====
@@ -1930,11 +1960,11 @@ class UIManager {
 
         if (config.waterProduction > 0) {
             const status = building.isRented ? ' (Alugado)' : '';
-            stats += `<div class="stat-item">💧 Produção de Água: ${config.waterProduction}L/s${status}</div>`;
+            stats += `<div class="stat-item">💧 Produção de Água: ${config.waterProduction}L/min${status}</div>`;
         }
 
         if (config.waterConsumption > 0) {
-            stats += `<div class="stat-item">🚰 Consumo de Água: ${config.waterConsumption}L/s</div>`;
+            stats += `<div class="stat-item">🚰 Consumo de Água: ${config.waterConsumption}L/min</div>`;
         }
 
         if (config.powerGeneration > 0) {
@@ -1943,7 +1973,11 @@ class UIManager {
         }
 
         if (config.powerConsumption > 0) {
-            stats += `<div class="stat-item">🔌 Consumo de Energia: ${config.powerConsumption} MW</div>`;
+            // Zona consome pela fase (BuildingEfficiency.getBuildingPowerConsumption)
+            const bs = this.gameManager?.buildingSystem;
+            const now = building.active && bs?.getBuildingPowerConsumption ? bs.getBuildingPowerConsumption(building) : config.powerConsumption;
+            const ofFull = now !== config.powerConsumption ? ` (de ${config.powerConsumption} MW com a zona completa)` : '';
+            stats += `<div class="stat-item power-consumption">🔌 Consumo de Energia: ${now} MW${ofFull}</div>`;
         }
 
         if (config.incomeGeneration > 0) {
@@ -1959,8 +1993,10 @@ class UIManager {
             stats += `<div class="stat-item">🏭 Poluição: +${config.pollutionGeneration}/s</div>`;
         }
 
+        stats += this.gameManager?.buildingSystem?.generateEfficiencyWarnings?.(building) || ''; // sem rua, falta de energia
         stats += this.generateResidentStats(building);
         stats += this.generateZoneStageStats(building);
+        stats += this.generatePlantedTreeStats?.(building) || ''; // árvore plantada (ui/TreeInfoUI.js)
 
         return uiIconsIn(stats);
     }
@@ -1981,7 +2017,8 @@ class UIManager {
             </div>
             <div class="stat-item zone-stage-eta">⏱️ <span id="zone-stage-eta-${building.id}" title="${growth?.reason || ''}">${growth ? growth.eta : 'Zona completa'}</span></div>
             <div id="zone-stage-why-${building.id}" class="zone-stage-why" style="font-size:0.85em;opacity:0.8;margin:-2px 0 4px">${growth?.reason || ''}</div>
-            <div class="stat-item">📈 Ocupação da zona: ${effect}%</div>`;
+            <div class="stat-item">📈 Ocupação da zona: ${effect}%</div>
+            ${bs.getZonePanelExtrasHtml?.(building) || ''}`;
     }
 
     /** Capacidade de moradores da zona/prédio: usa a fase da zona (outro sistema) se existir. */

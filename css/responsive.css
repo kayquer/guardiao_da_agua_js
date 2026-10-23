@@ -485,16 +485,6 @@
         font-size: 0.8rem;
     }
     
-    .notifications {
-        flex: 1;
-        gap: 0.3rem;
-    }
-    
-    .notification {
-        padding: 0.3rem 0.8rem;
-        font-size: 0.8rem;
-    }
-    
     /* ===== OVERLAYS MOBILE ===== */
     .overlay-content {
         padding: 2rem;

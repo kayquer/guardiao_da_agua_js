@@ -7,7 +7,9 @@ const path = require('path');
 const { load, ROOT } = require('./load');
 
 const g = load('js/utils/GameUtils.js', 'js/data/buildings.js', 'js/data/zoneLots.js',
-    'js/systems/BuildingSystem.js', 'js/systems/building/ZoneGrowth.js');
+    'js/systems/BuildingSystem.js', 'js/systems/building/ZoneGrowth.js', 'js/core/ResourceManager.js');
+const ResourceManager = g('ResourceManager');
+const EVOLUTION = g('ZONE_EVOLUTION');
 const BUILDINGS = g('BUILDING_TYPES');
 const LOTS = g('ZONE_LOTS');
 const PROPS = g('ZONE_PROPS');
@@ -253,4 +255,192 @@ test('save: fase e progresso da zona voltam; save antigo (sem fase) começa em 0
     const building = zone('zone_commercial_light', { underConstruction: true });
     bs.restoreZoneState(building, { zoneStage: 3 });
     assert.ok(!('zoneStage' in building));
+});
+
+// ===== Falta de água (ResourceManager.hasWaterShortage) e a mensagem da zona =====
+
+test('água: falta só quando a produção não cobre o gasto E a caixa está quase vazia (consumo é por minuto)', () => {
+    const rm = new ResourceManager();
+    const water = rm.resources.water;
+    rm.resources.population.current = 75; // 150 L/min de consumo + 10% de desperdício
+    rm.invalidateConsumptionCache();
+    rm.updateConsumption();
+    water.current = 1000;
+    water.production = 500; // produz mais do que gasta
+    assert.strictEqual(rm.hasWaterShortage(), false, 'caixa enchendo não é falta (antes pedia 10 MINUTOS de reserva: 1.500 L)');
+    water.current = 0;
+    assert.strictEqual(rm.hasWaterShortage(), false, 'caixa vazia mas produção dando conta: não falta');
+    water.production = 100; // gasta 165, produz 100
+    water.current = 1000;
+    assert.strictEqual(rm.hasWaterShortage(), false, 'ainda tem reserva');
+    water.current = 20; // menos de 10 s do gasto (165/60 × 10 = 27,5 L)
+    assert.strictEqual(rm.hasWaterShortage(), true);
+    const balance = rm.getWaterBalance();
+    assert.strictEqual(balance.production, 100);
+    assert.ok(Math.abs(balance.demand - 165) < 1e-9);
+    assert.ok(Math.abs(balance.deficit - 65) < 1e-9);
+});
+
+test('zona sem água: diz quanto a cidade gasta, produz e quanto falta (L/min)', () => {
+    const { bs } = system();
+    const b = zone('zone_residential_light', { zoneStage: 1, zoneProgress: 0 });
+    bs.getZoneGrowthConditions = () => ({ satisfaction: 50, waterShortage: true, energyEfficiency: 1, water: { production: 100, demand: 165, deficit: 65, current: 0 } });
+    const info = bs.describeZoneGrowth(b);
+    assert.strictEqual(info.eta, 'Crescimento parado');
+    assert.match(info.reason, /^Falta água! A cidade gasta 165 L\/min e só produz 100 L\/min\. Precisa de mais 65 L\/min/);
+});
+
+// ===== Eficiência: ritmo e efeitos =====
+
+test('eficiência: ritmo = satisfação × eficiência da zona (mínimo com a energia, sem contar duas vezes)', () => {
+    const { bs } = system();
+    const c = { satisfaction: 50, waterShortage: false, energyEfficiency: 1 };
+    const z = efficiency => zone('zone_residential_light', { zoneStage: 0, zoneProgress: 0, efficiency });
+    assert.strictEqual(bs.getZoneGrowthRate(z(1), c), 1);
+    assert.strictEqual(bs.getZoneGrowthRate(z(0.5), c), 0.5, 'zona a 50% cresce na metade');
+    assert.strictEqual(bs.getZoneGrowthRate(z(1.3), c), 1.3, 'bônus de pesquisa acelera');
+    assert.strictEqual(bs.getZoneGrowthRate(z(0), c), 0.25, 'nunca abaixo de 0,25×');
+    const low = { ...c, energyEfficiency: 0.5 };
+    assert.strictEqual(bs.getZoneGrowthRate(z(0.5), low), 0.5, 'eficiência do prédio que já conta a energia: 0,5, não 0,25');
+    assert.strictEqual(bs.getZoneGrowthRate(z(1), low), 0.5, 'energia da cidade limita');
+    assert.strictEqual(bs.getZoneGrowthRate(z(1), { ...c, waterShortage: true }), 0);
+
+    // O tempo até a próxima fase usa o ritmo da zona (uma vez só)
+    bs.getZoneGrowthConditions = () => c;
+    assert.strictEqual(bs.getZoneTimeToNextStage(z(0.5)), GROWTH.stageMs[0] / 0.5);
+    assert.match(bs.describeZoneGrowth(z(0.5)).reason, /funcionando a 50%/);
+});
+
+test('eficiência: empregos e receita caem com ela; moradia não', () => {
+    const { bs } = system();
+    const ind = zone('zone_industrial_balanced', { zoneStage: 3, efficiency: 0.5 });
+    assert.strictEqual(bs.getEffectiveJobCapacity(ind), Math.round(BUILDINGS.zone_industrial_balanced.jobCapacity * 0.5));
+    assert.strictEqual(bs.getEffectiveZoneIncome(ind), BUILDINGS.zone_industrial_balanced.incomeGeneration * 0.5);
+    assert.strictEqual(bs.getEffectiveJobCapacity({ ...ind, efficiency: 1.5 }), BUILDINGS.zone_industrial_balanced.jobCapacity, 'empregos até 100%');
+    const res = zone('zone_residential_balanced', { zoneStage: 2, efficiency: 0.3 });
+    assert.strictEqual(bs.getEffectivePopulationCapacity(res), BUILDINGS.zone_residential_balanced.populationCapacity * 0.75);
+});
+
+// ===== Evoluir para o próximo peso =====
+
+function evolutionSystem({ budget = 1e6, occupied = [] } = {}) {
+    const { bs, calls } = system();
+    bs.buildingTypes = new Map(Object.entries(BUILDINGS).map(([id, cfg]) => [id, { ...cfg, id }]));
+    const busy = new Set(occupied.map(([x, z]) => `${x},${z}`));
+    const rm = {
+        resources: { budget: { current: budget } },
+        canAfford(n) { return this.resources.budget.current >= n; },
+        spendBudget(n) { if (!this.canAfford(n)) return false; this.resources.budget.current -= n; return true; }
+    };
+    bs.gameManager.resourceManager = rm;
+    bs.gridManager = {
+        isCellOccupied: (x, z) => busy.has(`${x},${z}`),
+        getTerrainType: () => 'grassland',
+        occupyArea: (x, z, s) => { for (let i = x; i < x + s; i++) for (let j = z; j < z + s; j++) busy.add(`${i},${j}`); }
+    };
+    bs.isPlacementWithinBounds = (x, z, s) => x >= 0 && z >= 0 && x + s <= 40 && z + s <= 40;
+    calls.notes = [];
+    bs.showNotification = (msg, type) => calls.notes.push([type, msg]);
+    calls.mesh = 0;
+    bs.replaceZoneLotMesh = () => { calls.mesh++; };
+    return { bs, calls, rm, busy };
+}
+const typed = id => ({ ...BUILDINGS[id], id });
+
+test('evolução: leve → equilibrada → pesada; ids e custo (diferença)', () => {
+    const { bs } = evolutionSystem();
+    for (const kind of ['residential', 'commercial', 'industrial']) {
+        assert.strictEqual(bs.getNextZoneTypeId(typed(`zone_${kind}_light`)), `zone_${kind}_balanced`);
+        assert.strictEqual(bs.getNextZoneTypeId(typed(`zone_${kind}_balanced`)), `zone_${kind}_heavy`);
+        assert.strictEqual(bs.getNextZoneTypeId(typed(`zone_${kind}_heavy`)), null, 'pesada não evolui');
+    }
+    assert.strictEqual(bs.getNextZoneTypeId(typed('house')), null);
+    assert.strictEqual(bs.getZoneEvolutionCost(BUILDINGS.zone_residential_light, BUILDINGS.zone_residential_balanced),
+        BUILDINGS.zone_residential_balanced.cost - BUILDINGS.zone_residential_light.cost);
+    assert.strictEqual(JSON.stringify(EVOLUTION.weights), JSON.stringify(['light', 'balanced', 'heavy']));
+});
+
+test('evolução: começa na menor fase do novo peso em que nada cai (moradores, empregos, receita)', () => {
+    const { bs } = evolutionSystem();
+    const scale = GROWTH.effectScale;
+    const stats = ['population', 'jobs', 'income'];
+    const stat = (cfg, k) => ({ population: cfg.populationCapacity || 0, jobs: cfg.jobCapacity || 0, income: cfg.incomeGeneration || 0 })[k];
+    for (const kind of ['residential', 'commercial', 'industrial']) {
+        for (const [from, to] of [['light', 'balanced'], ['balanced', 'heavy']]) {
+            const a = BUILDINGS[`zone_${kind}_${from}`], b = BUILDINGS[`zone_${kind}_${to}`];
+            const start = bs.getZoneEvolutionStartStage(a, 3, b);
+            stats.forEach(k => assert.ok(stat(b, k) * scale[start] >= stat(a, k), `${kind} ${from}→${to}: ${k} não pode cair`));
+            if (start > 0) assert.ok(stats.some(k => stat(b, k) * scale[start - 1] < stat(a, k)), `${kind} ${from}→${to}: fase ${start} é a menor`);
+        }
+    }
+    assert.strictEqual(bs.getZoneEvolutionStartStage(BUILDINGS.zone_residential_light, 3, BUILDINGS.zone_residential_balanced), 1);
+    assert.strictEqual(bs.getZoneEvolutionStartStage(BUILDINGS.zone_industrial_balanced, 3, BUILDINGS.zone_industrial_heavy), 2);
+});
+
+test('evolução: só na fase final, cobra, troca o tipo preservando os efeitos e salva', () => {
+    const { bs, calls, rm } = evolutionSystem({ budget: 5000 });
+    const b = zone('zone_residential_light', { zoneStage: 2, zoneProgress: 0.5, effectsApplied: true, zoneAppliedScale: 0.75, gridX: 5, gridZ: 5, rotation: 1 });
+    bs.buildings.set(b.id, b);
+    assert.strictEqual(bs.getZoneEvolution(b), null, 'ainda crescendo: sem botão');
+    assert.strictEqual(bs.getZoneEvolveHtml(b), '');
+    b.zoneStage = 3;
+    b.zoneAppliedScale = 1;
+    const evo = bs.getZoneEvolution(b);
+    assert.strictEqual(evo.ok, true);
+    assert.strictEqual(evo.next, 'zone_residential_balanced');
+    assert.match(bs.getZoneEvolveHtml(b), /Evoluir para Equilibrada/);
+    assert.doesNotMatch(bs.getZoneEvolveHtml(b), /disabled/);
+
+    const popBefore = bs.getEffectivePopulationCapacity(b);
+    assert.strictEqual(bs.evolveZone(b.id), true);
+    assert.strictEqual(b.type, 'zone_residential_balanced');
+    assert.strictEqual(b.config.id, 'zone_residential_balanced');
+    assert.strictEqual(b.zoneStage, 1);
+    assert.strictEqual(b.zoneProgress, 0);
+    assert.ok(bs.getEffectivePopulationCapacity(b) >= popBefore, 'moradores não caem');
+    assert.strictEqual(rm.resources.budget.current, 5000 - 1000);
+    assert.strictEqual(JSON.stringify(calls.effects), JSON.stringify([[false, 1], [true, 0.5]]), 'tira o peso antigo (escala 1) e soma o novo (fase 1)');
+    assert.strictEqual(calls.mesh, 1, 'lote novo');
+    assert.strictEqual(JSON.stringify([b.gridX, b.gridZ]), '[5,5]', 'mesmo tamanho: mesmo lugar');
+
+    // Save/load: o tipo novo e a fase voltam, com a receita da fase nos totais
+    const saved = JSON.parse(JSON.stringify(BuildingSystem.serializeBuilding(b)));
+    assert.strictEqual(saved.type, 'zone_residential_balanced');
+    assert.strictEqual(saved.zoneStage, 1);
+    const restored = zone('zone_residential_balanced', { effectsApplied: true });
+    bs.restoreZoneState(restored, saved);
+    assert.strictEqual(restored.zoneStage, 1);
+    assert.strictEqual(restored.zoneAppliedScale, 0.5);
+});
+
+test('evolução: sem dinheiro ou sem espaço o botão fica desabilitado com o motivo; a pesada 3 × 3 procura espaço', () => {
+    const poor = evolutionSystem({ budget: 100 });
+    const b = zone('zone_industrial_balanced', { zoneStage: 3, effectsApplied: true, zoneAppliedScale: 1, gridX: 10, gridZ: 10 });
+    poor.bs.buildings.set(b.id, b);
+    const noMoney = poor.bs.getZoneEvolution(b);
+    assert.strictEqual(noMoney.ok, false);
+    assert.match(noMoney.reason, /Falta dinheiro: precisa de R\$ 3\.000/);
+    assert.match(poor.bs.getZoneEvolveHtml(b), /disabled/);
+    assert.strictEqual(poor.bs.evolveZone(b.id), false);
+    assert.strictEqual(b.type, 'zone_industrial_balanced');
+
+    // A zona ocupa x 10-11, z 10-11; em volta tudo ocupado → sem espaço para 3 × 3
+    const own = [[10, 10], [10, 11], [11, 10], [11, 11]];
+    const ring = [];
+    for (let x = 9; x <= 12; x++) for (let z = 9; z <= 12; z++) ring.push([x, z]);
+    const cramped = evolutionSystem({ occupied: [...own, ...ring] });
+    cramped.bs.buildings.set(b.id, b);
+    const noSpace = cramped.bs.getZoneEvolution(b);
+    assert.strictEqual(noSpace.ok, false);
+    assert.match(noSpace.reason, /Falta espaço/);
+
+    // Rua do lado direito (x = 12) e no fundo (z = 12): cresce para o outro lado (canto 9, 9)
+    const road = [...own, ...[9, 10, 11, 12].map(z => [12, z]), ...[9, 10, 11].map(x => [x, 12])];
+    const ok = evolutionSystem({ occupied: road });
+    ok.bs.buildings.set(b.id, b);
+    assert.strictEqual(ok.bs.evolveZone(b.id), true);
+    assert.strictEqual(b.type, 'zone_industrial_heavy');
+    assert.strictEqual(JSON.stringify([b.gridX, b.gridZ]), '[9,9]');
+    assert.strictEqual(b.zoneStage, 2, 'industrial equilibrada → pesada começa na fase 2 (75 empregos ≥ 60)');
+    for (let x = 9; x < 12; x++) for (let z = 9; z < 12; z++) assert.ok(ok.busy.has(`${x},${z}`), `célula ${x},${z} ocupada`);
 });

@@ -281,6 +281,8 @@ mixin(UIManager, {
                                     this.gameManager.selectBuilding(building);
                                     log(`🏢 Building selected via tap with aura: ${building.config.name}`);
                                 }
+                            } else if (this.gameManager.treeSystem?.selectAt(touch.clientX, touch.clientY)) {
+                                log('🌳 Árvore nativa selecionada via toque');
                             } else {
                                 // Trigger Babylon.js scene picking for terrain/other interactions
                                 this.gameManager.canvas.dispatchEvent(pointerEvent);
@@ -337,7 +339,7 @@ mixin(UIManager, {
                 infoTitle = building.config.name;
                 infoText = `Tipo: ${building.config.category}\n`;
                 if (building.config.waterProduction) {
-                    infoText += `💧 Produção: ${building.config.waterProduction}L/s\n`;
+                    infoText += `💧 Produção: ${building.config.waterProduction}L/min\n`;
                 }
                 if (building.config.energyConsumption) {
                     infoText += `⚡ Consumo: ${building.config.energyConsumption}MW\n`;
@@ -835,7 +837,7 @@ mixin(UIManager, {
                 content += `
                         <div class="detail-row">
                             <span class="detail-label">${uiIcon('res-water')} Produção:</span>
-                            <span class="detail-value">${building.config.waterProduction}L/s</span>
+                            <span class="detail-value">${building.config.waterProduction}L/min</span>
                         </div>
                 `;
             }

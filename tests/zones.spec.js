@@ -99,6 +99,7 @@ test('zona: canteiro → área livre → cresce pelo tempo de jogo, troca as pe�
         gm.tutorialSystem.complete();
         // Cidade "saudável" para o ritmo ser previsível (1×): sem falta de água/energia, satisfação 50
         gm.buildingSystem.getZoneGrowthConditions = () => ({ satisfaction: 50, waterShortage: false, energyEfficiency: 1 });
+        gm.buildingSystem.getZoneEfficiency = () => 1; // eficiência 100% (sem rua ao lado seria 75%: BuildingEfficiency.js)
     });
 
     const id = await placeZone(page, 'zone_commercial_light');

@@ -263,7 +263,7 @@ mixin(UIManager, {
                     ${buildingType.waterProduction ? `
                         <div class="stat-item">
                             <span class="stat-label">💧 Produção de Água:</span>
-                            <span class="stat-value">${buildingType.waterProduction}L/s</span>
+                            <span class="stat-value">${buildingType.waterProduction}L/min</span>
                         </div>
                     ` : ''}
                     ${buildingType.pollutionReduction ? `

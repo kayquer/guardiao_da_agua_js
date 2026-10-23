@@ -604,6 +604,8 @@ class GameManager {
     }
 
     handleTerrainClick(x, y) {
+        // Árvore nativa na frente do terreno: seleciona a árvore (painel próprio, TreeSystem.selectAt)
+        if (this.treeSystem?.selectAt(x, y)) return;
         const gridPos = this.pickTerrainCell(x, y);
         if (gridPos) {
             // Get terrain type
@@ -925,6 +927,7 @@ class GameManager {
         this.gameTime = 0;
         this.timeScale = 1;
         this.tutorialDone = false; // TutorialSystem.complete() libera o save
+        this.uiManager?.notificationLog?.clear(); // histórico de notificações é por partida
 
         this.initializeGameClock();
 
@@ -1116,6 +1119,7 @@ class GameManager {
             this.eventSystem?.loadData(saveData.events);
             this.studySystem?.loadSaveData(saveData.studies);
             this.loanManager?.loadData(saveData.loans);
+            this.uiManager?.notificationLog?.loadData(saveData.notifications); // save antigo: histórico vazio
             if (this.tutorialSystem && saveData.tutorial) {
                 this.tutorialSystem.lessonsDeferred = !!saveData.tutorial.lessonsDeferred;
             }
@@ -1447,6 +1451,7 @@ class GameManager {
             studies: this.studySystem.getSaveData(),
             loans: this.loanManager?.saveData() ?? null,
             tutorial: { lessonsDeferred: !!this.tutorialSystem?.lessonsDeferred },
+            notifications: this.uiManager?.notificationLog?.getSaveData() ?? [],
             camera: this.getCameraSaveData()
         };
     }

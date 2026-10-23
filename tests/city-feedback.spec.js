@@ -37,6 +37,7 @@ test('zona mostra quanto falta para a próxima fase e por quê', async ({ page }
         bs.completeConstruction(b);
         // Cidade com água e satisfação média: ritmo 1
         bs.getZoneGrowthConditions = () => ({ satisfaction: 50, waterShortage: false, energyEfficiency: 1 });
+        bs.getZoneEfficiency = () => 1; // sem rua ao lado a zona renderia 75% (BuildingEfficiency.js): ritmo 1 previsível
         gm.selectBuilding(b);
         return b.id;
     });

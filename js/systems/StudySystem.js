@@ -32,6 +32,7 @@ class StudySystem {
             'city_hall',      // Prefeitura (sempre disponível)
             'paved_road',     // Ruas (Asfalto): nunca pedem estudo
             'dirt_road',
+            'tree_sapling',   // Muda de árvore: plantar é básico, nunca pede estudo
             'park'            // Parque (básico)
         ];
 

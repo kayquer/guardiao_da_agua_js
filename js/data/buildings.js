@@ -75,6 +75,31 @@ const BUILDING_TYPES = {
         }
     },
 
+    // Muda de árvore: cresce sozinha em 4 etapas pelo tempo de jogo (js/systems/building/TreeGrowth.js).
+    // Na etapa 1 só bebe água (rega); da 2 em diante não precisa mais de rega e limpa o ar cada vez mais.
+    // treeStages: ms = tempo de jogo da etapa (null na última), scale = tamanho da árvore, waterConsumption em
+    // L/min, pollutionReduction em poluição/min (uma árvore nativa limpa TREES.POLLUTION_REDUCTION).
+    tree_sapling: {
+        name: 'Muda de Árvore',
+        description: 'Plante uma árvore! No começo ela só precisa de rega (gasta água); depois cresce e passa a limpar o ar.',
+        category: 'treatment',
+        cost: 300,
+        size: 1,
+        plantedTree: true,
+        treeStages: [
+            { name: 'Muda', ms: 25000, scale: 0.32, waterConsumption: 3, pollutionReduction: 0 },
+            { name: 'Árvore jovem', ms: 35000, scale: 0.55, waterConsumption: 0, pollutionReduction: 0.3 },
+            { name: 'Árvore adulta', ms: 45000, scale: 0.8, waterConsumption: 0, pollutionReduction: 0.6 },
+            { name: 'Árvore madura', ms: null, scale: 1.05, waterConsumption: 0, pollutionReduction: 1 }
+        ],
+        icon: '🌱',
+        color: '#7CB342',
+        requirements: {
+            terrain: ['grassland', 'lowland'],
+            nearWater: false
+        }
+    },
+
     // CATEGORIA: ARMAZENAMENTO
     water_tank: {
         name: 'Reservatório',
@@ -218,6 +243,7 @@ const BUILDING_TYPES = {
         cost: 1000,
         size: 2,
         zoneType: 'residential_light',
+        powerConsumption: 8, // MW na fase completa (ZoneGrowth: pela fase)
         populationCapacity: 50,
         waterConsumptionPerPerson: 1.5,
         growthRate: 0.1,
@@ -236,6 +262,7 @@ const BUILDING_TYPES = {
         cost: 2000,
         size: 2,
         zoneType: 'residential_balanced',
+        powerConsumption: 15, // MW na fase completa (ZoneGrowth: pela fase)
         populationCapacity: 100,
         waterConsumptionPerPerson: 2.0,
         growthRate: 0.15,
@@ -274,6 +301,7 @@ const BUILDING_TYPES = {
         cost: 3000,
         size: 2,
         zoneType: 'industrial_light',
+        powerConsumption: 20, // MW na fase completa (ZoneGrowth: pela fase)
         jobCapacity: 30,
         pollutionGeneration: 10,
         waterConsumption: 20,
@@ -293,6 +321,7 @@ const BUILDING_TYPES = {
         cost: 5000,
         size: 2,
         zoneType: 'industrial_balanced',
+        powerConsumption: 40, // MW na fase completa (ZoneGrowth: pela fase)
         jobCapacity: 60,
         pollutionGeneration: 20,
         waterConsumption: 40,
@@ -312,6 +341,7 @@ const BUILDING_TYPES = {
         cost: 8000,
         size: 3,
         zoneType: 'industrial_heavy',
+        powerConsumption: 70, // MW na fase completa (ZoneGrowth: pela fase)
         jobCapacity: 100,
         pollutionGeneration: 40,
         waterConsumption: 80,
@@ -332,6 +362,7 @@ const BUILDING_TYPES = {
         cost: 2500,
         size: 2,
         zoneType: 'commercial_light',
+        powerConsumption: 12, // MW na fase completa (ZoneGrowth: pela fase)
         jobCapacity: 25,
         waterConsumption: 15,
         incomeGeneration: 300,
@@ -351,6 +382,7 @@ const BUILDING_TYPES = {
         cost: 4500,
         size: 2,
         zoneType: 'commercial_balanced',
+        powerConsumption: 24, // MW na fase completa (ZoneGrowth: pela fase)
         jobCapacity: 50,
         waterConsumption: 30,
         incomeGeneration: 600,
@@ -370,6 +402,7 @@ const BUILDING_TYPES = {
         cost: 7000,
         size: 3,
         zoneType: 'commercial_heavy',
+        powerConsumption: 45, // MW na fase completa (ZoneGrowth: pela fase)
         jobCapacity: 100,
         waterConsumption: 60,
         incomeGeneration: 1200,
