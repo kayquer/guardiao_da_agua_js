@@ -177,7 +177,7 @@ test('tutorial das missões avança quando o aluno clica no que está destacado'
     await startGame(page);
     const title = page.locator('#tutorial-title');
 
-    await page.click('#tutorial-skip-btn'); // aulas "durante o jogo"
+    await page.click('#tutorial-next-btn'); // "Vamos lá!": direto para a Prefeitura
     await page.evaluate(() => {
         const gm = window.gameManager, bs = gm.buildingSystem;
         gm.enterBuildMode('city_hall');
@@ -189,6 +189,8 @@ test('tutorial das missões avança quando o aluno clica no que está destacado'
     await page.click('#tutorial-next-btn');
     await expect(title).toHaveText('Cuidado com as árvores');
     await page.click('#tutorial-next-btn');
+    await expect(title).toHaveText('Hora de aprender sobre a água?');
+    await page.click('#tutorial-skip-btn'); // aulas "durante o jogo"
     await expect(title).toHaveText('Quer conhecer as missões?');
     await page.click('#tutorial-next-btn'); // "Mostrar"
 

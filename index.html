@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="css/player.css?v=8b928c2c">
     <link rel="stylesheet" href="css/menu.css?v=ad09dab4">
     <link rel="stylesheet" href="css/notice.css?v=86b1e0da">
+    <link rel="stylesheet" href="css/research.css?v=ee08fec9">
+    <link rel="stylesheet" href="css/accessibility.css?v=8078e52f">
     <link rel="stylesheet" href="css/toasts.css?v=bcd03933">
     <link rel="stylesheet" href="css/events.css?v=02eb4409">
     <link rel="stylesheet" href="css/event-decision.css?v=a0abc448">
@@ -93,7 +95,7 @@
                 </div>
                 <p class="start-notice__privacy">
                     O apelido, a idade e a cidade do jogador ficam salvos só neste navegador; a cidade é usada para mostrar
-                    o clima real.
+                    o clima real. O jogo também guarda, só aqui, um registro das respostas dos quizzes, das páginas lidas e das decisões, para a pesquisa; o professor pode exportá-lo na tela de pausa, e o arquivo não leva o apelido.
                 </p>
             </div>
         </div>
@@ -165,6 +167,14 @@
                         <button type="button" role="radio" data-quality="high">Alta</button>
                     </div>
                     <p class="gfx-hint" aria-live="polite"></p>
+                </div>
+                <div id="menu-text" class="gfx-picker text-picker" data-text-picker>
+                    <span class="gfx-title" id="menu-text-title">🔠 Texto</span>
+                    <div class="gfx-seg" role="radiogroup" aria-labelledby="menu-text-title">
+                        <button type="button" role="radio" data-text-size="normal">Normal</button>
+                        <button type="button" role="radio" data-text-size="large">Grande</button>
+                        <button type="button" role="radio" data-text-size="xlarge">Maior</button>
+                    </div>
                 </div>
             </div>
 
@@ -454,12 +464,35 @@
                     </div>
                     <p class="gfx-hint" aria-live="polite"></p>
                 </div>
+                <div id="pause-text" class="gfx-picker gfx-picker--panel text-picker" data-text-picker>
+                    <span class="gfx-title" id="pause-text-title">🔠 Texto</span>
+                    <div class="gfx-seg" role="radiogroup" aria-labelledby="pause-text-title">
+                        <button type="button" role="radio" data-text-size="normal">Normal</button>
+                        <button type="button" role="radio" data-text-size="large">Grande</button>
+                        <button type="button" role="radio" data-text-size="xlarge">Maior</button>
+                    </div>
+                </div>
                 <div class="overlay-buttons pp-buttons">
                     <button id="btn-resume" class="overlay-btn primary">▶ Continuar</button>
                     <button id="btn-help" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-help.svg" alt="" aria-hidden="true" draggable="false"> Ajuda e controles</button>
                     <button id="btn-notifications" class="overlay-btn secondary" aria-haspopup="dialog"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-history.svg" alt="" aria-hidden="true" draggable="false"> Notificações</button>
+                    <button id="btn-research" class="overlay-btn secondary" aria-haspopup="dialog">📊 Dados da pesquisa</button>
                     <button id="btn-save-game" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-save.svg" alt="" aria-hidden="true" draggable="false"> Salvar jogo</button>
                     <button id="btn-main-menu" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-home.svg" alt="" aria-hidden="true" draggable="false"> Menu principal</button>
+                </div>
+            </div>
+            <!-- Registro de pesquisa do perfil (ResearchLog) e exportação: ui/ResearchUI.js -->
+            <div id="research-panel" class="overlay-content notif-history research-panel" role="dialog" aria-modal="true" aria-labelledby="rs-title" hidden>
+                <div class="nh-head">
+                    <h2 id="rs-title">📊 Dados da pesquisa</h2>
+                    <span class="nh-count" id="rs-count"></span>
+                </div>
+                <p class="nh-hint">Para o professor e a pesquisa: o que este jogador leu, respondeu e decidiu. Fica só neste navegador; o arquivo sai sem o apelido (perfil, idade e cidade).</p>
+                <div id="rs-summary" class="rs-summary"></div>
+                <div class="overlay-buttons nh-buttons rs-buttons">
+                    <button id="btn-research-csv" class="overlay-btn secondary">⬇ Baixar planilha (CSV)</button>
+                    <button id="btn-research-json" class="overlay-btn secondary">⬇ Baixar dados completos (JSON)</button>
+                    <button id="btn-research-back" class="overlay-btn primary">⬅ Voltar</button>
                 </div>
             </div>
             <!-- Histórico de notificações da partida (UIManager.openNotificationHistory; dados em NotificationLog) -->
@@ -673,7 +706,7 @@
     <script src="js/data/buildings.js?v=d6291717"></script>
     <script src="js/data/buildingModels.js?v=e030b14f"></script>
     <script src="js/data/zoneLots.js?v=6509f3b0"></script>
-    <script src="js/data/missions.js?v=7da29106"></script>
+    <script src="js/data/missions.js?v=8217ca2a"></script>
     <script src="js/data/brazil.js?v=c0fa1745"></script>
     <script src="js/data/lessons.js?v=06e4cea9"></script>
     <script src="js/data/introCity.js?v=db7ab833"></script>
@@ -769,6 +802,7 @@
     <script src="js/ui/AnimatedPortrait.js?v=7a5cbd3d"></script>
 
     <!-- Core systems - ordem de dependência -->
+    <script src="js/systems/TextSize.js?v=ce837765"></script>
     <script src="js/systems/GraphicsQuality.js?v=082950a2"></script>
     <script src="js/core/GridManager.js?v=1782dd90"></script>
     <script src="js/core/ResourceManager.js?v=400812e6"></script>
@@ -776,15 +810,15 @@
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=845fd95d"></script>
 
-    <script src="js/core/GameManager.js?v=6ad7fb00"></script>
+    <script src="js/core/GameManager.js?v=0378569d"></script>
     <script src="js/core/game/Diagnostics.js?v=7a3bbf0a"></script>
     <script src="js/core/game/SelectionVisuals.js?v=4ce5ba4f"></script>
     <script src="js/core/game/CameraGuard.js?v=47e1747c"></script>
 
     <!-- Game systems -->
-    <script src="js/systems/BuildingSystem.js?v=c25e14d2"></script>
+    <script src="js/systems/BuildingSystem.js?v=e3324d09"></script>
     <script src="js/systems/building/BuildingMeshes.js?v=a95bab25"></script>
-    <script src="js/systems/building/BuildingFeedback.js?v=bc4c9b74"></script>
+    <script src="js/systems/building/BuildingFeedback.js?v=3c20c840"></script>
     <script src="js/systems/building/BuildingModels.js?v=bcde47c0"></script>
     <script src="js/systems/building/ZoneGrowth.js?v=c28b8797"></script>
     <script src="js/systems/building/TreeGrowth.js?v=1dea3ded"></script>
@@ -795,9 +829,9 @@
     <script src="js/systems/shared/VehicleMeshes.js?v=53516ed0"></script>
     <script src="js/systems/CityLifeSystem.js?v=75ebc9a1"></script>
     <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
-    <script src="js/systems/UIManager.js?v=1e516dcf"></script>
+    <script src="js/systems/UIManager.js?v=caa4701c"></script>
     <script src="js/systems/ui/MobileTouch.js?v=107709dc"></script>
-    <script src="js/systems/ui/StudyBookUI.js?v=af06ca77"></script>
+    <script src="js/systems/ui/StudyBookUI.js?v=601d476f"></script>
     <script src="js/systems/ui/LoanUI.js?v=057d32de"></script>
     <script src="js/systems/ui/ResourcePanels.js?v=ca0b386a"></script>
     <script src="js/systems/ui/EventUI.js?v=5269f61e"></script>
@@ -809,23 +843,25 @@
     <script src="js/systems/ui/MobilePanels.js?v=a6989c98"></script>
     <script src="js/systems/ui/WeatherUI.js?v=f5c4df70"></script>
     <script src="js/systems/ui/CompassUI.js?v=9e3e44fa"></script>
-    <script src="js/systems/ui/LessonBookUI.js?v=02466470"></script>
+    <script src="js/systems/ui/ResearchUI.js?v=dde2417e"></script>
+    <script src="js/systems/ui/LessonBookUI.js?v=3122a13a"></script>
     <script src="js/systems/ui/TreeInfoUI.js?v=e348aba5"></script>
     <script src="js/systems/LoanManager.js?v=16a6bedc"></script>
-    <script src="js/systems/QuestSystem.js?v=2f570bd2"></script>
+    <script src="js/systems/QuestSystem.js?v=aae0a671"></script>
     <script src="js/systems/ui/MissionUI.js?v=c0c04f37"></script>
-    <script src="js/systems/EventSystem.js?v=b5c6f70f"></script>
+    <script src="js/systems/EventSystem.js?v=26a42c92"></script>
     <script src="js/systems/SaveSystem.js?v=62eb9f81"></script>
     <script src="js/systems/StudySystem.js?v=09a9c52e"></script>
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
-    <script src="js/systems/TutorialSystem.js?v=90a11b35"></script>
-    <script src="js/systems/GameOverSystem.js?v=2e6fb0b9"></script>
-    <script src="js/systems/PlayerProfile.js?v=cd0a9a04"></script>
+    <script src="js/systems/TutorialSystem.js?v=4e807afb"></script>
+    <script src="js/systems/GameOverSystem.js?v=6571abaa"></script>
+    <script src="js/systems/PlayerProfile.js?v=868ad2db"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
     <script src="js/systems/TreeSystem.js?v=aafb661e"></script>
     <script src="js/systems/WeatherService.js?v=ece5b194"></script>
-    <script src="js/systems/LessonProgress.js?v=442710af"></script>
+    <script src="js/systems/ResearchLog.js?v=0311d1da"></script>
+    <script src="js/systems/LessonProgress.js?v=9769f14b"></script>
 
     <!-- Abertura cinematográfica do menu (cena Babylon própria; usa o carregador de modelos do BuildingSystem) -->
     <script src="js/systems/intro/IntroLayout.js?v=176a4c5c"></script>
@@ -833,6 +869,6 @@
     <script src="js/systems/intro/MenuIntro.js?v=83e477fc"></script>
 
     <!-- Main initialization -->
-    <script src="js/main.js?v=6261bf05"></script>
+    <script src="js/main.js?v=984bd948"></script>
 </body>
 </html>

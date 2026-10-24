@@ -1,0 +1,100 @@
+/* Acessibilidade: tamanho do texto (TextSize, --text-scale) e sinais que não dependem só de cor. */
+
+/* ===== Tamanho do texto: só os blocos de leitura crescem (o HUD e os botões do jogo ficam como estão) ===== */
+.tut-text,
+.book-title,
+.book-text,
+.page-text,
+.question-text,
+.option-text,
+.decision-speech,
+.central-alert-message,
+.mission-details-text,
+.build-info-desc,
+.build-info-stats,
+.nh-list,
+.toast,
+.swal2-html-container {
+    zoom: var(--text-scale, 1);
+}
+
+/* ===== Números do topo: além da cor, um selo com símbolo (! atenção, ✕ crítico) no canto da pílula ===== */
+.resource-item:has(.resource-value.warning),
+.resource-item:has(.resource-value.critical) {
+    position: relative;
+}
+
+.resource-item:has(.resource-value.warning)::after,
+.resource-item:has(.resource-value.critical)::after {
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #000;
+    border-radius: 50%;
+    font: 800 12px/16px system-ui, sans-serif;
+    text-align: center;
+    text-shadow: none;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.resource-item:has(.resource-value.warning)::after {
+    content: '!';
+    background: #FFD60A;
+    color: #000;
+}
+
+.resource-item:has(.resource-value.critical)::after {
+    content: '✕';
+    background: #FF1744;
+    color: #fff;
+}
+
+/* ===== Rótulo de lugar da obra (BuildingFeedback.updatePlacementLabel): texto + borda com padrão ===== */
+#placement-label {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 90;
+    max-width: 280px;
+    padding: 0.3rem 0.6rem;
+    border: 2px solid #000;
+    border-radius: 10px;
+    background: #fff;
+    color: #1b1b1b;
+    font-weight: 800;
+    font-size: 0.85rem;
+    line-height: 1.25;
+    pointer-events: none;
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+    zoom: var(--text-scale, 1);
+}
+
+#placement-label[hidden] {
+    display: none;
+}
+
+#placement-label[data-state="ok"] {
+    border-left: 8px solid #00B866;
+}
+
+#placement-label[data-state="trees"] {
+    border-left: 8px dashed #FF8C00;
+}
+
+#placement-label[data-state="bad"] {
+    border-left: 8px double #FF1744;
+    background: #FFEBEE;
+}
+
+@media (hover: none) {
+    /* Toque: o dedo cobre o ponto; o rótulo fica no alto, centralizado */
+    #placement-label {
+        transform: none !important;
+        top: 70px;
+        left: 50%;
+        translate: -50% 0;
+    }
+}

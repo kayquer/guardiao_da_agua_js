@@ -143,6 +143,7 @@ class GameOverSystem {
         if (this.isGameOver) return;
 
         log(`💀 Game Over: ${reason}`);
+        if (typeof ResearchLog !== 'undefined') ResearchLog.record('game_over', { target: reason, value: this.getEmergenciesLeft() });
         this.isGameOver = true;
         this.gameOverReason = reason;
 
@@ -255,6 +256,7 @@ class GameOverSystem {
         const rm = gm.resourceManager;
         const res = rm.resources;
         this.emergenciesUsed++;
+        if (typeof ResearchLog !== 'undefined') ResearchLog.record('emergency', { target: this.gameOverReason, value: this.getEmergenciesLeft() });
 
         // Ajuda: água, poluição, dinheiro (empréstimo emergencial) e calma
         res.water.current = Math.max(res.water.current, (res.water.max || 0) * GameOverSystem.EMERGENCY_WATER_RATIO); // max = capacidade
@@ -312,6 +314,7 @@ class GameOverSystem {
         const container = document.getElementById('gameover-container');
         if (!container || this.isGameOver) return;
         this.showingVictory = true;
+        if (typeof ResearchLog !== 'undefined') ResearchLog.record('victory');
         this.gameManager.holdPause?.('victory');
         if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_victory');
 

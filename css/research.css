@@ -1,0 +1,51 @@
+/* "📊 Dados da pesquisa" na tela de pausa (ui/ResearchUI.js). O painel reaproveita .notif-history (css/toasts.css). */
+.rs-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.rs-item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 0.5rem;
+    align-items: center;
+    padding: 0.55rem 0.7rem;
+    border: 2px solid #000;
+    border-radius: 12px;
+    background: #fff;
+    color: #3d2a00;
+    text-shadow: none;
+}
+
+.rs-icon {
+    grid-row: span 2;
+    font-size: 1.5rem;
+}
+
+.rs-item b {
+    font-size: 1.2rem;
+    line-height: 1.1;
+}
+
+.rs-item span:last-child {
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.rs-buttons {
+    display: grid;
+    gap: 0.5rem;
+}
+
+@media (max-width: 480px) {
+    .rs-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* .overlay-content tem display próprio: sem isto o [hidden] não esconde (e a pausa acha que há um popup aberto) */
+#research-panel[hidden] {
+    display: none !important;
+}

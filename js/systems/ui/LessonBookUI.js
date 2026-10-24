@@ -211,6 +211,7 @@ mixin(UIManager, {
             <div class="book-text">${PlayerProfile.personalize(step.text)}</div>
             ${last ? this.renderLessonSources(state.chapter) : ''}`;
         book.querySelector('.book-right-content').scrollTop = 0;
+        ResearchLog.startPage('book', state.chapter, step.title);
         book.querySelector('.book-dots').innerHTML = state.pages.map((_, i) =>
             `<span class="book-dot ${i === state.page ? 'current' : ''} ${i < state.page ? 'read' : ''}"></span>`).join('');
         book.querySelector('.book-prev').disabled = state.page === 0;
@@ -273,6 +274,8 @@ mixin(UIManager, {
     finishLesson() {
         const { chapter, fromHub } = this.lessonBook;
         const first = LessonProgress.markDone(chapter);
+        ResearchLog.endPage();
+        ResearchLog.record('lesson_done', { source: 'book', target: chapter, value: first ? 'first' : 'review' });
         this.showNotification(PlayerProfile.personalize(first
             ? `🎉 Aula ${chapter} concluída! Muito bem, {nome}!`
             : `📖 Aula ${chapter} revisada!`), 'success', 4000);
@@ -284,6 +287,7 @@ mixin(UIManager, {
         const book = document.getElementById('lesson-book');
         if (!book) return;
         stopSpeaking();
+        ResearchLog.endPage();
         document.removeEventListener('keydown', this.lessonBookKeys);
         Object.values(this.lessonBook?.portraits || {}).forEach(portrait => portrait.destroy());
         const fromHub = this.lessonBook?.fromHub;

@@ -81,15 +81,57 @@ class TutorialSystem {
     // Passo sem `group` é da introdução; sem `mode` é 'story' (livro em tela cheia).
     // `bookOnly`: página só do livro da central de aulas (o tutorial inicial pula)
     return [
-        // Escolha: aprender sobre a água agora (lições em seguida) ou durante o jogo (uma por missão)
+        // Abertura curta: o jogador constrói antes de ler (a pergunta das aulas vem depois da Prefeitura)
+        {
+            group: 'hello',
+            character: 'Claudia',
+            background: 'assets/images/tutorial/bg-rio-boas-vindas.webp',
+            title: 'Olá, {nome}!',
+            text: 'Eu sou a <b>Pesquisadora Cláudia</b> e vou te ajudar a cuidar da água desta cidade. Vamos começar pelo começo: construir a <b>Prefeitura</b>, de onde você vai comandar tudo. Depois eu te conto como a água funciona!',
+            nextLabel: 'Vamos lá!',
+            icon: '💧'
+        },
+
+        // ===== PREFEITURA (obrigatório): o jogador constrói a sede da cidade =====
+        {
+            group: 'cityhall', mode: 'coach', character: 'Claudia', icon: '🏛️',
+            title: 'Primeiro passo: a Prefeitura',
+            text: 'Toda cidade precisa de uma sede de governo, e é da <b>Prefeitura</b> que você vai comandar as obras. Esta fica por conta do governo federal: <b>não custa nada</b>!',
+            waitFor: 'city_hall',
+            free: true, // obra do governo federal: não custa nada e fica pronta na hora
+            // já abre a categoria certa: com outra aberta, o botão "Públicos" fica fora da tela
+            enter: gm => gm.uiManager.uiState.currentCategory !== 'public' && gm.uiManager.selectCategory('public'),
+            placingHint: '👆 Agora clique (ou toque) num terreno do mapa. Onde a sombra ficar <b>verde</b>, a Prefeitura cabe. <b>Laranja</b> = cabe, mas derruba árvores 🌳.',
+            // O primeiro alvo visível ganha o destaque: acompanha o jogador abrindo menu → categoria → item
+            targets: [
+                { selector: '#build-info-construct:not([hidden])', text: '👆 Agora clique (ou toque) em <b>Construir</b>.' },
+                { selector: '.building-item[data-building-type="city_hall"]', text: '👆 Escolha a <b>🏛️ Prefeitura Municipal</b>.', scrollIn: '#build-modal-grid' },
+                { selector: '.category-btn[data-category="public"]', text: '👆 Abra a categoria <b>🏛️ Públicos</b>.' },
+                { selector: '.mobile-toggle.left', text: '👆 Toque em <b>🏗️</b> para abrir as construções.' },
+                { selector: '#building-panel', text: '👆 Abra a categoria <b>🏛️ Públicos</b> no menu de construções.' }
+            ]
+        },
+        {
+            group: 'cityhall', mode: 'coach', character: 'Claudia', icon: '🎉',
+            title: 'Prefeitura construída!',
+            text: 'Muito bem, {nome}! A cidade agora tem governo. Daqui pra frente, cada construção sai do <b>orçamento</b> da cidade: gaste com sabedoria.'
+        },
+        {
+            group: 'cityhall', mode: 'coach', character: 'Claudia', icon: '🌳',
+            title: 'Cuidado com as árvores',
+            text: 'Viu os bosques no mapa? As árvores <b>limpam o ar</b> e deixam a cidade mais feliz. Se você construir em cima delas, elas são <b>derrubadas</b>: a <b>poluição sobe</b> e a <b>satisfação cai</b>. Quando a sombra da obra ficar <b>laranja</b>, tem árvore no caminho: prefira um terreno livre!'
+        },
+
+        // Depois da Prefeitura (a primeira ação vem em menos de um minuto): aprender sobre a água agora
+        // (lições em seguida) ou durante o jogo (uma por missão, LessonProgress.forMission)
         {
             offer: true,
             nextLabel: 'Aprender agora',
             skipLabel: 'Durante o jogo',
             character: 'Claudia',
             background: 'assets/images/tutorial/bg-rio-boas-vindas.webp',
-            title: 'Olá, {nome}!',
-            text: 'Eu sou a Pesquisadora Cláudia! Antes de construir a cidade, posso te contar como a água funciona na natureza, com a ajuda de dois amigos: o <b>Pescador José</b>, que vive do rio desde criança, e a <b>Pesquisadora Márcia</b>, que vai até o rio coletar e analisar a água. <br><br>Você quer aprender <b>agora</b>, ou <b>aos poucos, durante o jogo</b>? Se escolher durante o jogo, a cada missão completada a gente aparece com uma aula nova.',
+            title: 'Hora de aprender sobre a água?',
+            text: 'A cidade já tem sede! Agora posso te contar como a água funciona na natureza, com a ajuda de dois amigos: o <b>Pescador José</b>, que vive do rio desde criança, e a <b>Pesquisadora Márcia</b>, que vai até o rio coletar e analisar a água. <br><br>Você quer aprender <b>agora</b>, ou <b>aos poucos, durante o jogo</b>? Se escolher durante o jogo, a cada missão completada a gente aparece com uma aula nova.',
             icon: '💧'
         },
 
@@ -295,36 +337,6 @@ class TutorialSystem {
             title: 'Cidades-Esponja',
             text: 'Já imaginou uma cidade que funciona como uma <b>esponja</b>? Essa ideia está sendo usada no mundo todo! Em vez de jogar a chuva rapidinho para canos e bueiros, a cidade-esponja <b>guarda e infiltra</b> a água: parques que alagam de propósito, lagoas, jardins de chuva e calçadas que deixam a água passar. <br><br>Isso faz parte das <b>Soluções Baseadas na Natureza</b>: usar plantas, solo e água a nosso favor. Os <b>alagados construídos</b>, por exemplo, são brejos feitos pelas pessoas onde as plantas limpam o esgoto, como um filtro vivo. <br><br>Menos enchente, mais verde e água mais limpa. A natureza é a melhor engenheira, {nome}!',
             icon: '🧽'
-        },
-
-        // ===== PREFEITURA (obrigatório): o jogador constrói a sede da cidade =====
-        {
-            group: 'cityhall', mode: 'coach', character: 'Claudia', icon: '🏛️',
-            title: 'Primeiro passo: a Prefeitura',
-            text: 'Toda cidade precisa de uma sede de governo, e é da <b>Prefeitura</b> que você vai comandar as obras. Esta fica por conta do governo federal: <b>não custa nada</b>!',
-            waitFor: 'city_hall',
-            free: true, // obra do governo federal: não custa nada e fica pronta na hora
-            // já abre a categoria certa: com outra aberta, o botão "Públicos" fica fora da tela
-            enter: gm => gm.uiManager.uiState.currentCategory !== 'public' && gm.uiManager.selectCategory('public'),
-            placingHint: '👆 Agora clique (ou toque) num terreno do mapa. Onde a sombra ficar <b>verde</b>, a Prefeitura cabe. <b>Laranja</b> = cabe, mas derruba árvores 🌳.',
-            // O primeiro alvo visível ganha o destaque: acompanha o jogador abrindo menu → categoria → item
-            targets: [
-                { selector: '#build-info-construct:not([hidden])', text: '👆 Agora clique (ou toque) em <b>Construir</b>.' },
-                { selector: '.building-item[data-building-type="city_hall"]', text: '👆 Escolha a <b>🏛️ Prefeitura Municipal</b>.', scrollIn: '#build-modal-grid' },
-                { selector: '.category-btn[data-category="public"]', text: '👆 Abra a categoria <b>🏛️ Públicos</b>.' },
-                { selector: '.mobile-toggle.left', text: '👆 Toque em <b>🏗️</b> para abrir as construções.' },
-                { selector: '#building-panel', text: '👆 Abra a categoria <b>🏛️ Públicos</b> no menu de construções.' }
-            ]
-        },
-        {
-            group: 'cityhall', mode: 'coach', character: 'Claudia', icon: '🎉',
-            title: 'Prefeitura construída!',
-            text: 'Muito bem, {nome}! A cidade agora tem governo. Daqui pra frente, cada construção sai do <b>orçamento</b> da cidade: gaste com sabedoria.'
-        },
-        {
-            group: 'cityhall', mode: 'coach', character: 'Claudia', icon: '🌳',
-            title: 'Cuidado com as árvores',
-            text: 'Viu os bosques no mapa? As árvores <b>limpam o ar</b> e deixam a cidade mais feliz. Se você construir em cima delas, elas são <b>derrubadas</b>: a <b>poluição sobe</b> e a <b>satisfação cai</b>. Quando a sombra da obra ficar <b>laranja</b>, tem árvore no caminho: prefira um terreno livre!'
         },
 
         // ===== MISSÕES (opcional) =====
@@ -607,15 +619,20 @@ class TutorialSystem {
      * Hook de QuestSystem.completeQuest: quem escolheu aprender "durante o jogo" ganha a próxima aula
      * ainda não feita (LessonProgress), aberta no livro da central de aulas.
      */
-    onMissionCompleted() {
+    onMissionCompleted(missionId) {
         if (!this.lessonsDeferred) return;
-        setTimeout(() => { // depois da comemoração da missão
-            const next = LessonProgress.summary().next;
+        setTimeout(() => { // depois da comemoração da missão: a aula ligada à missão (LessonProgress.forMission)
+            const next = LessonProgress.forMission(missionId);
             if (next == null) {
                 this.lessonsDeferred = false;
                 return;
             }
-            if (!this.isActive && this.gameManager.gameState === 'playing') this.gameManager.uiManager.openLessonBook(next);
+            if (this.isActive || this.gameManager.gameState !== 'playing') return;
+            const ui = this.gameManager.uiManager;
+            if (Number(MISSIONS[missionId]?.lesson) === next) {
+                ui.showNotification(`📖 Aula ${next}: ${LESSON_CHAPTERS[next].title}. Tem tudo a ver com a missão que você acabou de concluir!`, 'info', 6000);
+            }
+            ui.openLessonBook(next);
         }, 4000);
     }
 
@@ -698,6 +715,7 @@ class TutorialSystem {
         stopSpeaking();
         step.enter?.(this.gameManager);
         this.syncActionStepClock(step);
+        ResearchLog.startPage(this.run, step.chapter ?? this.groupOf(step), step.title);
 
         const container = document.getElementById('tutorial-container');
         const mode = step.mode || 'story';
@@ -953,8 +971,9 @@ class TutorialSystem {
         if (!this.isStepDone(step)) return;
         // "Aprender agora" no início: terminar a última página de um capítulo conclui aquela aula
         if (this.run === 'tutorial' && typeof step.chapter === 'number' && this.steps[this.currentStep + 1]?.chapter !== step.chapter) {
-            LessonProgress.markDone(step.chapter);
+            if (LessonProgress.markDone(step.chapter)) ResearchLog.record('lesson_done', { source: 'tutorial', target: step.chapter, value: 'first' });
         }
+        if (this.run === 'tutorial' && step.offer && this.groupOf(step) === 'intro') ResearchLog.record('tutorial_choice', { value: 'now' });
         if (this.currentStep < this.steps.length - 1) {
             AudioManager.playSound(this.mode === 'story' ? 'sfx_book_page' : 'sfx_tutorial_next');
             this.goTo(this.currentStep + 1);
@@ -980,6 +999,7 @@ class TutorialSystem {
         if (!step.skipLabel && !TutorialSystem.SKIP_LABELS[group]) return;
         if (group === 'intro') { // "durante o jogo": as aulas que faltam vêm uma por missão
             this.lessonsDeferred = true;
+            ResearchLog.record('tutorial_choice', { value: step.offer ? 'later' : 'skip_rest', target: step.chapter ?? null });
         }
         const nextIndex = this.steps.findIndex((s, i) => i > this.currentStep && this.groupOf(s) !== group);
         log(`📚 Parte "${group}" pulada`);
@@ -998,6 +1018,7 @@ class TutorialSystem {
         document.removeEventListener('click', this.handleTargetClick, true);
         this.hideTutorialUI();
         stopSpeaking();
+        ResearchLog.endPage();
         Object.values(this.portraits).forEach(p => p.hideBalloon());
         this.portraitShown = null;
         AudioManager.resetSpeaker(); // na próxima aula/guia o personagem cumprimenta de novo

@@ -225,6 +225,7 @@ class UIManager {
         
         // Histórico de notificações na tela de pausa (o toast fecha pelo próprio clique, em showNotification)
         this.setupNotificationHistory();
+        this.setupResearchPanel();
 
         // ===== ENHANCED RESOURCE PANEL INTERACTION SYSTEM =====
         this.setupEnhancedResourcePanelInteractions();
@@ -651,14 +652,14 @@ class UIManager {
         const popups = [
             '.swal2-container', '.central-alert-overlay', '#study-book-overlay', '#controls-modal',
             '#weather-modal', '#lessons-hub', '#lesson-book', '.mission-interface', '.choice-dialog', '.loan-interface',
-            '.resource-details-panel', '#notification-history', '#tech-modal', '#event-decision'
+            '.resource-details-panel', '#notification-history', '#research-panel', '#tech-modal', '#event-decision'
         ];
         return popups.some(selector => shown(document.querySelector(selector)));
     }
 
     updateSoftPauseBadge() {
         // Na tela de pausa (e no histórico de notificações dela) o jogo já está parado: o selo só cobriria o título
-        const pauseScreen = ['#pause-overlay', '#notification-history']
+        const pauseScreen = ['#pause-overlay', '#notification-history', '#research-panel']
             .some(sel => document.querySelector(sel)?.getClientRects().length > 0);
         const paused = this.gameManager?.pauseReasons?.size > 0 && this.gameManager.gameState === 'playing' && !pauseScreen;
         let badge = document.getElementById('soft-pause-badge');
@@ -1250,6 +1251,7 @@ class UIManager {
         if (this.elements.pauseOverlay) {
             this.renderPlayerPanel();
             this.closeNotificationHistory({ focus: false });
+            this.closeResearchPanel({ focus: false });
             this.elements.pauseOverlay.classList.remove('hidden');
         }
     }

@@ -108,12 +108,10 @@ test('tutorial congela o jogo e guia a construção da prefeitura', async ({ pag
     await expect(portrait).toHaveAttribute('data-character', 'claudia');
     expect(await page.evaluate(() => window.gameManager.gameTime)).toBe(0);
 
-    // Escolha "aprender agora", ouve um trecho e pula o resto das aulas: elas passam a vir uma por missão
-    await expect(next).toHaveText('Aprender agora');
-    await expect(skip).toHaveText('Durante o jogo');
+    // Abertura curta e obrigatória: a primeira ação (a Prefeitura) vem logo, a pergunta das aulas fica para depois
+    await expect(page.locator('#tutorial-title')).toHaveText('Olá, Teste!');
+    await expect(skip).toBeHidden();
     await next.click();
-    await page.locator('#tutorial-read-btn').click();
-    await skip.click();
 
     // Prefeitura: modo coach, sem "pular" e com "próximo" travado
     await expect(tutorial).toHaveClass(/tutorial--coach/);
@@ -139,10 +137,20 @@ test('tutorial congela o jogo e guia a construção da prefeitura', async ({ pag
     await expect(page.locator('#tutorial-title')).toHaveText('Prefeitura construída!');
     await expect(next).toBeEnabled();
 
-    // Partes opcionais: pula missões e interface; o final é obrigatório
     await next.click();
     await expect(page.locator('#tutorial-title')).toHaveText('Cuidado com as árvores');
     await next.click();
+
+    // Depois da Prefeitura: escolhe "aprender agora", ouve um trecho e pula o resto das aulas (passam a vir uma por missão)
+    await expect(tutorial).toHaveClass(/tutorial--story/);
+    await expect(page.locator('#tutorial-title')).toHaveText('Hora de aprender sobre a água?');
+    await expect(next).toHaveText('Aprender agora');
+    await expect(skip).toHaveText('Durante o jogo');
+    await next.click();
+    await page.locator('#tutorial-read-btn').click();
+    await skip.click();
+
+    // Partes opcionais: pula missões e interface; o final é obrigatório
     await expect(page.locator('#tutorial-title')).toHaveText('Quer conhecer as missões?');
     await skip.click();
     await expect(page.locator('#tutorial-title')).toHaveText('Um tour pela tela?');

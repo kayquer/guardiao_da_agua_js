@@ -102,6 +102,7 @@ class PlayerProfile {
         store.profiles = store.profiles.filter(p => p.id !== id);
         if (store.activeId === id) store.activeId = null;
         PlayerProfile.writeStore(store);
+        if (typeof ResearchLog !== 'undefined') ResearchLog.clear(id);
     }
 
     /** Dificuldade pela idade (DIFFICULTY_BY_AGE em GameConstants). */

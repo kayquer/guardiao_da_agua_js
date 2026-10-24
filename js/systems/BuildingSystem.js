@@ -460,6 +460,7 @@ class BuildingSystem {
         // Árvores no terreno caem com a obra (piora poluição e satisfação: TreeSystem)
         const felled = this.gameManager?.treeSystem?.fellTreesInArea(gridX, gridZ, buildingType.size);
         if (felled && typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_axe');
+        if (!isRoad && typeof ResearchLog !== 'undefined') ResearchLog.record('build', { target: buildingTypeId, value: felled || 0 });
 
         // Verificar e criar conexões para infraestrutura
         if (this.isInfrastructureBuilding(buildingType)) {
@@ -1581,6 +1582,7 @@ class BuildingSystem {
 
         this.previewMode = false;
         this.selectedBuildingType = null;
+        this.updatePlacementLabel(null);
         if (this.previewRotationObserver) {
             this.scene?.onBeforeRenderObservable?.remove(this.previewRotationObserver);
             this.previewRotationObserver = null;
@@ -1727,6 +1729,9 @@ class BuildingSystem {
                     this.previewMesh.material.alpha = 0.8;
                     this.previewMesh.material.emissiveColor = new BABYLON.Color3(0.2, 0, 0);
                 }
+                // A cor não é o único sinal (daltonismo): o rótulo junto do cursor diz o mesmo em texto
+                this.updatePlacementLabel(!isValid ? 'bad' : treesHere ? 'trees' : 'ok',
+                    !isValid ? (isWithinBounds ? canPlaceResult.reason : 'Fora do mapa') : treesHere);
             }
         }
 

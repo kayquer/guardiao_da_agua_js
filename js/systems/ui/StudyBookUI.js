@@ -278,6 +278,8 @@ mixin(UIManager, {
             // Calculate score and check if passed
             const score = studySystem.calculateQuizScore();
             const passed = studySystem.isQuizPassed();
+            ResearchLog.record('quiz', { target: buildingId, value: score, ok: passed,
+                answers: quiz.questions.map((q, i) => ({ q: q.id ?? i, chosen: studySystem.currentQuizAnswers[q.id ?? i] ?? null, right: studySystem.currentQuizAnswers[q.id ?? i] === q.correctAnswer })) });
 
             if (!passed) {
                 // Quiz failed - show results and allow retry
@@ -398,6 +400,7 @@ mixin(UIManager, {
         const studySystem = this.gameManager.studySystem;
         const buildingId = studySystem.currentStudy;
         if (!buildingId) return;
+        ResearchLog.record('quiz_continue', { target: buildingId });
         studySystem.completeStudy(buildingId);
         AudioManager.onStudyUnlock();
         this.closeStudyBook();

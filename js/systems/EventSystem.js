@@ -860,6 +860,7 @@ class EventSystem {
     static GUARDIAN_GOAL = 5;
 
     recordResponse(config, option, auto) {
+        if (typeof ResearchLog !== 'undefined') ResearchLog.record('event_decision', { target: config.id, value: option.id, tier: option.tier, auto, ok: !auto && (option.tier === 'max' || option.tier === 'mid') });
         const st = this.responseStats;
         st.total++;
         if (option.tier === 'max') st.best++;

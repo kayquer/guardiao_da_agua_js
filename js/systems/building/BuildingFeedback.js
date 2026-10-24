@@ -1235,4 +1235,33 @@ mixin(BuildingSystem, {
             }
         });
     },
+
+    /**
+     * Rótulo em texto junto do cursor durante a escolha do lugar (a cor do fantasma não é o único sinal):
+     * state 'ok' | 'trees' (detail = quantas) | 'bad' (detail = motivo) | null (esconde).
+     */
+    updatePlacementLabel(state, detail) {
+        let label = document.getElementById('placement-label');
+        if (!state) {
+            if (label) label.hidden = true;
+            return;
+        }
+        if (!label) {
+            label = document.createElement('div');
+            label.id = 'placement-label';
+            label.setAttribute('aria-live', 'polite');
+            document.getElementById('game-screen')?.appendChild(label);
+        }
+        const text = state === 'ok' ? '✓ Pode construir aqui'
+            : state === 'trees' ? `🌳 Pode, mas derruba ${detail} ${detail === 1 ? 'árvore' : 'árvores'}`
+                : `✕ ${detail || 'Não dá para construir aqui'}`;
+        if (label.dataset.state !== state || label.textContent !== text) {
+            label.dataset.state = state;
+            label.textContent = text;
+        }
+        label.hidden = false;
+        const x = this.scene?.pointerX ?? 0;
+        const y = this.scene?.pointerY ?? 0;
+        label.style.transform = `translate(${Math.round(x + 18)}px, ${Math.round(y + 22)}px)`;
+    },
 });

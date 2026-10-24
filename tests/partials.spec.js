@@ -102,6 +102,11 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         ui.closeLessonBook();
         ui.closeLessonsHub();
 
+        // ui/ResearchUI: painel "📊 Dados da pesquisa" da pausa (resumo do ResearchLog)
+        ui.openResearchPanel();
+        ui.renderResearchPanel();
+        ui.closeResearchPanel({ focus: false });
+
         // ui/EventUI + ui/EventDecisionUI: anúncio → modal do Paulo → escolha → aviso e evento com barra de tempo
         const es = window.gameManager.eventSystem;
         const asked = es.announceEvent('flood');

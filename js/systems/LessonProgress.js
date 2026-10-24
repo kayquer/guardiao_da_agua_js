@@ -49,6 +49,16 @@ class LessonProgress {
         return { done: done.length, total: chapters.length, next: chapters.find(c => !done.includes(c)) ?? null };
     }
 
+    /**
+     * Aula a abrir quando uma missão acaba: a que conversa com ela (MISSIONS[id].lesson) se ainda não foi feita,
+     * senão a próxima que falta. null = já fez todas.
+     */
+    static forMission(missionId) {
+        const linked = typeof MISSIONS !== 'undefined' ? Number(MISSIONS[missionId]?.lesson) : NaN;
+        if (LESSON_CHAPTERS[linked] && !LessonProgress.isDone(linked)) return linked;
+        return LessonProgress.summary().next;
+    }
+
     /** Apaga o progresso do jogador (perfil apagado). */
     static clear(profileId) {
         const all = LessonProgress.readAll();

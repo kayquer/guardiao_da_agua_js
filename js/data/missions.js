@@ -12,6 +12,7 @@ const MISSIONS = {
         category: 'primary',
         difficulty: 'beginner',
         estimatedTime: '5 minutos',
+        lesson: 1, // aula ao concluir: a água do planeta: de onde vem a água da bomba
         prerequisites: [],
         objectives: [
             {
@@ -49,6 +50,7 @@ const MISSIONS = {
         description: 'A poluição está afetando a qualidade da água. Construa uma estação de tratamento.',
         type: 'tutorial',
         category: 'secondary',
+        lesson: 4, // aula ao concluir: a vida no rio: o esgoto que a ETA trata
         prerequisites: ['tutorial_01'],
         objectives: [
             {
@@ -91,6 +93,7 @@ const MISSIONS = {
         description: 'Construa reservatórios para garantir fornecimento constante de água.',
         type: 'tutorial',
         category: 'secondary',
+        lesson: 5, // aula ao concluir: água escondida: aquíferos e reservatórios
         prerequisites: ['tutorial_02'],
         objectives: [
             {
@@ -134,6 +137,7 @@ const MISSIONS = {
         description: 'Desenvolva uma infraestrutura hídrica sustentável para sua cidade.',
         type: 'main',
         category: 'primary',
+        lesson: 6, // aula ao concluir: soluções verdes: crescer sem sujar o rio
         prerequisites: ['tutorial_03'],
         objectives: [
             {
@@ -187,6 +191,7 @@ const MISSIONS = {
         description: 'Uma seca chegou: as bombas e poços produzem metade da água. Aguente 4 minutos sem deixar a água faltar.',
         type: 'challenge',
         category: 'secondary',
+        lesson: 2, // aula ao concluir: o caminho da água: por que a seca acontece
         prerequisites: ['tutorial_03'],
         startEvent: { type: 'drought', durationMs: 240000 }, // a missão começa a seca (QuestSystem.startQuest)
         objectives: [
@@ -231,6 +236,7 @@ const MISSIONS = {
         description: 'Você foi nomeada a nova gestora de recursos hídricos da cidade. Conheça a situação atual e tome suas primeiras decisões.',
         type: 'story',
         category: 'secondary',
+        lesson: 3, // aula ao concluir: água para todos: dividir a água entre os grupos
         prerequisites: ['tutorial_01'],
         difficulty: 'beginner',
         estimatedTime: '8 minutos',

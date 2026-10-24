@@ -213,7 +213,8 @@ class QuestSystem {
         quest.completionTime = this.simNow();
         this.activeQuests.delete(questId);
         this.completedQuests.add(questId);
-        this.gameManager.tutorialSystem?.onMissionCompleted();
+        if (typeof ResearchLog !== 'undefined') ResearchLog.record('mission_done', { target: questId });
+        this.gameManager.tutorialSystem?.onMissionCompleted(questId);
 
         // ===== ENHANCED COMPLETION SYSTEM =====
 

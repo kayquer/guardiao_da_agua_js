@@ -921,6 +921,7 @@ class GameManager {
     // ===== CONTROLE DE JOGO =====
     startNewGame() {
         log('🎮 Iniciando novo jogo...');
+        ResearchLog.startSession('new');
 
         if (!this.initialized) {
             console.error('❌ Sistemas não inicializados');
@@ -1097,6 +1098,7 @@ class GameManager {
 
         try {
             this.gameState = 'loading'; // nada simula enquanto o mundo é remontado
+            ResearchLog.startSession('load');
             this.pauseReasons.clear();
             if (this.buildMode) this.exitBuildMode();
             this.deselectBuilding?.();

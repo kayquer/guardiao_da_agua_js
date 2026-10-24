@@ -132,6 +132,7 @@ function initializeMenuSystem() {
     document.getElementById('btn-start').addEventListener('click', onStartClick);
     initializeProfileScreen();
     initializeGraphicsPickers();
+    initializeTextPickers();
 }
 
 // ===== QUALIDADE GRÁFICA (GraphicsQuality) =====
@@ -162,6 +163,28 @@ function initializeGraphicsPickers() {
         if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_click', 0.6);
     }));
     GraphicsQuality.onChange(render);
+    render();
+}
+
+// ===== TAMANHO DO TEXTO (TextSize) =====
+// Seletor Normal/Grande/Maior no menu e na pausa ([data-text-picker]); salvo no navegador, vale na hora.
+function initializeTextPickers() {
+    const pickers = document.querySelectorAll('[data-text-picker]');
+    const render = () => {
+        const level = TextSize.current();
+        pickers.forEach(picker => picker.querySelectorAll('[data-text-size]').forEach(button => {
+            const on = button.dataset.textSize === level;
+            button.classList.toggle('active', on);
+            button.setAttribute('aria-checked', String(on));
+        }));
+    };
+    pickers.forEach(picker => picker.addEventListener('click', event => {
+        const button = event.target.closest('[data-text-size]');
+        if (!button || button.dataset.textSize === TextSize.current()) return;
+        TextSize.set(button.dataset.textSize);
+        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_click', 0.6);
+    }));
+    TextSize.onChange(render);
     render();
 }
 
@@ -565,7 +588,7 @@ function showAbout() {
                     </div>
                 </div>
                 <p class="about-small">O apelido, a idade e a cidade do jogador ficam salvos só neste navegador; a cidade
-                é usada para mostrar o clima real.</p>
+                é usada para mostrar o clima real. O jogo também guarda, só aqui, um registro das respostas dos quizzes, das páginas lidas e das decisões, para a pesquisa; o professor pode exportá-lo na tela de pausa, e o arquivo não leva o apelido.</p>
                 <p class="about-small">Versão 1.0.0 · Feito com Babylon.js</p>
             </div>
         `,
