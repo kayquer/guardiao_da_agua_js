@@ -102,12 +102,12 @@ test('muda de árvore: cresce em 4 etapas, só a muda bebe água, depois limpa o
         gm.buildingSystem.getTreeGrowthConditions = () => ({ waterShortage: false });
     });
 
-    // Liberada sem estudo, no cartão da categoria Tratamento
+    // Liberada sem estudo, no cartão da categoria Natureza
     const card = await page.evaluate(() => {
         const gm = window.gameManager;
         return { unlocked: gm.studySystem.isBuildingUnlocked('tree_sapling'), category: gm.buildingSystem.buildingTypes.get('tree_sapling').category };
     });
-    expect(card).toEqual({ unlocked: true, category: 'treatment' });
+    expect(card).toEqual({ unlocked: true, category: 'nature' });
 
     // Não planta em cima de árvore nativa
     const onNative = await page.evaluate(() => {

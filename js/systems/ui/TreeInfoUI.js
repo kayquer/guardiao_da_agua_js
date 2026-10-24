@@ -21,9 +21,13 @@ mixin(UIManager, {
         const growth = bs.describeTreeGrowth(building);
         const effect = data.waterConsumption > 0
             ? `<div class="stat-item tree-effect" data-effect="water">🚰 Rega da muda: consome ${fmt(data.waterConsumption)} L/min de água (ainda não limpa o ar)</div>`
-            : `<div class="stat-item tree-effect" data-effect="pollution">🌿 Limpa o ar: -${fmt(data.pollutionReduction)} de poluição/min (não precisa mais de rega)</div>`;
+            : `<div class="stat-item tree-effect" data-effect="pollution">🌿 Limpa o ar: -${fmt(bs.getTreeEffects(building).pollution)} de poluição/min (não precisa mais de rega)</div>`;
+        const riparian = bs.isRiparianTree?.(building)
+            ? `<div class="stat-item tree-riparian">🏞️ Mata ciliar: perto do rio, segura a terra da margem e limpa ${TREES.RIPARIAN_FACTOR}× mais</div>`
+            : `<div class="stat-note">Dica: árvores perto do rio (mata ciliar) limpam ${TREES.RIPARIAN_FACTOR}× mais.</div>`;
         return `
             ${tag}
+            ${riparian}
             <div class="stat-item tree-stage" data-tree-stage="${stage}">🌳 Etapa: ${data.name} (${stage + 1}/4)</div>
             <div class="tree-stage-track" style="height:8px;border-radius:4px;background:rgba(0,0,0,0.25);margin:2px 0 6px;overflow:hidden">
                 <div id="tree-stage-bar-${building.id}" class="tree-stage-bar" style="height:100%;width:${percent}%;background:${building.config.color || '#7CB342'};transition:width 0.4s"></div>
@@ -72,6 +76,7 @@ mixin(UIManager, {
                 </div>
                 <div class="building-stats">
                     <div class="stat-item tree-effect" data-effect="pollution">🌿 Limpa o ar: -${fmt(info.pollutionReduction)} de poluição/min</div>
+                    ${info.riparian ? `<div class="stat-item tree-riparian">🏞️ Mata ciliar: perto do rio, limpa ${TREES.RIPARIAN_FACTOR}× mais e segura a terra da margem</div>` : ''}
                     <div class="stat-item">💧 Não gasta água da cidade: já tem raízes fundas</div>
                     <div class="stat-item">😊 Deixa a cidade mais verde (moradores mais satisfeitos)</div>
                     <div class="stat-item">🌲 ${info.count} árvores nativas em pé no mapa</div>

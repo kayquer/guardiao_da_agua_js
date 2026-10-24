@@ -240,6 +240,7 @@ mixin(UIManager, {
             state.speaker = step.character;
             portrait.enter();
         }
+        AudioManager.onSpeaker(id, portrait.expression); // voz curta a cada página
         portrait.talk(1400);
     },
 

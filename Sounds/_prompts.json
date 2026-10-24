@@ -1302,6 +1302,686 @@
       "loop": false,
       "loudnessTarget": "-16 LUFS (-4.6 dB)",
       "channels": 2
+    },
+    "Sounds/SFX/Player/voc_paulo_hello_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Middle-aged Brazilian man's friendly energetic 'hey!' greeting vocal, confident and warm, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_claudia_hello_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Friendly adult Brazilian woman's short warm 'hey!' greeting vocal, smiling, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_claudia_hello_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Adult woman's soft cheerful inviting 'mm-hm?' hum, friendly and curious, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_claudia_happy.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Adult woman's delighted short laugh 'ha-ha!', joyful and celebrating, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_claudia_sad.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Adult woman's soft sad sigh 'aww...', gently disappointed, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_jose_hello_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Warm older Brazilian man's friendly calling 'ô!' greeting vocal, relaxed and kind, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_jose_hello_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Older man's calm content 'hmm-hm' hum, kind and easygoing, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_jose_happy.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Older man's hearty happy laugh 'ha-ha-ha', proud and warm, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_jose_worried.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Older man's low concerned 'hmm...' grumble, worried, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_jose_sad.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Older man's heavy sad sigh, tired and disappointed, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_marcia_hello_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Young adult woman's bright energetic 'hey!' vocal chirp, friendly, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_marcia_hello_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Young woman's curious thoughtful upward 'hmm?' hum, interested, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_marcia_happy.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Young woman's excited 'yay!' cheer with a small laugh, joyful, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_marcia_worried.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Young woman's anxious short 'uh-oh' gasp, worried, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_marcia_sad.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Young woman's soft disappointed 'ohh...' sigh, sad, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_paulo_hello_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Middle-aged man's warm approving 'mm-hm!' hum, confident and kind, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_paulo_hello_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Middle-aged man's upbeat short 'opa!' exclamation vocal, cheerful, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_paulo_happy.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Middle-aged man's hearty cheerful laugh 'ha-ha!', excited, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_paulo_worried.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Middle-aged man's concerned 'hmm...' with a tense exhale, worried, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_paulo_sad.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Middle-aged man's disappointed long sigh 'aaah...', sad, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "única",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_water_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a water pump building: short mechanical pump thunk followed by a bubbly water gurgle, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_water_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a water pump building: short mechanical pump thunk followed by a bubbly water gurgle, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_water_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a water pump building: short mechanical pump thunk followed by a bubbly water gurgle, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_treatment_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a water treatment plant: bubbling aeration tanks, soft filter swoosh and a tiny clean chime, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_treatment_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a water treatment plant: bubbling aeration tanks, soft filter swoosh and a tiny clean chime, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_treatment_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a water treatment plant: bubbling aeration tanks, soft filter swoosh and a tiny clean chime, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_waste_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a recycling center: plastic bottles and aluminum cans clinking into a bin with a cheerful little conveyor whir, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_waste_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a recycling center: plastic bottles and aluminum cans clinking into a bin with a cheerful little conveyor whir, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_waste_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a recycling center: plastic bottles and aluminum cans clinking into a bin with a cheerful little conveyor whir, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_nature_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a rain garden: leaves rustling, water trickling into soil and one happy bird chirp, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_nature_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a rain garden: leaves rustling, water trickling into soil and one happy bird chirp, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_nature_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a rain garden: leaves rustling, water trickling into soil and one happy bird chirp, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_science_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a research laboratory: friendly computer beeps and a glass test tube clink, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_science_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a research laboratory: friendly computer beeps and a glass test tube clink, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_science_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a research laboratory: friendly computer beeps and a glass test tube clink, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_power_clean_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a wind and solar power plant: airy wind turbine whoosh with a soft electric hum rising, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_power_clean_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a wind and solar power plant: airy wind turbine whoosh with a soft electric hum rising, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_power_clean_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a wind and solar power plant: airy wind turbine whoosh with a soft electric hum rising, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_power_heavy_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a big power plant: deep steam turbine hum and a short steam hiss, powerful but friendly cartoon, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_power_heavy_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a big power plant: deep steam turbine hum and a short steam hiss, powerful but friendly cartoon, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_power_heavy_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a big power plant: deep steam turbine hum and a short steam hiss, powerful but friendly cartoon, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_public_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting city hall: a small warm civic bell ding with distant friendly crowd murmur, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_public_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting city hall: a small warm civic bell ding with distant friendly crowd murmur, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_public_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting city hall: a small warm civic bell ding with distant friendly crowd murmur, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_homes_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a residential neighborhood: a front door opening, kids laughing far away, a little dog bark, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_homes_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a residential neighborhood: a front door opening, kids laughing far away, a little dog bark, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_homes_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a residential neighborhood: a front door opening, kids laughing far away, a little dog bark, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_commerce_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a shopping street: shop door bell jingle and a soft cash register cha-ching, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_commerce_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a shopping street: shop door bell jingle and a soft cash register cha-ching, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_commerce_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a shopping street: shop door bell jingle and a soft cash register cha-ching, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_industry_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a factory: rhythmic machinery clank and a short hydraulic press hiss, cartoon, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_industry_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a factory: rhythmic machinery clank and a short hydraulic press hiss, cartoon, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_industry_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a factory: rhythmic machinery clank and a short hydraulic press hiss, cartoon, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_tourism_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a tourist attraction: camera shutter click and a small delighted crowd ooh, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_tourism_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a tourist attraction: camera shutter click and a small delighted crowd ooh, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_tourism_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a tourist attraction: camera shutter click and a small delighted crowd ooh, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_roads_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a city street: a small car passing by with a light friendly horn beep, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_roads_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a city street: a small car passing by with a light friendly horn beep, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_roads_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Selecting a city street: a small car passing by with a light friendly horn beep, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_soil_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Clicking on grassy ground: soft footsteps on grass and earth with a tiny pebble crunch, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_soil_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Clicking on grassy ground: soft footsteps on grass and earth with a tiny pebble crunch, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_soil_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Clicking on grassy ground: soft footsteps on grass and earth with a tiny pebble crunch, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_trees_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Clicking on a tree: leaves rustling in a breeze and a bird chirping, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_trees_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Clicking on a tree: leaves rustling in a breeze and a bird chirping, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_trees_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Clicking on a tree: leaves rustling in a breeze and a bird chirping, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_river_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Clicking on a river: gentle water lapping and a small fish splash, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_river_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Clicking on a river: gentle water lapping and a small fish splash, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_select_river_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Clicking on a river: gentle water lapping and a small fish splash, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
     }
   }
 }

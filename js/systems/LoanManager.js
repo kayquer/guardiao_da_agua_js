@@ -148,7 +148,7 @@ class LoanManager {
             annualInterestRate: interestRate,
             monthlyPayment: this.calculateMonthlyPayment(amount, termMonths, interestRate),
             startDate: new Date(),
-            nextPaymentDate: this.getNextPaymentDate(),
+            nextPaymentAt: this.getNextPaymentAt(),
             status: 'active',
             paymentHistory: []
         };
@@ -157,10 +157,17 @@ class LoanManager {
         return loan;
     }
     
-    getNextPaymentDate() {
-        const now = new Date();
-        const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-        return nextMonth;
+    // Um "mês" do empréstimo = MONTH_MS de tempo de jogo (gameTime: para na pausa). Antes a cobrança somava
+    // 720 h de jogo com a data real do calendário e as parcelas praticamente nunca chegavam.
+    static MONTH_MS = 120000;
+    static LATE_RETRY_MS = 20000;
+
+    simNow() {
+        return this.gameManager?.gameTime || 0;
+    }
+
+    getNextPaymentAt() {
+        return this.simNow() + LoanManager.MONTH_MS;
     }
     
     getMonthlyIncome() {
@@ -196,8 +203,7 @@ class LoanManager {
     }
     
     isPaymentDue(loan) {
-        const now = new Date();
-        return now >= loan.nextPaymentDate;
+        return this.simNow() >= loan.nextPaymentAt;
     }
     
     processLoanPayment(loan) {
@@ -205,8 +211,9 @@ class LoanManager {
         const currentBudget = this.gameManager.resourceManager.getBudget().current;
         
         if (currentBudget < paymentAmount) {
-            // Pagamento em atraso
+            // Pagamento em atraso: tenta de novo daqui a LATE_RETRY_MS (não a cada quadro)
             this.handleLatePayment(loan);
+            loan.nextPaymentAt = this.simNow() + LoanManager.LATE_RETRY_MS;
             return { success: false, amount: 0 };
         }
         
@@ -232,7 +239,7 @@ class LoanManager {
         });
         
         // Atualizar próxima data de pagamento
-        loan.nextPaymentDate = this.getNextPaymentDate();
+        loan.nextPaymentAt = this.getNextPaymentAt();
         
         // Verificar se empréstimo foi quitado
         if (loan.remainingBalance <= 0.01 || loan.remainingMonths <= 0) {
@@ -319,11 +326,12 @@ class LoanManager {
     
     loadData(data) {
         if (data) {
-            // JSON transforma Date em string; sem reviver, isPaymentDue() nunca é verdadeiro
+            // JSON transforma Date em string: revive as datas do histórico. Save antigo (nextPaymentDate, data real):
+            // a próxima parcela vence daqui a um mês de jogo.
             this.loans = new Map((data.loans || []).map(([id, loan]) => [id, {
                 ...loan,
                 startDate: new Date(loan.startDate),
-                nextPaymentDate: new Date(loan.nextPaymentDate),
+                nextPaymentAt: Number.isFinite(loan.nextPaymentAt) ? loan.nextPaymentAt : this.getNextPaymentAt(),
                 paymentHistory: (loan.paymentHistory || []).map(payment => ({ ...payment, date: new Date(payment.date) }))
             }]));
             this.loanCounter = data.loanCounter || 0;

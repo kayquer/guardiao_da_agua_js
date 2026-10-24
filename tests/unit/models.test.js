@@ -48,9 +48,11 @@ const MAX_BLENDER_KB = 150;
 
 test('peças de água, tratamento e energia não usam modelo de kit (só modelo próprio do Blender)', () => {
     // Regra de quando só havia a Kenney: nenhum prédio do pack representa bem bomba, ETA, usina...
+    // Exceção: a caixa d'água da Kenney É uma caixa d'água (veio da antiga categoria Armazenamento, hoje em Água)
+    const KIT_OK = new Set(['water_tower']);
     for (const [id, entry] of Object.entries(MODELS)) {
         const { category } = BUILDINGS[id];
-        if (['water', 'treatment', 'power'].includes(category)) {
+        if (['water', 'treatment', 'power'].includes(category) && !KIT_OK.has(id)) {
             assert.ok(isBlender(entry), `${id} (${category}) só pode usar modelo próprio em blender/, não ${entry.file}`);
         }
     }

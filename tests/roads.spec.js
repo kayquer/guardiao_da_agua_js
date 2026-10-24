@@ -67,7 +67,9 @@ test('Asfalto: categoria visível, arrastar traça a rua na hora e cobra pouco',
 
     const [ox, oz] = await findFreeArea(page, 6, 1);
     await page.waitForTimeout(2500); // câmera suave chegando
+    // Menu de construção em modal: o card mostra as informações; o botão Construir entra no modo de construção
     await item.click();
+    await page.click('#build-info-construct');
     expect(await page.evaluate(() => window.gameManager.buildMode)).toBe(true);
 
     const a = await cellToScreen(page, ox, oz);

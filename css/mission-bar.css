@@ -1,0 +1,103 @@
+/* ===== BARRA DE MISSÃO COMPACTA QUE SE ESCONDE SOZINHA (js/systems/ui/MissionBar.js) =====
+   Computador: a barra de baixo tinha 140 px; agora é uma faixa de 64 px numa linha só. Depois de alguns
+   segundos sem uso ela desce para fora da tela (body.mission-bar-hidden) e fica só o botão 🎯 animado no
+   centro; ela volta ao clicar no botão, ao passar o mouse na faixa ou quando a missão avança.
+   Celular: continua a gaveta do ▲ (MobilePanels), que agora pulsa. */
+@media (min-width: 769px) {
+    .hud-bottom {
+        height: 64px;
+        border-top-width: 4px;
+        transition: transform 0.3s ease;
+    }
+
+    body.mission-bar-hidden .hud-bottom { transform: translateY(calc(100% + 8px)); }
+
+    .hud-bottom .info-panel { padding: 0.35rem 1rem; gap: 1rem; align-items: center; }
+
+    .hud-bottom .mission-info {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    .hud-bottom .mission-header { margin: 0; gap: 0.5rem; flex: none; }
+    .hud-bottom .mission-info h4 { font-size: 1rem; white-space: nowrap; text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3); }
+    .hud-bottom .mission-urgency { padding: 0.15rem 0.5rem; font-size: 0.65rem; border-width: 2px; }
+
+    .hud-bottom .mission-objective-display {
+        flex: 1;
+        min-width: 0;
+        padding: 0.3rem 0.7rem;
+        gap: 0.6rem;
+        border-width: 3px;
+        border-radius: 14px;
+        box-shadow: 0 3px 0 rgba(0, 200, 100, 0.5);
+    }
+
+    .hud-bottom .mission-objective-display:hover { transform: translateY(-2px); }
+    .hud-bottom .objective-icon .ui-icon { width: 30px; height: 30px; }
+    .hud-bottom .objective-content { flex-direction: row; align-items: baseline; gap: 0.6rem; min-width: 0; }
+    .hud-bottom .objective-title { font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .hud-bottom .objective-action { font-size: 0.8rem; white-space: nowrap; }
+    .hud-bottom .mission-progress { width: 160px; flex: none; }
+
+    /* Painéis laterais, bússola e cancelar obra descem junto com a barra */
+    .hud-left, .hud-right { bottom: 68px; transition: bottom 0.3s ease; }
+    body.mission-bar-hidden .hud-left, body.mission-bar-hidden .hud-right { bottom: 8px; }
+    .compass { bottom: 84px; transition: bottom 0.3s ease; }
+    body.mission-bar-hidden .compass { bottom: 24px; }
+    .cancel-build-btn { bottom: 90px; }
+    body.mission-bar-hidden .cancel-build-btn { bottom: 70px; }
+
+    /* Botão para trazer a barra de volta */
+    .mission-peek-btn {
+        position: absolute;
+        left: 50%;
+        bottom: 10px;
+        z-index: 45;
+        display: none;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.35rem 0.9rem 0.35rem 0.6rem;
+        border: 3px solid #fff;
+        border-radius: 999px;
+        background: linear-gradient(145deg, #00e08a, #00a86b);
+        box-shadow: 0 4px 0 #006b44, 0 0 14px rgba(0, 255, 136, 0.5);
+        color: #fff;
+        font-family: 'Fredoka', sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transform: translateX(-50%);
+        animation: missionPeekGlow 2.2s ease-in-out infinite; /* o botão fica parado (clicável); brilho e ícone se mexem */
+    }
+
+    .mission-peek-btn .ui-icon { width: 22px; height: 22px; animation: missionPeekBob 1.6s ease-in-out infinite; }
+    .mission-peek-btn b { padding: 0 0.35rem; border-radius: 8px; background: rgba(0, 0, 0, 0.25); font-size: 0.8rem; }
+    .mission-peek-btn:hover { filter: brightness(1.1); }
+    body.mission-bar-hidden .mission-peek-btn { display: inline-flex; }
+}
+
+@keyframes missionPeekBob {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-4px) rotate(-10deg); }
+}
+
+@keyframes missionPeekGlow {
+    0%, 100% { box-shadow: 0 4px 0 #006b44, 0 0 8px rgba(0, 255, 136, 0.35); }
+    50% { box-shadow: 0 4px 0 #006b44, 0 0 22px rgba(0, 255, 136, 0.9); }
+}
+
+@keyframes missionToggleGlow {
+    0%, 100% { box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.2); }
+    50% { box-shadow: 0 -4px 14px rgba(0, 212, 255, 0.85); }
+}
+
+@media (max-width: 768px) {
+    .hud-bottom-toggle:not(.expanded) { animation: missionToggleGlow 2s ease-in-out infinite; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mission-peek-btn, .mission-peek-btn .ui-icon, .hud-bottom-toggle { animation: none !important; }
+    .hud-bottom, .hud-left, .hud-right, .compass { transition: none; }
+}

@@ -75,6 +75,7 @@ class TutorialSystem {
     // `expression` ('worried', 'happy', null) fixa a expressão do passo (senão, TutorialSystem.expressionFor)
     const JOSE = 'Pescador José';
     const MARCIA = 'Pesquisadora Márcia';
+    const PAULO = 'Secretário Paulo';
     const openMissions = gm => gm.questSystem.missionUI.isOpen || gm.questSystem.openMissionInterface();
     const closeMissions = gm => { if (gm.questSystem.missionUI.isOpen) gm.questSystem.closeMissionInterface(); gm.uiManager.hideHudRight(); };
     // Passo sem `group` é da introdução; sem `mode` é 'story' (livro em tela cheia).
@@ -308,8 +309,8 @@ class TutorialSystem {
             placingHint: '👆 Agora clique (ou toque) num terreno do mapa. Onde a sombra ficar <b>verde</b>, a Prefeitura cabe. <b>Laranja</b> = cabe, mas derruba árvores 🌳.',
             // O primeiro alvo visível ganha o destaque: acompanha o jogador abrindo menu → categoria → item
             targets: [
-                { selector: '.mobile-build-btn', text: '👆 Toque em <b>Construir</b>.' },
-                { selector: '.building-item[data-building-type="city_hall"]', text: '👆 Escolha a <b>🏛️ Prefeitura Municipal</b>.', scrollIn: '#building-panel' },
+                { selector: '#build-info-construct:not([hidden])', text: '👆 Agora clique (ou toque) em <b>Construir</b>.' },
+                { selector: '.building-item[data-building-type="city_hall"]', text: '👆 Escolha a <b>🏛️ Prefeitura Municipal</b>.', scrollIn: '#build-modal-grid' },
                 { selector: '.category-btn[data-category="public"]', text: '👆 Abra a categoria <b>🏛️ Públicos</b>.' },
                 { selector: '.mobile-toggle.left', text: '👆 Toque em <b>🏗️</b> para abrir as construções.' },
                 { selector: '#building-panel', text: '👆 Abra a categoria <b>🏛️ Públicos</b> no menu de construções.' }
@@ -371,7 +372,8 @@ class TutorialSystem {
             group: 'missions', mode: 'coach', character: 'Claudia', icon: '💧',
             title: 'A missão da vez',
             text: 'A missão atual também fica aqui embaixo, com o progresso. <b>Clique nela</b> sempre que quiser ver os detalhes.',
-            enter: closeMissions,
+            // o atalho do passo anterior abriu o menu de construção: ele sairia por cima da barra de missão
+            enter: gm => { closeMissions(gm); gm.uiManager.closeBuildModal?.(); },
             targets: ['.hud-bottom .mission-info', '.hud-bottom-toggle'],
             advanceOnClick: true
         },
@@ -465,6 +467,16 @@ class TutorialSystem {
             icon: '💡'
         },
 
+        // Secretário Paulo: quem avisa dos eventos (EventDecisionUI) e dos alertas ambientais
+        {
+            group: 'end',
+            character: PAULO,
+            background: 'assets/images/tutorial/bg-causa-efeito.webp',
+            title: 'Prazer, {nome}! Eu sou o Paulo',
+            text: 'Sou o <b>Secretário Municipal de Meio Ambiente</b>. Meu trabalho é ficar de olho no tempo, no rio e no ar da cidade. Quando vier uma <b>seca</b>, uma <b>chuva forte</b>, um <b>vazamento</b> ou uma <b>oportunidade</b> (como um dinheiro do governo), eu chamo você e trago <b>quatro escolhas</b>: 🛡️ a melhor resolve quase tudo, mas custa mais e às vezes pede um prédio pronto; as outras ajudam menos; e <b>não fazer nada</b> deixa o problema inteiro (ou faz a gente perder a chance). Acertar várias seguidas rende prêmio! Também sou eu quem avisa quando a poluição sobe ou o aquífero baixa. Conto com você, {nome}!',
+            icon: '🧢'
+        },
+
         // Step 22: Final Conclusion
         {
             group: 'end',
@@ -472,7 +484,7 @@ class TutorialSystem {
             background: 'assets/images/tutorial/bg-rio-boas-vindas.webp',
             title: 'Você está pronto, {nome}!',
             expression: 'happy',
-            text: 'Parabéns, {nome}! A Prefeitura está de pé e você já sabe como a cidade funciona. <img src="assets/images/lessons/cidade-sustentavel.webp" alt="Cidade sustentável ao nascer do sol, com rio limpo, painéis solares e turbinas eólicas" style="width:100%; border-radius:8px; margin:10px 0;"/> Lembre-se: a água conecta tudo — a cidade, as plantações, a floresta e os bichos. O José, a Márcia e eu estaremos por perto. Quer rever as aulas sobre a água? É só tocar em <b>📚</b>. <b>Boa sorte, {nome}!</b> 🌊',
+            text: 'Parabéns, {nome}! A Prefeitura está de pé e você já sabe como a cidade funciona. <img src="assets/images/lessons/cidade-sustentavel.webp" alt="Cidade sustentável ao nascer do sol, com rio limpo, painéis solares e turbinas eólicas" style="width:100%; border-radius:8px; margin:10px 0;"/> Lembre-se: a água conecta tudo — a cidade, as plantações, a floresta e os bichos. O José, a Márcia, o Paulo e eu estaremos por perto. Quer rever as aulas sobre a água? É só tocar em <b>📚</b>. <b>Boa sorte, {nome}!</b> 🌊',
             icon: '🎓'
         }
     ];
@@ -761,10 +773,10 @@ class TutorialSystem {
         portrait.setLabel(TutorialSystem.displayName(step.character));
         portrait.setExpression(TutorialSystem.expressionFor(step, this.gameManager));
         if (portrait.el.parentNode !== slot) slot.replaceChildren(portrait.el);
+        // Voz curta a cada página, no humor da expressão (normal sorteada, animada, preocupada, triste)
+        AudioManager.onSpeaker(TutorialSystem.CHARACTERS[step.character]?.id, portrait.expression);
         if (this.portraitShown !== step.character) {
             this.portraitShown = step.character;
-            // "Oi" curto do personagem que entra em cena (preocupado se a expressão for worried)
-            AudioManager.onSpeaker(TutorialSystem.CHARACTERS[step.character]?.id, portrait.expression);
             const hello = TutorialSystem.CHARACTERS[step.character]?.hello;
             portrait.enter(!small && hello ? PlayerProfile.personalize(hello) : '');
         }
@@ -898,6 +910,7 @@ class TutorialSystem {
         if (!this.isActive || !this.stepWantsBuilding(step, building)) return;
 
         const gm = this.gameManager;
+        gm.uiManager?.dismissBuildModal?.(); // o menu aberto pelo passo não fica por cima dos próximos destaques
         if (!step.free) return this.next(); // guias: a obra é paga e termina quando o jogo voltar a rodar
         gm.resourceManager.adjustResource('budget', building.config.cost);
         gm.buildingSystem.buildingCooldown.active = false;
@@ -1013,7 +1026,7 @@ TutorialSystem.REPLAY_PARTS = [
     { group: 'cityhall', icon: '🏛️', title: 'Primeiros passos', summary: 'A Prefeitura, o orçamento e o cuidado com as árvores.' },
     { group: 'missions', icon: '🎯', title: 'Missões', summary: 'Onde ficam as missões, os detalhes e o atalho para construir.' },
     { group: 'interface', icon: '🧭', title: 'Tour pela tela', summary: 'O que cada número do topo significa, câmera e pausa.' },
-    { group: 'end', icon: '⚙️', title: 'Como o jogo funciona', summary: 'Causa e efeito, dicas da Pesquisadora Márcia e o recado final.' }
+    { group: 'end', icon: '⚙️', title: 'Como o jogo funciona', summary: 'Causa e efeito, dicas da Pesquisadora Márcia, o Secretário Paulo e o recado final.' }
 ];
 
 TutorialSystem.GROUP_LABELS = { intro: 'Introdução', cityhall: 'Prefeitura', missions: 'Missões', interface: 'Interface', end: 'Final' };
@@ -1034,6 +1047,11 @@ TutorialSystem.CHARACTERS = {
     },
     'Pesquisadora Márcia': {
         name: 'Pesquisadora Márcia', id: 'marcia', hello: 'Olá, {nome}!', emoji: '🧪', colors: ['#2e7d32', '#9ccc65']
+    },
+    // Secretário Municipal de Meio Ambiente: fala de todo problema e solução ambiental da cidade (eventos com
+    // decisão em ui/EventDecisionUI.js, alertas de poluição e de aquífero)
+    'Secretário Paulo': {
+        name: 'Secretário Paulo', id: 'paulo', hello: 'E aí, {nome}! Prazer!', emoji: '🧢', colors: ['#2e7d32', '#00a86b']
     }
 };
 
@@ -1079,7 +1097,7 @@ TutorialSystem.TOPICS = {
         steps: [
             { title: 'O estoque de água', text: '{nome}, este número é a água guardada na cidade. Ele <b>sobe</b> com o que bombas e poços produzem e <b>desce</b> com o que as pessoas usam.', targets: ['.resource-item:has(#water-amount)', '#compact-water'] },
             { title: 'Como conseguir mais', text: 'Na categoria <b>💧 Água</b> ficam bombas, poços e outras fontes. Quase todas precisam de <b>energia</b> para funcionar.', targets: ['.category-btn[data-category="water"]'] },
-            { title: 'Guardar para depois', text: 'Reservatórios da categoria <b>🏗️ Armazenamento</b> guardam água para os dias secos. Sem chuva, os rios baixam: veja o clima da sua cidade no relógio!', targets: ['.category-btn[data-category="storage"]', '#clock-weather', '#compact-weather'] },
+            { title: 'Guardar para depois', text: 'Reservatórios da categoria <b>💧 Água</b> guardam água para os dias secos. Sem chuva, os rios baixam: veja o clima da sua cidade no relógio!', targets: ['.category-btn[data-category="water"]', '#clock-weather', '#compact-weather'] },
             { title: 'Não deixe acabar!', expression: 'worried', text: 'Se a água acabar, é <b>fim de jogo</b>. Construa novas fontes antes de faltar, e não só quando o número já estiver baixo.' }
         ]
     },
@@ -1133,8 +1151,8 @@ TutorialSystem.GUIDES_KEY = 'guardiao_agua_guides';
 
 // Alvos do passo "construa": acompanham o aluno abrindo menu (mobile) → categoria → prédio
 TutorialSystem.buildTargets = (typeId, category, label) => [
-    { selector: '.mobile-build-btn', text: '👆 Toque em <b>Construir</b>.' },
-    { selector: `.building-item[data-building-type="${typeId}"]`, text: `👆 Escolha <b>${label}</b>. Bloqueado? Clique nele para estudar e liberar.`, scrollIn: '#building-panel' },
+    { selector: '#build-info-construct:not([hidden])', text: '👆 Agora clique (ou toque) em <b>Construir</b>.' },
+    { selector: `.building-item[data-building-type="${typeId}"]`, text: `👆 Escolha <b>${label}</b>. Bloqueado? Veja o que falta e estude para liberar.`, scrollIn: '#build-modal-grid' },
     { selector: `.category-btn[data-category="${category}"]`, text: '👆 Abra esta categoria.' },
     { selector: '.mobile-toggle.left', text: '👆 Toque em <b>🏗️</b> para abrir as construções.' }
 ];
@@ -1197,10 +1215,10 @@ TutorialSystem.GUIDES = [
             { title: 'Água e energia funcionando!', expression: 'happy', text: 'Muito bem, {nome}! A cidade já tem <b>água</b> e <b>energia</b>. Mas e quando não chover? Rios e represas baixam na seca. Por isso as cidades <b>guardam água</b> em reservatórios.' },
             {
                 title: 'Construa um Reservatório', waitFor: 'water_tank',
-                text: 'Abra <b>🏗️ Armazenamento</b> e construa um <b>Reservatório</b>. Ele aumenta quanta água a cidade consegue guardar.',
+                text: 'Abra <b>💧 Água</b> e construa um <b>Reservatório</b>. Ele aumenta quanta água a cidade consegue guardar.',
                 placingHint: '👆 Escolha um terreno livre. Sombra <b>laranja</b> = derruba árvores 🌳.',
-                enter: gm => gm.uiManager.uiState.currentCategory !== 'storage' && gm.uiManager.selectCategory('storage'),
-                targets: TutorialSystem.buildTargets('water_tank', 'storage', 'o 🛢️ Reservatório')
+                enter: gm => gm.uiManager.uiState.currentCategory !== 'water' && gm.uiManager.selectCategory('water'),
+                targets: TutorialSystem.buildTargets('water_tank', 'water', 'o 🛢️ Reservatório')
             },
             { title: 'Reservatório em obra!', text: 'Quando a obra terminar, a <b>capacidade de água</b> da cidade aumenta. Na seca, é essa reserva que mantém as torneiras abertas!', targets: ['.resource-item:has(#water-amount)', '#compact-water'] }
         ]

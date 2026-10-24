@@ -1,0 +1,146 @@
+/* ===== EVENTOS EM ANDAMENTO (UIManager.updateEventTracker, js/systems/ui/EventUI.js) =====
+   Topo, no centro, logo abaixo da barra de recursos. Um cartão por evento (barra do tempo até acabar) e por aviso
+   (barra até começar), com os botões de escolha. Não pausa o jogo. O contêiner não recebe clique: só os cartões.
+   Começa abaixo do selo "Jogo pausado enquanto você lê" (#soft-pause-badge, top 100px), que aparece com os painéis.
+   z-index 98: acima do HUD (50), abaixo dos toasts (99) e da pausa (.overlay, 100). */
+.event-tracker {
+    position: fixed;
+    top: 136px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(400px, calc(100vw - 760px));
+    min-width: 280px;
+    z-index: 98;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    pointer-events: none;
+}
+
+.event-card {
+    pointer-events: auto;
+    padding: 0.5rem 0.7rem 0.55rem;
+    border-radius: 14px;
+    border: 3px solid #ffb74d;
+    background: rgba(33, 25, 60, 0.92);
+    color: #fff;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 8px 16px rgba(0, 0, 0, 0.25);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    animation: eventIn 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.event-card.bad { border-color: #ef5350; }
+.event-card.good { border-color: #66bb6a; }
+.event-card.warning { border-style: dashed; }
+
+.event-head {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.event-icon { font-size: 1.2rem; }
+.event-name { flex: 1; }
+.event-time { font-size: 0.8rem; opacity: 0.85; white-space: nowrap; }
+
+.event-bar {
+    display: block;
+    height: 8px;
+    margin-top: 0.35rem;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.18);
+    overflow: hidden;
+}
+
+.event-bar-fill {
+    display: block;
+    height: 100%;
+    width: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #ffb74d, #ffd54f);
+    transition: width 0.25s linear;
+}
+
+.event-card.bad .event-bar-fill { background: linear-gradient(90deg, #ef5350, #ff8a65); }
+.event-card.good .event-bar-fill { background: linear-gradient(90deg, #66bb6a, #aed581); }
+
+.event-question {
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.event-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.3rem;
+}
+
+.event-choice-btn {
+    flex: 1 1 45%;
+    padding: 0.35rem 0.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    background: #3949ab;
+    color: #fff;
+    font: inherit;
+    font-size: 0.82rem;
+    cursor: pointer;
+}
+
+.event-choice-btn:hover:not(:disabled) { background: #5c6bc0; }
+.event-choice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.event-choice-btn small { opacity: 0.85; }
+
+.event-chosen {
+    margin-top: 0.35rem;
+    font-size: 0.8rem;
+    color: #c5e1a5;
+}
+
+@keyframes eventIn {
+    from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 768px) {
+    .event-tracker {
+        top: 170px;
+        width: calc(100vw - 32px);
+        min-width: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .event-card { animation: none; }
+    .event-bar-fill { transition: none; }
+}
+
+/* ===== Reputação e conquistas (painel de missões, MissionUI.renderReputationPanel) ===== */
+.reputation-list { list-style: none; padding: 0; margin: 0.3rem 0 0.6rem; }
+.reputation-row {
+    display: grid;
+    grid-template-columns: 8.5rem 1fr 2rem;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.25rem 0;
+}
+.reputation-bar { height: 10px; border-radius: 5px; background: rgba(0, 0, 0, 0.25); overflow: hidden; }
+.reputation-fill { display: block; height: 100%; background: #ffb74d; }
+.reputation-row.high .reputation-fill { background: #66bb6a; }
+.reputation-row.low .reputation-fill { background: #ef5350; }
+.reputation-value { text-align: right; font-weight: 700; }
+.reputation-effect { grid-column: 1 / -1; opacity: 0.75; margin-top: -0.2rem; }
+
+/* ===== Gráficos de tendência, aquífero e enchente nos painéis de recurso (ResourcePanels) =====
+   O painel é claro: texto escuro, títulos no roxo dos outros h5 (.resource-sources h5). */
+.trend-box { margin: 0.4rem 0 0.6rem; }
+.trend-box svg { display: block; width: 100%; height: 48px; }
+.trend-caption { font-size: 0.8rem; color: #444; }
+.aquifer-block, .flood-block { margin: 0.6rem 0; color: #222; font-family: 'Fredoka', sans-serif; }
+.aquifer-block h5, .flood-block h5 { color: var(--cartoon-purple); margin: 0 0 0.35rem; }
+.aquifer-block .stat-note, .flood-block .stat-note, .resource-details-panel > .stat-note { color: #333; }
+.resource-details-panel .negative { color: #c62828; }

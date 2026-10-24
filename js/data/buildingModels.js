@@ -40,20 +40,29 @@ const BUILDING_MODELS = {
     // ===== TRATAMENTO (modelos próprios) =====
     treatment_plant:       { file: 'blender/treatment_plant.glb', tris: 1142 },
     filter_station:        { file: 'blender/filter_station.glb', tris: 984 },
+    // lixo e reciclagem ("gira_N" = peça que gira: exaustor da cooperativa, tambor da composteira)
+    recycling_point:       { file: 'blender/recycling_point.glb', tris: 832 },
+    recycling_coop:        { file: 'blender/recycling_coop.glb', tris: 1302 },
+    landfill:              { file: 'blender/landfill.glb', tris: 1482 },
+    composting_yard:       { file: 'blender/composting_yard.glb', tris: 1158 },
+    biodigester:           { file: 'blender/biodigester.glb', tris: 1408 },
+    ecopark:               { file: 'blender/ecopark.glb', tris: 1480 },
 
     // ===== ARMAZENAMENTO (reservatório = modelo próprio) =====
     water_tower:           { file: 'kenney/industrial/water-tower.glb', tris: 968 },
     water_tank:            { file: 'blender/water_tank.glb', tris: 868 },
 
-    // ===== ENERGIA (modelos próprios; as pás da eólica são nós "pas_N" no .glb) =====
+    // ===== ENERGIA (modelos próprios; as pás da eólica são nós "pas_N" no .glb e giram no jogo) =====
     hydroelectric_plant:   { file: 'blender/hydroelectric_plant.glb', tris: 972 },
     solar_farm:            { file: 'blender/solar_farm.glb', tris: 944 },
     wind_farm:             { file: 'blender/wind_farm.glb', tris: 846 },
+    nuclear_plant:         { file: 'blender/nuclear_plant.glb', tris: 1488 },
+    biomass_plant:         { file: 'blender/biomass_plant.glb', tris: 1056 },
+    sugarcane_mill:        { file: 'blender/sugarcane_mill.glb', tris: 1440 },
     // escondidas em FEATURE_FLAGS.HIDDEN_BUILDINGS (prontas para quando voltarem)
     power_pole:            { file: 'blender/power_pole.glb', tris: 264 },
     thermal_plant:         { file: 'blender/thermal_plant.glb', tris: 844 },
     coal_plant:            { file: 'blender/coal_plant.glb', tris: 512 },
-    nuclear_plant:         { file: 'blender/nuclear_plant.glb', tris: 1488 },
 
     // ===== RESIDENCIAL =====
     house:                 { file: 'kenney/suburban/building-type-a.glb', tris: 1174 },

@@ -146,6 +146,7 @@ class GameManager {
             this.eventSystem = new EventSystem(this);
             this.saveSystem = new SaveSystem();
             this.studySystem = new StudySystem(this);
+            this.techTree = new TechTree(this);
             this.tutorialSystem = new TutorialSystem(this);
             this.gameOverSystem = new GameOverSystem(this);
             this.pollutionVisuals = new PollutionVisuals(this);
@@ -755,6 +756,13 @@ class GameManager {
         if (this.questSystem) {
             this.questSystem.update(deltaTime * this.timeScale);
         }
+
+        // Tecnologias novas (árvore tecnológica): confere ~1 vez por segundo de jogo
+        this.techCheckTimer = (this.techCheckTimer || 0) + deltaTime * this.timeScale;
+        if (this.techTree && this.techCheckTimer >= 1000) {
+            this.techCheckTimer = 0;
+            this.techTree.check();
+        }
         
         if (this.eventSystem) {
             this.eventSystem.update(deltaTime * this.timeScale);
@@ -764,12 +772,8 @@ class GameManager {
             this.gameOverSystem.update(deltaTime * this.timeScale);
         }
 
-        if (this.loanManager) {
-            const gameHours = this.gameTime / 3600000;
-            if (Math.floor(gameHours / (24 * 30)) > Math.floor((gameHours - deltaTime * this.timeScale) / (24 * 30))) {
-                this.loanManager.processMonthlyPayments();
-            }
-        }
+        // Parcelas vencem por tempo de jogo (LoanManager.MONTH_MS); só cobra quem venceu
+        this.loanManager?.processMonthlyPayments();
 
         if (this.uiManager) {
             this.uiManager.update(deltaTime);
@@ -928,6 +932,8 @@ class GameManager {
         this.timeScale = 1;
         this.tutorialDone = false; // TutorialSystem.complete() libera o save
         this.uiManager?.notificationLog?.clear(); // histórico de notificações é por partida
+        this.techTree?.reset();
+        if (this.gameOverSystem) this.gameOverSystem.emergenciesUsed = 0; // as 3 declarações de emergência voltam
 
         this.initializeGameClock();
 
@@ -1115,9 +1121,12 @@ class GameManager {
             this.resourceManager.loadData(saveData.resources);
             this.treeSystem?.loadData(saveData.trees);
             this.buildingSystem.loadData(saveData.buildings);
+            this.buildingSystem.rebuildLegacyResourceTotals(saveData.resources);
             this.questSystem.loadData(saveData.quests);
             this.eventSystem?.loadData(saveData.events);
             this.studySystem?.loadSaveData(saveData.studies);
+            this.techTree?.loadData(saveData.techTree); // depois de prédios e estudos: save antigo libera o que já tinha
+            this.gameOverSystem?.loadData(saveData.emergency); // declarações de emergência já usadas
             this.loanManager?.loadData(saveData.loans);
             this.uiManager?.notificationLog?.loadData(saveData.notifications); // save antigo: histórico vazio
             if (this.tutorialSystem && saveData.tutorial) {
@@ -1269,6 +1278,7 @@ class GameManager {
     }
 
     enterBuildMode(buildingType) {
+        this.uiManager?.dismissBuildModal?.(); // o mapa fica livre para escolher o lugar
         this.buildMode = true;
         this.currentBuildingType = buildingType;
         this.canvas.style.cursor = 'crosshair';
@@ -1366,6 +1376,17 @@ class GameManager {
                 return;
             }
             if (event.repeat) return;
+            // Árvore tecnológica e menu de construção fecham pelo Esc (antes de qualquer pausa)
+            const ui = this.uiManager;
+            if (ui?.isTechTreeOpen?.()) {
+                ui.closeTechTree();
+                event.stopImmediatePropagation();
+                return;
+            }
+            if (!this.buildMode && ui?.handleBuildModalEscape?.()) {
+                event.stopImmediatePropagation();
+                return;
+            }
             if (this.gameState === 'paused') {
                 if (!this.uiManager?.isInfoPopupOpen()) this.resumeGame();
             } else if (this.gameState === 'playing' && this.isIdleForEscPause()) {
@@ -1378,7 +1399,7 @@ class GameManager {
     isIdleForEscPause() {
         const ui = this.uiManager;
         return !this.buildMode && !this.buildingSystem?.previewMode && !this.selectedBuilding &&
-            !this.tutorialSystem?.isActive && !ui?.uiState?.currentOpenPanel && !ui?.isInfoPopupOpen() &&
+            !this.tutorialSystem?.isActive && !ui?.uiState?.currentOpenPanel && !ui?.isInfoPopupOpen() && !ui?.isBuildModalOpen?.() &&
             !document.querySelector('.hud-left.active, .hud-right.active') && !ui?.isHudRightVisible?.();
     }
 
@@ -1449,6 +1470,8 @@ class GameManager {
             quests: this.questSystem.getSaveData(),
             events: this.eventSystem.getSaveData(),
             studies: this.studySystem.getSaveData(),
+            techTree: this.techTree?.getSaveData() ?? null,
+            emergency: this.gameOverSystem?.getSaveData() ?? null,
             loans: this.loanManager?.saveData() ?? null,
             tutorial: { lessonsDeferred: !!this.tutorialSystem?.lessonsDeferred },
             notifications: this.uiManager?.notificationLog?.getSaveData() ?? [],

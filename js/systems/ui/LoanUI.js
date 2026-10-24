@@ -61,7 +61,7 @@ mixin(UIManager, {
                         </div>
 
                         <div class="form-group">
-                            <label for="loan-term">Prazo de Pagamento:</label>
+                            <label for="loan-term">Prazo de Pagamento (1 mês = ${LoanManager.MONTH_MS / 60000} min de jogo):</label>
                             <select id="loan-term">
                                 <option value="6">6 meses</option>
                                 <option value="12" selected>12 meses</option>

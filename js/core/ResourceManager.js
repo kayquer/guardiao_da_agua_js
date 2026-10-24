@@ -24,14 +24,16 @@ class ResourceManager {
             },
             budget: {
                 current: GAME_CONFIG.resources.initialBudget,
-                income: 1000, // Receita por minuto
+                income: 1000, // Receita por minuto = BASE_INCOME + impostos + buildingIncome (calculateTaxRevenue)
+                buildingIncome: 0, // R$/min de prédios, zonas e aluguel (add/removeIncome)
                 expenses: 0
             },
             population: {
                 current: GAME_CONFIG.resources.initialPopulation,
                 max: 1000,
                 growth: 0,
-                satisfaction: GAME_CONFIG.resources.initialSatisfaction
+                satisfaction: GAME_CONFIG.resources.initialSatisfaction,
+                buildingSatisfaction: 0 // soma bruta dos satisfactionBonus dos prédios prontos
             },
             pollution: {
                 current: GAME_CONFIG.resources.initialPollution,
@@ -84,7 +86,7 @@ class ResourceManager {
         // Configurações
         this.updateInterval = 1000; // 1 segundo
         this.lastUpdate = 0;
-        this.historyMaxLength = 100;
+        this.historyMaxLength = 120; // × HISTORY_EVERY s = os últimos 10 min de jogo
 
         // Callbacks para mudanças
         this.changeListeners = new Map(); // tipo → callbacks (ver onResourceChange)
@@ -110,7 +112,9 @@ class ResourceManager {
         
         if (this.lastUpdate >= this.updateInterval) {
             this.updateResources();
-            this.addToHistory();
+            // Gráficos de tendência dos painéis: 1 amostra a cada HISTORY_EVERY ciclos (s de jogo)
+            this.historyTick = ((this.historyTick || 0) + 1) % ResourceManager.HISTORY_EVERY;
+            if (this.historyTick === 0) this.addToHistory();
             this.checkCriticalLevels();
             this.lastUpdate = 0;
         }
@@ -128,6 +132,9 @@ class ResourceManager {
         
         // Atualizar poluição
         this.updatePollution();
+
+        // Água debaixo da terra (bombas e poços tiram, chuva e verde devolvem)
+        this.updateAquifer();
 
         // Atualizar energia
         this.updateElectricity();
@@ -155,7 +162,7 @@ class ResourceManager {
         this.updateConsumption();
 
         // Produção - Consumo - Desperdício
-        const production = water.production || 0;
+        const production = this.getEffectiveWaterProduction();
         const consumption = water.consumption || 0;
         const waste = water.waste || 0;
         const netChange = production - consumption - waste;
@@ -231,11 +238,14 @@ class ResourceManager {
         this.taxRevenue.tourism = tourismBuildings.length * this.taxRates.perTourism * this.taxRates.developmentMultiplier;
 
         // Calculate total tax revenue
-        this.taxRevenue.total = this.taxRevenue.population + this.taxRevenue.business + this.taxRevenue.tourism;
+        // × confiança do comércio (reputação do grupo Comércio: 0,8× a 1,2×)
+        this.taxRevenue.total = (this.taxRevenue.population + this.taxRevenue.business + this.taxRevenue.tourism) *
+            this.getReputationModifiers().income;
 
-        // Update budget income with tax revenue
-        // Base income (1000) + tax revenue
-        this.resources.budget.income = 1000 + this.taxRevenue.total;
+        // Receita = base + impostos + o que os prédios rendem. Antes esta linha sobrescrevia a receita dos prédios
+        // (addIncome) a cada segundo: comércio, turismo, indústria e aluguel não rendiam nada.
+        const budget = this.resources.budget;
+        budget.income = ResourceManager.BASE_INCOME + this.taxRevenue.total + (budget.buildingIncome || 0);
     }
 
     getTaxRevenue() {
@@ -246,32 +256,50 @@ class ResourceManager {
         return { ...this.taxRates };
     }
 
-    updatePopulation() {
+    /**
+     * Fatores da satisfação: [{ key, icon, label, value }]. A soma (limitada a 0-100) é a satisfação.
+     * Fonte única para updatePopulation e o painel 😊 (antes o painel listava fatores fixos que nem existiam).
+     */
+    getSatisfactionFactors() {
         const population = this.resources.population;
         const water = this.resources.water;
         const pollution = this.resources.pollution;
+        const factors = [{ key: 'base', icon: '🏙️', label: 'Base', value: 50 }];
+
+        // Água guardada por morador (2 L por pessoa)
+        const waterRatio = water.current / (Math.max(1, population.current) * 2);
+        if (waterRatio >= 1) factors.push({ key: 'water', icon: '💧', label: 'Água sobrando na caixa', value: 20 });
+        else if (waterRatio >= 0.5) factors.push({ key: 'water', icon: '💧', label: 'Água na caixa (pouca)', value: 10 });
+        else factors.push({ key: 'water', icon: '🚱', label: 'Falta água guardada', value: -20 });
+
+        if (pollution.current < 20) factors.push({ key: 'pollution', icon: '🌿', label: 'Ar e rio limpos', value: 15 });
+        else if (pollution.current < 50) factors.push({ key: 'pollution', icon: '🌿', label: 'Poluição moderada', value: 5 });
+        else factors.push({ key: 'pollution', icon: '🏭', label: 'Poluição alta', value: -15 });
+
+        // Árvores em pé (cai quando derrubadas para construir)
+        if (this.greenBonus) factors.push({ key: 'green', icon: '🌳', label: 'Árvores e áreas verdes', value: this.greenBonus });
+
+        // Serviços e lazer: escola, hospital, parque, prefeitura… (com teto, ver buildingSatisfactionEffect)
+        const services = this.getBuildingSatisfactionEffect();
+        if (services) factors.push({ key: 'services', icon: '🏥', label: 'Serviços e lazer', value: services });
+
+        // Eventos (ex.: campanha de conservação)
+        if (population.eventSatisfaction) factors.push({ key: 'event', icon: '📢', label: 'Eventos', value: population.eventSatisfaction });
+
+        // Confiança dos moradores na prefeitura (reputação, QuestSystem)
+        const trust = this.getReputationModifiers().satisfaction;
+        if (Math.abs(trust) >= 0.05) factors.push({ key: 'reputation', icon: '🤝', label: 'Confiança dos moradores', value: trust });
+        return factors;
+    }
+
+    updatePopulation() {
+        const population = this.resources.population;
 
         // Atualizar capacidade máxima baseada em edifícios de zoneamento
         this.updatePopulationCapacity();
 
-        // Calcular satisfação baseada em recursos
-        let satisfaction = 50; // Base
-
-        // Água disponível
-        const waterRatio = water.current / (population.current * 2); // 2L por pessoa
-        if (waterRatio >= 1) satisfaction += 20;
-        else if (waterRatio >= 0.5) satisfaction += 10;
-        else satisfaction -= 20;
-
-        // Poluição
-        if (pollution.current < 20) satisfaction += 15;
-        else if (pollution.current < 50) satisfaction += 5;
-        else satisfaction -= 15;
-
-        // Área verde: árvores em pé (cai quando derrubadas para construir)
-        satisfaction += this.greenBonus || 0;
-
-        // Atualizar satisfação
+        // Satisfação = soma dos fatores (o painel 😊 mostra a mesma lista)
+        const satisfaction = this.getSatisfactionFactors().reduce((sum, f) => sum + f.value, 0);
         population.satisfaction = Math.max(0, Math.min(100, satisfaction));
 
         // Crescimento populacional baseado na satisfação e recursos disponíveis
@@ -354,9 +382,95 @@ class ResourceManager {
     updatePollution() {
         const pollution = this.resources.pollution;
 
-        // Poluição = Fontes - Redução (dividido por 60 para mudança gradual por segundo)
-        const netPollution = (pollution.sources - pollution.reduction) / 60;
+        // Poluição = (fontes + esgoto − limpeza) / 60 por segundo — getPollutionBalance é a fonte única
+        const netPollution = this.getPollutionBalance().net / 60;
         pollution.current = Math.max(0, Math.min(pollution.max, pollution.current + netPollution));
+    }
+
+    // ===== ESGOTO =====
+    // Todo morador gera esgoto: sem tratamento, ele vai para o rio. É o que torna a ETA necessária quando a cidade cresce.
+    static SEWAGE_PER_PERSON = 0.02; // poluição/min por morador (100 → 2/min; 800 → 16/min, meia ETA)
+
+    getSewagePollution() {
+        return Math.max(0, this.resources.population.current || 0) * ResourceManager.SEWAGE_PER_PERSON;
+    }
+
+    /**
+     * Balanço da poluição por minuto: { sources (prédios/eventos), sewage (moradores), reduction (limpeza),
+     * reputation (confiança do grupo Meio Ambiente), net }. Painel ☣️, alertas e fim de jogo usam o mesmo número.
+     */
+    getPollutionBalance() {
+        const pollution = this.resources.pollution;
+        const sources = Math.max(0, pollution.sources || 0);
+        const sewage = this.getSewagePollution();
+        const reduction = Math.max(0, pollution.reduction || 0);
+        const reputation = this.getReputationModifiers().pollution;
+        return { sources, sewage, reduction, reputation, net: sources + sewage - reduction - reputation };
+    }
+
+    /** Efeitos da reputação dos grupos (QuestSystem.getReputationModifiers); neutros sem o sistema de missões. */
+    getReputationModifiers() {
+        return this.gameManager?.questSystem?.getReputationModifiers?.() || { satisfaction: 0, income: 1, pollution: 0 };
+    }
+
+    // ===== AQUÍFERO (água subterrânea) =====
+    // Bombas e poços (config.groundwater) tiram água do aquífero; chuva e áreas verdes (aquiferRecharge) devolvem.
+    // Abaixo de AQUIFER_LOW, bombas e poços rendem menos: bombear demais seca a fonte.
+    static AQUIFER_DRAIN = 0.032;          // %/min de aquífero por L/min bombeado
+    static AQUIFER_NATURAL_RECHARGE = 1;   // %/min que o solo devolve sozinho
+    static AQUIFER_RAIN_RECHARGE = 2;      // %/min a mais com chuva forte de verdade (clima real, rain = 1)
+    static AQUIFER_LOW = 30;               // abaixo disso a água subterrânea rende menos
+    static AQUIFER_MIN_FACTOR = 0.2;       // aquífero vazio: bombas e poços a 20%
+
+    getAquiferLevel() {
+        const level = this.resources.water.aquifer;
+        return Number.isFinite(level) ? level : 100;
+    }
+
+    /** Fator (0,2-1) da água subterrânea pelo nível do aquífero. */
+    getAquiferFactor() {
+        const level = this.getAquiferLevel();
+        if (level >= ResourceManager.AQUIFER_LOW) return 1;
+        return Math.max(ResourceManager.AQUIFER_MIN_FACTOR, level / ResourceManager.AQUIFER_LOW);
+    }
+
+    /** %/min: { drain, recharge, net } — recarga = natural + áreas verdes + eventos + chuva real. */
+    getAquiferBalance() {
+        const water = this.resources.water;
+        const drain = Math.max(0, water.groundwaterProduction || 0) * this.getAquiferFactor() * ResourceManager.AQUIFER_DRAIN;
+        const realRain = this.gameManager?.weatherEffects?.profile?.rain || 0;
+        const recharge = ResourceManager.AQUIFER_NATURAL_RECHARGE + Math.max(0, water.aquiferRecharge || 0) +
+            realRain * ResourceManager.AQUIFER_RAIN_RECHARGE;
+        return { drain, recharge, net: recharge - drain };
+    }
+
+    addGroundwaterProduction(amount) {
+        const water = this.resources.water;
+        water.groundwaterProduction = Math.max(0, (water.groundwaterProduction || 0) + amount);
+    }
+
+    addAquiferRecharge(amount) {
+        const water = this.resources.water;
+        water.aquiferRecharge = Math.max(0, (water.aquiferRecharge || 0) + amount);
+    }
+
+    updateAquifer() {
+        const water = this.resources.water;
+        const before = this.getAquiferLevel();
+        water.aquifer = Math.max(0, Math.min(100, before + this.getAquiferBalance().net / 60));
+        // Avisos ao descer: 50% (toast) e 30% (alerta central: daqui para baixo as bombas rendem menos)
+        for (const threshold of [30, 50]) {
+            if (before > threshold && water.aquifer <= threshold) {
+                const ui = this.gameManager?.uiManager;
+                if (threshold === 30) {
+                    ui?.showCentralAlert?.('Aquífero Baixo', 'A água debaixo da terra está acabando: bombas e poços vão render cada vez menos.',
+                        'warning', 'Jardins de chuva, tetos verdes, parques e a chuva recarregam o aquífero. Bombear menos também ajuda.',
+                        { speaker: 'Secretário Paulo' });
+                } else {
+                    ui?.showNotification?.('🪨 Secretário Paulo: o aquífero já está pela metade. As bombas tiram mais água do que a chuva devolve.', 'warning', 8000);
+                }
+            }
+        }
     }
     
     updateConsumption() {
@@ -373,14 +487,45 @@ class ResourceManager {
         const water = this.resources.water;
         
         // população + consumo fixo dos edifícios (add/removeWaterConsumption)
-        water.consumption = population.current * ResourceManager.WATER_PER_PERSON + (water.buildingConsumption || 0);
-        water.waste = water.consumption * 0.1;
+        // × demandMultiplier dos eventos (visitantes, campanha de conservação); desperdício = 10% + vazamentos
+        water.consumption = (population.current * ResourceManager.WATER_PER_PERSON + (water.buildingConsumption || 0)) *
+            (water.demandMultiplier ?? 1);
+        water.waste = water.consumption * 0.1 + (water.extraWaste || 0);
         
         this.consumptionCache.cachedConsumption = water.consumption;
         this.consumptionCache.cachedWaste = water.waste;
         this.consumptionCache.lastUpdate = now;
     }
     
+    // ===== MODIFICADORES DE EVENTO (EventSystem) =====
+    // Ficam em resources (vão no save com os totais); o fim do evento desfaz o que o começo fez.
+    /** Produção que chega de fato (L/min): soma dos prédios × productionMultiplier (seca = 0,5). */
+    getEffectiveWaterProduction() {
+        const water = this.resources.water;
+        // Água subterrânea rende menos com o aquífero baixo
+        const groundwaterLoss = Math.max(0, water.groundwaterProduction || 0) * (1 - this.getAquiferFactor());
+        return Math.max(0, ((water.production || 0) - groundwaterLoss) * (water.productionMultiplier ?? 1));
+    }
+
+    /** Multiplica productionMultiplier/demandMultiplier (o fim do evento passa 1/fator). */
+    scaleWaterModifier(field, factor) {
+        const water = this.resources.water;
+        const value = (water[field] ?? 1) * factor;
+        water[field] = Math.abs(value - 1) < 1e-9 ? 1 : value;
+        this.invalidateConsumptionCache();
+    }
+
+    addExtraWaste(amount) {
+        this.resources.water.extraWaste = Math.max(0, (this.resources.water.extraWaste || 0) + amount);
+        this.invalidateConsumptionCache();
+    }
+
+    addEventSatisfaction(amount) {
+        const population = this.resources.population;
+        const value = (population.eventSatisfaction || 0) + amount;
+        population.eventSatisfaction = Math.abs(value) < 1e-9 ? 0 : value;
+    }
+
     invalidateConsumptionCache() {
         this.consumptionCache.lastUpdate = 0;
     }
@@ -425,14 +570,43 @@ class ResourceManager {
         return false;
     }
     
+    // Receita fixa dos prédios (R$/min) fica em buildingIncome, porque calculateTaxRevenue recalcula income a cada ciclo
+    static BASE_INCOME = 1000;
+
     addIncome(amount) {
-        this.resources.budget.income += amount;
+        const budget = this.resources.budget;
+        budget.buildingIncome = Math.max(0, (budget.buildingIncome || 0) + amount);
+        budget.income = Math.max(0, budget.income + amount);
         this.notifyChange('budget', 'income', amount);
     }
 
     removeIncome(amount) {
-        this.resources.budget.income = Math.max(0, this.resources.budget.income - amount);
-        this.notifyChange('budget', 'income', -amount);
+        this.addIncome(-amount);
+    }
+
+    // ===== SATISFAÇÃO DOS PRÉDIOS (escola, hospital, parque…) =====
+    // Soma bruta dos satisfactionBonus; o que entra na satisfação tem teto e retorno decrescente
+    // (o primeiro parque conta mais que o quinto): MAX × (1 − e^(−soma/SCALE)).
+    static BUILDING_SATISFACTION_MAX = 15;
+    static BUILDING_SATISFACTION_SCALE = 40;
+
+    static buildingSatisfactionEffect(raw) {
+        if (!(raw > 0)) return 0;
+        return ResourceManager.BUILDING_SATISFACTION_MAX * (1 - Math.exp(-raw / ResourceManager.BUILDING_SATISFACTION_SCALE));
+    }
+
+    addSatisfactionBonus(amount) {
+        const population = this.resources.population;
+        population.buildingSatisfaction = Math.max(0, (population.buildingSatisfaction || 0) + amount);
+        this.notifyChange('population', 'satisfaction', amount);
+    }
+
+    removeSatisfactionBonus(amount) {
+        this.addSatisfactionBonus(-amount);
+    }
+
+    getBuildingSatisfactionEffect() {
+        return ResourceManager.buildingSatisfactionEffect(this.resources.population.buildingSatisfaction || 0);
     }
 
     addBudget(amount) {
@@ -580,7 +754,7 @@ class ResourceManager {
      */
     getWaterBalance() {
         const water = this.resources.water;
-        const production = Math.max(0, water.production || 0);
+        const production = this.getEffectiveWaterProduction();
         const demand = Math.max(0, (water.consumption || 0) + (water.waste || 0));
         return {
             production,
@@ -649,10 +823,36 @@ class ResourceManager {
         }
     }
 
+    /** Alerta central quando a poluição passa de 60, 80 e 90 subindo (100 = fim de jogo); rearma abaixo de 50. */
+    checkPollutionThresholds() {
+        const pollution = this.resources.pollution;
+        const value = pollution.current;
+        const messages = {
+            60: 'A poluição passou de 60%. O rio já está sofrendo: construa tratamento antes que piore.',
+            80: 'Alerta! Poluição acima de 80%. A água está ficando imprópria e os moradores começam a ir embora.',
+            90: 'EMERGÊNCIA! Poluição acima de 90%. Em 100% a cidade entra em colapso!'
+        };
+        for (const threshold of [90, 80, 60]) {
+            if (value >= threshold && (this._lastPollutionThreshold === undefined || this._lastPollutionThreshold < threshold)) {
+                this._lastPollutionThreshold = threshold;
+                const net = this.getPollutionBalance().net;
+                const trend = net > 0
+                    ? `Sobe ${net.toFixed(1)} por minuto: entra mais sujeira do que a limpeza tira.`
+                    : 'A limpeza já está vencendo: a poluição vai baixar.';
+                this.gameManager?.uiManager?.showCentralAlert?.('Poluição Alta', messages[threshold],
+                    threshold >= 80 ? 'error' : 'warning', `Poluição atual: ${Math.round(value)}%. ${trend}`,
+                    { speaker: 'Secretário Paulo' });
+                break;
+            }
+        }
+        if (value < 50) this._lastPollutionThreshold = undefined;
+    }
+
     checkCriticalLevels() {
         const criticalEvents = [];
 
         this.checkWaterThresholds();
+        this.checkPollutionThresholds();
 
         if (this.hasWaterShortage()) {
             criticalEvents.push({
@@ -685,6 +885,13 @@ class ResourceManager {
     }
     
     // ===== HISTÓRICO =====
+    static HISTORY_EVERY = 5;
+
+    /** Série de um recurso para os gráficos: history[type].map(campo). */
+    getHistorySeries(type, field = 'current') {
+        return (this.history[type] || []).map(p => p[field]).filter(Number.isFinite);
+    }
+
     addToHistory() {
         const timestamp = Date.now();
         
@@ -692,6 +899,7 @@ class ResourceManager {
         this.history.water.push({
             time: timestamp,
             current: this.resources.water.current,
+            aquifer: this.getAquiferLevel(),
             production: this.resources.water.production,
             consumption: this.resources.water.consumption
         });
@@ -776,13 +984,15 @@ class ResourceManager {
             budget: {
                 current: GAME_CONFIG.resources.initialBudget,
                 income: 1000,
+                buildingIncome: 0,
                 expenses: 0
             },
             population: {
                 current: GAME_CONFIG.resources.initialPopulation,
                 max: 1000,
                 growth: 0,
-                satisfaction: GAME_CONFIG.resources.initialSatisfaction
+                satisfaction: GAME_CONFIG.resources.initialSatisfaction,
+                buildingSatisfaction: 0
             },
             pollution: {
                 current: GAME_CONFIG.resources.initialPollution,

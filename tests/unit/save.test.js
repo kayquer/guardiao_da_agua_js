@@ -302,12 +302,12 @@ test('eventos, estudos e empréstimos: voltam do save (evento ativo sem reaplica
     assert.ok(study.isBuildingUnlocked('city_hall'), 'os liberados por padrão continuam liberados');
 
     const loans = new (g('LoanManager'))(gm);
-    loans.loans.set('loan_1', { id: 'loan_1', principal: 1000, startDate: new Date(5), nextPaymentDate: new Date(10),
+    loans.loans.set('loan_1', { id: 'loan_1', principal: 1000, startDate: new Date(5), nextPaymentAt: 10,
         paymentHistory: [{ date: new Date(7), amount: 100 }] });
     loans.loanCounter = 1;
     const loans2 = new (g('LoanManager'))(gm);
     loans2.loadData(roundTrip(loans.saveData()));
-    assert.strictEqual(loans2.loans.get('loan_1').nextPaymentDate.getTime(), 10);
+    assert.strictEqual(loans2.loans.get('loan_1').nextPaymentAt, 10);
     assert.strictEqual(loans2.loans.get('loan_1').paymentHistory[0].date.getTime(), 7);
     assert.strictEqual(loans2.loanCounter, 1);
 });

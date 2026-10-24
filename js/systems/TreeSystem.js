@@ -108,7 +108,7 @@ class TreeSystem {
         tree.rotation.y = Math.random() * Math.PI * 2;
         tree.scaling.setAll(0.8 + Math.random() * 0.45);
         tree.isPickable = false;
-        tree.metadata = { tree: true, decorationType: 'tree', gridX: x, gridZ: z };
+        tree.metadata = { tree: true, decorationType: 'tree', gridX: x, gridZ: z, riparian: TreeSystem.isRiparianCell(this.gridManager, x, z) };
         this.trees.set(`${x},${z}`, tree);
     }
 
@@ -117,9 +117,36 @@ class TreeSystem {
         return this.trees.size;
     }
 
-    /** Poluição/min que as árvores tiram agora. */
+    /**
+     * Mata ciliar: célula a até TREES.RIPARIAN_DISTANCE de uma célula de água. Árvore ali segura a terra da margem
+     * e filtra o que escorre para o rio: limpa TREES.RIPARIAN_FACTOR vezes mais (vale também para as mudas plantadas).
+     */
+    static isRiparianCell(gridManager, x, z) {
+        if (!gridManager?.getTerrainType) return false;
+        const d = TREES.RIPARIAN_DISTANCE;
+        for (let dx = -d; dx <= d; dx++) {
+            for (let dz = -d; dz <= d; dz++) {
+                if ((dx || dz) && gridManager.getTerrainType(x + dx, z + dz) === 'water') return true;
+            }
+        }
+        return false;
+    }
+
+    static treeReduction(riparian) {
+        return TREES.POLLUTION_REDUCTION * (riparian ? TREES.RIPARIAN_FACTOR : 1);
+    }
+
+    get riparianCount() {
+        let n = 0;
+        this.trees.forEach(tree => { if (tree.metadata?.riparian) n++; });
+        return n;
+    }
+
+    /** Poluição/min que as árvores tiram agora (as da margem do rio valem mais). */
     get pollutionReduction() {
-        return this.trees.size * TREES.POLLUTION_REDUCTION;
+        let total = 0;
+        this.trees.forEach(tree => { total += TreeSystem.treeReduction(tree.metadata?.riparian); });
+        return total;
     }
 
     /** Reaplica redução de poluição e bônus verde (fresh: depois de ResourceManager.reset, que zera tudo). */
@@ -206,7 +233,7 @@ class TreeSystem {
         this.select(tree);
         gm.uiManager?.showNativeTreeInfo?.(this.getNativeTreeInfo(tree));
         gm.uiManager?.toggleMobilePanel?.('right');
-        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_click', 0.8);
+        if (typeof AudioManager !== 'undefined') AudioManager.onSelect('trees');
         return true;
     }
 
@@ -216,7 +243,8 @@ class TreeSystem {
         return {
             gridX,
             gridZ,
-            pollutionReduction: TREES.POLLUTION_REDUCTION,
+            pollutionReduction: TreeSystem.treeReduction(tree.metadata.riparian),
+            riparian: !!tree.metadata.riparian,
             fellPollution: TREES.FELL_POLLUTION,
             count: this.trees.size
         };
@@ -259,7 +287,8 @@ class TreeSystem {
     getSaveData() {
         return {
             cells: Array.from(this.trees.values(), tree => [tree.metadata.gridX, tree.metadata.gridZ]),
-            initialCount: this.initialCount
+            initialCount: this.initialCount,
+            appliedReduction: this.appliedReduction // o que está somado nos recursos salvos
         };
     }
 
@@ -279,9 +308,10 @@ class TreeSystem {
             if (!this.trees.has(`${x},${z}`)) this.addTree(x, z);
         }
         this.initialCount = Number.isFinite(data.initialCount) ? data.initialCount : this.trees.size;
-        this.appliedReduction = this.pollutionReduction;
-        const rm = this.gameManager.resourceManager;
-        if (rm) rm.greenBonus = this.initialCount ? TREES.GREEN_BONUS_MAX * (this.trees.size / this.initialCount) : 0;
+        // O que os recursos salvos já têm somado: o valor salvo, ou (save de antes da mata ciliar) 1 por árvore.
+        // applyEffects acerta a diferença para a regra atual (não soma tudo de novo).
+        this.appliedReduction = Number.isFinite(data.appliedReduction) ? data.appliedReduction : this.trees.size * TREES.POLLUTION_REDUCTION;
+        this.applyEffects();
         log(`🌳 ${this.trees.size} árvores restauradas do save`);
     }
 

@@ -26,7 +26,7 @@ const MISSIONS = {
         rewards: {
             score: 100,
             budget: 2000,
-            unlock: ['water_well'],
+            recommendStudy: ['water_well'], // estudo é o caminho do desbloqueio: a missão só aponta
             experience: 50
         },
         educationalContent: {
@@ -49,6 +49,7 @@ const MISSIONS = {
         description: 'A poluição está afetando a qualidade da água. Construa uma estação de tratamento.',
         type: 'tutorial',
         category: 'secondary',
+        prerequisites: ['tutorial_01'],
         objectives: [
             {
                 id: 'build_treatment',
@@ -71,7 +72,7 @@ const MISSIONS = {
         rewards: {
             score: 200,
             budget: 3000,
-            unlock: ['filter_station']
+            recommendStudy: ['filter_station']
         },
         educationalContent: {
             facts: [
@@ -90,6 +91,7 @@ const MISSIONS = {
         description: 'Construa reservatórios para garantir fornecimento constante de água.',
         type: 'tutorial',
         category: 'secondary',
+        prerequisites: ['tutorial_02'],
         objectives: [
             {
                 id: 'build_storage',
@@ -112,7 +114,7 @@ const MISSIONS = {
         rewards: {
             score: 150,
             budget: 2500,
-            unlock: ['water_tower']
+            recommendStudy: ['water_tower']
         },
         educationalContent: {
             facts: [
@@ -132,6 +134,7 @@ const MISSIONS = {
         description: 'Desenvolva uma infraestrutura hídrica sustentável para sua cidade.',
         type: 'main',
         category: 'primary',
+        prerequisites: ['tutorial_03'],
         objectives: [
             {
                 id: 'population_growth',
@@ -181,22 +184,23 @@ const MISSIONS = {
     // MISSÕES DE DESAFIO
     challenge_01: {
         title: 'Crise Hídrica',
-        description: 'Supere uma crise de escassez de água mantendo a cidade funcionando.',
+        description: 'Uma seca chegou: as bombas e poços produzem metade da água. Aguente 4 minutos sem deixar a água faltar.',
         type: 'challenge',
         category: 'secondary',
-        timeLimit: 600, // 10 minutos
+        prerequisites: ['tutorial_03'],
+        startEvent: { type: 'drought', durationMs: 240000 }, // a missão começa a seca (QuestSystem.startQuest)
         objectives: [
             {
                 id: 'survive_drought',
-                description: 'Sobreviver à seca por 10 minutos',
+                description: 'Sobreviver à seca por 4 minutos',
                 type: 'survival',
                 target: 'time',
                 current: 0,
-                required: 600
+                required: 240
             },
             {
                 id: 'no_water_shortage',
-                description: 'Não deixar a água acabar',
+                description: 'Não deixar faltar água (a reserva não pode secar)',
                 type: 'avoid',
                 target: 'water_shortage',
                 current: 0,
@@ -227,6 +231,7 @@ const MISSIONS = {
         description: 'Você foi nomeada a nova gestora de recursos hídricos da cidade. Conheça a situação atual e tome suas primeiras decisões.',
         type: 'story',
         category: 'secondary',
+        prerequisites: ['tutorial_01'],
         difficulty: 'beginner',
         estimatedTime: '8 minutos',
         chainId: 'nova_gestora',
@@ -282,4 +287,76 @@ const MISSIONS = {
         }
     },
 
+    // ===== FIM DA CAMPANHA =====
+    // victory: true → tela "Cidade Guardiã" (GameOverSystem.showVictory) e o jogo segue no modo livre
+    final_01: {
+        title: 'Cidade Guardiã',
+        description: 'Mostre que sua cidade cresce sem acabar com a água: muita gente, rio limpo, aquífero cheio e moradores felizes.',
+        type: 'main',
+        category: 'primary',
+        prerequisites: ['main_01', 'challenge_01'],
+        missionIcon: '🏆',
+        victory: true,
+        objectives: [
+            {
+                id: 'final_population',
+                description: 'Chegar a 1.200 moradores',
+                type: 'resource',
+                target: 'population',
+                current: 0,
+                required: 1200,
+                comparison: 'greater'
+            },
+            {
+                id: 'final_pollution',
+                description: 'Manter a poluição abaixo de 25%',
+                type: 'resource',
+                target: 'pollution',
+                current: 0,
+                required: 25,
+                comparison: 'less'
+            },
+            {
+                id: 'final_aquifer',
+                description: 'Manter o aquífero acima de 50% (água debaixo da terra)',
+                type: 'resource',
+                target: 'aquifer',
+                current: 0,
+                required: 50,
+                comparison: 'greater'
+            },
+            {
+                id: 'final_satisfaction',
+                description: 'Satisfação acima de 75% por 3 minutos',
+                type: 'sustained',
+                target: 'satisfaction',
+                current: 0,
+                required: 180,
+                threshold: 75
+            }
+        ],
+        rewards: {
+            score: 1000,
+            budget: 20000,
+            achievement: 'guardian_city'
+        },
+        educationalContent: {
+            facts: [
+                'Uma cidade só cresce de verdade se a água que ela usa continua existindo para as próximas gerações.'
+            ],
+            tips: [
+                'Use áreas verdes para segurar a chuva e recarregar o aquífero.',
+                'Trate o esgoto antes que ele chegue ao rio.'
+            ]
+        }
+    },
+
+};
+
+/** Conquistas (QuestSystem.unlockAchievement): nome e ícone mostrados no toast e no painel de missões. */
+const ACHIEVEMENTS = {
+    sustainable_city: { icon: '🌱', name: 'Cidade Sustentável', description: 'Cresceu com a população feliz e o rio limpo.' },
+    crisis_manager: { icon: '☀️', name: 'Gestora de Crise', description: 'Atravessou uma seca sem deixar faltar água.' },
+    guardian_city: { icon: '🏆', name: 'Cidade Guardiã', description: 'Terminou a campanha cuidando da água de todos.' },
+    climate_guardian: { icon: '🌦️', name: 'Guardião do Clima', description: 'Respondeu bem a cinco eventos com o Secretário Paulo.' }
 };

@@ -31,7 +31,7 @@ mixin(BuildingSystem, {
     /** O prédio depende de rua para funcionar 100%? Aceita o prédio ou o tipo. */
     buildingNeedsRoad(buildingOrType) {
         const config = buildingOrType?.config || buildingOrType;
-        if (!config || config.roadType) return false;
+        if (!config || config.roadType || config.needsRoad === false) return false;
         return config.category === 'zoning' || !!(config.waterProduction || config.pollutionReduction || config.incomeGeneration);
     },
 
@@ -177,10 +177,43 @@ mixin(BuildingSystem, {
         });
     },
 
+    // ===== CONSERTO (dano de enchente, EventSystem.damageInfrastructure) =====
+
+    isBuildingDamaged(building) {
+        return Number.isFinite(building?.damageFactor) && building.damageFactor < 1;
+    },
+
+    /** Metade do custo do prédio × fração perdida (dano 0,2 → 10% do custo), arredondado em R$ 100. */
+    getRepairCost(building) {
+        if (!this.isBuildingDamaged(building)) return 0;
+        const lost = 1 - building.damageFactor;
+        return Math.max(100, Math.round((building.config?.cost || 0) * lost * 0.5 / 100) * 100);
+    },
+
+    /** Paga o conserto e devolve a eficiência total. false se não estiver danificado ou faltar dinheiro. */
+    repairBuilding(buildingId) {
+        const building = this.buildings.get(buildingId);
+        const rm = this.gameManager?.resourceManager;
+        if (!building || !rm || !this.isBuildingDamaged(building)) return false;
+        const cost = this.getRepairCost(building);
+        if (!rm.spendBudget(cost)) {
+            this.gameManager.uiManager?.showNotification(`💰 Faltam R$ ${Math.ceil(cost - rm.resources.budget.current).toLocaleString('pt-BR')} para consertar.`, 'warning');
+            return false;
+        }
+        delete building.damageFactor;
+        this.updateBuildingEfficiency(building);
+        this.gameManager.uiManager?.showNotification(`🔧 ${building.config.name} consertado (R$ ${cost.toLocaleString('pt-BR')}).`, 'success');
+        return true;
+    },
+
     /** Linhas de aviso do painel do prédio (UIManager.generateBuildingStats). */
     generateEfficiencyWarnings(building) {
         if (!building?.active || building.underConstruction) return '';
         let html = '';
+        if (this.isBuildingDamaged(building)) {
+            const percent = Math.round(building.damageFactor * 100);
+            html += `<div class="stat-item efficiency-warning damage-warning" style="color:#ffb74d">🌊 Danificado pela enchente: funciona a ${percent}%. Conserte para voltar a 100%.</div>`;
+        }
         if (building.noRoad) {
             const percent = Math.round(EFFICIENCY_RULES.noRoadFactor * 100);
             html += `<div class="stat-item efficiency-warning no-road-warning" style="color:#ffb74d">🚧 Sem rua ligando: funciona a ${percent}%. Construa uma rua encostada.</div>`;

@@ -160,6 +160,10 @@ test('tutorial congela o jogo e guia a construção da prefeitura', async ({ pag
         .map(s => s.title))).toEqual([]);
     await next.click();
     await next.click();
+    // O Secretário Paulo se apresenta (quem avisa dos eventos e dos alertas ambientais)
+    await expect(page.locator('#tutorial-character-name')).toHaveText('Secretário Paulo');
+    await expect(portrait).toHaveAttribute('data-character', 'paulo');
+    await next.click();
     // A Cláudia volta, feliz no recado final
     await expect(page.locator('#tutorial-character-name')).toHaveText('Pesquisadora Cláudia');
     await expect(portrait).toHaveAttribute('data-character', 'claudia');

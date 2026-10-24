@@ -536,14 +536,38 @@ async function startNewGame({ saveData = null } = {}) {
 
 function showAbout() {
     log('ℹ️ Mostrando sobre...');
+    // Mesmas informações do aviso inicial (#start-notice): objetivo, público, supervisão, pesquisa e privacidade
     gameDialog({
         title: '💧 Guardião da Água',
+        width: 640,
         html: `
-            <p>Jogo educacional de simulação e gestão de recursos hídricos.</p>
-            <p style="margin-top: 1rem;"><strong>Para aprender sobre:</strong><br>
-            conservação da água · gestão sustentável ·<br>
-            responsabilidade ambiental · planejamento urbano</p>
-            <p style="margin-top: 1rem; font-size: 0.9rem;">Versão 1.0.0 · Feito com Babylon.js</p>
+            <div class="about-dialog">
+                <p class="about-lead"><strong>Guardião da Água</strong> é um jogo educativo de simulação. O jogador administra
+                uma cidade e aprende, na prática, de onde vem a água, por que ela pode faltar ou ficar poluída e como as
+                escolhas de uma cidade afetam rios, nascentes e pessoas. O objetivo é apoiar a Educação Ambiental com foco
+                nos recursos hídricos.</p>
+                <dl class="about-facts">
+                    <div><dt>Público-alvo</dt><dd>Ensino Fundamental, anos finais (6º ao 9º ano)</dd></div>
+                    <div><dt>Idade de foco</dt><dd>11 a 14 anos</dd></div>
+                    <div><dt>Supervisão</dt><dd>Professor ou adulto responsável</dd></div>
+                </dl>
+                <p class="about-note">O jogo funciona melhor com a mediação de um <strong>professor ou de um adulto
+                responsável</strong>, que pode conversar sobre o que acontece na cidade, tirar dúvidas e relacionar o jogo
+                com a realidade do lugar onde a criança vive.</p>
+                <div class="about-inst">
+                    <img src="assets/images/institucional/unesp-logo.png" alt="Unesp — Universidade Estadual Paulista" width="72" height="78">
+                    <div>
+                        <p>Parte da pesquisa de mestrado <cite>Desenvolvimento de aplicativo para Educação Ambiental (EA)
+                        no Ensino Fundamental: recursos hídricos em foco</cite>, de <strong>Cláudia Dias Roxinol</strong>.</p>
+                        <p class="about-small">Universidade Estadual Paulista · Faculdade de Ciências e Tecnologia ·
+                        Campus de Presidente Prudente/SP · Programa de Pós-Graduação em Geografia — Mestrado Profissional —
+                        Recursos Hídricos e Meio Ambiente · 2026</p>
+                    </div>
+                </div>
+                <p class="about-small">O apelido, a idade e a cidade do jogador ficam salvos só neste navegador; a cidade
+                é usada para mostrar o clima real.</p>
+                <p class="about-small">Versão 1.0.0 · Feito com Babylon.js</p>
+            </div>
         `,
         confirmButtonText: 'Fechar'
     });

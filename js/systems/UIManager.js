@@ -137,7 +137,9 @@ class UIManager {
         // Atualizar recursos iniciais
         this.updateResourceDisplay();
 
-        // Carregar edifícios na UI
+        // Menu de construção em modal (ui/BuildMenuUI.js) e cards; barra de missão que se esconde (ui/MissionBar.js)
+        this.setupBuildModal();
+        this.setupMissionBarAutoHide();
         this.loadBuildingItems();
 
         // Configurar responsividade
@@ -288,48 +290,35 @@ class UIManager {
 
     // ===== STABILITY FIX: Improved building item event handling =====
     setupBuildingItemListeners() {
-        // Clean up existing listeners
         this.cleanupBuildingItemListeners();
 
-        // Add new listeners for building items
-        document.querySelectorAll('.building-item').forEach(item => {
+        document.querySelectorAll('#building-items .building-item').forEach(item => {
             const listener = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-
-                // ===== STUDY SYSTEM: Handle locked buildings =====
-                if (item.dataset.locked === 'true') {
-                    const buildingType = item.dataset.buildingType;
-                    if (buildingType) {
-                        this.openStudyBook(buildingType);
-                    }
-                    return;
-                }
-
-                // ===== STABILITY FIX: Prevent clicks on disabled items =====
-                if (item.classList.contains('disabled')) {
-                    this.showBudgetInsufficientNotification();
-                    return;
-                }
-
+                this.hideStudyTooltip();
+                const buildingType = item.dataset.buildingType;
+                if (buildingType) this.showBuildInfo(buildingType); // ui/BuildMenuUI.js
+            };
+            const dblListener = (e) => {
+                e.preventDefault();
+                const buildingType = item.dataset.buildingType;
+                if (!buildingType || item.dataset.state !== 'ok' || item.classList.contains('cooldown-disabled')) return;
                 if (this.isOnCooldown('building')) return;
                 this.setCooldown('building', 300);
-
-                const buildingType = item.dataset.buildingType;
-                if (buildingType) {
-                    this.selectBuildingType(buildingType);
-                }
+                this.constructFromBuildModal(buildingType);
             };
 
             item.addEventListener('click', listener);
-            this.buildingItemListeners.push({ element: item, listener });
+            item.addEventListener('dblclick', dblListener);
+            this.buildingItemListeners.push({ element: item, listener }, { element: item, listener: dblListener, type: 'dblclick' });
         });
     }
 
     cleanupBuildingItemListeners() {
         if (this.buildingItemListeners) {
-            this.buildingItemListeners.forEach(({ element, listener }) => {
-                element.removeEventListener('click', listener);
+            this.buildingItemListeners.forEach(({ element, listener, type }) => {
+                element.removeEventListener(type || 'click', listener);
             });
         }
         this.buildingItemListeners = [];
@@ -575,7 +564,8 @@ class UIManager {
         const categories = [
             { id: 'water', name: '💧 Água', icon: '💧' },
             { id: 'treatment', name: '🏭 Tratamento', icon: '🏭' },
-            { id: 'storage', name: '🏗️ Armazenamento', icon: '🏗️' },
+            { id: 'nature', name: '🌳 Natureza', icon: '🌳' },
+            { id: 'science', name: '🔬 Ciência', icon: '🔬' },
             { id: 'public', name: '🏛️ Prédios Públicos', icon: '🏛️' },
             { id: 'power', name: '⚡ Energia', icon: '⚡' },
             { id: 'roads', name: '🛣️ Asfalto', icon: '🛣️' },
@@ -591,8 +581,8 @@ class UIManager {
             }
         });
 
-        // As categorias já estão no HTML, apenas configurar eventos
-        this.selectCategory('water'); // Categoria padrão
+        // As categorias já estão no HTML; o modal só abre quando o jogador clica numa delas
+        this.updateCategoryButtonStates(null);
     }
     
     // ===== Controles, HUD e painéis do mobile: js/systems/ui/MobilePanels.js (5 métodos) =====
@@ -617,6 +607,8 @@ class UIManager {
             this.popupCheckTimer = 0;
             this.syncPopupPause();
             this.flushDeferredAlerts();
+            this.updateEventTracker(); // barra do tempo de cada evento/aviso (ui/EventUI.js)
+            this.flushEventDecisions(); // anúncio de evento esperando o modal do Paulo (ui/EventDecisionUI.js)
         }
     }
 
@@ -659,7 +651,7 @@ class UIManager {
         const popups = [
             '.swal2-container', '.central-alert-overlay', '#study-book-overlay', '#controls-modal',
             '#weather-modal', '#lessons-hub', '#lesson-book', '.mission-interface', '.choice-dialog', '.loan-interface',
-            '.resource-details-panel', '#notification-history'
+            '.resource-details-panel', '#notification-history', '#tech-modal', '#event-decision'
         ];
         return popups.some(selector => shown(document.querySelector(selector)));
     }
@@ -853,63 +845,34 @@ class UIManager {
     
     // ===== CONSTRUÇÃO =====
     selectCategory(category) {
-        // ===== ENHANCED CATEGORY SELECTION WITH STATE MANAGEMENT =====
         if (!category) return;
         this.hideStudyTooltip(); // a lista é refeita: o mouseleave do item removido não chega
 
-        const itemsEl = this.elements.buildingItems;
-
-        // Accordion: clicking the active category toggles it closed (desktop & mobile)
-        if (this.uiState.currentCategory === category) {
-            if (itemsEl && itemsEl.classList.contains('accordion-open')) {
-                itemsEl.classList.remove('accordion-open');
-            }
-            this.updateCategoryButtonStates(null);
-            this.uiState.currentCategory = null;
-            this.currentCategory = null;
+        // Clicar na categoria que está aberta fecha o modal (como o acordeão fazia)
+        if (this.uiState.currentCategory === category && this.isBuildModalOpen()) {
+            this.closeBuildModal();
             return;
         }
 
-        // ===== STATE TRANSITION MANAGEMENT =====
         if (this.uiState.isTransitioning) {
             log('⚠️ UI transition in progress, ignoring category selection');
             return;
         }
-
         this.uiState.isTransitioning = true;
 
         try {
-            // ===== CLEAN STATE TRANSITION =====
             this.cleanupBuildingItemListeners();
 
-            // Exit any active construction mode
+            // Sai do modo de construção em andamento
             if (this.gameManager && this.gameManager.buildingSystem.previewMode) {
                 this.gameManager.exitBuildMode();
             }
 
-            // Update state
             this.uiState.currentCategory = category;
             this.currentCategory = category; // Legacy compatibility
-
-            // ===== ENHANCED CATEGORY BUTTON MANAGEMENT =====
             this.updateCategoryButtonStates(category);
-
-            // ===== ENHANCED BUILDING ITEMS LOADING =====
             this.loadBuildingItemsWithStateManagement();
-
-            // Accordion: move items panel to right after the active button (desktop & mobile)
-            if (itemsEl) {
-                const activeBtn = document.querySelector(`.category-btn[data-category="${category}"]`);
-                if (activeBtn) {
-                    activeBtn.insertAdjacentElement('afterend', itemsEl);
-                }
-                itemsEl.classList.add('accordion-open');
-            }
-
-            // ===== PANEL STATE MANAGEMENT =====
-            if (this.uiState.currentOpenPanel === 'construction') {
-                this.updatePanelState('building'); // FIX: Use updatePanelState
-            }
+            this.openBuildModal(category); // ui/BuildMenuUI.js
 
             log(`🏗️ Categoria selecionada: ${category}`);
 
@@ -953,14 +916,22 @@ class UIManager {
             // Clear existing items
             this.elements.buildingItems.innerHTML = '';
 
-            // Create building items with enhanced error handling
-            buildingTypes.forEach(buildingType => {
-                try {
-                    const item = this.createBuildingItem(buildingType);
-                    this.elements.buildingItems.appendChild(item);
-                } catch (error) {
-                    console.warn(`⚠️ Error creating building item for ${buildingType.id}:`, error);
+            // Cards por função (group de buildings.js), cada grupo em ordem de nível tecnológico e custo
+            this.groupBuildingTypes(buildingTypes).forEach(({ group, types }) => {
+                if (group) {
+                    const title = document.createElement('div');
+                    title.className = 'build-group-title';
+                    title.textContent = group;
+                    this.elements.buildingItems.appendChild(title);
                 }
+                types.forEach(buildingType => {
+                    try {
+                        const item = this.createBuildingItem(buildingType);
+                        this.elements.buildingItems.appendChild(item);
+                    } catch (error) {
+                        console.warn(`⚠️ Error creating building item for ${buildingType.id}:`, error);
+                    }
+                });
             });
 
             // Setup event listeners after creating items
@@ -976,18 +947,24 @@ class UIManager {
     
     loadBuildingItems() {
         if (!this.elements.buildingItems || !this.gameManager.buildingSystem) return;
+        this.uiState.currentCategory = this.currentCategory;
+        this.loadBuildingItemsWithStateManagement();
+    }
 
-        const buildingTypes = this.gameManager.buildingSystem.getBuildingTypesByCategory(this.currentCategory);
-
-        this.elements.buildingItems.innerHTML = '';
-
-        buildingTypes.forEach(buildingType => {
-            const item = this.createBuildingItem(buildingType);
-            this.elements.buildingItems.appendChild(item);
+    /** [{ group, types }] na ordem em que os grupos aparecem; dentro do grupo, por nível e custo. */
+    groupBuildingTypes(buildingTypes) {
+        const groups = new Map();
+        buildingTypes.forEach(t => {
+            const key = t.group || '';
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key).push(t);
         });
-
-        // ===== LATERAL MENU STABILITY FIX: Setup event listeners after creating items =====
-        this.setupBuildingItemListeners();
+        const list = [...groups.entries()].map(([group, types]) => ({
+            group,
+            types: types.sort((a, b) => (a.tier || 1) - (b.tier || 1) || a.cost - b.cost)
+        }));
+        // Grupo do prédio de menor nível primeiro (Captação antes de Armazenamento...)
+        return list.sort((a, b) => (a.types[0].tier || 1) - (b.types[0].tier || 1) || a.types[0].cost - b.types[0].cost);
     }
     
     createBuildingItem(buildingType) {
@@ -1011,9 +988,12 @@ class UIManager {
         return item;
     }
 
-    /** Estado do card agora: 'locked' (falta estudo), 'disabled' (falta dinheiro) ou 'ok'. */
+    /** Estado do card agora: 'tech' (falta construir antes), 'locked' (falta estudo), 'disabled' (falta dinheiro) ou 'ok'. */
     getBuildingItemState(buildingType) {
-        if (!this.gameManager.buildingSystem.isBuildingUnlocked(buildingType.id)) return 'locked';
+        const study = this.gameManager.studySystem;
+        if (!this.gameManager.buildingSystem.isBuildingUnlocked(buildingType.id)) {
+            return study && !study.isTechReached?.(buildingType.id) ? 'tech' : 'locked';
+        }
         const rm = this.gameManager.resourceManager;
         return !rm || rm.canAfford(buildingType.cost) ? 'ok' : 'disabled';
     }
@@ -1021,28 +1001,49 @@ class UIManager {
     /** Classes e textos do card conforme o estado (criação e refreshBuildingItemStates). */
     applyBuildingItemState(item, buildingType, state = this.getBuildingItemState(buildingType)) {
         const hasStudyContent = !!this.gameManager.studySystem?.hasStudyContent(buildingType.id);
-        const locked = state === 'locked';
+        const tech = state === 'tech';
+        const locked = state === 'locked' || tech;
         item.dataset.state = state;
-        item.dataset.study = String(hasStudyContent);
+        item.dataset.study = String(hasStudyContent && !tech);
         item.classList.toggle('locked', locked);
+        item.classList.toggle('tech-locked', tech);
         item.classList.toggle('disabled', state === 'disabled');
         if (locked) item.dataset.locked = 'true';
         else delete item.dataset.locked;
 
         let iconHTML = `<div class="building-icon">${buildingIcon(buildingType)}</div>`;
-        if (locked && hasStudyContent) iconHTML += `<div class="study-icon">${uiIcon('ui-books')}</div>`;
+        if (state === 'locked' && hasStudyContent) iconHTML += `<div class="study-icon">${uiIcon('ui-books')}</div>`;
+
+        // Falta construir antes: o primeiro requisito que falta, com a contagem
+        let costText = 'R$ ' + buildingType.cost.toLocaleString();
+        let descText = buildingType.description;
+        item.dataset.techKey = tech ? this.getTechCardKey(buildingType) : '';
+        if (tech) {
+            const missing = this.gameManager.techTree?.getProgress(buildingType.id).find(p => !p.done);
+            costText = uiIcon('status-locked') + ' Tecnologia';
+            descText = missing ? `Construa antes: ${missing.label} (${missing.have}/${missing.need})` : 'Construa os prédios pedidos';
+        } else if (locked) {
+            costText = uiIcon('status-locked') + ' Bloqueado';
+            if (hasStudyContent) descText = 'Estude para liberar';
+        }
 
         // Overlay da espera entre obras (disableBuildingButtons) sobrevive à troca do conteúdo
         const cooldown = item.querySelector('.cooldown-overlay');
         item.innerHTML = `
             ${iconHTML}
+            <span class="building-tier" title="Nível tecnológico">${typeof TechTree !== 'undefined' ? TechTree.TIERS[buildingType.tier || 1]?.icon : ''}</span>
             <div class="building-info">
                 <div class="building-name">${buildingType.name}</div>
-                <div class="building-cost">${locked ? uiIcon('status-locked') + ' Bloqueado' : 'R$ ' + buildingType.cost.toLocaleString()}</div>
-                <div class="building-description">${locked && hasStudyContent ? 'Clique para estudar' : buildingType.description}</div>
+                <div class="building-cost">${costText}</div>
+                <div class="building-description">${descText}</div>
             </div>
         `;
         if (cooldown) item.appendChild(cooldown);
+    }
+
+    /** Contagens dos requisitos ("1/3,0/1"): o card trancado por tecnologia só é refeito quando elas mudam. */
+    getTechCardKey(buildingType) {
+        return (this.gameManager.techTree?.getProgress(buildingType.id) || []).map(p => `${p.have}/${p.need}`).join(',');
     }
 
     /**
@@ -1057,10 +1058,12 @@ class UIManager {
             const buildingType = bs.buildingTypes.get(item.dataset.buildingType);
             if (!buildingType) return;
             const state = this.getBuildingItemState(buildingType);
-            if (state === item.dataset.state) return;
+            // "Construa antes: X (1/3)" muda sem mudar o estado: só redesenha quando a contagem muda
+            if (state === item.dataset.state && (state !== 'tech' || this.getTechCardKey(buildingType) === item.dataset.techKey)) return;
             if (state !== 'locked') this.hideStudyTooltip();
             this.applyBuildingItemState(item, buildingType, state);
         });
+        this.updateBuildInfoButton(); // botão Construir do modal acompanha (dinheiro, estudo, tecnologia)
     }
 
     /**
@@ -1073,9 +1076,8 @@ class UIManager {
 
         if (this.isMobile && !this.mobilePanelsVisible?.left) this.toggleMobilePanel('left');
 
-        // selectCategory fecha o acordeão se a categoria já estiver ativa: só reabre quando preciso
-        const itemsEl = this.elements.buildingItems;
-        const open = this.uiState.currentCategory === buildingType.category && itemsEl?.classList.contains('accordion-open');
+        // selectCategory fecha o modal se a categoria já estiver aberta: só reabre quando preciso
+        const open = this.uiState.currentCategory === buildingType.category && this.isBuildModalOpen();
         if (!open) {
             this.uiState.currentCategory = null;
             this.uiState.isTransitioning = false;
@@ -1084,6 +1086,7 @@ class UIManager {
 
         const item = document.querySelector(`.building-item[data-building-type="${buildingTypeId}"]`);
         if (!item) return;
+        this.showBuildInfo(buildingTypeId);
         item.scrollIntoView({ block: 'center', behavior: 'smooth' });
         item.classList.remove('goal-highlight');
         void item.offsetWidth; // reinicia a animação se já estava destacado
@@ -1093,8 +1096,8 @@ class UIManager {
 
         const locked = item.dataset.locked === 'true';
         this.showNotification(locked
-            ? `🔒 ${buildingType.name} ainda está bloqueado: clique nele para estudar e liberar.`
-            : `👉 Aqui está: ${buildingType.name}. Clique nele para construir!`, 'info', 4000);
+            ? `🔒 ${buildingType.name} ainda está bloqueado: veja ao lado o que falta para liberar.`
+            : `👉 Aqui está: ${buildingType.name}. Clique em Construir!`, 'info', 4000);
         AudioManager.playSound('sfx_click', 0.6);
     }
 
@@ -1139,25 +1142,15 @@ class UIManager {
                 return;
             }
 
-            // ===== MOBILE VS DESKTOP FLOW =====
-            if (this.isMobile) {
-                // Mobile: Show full-screen details modal with "Construir" button
-                this.showMobileBuildingDetailsModal(buildingType, buildingTypeId);
-            } else {
-                // Desktop: Enter build mode directly
-                // ===== PANEL STATE MANAGEMENT =====
+            // As informações já foram vistas no menu de construção (ui/BuildMenuUI.js): entra no modo de construção
+            if (this.isBuildModalOpen()) this.closeBuildModal();
+            if (!this.isMobile) {
                 this.closeCurrentPanel(); // Close any open resource panels
-
-                // Enter construction mode
-                this.gameManager.enterBuildMode(buildingTypeId);
-
-                // Show building requirements with enhanced display
-                this.showEnhancedBuildingRequirements(buildingType);
-
-                // Update UI state
-                this.updatePanelState('construction'); // FIX: Use updatePanelState
-                this.uiState.selectedBuilding = buildingTypeId;
             }
+            this.gameManager.enterBuildMode(buildingTypeId);
+            if (!this.isMobile) this.showEnhancedBuildingRequirements(buildingType);
+            this.updatePanelState('construction'); // FIX: Use updatePanelState
+            this.uiState.selectedBuilding = buildingTypeId;
 
             // Audio feedback
             AudioManager.playSound('sfx_ui_select');
@@ -1241,8 +1234,8 @@ class UIManager {
     }
     
     updateTimeScaleUI(speed) {
-        // Atualizar botões de velocidade
-        document.querySelectorAll('.control-btn').forEach(btn => {
+        // Atualizar botões de velocidade (só eles: missões/aulas têm o próprio estado ativo)
+        document.querySelectorAll('.speed-btn').forEach(btn => {
             btn.classList.remove('active');
         });
         
@@ -1433,12 +1426,13 @@ class UIManager {
             return;
         }
 
-        // Cooldown de 30s para não spammar
-        if (this.isOnCooldown('central-alert')) {
+        // Cooldown de 30 s por título: o mesmo aviso não se repete, mas um aviso diferente não é engolido
+        const cooldownKey = `central-alert:${title}`;
+        if (this.isOnCooldown(cooldownKey)) {
             this.showNotification(message, type, 6000);
             return;
         }
-        this.setCooldown('central-alert', 30000);
+        this.setCooldown(cooldownKey, 30000);
 
         // Remover alerta anterior se existir
         const existing = document.querySelector('.central-alert-overlay');
@@ -1454,7 +1448,8 @@ class UIManager {
         const overlay = document.createElement('div');
         overlay.className = 'central-alert-overlay';
         overlay.innerHTML = `
-            <div class="central-alert-card ${type}">
+            <div class="central-alert-card ${type}${options.speaker ? ' has-speaker' : ''}">
+                ${options.speaker ? `<div class="central-alert-speaker"><span class="central-alert-face"></span><span>${TutorialSystem.displayName(options.speaker)}</span></div>` : ''}
                 <div class="central-alert-icon">${uiIcon(icons[type] || icons.warning, 'lg')}</div>
                 <div class="central-alert-title">${title}</div>
                 <div class="central-alert-message">${uiIconsIn(message)}</div>
@@ -1467,7 +1462,21 @@ class UIManager {
             AudioManager.playSound(options.sound || (type === 'error' ? 'sfx_alert_critical' : 'sfx_alert_warning'));
         }
 
-        const closeAlert = () => overlay.remove();
+        // Quem fala (ex.: Secretário Paulo nos alertas ambientais): rosto animado, preocupado
+        let speakerPortrait = null;
+        if (options.speaker) {
+            const { el, portrait } = this.createPauloPortrait?.(overlay) || {};
+            if (el) overlay.querySelector('.central-alert-face').appendChild(el);
+            speakerPortrait = portrait;
+            speakerPortrait?.setExpression('worried');
+            speakerPortrait?.talk?.(2000);
+            const speakerId = TutorialSystem.CHARACTERS[options.speaker]?.id;
+            setTimeout(() => AudioManager.onSpeaker(speakerId, 'worried'), 500);
+        }
+        const closeAlert = () => {
+            speakerPortrait?.destroy();
+            overlay.remove();
+        };
         overlay.querySelector('.central-alert-btn').addEventListener('click', closeAlert);
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) closeAlert();
@@ -1835,6 +1844,10 @@ class UIManager {
     // ===== INFORMAÇÕES DE SELEÇÃO DE EDIFÍCIOS =====
     showBuildingSelectionInfo(building) {
         if (!building) return;
+        // Som característico do prédio pronto (AudioManager.onSelect); obra em andamento: só o clique de sempre
+        if (building.config && !building.underConstruction && this.gameManager?.gameState === 'playing') {
+            AudioManager.onSelect(AudioManager.selectGroupFor({ ...building.config, id: building.type }));
+        }
 
         // ===== ZERO-ERROR POLICY FIX: Validar config antes de usar =====
         if (!building.config) {
@@ -2087,6 +2100,16 @@ class UIManager {
             `;
         }
 
+        // Conserto do dano de enchente
+        const bs = this.gameManager?.buildingSystem;
+        if (bs?.isBuildingDamaged?.(building) && building.active && !building.underConstruction) {
+            actions += `
+                <button class="action-btn repair-btn" onclick="window.gameManager.buildingSystem.repairBuilding('${building.id}')">
+                    🔧 Consertar (R$ ${bs.getRepairCost(building).toLocaleString('pt-BR')})
+                </button>
+            `;
+        }
+
         // ===== FEATURE FLAGS: Hide rental button in release version =====
         const showRentalButton = FEATURE_FLAGS.isUIFeatureVisible('rentalButton');
 
@@ -2109,6 +2132,8 @@ class UIManager {
             'water': 'Água',
             'treatment': 'Tratamento',
             'storage': 'Armazenamento',
+            'nature': 'Natureza',
+            'science': 'Ciência',
             'residential': 'Residencial',
             'power': 'Energia',
             'roads': 'Asfalto',
@@ -2603,6 +2628,7 @@ class UIManager {
     // ===== TERRAIN INFORMATION DISPLAY =====
     showTerrainInfo(gridX, gridZ, terrainType) {
         try {
+            if (this.gameManager?.gameState === 'playing') AudioManager.onSelect(terrainType === 'water' ? 'river' : 'soil');
             // Clear any existing panels
             this.closeCurrentPanel();
 

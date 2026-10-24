@@ -618,6 +618,136 @@
       "aspect": "1:1",
       "inputReference": "assets/characters/marcia/portrait.webp (a base em 1024 px)",
       "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/paulo/portrait.webp": {
+      "usedIn": "Retrato animado (decisões de evento, alertas ambientais, tutorial): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. PAULO, the Brazilian Municipal Secretary of the Environment, a down-to-earth man around 45 years old: warm lightly tanned skin, short neatly trimmed salt-and-pepper beard with more gray on the chin, short dark hair with gray at the temples showing under the cap, kind dark-brown eyes with small smile lines, plain dark charcoal baseball cap with no logo, plain black crew-neck t-shirt with no print, a green lanyard with a small blank badge with a leaf symbol, a light olive-green utility jacket open over the t-shirt. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the cap. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "note": "Inspirado numa foto de referência do usuário só pela ideia (boné escuro, camiseta preta, barba grisalha); a foto não foi enviada ao gerador. Para imagens novas do Paulo, use a base como input_references."
+    },
+    "assets/characters/paulo/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/paulo/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, cap, beard, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/paulo/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/paulo/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, cap, beard, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/paulo/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/paulo/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, cap, beard, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/paulo/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/paulo/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, cap, beard, lanyard, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/paulo/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa em js/data/portraits.js)",
+      "aspect": "1:1",
+      "inputReference": "assets/characters/paulo/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, cap, beard, lanyard, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/images/studies/ponto-de-coleta.webp": {
+      "usedIn": "Estudo - Ponto de Coleta Reciclável, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a voluntary recycling drop-off point in a Brazilian neighborhood square: a row of four colorful recycling containers (blue, red, green and yellow), a teenager and a grandmother dropping off flattened cardboard, plastic bottles, glass jars and cans, a clean street with a storm drain and trees, a small stream in the background without litter. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/cooperativa-reciclagem.webp": {
+      "usedIn": "Estudo - Cooperativa de Reciclagem, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration inside a Brazilian recycling cooperative warehouse: waste pickers wearing gloves, boots and safety vests sorting materials on a conveyor belt, a baling press making big cubes of pressed cardboard and plastic bottles, colorful bales stacked by type, a small truck unloading recyclables at the open gate, warm teamwork atmosphere. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/aterro-sanitario.webp": {
+      "usedIn": "Estudo - Aterro Sanitário, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational cutaway illustration of a sanitary landfill in the Brazilian countryside: layered cells of compacted waste covered with soil, a thick dark waterproof liner at the bottom, perforated pipes collecting dark leachate and sending it to a small treatment pond, vertical gas pipes with a controlled flame on top, a bulldozer spreading soil, a clean blue aquifer and river protected below and beside it, a closed part of the landfill already covered with grass. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/patio-compostagem.webp": {
+      "usedIn": "Estudo - Pátio de Compostagem, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a municipal composting yard in Brazil: long rows of brown compost piles made of food scraps, dry leaves and tree trimmings, a worker turning a pile with a pitchfork while steam rises, close-up inset of earthworms and dark rich soil, sacks of finished compost going to a school vegetable garden with children planting seedlings nearby. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/biodigestor.webp": {
+      "usedIn": "Estudo - Biodigestor, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational cutaway illustration of a biodigester next to a small Brazilian sewage treatment plant: a closed round tank half underground with a dome-shaped green gas cover, food scraps and sewage sludge going in through a pipe, cartoonish friendly bacteria inside, bubbles of biogas rising to the dome, a pipe carrying gas to a small generator lighting up lamps, a liquid biofertilizer outlet watering a green crop field. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/ecoparque.webp": {
+      "usedIn": "Estudo - Ecoparque (Central de Tratamento Avançado), pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a modern eco-park waste treatment complex in Brazil, seen from above at a slight angle: a sorting building with conveyor belts, magnets and air jets visible through a glass wall, composting rows, a round biodigester with a green dome, solar panels on the roofs, a few small wind turbines, trees and a clean river around it, a circular flow of materials suggested by curved arrows of light without any writing. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/usina-sucroenergetica.webp": {
+      "usedIn": "Estudo - Usina Sucroenergética, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a sugarcane ethanol and bioelectricity mill in the Brazilian countryside: green sugarcane fields being harvested by a machine without burning, trucks carrying cane to the mill, a boiler chimney with light white steam, a pile of bagasse feeding the boiler, power lines leaving toward a town, a tanker truck of ethanol, a protected strip of riverside forest along a clean river and sprinklers spreading dark liquid fertilizer over the cane field. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/usina-biomassa.webp": {
+      "usedIn": "Estudo - Usina de Biomassa, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a biomass power plant in southern Brazil: big piles of wood chips and rice husks next to a boiler building, a conveyor carrying the biomass into the furnace, a chimney with a visible filter unit releasing only light white steam, a turbine hall with power lines to a distant town, a planted eucalyptus reforestation area on one side and untouched native forest protected on the other. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/usina-nuclear.webp": {
+      "usedIn": "Estudo - Usina Nuclear, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a nuclear power plant on the green, mountainous Atlantic Forest coast of Brazil: a dome-shaped reactor building, a turbine hall, a wide cooling tower releasing white water vapor clouds, pipes taking seawater in and returning warm water to the bay, a cutaway inset showing heat boiling water into steam that spins a turbine, fish swimming in the cool part of the sea, security fences and protected forest around it. Generic setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
     }
   }
 }

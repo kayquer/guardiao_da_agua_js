@@ -12,6 +12,9 @@
  */
 
 class BuildingSystem {
+    /** Nós do .glb que giram (BuildingModels.js): "pas_N" = rotor eólico, "gira_N" = peça que gira em pé. */
+    static ANIMATED_NODE = /^(pas|gira)_/i;
+
     constructor(scene, gridManager, gameManager = null) {
         log('🏗️ Inicializando BuildingSystem...');
 
@@ -535,6 +538,7 @@ class BuildingSystem {
 
         // Remover do sistema imediatamente
         this.buildings.delete(buildingId);
+        this.gameManager?.techTree?.invalidate();
 
         // Remover conexões de infraestrutura
         if (this.isInfrastructureBuilding(building.config)) {
@@ -696,6 +700,52 @@ class BuildingSystem {
     }
 
     // ===== EFEITOS NOS RECURSOS =====
+    /** R$/min que um prédio com efeitos aplicados soma em buildingIncome (receita própria × eficiência × fase, ou aluguel). */
+    getAppliedBuildingIncome(building) {
+        const config = building?.config;
+        if (!config || !building.effectsApplied || this.isPlantedTree?.(building)) return 0;
+        let income = 0;
+        if (config.incomeGeneration && !building.isRented) {
+            const zoneScale = this.getZoneIncomeScale ? this.getZoneIncomeScale(building, false) : 1;
+            income += config.incomeGeneration * building.efficiency * zoneScale;
+        }
+        if (building.isRented) {
+            if (config.waterProduction) income += config.waterProduction * 2;
+            if (config.powerGeneration) income += config.powerGeneration * 50;
+        }
+        return income;
+    }
+
+    /**
+     * Save de antes de buildingIncome/buildingSatisfaction: a receita dos prédios era apagada a cada segundo e
+     * o bônus de satisfação não era somado. Recompõe os dois a partir dos prédios com efeitos aplicados.
+     */
+    rebuildLegacyResourceTotals(savedResources) {
+        const rm = window.gameManager?.resourceManager;
+        const saved = savedResources?.resources;
+        if (!rm || !saved) return;
+        const buildings = this.getAllBuildings();
+        if (!Number.isFinite(saved.budget?.buildingIncome)) {
+            rm.resources.budget.buildingIncome = buildings.reduce((sum, b) => sum + this.getAppliedBuildingIncome(b), 0);
+        }
+        // Aquífero (Fase 2): bombas/poços e áreas verdes prontos antes do save
+        if (!Number.isFinite(saved.water?.groundwaterProduction)) {
+            rm.resources.water.groundwaterProduction = buildings
+                .filter(b => b.effectsApplied && b.config?.groundwater && !b.isRented)
+                .reduce((sum, b) => sum + b.config.waterProduction * (b.efficiency ?? 1), 0);
+        }
+        if (!Number.isFinite(saved.water?.aquiferRecharge)) {
+            rm.resources.water.aquiferRecharge = buildings
+                .filter(b => b.effectsApplied && b.config?.aquiferRecharge)
+                .reduce((sum, b) => sum + b.config.aquiferRecharge, 0);
+        }
+        if (!Number.isFinite(saved.population?.buildingSatisfaction)) {
+            rm.resources.population.buildingSatisfaction = buildings
+                .filter(b => b.effectsApplied && !this.isPlantedTree?.(b))
+                .reduce((sum, b) => sum + (Number(b.config?.satisfactionBonus) || 0), 0);
+        }
+    }
+
     applyBuildingEffects(building, add = true) {
         const config = building.config;
 
@@ -719,7 +769,17 @@ class BuildingSystem {
                     } else {
                         resourceManager.removeWaterProduction(config.waterProduction * building.efficiency);
                     }
+                    // Bomba/poço: a mesma água sai do aquífero
+                    if (config.groundwater) {
+                        const amount = config.waterProduction * building.efficiency;
+                        resourceManager.addGroundwaterProduction(add ? amount : -amount);
+                    }
                 }
+            }
+
+            // Áreas verdes devolvem água da chuva ao aquífero
+            if (config.aquiferRecharge) {
+                resourceManager.addAquiferRecharge(add ? config.aquiferRecharge : -config.aquiferRecharge);
             }
             
             // Redução de poluição
@@ -751,14 +811,12 @@ class BuildingSystem {
                 // TODO: Implementar quando ResourceManager suportar mudanças de população
             }
 
-            // Bônus de satisfação (para infraestrutura)
+            // Bônus de satisfação (serviços e lazer; ResourceManager aplica teto e retorno decrescente)
             if (config.satisfactionBonus) {
                 if (add) {
-                    // Adicionar bônus de satisfação
-                    this.addSatisfactionBonus(config.satisfactionBonus);
+                    resourceManager.addSatisfactionBonus(config.satisfactionBonus);
                 } else {
-                    // Remover bônus de satisfação
-                    this.removeSatisfactionBonus(config.satisfactionBonus);
+                    resourceManager.removeSatisfactionBonus(config.satisfactionBonus);
                 }
             }
 
@@ -848,16 +906,6 @@ class BuildingSystem {
         }
     }
 
-    addSatisfactionBonus(amount) {
-        // Implementar quando ResourceManager suportar bônus de satisfação
-        log(`✅ Bônus de satisfação adicionado: +${amount}%`);
-    }
-
-    removeSatisfactionBonus(amount) {
-        // Implementar quando ResourceManager suportar bônus de satisfação
-        log(`➖ Bônus de satisfação removido: -${amount}%`);
-    }
-
     // ===== UTILITÁRIOS =====
     canPlaceBuildingOnWater(gridX, gridZ, buildingSize = 1) {
         // Verificar se todas as células necessárias estão livres (permitindo água)
@@ -930,6 +978,9 @@ class BuildingSystem {
 
             // Atualizar efeitos de escassez de energia
             this.updatePowerShortageEffects(deltaTime);
+
+            // Pás eólicas e outras peças que giram (BuildingModels.js)
+            this.updateAnimatedParts(deltaTime);
 
             // Eficiência (rua, energia, dano, pesquisa) a cada 5 s ou logo após markEfficiencyDirty (BuildingEfficiency.js)
             if (!this.lastEfficiencyUpdate || Date.now() - this.lastEfficiencyUpdate > 5000) {
@@ -1070,6 +1121,7 @@ class BuildingSystem {
         buildingData.active = true;
         buildingData.efficiency = 1.0;
         buildingData.underConstruction = false;
+        this.gameManager?.techTree?.invalidate(); // pode ter liberado uma tecnologia (confere no próximo segundo)
 
         // Remover visuais de construção
         if (!quiet) this.removeConstructionVisuals(buildingData);
@@ -1084,6 +1136,10 @@ class BuildingSystem {
 
         // Aplicar efeitos nos recursos (agora que está ativo)
         this.applyBuildingEffects(buildingData, true);
+        // Reputação muda uma vez, na conclusão (não em applyBuildingEffects, que reaplica ao mudar a eficiência)
+        if (buildingData.config.reputationOnBuild) {
+            this.gameManager?.questSystem?.changeReputation?.(buildingData.config.reputationOnBuild, buildingData.config.name);
+        }
         if (quiet) return;
 
         // ===== AUDIO FEEDBACK PARA CONCLUSÃO =====

@@ -186,13 +186,25 @@ mixin(UIManager, {
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Produção:</span>
-                        <span class="stat-value">+${this.formatNumber(water.production, 1)}L/min</span>
+                        <span class="stat-value">+${this.formatNumber(this.gameManager.resourceManager.getEffectiveWaterProduction(), 1)}L/min${(water.productionMultiplier ?? 1) < 1 ? ` (seca: −${Math.round((1 - water.productionMultiplier) * 100)}%)` : ''}</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Consumo:</span>
                         <span class="stat-value">-${this.formatNumber(water.consumption, 1)}L/min</span>
                     </div>
+                    <div class="resource-stat time-to-empty">
+                        <span class="stat-label">Tendência:</span>
+                        <span class="stat-value">${this.describeWaterTrend()}</span>
+                    </div>
+                    <div class="resource-stat">
+                        <span class="stat-label">Desperdício:</span>
+                        <span class="stat-value">-${this.formatNumber(water.waste || 0, 1)}L/min${water.extraWaste > 0 ? ' (vazamento)' : ''}</span>
+                    </div>
                 </div>
+
+                ${this.renderTrend(this.gameManager.resourceManager.getHistorySeries('water'), { color: '#29b6f6', max: water.storage, caption: 'Água guardada nos últimos minutos' })}
+                ${this.renderAquiferBlock()}
+                ${this.renderFloodRiskBlock()}
 
                 <div class="resource-sources">
                     <h5>🏭 Fontes de Produção</h5>
@@ -408,31 +420,21 @@ mixin(UIManager, {
                 </div>
 
                 <div class="resource-sources">
-                    <h5>✅ Fatores Positivos</h5>
-                    <ul>
-                        <li>💧 Abastecimento de água adequado</li>
-                        <li>🌿 Baixos níveis de poluição</li>
-                        <li>🏥 Infraestrutura de saúde</li>
-                        <li>🎓 Infraestrutura educacional</li>
-                        <li>🌳 Áreas verdes e recreação</li>
-                    </ul>
-
-                    <h5>❌ Fatores Negativos</h5>
-                    <ul>
-                        <li>🚱 Escassez de água</li>
-                        <li>🏭 Alta poluição</li>
-                        <li>⚡ Falta de energia</li>
-                        <li>🚧 Infraestrutura inadequada</li>
+                    <h5>📊 De onde vem a satisfação</h5>
+                    <ul class="satisfaction-factors">
+                        ${this.gameManager.resourceManager.getSatisfactionFactors().map(f =>
+                            `<li>${f.icon} ${f.label}: <b>${f.value >= 0 ? '+' : ''}${this.formatNumber(f.value, 1)}</b></li>`).join('')}
                     </ul>
 
                     <h5>🏢 Edifícios que Melhoram Satisfação</h5>
+                    <p class="stat-note">Cada prédio novo soma um pouco menos que o anterior (no máximo +${ResourceManager.BUILDING_SATISFACTION_MAX} no total).</p>
         `;
 
-        const satisfactionBuildings = buildings.filter(b => b.config && b.config.satisfactionBonus && b.active);
+        const satisfactionBuildings = buildings.filter(b => b.config && b.config.satisfactionBonus && b.active && b.effectsApplied);
         if (satisfactionBuildings.length > 0) {
             detailsHTML += this.renderBuildingGroups(satisfactionBuildings,
                 b => b.config.satisfactionBonus,
-                total => `+${this.formatNumber(total, 1)}%`, 'building-bonus');
+                total => `${this.formatNumber(total, 1)} pts`, 'building-bonus');
         } else {
             detailsHTML += '<p class="no-sources">Nenhum edifício de satisfação construído</p>';
         }
@@ -467,7 +469,7 @@ mixin(UIManager, {
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Crescimento:</span>
-                        <span class="stat-value">${this.formatNumber(population.growth, 1)}/min</span>
+                        <span class="stat-value">${population.growth >= 0 ? '+' : ''}${this.formatNumber(population.growth * 60, 1)}%/min</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Satisfação:</span>
@@ -534,7 +536,9 @@ mixin(UIManager, {
     showPollutionDetailsPanel() {
         if (!this.elements.detailsContent || !this.gameManager.resourceManager) return;
 
-        const pollution = this.gameManager.resourceManager.resources.pollution;
+        const rm = this.gameManager.resourceManager;
+        const pollution = rm.resources.pollution;
+        const balance = rm.getPollutionBalance();
         const buildings = this.gameManager.buildingSystem.getAllBuildings();
 
         // Filtrar edifícios que afetam poluição
@@ -551,20 +555,30 @@ mixin(UIManager, {
                         <span class="stat-value">${Math.floor(pollution.current)}%</span>
                     </div>
                     <div class="resource-stat">
-                        <span class="stat-label">Fontes Ativas:</span>
-                        <span class="stat-value">${this.formatNumber(pollution.sources, 1)}/min</span>
+                        <span class="stat-label">Prédios e eventos:</span>
+                        <span class="stat-value">+${this.formatNumber(balance.sources, 1)}/min</span>
+                    </div>
+                    <div class="resource-stat sewage-stat">
+                        <span class="stat-label">🚽 Esgoto dos moradores:</span>
+                        <span class="stat-value">+${this.formatNumber(balance.sewage, 1)}/min</span>
                     </div>
                     <div class="resource-stat">
-                        <span class="stat-label">Redução:</span>
-                        <span class="stat-value">-${this.formatNumber(pollution.reduction, 1)}/min</span>
+                        <span class="stat-label">Limpeza:</span>
+                        <span class="stat-value">-${this.formatNumber(balance.reduction, 1)}/min</span>
                     </div>
+                    ${Math.abs(balance.reputation) >= 0.05 ? `<div class="resource-stat">
+                        <span class="stat-label">🌿 Confiança do Meio Ambiente:</span>
+                        <span class="stat-value">${balance.reputation >= 0 ? '-' : '+'}${this.formatNumber(Math.abs(balance.reputation), 1)}/min</span>
+                    </div>` : ''}
                     <div class="resource-stat">
                         <span class="stat-label">Balanço:</span>
-                        <span class="stat-value ${(pollution.sources - pollution.reduction) <= 0 ? 'positive' : 'negative'}">
-                            ${pollution.sources - pollution.reduction >= 0 ? '+' : ''}${this.formatNumber(pollution.sources - pollution.reduction, 1)}/min
+                        <span class="stat-value ${balance.net <= 0 ? 'positive' : 'negative'}">
+                            ${balance.net >= 0 ? '+' : ''}${this.formatNumber(balance.net, 1)}/min
                         </span>
                     </div>
                 </div>
+                ${this.renderTrend(rm.getHistorySeries('pollution'), { color: '#ef5350', max: 100, caption: 'Poluição nos últimos minutos' })}
+                <p class="stat-note">Cada morador gera esgoto. Sem <b>Estação de Tratamento</b>, ele vai direto para o rio.</p>
 
                 <div class="resource-sources">
         `;
@@ -588,35 +602,89 @@ mixin(UIManager, {
                     <ul>
                         <li>
                             <span class="building-icon">🌳</span>
-                            <span class="building-name">${trees.count} árvores em pé</span>
+                            <span class="building-name">${trees.count} árvores em pé (${trees.riparianCount} na margem do rio)</span>
                             <span class="building-production">-${this.formatNumber(trees.pollutionReduction, 1)}%/min</span>
                         </li>${this.plantedTreesLine()}
+                        <li>🏞️ Mata ciliar: árvores a até ${TREES.RIPARIAN_DISTANCE} quadrados da água limpam ${TREES.RIPARIAN_FACTOR}× mais. Plante mudas na margem!</li>
                         <li>🪓 Construir em cima de árvores derruba as árvores: a poluição sobe e a cidade fica menos verde.</li>
                     </ul>`;
         }
 
         detailsHTML += `
-                    <h5>🌍 Impactos da Poluição</h5>
+                    <h5>🌍 O que a poluição faz na cidade</h5>
                     <ul>
-                        <li>😷 Reduz satisfação da população</li>
-                        <li>🏥 Aumenta custos de saúde pública</li>
-                        <li>🐟 Contamina recursos hídricos</li>
-                        <li>🌡️ Contribui para mudanças climáticas</li>
-                        <li>🌱 Degrada ecossistemas locais</li>
+                        <li>😷 Acima de 50%, os moradores ficam menos satisfeitos</li>
+                        <li>🏃 Acima de 70%, menos gente quer morar aqui (e a água fica turva)</li>
+                        <li>☠️ Em 100%, a água fica imprópria: fim de jogo</li>
                     </ul>
 
-                    <h5>✅ Estratégias de Redução</h5>
+                    <h5>✅ O que baixa a poluição</h5>
                     <ul>
-                        <li>🌳 Construir áreas verdes e parques</li>
-                        <li>♻️ Implementar sistemas de reciclagem</li>
-                        <li>🔋 Usar fontes de energia limpa</li>
-                        <li>🚌 Promover transporte público</li>
-                        <li>🏭 Modernizar indústrias</li>
+                        <li>🏭 Estações de Tratamento e de Filtros (tratam o esgoto)</li>
+                        <li>🪷 Jardins Flutuantes, Parque Linear, jardins e tetos verdes</li>
+                        <li>🌳 Árvores, principalmente na margem do rio</li>
+                        <li>🤝 Decisões que agradam o grupo Meio Ambiente</li>
                     </ul>
                 </div>
             </div>
         `;
 
         this.elements.detailsContent.innerHTML = uiIconsIn(detailsHTML) + this.topicLessonButton('pollution');
+    },
+
+    // ===== GRÁFICO DE TENDÊNCIA (ResourceManager.history: 1 ponto a cada 5 s de jogo) =====
+    /** Linha SVG dos últimos pontos. Sem 2 pontos ainda, só a legenda dizendo que está juntando dados. */
+    renderTrend(values, { color = '#29b6f6', max, caption = '' } = {}) {
+        if (!values || values.length < 2) {
+            return `<div class="trend-box"><span class="trend-caption">📈 ${caption}: juntando dados…</span></div>`;
+        }
+        const top = Math.max(max || 0, ...values, 1);
+        const w = 300, h = 48;
+        const points = values.map((v, i) => `${(i / (values.length - 1) * w).toFixed(1)},${(h - 2 - (v / top) * (h - 4)).toFixed(1)}`).join(' ');
+        return `<div class="trend-box">
+            <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="${caption}">
+                <rect x="0" y="0" width="${w}" height="${h}" rx="6" fill="rgba(0,0,0,0.18)"/>
+                <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+            </svg>
+            <span class="trend-caption">📈 ${caption} (${Math.max(1, Math.round(values.length * ResourceManager.HISTORY_EVERY / 60))} min)</span>
+        </div>`;
+    },
+
+    /** "Enchendo", "estável" ou "seca em ~N min" (tempo real), pelo balanço atual. */
+    describeWaterTrend() {
+        const rm = this.gameManager.resourceManager;
+        const { production, demand, current, storage } = rm.getWaterBalance();
+        const net = production - demand; // L/min de jogo
+        const realMin = minutes => minutes / (this.gameManager.timeScale || 1);
+        if (Math.abs(net) < 0.5) return 'estável';
+        if (net > 0) return current >= storage - 1 ? 'caixa cheia' : `enchendo (cheia em ~${Math.max(1, Math.ceil(realMin((storage - current) / net)))} min)`;
+        return `<b class="negative">secando: vazia em ~${Math.max(1, Math.ceil(realMin(current / -net)))} min</b>`;
+    },
+
+    renderAquiferBlock() {
+        const rm = this.gameManager.resourceManager;
+        const level = rm.getAquiferLevel();
+        const { drain, recharge, net } = rm.getAquiferBalance();
+        const factor = rm.getAquiferFactor();
+        const color = level >= 50 ? '#29b6f6' : level >= ResourceManager.AQUIFER_LOW ? '#ffb74d' : '#ef5350';
+        return `<div class="aquifer-block">
+            <h5>🪨 Aquífero (água debaixo da terra): ${Math.round(level)}%</h5>
+            <div style="height:10px;border-radius:5px;background:rgba(0,0,0,0.25);overflow:hidden">
+                <div class="aquifer-bar" style="height:100%;width:${level.toFixed(1)}%;background:${color}"></div>
+            </div>
+            <p class="stat-note">Bombas e poços tiram ${this.formatNumber(drain, 1)}%/min; chuva, solo e áreas verdes devolvem ${this.formatNumber(recharge, 1)}%/min
+                (${net >= 0 ? 'subindo' : 'descendo'}).${factor < 1 ? ` <b class="negative">Aquífero baixo: bombas e poços rendem ${Math.round(factor * 100)}%.</b>` : ''}</p>
+        </div>`;
+    },
+
+    renderFloodRiskBlock() {
+        const es = this.gameManager.eventSystem;
+        if (!es?.getFloodRisk) return '';
+        const { impervious, absorption, level } = es.getFloodRisk();
+        return `<div class="flood-block">
+            <h5>🌊 Risco de enchente: ${level}</h5>
+            <p class="stat-note">Asfalto e prédios fazem a chuva escorrer (${Math.round(impervious)}); jardins de chuva, tetos verdes, parques e árvores seguram (${Math.round(absorption)}).
+                ${es.getWarningTime() > EventSystem.WARNING_MS ? 'A Estação de Monitoramento avisa as enchentes mais cedo.' : 'Uma Estação de Monitoramento avisaria as enchentes mais cedo.'}</p>
+        </div>`;
     },
 });

@@ -178,6 +178,7 @@ class QuestSystem {
         quest.status = 'active';
         quest.startTime = this.simNow();
         this.activeQuests.add(questId);
+        this.startMissionEvent(quest);
         
         // Definir como missão principal se for tutorial ou main
         if (quest.type === 'tutorial' || quest.type === 'main') {
@@ -221,6 +222,9 @@ class QuestSystem {
 
         // Aplicar recompensas (with scaling if enabled)
         this.applyQuestRewards(quest, performanceMultiplier);
+
+        // Fim da campanha: tela de vitória; o jogo continua no modo livre
+        if (quest.victory) this.gameManager.gameOverSystem?.showVictory?.();
 
         this.checkUnlockConditions();
 
@@ -443,8 +447,9 @@ class QuestSystem {
         
         switch (objective.type) {
             case 'build':
+                // Só prédio pronto conta: a obra recém-colocada ainda não "construiu" nada
                 if (buildingSystem) {
-                    return buildingSystem.getBuildingsByType(objective.target).length;
+                    return buildingSystem.getBuildingsByType(objective.target).filter(b => !b.underConstruction).length;
                 }
                 break;
                 
@@ -465,12 +470,17 @@ class QuestSystem {
                 break;
                 
             case 'sustained':
+                // sustainedTime em segundos de jogo (simNow). Antes somava +1 por chamada, ou seja, por quadro:
+                // "manter por 5 minutos" acabava em ~5 s.
                 if (resourceManager) {
                     const resources = resourceManager.getAllResources();
                     const value = this.getResourceValue(resources, objective.target);
-                    
+                    const now = this.simNow();
+                    const elapsed = Number.isFinite(objective.lastSampleAt) ? Math.max(0, now - objective.lastSampleAt) / 1000 : 0;
+                    objective.lastSampleAt = now;
+
                     if (value >= objective.threshold) {
-                        objective.sustainedTime = (objective.sustainedTime || 0) + 1;
+                        objective.sustainedTime = (objective.sustainedTime || 0) + elapsed;
                         return objective.sustainedTime;
                     } else {
                         objective.sustainedTime = 0;
@@ -486,7 +496,9 @@ class QuestSystem {
 
             case 'avoid':
                 // Alvos aceitos estão em tests/unit/data.test.js (SUPPORTED.avoid)
-                if (objective.target === 'water_shortage' && resourceManager.resources.water.current <= 0) {
+                // Falta água = a reserva está secando sem produção que dê conta (hasWaterShortage), ou já secou
+                if (objective.target === 'water_shortage' &&
+                    (resourceManager.resources.water.current <= 0 || resourceManager.hasWaterShortage())) {
                     objective.violated = true;
                 }
                 return 0;
@@ -502,6 +514,7 @@ class QuestSystem {
             case 'population': return resources.population.current;
             case 'satisfaction': return resources.population.satisfaction;
             case 'budget': return resources.budget.current;
+            case 'aquifer': return Number.isFinite(resources.water.aquifer) ? resources.water.aquifer : 100;
             default: return 0;
         }
     }
@@ -533,16 +546,19 @@ class QuestSystem {
             }
         }
 
-        // Desbloqueios
-        if (quest.rewards.unlock) {
-            quest.rewards.unlock.forEach(buildingTypeId => {
-                const buildingType = buildingSystem?.buildingTypes.get(buildingTypeId);
-                if (buildingType) {
-                    buildingType.unlocked = true;
-                    log(`🔓 Desbloqueado: ${buildingType.name}`);
-                }
-            });
-        }
+        if (quest.rewards.reputation) this.changeReputation(quest.rewards.reputation, 'missão');
+
+        // Estudo recomendado: quem desbloqueia é o estudo (StudySystem); a missão só aponta o próximo
+        (quest.rewards.recommendStudy || []).forEach(buildingTypeId => {
+            const buildingType = buildingSystem?.buildingTypes?.get(buildingTypeId);
+            const unlocked = this.gameManager.studySystem?.isBuildingUnlocked?.(buildingTypeId);
+            if (buildingType && !unlocked) {
+                this.gameManager.uiManager?.showNotification(
+                    `📖 Novo estudo recomendado: ${buildingType.name}. Clique nele na aba de construções para estudar e liberar.`,
+                    'info', 8000
+                );
+            }
+        });
 
         // Conquistas
         if (quest.rewards.achievement) {
@@ -722,20 +738,7 @@ class QuestSystem {
         }
 
         // Apply reputation changes
-        if (consequences.reputation) {
-            Object.entries(consequences.reputation).forEach(([stakeholder, value]) => {
-                if (!this.stakeholderReputation[stakeholder]) {
-                    this.stakeholderReputation[stakeholder] = 50; // Default reputation
-                }
-
-                this.stakeholderReputation[stakeholder] += value;
-                this.stakeholderReputation[stakeholder] = Math.max(0, Math.min(100, this.stakeholderReputation[stakeholder]));
-
-                const icon = this.getStakeholderIcon(stakeholder);
-                const sign = value > 0 ? '+' : '';
-                log(`${icon} Reputação ${stakeholder}: ${sign}${value} (total: ${this.stakeholderReputation[stakeholder]})`);
-            });
-        }
+        if (consequences.reputation) this.changeReputation(consequences.reputation, 'sua decisão');
 
         // Apply time limit changes
         if (consequences.timeLimit) {
@@ -784,32 +787,74 @@ class QuestSystem {
         if (!this.achievements.has(achievementId)) {
             this.achievements.add(achievementId);
             
-            if (this.gameManager.uiManager) {
-                this.gameManager.uiManager.showNotification(
-                    `🏆 Conquista desbloqueada: ${achievementId}`,
-                    'success',
-                    8000
-                );
-            }
+            const info = (typeof ACHIEVEMENTS !== 'undefined' && ACHIEVEMENTS[achievementId]) || { icon: '🏆', name: achievementId };
+            this.gameManager.uiManager?.showNotification(`🏆 Conquista: ${info.icon} ${info.name}${info.description ? ` — ${info.description}` : ''}`, 'success', 8000);
             
             log(`🏆 Conquista desbloqueada: ${achievementId}`);
         }
     }
     
     // ===== CONDIÇÕES DE DESBLOQUEIO =====
+    // ===== REPUTAÇÃO DOS GRUPOS (0-100, começa em 50) =====
+    // Muda com escolhas (missões e eventos) e com o que se constrói (config.reputationOnBuild). Tem efeito:
+    // moradores → satisfação ±5; comércio → impostos 0,8×-1,2×; meio ambiente → limpeza ±5/min; governo → subsídios.
+    static STAKEHOLDERS = {
+        citizens: { icon: '👥', name: 'Moradores', effect: 'satisfação' },
+        environment: { icon: '🌿', name: 'Meio Ambiente', effect: 'limpeza do rio' },
+        business: { icon: '💼', name: 'Comércio', effect: 'impostos' },
+        government: { icon: '🏛️', name: 'Governo', effect: 'chance de subsídio' }
+    };
+
+    /** Soma { grupo: delta } na reputação (limitada a 0-100). `reason` vai no toast. */
+    changeReputation(changes, reason = '') {
+        const shown = [];
+        Object.entries(changes || {}).forEach(([stakeholder, value]) => {
+            if (!Number.isFinite(value) || !value) return;
+            const before = Number.isFinite(this.stakeholderReputation[stakeholder]) ? this.stakeholderReputation[stakeholder] : 50;
+            this.stakeholderReputation[stakeholder] = Math.max(0, Math.min(100, before + value));
+            const info = QuestSystem.STAKEHOLDERS[stakeholder];
+            if (info) shown.push(`${info.icon} ${info.name} ${value > 0 ? '+' : ''}${value}`);
+        });
+        if (shown.length && this.gameManager.gameState === 'playing') {
+            this.gameManager.uiManager?.showNotification?.(`🤝 Reputação${reason ? ` (${reason})` : ''}: ${shown.join(', ')}`, 'info', 4000);
+        }
+    }
+
+    getReputation(stakeholder) {
+        const value = this.stakeholderReputation[stakeholder];
+        return Number.isFinite(value) ? value : 50;
+    }
+
+    /** O que a reputação faz agora (lido pelo ResourceManager e pelo EventSystem). */
+    getReputationModifiers() {
+        const off = key => (this.getReputation(key) - 50) / 50; // −1 … +1
+        return {
+            satisfaction: off('citizens') * 5,
+            income: 1 + off('business') * 0.2,
+            pollution: off('environment') * 5,
+            grantChance: Math.max(0.2, 1 + off('government'))
+        };
+    }
+
+    // A ordem vem dos dados: prerequisites de cada missão (js/data/missions.js)
     checkUnlockConditions() {
-        // Verificar se novas missões devem ser desbloqueadas
-        if (this.completedQuests.has('tutorial_01') && !this.activeQuests.has('tutorial_02')) {
-            this.startQuest('tutorial_02');
+        this.quests.forEach((quest, id) => {
+            if (this.canStartMission(id)) this.startQuest(id);
+        });
+    }
+
+    /** Missão com startEvent (ex.: Crise Hídrica → seca): começa o evento, ou estica o que já está ativo. */
+    startMissionEvent(quest) {
+        const spec = quest.startEvent;
+        const eventSystem = this.gameManager.eventSystem;
+        if (!spec || !eventSystem) return;
+        const existing = [...eventSystem.activeEvents.values()].find(e => e.type === spec.type);
+        if (existing) {
+            existing.remainingTime = Math.max(existing.remainingTime, spec.durationMs);
+            existing.duration = Math.max(existing.duration, spec.durationMs);
+            return;
         }
-        
-        if (this.completedQuests.has('tutorial_02') && !this.activeQuests.has('tutorial_03')) {
-            this.startQuest('tutorial_03');
-        }
-        
-        if (this.completedQuests.has('tutorial_03') && !this.activeQuests.has('main_01')) {
-            this.startQuest('main_01');
-        }
+        eventSystem.triggerEvent(spec.type, false, { duration: spec.durationMs });
     }
     
     // ===== FALHA DE MISSÃO =====

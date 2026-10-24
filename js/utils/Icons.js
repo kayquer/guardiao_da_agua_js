@@ -134,9 +134,10 @@ function lessonIcon(chapter, size = 'lg', extraClass = '') {
     return uiIcon(id || fallback || '', size, extraClass);
 }
 
-/** Ícone de uma categoria de construção (water, treatment, ...). */
+/** Ícone de uma categoria de construção (water, treatment, ...). Natureza e Ciência usam ícones genéricos. */
+const UI_CATEGORY_ICON_ALIASES = { nature: 'ui-tree', science: 'ui-microscope' };
 function categoryIcon(category, size = 'sm', extraClass = '') {
-    return uiIcon(`cat-${category}`, size, extraClass);
+    return uiIcon(UI_CATEGORY_ICON_ALIASES[category] || `cat-${category}`, size, extraClass);
 }
 
 // Emojis que, soltos num texto, são símbolos genéricos e não o prédio do mesmo emoji (🔧 Manutenção ≠ estação de filtragem)

@@ -13,13 +13,17 @@
     <link rel="stylesheet" href="css/styles.css?v=479ea2e3">
     <link rel="stylesheet" href="css/ui.css?v=e40c3a6e">
     <link rel="stylesheet" href="css/responsive.css?v=c86a8e7e">
-    <link rel="stylesheet" href="css/tutorial.css?v=3a0ecf72">
+    <link rel="stylesheet" href="css/tutorial.css?v=9060ec61">
     <link rel="stylesheet" href="css/lessons.css?v=75823501">
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
     <link rel="stylesheet" href="css/player.css?v=8b928c2c">
-    <link rel="stylesheet" href="css/menu.css?v=2aac1344">
+    <link rel="stylesheet" href="css/menu.css?v=ad09dab4">
     <link rel="stylesheet" href="css/notice.css?v=86b1e0da">
     <link rel="stylesheet" href="css/toasts.css?v=bcd03933">
+    <link rel="stylesheet" href="css/events.css?v=02eb4409">
+    <link rel="stylesheet" href="css/event-decision.css?v=a0abc448">
+    <link rel="stylesheet" href="css/mission-bar.css?v=702b887c">
+    <link rel="stylesheet" href="css/build-menu.css?v=a5c9d3be">
 
     <!-- Babylon.js CDN -->
     <script src="https://cdn.babylonjs.com/v9.31.2/babylon.js"></script>
@@ -315,9 +319,9 @@
                 <!-- Botões de Controle -->
                 <div class="control-buttons">
                     <button style="display: none;" id="btn-pause" class="control-btn" title="Pausar"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-pause.svg" alt="" aria-hidden="true" draggable="false"></button>
-                    <button style="display: none;" id="btn-speed-1x" class="control-btn active">1x</button>
-                    <button style="display: none;" id="btn-speed-2x" class="control-btn">2x</button>
-                    <button style="display: none;" id="btn-speed-3x" class="control-btn">3x</button>
+                    <button id="btn-speed-1x" class="control-btn speed-btn active" title="Velocidade normal (tecla 1)" aria-label="Velocidade normal">1x</button>
+                    <button id="btn-speed-2x" class="control-btn speed-btn" title="Velocidade 2x (tecla 2)" aria-label="Velocidade 2x">2x</button>
+                    <button id="btn-speed-3x" class="control-btn speed-btn" title="Velocidade 3x (tecla 3)" aria-label="Velocidade 3x">3x</button>
                     <button style="display: none;" id="btn-loans" class="control-btn loans-btn" title="Empréstimos" onclick="window.gameManager.uiManager.showLoanInterface()"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/bank-sm.svg" alt="" aria-hidden="true" draggable="false"></button>
                     <button id="btn-missions" class="control-btn missions-btn" title="Missões" aria-label="Missões"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-target-sm.svg" alt="" aria-hidden="true" draggable="false"></button>
                     <button id="btn-lessons" class="control-btn help-btn" title="Aulas sobre a água" aria-label="Aulas sobre a água"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-books-sm.svg" alt="" aria-hidden="true" draggable="false"></button>
@@ -328,10 +332,12 @@
             <div class="hud-left">
                 <div class="building-panel" id="building-panel">
                     <h3>Construções</h3>
+                    <button class="build-modal-btn tech-tree-btn" id="btn-tech-tree" type="button"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-microscope.svg" alt="" aria-hidden="true" draggable="false"> Tecnologias</button>
                     <div class="building-categories">
                         <button class="category-btn active" data-category="water"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-water.svg" alt="" aria-hidden="true" draggable="false"> Água</button>
                         <button class="category-btn" data-category="treatment"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-treatment.svg" alt="" aria-hidden="true" draggable="false"> Tratamento</button>
-                        <button class="category-btn" data-category="storage"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-storage.svg" alt="" aria-hidden="true" draggable="false"> Armazenamento</button>
+                        <button class="category-btn" data-category="nature"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-tree.svg" alt="" aria-hidden="true" draggable="false"> Natureza</button>
+                        <button class="category-btn" data-category="science"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-microscope.svg" alt="" aria-hidden="true" draggable="false"> Ciência</button>
                         <button class="category-btn" data-category="public"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-public.svg" alt="" aria-hidden="true" draggable="false"> Públicos</button>
                         <button class="category-btn" data-category="power"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-power.svg" alt="" aria-hidden="true" draggable="false"> Energia</button>
                         <button class="category-btn" data-category="roads"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-roads.svg" alt="" aria-hidden="true" draggable="false"> Asfalto</button>
@@ -341,9 +347,8 @@
                         <button class="category-btn" data-category="tourism"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-tourism.svg" alt="" aria-hidden="true" draggable="false"> Turismo</button>
                         <button class="category-btn" data-category="industrial"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-industrial.svg" alt="" aria-hidden="true" draggable="false"> Industrial</button>
                     </div>
-                    <div class="building-items" id="building-items">
-                        <!-- Itens de construção serão inseridos dinamicamente -->
-                    </div>
+                    <!-- Os cards ficam no #build-modal (UIManager.setupBuildModal move o #building-items para lá) -->
+                    <div class="building-items" id="building-items"></div>
                 </div>
             </div>
 
@@ -382,6 +387,48 @@
                         <p>Selecione um item para ver detalhes</p>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Menu de construção (BuildMenuUI.js): cards da categoria + informações com prévia 3D e o botão Construir -->
+        <div id="build-modal" class="build-modal" aria-hidden="true">
+            <div class="build-modal-box" role="dialog" aria-labelledby="build-modal-title">
+                <div class="build-modal-head">
+                    <button class="build-modal-btn back" id="build-modal-back" type="button" aria-label="Voltar aos cards">← Voltar</button>
+                    <h3 id="build-modal-title">Construções</h3>
+                    <button class="build-modal-btn tech" id="build-modal-tech" type="button"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-microscope.svg" alt="" aria-hidden="true" draggable="false"> Tecnologias</button>
+                    <button class="build-modal-btn close" id="build-modal-close" type="button" aria-label="Fechar">✕</button>
+                </div>
+                <div class="build-modal-body">
+                    <div class="build-modal-grid" id="build-modal-grid"></div>
+                    <aside class="build-info" id="build-info">
+                        <div class="build-info-scroll" id="build-info-scroll">
+                            <div class="build-preview no-model" id="build-preview">
+                                <canvas id="build-preview-canvas" aria-label="Modelo 3D do prédio girando"></canvas>
+                                <div class="build-preview-icon" id="build-preview-icon"></div>
+                                <span class="build-preview-badge" id="build-preview-badge" hidden></span>
+                            </div>
+                            <div id="build-info-content"></div>
+                        </div>
+                        <div class="build-info-foot">
+                            <button class="build-info-construct" id="build-info-construct" type="button" hidden>Construir</button>
+                            <div class="build-info-hint" id="build-info-hint"></div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+
+        <!-- Árvore tecnológica (TechTreeUI.js): o que cada construção precisa para liberar -->
+        <div id="tech-modal" class="tech-modal" aria-hidden="true">
+            <div class="tech-modal-box" role="dialog" aria-labelledby="tech-modal-title">
+                <div class="build-modal-head">
+                    <h3 id="tech-modal-title"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-microscope.svg" alt="" aria-hidden="true" draggable="false"> Árvore tecnológica</h3>
+                    <button class="build-modal-btn close" id="tech-modal-close" type="button" aria-label="Fechar">✕</button>
+                </div>
+                <div class="tech-tabs" id="tech-tabs"></div>
+                <div class="tech-body" id="tech-body"></div>
+                <div class="tech-legend">Construa os prédios pedidos para liberar a próxima tecnologia. ①–⑤ = nível tecnológico. Os mais avançados precisam de pesquisa. Clique num card para ver e construir.</div>
             </div>
         </div>
 
@@ -622,16 +669,16 @@
     <!-- Scripts do Jogo - Ordem correta de dependências -->
 
     <!-- Clean Code Refactoring: Game Constants (loaded first) -->
-    <script src="js/config/GameConstants.js?v=6d402c62"></script>
-    <script src="js/data/buildings.js?v=27bfbfb2"></script>
-    <script src="js/data/buildingModels.js?v=4705b2b2"></script>
+    <script src="js/config/GameConstants.js?v=78fe112d"></script>
+    <script src="js/data/buildings.js?v=d6291717"></script>
+    <script src="js/data/buildingModels.js?v=e030b14f"></script>
     <script src="js/data/zoneLots.js?v=6509f3b0"></script>
-    <script src="js/data/missions.js?v=32aa1b5d"></script>
+    <script src="js/data/missions.js?v=7da29106"></script>
     <script src="js/data/brazil.js?v=c0fa1745"></script>
     <script src="js/data/lessons.js?v=06e4cea9"></script>
     <script src="js/data/introCity.js?v=db7ab833"></script>
-    <script src="js/data/portraits.js?v=c9d4265b"></script>
-    <script src="js/data/audioManifest.js?v=fa12402c"></script>
+    <script src="js/data/portraits.js?v=939f497c"></script>
+    <script src="js/data/audioManifest.js?v=07e651b9"></script>
 
     <!-- ===== TUTORIAL SYSTEM ===== -->
     <!-- Tutorial: modo 'story' (tela cheia) ou 'coach' (card + spotlight sobre o HUD) — TutorialSystem.js -->
@@ -694,6 +741,14 @@
 
                     <div class="tutorial-controls">
                         <div class="tutorial-buttons" style="justify-content: center;">
+                            <!-- Só na vitória (GameOverSystem.showVictory): o jogo segue no modo livre -->
+                            <button id="gameover-continue-btn" class="tutorial-btn" style="display: none;" onclick="window.gameManager?.gameOverSystem?.continueAfterVictory()">
+                                ▶ Continuar jogando
+                            </button>
+                            <!-- Fim de jogo com declarações sobrando (GameOverSystem.EMERGENCY_LIVES): pede ajuda ao Estado e continua -->
+                            <button id="gameover-emergency-btn" class="tutorial-btn emergency-btn" style="display: none;" onclick="window.gameManager?.gameOverSystem?.declareEmergency()">
+                                🚨 Declarar situação de emergência
+                            </button>
                             <button id="gameover-menu-btn" class="tutorial-btn" onclick="window.gameManager?.gameOverSystem?.returnToMainMenu()">
                                 <img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-home.svg" alt="" aria-hidden="true" draggable="false"> Voltar ao Menu Principal
                             </button>
@@ -706,62 +761,69 @@
 
     <!-- Utilitários primeiro -->
     <script src="js/utils/GameUtils.js?v=ca581bc5"></script>
-    <script src="js/utils/Icons.js?v=d7e9e4dd"></script>
+    <script src="js/utils/Icons.js?v=584556c7"></script>
     <script src="js/utils/GameLogo.js?v=f238ea7b"></script>
     <script src="js/utils/AssetLoader.js?v=92c41b47"></script>
     <script src="js/utils/AudioManager.js?v=bc85f67c"></script>
-    <script src="js/utils/audio/SoundDirector.js?v=3a433478"></script>
+    <script src="js/utils/audio/SoundDirector.js?v=699f6ada"></script>
     <script src="js/ui/AnimatedPortrait.js?v=7a5cbd3d"></script>
 
     <!-- Core systems - ordem de dependência -->
     <script src="js/systems/GraphicsQuality.js?v=082950a2"></script>
     <script src="js/core/GridManager.js?v=1782dd90"></script>
-    <script src="js/core/ResourceManager.js?v=dcc0ad92"></script>
+    <script src="js/core/ResourceManager.js?v=400812e6"></script>
 
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=845fd95d"></script>
 
-    <script src="js/core/GameManager.js?v=71badec8"></script>
+    <script src="js/core/GameManager.js?v=6ad7fb00"></script>
     <script src="js/core/game/Diagnostics.js?v=7a3bbf0a"></script>
     <script src="js/core/game/SelectionVisuals.js?v=4ce5ba4f"></script>
     <script src="js/core/game/CameraGuard.js?v=47e1747c"></script>
 
     <!-- Game systems -->
-    <script src="js/systems/BuildingSystem.js?v=2514c6ec"></script>
+    <script src="js/systems/BuildingSystem.js?v=c25e14d2"></script>
     <script src="js/systems/building/BuildingMeshes.js?v=a95bab25"></script>
     <script src="js/systems/building/BuildingFeedback.js?v=bc4c9b74"></script>
-    <script src="js/systems/building/BuildingModels.js?v=1f5361b0"></script>
+    <script src="js/systems/building/BuildingModels.js?v=bcde47c0"></script>
     <script src="js/systems/building/ZoneGrowth.js?v=c28b8797"></script>
-    <script src="js/systems/building/TreeGrowth.js?v=c997c09b"></script>
-    <script src="js/systems/building/BuildingEfficiency.js?v=72da8913"></script>
+    <script src="js/systems/building/TreeGrowth.js?v=1dea3ded"></script>
+    <script src="js/systems/building/BuildingEfficiency.js?v=69a29fbd"></script>
     <script src="js/systems/roads/RoadNetwork.js?v=3f427dee"></script>
     <script src="js/systems/roads/RoadMeshes.js?v=59096103"></script>
     <script src="js/systems/roads/RoadPlacement.js?v=dad65faf"></script>
     <script src="js/systems/shared/VehicleMeshes.js?v=53516ed0"></script>
     <script src="js/systems/CityLifeSystem.js?v=75ebc9a1"></script>
     <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
-    <script src="js/systems/UIManager.js?v=6a94e78e"></script>
+    <script src="js/systems/UIManager.js?v=1e516dcf"></script>
     <script src="js/systems/ui/MobileTouch.js?v=107709dc"></script>
     <script src="js/systems/ui/StudyBookUI.js?v=af06ca77"></script>
-    <script src="js/systems/ui/LoanUI.js?v=aa261551"></script>
-    <script src="js/systems/ui/ResourcePanels.js?v=6500428f"></script>
+    <script src="js/systems/ui/LoanUI.js?v=057d32de"></script>
+    <script src="js/systems/ui/ResourcePanels.js?v=ca0b386a"></script>
+    <script src="js/systems/ui/EventUI.js?v=5269f61e"></script>
+    <script src="js/systems/ui/EventDecisionUI.js?v=805243da"></script>
+    <script src="js/systems/ui/BuildPreview.js?v=46accd5f"></script>
+    <script src="js/systems/ui/BuildMenuUI.js?v=81ff8eb3"></script>
+    <script src="js/systems/ui/MissionBar.js?v=7d936c04"></script>
+    <script src="js/systems/ui/TechTreeUI.js?v=52a8b5b3"></script>
     <script src="js/systems/ui/MobilePanels.js?v=a6989c98"></script>
     <script src="js/systems/ui/WeatherUI.js?v=f5c4df70"></script>
     <script src="js/systems/ui/CompassUI.js?v=9e3e44fa"></script>
-    <script src="js/systems/ui/LessonBookUI.js?v=e895679f"></script>
-    <script src="js/systems/ui/TreeInfoUI.js?v=3aa6ac1e"></script>
-    <script src="js/systems/LoanManager.js?v=ba076174"></script>
-    <script src="js/systems/QuestSystem.js?v=9641c073"></script>
-    <script src="js/systems/ui/MissionUI.js?v=212a9e61"></script>
-    <script src="js/systems/EventSystem.js?v=0cdfa8b3"></script>
+    <script src="js/systems/ui/LessonBookUI.js?v=02466470"></script>
+    <script src="js/systems/ui/TreeInfoUI.js?v=e348aba5"></script>
+    <script src="js/systems/LoanManager.js?v=16a6bedc"></script>
+    <script src="js/systems/QuestSystem.js?v=2f570bd2"></script>
+    <script src="js/systems/ui/MissionUI.js?v=c0c04f37"></script>
+    <script src="js/systems/EventSystem.js?v=b5c6f70f"></script>
     <script src="js/systems/SaveSystem.js?v=62eb9f81"></script>
-    <script src="js/systems/StudySystem.js?v=dc3813ed"></script>
-    <script src="js/systems/TutorialSystem.js?v=d15c2f24"></script>
-    <script src="js/systems/GameOverSystem.js?v=6c7d619e"></script>
+    <script src="js/systems/StudySystem.js?v=09a9c52e"></script>
+    <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
+    <script src="js/systems/TutorialSystem.js?v=90a11b35"></script>
+    <script src="js/systems/GameOverSystem.js?v=2e6fb0b9"></script>
     <script src="js/systems/PlayerProfile.js?v=cd0a9a04"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
-    <script src="js/systems/TreeSystem.js?v=a35a8ad1"></script>
+    <script src="js/systems/TreeSystem.js?v=aafb661e"></script>
     <script src="js/systems/WeatherService.js?v=ece5b194"></script>
     <script src="js/systems/LessonProgress.js?v=442710af"></script>
 
@@ -771,6 +833,6 @@
     <script src="js/systems/intro/MenuIntro.js?v=83e477fc"></script>
 
     <!-- Main initialization -->
-    <script src="js/main.js?v=cb703422"></script>
+    <script src="js/main.js?v=6261bf05"></script>
 </body>
 </html>

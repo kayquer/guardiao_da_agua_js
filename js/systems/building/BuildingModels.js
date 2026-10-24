@@ -15,6 +15,9 @@
  *    material de um prédio só.
  * 4. Enquanto o arquivo carrega, ou se ele falhar, o prédio usa o mesh procedural; quando o modelo fica
  *    pronto, swapBuildingMeshForModel troca o mesh dos prédios daquele tipo que já estão no mapa.
+ * 5. Partes que giram: nós do .glb chamados "pas_N" (rotor, eixo do cubo) ou "gira_N" (em pé) NÃO entram no
+ *    mesh único: viram filhos do modelo-base (pivô no lugar, eixo em metadata.spinAxis), clonados junto com
+ *    ele, e updateAnimatedParts os gira enquanto o prédio funciona (BuildingModels.ANIMATED_NODE).
  */
 mixin(BuildingSystem, {
     /** Entrada da tabela de modelos para o tipo, ou null (sem modelo → procedural). */
@@ -46,6 +49,8 @@ mixin(BuildingSystem, {
         mesh.setEnabled(true);
         mesh.isVisible = true;
         mesh.isPickable = true;
+        // clone() leva as partes animadas (filhas do modelo-base): em vez de uma cópia, um pedaço que gira por prédio
+        mesh.animatedParts = this.collectAnimatedParts(mesh);
 
         // Material próprio por prédio, com a textura compartilhada (liberado em performDisposal)
         const base = template.material;
@@ -57,6 +62,7 @@ mixin(BuildingSystem, {
         material.backFaceCulling = false;
         material.metadata = { perBuilding: true };
         mesh.material = material;
+        mesh.animatedParts.forEach(part => { part.mesh.material = material; });
 
         mesh.metadata = { ...(mesh.metadata || {}), fromModel: true, modelFile: entry.file };
         return mesh;
@@ -89,6 +95,7 @@ mixin(BuildingSystem, {
         material.needDepthPrePass = true;
         material.metadata = { preview: true };
         mesh.material = material;
+        this.collectAnimatedParts(mesh).forEach(part => { part.mesh.material = material; });
 
         mesh.metadata = { preview: true, fromModel: true, buildingType: buildingType.id };
         return mesh;
@@ -177,14 +184,22 @@ mixin(BuildingSystem, {
     /**
      * Junta as malhas do container num VertexData no espaço do Babylon (transformações aplicadas),
      * grava a cor base de cada material como cor de vértice e guarda a textura; descarta o resto.
+     * Nós animados (pas_N / gira_N) saem à parte em `animated`: { name, vertexData (relativo ao pivô), pivot, axis }.
      */
     extractBuildingModelData(container) {
         const computeWorld = node => {
             if (node.parent) computeWorld(node.parent);
             node.computeWorldMatrix(true);
         };
+        const animatedOf = node => {
+            // o nó mais alto com o nome (um nó de várias cores vira "pas_1" + filhos "pas_1_primitive0/1")
+            let found = null;
+            for (let n = node; n; n = n.parent) if (BuildingSystem.ANIMATED_NODE.test(n.name || '')) found = n;
+            return found;
+        };
 
         const parts = [];
+        const animatedGroups = new Map(); // nó animado → partes (VertexData no mundo)
         let texture = null;
         let anyColor = false;
         container.meshes.forEach(mesh => {
@@ -209,25 +224,43 @@ mixin(BuildingSystem, {
             }
             if (color.r < 0.999 || color.g < 0.999 || color.b < 0.999) anyColor = true;
             vd.colors = colors;
-            parts.push(vd);
+            const animatedNode = animatedOf(mesh);
+            if (animatedNode) {
+                if (!animatedGroups.has(animatedNode)) animatedGroups.set(animatedNode, []);
+                animatedGroups.get(animatedNode).push(vd);
+            } else {
+                parts.push(vd);
+            }
         });
         if (parts.length === 0) throw new Error('modelo sem geometria');
 
         // Todas as partes precisam dos mesmos atributos para o merge
-        const hasUvs = parts.some(p => p.uvs);
-        parts.forEach(p => {
+        const all = [...parts, ...[...animatedGroups.values()].flat()];
+        const hasUvs = all.some(p => p.uvs);
+        all.forEach(p => {
             if (!anyColor) p.colors = null;
             if (hasUvs && !p.uvs) p.uvs = new Float32Array((p.positions.length / 3) * 2);
         });
         const vertexData = parts[0];
         if (parts.length > 1) vertexData.merge(parts.slice(1), true);
 
+        // Partes animadas: geometria relativa ao pivô (origem do nó) e o eixo de giro no espaço do Babylon
+        const animated = [...animatedGroups.entries()].map(([node, list]) => {
+            const vd = list[0];
+            if (list.length > 1) vd.merge(list.slice(1), true);
+            const pivot = node.getAbsolutePosition().clone();
+            vd.transform(BABYLON.Matrix.Translation(-pivot.x, -pivot.y, -pivot.z));
+            const local = /^pas_/i.test(node.name) ? new BABYLON.Vector3(0, 0, 1) : new BABYLON.Vector3(0, 1, 0);
+            const axis = BABYLON.Vector3.TransformNormal(local, node.getWorldMatrix()).normalize();
+            return { name: node.name, vertexData: vd, pivot, axis };
+        });
+
         // A textura fica (é do modelo-base); malhas, materiais PBR e nós do container saem
         container.meshes.slice().forEach(m => m.dispose(false, false));
         container.materials.slice().forEach(m => m.dispose(false, false));
         container.transformNodes.slice().forEach(t => t.dispose());
 
-        return { vertexData, texture };
+        return { vertexData, texture, animated };
     },
 
     /** Modelo-base escondido do tipo, encaixado na área do prédio pela caixa envolvente. */
@@ -240,14 +273,38 @@ mixin(BuildingSystem, {
         vd.colors = source.colors ? Float32Array.from(source.colors) : null;
         vd.indices = source.indices.slice ? source.indices.slice() : Array.from(source.indices);
 
-        if (entry.rotationY) vd.transform(BABYLON.Matrix.RotationY(entry.rotationY));
+        const turn = entry.rotationY ? BABYLON.Matrix.RotationY(entry.rotationY) : BABYLON.Matrix.Identity();
+        if (entry.rotationY) vd.transform(turn);
+        // Partes animadas: cópia própria, giradas como o corpo (pivô e eixo também)
+        const animated = (data.animated || []).map(a => {
+            const pvd = new BABYLON.VertexData();
+            pvd.positions = Float32Array.from(a.vertexData.positions);
+            pvd.normals = a.vertexData.normals ? Float32Array.from(a.vertexData.normals) : null;
+            pvd.uvs = a.vertexData.uvs ? Float32Array.from(a.vertexData.uvs) : null;
+            pvd.colors = a.vertexData.colors ? Float32Array.from(a.vertexData.colors) : null;
+            pvd.indices = Array.from(a.vertexData.indices);
+            pvd.transform(turn);
+            return {
+                name: a.name, vertexData: pvd,
+                pivot: BABYLON.Vector3.TransformCoordinates(a.pivot, turn),
+                axis: BABYLON.Vector3.TransformNormal(a.axis, turn).normalize()
+            };
+        });
 
+        // Caixa envolvente do corpo + partes animadas (as pás contam na altura)
         const min = new BABYLON.Vector3(Infinity, Infinity, Infinity);
         const max = new BABYLON.Vector3(-Infinity, -Infinity, -Infinity);
         for (let i = 0; i < vd.positions.length; i += 3) {
             min.minimizeInPlaceFromFloats(vd.positions[i], vd.positions[i + 1], vd.positions[i + 2]);
             max.maximizeInPlaceFromFloats(vd.positions[i], vd.positions[i + 1], vd.positions[i + 2]);
         }
+        animated.forEach(a => {
+            const p = a.vertexData.positions;
+            for (let i = 0; i < p.length; i += 3) {
+                min.minimizeInPlaceFromFloats(p[i] + a.pivot.x, p[i + 1] + a.pivot.y, p[i + 2] + a.pivot.z);
+                max.maximizeInPlaceFromFloats(p[i] + a.pivot.x, p[i + 1] + a.pivot.y, p[i + 2] + a.pivot.z);
+            }
+        });
         const footprint = Math.max(max.x - min.x, max.z - min.z) || 1;
         const target = (buildingType.size || 1) * this.gridManager.cellSize * BUILDING_MODEL_FILL;
         // Altura limitada a BUILDING_MODEL_MAX_HEIGHT × o lado: torres finas encolhem por inteiro
@@ -273,7 +330,58 @@ mixin(BuildingSystem, {
         material.diffuseTexture = data.texture;
         material.backFaceCulling = false;
         template.material = material;
+
+        // Partes animadas como filhas do modelo-base: template.clone() as leva junto para cada prédio
+        animated.forEach((a, k) => {
+            a.vertexData.transform(BABYLON.Matrix.Scaling(scale, scale, scale));
+            const part = new BABYLON.Mesh(`${a.name}_${buildingType.id}_${k}`, this.scene);
+            a.vertexData.applyToMesh(part, false);
+            part.parent = template;
+            part.position = BABYLON.Vector3.TransformCoordinates(a.pivot, fit);
+            part.rotationQuaternion = BABYLON.Quaternion.Identity();
+            part.isPickable = false;
+            part.material = material;
+            part.metadata = { animatedPart: true, spinAxis: [a.axis.x, a.axis.y, a.axis.z], kind: /^pas_/i.test(a.name) ? 'rotor' : 'spin' };
+        });
         return template;
+    },
+
+    /** Partes que giram de um clone do modelo (filhas com metadata.animatedPart), com eixo e fase próprios. */
+    collectAnimatedParts(mesh) {
+        return mesh.getChildMeshes(true)
+            .filter(child => child.metadata?.animatedPart)
+            .map((child, k) => ({
+                mesh: child,
+                axis: BABYLON.Vector3.FromArray(child.metadata.spinAxis),
+                kind: child.metadata.kind,
+                angle: k * 1.7 + (mesh.uniqueId % 7), // cada rotor começa num ponto: o campo não gira em uníssono
+                speed: child.metadata.kind === 'rotor' ? 2.4 + (k % 3) * 0.3 : 1.6
+            }));
+    },
+
+    /**
+     * Gira as partes animadas dos prédios prontos e funcionando (BuildingSystem.update, tempo de jogo: para na
+     * pausa). Rotores acompanham o vento real (WeatherEffects) e a eficiência; o material segue o do prédio
+     * (obra, falta de energia e destaque trocam o material do mesh pai).
+     */
+    updateAnimatedParts(deltaTime) {
+        const dt = (deltaTime || 0) / 1000;
+        if (dt <= 0) return;
+        const wind = this.gameManager?.weatherEffects?.profile?.wind;
+        const windFactor = Number.isFinite(wind) ? Math.min(1.8, 0.45 + wind / 25) : 1;
+        for (const b of this.buildings.values()) {
+            const parts = b.mesh?.animatedParts;
+            if (!parts || parts.length === 0) continue;
+            const running = !b.underConstruction && b.active !== false && (b.efficiency ?? 1) > 0;
+            for (const part of parts) {
+                if (part.mesh.isDisposed()) continue;
+                if (part.mesh.material !== b.mesh.material) part.mesh.material = b.mesh.material;
+                if (!running) continue;
+                const factor = part.kind === 'rotor' ? windFactor : 1;
+                part.angle = (part.angle + part.speed * factor * Math.max(0.3, b.efficiency ?? 1) * dt) % (Math.PI * 2);
+                part.mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(part.axis, -part.angle);
+            }
+        }
     },
 
     /** Troca pelo modelo o mesh procedural dos prédios desse tipo que já estão no mapa. */

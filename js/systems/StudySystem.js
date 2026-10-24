@@ -89,7 +89,20 @@ class StudySystem {
     }
     
     // ===== VERIFICAÇÃO DE DESBLOQUEIO =====
+    /** Liberado para construir: tecnologia atingida (TechTree) E estudo feito (ou prédio sem estudo). */
     isBuildingUnlocked(buildingId) {
+        if (!this.isTechReached(buildingId)) return false;
+        return this.isStudyUnlocked(buildingId);
+    }
+
+    /** Requisitos da árvore tecnológica cumpridos (sem TechTree, como nos testes de unidade: sim). */
+    isTechReached(buildingId) {
+        const tech = this.gameManager?.techTree;
+        return !tech || tech.isReached(buildingId);
+    }
+
+    /** Só a parte do estudo (o cartão diz "estude" e não "construa antes"). */
+    isStudyUnlocked(buildingId) {
         // If building is already unlocked, return true
         if (this.unlockedBuildings.has(buildingId)) {
             return true;
@@ -135,6 +148,7 @@ class StudySystem {
     
     // ===== DESBLOQUEIO DE EDIFÍCIOS =====
     unlockBuilding(buildingId) {
+        this.gameManager?.techTree?.markReached(buildingId); // estudo concluído vale também pela tecnologia
         if (!this.unlockedBuildings.has(buildingId)) {
             this.unlockedBuildings.add(buildingId);
             log(`🔓 Edifício desbloqueado: ${buildingId}`);

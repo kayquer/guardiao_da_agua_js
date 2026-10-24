@@ -66,7 +66,9 @@ const TREES = {
     START_AREA_CLEAR: 5,          // raio (células) sem árvores em volta da área inicial do tutorial
     POLLUTION_REDUCTION: 0.04,    // poluição/min que cada árvore tira (~140 árvores ≈ 5/min, uma bomba d'água)
     GREEN_BONUS_MAX: 8,           // satisfação extra com todas as árvores iniciais em pé
-    FELL_POLLUTION: 0.6           // poluição (%) que sobe na hora por árvore derrubada
+    FELL_POLLUTION: 0.6,          // poluição (%) que sobe na hora por árvore derrubada
+    RIPARIAN_DISTANCE: 2,         // mata ciliar: até 2 células da água (TreeSystem.isRiparianCell)
+    RIPARIAN_FACTOR: 2.5          // árvore de mata ciliar limpa 2,5× mais (nativa ou muda plantada)
 };
 
 // ===== FEATURE FLAGS (o que aparece na versão de release) =====
@@ -74,12 +76,12 @@ const FEATURE_FLAGS = {
     HIDDEN_BUILDINGS: [
         'power_pole',
         'thermal_plant',
-        'coal_plant',
-        'nuclear_plant'
+        'coal_plant'
     ],
 
     HIDDEN_CATEGORIES: [
-        'infrastructure'
+        'infrastructure', // calçada e praça
+        'residential'     // casa e prédio avulsos (sem botão): a cidade cresce pelas zonas
     ],
 
     HIDDEN_UI_FEATURES: {

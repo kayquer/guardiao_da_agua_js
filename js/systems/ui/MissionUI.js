@@ -77,8 +77,39 @@ mixin(QuestSystem, {
                         <summary>🏆 Concluídas (${completed.length}) · ⭐ ${this.totalScore} pontos</summary>
                         <ul class="mission-mini-list">${completedList}</ul>
                     </details>` : ''}
+
+                ${this.renderReputationPanel()}
+                ${this.renderAchievements()}
             </div>
         `);
+    },
+
+    /** Barras de confiança dos 4 grupos e o que cada uma muda no jogo. */
+    renderReputationPanel() {
+        const rows = Object.entries(QuestSystem.STAKEHOLDERS).map(([key, info]) => {
+            const value = Math.round(this.getReputation(key));
+            const mood = value >= 65 ? 'high' : value <= 35 ? 'low' : 'mid';
+            return `<li class="reputation-row ${mood}" data-stakeholder="${key}">
+                <span class="reputation-name">${info.icon} ${info.name}</span>
+                <span class="reputation-bar" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${value}" aria-label="Confiança: ${info.name}">
+                    <span class="reputation-fill" style="width:${value}%"></span>
+                </span>
+                <span class="reputation-value">${value}</span>
+                <small class="reputation-effect">muda: ${info.effect}</small>
+            </li>`;
+        }).join('');
+        return `<h4 class="mission-section-title">🤝 Confiança na prefeitura</h4>
+            <p class="mission-intro reputation-hint">Suas escolhas e o que você constrói mudam a confiança de cada grupo.</p>
+            <ul class="reputation-list">${rows}</ul>`;
+    },
+
+    renderAchievements() {
+        if (!this.achievements.size) return '';
+        const items = [...this.achievements].map(id => {
+            const a = (typeof ACHIEVEMENTS !== 'undefined' && ACHIEVEMENTS[id]) || { icon: '🏆', name: id };
+            return `<li class="mission-mini done" title="${a.description || ''}"><span class="mission-mini-icon">${a.icon}</span><span class="mission-mini-text">${a.name}</span></li>`;
+        }).join('');
+        return `<h4 class="mission-section-title">🏅 Conquistas</h4><ul class="mission-mini-list achievements-list">${items}</ul>`;
     },
 
     /**
@@ -114,14 +145,14 @@ mixin(QuestSystem, {
         this.gameManager.uiManager?.focusBuildingItem(buildingId);
     },
 
-    /** Recompensas em selos curtos; desbloqueios com o nome do prédio. */
+    /** Recompensas em selos curtos; estudo recomendado com o nome do prédio. */
     renderMissionRewards(mission) {
         const rewards = mission.rewards || {};
         const buildingName = id => this.gameManager.buildingSystem?.buildingTypes?.get(id)?.name || id;
         const chips = [];
         if (rewards.budget) chips.push(`${uiIcon('res-budget')} R$ ${Number(rewards.budget).toLocaleString('pt-BR')}`);
         if (rewards.score) chips.push(`${uiIcon('status-star')} ${rewards.score} pontos`);
-        (rewards.unlock || []).forEach(id => chips.push(`${uiIcon('status-unlocked')} ${buildingName(id)}`));
+        (rewards.recommendStudy || []).forEach(id => chips.push(`${uiIcon('ui-book')} Estudo: ${buildingName(id)}`));
         return chips.length
             ? `<div class="mission-rewards-chips">${chips.map(c => `<span class="reward-chip">${c}</span>`).join('')}</div>`
             : '';
@@ -583,6 +614,8 @@ mixin(QuestSystem, {
 
             // Store current mission for click handler
             this.currentDisplayMission = displayMission;
+            // Barra que se esconde (ui/MissionBar.js): missão/objetivo mudou → aparece um pouco
+            this.onMissionBarChange?.(`${displayMission.id}|${currentMissionElement.textContent}|${completedObjectives}`, `${completedObjectives}/${totalObjectives}`);
 
             // FIX #3: Add carousel navigation if multiple missions
             this.updateCarouselNavigation();

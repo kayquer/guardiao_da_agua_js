@@ -1333,5 +1333,726 @@
       "water_energy_nexus",
       "renewable_energy"
     ]
+  },
+  "recycling_point": {
+    "buildingId": "recycling_point",
+    "buildingName": "Ponto de Coleta Reciclável",
+    "category": "treatment",
+    "difficulty": "básico",
+    "studyTitle": "Coleta Seletiva: o Lixo no Lugar Certo",
+    "studyIcon": "♻️",
+    "estimatedTime": "4 minutos",
+    "learningObjectives": [
+      "Entender o que é um ponto de coleta e a coleta seletiva",
+      "Saber separar o lixo nas cores certas",
+      "Perceber como o lixo jogado na rua chega aos rios"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que é um ponto de coleta?",
+        "content": "<p>Um ponto de coleta é um lugar onde os moradores <b>levam o lixo que pode ser reciclado</b>. Lá ficam contêineres coloridos, um para cada tipo de material.</p><ul><li>🔵 <b>Azul:</b> papel e papelão.</li><li>🔴 <b>Vermelho:</b> plástico, como garrafas e embalagens.</li><li>🟢 <b>Verde:</b> vidro, como potes e garrafas.</li><li>🟡 <b>Amarelo:</b> metal, como latinhas.</li></ul><p>Ninguém é obrigado a ir: é uma <b>entrega voluntária</b>. Quem leva está ajudando a cidade por vontade própria!</p>",
+        "image": "assets/images/studies/ponto-de-coleta.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Separar em casa é o primeiro passo",
+        "content": "<p>A coleta seletiva começa na cozinha de casa. O segredo é simples:</p><ul><li><b>Separe</b> o reciclável do resto do lixo.</li><li><b>Dê uma enxaguada</b> rápida nas embalagens, com a água que sobrou da louça. Embalagem suja estraga o resto.</li><li><b>Amasse</b> caixas e garrafas para ocupar menos espaço.</li><li><b>Leve</b> até o ponto de coleta e coloque cada coisa na cor certa.</li></ul><p>💡 Papel engordurado, como guardanapo e caixa de pizza suja, não vai para o azul: ele vai para o lixo comum.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Do bueiro até o rio",
+        "content": "<p>Sabe a garrafinha jogada na calçada? Quando chove, a enxurrada leva ela para o <b>bueiro</b>. Do bueiro, ela vai pelos canos até o <b>córrego</b>, e do córrego até o <b>rio</b>.</p><ul><li>🌊 Lixo entupe os bueiros, e a rua alaga.</li><li>🐟 Peixes e tartarugas confundem plástico com comida.</li><li>🦟 Água parada em lixo vira criadouro de mosquito.</li></ul><p>Cada embalagem que vai para o ponto de coleta é uma embalagem a menos no caminho da água.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "O que a cidade ganha",
+        "content": "<p>Com pontos de coleta espalhados, a cidade fica diferente:</p><ul><li>🧹 Ruas e praças <b>mais limpas</b>.</li><li>💧 <b>Menos poluição</b> chegando aos rios.</li><li>😊 Moradores <b>mais satisfeitos</b> com o lugar onde vivem.</li><li>♻️ Material separado que pode <b>virar coisa nova</b>.</li></ul><p>No jogo, o ponto de coleta é o primeiro passo do caminho do lixo e da reciclagem. Depois dele vêm a cooperativa, a compostagem e muito mais!</p><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Um menino joga uma garrafa de plástico na calçada. Dias depois, chove forte. O que pode acontecer com essa garrafa?",
+          "options": [
+            "Ela some sozinha com a água da chuva",
+            "A enxurrada leva a garrafa para o bueiro e ela pode chegar ao rio",
+            "Ela vira adubo para as árvores da rua",
+            "A chuva lava a garrafa e ela fica limpa na calçada"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O texto mostra o caminho: a enxurrada leva o lixo para o bueiro, do bueiro para o córrego e do córrego para o rio."
+        },
+        {
+          "id": 2,
+          "question": "Por que é bom dar uma enxaguada nas embalagens antes de levar ao ponto de coleta?",
+          "options": [
+            "Porque embalagem suja pode estragar o resto do material reciclável",
+            "Porque o contêiner só aceita embalagens brilhando",
+            "Porque assim a embalagem fica mais pesada",
+            "Porque a água faz a embalagem mudar de cor"
+          ],
+          "correctAnswer": 0,
+          "explanation": "A página sobre separar em casa diz que embalagem suja estraga o resto, por isso vale uma enxaguada rápida com a água que sobrou da louça."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "recycling_coop",
+      "composting_yard",
+      "landfill"
+    ],
+    "relatedConcepts": [
+      "selective_collection",
+      "solid_waste",
+      "urban_drainage"
+    ]
+  },
+  "recycling_coop": {
+    "buildingId": "recycling_coop",
+    "buildingName": "Cooperativa de Reciclagem",
+    "category": "treatment",
+    "difficulty": "intermediário",
+    "studyTitle": "Cooperativas: Reciclagem que Gera Renda",
+    "studyIcon": "🤝",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender o que uma cooperativa de reciclagem faz",
+      "Conhecer o trabalho dos catadores",
+      "Perceber como reciclar gera renda e diminui a poluição"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que é uma cooperativa?",
+        "content": "<p>Uma cooperativa é um grupo de pessoas que <b>trabalham juntas e dividem o que ganham</b>. Na cooperativa de reciclagem, quem trabalha são os <b>catadores</b>.</p><p>Antes, muitos catadores trabalhavam sozinhos, puxando carrinhos pelas ruas e vendendo pouco material por um preço baixo. Juntos, eles conseguem:</p><ul><li>🏠 Um galpão para trabalhar protegidos do sol e da chuva.</li><li>⚙️ Máquinas que sozinhos não teriam.</li><li>💰 Preço melhor, porque vendem muito material de uma vez.</li></ul>",
+        "image": "assets/images/studies/cooperativa-reciclagem.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Como funciona o galpão",
+        "content": "<p>O material que chega dos pontos de coleta passa por várias etapas:</p><ul><li><b>Chegada:</b> caminhões trazem os recicláveis.</li><li><b>Triagem:</b> numa esteira, os catadores separam cada tipo: garrafa transparente, garrafa colorida, papelão, latinha.</li><li><b>Prensa:</b> uma máquina aperta o material em fardos grandes e firmes.</li><li><b>Venda:</b> os fardos vão para fábricas que transformam tudo em produto novo.</li></ul><p>💡 Uma latinha pode voltar para o mercado como latinha nova em pouco tempo!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Gente que cuida da cidade",
+        "content": "<p>Os catadores fazem um trabalho muito importante, mas que nem sempre é valorizado. Eles <b>tiram das ruas</b> uma montanha de material que iria parar no lixo ou nos rios.</p><ul><li>👨‍👩‍👧 A cooperativa dá <b>renda</b> para muitas famílias.</li><li>🦺 Com luvas e botas, o trabalho fica <b>mais seguro</b>.</li><li>🙌 Os cooperados decidem juntos como dividir o dinheiro.</li></ul><p>Quando você separa bem o lixo em casa, ajuda diretamente o trabalho dessas pessoas.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "O que a cidade ganha",
+        "content": "<p>Uma cooperativa forte é boa para todo mundo:</p><ul><li>💧 <b>Menos poluição</b>, porque o material não vai para rios e terrenos.</li><li>💰 <b>Renda</b> para as famílias e para a cidade.</li><li>🌳 Menos árvores cortadas e menos minério tirado da natureza, porque o material é reaproveitado.</li><li>🗑️ <b>Menos lixo</b> ocupando espaço no aterro.</li></ul><p>⚠️ Mas a cooperativa só funciona se o material chegar até ela. Por isso, no jogo, ela precisa de <b>pontos de coleta</b> antes!</p><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Uma cidade construiu uma cooperativa de reciclagem, mas não tem nenhum ponto de coleta e ninguém separa o lixo. O que deve acontecer?",
+          "options": [
+            "A cooperativa funciona normalmente, porque as máquinas fazem tudo sozinhas",
+            "A cooperativa fica sem material para triar e vender",
+            "A cooperativa passa a produzir água limpa",
+            "O lixo comum vira reciclável sozinho dentro do galpão"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O texto diz que a cooperativa só funciona se o material chegar até ela, e quem traz esse material são os pontos de coleta."
+        },
+        {
+          "id": 2,
+          "question": "Por que os catadores ganham mais trabalhando juntos numa cooperativa do que sozinhos?",
+          "options": [
+            "Porque vendem muito material de uma vez e conseguem preço melhor",
+            "Porque na cooperativa ninguém precisa trabalhar",
+            "Porque a cooperativa compra o lixo dos moradores",
+            "Porque sozinhos eles não podem pegar latinhas"
+          ],
+          "correctAnswer": 0,
+          "explanation": "A primeira página explica que, juntos, os catadores têm galpão, máquinas e preço melhor, porque vendem bastante material de uma vez."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "recycling_point",
+      "landfill",
+      "ecopark"
+    ],
+    "relatedConcepts": [
+      "recycling",
+      "circular_economy",
+      "social_inclusion"
+    ]
+  },
+  "landfill": {
+    "buildingId": "landfill",
+    "buildingName": "Aterro Sanitário",
+    "category": "treatment",
+    "difficulty": "intermediário",
+    "studyTitle": "Aterro Sanitário: Guardando o Lixo sem Sujar a Água",
+    "studyIcon": "🚛",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender a diferença entre lixão e aterro sanitário",
+      "Descobrir o que é o chorume e por que ele é perigoso",
+      "Perceber como o aterro protege a água debaixo da terra"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Lixão ou aterro?",
+        "content": "<p>Parecem a mesma coisa, mas são muito diferentes!</p><ul><li>❌ <b>Lixão:</b> o lixo é jogado direto no chão, a céu aberto. Tem mau cheiro, urubus, ratos e moscas. O líquido do lixo afunda na terra e suja a água.</li><li>✅ <b>Aterro sanitário:</b> o lixo vai para um buraco preparado com cuidado, com proteção no fundo, tubos e camadas de terra por cima.</li></ul><p>O aterro é feito para <b>guardar o lixo sem sujar a água, o solo e o ar</b>.</p>",
+        "image": "assets/images/studies/aterro-sanitario.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "O chorume e a manta",
+        "content": "<p>Quando o lixo apodrece, ele solta um líquido escuro e fedido chamado <b>chorume</b>. Ele é muito poluente!</p><p>Se o chorume afundar no solo, chega ao <b>lençol freático</b>, a água que fica guardada debaixo da terra e que abastece poços e rios.</p><p>Para impedir isso, o fundo do aterro recebe uma <b>manta impermeável</b>, uma espécie de lona grossa que não deixa nada passar. Por cima dela, tubos recolhem o chorume e levam ele para ser <b>tratado</b>, como se fosse esgoto.</p><p>🛡️ É assim que o aterro protege a água que a cidade bebe.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Gás e camadas de terra",
+        "content": "<p>O lixo apodrecendo também solta <b>gás</b>. Esse gás tem cheiro ruim, pode pegar fogo e esquenta o planeta.</p><ul><li>🔥 No aterro, canos levam o gás para cima, onde ele é <b>queimado</b> com segurança. Alguns aterros até usam esse gás para fazer eletricidade!</li><li>🟫 Todo dia, o lixo novo é <b>coberto com terra</b>. Isso afasta bichos e diminui o cheiro.</li><li>🌿 Quando o aterro enche, ele é fechado e coberto com grama.</li></ul>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "O aterro é a última opção",
+        "content": "<p>Um aterro bem feito é muito melhor que um lixão, mas ele tem um problema: <b>uma hora enche</b>. E abrir outro custa caro e ocupa muito espaço.</p><p>Por isso, o aterro deve receber só o que <b>não dá para reciclar nem compostar</b>, como papel higiênico usado e fraldas.</p><ul><li>♻️ Reciclar tira do aterro plástico, papel, vidro e metal.</li><li>🍂 Compostar tira os restos de comida, que são os que mais fazem chorume.</li></ul><p>Quanto menos lixo chegar ao aterro, mais tempo ele dura.</p><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Em um lixão, o chorume afunda direto na terra. O que isso pode causar para quem bebe água de poço perto dali?",
+          "options": [
+            "Nada, porque a terra limpa o chorume na hora",
+            "A água do poço fica mais doce",
+            "O chorume pode chegar ao lençol freático e sujar a água do poço",
+            "O poço seca, porque o chorume tampa o buraco"
+          ],
+          "correctAnswer": 2,
+          "explanation": "O texto explica que o chorume que afunda no solo chega ao lençol freático, a água debaixo da terra que abastece poços e rios."
+        },
+        {
+          "id": 2,
+          "question": "Se a cidade reciclar e compostar mais, o que acontece com o aterro sanitário?",
+          "options": [
+            "Ele enche mais rápido",
+            "Ele recebe menos lixo e dura mais tempo",
+            "Ele passa a soltar mais chorume",
+            "Ele precisa ser trocado por um lixão"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A última página diz que reciclar e compostar tiram material do aterro, e quanto menos lixo chegar, mais tempo ele dura."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "recycling_coop",
+      "composting_yard",
+      "treatment_plant"
+    ],
+    "relatedConcepts": [
+      "leachate",
+      "groundwater_protection",
+      "solid_waste"
+    ]
+  },
+  "composting_yard": {
+    "buildingId": "composting_yard",
+    "buildingName": "Pátio de Compostagem",
+    "category": "treatment",
+    "difficulty": "básico",
+    "studyTitle": "Compostagem: Restos que Viram Adubo",
+    "studyIcon": "🍂",
+    "estimatedTime": "4 minutos",
+    "learningObjectives": [
+      "Entender como restos de comida viram adubo",
+      "Perceber quanto do lixo de casa é orgânico",
+      "Ligar a compostagem a menos chorume e menos poluição"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Lixo que volta para a terra",
+        "content": "<p>Casca de banana, borra de café, folhas secas e galhos de poda. Tudo isso é <b>lixo orgânico</b>: coisas que vieram da natureza e podem voltar para ela.</p><p>No pátio de compostagem, esses restos são juntados em montes compridos chamados <b>leiras</b>. Com o tempo, eles se transformam em <b>composto</b>, um adubo escuro e cheiroso como terra de mata.</p><p>💡 Sabia que <b>metade do lixo de casa</b> é orgânico? É muita coisa que poderia virar adubo em vez de ir para o aterro!</p>",
+        "image": "assets/images/studies/patio-compostagem.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Quem faz o trabalho",
+        "content": "<p>Quem transforma os restos em adubo são <b>seres bem pequenos</b>: fungos, bactérias, minhocas e outros bichinhos do solo. Eles comem os restos e devolvem tudo como terra boa.</p><p>Para eles trabalharem bem, o monte precisa de:</p><ul><li>🍌 <b>Restos úmidos</b>, como cascas de frutas e verduras.</li><li>🍂 <b>Restos secos</b>, como folhas e serragem.</li><li>💨 <b>Ar</b>: o monte é revirado de vez em quando.</li><li>💧 <b>Um pouco de água</b>: nem seco demais, nem encharcado.</li></ul><p>⚠️ Carne, óleo e fezes de animais não entram: atraem bichos e dão cheiro ruim.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Por que é bom para a água",
+        "content": "<p>Lembra do <b>chorume</b>, aquele líquido escuro do lixo podre? A maior parte dele vem justamente dos <b>restos de comida</b> misturados com o resto do lixo.</p><ul><li>🗑️ Menos orgânico no aterro, <b>menos chorume</b> ameaçando a água debaixo da terra.</li><li>🚛 Menos caminhões levando lixo para longe.</li><li>🌍 Menos gás que esquenta o planeta.</li></ul><p>E o adubo ainda deixa o solo mais fofo, o que ajuda a <b>chuva a entrar na terra</b> em vez de escorrer.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Do pátio para a horta",
+        "content": "<p>O composto pronto pode ir para:</p><ul><li>🌱 Hortas comunitárias e das escolas.</li><li>🌳 Praças, parques e mudas de árvores.</li><li>🚜 Pequenos agricultores da região.</li></ul><p>E dá para começar em casa! Um balde com tampa e minhocas, ou um cantinho no quintal, já transforma as cascas da cozinha em adubo para os vasos.</p><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Uma cidade passou a mandar todos os restos de comida para o pátio de compostagem em vez do aterro. O que deve acontecer no aterro?",
+          "options": [
+            "Vai sair mais chorume, porque o aterro fica vazio",
+            "Vai sair menos chorume, porque a maior parte dele vem dos restos de comida",
+            "O aterro vai começar a produzir adubo",
+            "Nada muda no aterro"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O texto explica que a maior parte do chorume vem dos restos de comida, então tirar o orgânico do aterro diminui o chorume."
+        },
+        {
+          "id": 2,
+          "question": "O monte de compostagem ficou fedido e cheio de moscas. O que provavelmente foi colocado nele?",
+          "options": [
+            "Folhas secas e serragem",
+            "Cascas de frutas e verduras",
+            "Carne e óleo",
+            "Galhos de poda"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A página sobre quem faz o trabalho avisa que carne, óleo e fezes de animais não entram, porque atraem bichos e dão cheiro ruim."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "landfill",
+      "biodigester",
+      "recycling_point"
+    ],
+    "relatedConcepts": [
+      "composting",
+      "organic_waste",
+      "soil_health"
+    ]
+  },
+  "biodigester": {
+    "buildingId": "biodigester",
+    "buildingName": "Biodigestor",
+    "category": "treatment",
+    "difficulty": "intermediário",
+    "studyTitle": "Biodigestor: Energia que Vem dos Restos",
+    "studyIcon": "🫧",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender como um biodigestor funciona",
+      "Descobrir o que são o biogás e o biofertilizante",
+      "Perceber como ele limpa a água e ainda gera energia"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Uma barriga que trabalha",
+        "content": "<p>O biodigestor é um grande tanque <b>fechado</b>, sem entrada de ar. Ele funciona como uma barriga gigante!</p><p>Dentro dele vão restos de comida, esterco de animais e o <b>lodo do esgoto</b>, aquela sujeira que sobra na estação de tratamento.</p><p>Lá dentro vivem <b>bactérias que não precisam de ar</b>. Elas comem os restos devagar e, enquanto comem, soltam um gás.</p><p>💡 É parecido com o que acontece na barriga de uma vaca quando ela digere o capim!</p>",
+        "image": "assets/images/studies/biodigestor.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "O biogás",
+        "content": "<p>O gás que as bactérias soltam se chama <b>biogás</b>. Ele sobe e fica guardado no alto do tanque, numa cúpula que estufa como um balão.</p><p>O biogás pega fogo, então pode ser usado para:</p><ul><li>🔥 <b>Cozinhar</b>, como o gás de botijão.</li><li>⚡ <b>Gerar eletricidade</b>, girando um motor ligado a um gerador.</li><li>🚌 Até mover ônibus e caminhões, depois de limpo.</li></ul><p>No sítio, um biodigestor pequeno já dá gás para a cozinha da família. Na cidade, um grande ajuda a acender as luzes!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "O biofertilizante",
+        "content": "<p>O que sobra no fundo do tanque depois que as bactérias terminam o serviço é um líquido chamado <b>biofertilizante</b>.</p><ul><li>🌱 Ele é rico em alimento para as plantas e pode adubar lavouras.</li><li>👃 Tem muito menos cheiro do que os restos que entraram.</li><li>🦠 Boa parte dos micróbios que causam doenças morre lá dentro.</li></ul><p>⚠️ Mesmo assim, ele deve ser usado na medida certa no solo. Jogado direto no rio, ainda polui.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "O que a cidade ganha",
+        "content": "<p>O biodigestor resolve dois problemas de uma vez:</p><ul><li>💧 <b>Menos poluição</b>: restos e lodo que poderiam sujar rios e solo são tratados num tanque fechado.</li><li>⚡ <b>Um pouco de energia</b> limpa, feita com o que antes era lixo.</li><li>🌍 O gás que esquentaria o planeta é <b>queimado e aproveitado</b> em vez de escapar.</li></ul><p>No jogo, ele gera um pouco de eletricidade e ajuda a baixar a poluição. Não substitui uma usina grande, mas é um ótimo reforço!</p><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Por que o tanque do biodigestor precisa ficar bem fechado, sem entrar ar?",
+          "options": [
+            "Para a água não evaporar",
+            "Porque as bactérias que fazem o biogás vivem sem ar",
+            "Para os restos não pegarem sol",
+            "Porque o ar transforma o lodo em plástico"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O texto explica que dentro do biodigestor vivem bactérias que não precisam de ar, e são elas que comem os restos e soltam o biogás."
+        },
+        {
+          "id": 2,
+          "question": "Uma estação de tratamento de esgoto tem muito lodo sobrando. O que um biodigestor faz com esse lodo?",
+          "options": [
+            "Transforma o lodo em biogás e biofertilizante",
+            "Joga o lodo de volta no rio mais rápido",
+            "Congela o lodo para guardar",
+            "Transforma o lodo em água de beber"
+          ],
+          "correctAnswer": 0,
+          "explanation": "As páginas mostram que o lodo do esgoto entra no biodigestor e sai como biogás, que vira energia, e biofertilizante, que aduba plantas."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "composting_yard",
+      "treatment_plant",
+      "ecopark"
+    ],
+    "relatedConcepts": [
+      "biogas",
+      "anaerobic_digestion",
+      "renewable_energy"
+    ]
+  },
+  "ecopark": {
+    "buildingId": "ecopark",
+    "buildingName": "Ecoparque (Central de Tratamento Avançado)",
+    "category": "treatment",
+    "difficulty": "avançado",
+    "studyTitle": "Ecoparque: Rumo ao Lixo Zero",
+    "studyIcon": "🏭",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender o que é um ecoparque e o que ele junta num lugar só",
+      "Conhecer as ideias de lixo zero e economia circular",
+      "Perceber por que essa tecnologia depende de pesquisa"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Tudo num lugar só",
+        "content": "<p>Até aqui você conheceu várias soluções para o lixo: ponto de coleta, cooperativa, compostagem, biodigestor e aterro. O <b>ecoparque</b> junta quase todas elas <b>num mesmo lugar</b>!</p><ul><li>🤖 <b>Triagem automática:</b> esteiras, ímãs e sensores separam os materiais.</li><li>🍂 <b>Compostagem</b> dos restos de comida e podas.</li><li>🫧 <b>Biodigestão</b> que vira biogás e adubo.</li><li>☀️💨 <b>Painéis solares e turbinas de vento</b> no telhado e no terreno.</li></ul><p>É como uma fábrica que, em vez de fazer produtos, <b>desfaz o lixo</b>.</p>",
+        "image": "assets/images/studies/ecoparque.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Máquinas que separam",
+        "content": "<p>Na triagem automática, cada máquina tem um truque:</p><ul><li>🧲 <b>Ímãs gigantes</b> puxam latas de ferro.</li><li>👁️ <b>Sensores de luz</b> reconhecem cada tipo de plástico, e um jato de ar sopra a embalagem para a caixa certa.</li><li>🌀 <b>Peneiras que giram</b> separam o que é pequeno do que é grande.</li></ul><p>As máquinas não substituem as pessoas: trabalhadores treinados controlam tudo e conferem o que as máquinas deixam passar.</p><p>💡 Essa tecnologia é avançada, por isso, no jogo, o ecoparque precisa de um <b>centro de pesquisa</b>.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Lixo zero e economia circular",
+        "content": "<p>Pense no jeito antigo: a gente <b>tira</b> da natureza, <b>fabrica</b>, <b>usa</b> e <b>joga fora</b>. É uma linha reta que termina no lixo.</p><p>A <b>economia circular</b> transforma essa linha num círculo: o que seria jogado fora volta a ser matéria-prima.</p><ul><li>🥫 A lata vira lata de novo.</li><li>🍌 A casca vira adubo, que vira comida.</li><li>💩 O lodo vira gás, que vira energia.</li></ul><p><b>Lixo zero</b> é a meta de quase nada sobrar para o aterro. Não é fácil, mas cada passo conta!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Desafios e o que a cidade ganha",
+        "content": "<p>O ecoparque traz muitas vantagens:</p><ul><li>💧 Quase nada vai para o aterro, então <b>quase não há chorume</b> ameaçando a água.</li><li>⚡ Ele gera parte da <b>própria energia</b>.</li><li>💰 Vende materiais e adubo.</li></ul><p>Mas também tem desafios:</p><ul><li>💸 Custa caro para construir e manter.</li><li>🎓 Precisa de gente bem preparada.</li><li>🏠 Só funciona bem se os moradores <b>continuarem separando o lixo</b> em casa.</li></ul><p>A melhor máquina do ecoparque ainda é a atitude de cada morador!</p><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Na economia circular, o que acontece com uma lata de alumínio depois que alguém bebe o refrigerante?",
+          "options": [
+            "Ela vai para o aterro e fica lá para sempre",
+            "Ela é separada e volta a ser matéria-prima para uma lata nova",
+            "Ela é queimada para esquentar a água",
+            "Ela é enterrada para virar adubo"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A página da economia circular explica que o que seria jogado fora volta a ser matéria-prima, como a lata que vira lata de novo."
+        },
+        {
+          "id": 2,
+          "question": "Uma cidade construiu um ecoparque moderno, mas os moradores pararam de separar o lixo em casa. O que deve acontecer?",
+          "options": [
+            "Nada, porque as máquinas resolvem tudo sozinhas",
+            "O ecoparque passa a funcionar melhor",
+            "O ecoparque funciona pior, porque depende da separação feita pelos moradores",
+            "O ecoparque vira um aterro automaticamente"
+          ],
+          "correctAnswer": 2,
+          "explanation": "O texto diz que o ecoparque só funciona bem se os moradores continuarem separando o lixo em casa: a melhor máquina é a atitude de cada um."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "recycling_coop",
+      "biodigester",
+      "composting_yard",
+      "research_center"
+    ],
+    "relatedConcepts": [
+      "circular_economy",
+      "zero_waste",
+      "waste_technology"
+    ]
+  },
+  "sugarcane_mill": {
+    "buildingId": "sugarcane_mill",
+    "buildingName": "Usina Sucroenergética",
+    "category": "energy",
+    "difficulty": "intermediário",
+    "studyTitle": "Da Cana ao Açúcar, ao Etanol e à Eletricidade",
+    "studyIcon": "🎋",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender o que uma usina de cana produz",
+      "Descobrir como o bagaço vira eletricidade",
+      "Pesar os cuidados que a usina precisa ter com a água e o solo"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que sai de uma cana",
+        "content": "<p>A cana-de-açúcar é uma planta comprida e cheia de caldo doce. Na usina, ela vira várias coisas:</p><ul><li>🍬 <b>Açúcar</b>, que vai para a cozinha.</li><li>⛽ <b>Etanol</b>, o álcool que abastece os carros nos postos.</li><li>⚡ <b>Eletricidade</b>, feita com o <b>bagaço</b>, aquela palha que sobra depois de espremer a cana.</li></ul><p>Por isso ela se chama <b>sucroenergética</b>: faz açúcar e energia.</p><p>🇧🇷 O Brasil é <b>referência no mundo</b> em etanol de cana e em energia feita com bagaço!</p>",
+        "image": "assets/images/studies/usina-sucroenergetica.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Bagaço que vira luz",
+        "content": "<p>Sabe o bagaço que sobra quando você toma caldo de cana na feira? Na usina, ele não vai para o lixo:</p><ul><li>🔥 O bagaço é queimado numa <b>caldeira</b>.</li><li>♨️ O fogo ferve água e faz <b>vapor</b>.</li><li>🌀 O vapor gira uma <b>turbina</b> ligada a um gerador.</li><li>⚡ A eletricidade abastece a própria usina e a sobra vai para a cidade.</li></ul><p>Isso se chama <b>bioeletricidade</b>. E tem uma vantagem: a colheita da cana acontece justamente na época mais seca, quando os rios baixam e as hidrelétricas produzem menos.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Os cuidados com a água",
+        "content": "<p>A usina também traz desafios, e muitos têm a ver com a água:</p><ul><li>💧 <b>Usa muita água</b> para lavar a cana e esfriar as máquinas. Usinas modernas reaproveitam boa parte dela.</li><li>🟤 Fazer etanol deixa um líquido escuro chamado <b>vinhaça</b>. Se cair no rio, os peixes morrem por falta de ar na água.</li><li>🌱 Bem usada, a vinhaça vira <b>adubo</b>: ela é espalhada com cuidado nos canaviais, o que se chama <b>fertirrigação</b>.</li></ul><p>A mesma vinhaça que mata um rio pode ajudar a plantação a crescer. Tudo depende de como é usada!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Queimadas e monocultura",
+        "content": "<p>Outros cuidados importantes:</p><ul><li>🔥 Antigamente era comum <b>queimar a palha</b> do canavial antes da colheita. A fumaça faz mal para quem respira e suja o ar das cidades. Hoje, máquinas colhem a cana crua e a palha fica protegendo o solo.</li><li>🌾 A <b>monocultura</b>, que é plantar só cana em áreas enormes, deixa o solo cansado e espanta bichos e plantas nativas.</li><li>🌳 Manter as <b>matas na beira dos rios</b> no meio do canavial protege a água e a vida.</li></ul><p>Uma usina bem cuidada gera energia renovável. Mal cuidada, polui o ar, a terra e a água.</p><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Uma usina despejou vinhaça direto no rio, em vez de usar nos canaviais. O que pode acontecer com os peixes?",
+          "options": [
+            "Eles crescem mais, porque a vinhaça é adubo",
+            "Eles podem morrer por falta de ar na água",
+            "Nada acontece, porque a vinhaça é só água doce",
+            "Eles mudam de cor e ficam mais bonitos"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O texto explica que a vinhaça que cai no rio faz os peixes morrerem por falta de ar na água; bem usada nos canaviais, ela vira adubo."
+        },
+        {
+          "id": 2,
+          "question": "Por que a eletricidade do bagaço ajuda a cidade justamente na época de seca?",
+          "options": [
+            "Porque o bagaço faz chover",
+            "Porque a colheita da cana acontece na época seca, quando as hidrelétricas produzem menos",
+            "Porque o bagaço só queima quando está molhado",
+            "Porque na seca as cidades não usam eletricidade"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A página do bagaço diz que a colheita acontece na época mais seca, quando os rios baixam e as hidrelétricas produzem menos, então uma fonte ajuda a outra."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "biomass_plant",
+      "hydroelectric_plant",
+      "solar_farm"
+    ],
+    "relatedConcepts": [
+      "bioenergy",
+      "ethanol",
+      "water_use"
+    ]
+  },
+  "biomass_plant": {
+    "buildingId": "biomass_plant",
+    "buildingName": "Usina de Biomassa",
+    "category": "energy",
+    "difficulty": "intermediário",
+    "studyTitle": "Biomassa: Energia de Restos de Plantas",
+    "studyIcon": "🪵",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender o que é biomassa e como ela vira eletricidade",
+      "Saber quando a biomassa é uma energia renovável",
+      "Conhecer os cuidados com a fumaça"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O que é biomassa?",
+        "content": "<p><b>Biomassa</b> é todo material que vem de seres vivos, principalmente de plantas. Na usina de biomassa, o combustível são <b>restos</b> que sobrariam de outras atividades:</p><ul><li>🪵 <b>Cavaco</b>: madeira picada em pedacinhos, de serrarias e de galhos.</li><li>🌾 <b>Casca de arroz</b>, que sobra nas beneficiadoras do Sul.</li><li>🥥 Cascas de coco, de castanha e de outros frutos.</li></ul><p>Em vez de apodrecer ou ser queimado à toa, esse resto vira <b>eletricidade</b>.</p>",
+        "image": "assets/images/studies/usina-biomassa.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Como a usina funciona",
+        "content": "<p>A ideia é parecida com a de uma panela de pressão gigante:</p><ul><li>🔥 A biomassa é queimada numa <b>caldeira</b>.</li><li>♨️ O calor ferve água e faz <b>vapor</b>.</li><li>🌀 O vapor gira uma <b>turbina</b>, que move o gerador.</li><li>⚡ A eletricidade segue pelos fios até a cidade.</li></ul><p>Uma vantagem: ao contrário do sol e do vento, a biomassa pode ser queimada <b>a qualquer hora</b>, de dia ou de noite, com vento ou sem vento.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Renovável, mas com condições",
+        "content": "<p>Uma árvore, enquanto cresce, puxa do ar o gás que esquenta o planeta. Quando ela é queimada, devolve esse gás. Por isso a biomassa pode ser renovável: <b>uma planta nova puxa de volta o que a velha soltou</b>.</p><p>Mas isso só vale se:</p><ul><li>✅ A madeira vier de <b>reflorestamento</b>, áreas plantadas para isso, ou de <b>resíduos</b>.</li><li>❌ Nunca de <b>mata nativa derrubada</b>. Cortar floresta para queimar destrói rios, bichos e o clima.</li></ul>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Fumaça e filtros",
+        "content": "<p>Queimar qualquer coisa solta <b>fumaça</b>, com fuligem e pozinho que fazem mal para o pulmão e sujam o ar.</p><ul><li>🧯 Por isso a usina precisa de <b>filtros</b> na chaminé, que seguram a fuligem antes de ela sair.</li><li>🏘️ Deve ficar <b>longe das casas</b>.</li><li>💧 Também usa água para fazer o vapor, que precisa ser bem cuidada.</li></ul><p>No jogo, a usina de biomassa dá energia firme, mas aumenta um pouco a poluição. Combinar com sol e vento é o melhor caminho!</p><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Uma empresa quer derrubar uma mata nativa para queimar a madeira na usina de biomassa. Por que essa não é uma energia renovável de verdade?",
+          "options": [
+            "Porque madeira de mata nativa não pega fogo",
+            "Porque derrubar floresta destrói rios, bichos e o clima, e a biomassa só é renovável quando vem de reflorestamento ou de resíduos",
+            "Porque a usina só aceita casca de arroz",
+            "Porque madeira nativa gera eletricidade demais"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O texto explica que a biomassa só é renovável se vier de reflorestamento ou de resíduos, nunca de mata nativa derrubada."
+        },
+        {
+          "id": 2,
+          "question": "Uma usina de biomassa foi construída sem filtros na chaminé. O que os moradores perto dela vão sentir?",
+          "options": [
+            "Ar mais limpo, porque a usina não usa carvão",
+            "Mais fuligem e poeira no ar, que fazem mal para o pulmão",
+            "Mais chuva todos os dias",
+            "Nenhuma diferença, porque a fumaça de planta não suja"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A última página diz que queimar biomassa solta fumaça com fuligem e pozinho, e os filtros seguram essa sujeira antes de ela sair."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "sugarcane_mill",
+      "solar_farm",
+      "wind_farm"
+    ],
+    "relatedConcepts": [
+      "biomass",
+      "renewable_energy",
+      "air_quality"
+    ]
+  },
+  "nuclear_plant": {
+    "buildingId": "nuclear_plant",
+    "buildingName": "Usina Nuclear",
+    "category": "energy",
+    "difficulty": "avançado",
+    "studyTitle": "Energia Nuclear: Muito Poder, Muita Responsabilidade",
+    "studyIcon": "⚛️",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender como o calor do átomo vira eletricidade",
+      "Descobrir por que a usina nuclear precisa de tanta água",
+      "Pesar as vantagens e os riscos dessa energia"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Energia de dentro do átomo",
+        "content": "<p>Tudo no mundo é feito de pecinhas minúsculas chamadas <b>átomos</b>. Alguns átomos bem pesados, como o do <b>urânio</b>, podem ser partidos ao meio. Isso se chama <b>fissão</b>.</p><p>Quando um átomo se parte, ele solta <b>muito calor</b>. E na usina nuclear isso acontece com uma quantidade enorme de átomos, dentro de uma peça bem protegida chamada <b>reator</b>.</p><p>💡 Um punhado pequeno de combustível nuclear gera tanta energia quanto montanhas de carvão!</p>",
+        "image": "assets/images/studies/usina-nuclear.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Do calor à tomada",
+        "content": "<p>Depois do calor, o caminho é parecido com o de outras usinas:</p><ul><li>⚛️ O calor da fissão <b>ferve água</b>.</li><li>♨️ A água vira <b>vapor</b> com muita força.</li><li>🌀 O vapor gira uma <b>turbina</b> ligada ao gerador.</li><li>⚡ A eletricidade vai para as cidades.</li></ul><p>Vantagens: produz <b>muita energia num espaço pequeno</b>, funciona dia e noite, faça chuva ou faça sol, e quase não solta fumaça nem gás que esquenta o planeta.</p><p>🇧🇷 O Brasil tem usinas nucleares em <b>Angra dos Reis</b>, no litoral do Rio de Janeiro, à beira do mar.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Uma usina que bebe muita água",
+        "content": "<p>O vapor que sai da turbina precisa ser <b>esfriado</b> para virar água de novo. Para isso, a usina usa <b>muita, muita água</b>:</p><ul><li>🌊 Pode puxar água do <b>mar</b> ou de um <b>rio</b> grande.</li><li>☁️ Ou usar <b>torres de resfriamento</b>, aquelas chaminés largas que soltam nuvens brancas. Aquilo é só vapor de água, não é fumaça!</li></ul><p>⚠️ A água devolvida ao mar ou ao rio volta <b>morna</b>. Água mais quente guarda menos ar, e isso atrapalha <b>peixes</b>, corais e outros bichos que vivem ali.</p><p>Por isso a usina nuclear é construída perto de muita água e precisa ser vigiada o tempo todo.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Riscos e responsabilidade",
+        "content": "<p>A energia nuclear exige cuidados enormes:</p><ul><li>☢️ O combustível usado vira <b>rejeito radioativo</b>, um lixo perigoso que precisa ficar guardado em lugar seguro por <b>muito, muito tempo</b>, mais do que muitas vidas humanas.</li><li>🛡️ A <b>segurança é rígida</b>: paredes grossas de concreto e aço, vários sistemas de emergência e gente treinada vigiando sem parar.</li><li>🚨 Acidentes são raros, mas, quando acontecem, podem espalhar contaminação por regiões inteiras.</li></ul><p>No jogo, ela é a tecnologia mais avançada: precisa de <b>universidade</b> e de <b>centro de pesquisa</b>. Muita energia, muita responsabilidade!</p><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "A usina nuclear devolve ao rio a água que usou para esfriar o vapor, só que morna. Por que isso pode prejudicar os peixes?",
+          "options": [
+            "Porque a água morna é radioativa",
+            "Porque a água mais quente guarda menos ar, e os peixes precisam desse ar",
+            "Porque os peixes só gostam de água gelada para beber",
+            "Porque a água morna faz o rio secar na hora"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A página sobre a água explica que água mais quente guarda menos ar, e isso atrapalha peixes, corais e outros bichos."
+        },
+        {
+          "id": 2,
+          "question": "As torres de resfriamento soltam nuvens brancas enormes. O que são essas nuvens?",
+          "options": [
+            "Fumaça preta cheia de fuligem",
+            "Gás radioativo escapando do reator",
+            "Vapor de água usado para esfriar a usina",
+            "Poeira de urânio"
+          ],
+          "correctAnswer": 2,
+          "explanation": "O texto diz que as nuvens brancas das torres de resfriamento são só vapor de água, não fumaça."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "hydroelectric_plant",
+      "university",
+      "research_center"
+    ],
+    "relatedConcepts": [
+      "nuclear_energy",
+      "cooling_water",
+      "radioactive_waste"
+    ]
   }
 }

@@ -73,6 +73,16 @@ PALETA = {
     'painel_solar': '#2a4b8f',
     'flor_rosa': '#f07aa8',
     'flor_amarela': '#ffd84a',
+    'marrom': '#8b5a2b',        # contêiner de orgânicos
+    'composto': '#5e4632',      # composto/adubo pronto
+    'chorume': '#6f6a3a',       # líquido marrom-esverdeado do aterro
+    'verde_garrafa': '#2f7d4f', # contêiner de vidro
+    'lona_verde': '#2f6b45',    # cúpula de lona do biodigestor
+    'lona_cinza': '#8e969e',    # cúpula de lona cinza / gasômetro
+    'cana': '#8cc63f',          # cana-de-açúcar verde
+    'cana_seca': '#cdb95a',     # palha / cana madura
+    'bagaco': '#dcc684',        # bagaço de cana
+    'cavaco': '#c8955a',        # cavaco de madeira
 }
 
 _materiais = {}
@@ -359,6 +369,31 @@ def rotor(pos, raio, cor='parede', cor_cubo='metal', nome='pas', pas=3, largura=
     for p in ob.data.polygons:
         p.use_smooth = False
     return ob
+
+
+def animar(pecas, nome, pivo):
+    """
+    Transforma peças já montadas no lugar numa parte ANIMADA (objeto separado, pivô em `pivo`), que o jogo
+    gira sozinho (BuildingModels.js / prévia do menu de construção):
+    - nome 'pas_N'  → gira no eixo do rotor (Y do Blender, de frente para -Y), como as pás de `rotor`;
+    - nome 'gira_N' → gira em pé, no eixo Z do Blender (misturador, ventilador, peneira rotativa...).
+    `pecas` = um objeto ou uma lista (a lista vira um objeto só; o chanfro que fica é o da primeira peça).
+    """
+    if not isinstance(pecas, (list, tuple)):
+        pecas = [pecas]
+    alvo = pecas[0]
+    resto = list(pecas[1:])
+    for p in resto:
+        _objetos.remove(p)  # some no join: tira da lista antes, a referência morre
+    if resto:
+        todas = [alvo] + resto
+        with bpy.context.temp_override(active_object=alvo, selected_editable_objects=todas, selected_objects=todas):
+            bpy.ops.object.join()
+    alvo.data.transform(Matrix.Translation(-Vector(pivo)) @ alvo.matrix_world)
+    alvo.matrix_world = Matrix.Translation(Vector(pivo))
+    alvo.name = nome
+    alvo['animado'] = True
+    return alvo
 
 
 def cerca(x0, y0, x1, y1, alt=0.22, cor='metal', postes=True):

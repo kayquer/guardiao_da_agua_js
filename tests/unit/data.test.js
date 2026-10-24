@@ -21,6 +21,20 @@ test('todo prédio tem custo, categoria e tamanho válidos', () => {
     }
 });
 
+// applyBuildingEffects só lê campos no primeiro nível do prédio. Em 10/2026, 9 prédios verdes/de monitoramento
+// guardavam tudo num `effects: {}` aninhado e não faziam nada (nem custavam manutenção).
+const EFFECT_FIELDS = ['waterProduction', 'pollutionReduction', 'pollutionGeneration', 'maintenanceCost', 'satisfactionBonus',
+    'powerGeneration', 'powerConsumption', 'waterStorage', 'incomeGeneration', 'waterConsumption', 'populationCapacity',
+    'population', 'nearbyEfficiencyBonus', 'constructionCostReduction', 'treeStages'];
+
+test('todo prédio tem efeito que a simulação lê (sem `effects` aninhado)', () => {
+    for (const [id, b] of Object.entries(BUILDINGS)) {
+        assert.ok(!('effects' in b), `${id}: efeitos em 'effects: {}' não são lidos — use campos no primeiro nível`);
+        if (b.roadType) continue;
+        assert.ok(EFFECT_FIELDS.some(f => b[f]), `${id}: nenhum efeito (${EFFECT_FIELDS.join(', ')})`);
+    }
+});
+
 test('missões só referenciam prédios e missões que existem', () => {
     for (const [mid, m] of Object.entries(MISSIONS)) {
         const objectives = [...(m.objectives || []), ...(m.dynamicObjectives || [])];
@@ -29,8 +43,13 @@ test('missões só referenciam prédios e missões que existem', () => {
                 assert.ok(ids.has(o.target), `${mid}: objetivo constrói '${o.target}' inexistente`);
             }
         }
-        for (const u of [...(m.rewards?.unlock || []), ...(m.rewards?.performanceUnlocks || [])]) {
-            assert.ok(ids.has(u), `${mid}: desbloqueia '${u}' inexistente`);
+        // rewards.unlock não desbloqueava nada (quem libera é o estudo): virou recommendStudy
+        assert.ok(!m.rewards?.unlock, `${mid}: use rewards.recommendStudy, não rewards.unlock`);
+        for (const u of [...(m.rewards?.recommendStudy || []), ...(m.rewards?.performanceUnlocks || [])]) {
+            assert.ok(ids.has(u), `${mid}: recomenda '${u}' inexistente`);
+        }
+        if (m.startEvent) {
+            assert.ok(typeof m.startEvent.type === 'string' && m.startEvent.durationMs > 0, `${mid}: startEvent { type, durationMs }`);
         }
         for (const p of m.prerequisites || []) {
             assert.ok(MISSIONS[p], `${mid}: pré-requisito '${p}' inexistente`);
@@ -61,7 +80,7 @@ test('estudos apontam para prédios existentes e quiz tem ids sequenciais', () =
 
 // Tipos/alvos que QuestSystem.checkObjectiveProgress sabe medir. Objetivo fora disso nunca progride
 // (já existiram missões com 'observation', 'management', 'research'... impossíveis de concluir).
-const RESOURCE_TARGETS = ['water', 'pollution', 'population', 'satisfaction', 'budget'];
+const RESOURCE_TARGETS = ['water', 'pollution', 'population', 'satisfaction', 'budget', 'aquifer'];
 const SUPPORTED = {
     build: o => ids.has(o.target),
     resource: o => RESOURCE_TARGETS.includes(o.target),

@@ -1,0 +1,487 @@
+/* ===== MENU DE CONSTRUÇÃO EM MODAL (js/systems/ui/BuildMenuUI.js) =====
+   Clicar numa categoria abre #build-modal com os cards (#building-items mora aqui dentro); um clique no card
+   mostra as informações à direita (no celular, em tela cheia) com a prévia 3D girando e o botão Construir
+   sempre visível no rodapé. Abre sem animação longa (120 ms): é o caminho de toda obra.
+   Não pausa o jogo (não está em isInfoPopupOpen). z-index 97: abaixo do rastreador de eventos (98), dos
+   toasts (99) e do tutorial (200), para o destaque do tutorial passar por cima. */
+.build-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 97;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 70px 16px 16px 16px;
+    background: rgba(10, 14, 40, 0.35);
+    font-family: 'Fredoka', sans-serif;
+}
+
+.build-modal.open {
+    display: flex;
+    animation: buildModalIn 0.12s ease-out both;
+}
+
+@keyframes buildModalIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.build-modal-box {
+    width: min(1020px, 100%);
+    height: min(660px, 100%);
+    display: flex;
+    flex-direction: column;
+    border-radius: 22px;
+    border: 3px solid #0096C7;
+    background: linear-gradient(160deg, #1e2a78, #2b1d63);
+    box-shadow: 0 8px 0 #0b1340, 0 18px 40px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+    color: #fff;
+}
+
+.build-modal-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.8rem 0.6rem 1rem;
+    background: rgba(0, 0, 0, 0.25);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+.build-modal-head h3 {
+    flex: 1;
+    margin: 0;
+    font-family: 'Lilita One', cursive;
+    font-size: 1.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.build-modal-btn {
+    border: 2px solid rgba(255, 255, 255, 0.55);
+    border-radius: 12px;
+    background: #3949ab;
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.build-modal-btn:hover { background: #5c6bc0; }
+.build-modal-btn.close { padding: 0.35rem 0.6rem; background: #c62828; }
+.build-modal-btn.close:hover { background: #e53935; }
+.build-modal-btn.back { display: none; }
+
+.build-modal-body {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+}
+
+/* ---- Cards (o #building-items do painel lateral vive aqui) ---- */
+.build-modal-grid {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0.8rem;
+}
+
+#build-modal #building-items {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 0.7rem;
+    padding: 0;
+    margin: 0;
+    background: none;
+    overflow: visible;
+    flex: none;
+}
+
+#build-modal .build-group-title {
+    grid-column: 1 / -1;
+    margin: 0.3rem 0 -0.2rem;
+    font-family: 'Lilita One', cursive;
+    font-size: 1rem;
+    color: #ffd54f;
+    letter-spacing: 0.02em;
+}
+
+#build-modal .build-group-title:first-child { margin-top: 0; }
+
+#build-modal .building-item {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0.7rem 0.5rem 0.6rem;
+    border-radius: 16px;
+    min-height: 150px;
+    box-shadow: 0 5px 0 #006D8F;
+    transition: transform 0.08s ease, filter 0.08s ease;
+}
+
+#build-modal .building-item::before { display: none; }
+#build-modal .building-item:hover { transform: translateY(-2px); filter: brightness(1.12); }
+/* Escolhido: só a moldura dourada (o fundo amarelo do menu antigo deixava o texto ilegível) */
+#build-modal .building-item.selected {
+    animation: none;
+    transform: none;
+    background: linear-gradient(145deg, #3949ab, #5c6bc0);
+    border-color: #ffd54f;
+    box-shadow: 0 5px 0 #b8860b, 0 0 0 3px #ffd54f, 0 0 18px rgba(255, 213, 79, 0.6);
+    filter: none;
+    opacity: 1;
+}
+
+#build-modal .building-item .building-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 2.2rem;
+    flex: none;
+}
+
+#build-modal .building-item .building-info { width: 100%; }
+#build-modal .building-item .building-name { font-size: 0.92rem; line-height: 1.15; }
+#build-modal .building-item .building-cost { font-size: 0.85rem; margin-top: 0.2rem; }
+
+#build-modal .building-item .building-description {
+    font-size: 0.72rem;
+    line-height: 1.2;
+    opacity: 0.85;
+    margin-top: 0.2rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.building-tier {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    padding: 0 0.4rem;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.35);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #ffd54f;
+}
+
+#build-modal .building-item.tech-locked { filter: grayscale(0.7); opacity: 0.75; }
+#build-modal .building-item.tech-locked .building-cost { color: #ffcc80; }
+
+/* ---- Informações do prédio ---- */
+.build-info {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.22);
+    border-left: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+.build-info-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0.7rem 0.9rem;
+}
+
+.build-preview {
+    position: relative;
+    height: 190px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 50% 30%, #bfe7ff 0%, #8fcdf2 55%, #5ea9d6 100%);
+    margin-bottom: 0.6rem;
+}
+
+.build-preview canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    outline: none;
+    touch-action: none;
+}
+
+.build-preview-icon {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.build-preview-icon .ui-icon { width: 96px; height: 96px; }
+.build-preview.no-model canvas { visibility: hidden; }
+.build-preview.no-model .build-preview-icon { display: flex; }
+
+.build-preview-badge {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    padding: 0.1rem 0.5rem;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.45);
+    font-size: 0.75rem;
+}
+
+.build-info h4 {
+    margin: 0 0 0.15rem;
+    font-family: 'Lilita One', cursive;
+    font-size: 1.3rem;
+}
+
+.build-info-meta { font-size: 0.8rem; color: #ffd54f; margin-bottom: 0.4rem; }
+.build-info-desc { font-size: 0.88rem; line-height: 1.35; margin: 0 0 0.6rem; opacity: 0.95; }
+
+.build-info-stats {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.6rem;
+    display: grid;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+}
+
+.build-info-stats li {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.build-info-stats .good { color: #a5d6a7; }
+.build-info-stats .bad { color: #ef9a9a; }
+
+.build-info-req h5, .build-info-unlocks h5 {
+    margin: 0.4rem 0 0.25rem;
+    font-size: 0.85rem;
+    color: #ffd54f;
+}
+
+.build-info-req ul { list-style: none; padding: 0; margin: 0; font-size: 0.82rem; }
+.build-info-req li { display: flex; align-items: center; gap: 0.4rem; margin: 0.2rem 0; }
+.build-info-req .req-bar { flex: 1; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.15); overflow: hidden; }
+.build-info-req .req-bar span { display: block; height: 100%; background: #ffb74d; }
+.build-info-req li.done .req-bar span { background: #66bb6a; }
+.build-info-unlocks { font-size: 0.8rem; opacity: 0.9; }
+
+.build-info-empty {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0.5rem;
+    opacity: 0.8;
+    font-size: 0.95rem;
+    padding: 1rem;
+}
+
+.build-info-foot {
+    padding: 0.6rem 0.8rem 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 2px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.build-info-construct {
+    width: 100%;
+    min-height: 52px;
+    border: 3px solid #fff;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #43d675, #1fa14f);
+    box-shadow: 0 5px 0 #11733a;
+    color: #fff;
+    font-family: 'Lilita One', cursive;
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.build-info-construct:hover:not(:disabled) { filter: brightness(1.08); }
+.build-info-construct:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 #11733a; }
+.build-info-construct.study { background: linear-gradient(180deg, #ffb74d, #f57c00); box-shadow: 0 5px 0 #a64d00; }
+.build-info-construct:disabled { background: #5f6680; box-shadow: 0 5px 0 #3a3f55; cursor: not-allowed; opacity: 0.85; }
+.build-info-construct[hidden] { display: none; }
+.build-info-hint { font-size: 0.78rem; text-align: center; opacity: 0.85; min-height: 1em; }
+
+.build-info-link {
+    background: none;
+    border: none;
+    color: #90caf9;
+    font: inherit;
+    font-size: 0.82rem;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* Botão "Tecnologias" no painel lateral */
+.tech-tree-btn {
+    width: 100%;
+    margin: 0 0 0.5rem;
+    justify-content: center;
+}
+
+/* ===== ÁRVORE TECNOLÓGICA (js/systems/ui/TechTreeUI.js) ===== */
+.tech-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(10, 14, 40, 0.55);
+    font-family: 'Fredoka', sans-serif;
+}
+
+.tech-modal.open { display: flex; }
+
+.tech-modal-box {
+    width: min(1180px, 100%);
+    height: min(720px, 100%);
+    display: flex;
+    flex-direction: column;
+    border-radius: 22px;
+    border: 3px solid #ffd54f;
+    background: linear-gradient(160deg, #1b2459, #24164f);
+    color: #fff;
+    overflow: hidden;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+.tech-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.5rem 0.8rem;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.tech-tab {
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-radius: 12px;
+    background: transparent;
+    color: #fff;
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.6rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.tech-tab.active { background: #ffd54f; color: #2a1f00; border-color: #ffd54f; }
+.tech-tab small { opacity: 0.8; }
+
+.tech-body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 0.8rem 1rem 1rem;
+}
+
+.tech-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(170px, 1fr));
+    column-gap: 2.2rem;
+    min-width: 960px;
+}
+
+.tech-col-head {
+    font-family: 'Lilita One', cursive;
+    font-size: 0.95rem;
+    color: #ffd54f;
+    text-align: center;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px dashed rgba(255, 213, 79, 0.4);
+    margin-bottom: 0.6rem;
+}
+
+.tech-col { display: flex; flex-direction: column; gap: 0.7rem; position: relative; z-index: 1; }
+
+.tech-card {
+    position: relative;
+    padding: 0.5rem 0.55rem;
+    border-radius: 14px;
+    border: 2px solid #66bb6a;
+    background: rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+    font-size: 0.82rem;
+}
+
+.tech-card:hover { background: rgba(255, 255, 255, 0.14); }
+.tech-card.locked { border-color: #8d8fa8; border-style: dashed; opacity: 0.85; }
+.tech-card.study { border-color: #ffb74d; }
+.tech-card.hidden-type { display: none; }
+.tech-card-head { display: flex; align-items: center; gap: 0.4rem; font-weight: 700; }
+.tech-card-head .ui-icon { width: 28px; height: 28px; flex: none; }
+.tech-card-status { font-size: 0.72rem; margin-top: 0.15rem; opacity: 0.9; }
+.tech-card-req { list-style: none; padding: 0; margin: 0.3rem 0 0; font-size: 0.72rem; }
+.tech-card-req li.done { color: #a5d6a7; }
+.tech-card-req li:not(.done) { color: #ffcc80; }
+
+.tech-lines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: visible;
+}
+
+.tech-lines path { fill: none; stroke: rgba(255, 213, 79, 0.55); stroke-width: 2.5; }
+.tech-lines path.done { stroke: rgba(102, 187, 106, 0.8); }
+
+.tech-legend {
+    padding: 0.45rem 1rem;
+    font-size: 0.78rem;
+    opacity: 0.85;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* ---- Celular: modal em tela cheia; informações substituem os cards ---- */
+@media (max-width: 768px) {
+    .build-modal { padding: 0; z-index: 1100; }
+    .build-modal-box { width: 100%; height: 100%; border-radius: 0; border: none; }
+    .build-modal-body { grid-template-columns: 1fr; }
+    .build-info { display: none; border-left: none; }
+    .build-modal.info-open .build-info { display: flex; }
+    .build-modal.info-open .build-modal-grid { display: none; }
+    .build-modal.info-open .build-modal-btn.back { display: inline-flex; }
+    .build-modal.info-open .build-modal-btn.tech { display: none; }
+    #build-modal #building-items { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+    .build-preview { height: 170px; }
+    .build-info-foot { padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)); }
+    .tech-modal { padding: 0; z-index: 1150; }
+    /* Os botões flutuantes do celular ficam presos fora do contexto do modal: somem enquanto ele está aberto */
+    body.build-modal-open .mobile-toggle,
+    body.build-modal-open .mobile-top-toggle,
+    body.build-modal-open .hud-bottom-toggle,
+    body.build-modal-open .selection-counter-badge,
+    body.build-modal-open #btn-missions { display: none !important; }
+    .tech-modal-box { border-radius: 0; height: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .build-modal.open { animation: none; }
+}

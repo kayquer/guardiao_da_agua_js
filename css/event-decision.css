@@ -1,0 +1,228 @@
+/* ===== DECISÃO DE EVENTO COM O SECRETÁRIO PAULO (js/systems/ui/EventDecisionUI.js) =====
+   Popup de decisão: pausa o jogo (isInfoPopupOpen) e fica acima do HUD, do menu de construção e dos cartões de
+   evento; abaixo do tutorial (200) e dos diálogos SweetAlert. Ameaça = borda vermelha; oportunidade = verde. */
+.event-decision {
+    position: fixed;
+    inset: 0;
+    z-index: 160;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(8, 12, 32, 0.6);
+    font-family: 'Fredoka', sans-serif;
+}
+
+.event-decision.open { display: flex; animation: decisionIn 0.18s ease-out both; }
+
+@keyframes decisionIn {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: none; }
+}
+
+.decision-box {
+    width: min(980px, 100%);
+    max-height: 100%;
+    overflow-y: auto;
+    border-radius: 22px;
+    border: 4px solid #ef5350;
+    background: linear-gradient(160deg, #1e2a78, #2b1d63);
+    box-shadow: 0 8px 0 #0b1340, 0 18px 40px rgba(0, 0, 0, 0.5);
+    color: #fff;
+    padding: 1rem 1.1rem 0.8rem;
+}
+
+.decision-box.opportunity { border-color: #66bb6a; }
+
+.decision-head {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+}
+
+.decision-avatar {
+    flex: none;
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #ffd54f;
+    background: #f6f1e1;
+    box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+}
+
+.decision-avatar .aportrait, .decision-avatar-img { width: 100%; height: 100%; display: block; }
+
+.decision-speech {
+    flex: 1;
+    position: relative;
+    padding: 0.6rem 0.9rem;
+    border-radius: 16px;
+    background: #fffdf5;
+    color: #222;
+}
+
+.decision-speech::before {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 34px;
+    border: 8px solid transparent;
+    border-right: 12px solid #fffdf5;
+}
+
+.decision-who { font-weight: 700; color: #2e7d32; font-size: 0.85rem; }
+.decision-who small { color: #555; font-weight: 600; }
+
+.decision-speech h3 {
+    margin: 0.15rem 0 0.3rem;
+    font-family: 'Lilita One', cursive;
+    font-size: 1.35rem;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.decision-kind {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: #ef5350;
+    color: #fff;
+}
+
+.opportunity .decision-kind { background: #43a047; }
+.decision-intro { margin: 0 0 0.3rem; line-height: 1.35; }
+.decision-when { margin: 0; font-size: 0.82rem; color: #555; }
+
+.decision-read {
+    flex: none;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    background: #3949ab;
+    color: #fff;
+    cursor: pointer;
+}
+
+.decision-options {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.6rem;
+    margin-top: 0.9rem;
+}
+
+.decision-option {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    text-align: left;
+    padding: 0.7rem 0.7rem 0.6rem;
+    border-radius: 16px;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    background: #3949ab;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.35);
+    transition: transform 0.08s ease, filter 0.08s ease;
+}
+
+.decision-option:hover:not(:disabled), .decision-option:focus-visible { transform: translateY(-3px); filter: brightness(1.1); outline: none; }
+.decision-option.tier-max { background: linear-gradient(170deg, #2e9d55, #1d7a40); border-color: #a5d6a7; }
+.decision-option.tier-mid { background: linear-gradient(170deg, #1e88e5, #1565c0); }
+.decision-option.tier-low { background: linear-gradient(170deg, #8e7cc3, #6a5aa8); }
+.decision-option.tier-none { background: linear-gradient(170deg, #616a80, #474e60); }
+.decision-option:disabled { cursor: not-allowed; filter: grayscale(0.6); opacity: 0.75; }
+
+.decision-key {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.decision-tier { font-size: 0.75rem; opacity: 0.95; }
+.decision-tier b { color: #ffd54f; letter-spacing: 1px; }
+.decision-label { font-family: 'Lilita One', cursive; font-size: 1.05rem; line-height: 1.15; }
+.decision-detail { font-size: 0.78rem; line-height: 1.25; opacity: 0.92; }
+.decision-chips { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.1rem; }
+
+.decision-chips .chip {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.05rem 0.4rem;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.28);
+}
+
+.decision-chips .chip.good { color: #c8f7c5; }
+.decision-chips .chip.bad { color: #ffcdd2; }
+.decision-cost { margin-top: auto; font-weight: 700; color: #ffd54f; font-size: 0.9rem; }
+
+.decision-lock {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #ffe0b2;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 0.15rem 0.4rem;
+}
+
+.decision-foot { margin: 0.7rem 0 0; font-size: 0.82rem; opacity: 0.9; text-align: center; }
+.decision-foot b { color: #ffd54f; }
+
+/* Alerta central com quem fala (Secretário Paulo nos alertas ambientais) */
+.central-alert-speaker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+    font-weight: 700;
+    color: #2e7d32;
+}
+
+.central-alert-face {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #ffd54f;
+    background: #f6f1e1;
+    flex: none;
+}
+
+.central-alert-face .aportrait, .central-alert-face img { width: 100%; height: 100%; display: block; }
+
+@media (max-width: 860px) {
+    .decision-options { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+    .event-decision { padding: 0; z-index: 1200; }
+    .decision-box { border-radius: 0; height: 100%; max-height: none; padding: 0.8rem; }
+    .decision-head { flex-wrap: wrap; }
+    .decision-avatar { width: 72px; height: 72px; }
+    .decision-speech::before { display: none; }
+    .decision-options { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .event-decision.open { animation: none; }
+}

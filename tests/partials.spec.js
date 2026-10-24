@@ -102,6 +102,18 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         ui.closeLessonBook();
         ui.closeLessonsHub();
 
+        // ui/EventUI + ui/EventDecisionUI: anúncio → modal do Paulo → escolha → aviso e evento com barra de tempo
+        const es = window.gameManager.eventSystem;
+        const asked = es.announceEvent('flood');
+        ui.showEventDecision(asked);
+        es.chooseResponse(asked.id, 'none');
+        ui.closeEventDecision();
+        const leak = es.triggerEvent('pipe_leak');
+        ui.updateEventTracker();
+        es.endEvent(leak.id);
+        es.pendingEvents = [];
+        ui.updateEventTracker();
+
         // ui/StudyBookUI
         ui.openStudyBook('water_pump');
     }, buildingId);

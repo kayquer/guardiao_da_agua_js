@@ -111,7 +111,7 @@ mixin(AudioManager, {
         // Água: reserva abaixo de 15 % ou menos de ~2 minutos do consumo líquido (hasWaterShortage já acusa no
         // começo do jogo, com a caixa cheia e nenhuma bomba: cedo demais para música de alerta)
         const water = res?.water;
-        const deficit = water ? (water.consumption || 0) - (water.production || 0) : 0;
+        const deficit = water ? (water.consumption || 0) - (rm?.getEffectiveWaterProduction?.() ?? (water.production || 0)) : 0;
         const dry = !!water && (water.current <= (water.max || 0) * 0.15 || (deficit > 0 && water.current < deficit * 2));
         const danger = !!rm && (dry || rm.hasCriticalPollution?.() || blackout);
         if (danger) {
@@ -312,13 +312,29 @@ mixin(AudioManager, {
         if (event?.config?.severity !== 'positive') this.playSound('sfx_event_resolved', 0.8);
     },
 
-    /** Tutorial: personagem novo em cena diz um "oi" curto (sem repetir a cada página). */
+    /**
+     * Voz curta do personagem a cada página nova (tutorial, livro de aulas, decisão do Paulo, alerta com quem fala,
+     * fim de jogo). Humor pela expressão: happy → voc_<id>_happy (animado), worried → _worried, sad → _sad; senão a
+     * normal voc_<id>_hello (várias variações, sorteadas sem repetir). Sem o arquivo do humor, toca a normal; o gap
+     * do manifesto evita repetir em páginas viradas rápido.
+     */
     onSpeaker(characterId, expression) {
-        if (!characterId || characterId === this.director.lastSpeaker) return;
+        if (!characterId) return;
         this.director.lastSpeaker = characterId;
-        const worried = `voc_${characterId}_worried`;
-        const key = expression === 'worried' && this.manifest[worried] ? worried : `voc_${characterId}_hello`;
+        const mood = { happy: 'happy', worried: 'worried', sad: 'sad' }[expression];
+        const moodKey = mood && `voc_${characterId}_${mood}`;
+        const key = moodKey && this.manifest[moodKey] ? moodKey : `voc_${characterId}_hello`;
         if (this.manifest[key]) this.playSound(key);
+    },
+
+    /**
+     * Clique no que está pronto no mapa (como o "sim, senhor" dos prédios de jogos de estratégia): som próprio de
+     * cada grupo — prédio pelo tipo (AudioManager.selectGroupFor), 'soil' (chão), 'trees', 'river' — com 3
+     * variações sorteadas. Grupo sem arquivo ainda: o clique comum.
+     */
+    onSelect(group) {
+        const key = `sfx_select_${group}`;
+        this.playSound(this.manifest[key] ? key : 'sfx_click', 0.8);
     },
 
     /** Tutorial fechou: o próximo personagem cumprimenta de novo. */
@@ -439,8 +455,26 @@ AudioManager.BUILDING_LOOPS = {
     wind_farm: 'sfx_wind_turbine'
 };
 
+/** Grupo do som de seleção de um prédio (onSelect): pela função, como o menu de construção. */
+AudioManager.SELECT_GROUPS = ['water', 'treatment', 'waste', 'nature', 'science', 'power_clean', 'power_heavy', 'public',
+    'homes', 'commerce', 'industry', 'tourism', 'roads', 'soil', 'trees', 'river'];
+AudioManager.selectGroupFor = config => {
+    if (!config) return 'soil';
+    const id = config.id || '';
+    if (config.plantedTree) return 'trees';
+    if (config.roadType || config.category === 'roads') return 'roads';
+    if (config.category === 'treatment') return config.waste ? 'waste' : 'treatment';
+    if (config.category === 'power') return config.group === 'Renováveis' ? 'power_clean' : 'power_heavy';
+    if (config.category === 'zoning' || config.category === 'residential') {
+        return id.includes('commercial') ? 'commerce' : id.includes('industrial') ? 'industry' : 'homes';
+    }
+    const byCategory = { water: 'water', nature: 'nature', science: 'science', public: 'public', commercial: 'commerce',
+        industrial: 'industry', tourism: 'tourism', infrastructure: 'roads' };
+    return byCategory[config.category] || 'public';
+};
+
 /** Atalhos estáticos para os ganchos (quem chama não precisa saber da instância). */
 ['onScreen', 'onIntroStart', 'onIntroDone', 'onLightning', 'onGameOver', 'onMissionComplete', 'onStudyUnlock',
-    'onEventStart', 'onEventEnd', 'onSpeaker', 'resetSpeaker'].forEach(name => {
+    'onEventStart', 'onEventEnd', 'onSpeaker', 'resetSpeaker', 'onSelect'].forEach(name => {
     AudioManager[name] = (...args) => AudioManager.getInstance()[name](...args);
 });

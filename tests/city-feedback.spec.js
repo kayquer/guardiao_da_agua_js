@@ -86,6 +86,9 @@ test('poluição acima de 70%: água turva, ruas encardidas e ar com fumaça; vo
     expect((await look()).level).toBe(0); // até 70% nada muda
 
     await page.evaluate(() => { window.gameManager.resourceManager.resources.pollution.current = 95; });
+    // Passar de 90 abre o alerta central (que pausa o jogo, como todo popup); fechado, a água turva aparece
+    await expect(page.locator('.central-alert-card')).toContainText('Poluição Alta');
+    await page.evaluate(() => document.querySelectorAll('.central-alert-overlay').forEach(el => el.remove()));
     await page.waitForFunction(() => window.gameManager.pollutionVisuals.level > 0.8, null, { timeout: 15000 });
     const dirty = await look();
     expect(dirty.water).toBeGreaterThan(0.8);

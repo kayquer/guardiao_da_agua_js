@@ -854,3 +854,37 @@ body.intro-letterbox .intro-bar { transform: none; }
         display: none;
     }
 }
+
+/* ===== SOBRE (main.js showAbout): as mesmas informações do aviso inicial, no visual dos diálogos ===== */
+.about-dialog { text-align: left; font-size: 0.92rem; line-height: 1.4; }
+.about-dialog p { margin: 0 0 0.7rem; }
+.about-facts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin: 0 0 0.8rem;
+}
+.about-facts > div {
+    padding: 0.5rem 0.6rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    text-align: center;
+}
+.about-facts dt { font-weight: 700; font-size: 0.8rem; opacity: 0.85; }
+.about-facts dd { margin: 0.15rem 0 0; font-size: 0.85rem; }
+.about-inst {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    padding: 0.6rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.08);
+    margin-bottom: 0.7rem;
+}
+.about-inst img { width: 72px; height: auto; flex: none; background: #fff; border-radius: 8px; padding: 4px; }
+.about-inst p { margin: 0 0 0.35rem; }
+.about-small { font-size: 0.78rem; opacity: 0.85; }
+@media (max-width: 560px) {
+    .about-facts { grid-template-columns: 1fr; }
+}

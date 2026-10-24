@@ -42,7 +42,14 @@ mixin(BuildingSystem, {
     getTreeEffects(building) {
         if (this.getTreeStage(building) === null) return { water: 0, pollution: 0 };
         const data = this.getTreeStageData(building);
-        return { water: data.waterConsumption || 0, pollution: data.pollutionReduction || 0 };
+        // Mata ciliar: muda perto da água limpa TREES.RIPARIAN_FACTOR vezes mais (TreeSystem.isRiparianCell)
+        const factor = this.isRiparianTree(building) ? TREES.RIPARIAN_FACTOR : 1;
+        return { water: data.waterConsumption || 0, pollution: (data.pollutionReduction || 0) * factor };
+    },
+
+    isRiparianTree(building) {
+        const grid = this.gridManager || this.gameManager?.gridManager;
+        return typeof TreeSystem !== 'undefined' && TreeSystem.isRiparianCell(grid, building.gridX, building.gridZ);
     },
 
     /**
