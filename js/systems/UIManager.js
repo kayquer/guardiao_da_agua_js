@@ -1509,16 +1509,22 @@ class UIManager {
 
         const stack = this.getToastStack();
         const toast = document.createElement('div');
-        toast.className = `notification toast ${NotificationLog.normalizeType(type)}`;
-        const { icon, text } = this.splitNotificationIcon(message, type);
+        toast.className = `notification toast ${NotificationLog.normalizeType(type)}${options.className ? ` ${options.className}` : ''}`;
+        // options.icon: ícone próprio (id de uiIcon ou emoji) no lugar do emoji do começo do texto
+        const { icon, text } = options.icon ? { icon: options.icon, text: String(message ?? '') } : this.splitNotificationIcon(message, type);
+        // options.actions: [{ label, onClick }] → botões no aviso (fazem a ação e fecham o aviso)
+        const actions = (options.actions || []).map((a, i) =>
+            `<button type="button" class="toast-action" data-action="${i}">${uiIconsIn(a.label)}</button>`).join('');
         toast.innerHTML = `
-            <span class="toast-icon" aria-hidden="true">${uiIcon(icon)}</span>
-            <div class="toast-text">${uiIconsIn(text)}</div>
+            <span class="toast-icon" aria-hidden="true">${uiIcon(icon, options.iconSize || 'sm')}</span>
+            <div class="toast-text">${uiIconsIn(text)}${actions ? `<div class="toast-actions">${actions}</div>` : ''}</div>
             <button type="button" class="notification-close" aria-label="Fechar aviso">${uiIcon('ui-close')}</button>
         `;
         // Clique em qualquer parte fecha (menos em link dentro do texto, que tem a própria ação)
         toast.addEventListener('click', event => {
             if (event.target.closest('a')) return;
+            const button = event.target.closest('.toast-action');
+            if (button) options.actions[Number(button.dataset.action)]?.onClick?.();
             this.removeNotification(toast);
         });
         stack.appendChild(toast);

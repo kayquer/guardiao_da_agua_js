@@ -332,6 +332,10 @@ class QuestSystem {
         // Sem missão nenhuma (campanha acabou ou falhou): um desafio novo, do tamanho da cidade (CityChallenges.js)
         this.updateCityChallenges?.();
 
+        // Conquistas por níveis (AchievementTracks.js) e lembretes da missão parada (MissionReminders.js)
+        this.updateAchievementTracks?.();
+        this.updateMissionReminders?.();
+
         // ===== NEW UPDATE FEATURES =====
 
         // Check time window missions
@@ -871,15 +875,14 @@ class QuestSystem {
         });
     }
     
+    /** Conquista de missão ou do Paulo: aviso na hora, com o botão "Ver conquistas" (AchievementTracks.announceAchievement). */
     unlockAchievement(achievementId) {
-        if (!this.achievements.has(achievementId)) {
-            this.achievements.add(achievementId);
-            
-            const info = (typeof ACHIEVEMENTS !== 'undefined' && ACHIEVEMENTS[achievementId]) || { icon: '🏆', name: achievementId };
-            this.gameManager.uiManager?.showNotification(`🏆 Conquista: ${info.icon} ${info.name}${info.description ? ` — ${info.description}` : ''}`, 'success', 8000);
-            
-            log(`🏆 Conquista desbloqueada: ${achievementId}`);
-        }
+        if (this.achievements.has(achievementId)) return;
+        this.achievements.add(achievementId);
+        this.recordAchievement?.(achievementId);
+        if (this.announceAchievement) return this.announceAchievement(achievementId);
+        const info = (typeof ACHIEVEMENTS !== 'undefined' && ACHIEVEMENTS[achievementId]) || { icon: '🏆', name: achievementId };
+        this.gameManager.uiManager?.showNotification(`🏆 Conquista: ${info.icon} ${info.name}`, 'success', 8000);
     }
     
     // ===== CONDIÇÕES DE DESBLOQUEIO =====
@@ -1100,6 +1103,8 @@ class QuestSystem {
         this.totalScore = data.totalScore || 0;
         this.questCounter = data.questCounter || 0;
         this.achievements = new Set(data.achievements || []);
+        this.tracksPrimed = false; // 1ª conferência das conquistas de nível depois do load: em silêncio (save antigo)
+        this.achievementToastQueue = [];
         if (data.stakeholderReputation) Object.assign(this.stakeholderReputation, data.stakeholderReputation);
 
         (data.questStates || []).forEach(state => {

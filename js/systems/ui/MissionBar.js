@@ -67,6 +67,15 @@ mixin(UIManager, {
         document.body.classList.add('mission-bar-hidden');
     },
 
+    /** Lembrete da missão (QuestSystem.remindMission): o 🎯 pulsa mais forte por um tempo. */
+    pulseMissionPeek(ms = 12000) {
+        const button = document.getElementById('mission-peek-btn');
+        if (!button) return;
+        button.classList.add('mission-peek-btn--remind');
+        clearTimeout(this.missionPeekPulseTimer);
+        this.missionPeekPulseTimer = setTimeout(() => button.classList.remove('mission-peek-btn--remind'), ms);
+    },
+
     /** A missão mostrada ou o progresso mudou: atualiza o botão e mostra a barra um pouco. */
     onMissionBarChange(key, progressText) {
         const label = document.querySelector('#mission-peek-btn .mission-peek-progress');

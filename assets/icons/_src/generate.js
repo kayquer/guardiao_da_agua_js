@@ -15,7 +15,8 @@ const defs = [
     ...require('./icons-res-states'),
     ...require('./icons-cat-weather'),
     ...require('./icons-buildings'),
-    ...require('./icons-content')
+    ...require('./icons-content'),
+    ...require('./icons-achievements')
 ];
 
 const ROOT = path.resolve(__dirname, '..');
@@ -66,7 +67,8 @@ const AREAS = {
     weather: 'Clima',
     building: 'Prédios',
     mission: 'Missões',
-    lesson: 'Aulas'
+    lesson: 'Aulas',
+    ach: 'Conquistas'
 };
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
 let sections = '';

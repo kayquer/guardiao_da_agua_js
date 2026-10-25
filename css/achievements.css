@@ -41,3 +41,34 @@
 #achievements-panel[hidden] {
     display: none !important;
 }
+
+/* Conquistas por níveis (renderAchievementTracks): selo, 5 bolinhas na cor do nível, meta seguinte */
+.ach-title:first-child { margin-top: 0; }
+.ach-tracks { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.ach-track {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 10px;
+    border: 3px solid #1a1a1a;
+    border-radius: 14px;
+    background: #fffdf5;
+    color: #1a1a1a;
+    font-size: 0.85rem;
+}
+.ach-track.lvl-0 .ach-icon { filter: grayscale(0.9); opacity: 0.6; }
+.ach-track:not(.lvl-0) { background: linear-gradient(160deg, #fffdf5 55%, var(--lvl-color)); }
+.ach-track-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.ach-track-info b { font-size: 0.98rem; }
+.ach-track-level { color: #4a5560; }
+.ach-pips { display: flex; gap: 4px; }
+.ach-pips i { width: 14px; height: 14px; border: 2px solid #1a1a1a; border-radius: 50%; background: #fff; }
+.ach-pips i.on:nth-child(1) { background: #e0a36b; }
+.ach-pips i.on:nth-child(2) { background: #d7dee3; }
+.ach-pips i.on:nth-child(3) { background: #ffd700; }
+.ach-pips i.on:nth-child(4) { background: #b9f2ff; }
+.ach-pips i.on:nth-child(5) { background: #e7b6ff; }
+.ach-next { color: #333c45; }
+.ach-bar { display: block; height: 8px; border: 2px solid #1a1a1a; border-radius: 6px; background: #fff; overflow: hidden; }
+.ach-bar i { display: block; height: 100%; background: linear-gradient(90deg, #00d4ff, #00ff88); }
+.ach-track small { color: #4a5560; }

@@ -64,7 +64,7 @@ mixin(UIManager, {
             }
         }
         const qs = gm.questSystem;
-        const main = qs?.quests.get(qs.currentMainQuest);
+        const main = qs?.getFocusQuest ? qs.getFocusQuest() : qs?.quests.get(qs.currentMainQuest);
         if (main?.status === 'active') {
             const pending = main.objectives.find(o => (o.required > 0 ? (o.current || 0) < o.required : false));
             if (pending) return `⏳ Enquanto espera, olhe a missão <b>${PlayerProfile.personalize(main.title)}</b>: falta ${pending.description.charAt(0).toLowerCase() + pending.description.slice(1)}.`;

@@ -3081,5 +3081,174 @@
       "lg": "svg/mission-new-manager.svg",
       "sm": "svg/mission-new-manager-sm.svg"
     }
+  },
+  "ach-water-sources": {
+    "title": "Conquista: fontes de água",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-water-sources.svg"
+    }
+  },
+  "ach-paved-roads": {
+    "title": "Conquista: ruas asfaltadas",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-paved-roads.svg"
+    }
+  },
+  "ach-dirt-roads": {
+    "title": "Conquista: estradas de terra",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-dirt-roads.svg"
+    }
+  },
+  "ach-gravel-roads": {
+    "title": "Conquista: estradas de cascalho",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-gravel-roads.svg"
+    }
+  },
+  "ach-high-tech": {
+    "title": "Conquista: alta tecnologia",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-high-tech.svg"
+    }
+  },
+  "ach-budget": {
+    "title": "Conquista: caixa da cidade",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-budget.svg"
+    }
+  },
+  "ach-power": {
+    "title": "Conquista: energia gerada",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-power.svg"
+    }
+  },
+  "ach-storage": {
+    "title": "Conquista: água guardada",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-storage.svg"
+    }
+  },
+  "ach-trees": {
+    "title": "Conquista: árvores plantadas",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-trees.svg"
+    }
+  },
+  "ach-recycling": {
+    "title": "Conquista: reciclagem",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-recycling.svg"
+    }
+  },
+  "ach-residential": {
+    "title": "Conquista: zonas residenciais",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-residential.svg"
+    }
+  },
+  "ach-commercial": {
+    "title": "Conquista: zonas comerciais",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-commercial.svg"
+    }
+  },
+  "ach-industrial": {
+    "title": "Conquista: zonas industriais",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-industrial.svg"
+    }
   }
 }

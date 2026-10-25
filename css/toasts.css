@@ -307,3 +307,60 @@
     color: #1a1a1a;
     font: 700 11px/16px system-ui, sans-serif;
 }
+
+/* Botões dentro do aviso (options.actions): fazem a ação e fecham o aviso */
+.toast-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.4rem; }
+.toast-action {
+    padding: 0.25rem 0.7rem;
+    border: 2px solid #1a1a1a;
+    border-radius: 999px;
+    background: #fff;
+    color: #1a1a1a;
+    font: inherit;
+    font-size: 0.85rem;
+    text-shadow: none;
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+}
+.toast-action .ui-icon { width: 16px; height: 16px; vertical-align: -3px; }
+.toast-action:hover { filter: brightness(0.95); transform: translateY(-1px); }
+.toast-action:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+/* Missão: lembrete e progresso (js/systems/MissionReminders.js) */
+.toast.toast--mission { background: linear-gradient(145deg, #00e08a, #00a86b); border-color: #006b44; color: #fff; }
+
+/* Conquista nova (ui/AchievementsUI.js → showAchievementToast): dourado, selo grande, cor do nível na faixa */
+.toast.toast--achievement {
+    background: linear-gradient(150deg, #fff7c2, #ffd23f);
+    border-color: #c99700;
+    color: #1a1a1a;
+    text-shadow: none;
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3), 0 0 22px rgba(255, 215, 0, 0.75);
+}
+.toast--achievement .toast-icon .ui-icon { width: 56px; height: 56px; animation: toastMedal 1.2s ease-out both; }
+.toast--achievement .toast-text { display: flex; flex-direction: column; gap: 2px; }
+.toast-ach-name { font-size: 1rem; }
+.toast-ach-desc { font-weight: 500; font-size: 0.85rem; color: #3d3a2a; }
+.toast-ach-level {
+    align-self: flex-start;
+    padding: 0 0.5rem;
+    border: 2px solid #1a1a1a;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    background: var(--lvl-color, #fff);
+}
+.lvl-1 { --lvl-color: #e0a36b; }
+.lvl-2 { --lvl-color: #d7dee3; }
+.lvl-3 { --lvl-color: #ffd700; }
+.lvl-4 { --lvl-color: #b9f2ff; }
+.lvl-5 { --lvl-color: #e7b6ff; }
+
+@keyframes toastMedal {
+    0% { transform: scale(0.3) rotate(-30deg); }
+    60% { transform: scale(1.15) rotate(8deg); }
+    100% { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toast--achievement .toast-icon .ui-icon { animation: none; }
+}

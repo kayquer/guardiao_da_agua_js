@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="css/ui.css?v=e40c3a6e">
     <link rel="stylesheet" href="css/responsive.css?v=c86a8e7e">
     <link rel="stylesheet" href="css/tutorial.css?v=9060ec61">
-    <link rel="stylesheet" href="css/lessons.css?v=75823501">
+    <link rel="stylesheet" href="css/lessons.css?v=e68e4db9">
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
     <link rel="stylesheet" href="css/player.css?v=ba48e239">
     <link rel="stylesheet" href="css/menu.css?v=ad09dab4">
@@ -22,13 +22,13 @@
     <link rel="stylesheet" href="css/research.css?v=ee08fec9">
     <link rel="stylesheet" href="css/settings.css?v=4caa15a0">
     <link rel="stylesheet" href="css/accessibility.css?v=11a95adf">
-    <link rel="stylesheet" href="css/toasts.css?v=bdc73b51">
+    <link rel="stylesheet" href="css/toasts.css?v=ed4e539e">
     <link rel="stylesheet" href="css/resource-hud.css?v=c17137eb">
-    <link rel="stylesheet" href="css/achievements.css?v=60aad0d5">
+    <link rel="stylesheet" href="css/achievements.css?v=c3053f66">
     <link rel="stylesheet" href="css/mission-card.css?v=5099022c">
     <link rel="stylesheet" href="css/events.css?v=02eb4409">
     <link rel="stylesheet" href="css/event-decision.css?v=a2b7ac78">
-    <link rel="stylesheet" href="css/mission-bar.css?v=6474f36a">
+    <link rel="stylesheet" href="css/mission-bar.css?v=27778451">
     <link rel="stylesheet" href="css/build-menu.css?v=6a2bed6d">
 
     <!-- Babylon.js CDN -->
@@ -744,6 +744,8 @@
     <script src="js/data/zoneLots.js?v=3bf239c4"></script>
     <script src="js/data/resourceStates.js?v=c0802704"></script>
     <script src="js/data/missions.js?v=52de6a0f"></script>
+    <script src="js/data/achievementTracks.js?v=2970f218"></script>
+    <script src="js/data/rescueGuides.js?v=f0055623"></script>
     <script src="js/data/brazil.js?v=c0fa1745"></script>
     <script src="js/data/lessons.js?v=97c30f82"></script>
     <script src="js/data/introCity.js?v=a2e6387e"></script>
@@ -831,7 +833,7 @@
 
     <!-- Utilitários primeiro -->
     <script src="js/utils/GameUtils.js?v=ca581bc5"></script>
-    <script src="js/utils/Icons.js?v=d112973a"></script>
+    <script src="js/utils/Icons.js?v=8c52fb80"></script>
     <script src="js/utils/GameLogo.js?v=f238ea7b"></script>
     <script src="js/utils/AssetLoader.js?v=92c41b47"></script>
     <script src="js/utils/AudioManager.js?v=26139c44"></script>
@@ -868,20 +870,21 @@
     <script src="js/systems/CityLifeSystem.js?v=54ff85d0"></script>
     <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
     <script src="js/systems/ResourceTrends.js?v=16c746be"></script>
-    <script src="js/systems/UIManager.js?v=6667eaf2"></script>
+    <script src="js/systems/DeclineWatch.js?v=e0e70d98"></script>
+    <script src="js/systems/UIManager.js?v=cf9d265e"></script>
     <script src="js/systems/ui/MobileTouch.js?v=6023dd14"></script>
     <script src="js/systems/ui/StudyBookUI.js?v=4bff7e80"></script>
     <script src="js/systems/ui/LoanUI.js?v=057d32de"></script>
     <script src="js/systems/ui/ResourceHud.js?v=c698f1d9"></script>
-    <script src="js/systems/ui/IdleHints.js?v=ba0120d6"></script>
-    <script src="js/systems/ui/AchievementsUI.js?v=60a2c5ff"></script>
+    <script src="js/systems/ui/IdleHints.js?v=c75e6450"></script>
+    <script src="js/systems/ui/AchievementsUI.js?v=1799e7e6"></script>
     <script src="js/systems/ui/MissionCardUI.js?v=73d93ae8"></script>
     <script src="js/systems/ui/ResourcePanels.js?v=d332588f"></script>
     <script src="js/systems/ui/EventUI.js?v=72f71fc0"></script>
     <script src="js/systems/ui/EventDecisionUI.js?v=faa32f6d"></script>
     <script src="js/systems/ui/BuildPreview.js?v=7993662a"></script>
     <script src="js/systems/ui/BuildMenuUI.js?v=ca6e2ecb"></script>
-    <script src="js/systems/ui/MissionBar.js?v=7d936c04"></script>
+    <script src="js/systems/ui/MissionBar.js?v=8e720656"></script>
     <script src="js/systems/ui/TechTreeUI.js?v=2ee956b7"></script>
     <script src="js/systems/ui/MobilePanels.js?v=a6989c98"></script>
     <script src="js/systems/ui/WeatherUI.js?v=50f7ef6f"></script>
@@ -891,14 +894,17 @@
     <script src="js/systems/ui/LessonBookUI.js?v=3122a13a"></script>
     <script src="js/systems/ui/TreeInfoUI.js?v=e348aba5"></script>
     <script src="js/systems/LoanManager.js?v=e0d90e35"></script>
-    <script src="js/systems/QuestSystem.js?v=69877cdb"></script>
+    <script src="js/systems/QuestSystem.js?v=4c5a4ebf"></script>
     <script src="js/systems/ui/MissionUI.js?v=3edf76db"></script>
     <script src="js/systems/CityChallenges.js?v=f3906cb3"></script>
+    <script src="js/systems/AchievementTracks.js?v=b89412d8"></script>
+    <script src="js/systems/MissionReminders.js?v=203dd893"></script>
     <script src="js/systems/EventSystem.js?v=1700ffc6"></script>
     <script src="js/systems/SaveSystem.js?v=62eb9f81"></script>
     <script src="js/systems/StudySystem.js?v=df487ae5"></script>
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
-    <script src="js/systems/TutorialSystem.js?v=f7a4c40a"></script>
+    <script src="js/systems/TutorialSystem.js?v=20f658dd"></script>
+    <script src="js/systems/RescueGuides.js?v=5137ce55"></script>
     <script src="js/systems/GameOverSystem.js?v=f2965ad2"></script>
     <script src="js/systems/PlayerProfile.js?v=868ad2db"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>

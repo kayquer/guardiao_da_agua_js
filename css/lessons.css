@@ -598,3 +598,10 @@ body:has(#lesson-book, #lessons-hub, #pause-overlay:not(.hidden)) :is(.mobile-to
         padding-left: 1rem;
     }
 }
+
+/* Guia de socorro (js/systems/RescueGuides.js): lista de construções clicáveis */
+.rescue-list { margin: 6px 0 8px; padding-left: 18px; }
+.rescue-list li { margin: 4px 0; }
+.rescue-link { font-weight: 700; color: #0b6e8a; text-decoration: underline; }
+.rescue-link:hover { color: #00a6cc; }
+.rescue-list small { opacity: 0.8; }

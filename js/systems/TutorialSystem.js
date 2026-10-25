@@ -559,6 +559,7 @@ class TutorialSystem {
         if (gm.uiManager?.isInfoPopupOpen() || Date.now() - (this.lastGuideEnd || 0) < 3000) return;
         const guide = TutorialSystem.nextGuide(gm);
         if (guide) this.startGuide(guide.id);
+        else this.checkRescue?.(); // recurso caindo sem parar: guia de socorro (RescueGuides.js)
     }
 
     static nextGuide(gm) {
@@ -1035,6 +1036,8 @@ class TutorialSystem {
         gm.gameState = 'playing';
         if (this.run === 'guide') {
             TutorialSystem.markGuideDone(this.guideId);
+            this.lastGuideEnd = Date.now();
+        } else if (this.run === 'rescue') {
             this.lastGuideEnd = Date.now();
         }
         if (this.run !== 'tutorial') return;

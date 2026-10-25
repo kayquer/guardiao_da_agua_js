@@ -54,7 +54,11 @@ const UI_ICON_FILES = {
     'ecopark': 'b', 'biomass-plant': 'b', 'sugarcane-mill': 'b', 'gravel-road': 'b', 'tidal-plant': 'b',
     'loss-control-center': 'b', 'underground-dam': 'b', 'water-reuse-plant': 'b', 'desalination-plant': 'b', 'lesson-planet': 'b',
     'lesson-water-cycle': 'b', 'lesson-sharing': 'b', 'lesson-river-life': 'b', 'lesson-hidden-water': 'b',
-    'lesson-green-solutions': 'b', 'mission-new-manager': 'b'
+    'lesson-green-solutions': 'b', 'mission-new-manager': 'b',
+    // selos das conquistas por níveis (js/data/achievementTracks.js)
+    'ach-water-sources': 'l', 'ach-paved-roads': 'l', 'ach-dirt-roads': 'l', 'ach-gravel-roads': 'l', 'ach-high-tech': 'l',
+    'ach-budget': 'l', 'ach-power': 'l', 'ach-storage': 'l', 'ach-trees': 'l', 'ach-recycling': 'l', 'ach-residential': 'l',
+    'ach-commercial': 'l', 'ach-industrial': 'l'
 };
 const UI_ICON_BY_EMOJI = {
     '💧': 'res-water', '🏭': 'res-pollution', '💰': 'res-budget', '👥': 'res-population', '⚡': 'res-energy',

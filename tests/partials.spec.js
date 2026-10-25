@@ -139,6 +139,13 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         es.pendingEvents = [];
         ui.updateEventTracker();
 
+        // AchievementTracks + MissionReminders (QuestSystem) e RescueGuides (TutorialSystem): conferências do dia a dia
+        const quests = window.gameManager.questSystem;
+        quests.updateAchievementTracks();
+        quests.updateMissionReminders();
+        ui.renderAchievementTracks(quests.achievements);
+        window.gameManager.tutorialSystem.checkRescue();
+
         // ui/StudyBookUI
         ui.openStudyBook('water_pump');
     }, buildingId);
