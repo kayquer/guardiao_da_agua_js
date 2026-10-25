@@ -48,10 +48,11 @@ class BuildingSystem {
         this.isProcessingDisposal = false;
         this.disposalBatchSize = 5; // Processar até 5 disposals por frame
 
-        // Sistema de cooldown para construção
+        // Espera curta entre obras: só evita construir duas vezes no mesmo clique duplo. Sem painel nem aviso
+        // (o painel "Aguarde..." no meio da tela foi removido em 10/2026: atrapalhava e parecia erro)
         this.buildingCooldown = {
             active: false,
-            duration: 1000, // 1000ms de cooldown (1 segundo)
+            duration: 400,
             lastBuildTime: 0,
             remainingTime: 0
         };
@@ -270,11 +271,18 @@ class BuildingSystem {
     }
 
     // ===== CONSTRUÇÃO =====
-    canPlaceBuilding(gridX, gridZ, buildingTypeId) {
+    canPlaceBuilding(gridX, gridZ, buildingTypeId, { quiet = false } = {}) {
         const buildingType = this.buildingTypes.get(buildingTypeId);
         if (!buildingType) {
-            console.warn(`❌ Tipo de edifício inválido: ${buildingTypeId}`);
+            if (!quiet) console.warn(`❌ Tipo de edifício inválido: ${buildingTypeId}`);
             return { canPlace: false, reason: 'Tipo de edifício inválido' };
+        }
+
+        // Ruas têm regra própria (colina por tipo, ponte sobre a água: RoadPlacement.canPlaceRoadAt)
+        if (buildingType.roadType) {
+            const road = this.canPlaceRoadAt(gridX, gridZ, buildingTypeId);
+            return road.ok ? { canPlace: true, reason: road.bridge ? 'Vira ponte' : 'Pode construir', userFriendly: true }
+                : { canPlace: false, reason: road.reason, userFriendly: true };
         }
 
         // Verificar se há espaço no grid
@@ -283,13 +291,13 @@ class BuildingSystem {
             buildingType.requirements.terrain.includes('water')) {
             // Validação especial para edifícios que podem ser construídos na água
             if (!this.canPlaceBuildingOnWater(gridX, gridZ, buildingType.size)) {
-                console.warn(`❌ Área ocupada ou fora dos limites em (${gridX}, ${gridZ})`);
+                if (!quiet) console.warn(`❌ Área ocupada ou fora dos limites em (${gridX}, ${gridZ})`);
                 return { canPlace: false, reason: 'Área ocupada ou fora dos limites' };
             }
         } else {
             // Validação normal para outros edifícios
             if (!this.gridManager.canPlaceBuilding(gridX, gridZ, buildingType.size)) {
-                console.warn(`❌ Área ocupada ou fora dos limites em (${gridX}, ${gridZ})`);
+                if (!quiet) console.warn(`❌ Área ocupada ou fora dos limites em (${gridX}, ${gridZ})`);
                 return { canPlace: false, reason: 'Área ocupada ou fora dos limites' };
             }
         }
@@ -328,7 +336,7 @@ class BuildingSystem {
 
             if (buildingType.requirements.nearWater) {
                 if (!this.isNearWater(gridX, gridZ, buildingType.size)) {
-                    console.warn(`❌ Deve estar próximo à água em (${gridX}, ${gridZ})`);
+                    if (!quiet) console.warn(`❌ Deve estar próximo à água em (${gridX}, ${gridZ})`);
                     return {
                         canPlace: false,
                         reason: `${buildingType.name} deve estar próximo à água`,
@@ -343,7 +351,7 @@ class BuildingSystem {
             return { canPlace: false, reason: 'Já existe uma árvore nativa aqui: plante a muda num espaço livre.', userFriendly: true };
         }
 
-        log(`✅ Pode construir ${buildingType.name} em (${gridX}, ${gridZ})`);
+        if (!quiet) log(`✅ Pode construir ${buildingType.name} em (${gridX}, ${gridZ})`);
         return {
             canPlace: true,
             reason: `Você pode construir ${buildingType.name} aqui`,
@@ -356,21 +364,7 @@ class BuildingSystem {
         const isRoad = !!this.buildingTypes.get(buildingTypeId)?.roadType;
 
         // Verificar cooldown de construção
-        if (!isRoad && this.isBuildingOnCooldown()) {
-            const remainingSeconds = Math.ceil(this.buildingCooldown.remainingTime / 1000);
-            this.showNotification(`Aguarde ${remainingSeconds} segundos antes de construir novamente...`, 'warning');
-            console.warn(`⚠️ Construção em cooldown: ${remainingSeconds}s restantes`);
-
-            // Mostrar indicador visual de cooldown
-            if (this.gameManager && this.gameManager.uiManager) {
-                this.gameManager.uiManager.showBuildingCooldown(
-                    this.buildingCooldown.remainingTime,
-                    this.buildingCooldown.duration
-                );
-            }
-
-            return null;
-        }
+        if (!isRoad && this.isBuildingOnCooldown()) return null; // clique duplo: a primeira obra já foi
 
         const buildingType = this.buildingTypes.get(buildingTypeId);
         if (!buildingType) {
@@ -1207,14 +1201,6 @@ class BuildingSystem {
         this.buildingCooldown.remainingTime = this.buildingCooldown.duration;
 
         log(`⏱️ Cooldown de construção ativado: ${this.buildingCooldown.duration}ms`);
-
-        // Mostrar indicador visual de cooldown
-        if (this.gameManager && this.gameManager.uiManager) {
-            this.gameManager.uiManager.showBuildingCooldown(
-                this.buildingCooldown.remainingTime,
-                this.buildingCooldown.duration
-            );
-        }
     }
 
     updateBuildingCooldown(deltaTime) {
@@ -1226,11 +1212,6 @@ class BuildingSystem {
             this.buildingCooldown.active = false;
             this.buildingCooldown.remainingTime = 0;
             log(`✅ Cooldown de construção finalizado`);
-
-            // Esconder indicador visual de cooldown
-            if (this.gameManager && this.gameManager.uiManager) {
-                this.gameManager.uiManager.hideBuildingCooldown();
-            }
         }
     }
 

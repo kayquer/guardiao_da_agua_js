@@ -355,21 +355,21 @@ mixin(UIManager, {
                 <div class="resource-summary">
                     <div class="resource-stat">
                         <span class="stat-label">Geração:</span>
-                        <span class="stat-value">+${this.formatNumber(electricity.generation, 1)}kW</span>
+                        <span class="stat-value positive">+${this.formatNumber(electricity.generation, 1)} MW</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Consumo:</span>
-                        <span class="stat-value">-${this.formatNumber(electricity.consumption, 1)}kW</span>
+                        <span class="stat-value negative">-${this.formatNumber(electricity.consumption, 1)} MW</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Saldo:</span>
                         <span class="stat-value ${electricity.generation - electricity.consumption >= 0 ? 'positive' : 'negative'}">
-                            ${electricity.generation - electricity.consumption >= 0 ? '+' : ''}${this.formatNumber(electricity.generation - electricity.consumption, 1)}kW
+                            ${electricity.generation - electricity.consumption >= 0 ? '+' : ''}${this.formatNumber(electricity.generation - electricity.consumption, 1)} MW
                         </span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Eficiência:</span>
-                        <span class="stat-value">${Math.floor(electricity.efficiency * 100)}%</span>
+                        <span class="stat-value ${electricity.efficiency >= 1 ? 'positive' : electricity.efficiency < 0.5 ? 'negative' : 'warn'}">${Math.floor(electricity.efficiency * 100)}%</span>
                     </div>
                 </div>
 
@@ -378,11 +378,12 @@ mixin(UIManager, {
         `;
 
         if (powerGenerators.length > 0) {
-            const renewable = building => ['hydroelectric_plant', 'solar_panel', 'wind_turbine'].includes(building.type);
+            // Renovável vem do dado do prédio (buildings.js: renewable) — antes uma lista com ids que não existiam
+            // marcava até o campo eólico como não renovável
             detailsHTML += this.renderBuildingGroups(powerGenerators,
-                b => b.config.powerGeneration,
-                (total, count) => `${count > 1 ? 'gerando ' : ''}+${this.formatNumber(total, 1)} kW`, 'building-production',
-                b => `<span class="renewable-indicator">${renewable(b) ? '🌱 (Renovável)' : '🏭 (Não-renovável)'}</span>`);
+                b => b.isRented ? 0 : b.config.powerGeneration * (b.efficiency ?? 1),
+                (total, count) => `${count > 1 ? 'gerando ' : ''}+${this.formatNumber(total, 1)} MW`, 'building-production',
+                b => `<span class="renewable-indicator ${b.config.renewable ? 'is-renewable' : 'is-fossil'}">${b.config.renewable ? '🌱 Renovável' : '🏭 Não renovável'}</span>`);
         } else {
             detailsHTML += '<p class="no-sources">Nenhuma fonte de energia ativa</p>';
         }
@@ -390,7 +391,7 @@ mixin(UIManager, {
         if (powerConsumers.length > 0) {
             detailsHTML += '<h5>🔌 Consumidores de Energia</h5>' + this.renderBuildingGroups(powerConsumers,
                 powerOf,
-                (total, count) => `${count > 1 ? 'usando ' : ''}-${this.formatNumber(total, 1)} kW`, 'building-consumption');
+                (total, count) => `${count > 1 ? 'usando ' : ''}-${this.formatNumber(total, 1)} MW`, 'building-consumption');
         }
 
         detailsHTML += '</div></div>';
@@ -411,7 +412,7 @@ mixin(UIManager, {
                 <div class="resource-summary">
                     <div class="resource-stat">
                         <span class="stat-label">Satisfação Atual:</span>
-                        <span class="stat-value">${Math.floor(population.satisfaction)}%</span>
+                        <span class="stat-value ${this.levelClass(population.satisfaction, 70, 50)}">${Math.floor(population.satisfaction)}%</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">População:</span>
@@ -423,8 +424,9 @@ mixin(UIManager, {
                     <h5>📊 De onde vem a satisfação</h5>
                     <ul class="satisfaction-factors">
                         ${this.gameManager.resourceManager.getSatisfactionFactors().map(f =>
-                            `<li>${f.icon} ${f.label}: <b>${f.value >= 0 ? '+' : ''}${this.formatNumber(f.value, 1)}</b></li>`).join('')}
+                            `<li class="${f.value > 0 ? 'factor-good' : f.value < 0 ? 'factor-bad' : ''}">${uiIcon(f.icon)} ${f.label}: <b>${f.value >= 0 ? '+' : ''}${this.formatNumber(f.value, 1)}</b></li>`).join('')}
                     </ul>
+                    ${this.satisfactionClampNote()}
 
                     <h5>🏢 Edifícios que Melhoram Satisfação</h5>
                     <p class="stat-note">Cada prédio novo soma um pouco menos que o anterior (no máximo +${ResourceManager.BUILDING_SATISFACTION_MAX} no total).</p>
@@ -434,7 +436,7 @@ mixin(UIManager, {
         if (satisfactionBuildings.length > 0) {
             detailsHTML += this.renderBuildingGroups(satisfactionBuildings,
                 b => b.config.satisfactionBonus,
-                total => `${this.formatNumber(total, 1)} pts`, 'building-bonus');
+                total => `+${this.formatNumber(total, 1)} pts`, 'building-production');
         } else {
             detailsHTML += '<p class="no-sources">Nenhum edifício de satisfação construído</p>';
         }
@@ -469,11 +471,11 @@ mixin(UIManager, {
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Crescimento:</span>
-                        <span class="stat-value">${population.growth >= 0 ? '+' : ''}${this.formatNumber(population.growth * 60, 1)}%/min</span>
+                        ${this.populationGrowthValue(population)}
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Satisfação:</span>
-                        <span class="stat-value">${Math.floor(population.satisfaction)}%</span>
+                        <span class="stat-value ${this.levelClass(population.satisfaction, 70, 50)}">${Math.floor(population.satisfaction)}%</span>
                     </div>
                 </div>
 
@@ -481,51 +483,29 @@ mixin(UIManager, {
                     <h5>🏠 Edifícios Residenciais</h5>
         `;
 
+        // A capacidade = casas que a cidade já tem + zonas (pela fase): a lista soma o mesmo que "Capacidade Máxima"
+        detailsHTML += `<ul><li>
+                <span class="building-icon">${uiIcon('🏘️')}</span>
+                <span class="building-name">Casas que a cidade já tinha</span>
+                <span class="building-production">+${ResourceManager.BASE_POPULATION_CAPACITY} hab</span>
+            </li></ul>`;
         if (residentialBuildings.length > 0) {
-            detailsHTML += '<ul>';
-            residentialBuildings.forEach(building => {
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-production">+${this.gameManager.buildingSystem.getEffectivePopulationCapacity(building)} hab</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
+            detailsHTML += this.renderBuildingGroups(residentialBuildings,
+                b => this.gameManager.buildingSystem.getEffectivePopulationCapacity(b),
+                total => `+${this.formatNumber(total, 0)} hab`, 'building-production');
         } else {
-            detailsHTML += '<p class="no-sources">Nenhum edifício residencial construído</p>';
+            detailsHTML += '<p class="no-sources">Nenhuma zona residencial ainda: construa em 🏘️ Residencial</p>';
         }
 
-        if (serviceBuildings.length > 0) {
-            detailsHTML += '<h5>🏢 Serviços e Infraestrutura</h5><ul>';
-            serviceBuildings.forEach(building => {
-                // ===== ZERO-ERROR POLICY FIX: Validar config antes de usar =====
-                if (!building.config) {
-                    console.warn('⚠️ Edifício sem configuração encontrado na lista de serviços:', building);
-                    return;
-                }
-
-                detailsHTML += `
-                    <li>
-                        <span class="building-icon">${building.config.icon}</span>
-                        <span class="building-name">${building.config.name}</span>
-                        <span class="building-production">+${building.config.satisfactionBonus}% satisfação</span>
-                    </li>
-                `;
-            });
-            detailsHTML += '</ul>';
-        }
-
+        // O que faz gente chegar ou ir embora, com o estado de agora (ResourceManager.getGrowthFactors)
+        const stateIcon = { good: '✅', ok: '⚠️', bad: '❌' };
         detailsHTML += `
-                    <h5>📊 Fatores de Crescimento</h5>
-                    <ul>
-                        <li>💧 Disponibilidade de água</li>
-                        <li>🏠 Capacidade habitacional</li>
-                        <li>😊 Nível de satisfação</li>
-                        <li>🏭 Baixa poluição</li>
-                        <li>⚡ Fornecimento de energia</li>
+                    <h5>📊 O que faz a cidade crescer</h5>
+                    <ul class="growth-factors">
+                        ${this.gameManager.resourceManager.getGrowthFactors().map(f => `
+                        <li class="factor-${f.state}"><span>${stateIcon[f.state]} ${f.icon} <b>${f.label}</b></span><span class="factor-detail">${f.detail}</span></li>`).join('')}
                     </ul>
+                    ${serviceBuildings.length ? '<p class="stat-note">Escolas, hospitais e parques deixam os moradores mais satisfeitos: veja no painel 😊.</p>' : ''}
                 </div>
             </div>
         `;
@@ -552,23 +532,23 @@ mixin(UIManager, {
                 <div class="resource-summary">
                     <div class="resource-stat">
                         <span class="stat-label">Poluição Atual:</span>
-                        <span class="stat-value">${Math.floor(pollution.current)}%</span>
+                        <span class="stat-value ${pollution.current > 70 ? 'negative' : pollution.current > 40 ? 'warn' : 'positive'}">${Math.floor(pollution.current)}%</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Prédios e eventos:</span>
-                        <span class="stat-value">+${this.formatNumber(balance.sources, 1)}/min</span>
+                        <span class="stat-value negative">+${this.formatNumber(balance.sources, 1)}/min</span>
                     </div>
                     <div class="resource-stat sewage-stat">
                         <span class="stat-label">🚽 Esgoto dos moradores:</span>
-                        <span class="stat-value">+${this.formatNumber(balance.sewage, 1)}/min</span>
+                        <span class="stat-value negative">+${this.formatNumber(balance.sewage, 1)}/min</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Limpeza:</span>
-                        <span class="stat-value">-${this.formatNumber(balance.reduction, 1)}/min</span>
+                        <span class="stat-value positive">-${this.formatNumber(balance.reduction, 1)}/min</span>
                     </div>
                     ${Math.abs(balance.reputation) >= 0.05 ? `<div class="resource-stat">
                         <span class="stat-label">🌿 Confiança do Meio Ambiente:</span>
-                        <span class="stat-value">${balance.reputation >= 0 ? '-' : '+'}${this.formatNumber(Math.abs(balance.reputation), 1)}/min</span>
+                        <span class="stat-value ${balance.reputation >= 0 ? 'positive' : 'negative'}">${balance.reputation >= 0 ? '-' : '+'}${this.formatNumber(Math.abs(balance.reputation), 1)}/min</span>
                     </div>` : ''}
                     <div class="resource-stat">
                         <span class="stat-label">Balanço:</span>
@@ -586,13 +566,13 @@ mixin(UIManager, {
         if (pollutionSources.length > 0) {
             detailsHTML += '<h5>🏭 Fontes de Poluição</h5>' + this.renderBuildingGroups(pollutionSources,
                 b => b.config.pollutionGeneration,
-                (total, count) => `${count > 1 ? 'poluindo ' : ''}+${this.formatNumber(total, 1)}%/min`, 'building-consumption');
+                (total, count) => `${count > 1 ? 'poluindo ' : ''}+${this.formatNumber(total, 1)}/min`, 'building-consumption');
         }
 
         if (cleanupBuildings.length > 0) {
             detailsHTML += '<h5>🌱 Sistemas de Limpeza</h5>' + this.renderBuildingGroups(cleanupBuildings,
-                b => b.config.pollutionReduction,
-                (total, count) => `${count > 1 ? 'limpando ' : ''}-${this.formatNumber(total, 1)}%/min`);
+                b => b.effectsApplied ? b.config.pollutionReduction * (b.efficiency ?? 1) : 0, // o mesmo que entra na limpeza
+                (total, count) => `${count > 1 ? 'limpando ' : ''}-${this.formatNumber(total, 1)}/min`, 'building-production');
         }
 
         const trees = this.gameManager.treeSystem;
@@ -603,7 +583,7 @@ mixin(UIManager, {
                         <li>
                             <span class="building-icon">🌳</span>
                             <span class="building-name">${trees.count} árvores em pé (${trees.riparianCount} na margem do rio)</span>
-                            <span class="building-production">-${this.formatNumber(trees.pollutionReduction, 1)}%/min</span>
+                            <span class="building-production">-${this.formatNumber(trees.pollutionReduction, 1)}/min</span>
                         </li>${this.plantedTreesLine()}
                         <li>🏞️ Mata ciliar: árvores a até ${TREES.RIPARIAN_DISTANCE} quadrados da água limpam ${TREES.RIPARIAN_FACTOR}× mais. Plante mudas na margem!</li>
                         <li>🪓 Construir em cima de árvores derruba as árvores: a poluição sobe e a cidade fica menos verde.</li>
@@ -613,23 +593,49 @@ mixin(UIManager, {
         detailsHTML += `
                     <h5>🌍 O que a poluição faz na cidade</h5>
                     <ul>
-                        <li>😷 Acima de 50%, os moradores ficam menos satisfeitos</li>
-                        <li>🏃 Acima de 70%, menos gente quer morar aqui (e a água fica turva)</li>
-                        <li>☠️ Em 100%, a água fica imprópria: fim de jogo</li>
+                        <li class="factor-bad">😷 Acima de 50%, os moradores ficam menos satisfeitos</li>
+                        <li class="factor-bad">🏃 Acima de 70%, menos gente quer morar aqui (e a água fica turva)</li>
+                        <li class="factor-bad">☠️ Em 100%, a água fica imprópria: fim de jogo</li>
                     </ul>
 
                     <h5>✅ O que baixa a poluição</h5>
                     <ul>
-                        <li>🏭 Estações de Tratamento e de Filtros (tratam o esgoto)</li>
-                        <li>🪷 Jardins Flutuantes, Parque Linear, jardins e tetos verdes</li>
-                        <li>🌳 Árvores, principalmente na margem do rio</li>
-                        <li>🤝 Decisões que agradam o grupo Meio Ambiente</li>
+                        <li class="factor-good">🏭 Estações de Tratamento, de Filtros e de Reúso (tratam o esgoto)</li>
+                        <li class="factor-good">♻️ Reciclagem, compostagem e biodigestor (lixo longe do rio)</li>
+                        <li class="factor-good">🪷 Jardins Flutuantes, Parque Linear, jardins e tetos verdes</li>
+                        <li class="factor-good">🌳 Árvores, principalmente na margem do rio</li>
+                        <li class="factor-good">🤝 Decisões que agradam o grupo Meio Ambiente</li>
                     </ul>
                 </div>
             </div>
         `;
 
         this.elements.detailsContent.innerHTML = uiIconsIn(detailsHTML) + this.topicLessonButton('pollution');
+    },
+
+    /** Classe de cor de um nível onde mais é melhor: positive (≥ good), warn (≥ ok), negative (abaixo). */
+    levelClass(value, good, ok) {
+        return value >= good ? 'positive' : value >= ok ? 'warn' : 'negative';
+    },
+
+    /** Crescimento real: lotado e no mínimo não crescem, mesmo com a taxa positiva/negativa. */
+    populationGrowthValue(population) {
+        if (population.growth > 0 && population.current >= population.max - 0.5) {
+            return '<span class="stat-value warn">parado: cidade lotada</span>';
+        }
+        if (population.growth < 0 && population.current <= 100.5) {
+            return '<span class="stat-value warn">parado no mínimo</span>';
+        }
+        const perMin = population.growth * 60;
+        return `<span class="stat-value ${perMin >= 0 ? 'positive' : 'negative'}">${perMin >= 0 ? '+' : ''}${this.formatNumber(perMin, 1)}% por minuto</span>`;
+    },
+
+    /** A soma dos fatores pode passar de 100 ou ficar abaixo de 0; a satisfação mostrada fica entre 0% e 100%. */
+    satisfactionClampNote() {
+        const sum = this.gameManager.resourceManager.getSatisfactionFactors().reduce((s, f) => s + f.value, 0);
+        if (sum > 100) return `<p class="stat-note">A soma dá ${this.formatNumber(sum, 0)}, mas a satisfação para em 100%.</p>`;
+        if (sum < 0) return `<p class="stat-note">A soma dá ${this.formatNumber(sum, 0)}, mas a satisfação não fica abaixo de 0%.</p>`;
+        return '';
     },
 
     // ===== GRÁFICO DE TENDÊNCIA (ResourceManager.history: 1 ponto a cada 5 s de jogo) =====

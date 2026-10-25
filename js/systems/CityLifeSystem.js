@@ -131,12 +131,13 @@ class CityLifeSystem {
             p1 = { x: p0.x + (k.x - p0.x) * 0.75, z: p0.z + (k.z - p0.z) * 0.75 };
             p2 = { x: p3.x + (k.x - p3.x) * 0.75, z: p3.z + (k.z - p3.z) * 0.75 };
         }
-        // Altura: borda de entrada (média das células) → centro → borda de saída
-        const h = (x, z) => this.buildingSystem.getRoadSurfaceHeight(x, z);
-        const yCur = h(v.cur.x, v.cur.z);
+        // Altura pelo perfil das ruas (rampas e pontes): borda de entrada → centro → borda de saída
+        const profile = this.buildingSystem.getRoadProfile();
         v.path = {
             p: [p0, p1, p2, p3],
-            y0: (h(v.prev.x, v.prev.z) + yCur) / 2, y1: yCur, y2: (yCur + h(v.next.x, v.next.z)) / 2
+            y0: RoadNetwork.edgeHeight(profile, v.cur, v.prev),
+            y1: RoadNetwork.centerHeight(profile, v.cur),
+            y2: RoadNetwork.edgeHeight(profile, v.cur, v.next)
         };
         // Comprimento aproximado (para a velocidade ser a mesma em reta e curva)
         let length = 0, last = this.bezier(v.path.p, 0);
@@ -194,6 +195,9 @@ class CityLifeSystem {
         v.mesh.position.set(pos.x, y + 0.01, pos.z);
         const dx = ahead.x - behind.x, dz = ahead.z - behind.z;
         if (dx || dz) v.mesh.rotation.y = Math.atan2(dx, dz);
+        // Inclina na rampa (nariz para cima subindo): metade do trecho = metade do comprimento
+        const rise = v.t < 0.5 ? y1 - y0 : y2 - y1;
+        v.mesh.rotation.x = -Math.atan2(rise, v.path.length / 2);
     }
 
     dispose() {

@@ -671,6 +671,27 @@ class IntroCinematic {
         });
     }
 
+    /**
+     * Troca a qualidade com a abertura rodando (seletor de Gráficos do menu): resolução, sombras, bloom e FXAA mudam
+     * na hora. O MSAA vem do engine, criado uma vez (FXAA cobre quando ele falta).
+     */
+    setQuality(quality) {
+        if (!this.engine || !this.scene || quality === this.quality) return;
+        this.quality = quality;
+        const dpr = window.devicePixelRatio || 1;
+        const pixels = Math.min(dpr, quality === 'high' ? 2 : 1.5) * (quality === 'low' ? 0.625 : 1);
+        this.engine.setHardwareScalingLevel(1 / pixels);
+        this.scene.shadowsEnabled = quality !== 'low';
+        if (this.shadows) {
+            this.shadows.filteringQuality = quality === 'high' ? BABYLON.ShadowGenerator.QUALITY_MEDIUM : BABYLON.ShadowGenerator.QUALITY_LOW;
+        }
+        if (this.pipeline) {
+            const high = quality === 'high';
+            this.pipeline.bloomEnabled = high;
+            this.pipeline.fxaaEnabled = !high || !this.engine.getCaps().multiSampledRenderToTexture;
+        }
+    }
+
     // ===================== PÓS-PROCESSAMENTO =====================
 
     createPostProcess() {

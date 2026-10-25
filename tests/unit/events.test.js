@@ -139,3 +139,33 @@ test('dica educativa aparece como notificação', () => {
     es.showEducationalContent({ message: 'Secas são longas.', tips: ['Guarde água'] });
     assert.ok(notes.some(n => n.includes('Secas são longas.') && n.includes('Guarde água')));
 });
+
+test('eventos juntos: até 3 ao mesmo tempo e nunca antagonistas (seca × enchente/chuva, queimada × chuva)', () => {
+    const { es } = setup();
+    es.triggerEvent('state_intervention', true);
+    assert.ok(es.canEventHappen('drought'), 'intervenção do Estado e seca podem vir juntas');
+    es.triggerEvent('drought');
+    assert.strictEqual(es.canEventHappen('flood'), false, 'seca e enchente não');
+    assert.strictEqual(es.canEventHappen('heavy_rain'), false, 'seca e chuva forte não');
+    assert.strictEqual(es.canEventHappen('drought'), false, 'não repete');
+    assert.ok(es.canEventHappen('wildfire'), 'queimada na seca pode');
+    es.triggerEvent('wildfire');
+    assert.strictEqual(es.canEventHappen('pipe_leak'), false, 'já são 3');
+    // Um evento esperando a decisão do Paulo também conta
+    const { es: es2 } = setup();
+    es2.pendingEvents.push({ id: 'p1', type: 'heavy_rain', awaiting: true });
+    assert.strictEqual(es2.canEventHappen('wildfire'), false);
+    assert.strictEqual(es2.canEventHappen('drought'), false);
+});
+
+test('queimada: fumaça sobe a poluição, os moradores reclamam e o fim desfaz o que fica', () => {
+    const { es, rm, res } = setup();
+    const before = res.pollution.current;
+    const ev = es.triggerEvent('wildfire');
+    assert.ok(res.pollution.current > before, 'fumaça na hora');
+    assert.ok(rm.getPollutionBalance().sources > 0, 'e enquanto queima');
+    assert.ok(res.population.eventSatisfaction < 0, 'satisfação cai');
+    es.endEvent(ev.id);
+    assert.strictEqual(res.population.eventSatisfaction, 0);
+    assert.ok(Math.abs(rm.getPollutionBalance().sources) < 1e-9);
+});

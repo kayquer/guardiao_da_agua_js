@@ -724,14 +724,15 @@ mixin(BuildingSystem, {
         const shadowWidth = buildingWidth * BUILDING_CONSTANTS.SHADOW_SIZE_MULTIPLIER;
         const shadowDepth = buildingDepth * BUILDING_CONSTANTS.SHADOW_SIZE_MULTIPLIER;
 
-        const shadow = BABYLON.MeshBuilder.CreateGround(`shadow_${buildingMesh.name}`, {
-            width: shadowWidth,
-            height: shadowDepth
-        }, this.scene);
+        // Instância de um quadrado-modelo escondido (um draw call para todas as sombras; antes cada prédio tinha a
+        // sua malha e o seu material, iguais)
+        const shadow = this.getGroundShadowTemplate().createInstance(`shadow_${buildingMesh.name}`);
+        shadow.scaling.x = shadowWidth;
+        shadow.scaling.z = shadowDepth;
+        shadow.isPickable = false;
 
         // ===== CLEAN CODE REFACTORING: Use constants for shadow positioning and material =====
         const SHADOW_HEIGHT_OFFSET = BUILDING_CONSTANTS.SHADOW_HEIGHT_OFFSET || 0.005;
-        const SHADOW_ALPHA = BUILDING_CONSTANTS.SHADOW_ALPHA || 0.3;
 
         // Position shadow exactly under building center (girada junto com o prédio: planta não quadrada)
         shadow.position.x = buildingMesh.position.x;
@@ -739,18 +740,28 @@ mixin(BuildingSystem, {
         shadow.rotation.y = buildingMesh.rotation.y;
         shadow.position.y = terrainHeight + SHADOW_HEIGHT_OFFSET;
 
-        // Standardized shadow material
-        const shadowMaterial = new BABYLON.StandardMaterial(`shadowMat_${buildingMesh.name}`, this.scene);
-        shadowMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-        shadowMaterial.alpha = SHADOW_ALPHA;
-        shadowMaterial.backFaceCulling = false;
-        shadow.material = shadowMaterial;
 
         // Associate shadow with building
         buildingMesh.shadowMesh = shadow;
         this.shadowMeshes.set(buildingMesh.name, shadow);
 
         return shadow;
+    },
+
+    /** Quadrado 1×1 preto translúcido, escondido: cada sombra falsa no chão é uma instância dele. */
+    getGroundShadowTemplate() {
+        if (this.groundShadowTemplate && !this.groundShadowTemplate.isDisposed()) return this.groundShadowTemplate;
+        const template = BABYLON.MeshBuilder.CreateGround('groundShadowTemplate', { width: 1, height: 1 }, this.scene);
+        const material = new BABYLON.StandardMaterial('groundShadowMat', this.scene);
+        material.diffuseColor = new BABYLON.Color3(0, 0, 0);
+        material.specularColor = new BABYLON.Color3(0, 0, 0);
+        material.alpha = BUILDINGS.SHADOW_ALPHA || 0.3;
+        material.backFaceCulling = false;
+        template.material = material;
+        template.isVisible = false;
+        template.isPickable = false;
+        this.groundShadowTemplate = template;
+        return template;
     },
 
     createBasicVoxelMesh(buildingType) {

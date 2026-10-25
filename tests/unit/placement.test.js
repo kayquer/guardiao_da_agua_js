@@ -70,3 +70,30 @@ test('os 5 prédios avançados têm modelo próprio, estudo com imagem e quiz, e
         assert.ok(!/\d/.test(s.pages.map(p => p.content).join('')), `${id}: texto sem números`);
     }
 });
+
+test('reciclar prédio: de 20% a 80% do custo, cada tipo de prédio de conhecimento conta uma vez', () => {
+    const h = load('js/utils/GameUtils.js', 'js/data/buildings.js', 'js/systems/BuildingSystem.js', 'js/systems/building/BuildingRecycle.js');
+    const BS = h('BuildingSystem');
+    const B = h('BUILDING_TYPES');
+    const fake = { buildings: new Map(), gameManager: { tutorialSystem: { isActive: false } } };
+    Object.setPrototypeOf(fake, BS.prototype);
+    const add = (id, type, extra = {}) => fake.buildings.set(id, { id, type, config: { ...B[type], id: type }, active: true, underConstruction: false, ...extra });
+    add('p', 'water_pump');
+    assert.strictEqual(fake.getRecycleRate().percent, 0.2, 'sem escola: 20%');
+    assert.strictEqual(fake.getRecycleValue(fake.buildings.get('p')), Math.round(B.water_pump.cost * 0.2));
+    add('s1', 'school');
+    add('s2', 'school'); // a segunda escola não soma de novo
+    add('t', 'technical_school', { underConstruction: true }); // em obra não conta
+    assert.ok(Math.abs(fake.getRecycleRate().percent - 0.25) < 1e-9);
+    fake.buildings.get('t').underConstruction = false;
+    ['research_center', 'university', 'water_research_center', 'tech_center', 'recycling_coop', 'ecopark'].forEach((t, i) => add(`k${i}`, t));
+    assert.strictEqual(fake.getRecycleRate().percent, 0.8, 'no máximo 80%');
+    // Prefeitura, rua e tutorial não reciclam
+    add('c', 'city_hall');
+    add('r', 'paved_road');
+    assert.strictEqual(fake.canRecycleBuilding(fake.buildings.get('c')), false);
+    assert.strictEqual(fake.canRecycleBuilding(fake.buildings.get('r')), false);
+    assert.strictEqual(fake.canRecycleBuilding(fake.buildings.get('p')), true);
+    fake.gameManager.tutorialSystem.isActive = true;
+    assert.strictEqual(fake.canRecycleBuilding(fake.buildings.get('p')), false);
+});

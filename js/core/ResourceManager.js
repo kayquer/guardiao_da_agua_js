@@ -333,7 +333,7 @@ class ResourceManager {
 
         const buildingSystem = this.gameManager.buildingSystem;
         const buildings = buildingSystem.getAllBuildings();
-        let totalCapacity = 500; // Capacidade base
+        let totalCapacity = ResourceManager.BASE_POPULATION_CAPACITY; // casas que a cidade já tem
 
         // Somar capacidade de edifícios residenciais e zonas (zona: a fração da fase em que está)
         buildings.forEach(building => {
@@ -350,6 +350,31 @@ class ResourceManager {
 
         this.resources.population.max = totalCapacity;
         log(`👥 Capacidade populacional atualizada: ${totalCapacity}`);
+    }
+
+    static BASE_POPULATION_CAPACITY = 500;
+
+    /**
+     * Os fatores que decidem se gente nova chega (os mesmos de calculatePopulationAttraction e updatePopulation),
+     * com o estado de agora: { icon, label, state: 'good'|'ok'|'bad', detail }. O painel 👥 mostra esta lista.
+     */
+    getGrowthFactors() {
+        const { water, electricity, pollution, population } = this.resources;
+        const waterRatio = water.current / Math.max(1, population.current * 2);
+        const energy = electricity.efficiency || 0;
+        const hasRoom = population.current < population.max - 0.5;
+        const rate = (value, good, bad) => (value === 'good' ? good : value === 'bad' ? bad : null);
+        const waterState = waterRatio >= 1 ? 'good' : waterRatio < 0.3 ? 'bad' : waterRatio < 0.7 ? 'ok' : 'good';
+        const energyState = energy >= 1 ? 'good' : energy < 0.5 ? 'bad' : 'ok';
+        const pollutionState = pollution.current > 70 ? 'bad' : pollution.current > 40 ? 'ok' : 'good';
+        const satisfactionState = population.satisfaction > 70 ? 'good' : population.satisfaction > 50 ? 'ok' : 'bad';
+        return [
+            { icon: '💧', label: 'Água guardada', state: waterState, detail: rate(waterState, 'sobra água para todos', 'quase sem água: gente vai embora') || 'dá, mas está apertado' },
+            { icon: '🏠', label: 'Lugar para morar', state: hasRoom ? 'good' : 'bad', detail: hasRoom ? `cabem mais ${Math.floor(population.max - population.current)}` : 'lotado: construa zonas residenciais' },
+            { icon: '😊', label: 'Satisfação', state: satisfactionState, detail: rate(satisfactionState, 'acima de 70%: cresce rápido', 'abaixo de 50%: a cidade encolhe') || 'entre 50% e 70%: cresce devagar' },
+            { icon: '🏭', label: 'Poluição', state: pollutionState, detail: rate(pollutionState, 'ar e rio limpos', 'acima de 70%: afasta moradores') || 'acima de 40%: atrapalha' },
+            { icon: '⚡', label: 'Energia', state: energyState, detail: rate(energyState, 'tem energia para todos', 'menos da metade: atrapalha muito') || 'faltando um pouco' }
+        ];
     }
 
     calculatePopulationAttraction() {

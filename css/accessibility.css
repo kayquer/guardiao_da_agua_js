@@ -16,6 +16,19 @@
     zoom: var(--text-scale, 1);
 }
 
+/* Menu inicial e tela de pausa (incl. Configurações, notificações, pesquisa): crescem inteiros, na hora em que o
+   tamanho muda. A altura máxima é dividida pela escala para o painel continuar cabendo na tela (e rolar). */
+#main-menu .menu-col,
+#profile-screen .profile-form-container,
+#pause-overlay .overlay-content {
+    zoom: var(--text-scale, 1);
+}
+
+#pause-overlay .overlay-content {
+    max-height: calc((100vh - 32px) / var(--text-scale, 1));
+    overflow-y: auto;
+}
+
 /* Balão do Paulo e toasts: tamanho da fonte em vez de zoom (o zoom deixava o modal "instável" a cada quadro do
    retrato animado e tirava os toasts do canto por meio pixel) */
 html .decision-speech { /* html: vence o css/event-decision.css, carregado depois */
@@ -105,4 +118,36 @@ html .toast {
         left: 50%;
         translate: -50% 0;
     }
+}
+
+/* ===== Painéis de recurso (fundo claro): cores legíveis e padronizadas — verde = bom, vermelho = ruim ===== */
+.resource-details-panel h4 { color: #1b5e20; }
+.resource-details-panel h5 { color: #5b2a86; }
+.resource-details-panel .stat-label { color: #3a3a3a; }
+.resource-details-panel .stat-value { color: #0d47a1; }
+.resource-details-panel .stat-value.positive,
+.resource-details-panel .building-production,
+.resource-details-panel .factor-good b,
+.resource-details-panel .factor-good .factor-detail { color: #1b7a34; }
+.resource-details-panel .stat-value.negative,
+.resource-details-panel .building-consumption,
+.resource-details-panel .building-cost,
+.resource-details-panel .factor-bad b,
+.resource-details-panel .factor-bad .factor-detail { color: #c62828; }
+.resource-details-panel .stat-value.warn,
+.resource-details-panel .factor-ok .factor-detail { color: #a35a00; }
+.resource-details-panel .building-storage,
+.resource-details-panel .building-bonus { color: #0d47a1; }
+.resource-details-panel .stat-note { color: #333; opacity: 1; }
+.resource-details-panel .no-sources { color: #555; }
+.resource-details-panel .renewable-indicator { font-weight: 700; }
+.resource-details-panel .renewable-indicator.is-renewable { color: #1b7a34; }
+.resource-details-panel .renewable-indicator.is-fossil { color: #8d4a00; }
+.resource-details-panel .growth-factors li { display: flex; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; }
+.resource-details-panel .factor-detail { font-size: 0.85em; font-weight: 700; }
+.resource-details-panel .building-name {
+    color: #1f2937;
+    text-shadow: none;
+    -webkit-text-stroke: 0;
+    font-weight: 700;
 }

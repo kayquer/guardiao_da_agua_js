@@ -279,6 +279,44 @@ class EventSystem {
         });
         
         // EVENTOS AMBIENTAIS
+        this.addEventType('wildfire', {
+            name: 'Queimada',
+            description: 'Fogo no mato perto da cidade: a fumaça suja o ar e os moradores reclamam.',
+            category: 'environment',
+            severity: 'high',
+            duration: 180000, // 3 minutos
+            probability: 0.08, // mais provável no tempo seco e quente (getEventWeight)
+            icon: '🔥',
+            effects: {
+                pollutionSpike: 20,     // fumaça na hora
+                pollutionIncrease: 6,   // e enquanto queima (poluição/min)
+                satisfactionBonus: -8   // moradores incomodados com a fumaça
+            },
+            response: {
+                kind: 'threat',
+                intro: '{nome}, tem fogo no mato perto da cidade! A fumaça já chegou nas casas. Como a gente combate?',
+                options: [
+                    { id: 'brigade', tier: 'max', label: 'Bombeiros e brigada de incêndio', cost: 3000, impact: 0.25, duration: 0.4,
+                        detail: 'Os bombeiros cercam o fogo e a brigada faz aceiros para ele não passar.',
+                        requires: [{ id: 'fire_station', count: 1, label: 'Corpo de Bombeiros' }], reputation: { citizens: 3, environment: 3 } },
+                    { id: 'firebreak', tier: 'mid', label: 'Abrir aceiros com tratores', cost: 1500, impact: 0.5, duration: 0.6,
+                        detail: 'Faixas de terra sem mato seguram o fogo, mas ele ainda queima um bom pedaço.', reputation: { environment: 1 } },
+                    { id: 'warn', tier: 'low', label: 'Pedir para ninguém botar fogo', cost: 300, impact: 0.8, duration: 0.9,
+                        detail: 'Carro de som e redes sociais: ajuda a não começar outro, mas este continua.', reputation: { citizens: 1 } },
+                    { id: 'none', tier: 'none', label: 'Não fazer nada', impact: 1, duration: 1,
+                        detail: 'O fogo queima até acabar o mato.', reputation: { environment: -4, citizens: -2 } }
+                ]
+            },
+            educationalContent: {
+                message: 'Queimadas soltam fumaça que faz mal aos pulmões e deixam o solo pelado: na próxima chuva, a terra vai para o rio.',
+                tips: [
+                    'No tempo seco, qualquer faísca vira incêndio: nunca queime lixo nem mato',
+                    'Aceiros (faixas sem mato) seguram o fogo',
+                    'Mata ciliar bem cuidada protege o rio depois do fogo'
+                ]
+            }
+        });
+
         this.addEventType('industrial_pollution', {
             name: 'Poluição Industrial',
             description: 'Uma indústria próxima causou um vazamento, aumentando a poluição.',
@@ -433,6 +471,31 @@ class EventSystem {
         this.updateChoiceTimeouts();
     }
     
+    // ===== EVENTOS AO MESMO TEMPO =====
+    // Até MAX_SIMULTANEOUS eventos (ativos + anunciados) juntos — ex.: Intervenção do Estado e seca —, mas nunca
+    // dois que se contradizem (seca com enchente ou chuva forte, queimada com chuva).
+    static MAX_SIMULTANEOUS = 3;
+    static ANTAGONISTS = {
+        drought: ['flood', 'heavy_rain'],
+        flood: ['drought', 'wildfire'],
+        heavy_rain: ['drought', 'wildfire'],
+        wildfire: ['flood', 'heavy_rain']
+    };
+
+    /** Tipos dos eventos em andamento e dos anunciados (esperando decisão ou no aviso). */
+    getOngoingEventTypes() {
+        return [...new Set([...[...this.activeEvents.values()].map(e => e.type), ...this.pendingEvents.map(p => p.type)])];
+    }
+
+    /** O evento pode começar agora? Não repete, não passa do limite e não briga com um que já está acontecendo. */
+    canEventHappen(type) {
+        const ongoing = this.getOngoingEventTypes();
+        if (ongoing.includes(type)) return false;
+        if (ongoing.length >= EventSystem.MAX_SIMULTANEOUS) return false;
+        const enemies = EventSystem.ANTAGONISTS[type] || [];
+        return !ongoing.some(t => enemies.includes(t));
+    }
+
     tryGenerateEvent() {
         if (Math.random() > this.eventProbability * this.difficultyMultiplier) {
             return; // Não gerar evento desta vez
@@ -440,7 +503,7 @@ class EventSystem {
         
         // Selecionar tipo de evento baseado em probabilidades
         const availableEvents = Array.from(this.eventTypes.values()).filter(
-            eventType => !this.hasActiveEventOfType(eventType.id) && !this.pendingEvents.some(p => p.type === eventType.id)
+            eventType => this.canEventHappen(eventType.id) // não repete, até 3 juntos, sem antagonistas
         );
         
         if (availableEvents.length === 0) return;
@@ -709,6 +772,8 @@ class EventSystem {
             if (eventType.id === 'flood') weight *= this.getFloodRisk().risk;
         }
         if (eventType.id === 'drought') weight *= rain > 0 ? 0.3 : profile?.hot ? 2 : 1;
+        // Queimada: quase não acontece com chuva; tempo quente e seca em andamento dobram a chance
+        if (eventType.id === 'wildfire') weight *= (rain > 0 ? 0.1 : profile?.hot ? 2 : 1) * (this.hasActiveEventOfType('drought') ? 2 : 1);
         if (eventType.id === 'government_grant') {
             weight *= this.gameManager.questSystem?.getReputationModifiers?.().grantChance ?? 1;
         }

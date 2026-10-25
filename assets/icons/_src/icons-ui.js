@@ -3,7 +3,7 @@
  * Regra dos pequenos: formas simples, contorno grosso e UM movimento lento e sutil.
  */
 'use strict';
-const { O, P, rect, circ, ell, path, line, poly, g, A, box, ball, drop, cloud, gear, pivot, thick, boltD, starD, sparkD, waveD } = require('./core');
+const { O, P, rect, circ, ell, path, line, poly, g, A, box, ball, drop, cloud, gear, pivot, thick, flame, wrench, boltD, starD, sparkD, waveD } = require('./core');
 
 const HTML = 'index.html';
 const RP = 'js/systems/ui/ResourcePanels.js';
@@ -15,6 +15,9 @@ const WU = 'js/systems/ui/WeatherUI.js';
 const LB = 'js/systems/ui/LessonBookUI.js';
 const SB = 'js/systems/ui/StudyBookUI.js';
 const UI = 'js/systems/UIManager.js';
+const EV = 'js/systems/EventSystem.js';
+const EU = 'js/systems/ui/EventUI.js';
+const ED = 'js/systems/ui/EventDecisionUI.js';
 
 module.exports = [
     // ===================== HUD / RECURSOS =====================
@@ -509,5 +512,107 @@ module.exports = [
         id: 'weather-humidity', area: 'weather', emoji: ['💦'], title: 'Umidade',
         used: [WU + ' (umidade do ar)'],
         sm: () => g(drop(12, 21, 6.5), { a: A('bobs', 3) }) + g(drop(23.5, 13, 4.5), { a: A('bobs', 3, 1.5) })
+    },
+    // ===================== EVENTOS (EventSystem) e extras =====================
+    {
+        id: 'event-fire', area: 'ui', emoji: ['🔥'], title: 'Queimada',
+        used: [EV + ' (wildfire.icon)', EU, ED, UI + ' (toasts)'],
+        sm: () => ell(16, 28, 14, 3, P.grass[0], { w: 1.6 }) +
+            poly('25,8 29.5,19 20.5,19', P.leaf[0], { w: 1.4 }) + rect(24, 19, 2, 7, P.brown[0], { w: 1.2 }) +
+            g(circ(12, 9, 2.6, P.smoke[0], { w: 1.4 }), { a: A('smoke', 3.2, 0, 'center', 'ease-out') }) +
+            g(circ(18, 7, 2.2, P.smoke[0], { w: 1.4 }), { a: A('smoke', 3.2, 1.6, 'center', 'ease-out') }) +
+            flame(9, 28, 0.45, 0.6, 'orange', 1.3) + flame(17.5, 28, 0.72, 0.8, 'orange', 1.5),
+        lg: () => ell(64, 108, 58, 12, P.grass[0]) + path('M10 112a58 12 0 0 0 108 0a58 9 0 0 1-108 0z', P.grass[1], { s: 'none' }) +
+            rect(14, 64, 7, 42, P.soot[0]) + line('M17.5 82l-9-9M17.5 74l8-8', { w: 3.5 }) +
+            poly('104,26 123,78 85,78', P.leaf[0]) + poly('104,34 117,74 106,74', P.leaf[1], { s: 'none' }) + rect(100.5, 78, 7, 26, P.brown[0]) +
+            [0, 1, 2].map(i => g(circ(56 + (i % 2 ? 8 : -4), 40, 9, P.smoke[0]), { a: A('smoke', 3.6, i * 1.2, 'center', 'ease-out') })).join('') +
+            flame(36, 108, 1.2, 0.7, 'orange', 3) + flame(84, 108, 1.4, 0.75, 'orange', 3) + flame(62, 108, 2.3, 0.9, 'orange', 3) +
+            [[44, 58, 0], [78, 54, 0.8], [30, 70, 1.6]].map(([x, y, d]) => g(circ(x, y, 2.4, P.yellow[0], { w: 1.5 }), { a: A('rise', 2.4, d, 'center', 'ease-out') })).join('')
+    },
+    {
+        id: 'event-flood', area: 'ui', emoji: ['🌊'], title: 'Enchente',
+        used: [EV + ' (flood.icon)', EU, ED, UI + ' (toasts)'],
+        sm: () => rect(8, 11, 16, 13, '#fff', { w: 1.6 }) + poly('5.5,12 16,3.5 26.5,12', P.red[0], { w: 1.6 }) +
+            rect(10.5, 14, 3.5, 3.5, P.glass[0], { w: 1.1 }) + rect(17, 14, 4.5, 10, P.brown[0], { w: 1.3 }) +
+            g(g(path(waveD(-8, 40, 21, 1.5, 8) + 'V34H-8Z', P.water[0], { w: 1.6 }) + line(waveD(-8, 40, 26, 1, 8), { s: '#fff', w: 1.2, op: 0.8 }),
+                { a: A('wave', 1.6, 0, 'center', 'linear') }), { a: A('level', 4) }),
+        lg: () => rect(8, 60, 5, 34, P.brown[0], { w: 2.5 }) + rect(20, 60, 5, 34, P.brown[0], { w: 2.5 }) + line('M6 68h22', { w: 3 }) +
+            box(34, 46, 52, 40, 'white') + poly('28,48 60,18 92,48', P.red[0]) + rect(42, 52, 12, 12, P.glass[0], { w: 2.5 }) +
+            g(rect(66, 52, 12, 12, P.yellow[0], { w: 2.5 }), { a: A('blinkx', 4) }) + rect(54, 66, 12, 20, P.brown[0], { rx: 2 }) +
+            g(cloud(106, 18, 0.9, 'soot'), { a: A('drift', 5) }) +
+            [[96, 34, 0], [108, 38, 0.5], [118, 34, 1]].map(([x, y, d]) => g(drop(x, y, 2.6, 'water', { noHl: true, w: 2 }), { a: A('fall', 1.2, d, 'center', 'linear') })).join('') +
+            g(g(path(waveD(-24, 152, 74, 4, 24) + 'V140H-24Z', P.water[0]) + line(waveD(-24, 152, 92, 3, 24), { s: '#fff', w: 3, op: 0.8 }) +
+                line(waveD(-12, 152, 108, 2.5, 24), { s: '#fff', w: 2.5, op: 0.6 }),
+                { a: A('wave', 2.4, 0, 'center', 'linear') }), { a: A('level', 5) })
+    },
+    {
+        id: 'event-repair', area: 'ui', emoji: ['🔧'], title: 'Falha de equipamento',
+        used: [EV + ' (equipment_failure.icon)', EU, ED, UI + ' (toasts)'],
+        sm: () => rect(1, 20, 13, 6, P.gray[0], { rx: 1, w: 1.5 }) + rect(18, 20, 13, 6, P.gray[0], { rx: 1, w: 1.5 }) +
+            rect(11.5, 18, 3, 10, P.gray[1], { w: 1.2 }) + rect(17.5, 18, 3, 10, P.gray[1], { w: 1.2 }) +
+            g(drop(16, 28.5, 1.6, 'water', { flat: true, w: 1.1 }), { a: A('drip', 1.4, 0, 'center', 'ease-in') }) +
+            g(wrench(16, 12.5, 3.6, 105, 8, 2.4), { a: A('tilt', 1.8, 0, '30% 85%') }) +
+            g(path(sparkD(25, 12, 3.2), P.yellow[0], { w: 1.1 }), { a: A('shine', 2.2) }),
+        lg: () => g(pivot(24, 28, 17) + gear(24, 28, 12, 'gray'), { a: A('spin', 10, 0, 'center', 'linear') }) +
+            box(2, 70, 46, 22, 'gray', { rx: 4 }) + box(80, 70, 46, 22, 'gray', { rx: 4 }) +
+            rect(44, 62, 12, 38, P.gray[1], { rx: 3 }) + rect(72, 62, 12, 38, P.gray[1], { rx: 3 }) +
+            [[50, 68], [50, 94], [78, 68], [78, 94]].map(([x, y]) => circ(x, y, 2.2, P.dark[0], { s: 'none' })).join('') +
+            g(drop(64, 106, 5, 'water', { noHl: true, w: 2.5 }), { a: A('drip', 1.4, 0, 'center', 'ease-in') }) + ell(64, 120, 14, 4, P.water[0], { w: 2.5 }) +
+            g(wrench(64, 54, 13, 105, 32, 8), { a: A('tilt', 1.8, 0, '30% 85%') }) +
+            g(path(sparkD(96, 44, 9), P.yellow[0], { w: 2.5 }), { a: A('shine', 2.2) }) +
+            g(path(sparkD(36, 54, 6), '#fff', { w: 2 }), { a: A('shine', 2.2, 1.1) })
+    },
+    {
+        id: 'event-campaign', area: 'ui', emoji: ['📢'], title: 'Campanha de economia de água',
+        used: [EV + ' (conservation_campaign.icon)', EU, ED, UI + ' (toasts)'],
+        sm: () => g(path('M4 13h5l11-7v20l-11-7H4z', P.red[0], { w: 1.6 }) + ell(20, 16, 2.2, 10, P.red[1], { w: 1.6 }) +
+            rect(6.5, 19, 3, 6, P.dark[0], { rx: 1, w: 1.2 }) + drop(14, 17.5, 2.4, 'water', { noHl: true, w: 1.1 }), { a: A('nod', 2.4, 0, '0% 50%') }) +
+            g(line('M24.5 12q3 4 0 8', { w: 1.8 }), { a: A('fade', 1.6) }) +
+            g(line('M27.5 9q5 7 0 14', { w: 1.8 }), { a: A('fade', 1.6, 0.8) }),
+        lg: () => g(rect(8, 54, 10, 20, P.dark[0], { rx: 3 }) + rect(26, 74, 12, 26, P.dark[0], { rx: 4 }) +
+            path('M16 52h20l44-28v80l-44-28H16z', P.red[0], { s: 'none' }) + path('M60 37l20-13v80l-20-13z', P.red[1], { s: 'none' }) + path('M16 52h20l44-28v80l-44-28H16z') +
+            ell(80, 64, 9, 40, P.red[1]) + ell(80, 64, 4.5, 31, P.dark[0], { s: 'none' }) +
+            drop(50, 72, 10, 'water'), { a: A('nod', 2.4, 0, '0% 50%') }) +
+            [[0, 'M96 48q10 16 0 32'], [0.5, 'M106 38q16 26 0 52'], [1, 'M116 28q22 36 0 72']].map(([d, p]) =>
+                g(thick(p, P.blue[0], 4, { ow: 3 }), { a: A('fade', 1.6, d) })).join('')
+    },
+    {
+        id: 'event-emergency', area: 'ui', emoji: ['🚨'], title: 'Emergência / intervenção',
+        used: [EV + ' (state_intervention.icon)', 'js/systems/GameOverSystem.js (declarar emergência)', EU, UI + ' (toasts)'],
+        sm: () => g(thick('M5 11L2 8.5M4.5 16H1', P.yellow[0], 1.6, { ow: 1.4 }), { a: A('blinkx', 1, 0, 'center', 'linear') }) +
+            g(thick('M27 11l3-2.5M27.5 16H31', P.yellow[0], 1.6, { ow: 1.4 }), { a: A('blinkx', 1, 0.5, 'center', 'linear') }) +
+            g(thick('M16 5.5V2', P.yellow[0], 1.6, { ow: 1.4 }), { a: A('blinkx', 0.5, 0, 'center', 'linear') }) +
+            path('M8 23v-7a8 8 0 0 1 16 0v7z', P.red[0], { w: 1.6 }) +
+            g(rect(13, 13, 6, 9, P.yellow[0], { rx: 3, w: 1.2 }), { a: A('blinkx', 0.5, 0, 'center', 'linear') }) +
+            line('M10.5 17a5.5 5.5 0 0 1 2.5-4.5', { s: '#fff', w: 1.3, op: 0.85 }) +
+            rect(5, 23, 22, 6, P.dark[0], { rx: 1.5, w: 1.6 }),
+        lg: () => g(poly('30,58 2,40 2,76', P.yellow[0], { op: 0.85 }), { a: A('blinkx', 1, 0, 'center', 'linear') }) +
+            g(poly('98,58 126,40 126,76', P.yellow[0], { op: 0.85 }), { a: A('blinkx', 1, 0.5, 'center', 'linear') }) +
+            g(thick('M64 22V4M40 30l-9-11M88 30l9-11', P.yellow[0], 5, { ow: 4 }), { a: A('blinkx', 0.5, 0, 'center', 'linear') }) +
+            path('M30 92V64a34 34 0 0 1 68 0v28z', P.red[0], { s: 'none' }) + path('M84 38a34 34 0 0 1 14 26v28H86V64a32 32 0 0 0-2-26z', P.red[1], { s: 'none' }) +
+            path('M30 92V64a34 34 0 0 1 68 0v28z') +
+            g(rect(52, 50, 24, 38, P.yellow[0], { rx: 12 }), { a: A('blinkx', 0.5, 0, 'center', 'linear') }) +
+            line('M40 70a24 24 0 0 1 10-20', { s: '#fff', w: 4, op: 0.85 }) +
+            rect(24, 88, 80, 8, P.gray[0], { rx: 3 }) + box(14, 94, 100, 16, 'dark', { rx: 4 })
+    },
+    {
+        id: 'ui-text-size', area: 'ui', emoji: ['🔠'], title: 'Tamanho do texto',
+        used: [HTML + ' (#menu-text-title, #pause-text-title)'],
+        sm: () => path('M5 3h15l6 6v20H5z', '#fff', { w: 1.8 }) + path('M20 3v6h6', P.white[1], { w: 1.5 }) +
+            line('M8.5 8h6', { w: 1.2 }) + line('M8.5 12.5h9', { w: 2.2 }) + line('M8.5 18h6.5', { w: 3.4 }) +
+            g(thick('M25 26L29 30', P.dark[0], 2.6, { ow: 1.6 }) + circ(21.5, 22.5, 4.6, P.glass[0], { w: 1.8 }) + line('M19.2 22.5h4.6', { w: 2.8 }),
+                { a: A('pulse', 2.6, 0, '40% 40%') })
+    },
+    {
+        id: 'ui-medal', area: 'ui', emoji: ['🏅'], title: 'Medalha / conquista',
+        used: [EV + ' (sequência de boas decisões)', ED, MU + ' (conquistas)', UI + ' (toasts)'],
+        sm: () => g(poly('18,2 24,2 19,14 13,14', P.red[0], { w: 1.4 }) + poly('8,2 14,2 19,14 13,14', P.blue[0], { w: 1.4 }) +
+            ball(16, 21, 7.5, 'yellow') + path(starD(16, 21, 3.6), P.orange[0], { w: 1.1 }), { a: A('sway', 3.6, 0, '50% 0%') }) +
+            g(path(sparkD(23, 16, 3), '#fff', { w: 1.1 }), { a: A('shine', 3) }),
+        lg: () => g(poly('70,4 94,4 76,60 52,60', P.red[0]) + poly('34,4 58,4 76,60 52,60', P.blue[0]) + line('M46 4l18 56', { s: '#fff', w: 4 }) +
+            ball(64, 88, 30, 'yellow') + circ(64, 88, 21, 'none', { s: P.yellow[1], w: 4 }) + path(starD(64, 88, 14), P.orange[0]) +
+            rect(50, 54, 28, 10, P.yellow[1], { rx: 3 }), { a: A('sway', 3.6, 0, '50% 0%') }) +
+            g(path(sparkD(88, 72, 8), '#fff', { w: 2.5 }), { a: A('shine', 3) }) +
+            g(path(sparkD(36, 104, 6), '#fff', { w: 2 }), { a: A('shine', 3, 1.5) })
     }
 ];

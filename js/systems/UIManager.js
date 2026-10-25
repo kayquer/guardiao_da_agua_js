@@ -74,10 +74,6 @@ class UIManager {
         this.updateTimer = 0;
         this.updateInterval = 100; // 100ms
 
-        // Cooldown UI
-        this.cooldownIndicator = null;
-        this.cooldownUpdateInterval = null;
-
         // ===== ENHANCED MOBILE SUPPORT =====
         this.isMobile = window.innerWidth <= 768;
         this.mobilePanelsVisible = {
@@ -662,10 +658,11 @@ class UIManager {
     }
 
     updateSoftPauseBadge() {
-        // Na tela de pausa (e no histórico de notificações dela) o jogo já está parado: o selo só cobriria o título
-        const pauseScreen = ['#pause-overlay', '#notification-history', '#research-panel', '#settings-panel']
-            .some(sel => document.querySelector(sel)?.getClientRects().length > 0);
-        const paused = this.gameManager?.pauseReasons?.size > 0 && this.gameManager.gameState === 'playing' && !pauseScreen;
+        // Na tela de pausa (e nos painéis dela) o jogo já está parado: o selo só cobriria o título. A tela de pausa só
+        // aparece com gameState 'paused', então basta ele (antes: 4 querySelector + getClientRects a cada 200 ms)
+        const paused = this.gameManager?.pauseReasons?.size > 0 && this.gameManager.gameState === 'playing';
+        if (paused === this.softPauseShown) return;
+        this.softPauseShown = paused;
         let badge = document.getElementById('soft-pause-badge');
         if (paused && !badge) {
             badge = document.createElement('div');
@@ -680,7 +677,8 @@ class UIManager {
     updateResourceDisplay() {
         if (!this.gameManager.resourceManager) return;
 
-        const resources = this.gameManager.resourceManager.getAllResources();
+        // Lê direto (getAllResources faz uma cópia profunda: 10× por segundo à toa) e só escreve o que mudou
+        const resources = this.gameManager.resourceManager.resources;
         if (!resources) return;
 
         // Água (formato: usado/capacidade)
@@ -693,13 +691,13 @@ class UIManager {
             current = Math.round(current);
 
             const storage = Math.round(resources.water.storage || resources.water.max || 1000);
-            this.elements.waterAmount.textContent = `${current}/${storage}L`;
+            this.setText(this.elements.waterAmount, `${current}/${storage}L`);
             this.updateResourceStatus(this.elements.waterAmount, current, storage);
         }
 
         // Poluição
         if (this.elements.pollutionLevel && resources.pollution) {
-            this.elements.pollutionLevel.textContent = `${Math.round(resources.pollution.current || 0)}%`;
+            this.setText(this.elements.pollutionLevel, `${Math.round(resources.pollution.current || 0)}%`);
             this.updatePollutionStatus(this.elements.pollutionLevel, resources.pollution.current || 0);
         }
 
@@ -707,19 +705,19 @@ class UIManager {
         if (this.elements.populationCount && resources.population) {
             const current = Math.round(resources.population.current || 0);
             const maxCapacity = Math.round(resources.population.max || 1000);
-            this.elements.populationCount.textContent = `${current}/${maxCapacity}`;
+            this.setText(this.elements.populationCount, `${current}/${maxCapacity}`);
             this.updateResourceStatus(this.elements.populationCount, current, maxCapacity);
         }
 
         // Satisfação
         if (this.elements.satisfactionLevel && resources.population) {
-            this.elements.satisfactionLevel.textContent = `${Math.round(resources.population.satisfaction || 0)}%`;
+            this.setText(this.elements.satisfactionLevel, `${Math.round(resources.population.satisfaction || 0)}%`);
             this.updateSatisfactionStatus(this.elements.satisfactionLevel, resources.population.satisfaction || 0);
         }
 
         // Orçamento
         if (this.elements.budgetAmount && resources.budget) {
-            this.elements.budgetAmount.textContent = `R$ ${Math.round(resources.budget.current || 0).toLocaleString()}`;
+            this.setText(this.elements.budgetAmount, `R$ ${Math.round(resources.budget.current || 0).toLocaleString()}`);
         }
 
         // Energia (formato: atual/máximo disponível)
@@ -727,16 +725,12 @@ class UIManager {
             const current = Math.round(resources.electricity.current || 0);
             const maxAvailable = Math.round(resources.electricity.generation || 0);
 
-            this.elements.electricityAmount.textContent = `${current}/${maxAvailable} MW`;
+            this.setText(this.elements.electricityAmount, `${current}/${maxAvailable} MW`);
 
-            // Adicionar classe de status baseada na eficiência
+            // Classe de status pela eficiência (toggle não mexe no DOM se já está certo)
             const efficiency = resources.electricity.efficiency || 0;
-            this.elements.electricityAmount.classList.remove('energy-sufficient', 'energy-deficit');
-            if (efficiency >= 1.0) {
-                this.elements.electricityAmount.classList.add('energy-sufficient');
-            } else {
-                this.elements.electricityAmount.classList.add('energy-deficit');
-            }
+            this.elements.electricityAmount.classList.toggle('energy-sufficient', efficiency >= 1.0);
+            this.elements.electricityAmount.classList.toggle('energy-deficit', efficiency < 1.0);
         }
 
         // Relógio do jogo
@@ -810,42 +804,27 @@ class UIManager {
         return num.toString();
     }
     
+    /** Escreve o texto só se mudou (escrever igual também invalida o estilo e o layout do HUD). */
+    setText(element, text) {
+        if (element.textContent !== text) element.textContent = text;
+    }
+
+    /** Uma das classes critical/warning/good; não toca no DOM se já está certa. */
+    setStatusClass(element, status) {
+        for (const cls of ['critical', 'warning', 'good']) element.classList.toggle(cls, cls === status);
+    }
+
     updateResourceStatus(element, current, max) {
         const percentage = (current / max) * 100;
-        
-        element.classList.remove('critical', 'warning', 'good');
-        
-        if (percentage < 20) {
-            element.classList.add('critical');
-        } else if (percentage < 50) {
-            element.classList.add('warning');
-        } else {
-            element.classList.add('good');
-        }
+        this.setStatusClass(element, percentage < 20 ? 'critical' : percentage < 50 ? 'warning' : 'good');
     }
-    
+
     updatePollutionStatus(element, level) {
-        element.classList.remove('critical', 'warning', 'good');
-        
-        if (level > 80) {
-            element.classList.add('critical');
-        } else if (level > 50) {
-            element.classList.add('warning');
-        } else {
-            element.classList.add('good');
-        }
+        this.setStatusClass(element, level > 80 ? 'critical' : level > 50 ? 'warning' : 'good');
     }
-    
+
     updateSatisfactionStatus(element, level) {
-        element.classList.remove('critical', 'warning', 'good');
-        
-        if (level < 30) {
-            element.classList.add('critical');
-        } else if (level < 60) {
-            element.classList.add('warning');
-        } else {
-            element.classList.add('good');
-        }
+        this.setStatusClass(element, level < 30 ? 'critical' : level < 60 ? 'warning' : 'good');
     }
     
     // ===== CONSTRUÇÃO =====
@@ -1032,8 +1011,6 @@ class UIManager {
             if (hasStudyContent) descText = 'Estude para liberar';
         }
 
-        // Overlay da espera entre obras (disableBuildingButtons) sobrevive à troca do conteúdo
-        const cooldown = item.querySelector('.cooldown-overlay');
         item.innerHTML = `
             ${iconHTML}
             <span class="building-tier" title="Nível tecnológico">${typeof TechTree !== 'undefined' ? TechTree.TIERS[buildingType.tier || 1]?.icon : ''}</span>
@@ -1043,7 +1020,6 @@ class UIManager {
                 <div class="building-description">${descText}</div>
             </div>
         `;
-        if (cooldown) item.appendChild(cooldown);
     }
 
     /** Contagens dos requisitos ("1/3,0/1"): o card trancado por tecnologia só é refeito quando elas mudam. */
@@ -2081,6 +2057,17 @@ class UIManager {
             `;
         }
 
+        // Reciclar: tira o prédio e devolve parte do custo (BuildingRecycle.js), com confirmação
+        if (bs?.canRecycleBuilding?.(building)) {
+            const { percent } = bs.getRecycleRate();
+            actions += `
+                <button class="action-btn recycle-btn" data-building-id="${building.id}" onclick="window.gameManager.uiManager.confirmRecycleBuilding('${building.id}')"
+                    title="Quanto mais escolas, escolas técnicas e centros de pesquisa prontos, mais volta">
+                    ♻️ Reciclar (volta R$ ${bs.getRecycleValue(building).toLocaleString('pt-BR')} · ${Math.round(percent * 100)}%)
+                </button>
+            `;
+        }
+
         // ===== FEATURE FLAGS: Hide rental button in release version =====
         const showRentalButton = FEATURE_FLAGS.isUIFeatureVisible('rentalButton');
 
@@ -2096,6 +2083,21 @@ class UIManager {
         }
 
         return actions;
+    }
+
+    async confirmRecycleBuilding(buildingId) {
+        const bs = this.gameManager?.buildingSystem;
+        const building = bs?.buildings.get(buildingId);
+        if (!building || !bs.canRecycleBuilding(building)) return;
+        const { percent, sources } = bs.getRecycleRate();
+        const value = bs.getRecycleValue(building);
+        const why = sources.length
+            ? `Seu conhecimento ajuda: ${sources.map(s => `${s.name} +${Math.round(s.bonus * 100)}%`).join(', ')}.`
+            : 'Construa escola, escola técnica, centro de pesquisa ou universidade para aproveitar mais o material.';
+        const ok = await gameConfirm(`Reciclar ${building.config.name}?`,
+            `O prédio sai do mapa e voltam R$ ${value.toLocaleString('pt-BR')} (${Math.round(percent * 100)}% do custo). ${why}`,
+            { confirmText: '♻️ Reciclar', cancelText: 'Manter', icon: 'question' });
+        if (ok) bs.recycleBuilding(buildingId);
     }
 
     getCategoryDisplayName(category) {
@@ -2119,209 +2121,6 @@ class UIManager {
     // ===== Interface de empréstimos: js/systems/ui/LoanUI.js (6 métodos) =====
 
     // ===== SISTEMA DE COOLDOWN VISUAL APRIMORADO =====
-    showBuildingCooldown(remainingTime, totalTime) {
-        // Criar indicador de cooldown se não existir
-        if (!this.cooldownIndicator) {
-            this.createCooldownIndicator();
-        }
-
-        // Mostrar o indicador com animação suave
-        this.cooldownIndicator.style.display = 'block';
-        this.cooldownIndicator.style.opacity = '0';
-        this.cooldownIndicator.style.transform = 'translate(-50%, -50%) scale(0.8)';
-
-        // Animação de entrada
-        requestAnimationFrame(() => {
-            this.cooldownIndicator.style.transition = 'all 0.3s ease-out';
-            this.cooldownIndicator.style.opacity = '1';
-            this.cooldownIndicator.style.transform = 'translate(-50%, -50%) scale(1)';
-        });
-
-        // Atualizar texto com formatação melhorada
-        const seconds = Math.ceil(remainingTime / 1000);
-        const progressText = this.cooldownIndicator.querySelector('.cooldown-text');
-        if (progressText) {
-            progressText.textContent = `⏱️ Aguarde ${seconds}s antes de construir novamente`;
-        }
-
-        // Desabilitar botões de construção com feedback visual
-        this.disableBuildingButtons();
-
-        // Adicionar efeito de pulsação no painel de construção
-        this.addCooldownPulseEffect();
-
-        // Iniciar atualização do progresso
-        this.startCooldownUpdate(remainingTime, totalTime);
-
-        // Tocar som de feedback aprimorado
-        if (typeof AudioManager !== 'undefined') {
-            AudioManager.playSound('sfx_build_error', 0.6);
-        }
-    }
-
-    createCooldownIndicator() {
-        // Criar elemento do indicador de cooldown aprimorado
-        this.cooldownIndicator = document.createElement('div');
-        this.cooldownIndicator.className = 'building-cooldown enhanced';
-        this.cooldownIndicator.style.display = 'none';
-
-        this.cooldownIndicator.innerHTML = `
-            <div class="cooldown-icon">${uiIcon('ui-build', 'lg')}</div>
-            <div class="cooldown-text">Aguarde antes de construir novamente</div>
-            <div class="cooldown-progress">
-                <div class="cooldown-progress-fill"></div>
-                <div class="cooldown-progress-glow"></div>
-            </div>
-            <div class="cooldown-time">0s</div>
-            <div class="cooldown-subtitle">Sistema de construção em pausa</div>
-        `;
-
-        // Adicionar ao body
-        document.body.appendChild(this.cooldownIndicator);
-    }
-
-    startCooldownUpdate(remainingTime, totalTime) {
-        // Limpar intervalo anterior se existir
-        if (this.cooldownUpdateInterval) {
-            clearInterval(this.cooldownUpdateInterval);
-        }
-
-        const startTime = Date.now();
-        const endTime = startTime + remainingTime;
-
-        this.cooldownUpdateInterval = setInterval(() => {
-            const now = Date.now();
-            const timeLeft = Math.max(0, endTime - now);
-            const progress = Math.min(1, (totalTime - timeLeft) / totalTime);
-
-            // Atualizar barra de progresso com animação suave
-            const progressFill = this.cooldownIndicator.querySelector('.cooldown-progress-fill');
-            const progressGlow = this.cooldownIndicator.querySelector('.cooldown-progress-glow');
-            if (progressFill) {
-                progressFill.style.width = `${progress * 100}%`;
-
-                // Mudança de cor baseada no progresso
-                const hue = progress * 120; // De vermelho (0) para verde (120)
-                progressFill.style.background = `hsl(${hue}, 70%, 50%)`;
-
-                if (progressGlow) {
-                    progressGlow.style.width = `${progress * 100}%`;
-                    progressGlow.style.boxShadow = `0 0 10px hsl(${hue}, 70%, 50%)`;
-                }
-            }
-
-            // Atualizar tempo restante com formatação melhorada
-            const timeDisplay = this.cooldownIndicator.querySelector('.cooldown-time');
-            if (timeDisplay) {
-                const seconds = Math.ceil(timeLeft / 1000);
-                timeDisplay.textContent = `${seconds}s`;
-
-                // Efeito de pulsação nos últimos 3 segundos
-                if (seconds <= 3 && seconds > 0) {
-                    timeDisplay.style.animation = 'pulse 0.5s ease-in-out infinite alternate';
-                } else {
-                    timeDisplay.style.animation = '';
-                }
-            }
-
-            // Verificar se terminou
-            if (timeLeft <= 0) {
-                this.hideBuildingCooldown();
-            }
-        }, 50); // Atualizar a cada 50ms para suavidade
-    }
-
-    hideBuildingCooldown() {
-        if (this.cooldownIndicator) {
-            // Animação de saída suave
-            this.cooldownIndicator.style.transition = 'all 0.3s ease-in';
-            this.cooldownIndicator.style.opacity = '0';
-            this.cooldownIndicator.style.transform = 'translate(-50%, -50%) scale(0.8)';
-
-            setTimeout(() => {
-                if (this.cooldownIndicator) {
-                    this.cooldownIndicator.style.display = 'none';
-                }
-            }, 300);
-        }
-
-        if (this.cooldownUpdateInterval) {
-            clearInterval(this.cooldownUpdateInterval);
-            this.cooldownUpdateInterval = null;
-        }
-
-        // Reabilitar botões de construção com feedback visual
-        this.enableBuildingButtons();
-
-        // Remover efeito de pulsação do painel
-        this.removeCooldownPulseEffect();
-
-        // Tocar som de sucesso
-        if (typeof AudioManager !== 'undefined') {
-            AudioManager.playSound('sfx_success', 0.3);
-        }
-
-        // Mostrar notificação de cooldown finalizado
-        this.showNotification('Sistema de construção reativado!', 'success', 2000);
-    }
-
-    disableBuildingButtons() {
-        const buildingItems = document.querySelectorAll('.building-item');
-        buildingItems.forEach(item => {
-            item.classList.add('cooldown-disabled');
-            item.style.pointerEvents = 'none';
-            item.style.opacity = '0.4';
-            item.style.filter = 'grayscale(50%)';
-            item.style.transition = 'all 0.3s ease';
-
-            // Adicionar overlay de cooldown
-            if (!item.querySelector('.cooldown-overlay')) {
-                const overlay = document.createElement('div');
-                overlay.className = 'cooldown-overlay';
-                overlay.innerHTML = uiIcon('ui-clock');
-                item.appendChild(overlay);
-            }
-        });
-    }
-
-    enableBuildingButtons() {
-        const buildingItems = document.querySelectorAll('.building-item');
-        buildingItems.forEach(item => {
-            item.classList.remove('cooldown-disabled');
-            item.style.pointerEvents = '';
-            item.style.opacity = '';
-            item.style.filter = '';
-            item.style.transition = 'all 0.3s ease';
-
-            // Remover overlay de cooldown
-            const overlay = item.querySelector('.cooldown-overlay');
-            if (overlay) {
-                overlay.remove();
-            }
-
-            // Efeito de "reativação" suave
-            item.style.transform = 'scale(1.05)';
-            setTimeout(() => {
-                item.style.transform = '';
-            }, 200);
-        });
-    }
-
-    // Adicionar efeito de pulsação no painel durante cooldown
-    addCooldownPulseEffect() {
-        const buildingPanel = document.querySelector('.building-panel');
-        if (buildingPanel) {
-            buildingPanel.classList.add('cooldown-pulse');
-        }
-    }
-
-    removeCooldownPulseEffect() {
-        const buildingPanel = document.querySelector('.building-panel');
-        if (buildingPanel) {
-            buildingPanel.classList.remove('cooldown-pulse');
-        }
-    }
-
     // ===== RESOURCE UI REDESIGN: Sistema de tooltips para recursos =====
     showResourceTooltip(event, resourceName, resourceType) {
         // Criar ou obter tooltip

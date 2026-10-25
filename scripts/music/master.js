@@ -29,6 +29,7 @@ for (const job of jobs) {
     const n = Number(job.name.match(/-(\d)$/)[1]) + (offsets[job.cat] || 0);
     const rel = `Sounds/BGM/gameplay-${job.cat}-${n}.mp3`;
     const out = path.join(ROOT, rel);
+    if (fs.existsSync(out) && !process.argv.includes('--force')) continue; // já está no jogo: não regrava
     const tmp = path.join(RAW, `${job.name}.trim.wav`);
     ff(['-i', src, '-af', TRIM, tmp]);
     const seconds = probe(tmp);
@@ -41,7 +42,8 @@ for (const job of jobs) {
     added[rel] = {
         generator: 'Google Lyria 3 (OpenRouter)', model: MODEL, prompt: job.prompt, date: today,
         chosenVersion: `faixa ${n} da playlist`, source: `${job.name}.mp3`,
-        why: 'Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).',
+        why: job.intensity ? 'Um tom acima e mais intensa no espírito do estado (mais emocionante, calma ou tensa), mesmo estilo.'
+            : 'Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).',
         loudness: `${m.input_i} → ${after.input_i} LUFS, pico ${after.input_tp} dBTP`,
         seconds: Math.round(probe(out) * 10) / 10
     };

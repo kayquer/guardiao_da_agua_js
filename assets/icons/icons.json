@@ -1035,6 +1035,128 @@
       "sm": "svg/weather-humidity.svg"
     }
   },
+  "event-fire": {
+    "title": "Queimada",
+    "area": "ui",
+    "emoji": [
+      "🔥"
+    ],
+    "usedIn": [
+      "js/systems/EventSystem.js (wildfire.icon)",
+      "js/systems/ui/EventUI.js",
+      "js/systems/ui/EventDecisionUI.js",
+      "js/systems/UIManager.js (toasts)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/event-fire.svg",
+      "sm": "svg/event-fire-sm.svg"
+    }
+  },
+  "event-flood": {
+    "title": "Enchente",
+    "area": "ui",
+    "emoji": [
+      "🌊"
+    ],
+    "usedIn": [
+      "js/systems/EventSystem.js (flood.icon)",
+      "js/systems/ui/EventUI.js",
+      "js/systems/ui/EventDecisionUI.js",
+      "js/systems/UIManager.js (toasts)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/event-flood.svg",
+      "sm": "svg/event-flood-sm.svg"
+    }
+  },
+  "event-repair": {
+    "title": "Falha de equipamento",
+    "area": "ui",
+    "emoji": [
+      "🔧"
+    ],
+    "usedIn": [
+      "js/systems/EventSystem.js (equipment_failure.icon)",
+      "js/systems/ui/EventUI.js",
+      "js/systems/ui/EventDecisionUI.js",
+      "js/systems/UIManager.js (toasts)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/event-repair.svg",
+      "sm": "svg/event-repair-sm.svg"
+    }
+  },
+  "event-campaign": {
+    "title": "Campanha de economia de água",
+    "area": "ui",
+    "emoji": [
+      "📢"
+    ],
+    "usedIn": [
+      "js/systems/EventSystem.js (conservation_campaign.icon)",
+      "js/systems/ui/EventUI.js",
+      "js/systems/ui/EventDecisionUI.js",
+      "js/systems/UIManager.js (toasts)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/event-campaign.svg",
+      "sm": "svg/event-campaign-sm.svg"
+    }
+  },
+  "event-emergency": {
+    "title": "Emergência / intervenção",
+    "area": "ui",
+    "emoji": [
+      "🚨"
+    ],
+    "usedIn": [
+      "js/systems/EventSystem.js (state_intervention.icon)",
+      "js/systems/GameOverSystem.js (declarar emergência)",
+      "js/systems/ui/EventUI.js",
+      "js/systems/UIManager.js (toasts)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/event-emergency.svg",
+      "sm": "svg/event-emergency-sm.svg"
+    }
+  },
+  "ui-text-size": {
+    "title": "Tamanho do texto",
+    "area": "ui",
+    "emoji": [
+      "🔠"
+    ],
+    "usedIn": [
+      "index.html (#menu-text-title, #pause-text-title)"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/ui-text-size.svg"
+    }
+  },
+  "ui-medal": {
+    "title": "Medalha / conquista",
+    "area": "ui",
+    "emoji": [
+      "🏅"
+    ],
+    "usedIn": [
+      "js/systems/EventSystem.js (sequência de boas decisões)",
+      "js/systems/ui/EventDecisionUI.js",
+      "js/systems/ui/MissionUI.js (conquistas)",
+      "js/systems/UIManager.js (toasts)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/ui-medal.svg",
+      "sm": "svg/ui-medal-sm.svg"
+    }
+  },
   "cat-water": {
     "title": "Categoria Água",
     "area": "cat",
@@ -1891,6 +2013,23 @@
     "files": {
       "lg": "svg/school.svg",
       "sm": "svg/school-sm.svg"
+    }
+  },
+  "technical-school": {
+    "title": "Escola Técnica",
+    "area": "building",
+    "emoji": [
+      "🛠️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (technical_school.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/technical-school.svg",
+      "sm": "svg/technical-school-sm.svg"
     }
   },
   "hospital": {

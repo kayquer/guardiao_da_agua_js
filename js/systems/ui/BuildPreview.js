@@ -173,7 +173,9 @@ class BuildPreview {
         if (!reduced) this.root.rotation.y += BuildPreview.SPIN_SPEED * dt;
         for (const part of this.current.parts) {
             part.angle = (part.angle + part.speed * dt) % (Math.PI * 2);
-            part.mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(part.axis, -part.angle);
+            // Reaproveita o quaternion (antes: um novo por peça a cada quadro)
+                if (part.mesh.rotationQuaternion) BABYLON.Quaternion.RotationAxisToRef(part.axis, -part.angle, part.mesh.rotationQuaternion);
+                else part.mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(part.axis, -part.angle);
         }
     }
 

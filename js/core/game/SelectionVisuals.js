@@ -351,110 +351,62 @@ mixin(GameManager, {
     },
 
     // ===== BUILDING PLACEMENT OVERLAY SYSTEM =====
-    async createPlacementOverlay(buildingType) {
-        // Clear any existing overlay
+    // Uma malha só, com um quadrado por célula (verde = cabe, vermelho = não cabe) em cor de vértice, logo acima do topo
+    // de cada bloco. Antes eram 1.600 planos transparentes (1.600 draw calls ordenados a cada quadro) montados em
+    // lotes assíncronos, e sair do modo construção no meio deixava planos órfãos.
+    createPlacementOverlay(buildingType) {
         this.clearPlacementOverlay();
-
-        const buildingTypeData = this.buildingSystem.buildingTypes.get(buildingType);
-        if (!buildingTypeData) {
+        if (!this.buildingSystem.buildingTypes.get(buildingType)) {
             console.warn(`⚠️ Building type not found: ${buildingType}`);
             return;
         }
-
-        log(`🎨 Creating placement overlay for ${buildingType}...`);
-
-        // Create overlay mesh array
-        this.placementOverlayMeshes = [];
-
-        const gridSize = this.gridManager.gridSize;
-        const cellSize = this.gridManager.cellSize;
-
-        // Create shared materials for better performance
-        const validMaterial = new BABYLON.StandardMaterial('overlayValidMat', this.scene);
-        validMaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);
-        validMaterial.alpha = 0.4;
-        validMaterial.backFaceCulling = false;
-        validMaterial.disableLighting = true;
-        validMaterial.emissiveColor = new BABYLON.Color3(0, 1, 0);
-
-        const invalidMaterial = new BABYLON.StandardMaterial('overlayInvalidMat', this.scene);
-        invalidMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0);
-        invalidMaterial.alpha = 0.4;
-        invalidMaterial.backFaceCulling = false;
-        invalidMaterial.disableLighting = true;
-        invalidMaterial.emissiveColor = new BABYLON.Color3(1, 0, 0);
-
-        // Process in batches to avoid UI freeze
-        const batchSize = 100; // Process 100 cells at a time
-        let processedCells = 0;
-
-        // Show loading notification
-        if (this.uiManager) {
-            this.uiManager.showNotification('🎨 Preparando área de construção...', 'info', 2000);
-        }
-
-        // Process grid in batches
-        for (let x = 0; x < gridSize; x++) {
-            for (let z = 0; z < gridSize; z++) {
-                // Check if building can be placed at this position
-                const canPlaceResult = this.buildingSystem.canPlaceBuilding(x, z, buildingType);
-                const canPlace = canPlaceResult.canPlace;
-
-                // Create plane for this cell
-                const plane = BABYLON.MeshBuilder.CreatePlane(`overlay_${x}_${z}`, {
-                    width: cellSize * 0.95,
-                    height: cellSize * 0.95
-                }, this.scene);
-
-                // Position the plane slightly above the terrain
-                const worldPos = this.gridManager.gridToWorld(x, z);
-                // Logo acima do topo real do bloco (GridManager.getTerrainBlockHeight); a fórmula antiga
-                // (elevação × gridHeight + 0.75) flutuava sobre a planície e afundava nas colinas.
-                const blockTop = this.gridManager.getTerrainBlockHeight(x, z);
-                plane.position = new BABYLON.Vector3(
-                    worldPos.x,
-                    blockTop + 0.06,
-                    worldPos.z
-                );
-
-                // Rotate to be horizontal
-                plane.rotation.x = Math.PI / 2;
-
-                // Use shared material
-                plane.material = canPlace ? validMaterial : invalidMaterial;
-
-                // Store reference
-                this.placementOverlayMeshes.push(plane);
-
-                processedCells++;
-
-                // Yield to UI every batch
-                if (processedCells % batchSize === 0) {
-                    await new Promise(resolve => setTimeout(resolve, 0));
-                }
+        const gm = this.gridManager;
+        const size = gm.gridSize;
+        const half = (gm.cellSize * 0.95) / 2;
+        const positions = [], colors = [], indices = [], normals = [];
+        const cells = [];
+        const valid = [0.15, 0.95, 0.35, 0.4], invalid = [1, 0.15, 0.15, 0.4];
+        for (let x = 0; x < size; x++) {
+            for (let z = 0; z < size; z++) {
+                const ok = this.buildingSystem.canPlaceBuilding(x, z, buildingType, { quiet: true }).canPlace;
+                const c = gm.gridToWorld(x, z);
+                // Logo acima do topo real do bloco (GridManager.getTerrainBlockHeight)
+                const y = gm.getTerrainBlockHeight(x, z) + 0.06;
+                const base = positions.length / 3;
+                positions.push(c.x - half, y, c.z - half, c.x + half, y, c.z - half, c.x + half, y, c.z + half, c.x - half, y, c.z + half);
+                const col = ok ? valid : invalid;
+                for (let i = 0; i < 4; i++) { colors.push(...col); normals.push(0, 1, 0); }
+                indices.push(base, base + 2, base + 1, base, base + 3, base + 2);
+                cells.push({ x, z, y, ok });
             }
         }
-
-        log(`✅ Placement overlay created with ${this.placementOverlayMeshes.length} cells`);
-
-        if (this.uiManager) {
-            this.uiManager.showNotification('✅ Área de construção pronta!', 'success', 1500);
-        }
+        const mesh = new BABYLON.Mesh('placementOverlay', this.scene);
+        const data = new BABYLON.VertexData();
+        data.positions = positions;
+        data.colors = colors;
+        data.indices = indices;
+        data.normals = normals;
+        data.applyToMesh(mesh);
+        const mat = new BABYLON.StandardMaterial('placementOverlayMat', this.scene);
+        mat.disableLighting = true;
+        mat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+        mat.backFaceCulling = false;
+        mat.useVertexAlpha = true;
+        mesh.hasVertexAlpha = true;
+        mesh.material = mat;
+        mesh.isPickable = false;
+        mesh.freezeWorldMatrix();
+        this.placementOverlayMeshes = [mesh];
+        this.placementOverlayCells = cells; // para testes e para quem precisar saber o que cabe onde
+        log(`✅ Placement overlay: ${cells.length} cells in 1 mesh`);
     },
 
     clearPlacementOverlay() {
-        if (this.placementOverlayMeshes && this.placementOverlayMeshes.length > 0) {
-            log(`🗑️ Clearing placement overlay (${this.placementOverlayMeshes.length} meshes)...`);
-
-            this.placementOverlayMeshes.forEach(mesh => {
-                if (mesh.material) {
-                    mesh.material.dispose();
-                }
-                mesh.dispose();
-            });
-
-            this.placementOverlayMeshes = [];
-            log('✅ Placement overlay cleared');
+        for (const mesh of this.placementOverlayMeshes || []) {
+            mesh.material?.dispose();
+            mesh.dispose();
         }
+        this.placementOverlayMeshes = [];
+        this.placementOverlayCells = [];
     },
 });

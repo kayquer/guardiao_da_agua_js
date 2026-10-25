@@ -88,6 +88,7 @@ const BUILDING_MODELS = {
     // ===== PÚBLICOS =====
     city_hall:             { file: 'blender/city_hall.glb', tris: 1146 },
     school:                { file: 'kenney/suburban/building-type-m.glb', tris: 1112 },
+    technical_school:      { file: 'kenney/commercial/building-c.glb', tris: 1195, tint: '#c5cae9' }, // mesmo prédio do restaurante, azulado
     hospital:              { file: 'blender/hospital.glb', tris: 1224 },
     university:            { file: 'blender/university.glb', tris: 1352 },
     fire_station:          { file: 'kenney/industrial/building-h.glb', tris: 698 },

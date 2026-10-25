@@ -83,6 +83,7 @@ mixin(AudioManager, {
         if (gm.gameState === 'gameover') return;
         this.evaluateMusic(gm, now);
         this.evaluateAmbient(gm);
+        this.evaluateStormFx(gm, now);
         this.watchCity(gm);
         this.watchSelectedBuilding(gm);
     },
@@ -173,6 +174,20 @@ mixin(AudioManager, {
         const minRoads = typeof CityLifeSystem !== 'undefined' ? CityLifeSystem.MIN_ROADS : 20;
         if (roads >= minRoads) layers.amb_traffic_loop = Math.min(1, 0.5 + roads / 120);
         return layers;
+    },
+
+    /** Na tempestade, de vez em quando um som solto por cima do ambiente (rajada, granizo, trovão rolando...). */
+    evaluateStormFx(gm, now) {
+        const d = this.director;
+        const storm = gm.weatherEffects?.profile?.kind === 'storm';
+        if (!storm || gm.gameState === 'paused') {
+            d.nextStormFx = null;
+            return;
+        }
+        if (d.nextStormFx == null) d.nextStormFx = now + 4000 + Math.random() * 6000;
+        if (now < d.nextStormFx) return;
+        this.playSound('sfx_storm_extra', 0.9, { pan: (Math.random() * 2 - 1) * 0.6 });
+        d.nextStormFx = now + 10000 + Math.random() * 15000;
     },
 
     /** Blocos de rua ligados (CityLifeSystem) ou, sem ele, prédios de rua prontos. */

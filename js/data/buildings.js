@@ -135,6 +135,7 @@ const BUILDING_TYPES = {
         satisfactionBonus: 5,
         powerConsumption: 15,
         maintenanceCost: 150,
+        recycleBonus: 0.05, // +5% no valor de reciclar prédios (BuildingRecycle.js)
         icon: '♻️',
         color: '#2E7D32',
         requirements: { terrain: ['grassland', 'lowland'], nearWater: false }
@@ -186,6 +187,7 @@ const BUILDING_TYPES = {
         size: 2,
         pollutionReduction: 10,
         powerGeneration: 60,
+        renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
         maintenanceCost: 180,
         icon: '🫧',
         color: '#558B2F',
@@ -203,10 +205,12 @@ const BUILDING_TYPES = {
         size: 3,
         pollutionReduction: 30,
         powerGeneration: 80,
+        renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
         powerConsumption: 40,
         incomeGeneration: 500,
         satisfactionBonus: 10,
         maintenanceCost: 600,
+        recycleBonus: 0.1, // +10% no valor de reciclar prédios (BuildingRecycle.js)
         icon: '⚙️', // central de tratamento avançada (o ícone SVG ecopark mostra engrenagens, gota e folha)
         color: '#00897B',
         requirements: { terrain: ['grassland', 'lowland'], nearWater: false }
@@ -662,6 +666,7 @@ const BUILDING_TYPES = {
         cost: 11250,
         size: 3,
         powerGeneration: 500,
+        renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
         waterConsumption: 0,
         pollutionGeneration: 0,
         maintenanceCost: 200,
@@ -681,6 +686,7 @@ const BUILDING_TYPES = {
         cost: 18000,
         size: 2,
         powerGeneration: 300,
+        renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
         maintenanceCost: 260,
         reputationOnBuild: { environment: 2 },
         icon: '🌗',
@@ -772,6 +778,7 @@ const BUILDING_TYPES = {
         cost: 9000,
         size: 3,
         powerGeneration: 200,
+        renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
         pollutionGeneration: 0,
         maintenanceCost: 80,
         icon: '☀️',
@@ -790,6 +797,7 @@ const BUILDING_TYPES = {
         cost: 10000,
         size: 2,
         powerGeneration: 180,
+        renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
         pollutionGeneration: 0,
         maintenanceCost: 60,
         icon: '💨',
@@ -809,6 +817,7 @@ const BUILDING_TYPES = {
         cost: 16000,
         size: 2,
         powerGeneration: 140,
+        renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
         pollutionGeneration: 8,
         maintenanceCost: 200,
         icon: '🎋', // bagaço de cana (o ícone SVG biomass-plant mostra a pilha de bagaço e a caldeira)
@@ -825,6 +834,7 @@ const BUILDING_TYPES = {
         cost: 30000,
         size: 3,
         powerGeneration: 250,
+        renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
         pollutionGeneration: 12,
         waterConsumption: 40,
         incomeGeneration: 500,
@@ -866,8 +876,28 @@ const BUILDING_TYPES = {
         satisfactionBonus: 15,
         educationBonus: true,
         maintenanceCost: 300,
+        recycleBonus: 0.05, // +5% no valor de reciclar prédios (BuildingRecycle.js)
         icon: '🏫',
         color: '#4CAF50',
+        requirements: {
+            terrain: ['grassland', 'lowland'],
+            nearWater: false
+        }
+    },
+
+    technical_school: {
+        tier: 2, group: 'Educação e saúde', techRequires: [{ id: 'school', count: 1 }],
+        reputationOnBuild: { citizens: 2, business: 2 },
+        name: 'Escola Técnica',
+        description: 'Cursos técnicos de construção, saneamento e reciclagem: a cidade aproveita melhor o material ao reciclar prédios',
+        category: 'public',
+        cost: 22000,
+        size: 2,
+        satisfactionBonus: 8,
+        maintenanceCost: 260,
+        recycleBonus: 0.15, // +15% no valor de reciclar prédios (BuildingRecycle.js)
+        icon: '🛠️',
+        color: '#5C6BC0',
         requirements: {
             terrain: ['grassland', 'lowland'],
             nearWater: false
@@ -940,6 +970,7 @@ const BUILDING_TYPES = {
         satisfactionBonus: 12,
         researchBonus: true,
         maintenanceCost: 500,
+        recycleBonus: 0.1, // +10% no valor de reciclar prédios (BuildingRecycle.js)
         powerConsumption: 80,
         waterConsumption: 25,
         // ===== EFFICIENCY BONUSES =====
@@ -966,6 +997,7 @@ const BUILDING_TYPES = {
         educationBonus: true,
         researchBonus: true,
         maintenanceCost: 800,
+        recycleBonus: 0.15, // +15% no valor de reciclar prédios (BuildingRecycle.js)
         powerConsumption: 120,
         waterConsumption: 40,
         // ===== EFFICIENCY BONUSES =====
@@ -1187,6 +1219,7 @@ const BUILDING_TYPES = {
         waterConsumption: 20,
         pollutionGeneration: 5,
         maintenanceCost: 1000,
+        recycleBonus: 0.1, // +10% no valor de reciclar prédios (BuildingRecycle.js)
         populationRequirement: 250,
         satisfactionBonus: 15,
         icon: '🔬',
@@ -1242,6 +1275,7 @@ const BUILDING_TYPES = {
         effectRadius: 5,
         pollutionReduction: 5,
         maintenanceCost: 800,
+        recycleBonus: 0.1, // +10% no valor de reciclar prédios (BuildingRecycle.js)
         description: 'Centro avançado para pesquisa e desenvolvimento de tecnologias hídricas',
         educationalContent: {
             concepts: ['centros de pesquisas', 'inovação tecnológica', 'gestão hídrica'],

@@ -78,14 +78,36 @@ test('cada personagem do tutorial tem a voz de entrada', () => {
 });
 
 // Música é streaming (uma faixa por vez, nunca pré-carregada): o orçamento total é do repositório, e cada faixa
-// tem um teto para começar rápido. Em 10/2026 as playlists ganharam 3 faixas por categoria (25 → 64 MB).
-test('música total cabe no orçamento (< 64 MB, faixa < 4 MB) e efeitos curtos são pequenos', () => {
+// tem um teto para começar rápido. Em 10/2026 as playlists cresceram para 8–9 faixas por estado (25 → 128 MB).
+test('música total cabe no orçamento (< 128 MB, faixa < 4 MB) e efeitos curtos são pequenos', () => {
     const size = files => files.reduce((sum, f) => sum + fs.statSync(path.join(ROOT, f)).size, 0);
     const music = Object.values(MANIFEST).filter(e => e.kind === 'music' || e.kind === 'jingle').flatMap(e => e.files);
-    assert.ok(size(music) < 64 * 1024 * 1024, `música: ${(size(music) / 1048576).toFixed(1)} MB`);
+    assert.ok(size(music) < 128 * 1024 * 1024, `música: ${(size(music) / 1048576).toFixed(1)} MB`);
     for (const f of music) assert.ok(size([f]) < 4 * 1024 * 1024, `${f}: faixa grande demais`);
     for (const [key, entry] of Object.entries(MANIFEST)) {
         if (entry.kind !== 'sfx' && entry.kind !== 'voice') continue;
         for (const f of entry.files) assert.ok(size([f]) < 150 * 1024, `${key}: ${f} grande demais para pré-carregar`);
+    }
+});
+
+test('playlist toca em ordem aleatória: passa por todas as faixas antes de repetir e nunca repete a de agora', () => {
+    const { load } = require('./load');
+    const g = load('js/utils/AudioManager.js');
+    const StreamTrack = g('StreamTrack');
+    const files = ['a', 'b', 'c', 'd', 'e'];
+    const track = new StreamTrack(null, 'bgm_x', { files }, 'music');
+    const order = [track.index];
+    for (let i = 0; i < files.length - 1; i++) { track.index = track.nextIndex(); order.push(track.index); }
+    assert.strictEqual(new Set(order).size, files.length, `uma rodada toca todas: ${order}`);
+    for (let i = 0; i < 20; i++) {
+        const before = track.index;
+        track.index = track.nextIndex();
+        assert.notStrictEqual(track.index, before, 'não repete a faixa que acabou de tocar');
+    }
+    // Todas as músicas das playlists de jogo estão no manifesto e existem (as 15 novas incluídas)
+    for (const cat of ['day', 'night', 'rain', 'alert', 'thriving']) {
+        const entry = MANIFEST[`bgm_gameplay_${cat}`];
+        assert.ok(entry.files.length >= 8, `${cat}: ${entry.files.length} faixas`);
+        entry.files.forEach(f => assert.ok(fs.existsSync(path.join(ROOT, f)), f));
     }
 });

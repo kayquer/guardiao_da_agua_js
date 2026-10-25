@@ -24,11 +24,24 @@ const CATEGORIES = {
 const VARIATIONS = {
     2: 'New composition in the same style: a different main melody and chord progression.',
     3: 'New composition in the same style: a different melody led by another instrument of the same palette, slightly different groove.',
-    4: 'New composition in the same style: a fresh theme with a gentle key change in the middle, same tempo and mood.'
+    4: 'New composition in the same style: a fresh theme with a gentle key change in the middle, same tempo and mood.',
+    // 10/2026 (2): mais três, sem repetir os temas anteriores, continuando a mesma trilha
+    5: 'New composition continuing the same soundtrack: a new main theme not heard before, call-and-response between two instruments of the same palette.',
+    6: 'New composition continuing the same soundtrack: a new melody built from a short repeating motif, lighter arrangement in the first half, fuller in the second.',
+    7: 'New composition continuing the same soundtrack: a new theme in a related key, with a gentle countermelody, same tempo and instruments.'
+};
+// Faixa 8: um tom acima, mais intensa no espírito do estado (sem sair do estilo)
+const INTENSITY = {
+    day: 'Same style and instruments, one whole step higher in key, more uplifting and emotional, a soaring melody, still unobtrusive under sound effects.',
+    night: 'Same style and instruments, one whole step higher in key, even calmer and more intimate, slower phrasing, very soft dynamics.',
+    rain: 'Same style and instruments, one whole step higher in key, more tender and emotional, hopeful swell near the end, still gentle.',
+    alert: 'Same style and instruments, one whole step higher in key, more tense and urgent, faster ostinato and rising tension, still kid-friendly and never scary.',
+    thriving: 'Same style and instruments, one whole step higher in key, more exciting and celebratory, brighter percussion, still a balanced background mix.'
 };
 const jobs = [];
 for (const [cat, prompt] of Object.entries(CATEGORIES)) {
-    for (const n of [2, 3, 4]) jobs.push({ name: `gameplay-${cat}-${n}`, cat, prompt: `${prompt} ${VARIATIONS[n]}` });
+    for (const n of [2, 3, 4, 5, 6, 7]) jobs.push({ name: `gameplay-${cat}-${n}`, cat, prompt: `${prompt} ${VARIATIONS[n]}` });
+    jobs.push({ name: `gameplay-${cat}-8`, cat, prompt: `${prompt} ${INTENSITY[cat]}`, intensity: true });
 }
 fs.writeFileSync(path.join(RAW, 'jobs.json'), JSON.stringify({ model: MODEL, jobs }, null, 2));
 

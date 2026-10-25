@@ -144,3 +144,27 @@ test('quiz: revisão lista só as erradas, com a resposta dada, a certa e a expl
     const wrong = study.getWrongAnswers();
     assert.strictEqual(JSON.stringify(wrong), JSON.stringify([{ question: 'B?', chosen: 'p', correct: 'q', explanation: 'porque q' }]));
 });
+
+// Em 10/2026 a água rasa ficava mais alta que a margem (310 de 310 bordas): a fórmula da lâmina era invertida.
+test('água fica abaixo de toda a terra em volta, e cada lago/rio é plano', () => {
+    const gm = grid();
+    let edges = 0;
+    for (let x = 0; x < gm.gridSize; x++) {
+        for (let z = 0; z < gm.gridSize; z++) {
+            if (gm.getTerrainType(x, z) !== 'water') continue;
+            const level = gm.getWaterLevel(x, z);
+            assert.ok(level > 0, 'a água tem altura (o fundo fica em 0)');
+            assert.strictEqual(gm.getTerrainBlockHeight(x, z), level, 'prédio sobre a água fica na superfície');
+            for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+                const type = gm.getTerrainType(x + dx, z + dz);
+                if (type === 'unknown') continue;
+                if (type === 'water') assert.strictEqual(gm.getWaterLevel(x + dx, z + dz), level, 'lago/rio plano');
+                else {
+                    edges++;
+                    assert.ok(gm.getTerrainBlockHeight(x + dx, z + dz) >= level + 0.1, `margem em (${x + dx}, ${z + dz}) acima da água`);
+                }
+            }
+        }
+    }
+    assert.ok(edges > 0, 'o mapa tem margens');
+});

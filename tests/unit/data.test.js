@@ -44,7 +44,7 @@ test('todo campo de efeito aparece na descrição do prédio (painel e menu)', (
     const shown = ['waterProduction', 'waterStorage', 'waterConsumption', 'powerGeneration', 'powerConsumption',
         'pollutionReduction', 'pollutionGeneration', 'satisfactionBonus', 'incomeGeneration', 'populationCapacity',
         'aquiferRecharge', 'groundwater', 'plantedTree', 'runoffAbsorption', 'earlyWarning', 'nearbyEfficiencyBonus',
-        'runoffImpervious', 'maintenanceCost'];
+        'runoffImpervious', 'recycleBonus', 'maintenanceCost'];
     for (const field of shown) assert.ok(body.includes(`type.${field}`), `${field} sem linha em getBuildingEffectLines`);
     const used = new Set(Object.values(BUILDINGS).flatMap(b => Object.keys(b)));
     for (const field of shown) assert.ok(used.has(field) || field === 'runoffImpervious', `${field} não é usado por nenhum prédio`);

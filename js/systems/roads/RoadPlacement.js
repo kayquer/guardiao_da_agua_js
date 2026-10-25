@@ -15,13 +15,37 @@ mixin(BuildingSystem, {
         if (!type) return { ok: false, reason: 'Tipo inválido' };
         if (!this.isPlacementWithinBounds(gridX, gridZ, 1)) return { ok: false, reason: 'Fora do mapa' };
         const terrain = this.gridManager.getTerrainType(gridX, gridZ);
-        if (terrain === 'water') return { ok: false, reason: 'Não dá para fazer rua na água' };
+        if (terrain === 'water') {
+            if (!this.canBridgeWaterAt(gridX, gridZ)) {
+                return { ok: false, reason: `Ponte só sobre até ${RoadNetwork.BRIDGE_SPAN} blocos de água, com terra dos dois lados` };
+            }
+            if (this.gridManager.isCellOccupied(gridX, gridZ)) return { ok: false, reason: 'Lugar ocupado' };
+            return { ok: true, bridge: true };
+        }
         if (!this.gridManager.canPlaceBuilding(gridX, gridZ, 1)) return { ok: false, reason: 'Lugar ocupado' };
         const allowed = type.requirements?.terrain;
         if (allowed && !allowed.includes(terrain)) {
             return { ok: false, reason: terrain === 'hill' ? `${type.name} não sobe colina: use a Estrada de Terra ou de Cascalho` : `${type.name} não pode ser feita aqui` };
         }
         return { ok: true };
+    },
+
+    /** Água atravessável por ponte: num dos eixos, terra dos dois lados e no máximo BRIDGE_SPAN blocos de água. */
+    canBridgeWaterAt(gridX, gridZ) {
+        const gm = this.gridManager;
+        const run = (dx, dz) => {
+            for (let k = 1; k <= RoadNetwork.BRIDGE_SPAN; k++) {
+                const type = gm.getTerrainType(gridX + dx * k, gridZ + dz * k);
+                if (type === 'unknown') return null;
+                if (type !== 'water') return k - 1; // quantos blocos de água até a margem
+            }
+            return null;
+        };
+        for (const [dx, dz] of [[1, 0], [0, 1]]) {
+            const a = run(dx, dz), b = run(-dx, -dz);
+            if (a !== null && b !== null && a + b + 1 <= RoadNetwork.BRIDGE_SPAN) return true;
+        }
+        return false;
     },
 
     /** Para cada célula da linha: pode construir e quanto custa (para até onde o dinheiro dá). */

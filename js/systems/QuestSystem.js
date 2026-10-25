@@ -295,6 +295,13 @@ class QuestSystem {
     
     // ===== ENHANCED UPDATE SYSTEM =====
     update(deltaTime) {
+        // Missões conferidas 4× por segundo (antes a cada quadro: cópia profunda dos recursos por objetivo, a 60 fps).
+        // O tempo de 'sustained' vem do relógio do jogo (simNow), então juntar os quadros não muda a contagem.
+        this.updateAccumulator = (this.updateAccumulator || 0) + deltaTime;
+        if (this.updateAccumulator < QuestSystem.UPDATE_EVERY_MS) return;
+        deltaTime = this.updateAccumulator;
+        this.updateAccumulator = 0;
+
         // Atualizar progresso das missões ativas
         this.activeQuests.forEach(questId => {
             this.updateQuestProgress(questId, deltaTime);
@@ -1058,3 +1065,5 @@ class QuestSystem {
 // Exportar para escopo global
 window.QuestSystem = QuestSystem;
 log('🎯 QuestSystem carregado e exportado para window.QuestSystem');
+
+QuestSystem.UPDATE_EVERY_MS = 250; // conferência das missões (QuestSystem.update)

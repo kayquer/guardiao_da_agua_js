@@ -3,7 +3,7 @@
  * Grandes ficam sobre um "lote" de grama (elipse) e têm várias partes animadas.
  */
 'use strict';
-const { O, P, f1, rect, circ, ell, path, line, poly, g, A, box, ball, drop, cloud, gear, pivot, thick, tree, boltD, starD, sparkD, waveD } = require('./core');
+const { O, P, f1, rect, circ, ell, path, line, poly, g, A, box, ball, drop, cloud, gear, pivot, thick, flame, wrench, tree, boltD, starD, sparkD, waveD } = require('./core');
 
 const BJ = 'js/data/buildings.js';
 const RP = 'js/systems/ui/ResourcePanels.js';
@@ -64,11 +64,6 @@ function recyc(cx, cy, r, c, w) {
 /** Clip-path inline: o id usa "§" (vira o prefixo do arquivo). */
 const clip = (id, shapes) => `<clipPath id="§${id}">${shapes}</clipPath>`;
 const clipped = (id, inner) => g(inner, { x: `clip-path="url(#§${id})"` });
-/** Chama (laranja com miolo amarelo) com a base em (x, y); s = escala (1 ≈ 22 de altura). */
-const FLAME = 'c-8 0-10-6-6-12 0 4 2 4 3 2-1-4 1-8 5-10-1 4 4 6 4 12 0 5-3 8-6 8z';
-const flame = (x, y, s, dur = 0.8, c = 'orange') => g(
-    path(`M${f1(x)} ${f1(y)}` + FLAME.replace(/-?\d+(\.\d+)?/g, n => f1(n * s)), P[c][0], { w: f1(Math.max(1.2, 2.2 * s)) }) +
-    ell(x + s, y - 4 * s, 2.2 * s, 3.5 * s, P.yellow[0], { s: 'none' }), { a: A('flicker', dur, 0, '50% 100%') });
 /** Fiapo de vapor subindo (traço branco ondulado). */
 const wisp = (x, y, s, dur, delay, w = 3) => g(thick(`M${x} ${y}c${f1(-3 * s)} ${f1(-3 * s)} ${f1(3 * s)} ${f1(-6 * s)} 0 ${f1(-10 * s)}`, '#fff', w, { ow: w * 0.8 }), { a: A('steam', dur, delay, 'center', 'ease-out') });
 const TURQ = '#2EE6D6';
@@ -389,6 +384,21 @@ module.exports = [
         () => box(4, 15, 24, 13, '#F07A5A') + box(11.5, 8, 9, 8, '#F07A5A') + poly('10,8.5 16,3 22,8.5', P.blue[0], { w: 1.5 }) +
             g(path('M14.3 10a1.7 1.7 0 0 1 3.4 0v3h-3.4z', P.yellow[0], { w: 1.1 }), { a: A('swing', 1.6, 0, '50% 0%') }) +
             rect(13.5, 21, 5, 7, P.blue[0], { w: 1.3 }) + rect(6.5, 18, 4, 3.5, P.glass[0], { w: 1.1 }) + rect(21.5, 18, 4, 3.5, P.glass[0], { w: 1.1 })),
+    // Escola com oficina: engrenagem grande girando na placa (e uma pequena ao contrário), chave de boca na bancada e capacete de obra.
+    B('technical-school', 'technical_school', 'Escola Técnica', '🛠️',
+        () => ground() + box(14, 58, 100, 48, 'concrete') + rect(10, 52, 108, 8, '#5C6BC0', { rx: 3 }) +
+            rect(61, 40, 6, 13, P.dark[0]) +
+            g(pivot(64, 30, 19) + gear(64, 30, 14, 'yellow', { teeth: 9 }), { a: A('spin', 8, 0, 'center', 'linear') }) +
+            g(pivot(88, 18, 11) + gear(88, 18, 8, 'orange', { teeth: 7 }), { a: A('spinr', 6, 0, 'center', 'linear') }) +
+            win(22, 66, 14, 12) + lit(40, 66, 14, 12, 5) + win(78, 66, 14, 12) + lit(96, 66, 12, 12, 5, 2) +
+            doorL(56, 84, 16, 22, 'blue') +
+            rect(16, 92, 32, 4, P.brown[0], { w: 2.5 }) + line('M20 96v10M44 96v10', { w: 3 }) +
+            g(wrench(24, 86, 4.6, 180, 16, 3.6), { a: A('tilt', 2.4, 0, '0% 50%') }) +
+            path('M86 104a12 11 0 0 1 24 0z', P.yellow[0]) + line('M98 93v9', { w: 2.5 }) + rect(82, 102, 32, 5, P.yellow[1], { rx: 2.5, w: 2.5 }) +
+            spark(112, 34, 5, 3.2),
+        () => box(3, 16, 26, 12, 'concrete') + rect(2, 14, 28, 3, '#5C6BC0', { rx: 1, w: 1.4 }) + rect(14.5, 11, 3, 3, P.dark[0], { w: 1 }) +
+            g(pivot(16, 7.5, 6.5) + gear(16, 7.5, 4.6, 'yellow', { teeth: 8 }), { a: A('spin', 8, 0, 'center', 'linear') }) +
+            rect(13.5, 21, 5, 7, P.blue[0], { w: 1.3 }) + rect(6, 19.5, 4.5, 3.5, P.glass[0], { w: 1.1 }) + rect(21.5, 19.5, 4.5, 3.5, P.glass[0], { w: 1.1 })),
     B('hospital', 'hospital', 'Hospital', '🏥',
         () => ground() + box(20, 34, 88, 72, 'white') + rect(16, 28, 96, 8, P.concrete[1], { rx: 3 }) +
             g(path('M56 42h16v12h12v16H72v12H56V70H44V54h12z', P.red[0]), { a: A('beat', 1.6) }) +

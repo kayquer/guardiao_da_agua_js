@@ -107,6 +107,11 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         ui.renderResearchPanel();
         ui.closeResearchPanel({ focus: false });
 
+        // building/BuildingRecycle: taxa de reciclar (20%–80%) e o valor de um prédio
+        const recycleBs = window.gameManager.buildingSystem;
+        const recycleRate = recycleBs.getRecycleRate();
+        if (recycleRate.percent < 0.2 || recycleRate.percent > 0.8) throw new Error(`taxa de reciclar fora: ${recycleRate.percent}`);
+
         // ui/EventUI + ui/EventDecisionUI: anúncio → modal do Paulo → escolha → aviso e evento com barra de tempo
         const es = window.gameManager.eventSystem;
         const asked = es.announceEvent('flood');

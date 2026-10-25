@@ -137,6 +137,22 @@ const pivot = (cx, cy, r) => circ(cx, cy, r, 'none', { s: 'none' });
 /** Linha grossa com contorno: traço escuro largo + traço colorido por cima. */
 const thick = (d, c, w, o = {}) => line(d, { w: w + (o.ow ?? 2.5), ...(o.x ? { x: o.x } : {}) }) + line(d, { s: c, w, ...(o.x ? { x: o.x } : {}) });
 
+/** Chama (laranja com miolo amarelo) com a base em (x, y); s = escala (1 ≈ 22 de altura); w = contorno. */
+const FLAME = 'c-8 0-10-6-6-12 0 4 2 4 3 2-1-4 1-8 5-10-1 4 4 6 4 12 0 5-3 8-6 8z';
+const flame = (x, y, s, dur = 0.8, c = 'orange', w = Math.max(1.2, 2.2 * s)) => g(
+    path(`M${f1(x)} ${f1(y)}` + FLAME.replace(/-?\d+(\.\d+)?/g, n => f1(n * s)), P[c][0], { w: f1(w) }) +
+    ell(x + s, y - 4 * s, 2.2 * s, 3.5 * s, P.yellow[0], { s: 'none' }), { a: A('flicker', dur, 0, '50% 100%') });
+
+/** Chave de boca: cabeça (arco aberto para o ângulo `open`, em graus) em (cx, cy), cabo de comprimento len para o lado oposto. */
+function wrench(cx, cy, r, open, len, w, c = P.concrete[0]) {
+    const rad = d => d * Math.PI / 180;
+    const pt = (d, k = r) => [cx + k * Math.cos(rad(d)), cy + k * Math.sin(rad(d))];
+    const [x0, y0] = pt(open + 48), [x1, y1] = pt(open - 48);
+    const [hx, hy] = pt(open + 180), [ex, ey] = pt(open + 180, r + len);
+    return thick(`M${f1(hx)} ${f1(hy)}L${f1(ex)} ${f1(ey)}`, c, w * 1.1, { ow: w * 0.6 }) +
+        thick(`M${f1(x0)} ${f1(y0)}A${f1(r)} ${f1(r)} 0 1 1 ${f1(x1)} ${f1(y1)}`, c, w, { ow: w * 0.6 });
+}
+
 /** Árvore redonda (copa + tronco). */
 function tree(cx, by, s = 1, o = {}) {
     const a = o.a || '';
@@ -254,4 +270,4 @@ function svg(id, size, title, body) {
     return out;
 }
 
-module.exports = { O, P, f1, rect, circ, ell, path, line, poly, g, A, box, ball, drop, dropD, cloud, cloudD, gear, gearD, pivot, thick, tree, boltD, starD, sparkD, waveD, svg };
+module.exports = { O, P, f1, rect, circ, ell, path, line, poly, g, A, box, ball, drop, dropD, cloud, cloudD, gear, gearD, pivot, thick, flame, wrench, tree, boltD, starD, sparkD, waveD, svg };

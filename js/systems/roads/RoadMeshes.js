@@ -12,6 +12,13 @@ mixin(BuildingSystem, {
     // Medidas da peça em unidades de meia célula (h = cellSize / 2): asfalto de -A a +A
     ROAD_SHAPE: { A: 0.75, CURB: 0.06, DASH: 0.035, SLAB: 0.1 },
 
+    // Ponte: tabuleiro, guarda-corpo e pilares (concreto no asfalto; madeira na terra e no cascalho)
+    BRIDGE_COLORS: {
+        paved: { deck: '#b9b5ab', deckSide: '#8f8b82', rail: '#e4e1d8', pillar: '#9a968d' },
+        dirt: { deck: '#8a5a2b', deckSide: '#6e4722', rail: '#a8743f', pillar: '#6e4a26' },
+        gravel: { deck: '#8a5a2b', deckSide: '#6e4722', rail: '#a8743f', pillar: '#6e4a26' }
+    },
+
     ROAD_COLORS: {
         paved: { slab: '#b9b5ab', slabSide: '#9a968d', road: '#4b4f55', curb: '#e4e1d8', dash: '#f2c230', zebra: '#f1efe8' },
         dirt: { slab: '#6f9b45', slabSide: '#5a7d38', road: '#a47d52', curb: '#8a6a45', dash: null, zebra: null },
@@ -30,46 +37,141 @@ mixin(BuildingSystem, {
         return net;
     },
 
-    /** Altura do topo da rua na célula (topo do bloco do terreno + laje). */
-    getRoadSurfaceHeight(gridX, gridZ) {
+    /** Altura da rua assentada no chão da célula (topo do bloco do terreno, ou da água, + laje). */
+    getRoadGroundHeight(gridX, gridZ) {
         return this.getBuildingAreaTerrainHeight(gridX, gridZ, 1) + this.ROAD_SHAPE.SLAB * this.gridManager.cellSize / 2 + 0.02;
     },
 
+    /**
+     * Perfil de altura de todas as ruas (RoadNetwork.profile): planas, rampas e pontes. Guardado até a próxima
+     * mudança de ruas (refreshRoadPieces/refreshAllRoadPieces refazem).
+     */
+    getRoadProfile(net = null) {
+        if (!this.roadProfile) {
+            net = net || this.getRoadNetwork();
+            this.roadProfile = net.profile((x, z) => this.getRoadGroundHeight(x, z),
+                (x, z) => this.gridManager.getTerrainType(x, z) === 'water');
+        }
+        return this.roadProfile;
+    },
+
+    /** Altura do topo da rua no centro da célula (rampa: o meio dela; ponte: o tabuleiro). Sem rua: no chão. */
+    getRoadSurfaceHeight(gridX, gridZ) {
+        const p = this.roadProfile?.get(RoadNetwork.key(gridX, gridZ));
+        if (!p) return this.getRoadGroundHeight(gridX, gridZ);
+        return p.kind === 'ramp' ? p.base + p.rise / 2 : p.base;
+    },
+
     /** Mesh da rua (instância da peça certa para os vizinhos de agora), já com metadata. */
-    createRoadMesh(gridX, gridZ, buildingType, piece = null) {
+    createRoadMesh(gridX, gridZ, buildingType, piece = null, prof = null) {
         piece = piece || this.getRoadNetwork().pieceAt(gridX, gridZ);
-        const template = this.getRoadPieceTemplate(buildingType.roadType, piece.tipo);
+        prof = prof || this.getRoadProfile().get(RoadNetwork.key(gridX, gridZ)) || { kind: 'flat', base: this.getRoadGroundHeight(gridX, gridZ) };
+        const roadType = buildingType.roadType;
+        let template, rotation = piece.rotacao;
+        if (prof.kind === 'bridge') template = this.getRoadPieceTemplate(roadType, 'reta', { bridge: true });
+        else if (prof.kind === 'ramp') {
+            template = this.getRoadPieceTemplate(roadType, piece.tipo, { rise: prof.rise });
+            rotation = prof.dir; // o modelo da rampa sobe para +z (N); gira para o lado de onde a rua sobe
+        } else template = this.getRoadPieceTemplate(roadType, piece.tipo);
         const mesh = template.createInstance(`road_${buildingType.id}_${gridX}_${gridZ}#${template.instances.length}`);
         const world = this.gridManager.gridToWorld(gridX, gridZ);
-        mesh.position.set(world.x, this.getRoadSurfaceHeight(gridX, gridZ), world.z);
-        mesh.rotation.y = piece.rotacao * Math.PI / 2;
+        mesh.position.set(world.x, prof.base, world.z);
+        mesh.rotation.y = rotation * Math.PI / 2;
         mesh.isPickable = true;
-        mesh.metadata = { building: true, buildingType: buildingType.id, gridX, gridZ, roadPiece: piece.tipo, roadRotation: piece.rotacao };
+        if (prof.kind === 'bridge') this.addBridgePillar(mesh, roadType, gridX, gridZ, prof.base);
+        // Peça de rua não se mexe (muda trocando a instância): matriz congelada, nada a recalcular por quadro
+        mesh.freezeWorldMatrix();
+        mesh.getChildMeshes().forEach(child => child.freezeWorldMatrix());
+        mesh.metadata = { building: true, buildingType: buildingType.id, gridX, gridZ, roadPiece: piece.tipo, roadRotation: piece.rotacao,
+            roadKind: prof.kind, roadSig: this.roadSignature(piece, prof) };
+        return mesh;
+    },
+
+    roadSignature(piece, prof) {
+        return `${piece.tipo}|${piece.rotacao}|${prof.kind}|${prof.base.toFixed(3)}|${(prof.rise || 0).toFixed(2)}|${prof.dir ?? ''}`;
+    },
+
+    /** Pilar da ponte: do fundo do tabuleiro até o chão (na água, até o leito), filho da peça da rua. */
+    addBridgePillar(mesh, roadType, gridX, gridZ, deck) {
+        const h = this.gridManager.cellSize / 2;
+        const water = this.gridManager.getTerrainType(gridX, gridZ) === 'water';
+        const floor = water ? 0 : this.gridManager.getTerrainBlockHeight(gridX, gridZ);
+        const height = deck - this.ROAD_SHAPE.SLAB * h - floor;
+        if (height <= 0.05) return;
+        const template = this.getBridgePillarTemplate(roadType);
+        const pillar = template.createInstance(`roadPillar_${gridX}_${gridZ}#${template.instances.length}`);
+        pillar.parent = mesh;
+        pillar.position.set(0, -this.ROAD_SHAPE.SLAB * h, 0);
+        pillar.scaling.y = height;
+        pillar.isPickable = false;
+    },
+
+    /** Pilar-modelo: duas colunas e uma travessa, de y = 0 até y = -1 (escala em y = altura). */
+    getBridgePillarTemplate(roadType) {
+        if (!this.roadPillarTemplates) this.roadPillarTemplates = new Map();
+        const cached = this.roadPillarTemplates.get(roadType);
+        if (cached && !cached.isDisposed()) return cached;
+        const h = this.gridManager.cellSize / 2;
+        const c = this.BRIDGE_COLORS[roadType] || this.BRIDGE_COLORS.paved;
+        const geo = { positions: [], indices: [], colors: [], normals: [] };
+        const w = roadType === 'paved' ? 0.12 : 0.08;
+        for (const x of [-0.55, 0.55]) this.pushBox(geo, [x * h - w, -1, -w], [x * h + w, 0, w], c.pillar);
+        this.pushBox(geo, [-0.62 * h, -0.12, -w * 0.8], [0.62 * h, 0, w * 0.8], c.pillar);
+        const mesh = this.meshFromGeometry(`roadPillar_${roadType}`, geo, `roadPieceMat_${roadType}_pilar`);
+        this.roadPillarTemplates.set(roadType, mesh);
+        return mesh;
+    },
+
+    /** Caixa alinhada aos eixos (de a até b) com cor por vértice, num acumulador { positions, indices, colors, normals }. */
+    pushBox(geo, a, b, color) {
+        const col = BABYLON.Color3.FromHexString(color);
+        const [x0, y0, z0] = a, [x1, y1, z1] = b;
+        const faces = [
+            [[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1], [0, 1, 0], 1],
+            [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0], [0, 0, -1], 0.85],
+            [[x1, y0, z1], [x0, y0, z1], [x0, y1, z1], [x1, y1, z1], [0, 0, 1], 0.85],
+            [[x1, y0, z0], [x1, y0, z1], [x1, y1, z1], [x1, y1, z0], [1, 0, 0], 0.75],
+            [[x0, y0, z1], [x0, y0, z0], [x0, y1, z0], [x0, y1, z1], [-1, 0, 0], 0.75]
+        ];
+        for (const [p, q, r, s, n, shade] of faces) {
+            const base = geo.positions.length / 3;
+            [p, q, r, s].forEach(v => { geo.positions.push(...v); geo.normals.push(...n); geo.colors.push(col.r * shade, col.g * shade, col.b * shade, 1); });
+            geo.indices.push(base, base + 2, base + 1, base, base + 3, base + 2);
+        }
+    },
+
+    meshFromGeometry(name, geo, materialName) {
+        const mesh = new BABYLON.Mesh(name, this.scene);
+        const data = new BABYLON.VertexData();
+        data.positions = geo.positions;
+        data.indices = geo.indices;
+        data.colors = geo.colors;
+        data.normals = geo.normals;
+        data.applyToMesh(mesh);
+        const mat = new BABYLON.StandardMaterial(materialName, this.scene);
+        mat.specularColor = new BABYLON.Color3(0.03, 0.03, 0.03);
+        mat.backFaceCulling = false;
+        mesh.material = mat;
+        mesh.receiveShadows = true;
+        mesh.isPickable = false;
+        mesh.isVisible = false; // modelo escondido: só as instâncias aparecem
+        mesh.metadata = { roadTemplate: true };
         return mesh;
     },
 
     /** Recalcula a peça das ruas nas células dadas e nas vizinhas (troca a instância se mudou). */
-    refreshRoadPieces(cells) {
-        const net = this.getRoadNetwork();
-        const targets = new Map();
-        for (const c of cells) {
-            for (const [dx, dz] of [[0, 0], [0, 1], [1, 0], [0, -1], [-1, 0]]) {
-                targets.set(RoadNetwork.key(c.x + dx, c.z + dz), { x: c.x + dx, z: c.z + dz });
-            }
-        }
-        const byCell = new Map();
-        for (const b of this.buildings.values()) if (b.config?.roadType) byCell.set(RoadNetwork.key(b.gridX, b.gridZ), b);
-        for (const [key, cell] of targets) {
-            const building = byCell.get(key);
-            if (building) this.applyRoadPiece(building, net.pieceAt(cell.x, cell.z));
-        }
-        this.refreshRoadAccesses();
+    // Uma rua nova pode virar o apoio de uma ponte ou o topo de uma rampa a algumas células: o perfil é refeito e
+    // todas as ruas conferidas (applyRoadPiece só troca a instância se a peça mudou)
+    refreshRoadPieces() {
+        this.refreshAllRoadPieces();
     },
 
     refreshAllRoadPieces() {
         const net = this.getRoadNetwork();
+        this.roadProfile = null;
+        const profile = this.getRoadProfile(net);
         for (const b of this.buildings.values()) {
-            if (b.config?.roadType) this.applyRoadPiece(b, net.pieceAt(b.gridX, b.gridZ));
+            if (b.config?.roadType) this.applyRoadPiece(b, net.pieceAt(b.gridX, b.gridZ), profile);
         }
         this.refreshRoadAccesses();
     },
@@ -199,31 +301,37 @@ mixin(BuildingSystem, {
         return mesh;
     },
 
-    applyRoadPiece(building, piece) {
+    applyRoadPiece(building, piece, profile = this.getRoadProfile()) {
         const old = building.mesh;
-        if (old && !old.isDisposed() && old.metadata?.roadPiece === piece.tipo && old.metadata?.roadRotation === piece.rotacao) return;
-        const mesh = this.createRoadMesh(building.gridX, building.gridZ, building.config, piece);
+        const prof = profile.get(RoadNetwork.key(building.gridX, building.gridZ)) || { kind: 'flat', base: this.getRoadGroundHeight(building.gridX, building.gridZ) };
+        if (old && !old.isDisposed() && old.metadata?.roadSig === this.roadSignature(piece, prof)) return;
+        const mesh = this.createRoadMesh(building.gridX, building.gridZ, building.config, piece, prof);
         mesh.metadata = { ...(old?.metadata || {}), ...mesh.metadata, buildingId: building.id };
         building.mesh = mesh;
         if (old && !old.isDisposed()) old.dispose();
     },
 
     // ===== PEÇAS-MODELO =====
-    getRoadPieceTemplate(roadType, tipo) {
+    /** opts.bridge = tabuleiro de ponte; opts.rise = rampa (altura arredondada em 0,05: poucos modelos por tipo). */
+    getRoadPieceTemplate(roadType, tipo, opts = {}) {
         if (!this.roadTemplates) this.roadTemplates = new Map();
-        const key = `${roadType}_${tipo}`;
+        const rise = opts.rise ? Math.max(0.05, Math.round(opts.rise * 20) / 20) : 0;
+        const key = `${roadType}_${tipo}${opts.bridge ? '_ponte' : ''}${rise ? `_rampa${rise.toFixed(2)}` : ''}`;
         let template = this.roadTemplates.get(key);
         if (template && !template.isDisposed()) return template;
-        template = this.buildRoadPieceMesh(roadType, tipo);
+        template = this.buildRoadPieceMesh(roadType, tipo, { bridge: !!opts.bridge, rise });
         this.roadTemplates.set(key, template);
         return template;
     },
 
     /** Peça canônica (ligações N=+z, L=+x), origem no topo da laje, centro da célula. */
-    buildRoadPieceMesh(roadType, tipo) {
+    buildRoadPieceMesh(roadType, tipo, { bridge = false, rise = 0 } = {}) {
         const h = this.gridManager.cellSize / 2;
         const { A, CURB, DASH, SLAB } = this.ROAD_SHAPE;
-        const colors = this.ROAD_COLORS[roadType] || this.ROAD_COLORS.paved;
+        const baseColors = this.ROAD_COLORS[roadType] || this.ROAD_COLORS.paved;
+        const bridgeColors = this.BRIDGE_COLORS[roadType] || this.BRIDGE_COLORS.paved;
+        // Na ponte a "calçada" vira o tabuleiro (na terra/cascalho, de madeira em vez de grama)
+        const colors = bridge ? { ...baseColors, slab: bridgeColors.deck, slabSide: bridgeColors.deckSide } : baseColors;
         const positions = [], indices = [], vcolors = [], normals = [];
         const Y = { road: 0.012, curb: 0.03, mark: 0.022 };
 
@@ -343,7 +451,36 @@ mixin(BuildingSystem, {
             ['N', 'L', 'S', 'O'].forEach(zebra);
         }
 
-        const mesh = new BABYLON.Mesh(`roadPiece_${roadType}_${tipo}`, this.scene);
+        if (bridge) {
+            // Guarda-corpo dos dois lados (ao longo de z) com postes
+            const geo = { positions, indices, colors: vcolors, normals };
+            for (const x of [-0.95, 0.95]) {
+                this.pushBox(geo, [x * h - 0.025, 0.2, -h], [x * h + 0.025, 0.25, h], bridgeColors.rail);
+                for (const z of [-0.8, 0, 0.8]) this.pushBox(geo, [x * h - 0.03, 0, z * h - 0.03], [x * h + 0.03, 0.25, z * h + 0.03], bridgeColors.rail);
+            }
+        }
+        if (rise) {
+            // Rampa: a peça inteira inclina, de y = 0 na borda sul (z = -h) até y = rise na borda norte (z = +h)...
+            for (let i = 0; i < positions.length; i += 3) positions[i + 1] += rise * (positions[i + 2] / h + 1) / 2;
+            // ...e um aterro enche o vão embaixo dela até a altura da laje da ponta baixa
+            const c = BABYLON.Color3.FromHexString(colors.slabSide);
+            const bottom = -SLAB * h;
+            const tri = (pts, n) => {
+                const base = positions.length / 3;
+                pts.forEach(p => { positions.push(...p); normals.push(...n); vcolors.push(c.r, c.g, c.b, 1); });
+                indices.push(base, base + 1, base + 2);
+            };
+            for (const x of [-h, h]) {
+                const n = [Math.sign(x), 0, 0];
+                tri([[x, bottom, -h], [x, bottom + rise, h], [x, bottom, h]], n);
+            }
+            const base = positions.length / 3;
+            [[-h, bottom, h], [h, bottom, h], [h, bottom + rise, h], [-h, bottom + rise, h]]
+                .forEach(p => { positions.push(...p); normals.push(0, 0, 1); vcolors.push(c.r, c.g, c.b, 1); });
+            indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+        }
+
+        const mesh = new BABYLON.Mesh(`roadPiece_${roadType}_${tipo}${bridge ? '_ponte' : ''}${rise ? '_rampa' : ''}`, this.scene);
         const data = new BABYLON.VertexData();
         data.positions = positions;
         data.indices = indices;
@@ -351,7 +488,7 @@ mixin(BuildingSystem, {
         data.normals = normals;
         data.applyToMesh(mesh);
 
-        const mat = new BABYLON.StandardMaterial(`roadPieceMat_${roadType}_${tipo}`, this.scene);
+        const mat = new BABYLON.StandardMaterial(`roadPieceMat_${roadType}_${tipo}${bridge ? '_ponte' : ''}${rise ? `_rampa${rise.toFixed(2)}` : ''}`, this.scene);
         mat.specularColor = new BABYLON.Color3(0.03, 0.03, 0.03);
         mat.backFaceCulling = false;
         mesh.material = mat;

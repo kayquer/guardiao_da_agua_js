@@ -37,7 +37,7 @@ mixin(BuildingSystem, {
                 'Energia Insuficiente',
                 `Seus edifícios estão operando a apenas ${efficiencyPercent}% de eficiência por falta de energia.`,
                 'warning',
-                `Geração atual: ${generation} kW | Consumo: ${consumption} kW | Déficit: ${deficit} kW\n\nConstrua usinas de energia (Hidrelétrica, Painéis Solares ou Turbinas Eólicas) para suprir a demanda.`,
+                `Geração atual: ${generation} MW | Consumo: ${consumption} MW | Falta: ${deficit} MW\n\nConstrua usinas em ⚡ Energia (Campo Eólico, Usina Solar ou Hidrelétrica) para suprir a demanda.`,
                 // Se esperou um livro/tutorial fechar: só mostra se ainda faltar energia (obras contam)
                 { stillRelevant: () => this.isEnergyShortProjected() }
             );
@@ -335,12 +335,15 @@ mixin(BuildingSystem, {
         if (material) {
             const red = 1 - progress;
             const green = progress;
-            material.diffuseColor = new BABYLON.Color3(red, green, 0.2);
-            material.emissiveColor = new BABYLON.Color3(red * 0.5, green * 0.5, 0.1);
+            material.diffuseColor.set(red, green, 0.2); // sem Color3 novo a cada quadro
+            material.emissiveColor.set(red * 0.5, green * 0.5, 0.1);
         }
 
-        // Atualizar texto de porcentagem
+        // Atualizar texto de porcentagem: redesenhar o canvas e subir a textura só quando o número muda
+        // (antes era a cada quadro, por obra)
         const percentage = Math.floor(progress * 100);
+        if (buildingData.constructionIndicators.lastPercent === percentage) return;
+        buildingData.constructionIndicators.lastPercent = percentage;
         if (textPlate && textPlate.updateText) {
             try {
                 textPlate.updateText(`${percentage}%`);

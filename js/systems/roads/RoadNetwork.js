@@ -116,6 +116,90 @@ class RoadNetwork {
     }
 
     /**
+     * Perfil de altura de cada rua: plana, rampa (sobe uma colina) ou ponte (passa sobre água ou entre dois montes).
+     * ground(x, z) = altura da rua assentada no chão; isWater(x, z) = célula de água. Devolve Map chave →
+     * { kind: 'flat'|'ramp'|'bridge', base, rise?, dir? } — base = altura (na rampa, a da ponta baixa); rise = quanto
+     * a rampa sobe; dir = 0..3 (N, L, S, O) para onde ela sobe. Só retas viram ponte; retas e pontas viram rampa.
+     */
+    profile(ground, isWater, { dip = RoadNetwork.BRIDGE_DIP, span = RoadNetwork.BRIDGE_SPAN, rampMin = RoadNetwork.RAMP_MIN } = {}) {
+        const out = new Map();
+        const cells = this.list();
+        for (const c of cells) out.set(RoadNetwork.key(c.x, c.z), { kind: 'flat', base: ground(c.x, c.z) });
+
+        // Pontes: numa reta, procura nos dois sentidos do eixo o primeiro apoio (terra firme ou terreno bem mais alto)
+        for (const c of cells) {
+            const piece = this.pieceAt(c.x, c.z);
+            if (piece.tipo !== 'reta') continue;
+            const axis = piece.rotacao % 2 === 0 ? [[0, 1], [0, -1]] : [[1, 0], [-1, 0]];
+            const water = isWater(c.x, c.z);
+            const g = ground(c.x, c.z);
+            const anchors = axis.map(([dx, dz]) => {
+                for (let k = 1; k <= span; k++) {
+                    const x = c.x + dx * k, z = c.z + dz * k;
+                    if (!this.has(x, z)) return null;
+                    const nWater = isWater(x, z);
+                    if (water ? !nWater : (!nWater && ground(x, z) >= g + dip)) return { k, h: ground(x, z) };
+                    // no meio da ponte só pode haver retas no mesmo eixo
+                    const p = this.pieceAt(x, z);
+                    if (p.tipo !== 'reta' || p.rotacao % 2 !== piece.rotacao % 2) return null;
+                }
+                return null;
+            });
+            if (!anchors[0] || !anchors[1] || anchors[0].k + anchors[1].k - 1 > span) continue;
+            const deck = Math.min(anchors[0].h, anchors[1].h);
+            if (!water && deck < g + dip) continue;
+            out.set(RoadNetwork.key(c.x, c.z), { kind: 'bridge', base: deck, ground: g });
+        }
+
+        // Rampas: reta ou ponta plana encostada numa rua bem mais alta, no próprio eixo
+        for (const c of cells) {
+            const k = RoadNetwork.key(c.x, c.z);
+            const me = out.get(k);
+            if (me.kind !== 'flat') continue;
+            const piece = this.pieceAt(c.x, c.z);
+            const dirs = piece.tipo === 'reta' ? (piece.rotacao % 2 === 0 ? [0, 2] : [1, 3]) : piece.tipo === 'ponta' ? [piece.rotacao] : [];
+            let best = null;
+            for (const dir of dirs) {
+                const d = RoadNetwork.DIRS[dir];
+                const other = out.get(RoadNetwork.key(c.x + d.dx, c.z + d.dz));
+                if (!other) continue;
+                const rise = other.base - me.base; // rampa vizinha: a ponta baixa dela (base) é onde esta encosta
+                if (rise >= rampMin && (!best || rise > best.rise)) best = { rise, dir };
+            }
+            if (best) out.set(k, { kind: 'ramp', base: me.base, rise: best.rise, dir: best.dir });
+        }
+        return out;
+    }
+
+    /**
+     * Altura da rua na borda da célula c virada para o vizinho n (para os carros): na rampa, a altura daquela ponta;
+     * entre duas células planas, a média; ao lado de uma rampa, a ponta da rampa que encosta.
+     */
+    static edgeHeight(profile, c, n) {
+        const pc = profile.get(RoadNetwork.key(c.x, c.z));
+        const pn = profile.get(RoadNetwork.key(n.x, n.z));
+        const rampEdge = (p, from, to) => {
+            const d = RoadNetwork.DIRS[p.dir];
+            const dx = to.x - from.x, dz = to.z - from.z;
+            if (dx === d.dx && dz === d.dz) return p.base + p.rise;
+            if (dx === -d.dx && dz === -d.dz) return p.base;
+            return p.base + p.rise / 2;
+        };
+        if (pc?.kind === 'ramp') return rampEdge(pc, c, n);
+        if (pn?.kind === 'ramp') return rampEdge(pn, n, c);
+        if (!pc) return pn?.base ?? 0;
+        if (!pn) return pc.base;
+        return (pc.base + pn.base) / 2;
+    }
+
+    /** Altura da rua no centro da célula (meio da rampa). */
+    static centerHeight(profile, c) {
+        const p = profile.get(RoadNetwork.key(c.x, c.z));
+        if (!p) return 0;
+        return p.kind === 'ramp' ? p.base + p.rise / 2 : p.base;
+    }
+
+    /**
      * Próxima célula de quem está em cur vindo de prev: um vizinho aleatório que não seja a volta.
      * Ponta sem saída → volta por onde veio (meia-volta); célula isolada → null.
      */
@@ -140,3 +224,9 @@ RoadNetwork.DIRS = [
 RoadNetwork.CANONICAL = { isolada: 0, ponta: 1, reta: 5, curva: 3, T: 7, cruzamento: 15 };
 
 window.RoadNetwork = RoadNetwork;
+
+// Perfil de altura (profile): ponte quando o vão fica BRIDGE_DIP abaixo dos dois apoios (ou é água), até BRIDGE_SPAN
+// células de vão; rampa quando a rua vizinha fica RAMP_MIN ou mais acima (degraus menores ficam planos)
+RoadNetwork.BRIDGE_DIP = 0.5;
+RoadNetwork.BRIDGE_SPAN = 4;
+RoadNetwork.RAMP_MIN = 0.15;

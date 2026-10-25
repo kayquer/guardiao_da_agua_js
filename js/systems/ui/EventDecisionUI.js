@@ -97,7 +97,7 @@ mixin(UIManager, {
                     <div class="decision-avatar"></div>
                     <div class="decision-speech">
                         <div class="decision-who">${PAULO} <small>· Secretaria Municipal de Meio Ambiente</small></div>
-                        <h3 id="event-decision-title"><span aria-hidden="true">${config.icon}</span> ${config.name}
+                        <h3 id="event-decision-title"><span aria-hidden="true">${uiIcon(config.icon, 'lg')}</span> ${config.name}
                             <span class="decision-kind">${threat ? 'Ameaça' : 'Oportunidade'}</span></h3>
                         <p class="decision-intro">${intro}</p>
                         <p class="decision-when">${when}</p>

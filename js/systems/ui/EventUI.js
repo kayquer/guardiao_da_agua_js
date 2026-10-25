@@ -85,7 +85,7 @@ mixin(UIManager, {
 
         card.innerHTML = `
             <div class="event-head">
-                <span class="event-icon" aria-hidden="true">${config.icon}</span>
+                <span class="event-icon" aria-hidden="true">${uiIcon(config.icon)}</span>
                 <span class="event-name">${kind === 'warning' ? 'Previsão: ' : ''}${config.name}</span>
                 <span class="event-time"></span>
             </div>

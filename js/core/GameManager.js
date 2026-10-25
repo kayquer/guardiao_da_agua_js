@@ -699,7 +699,11 @@ class GameManager {
             try {
                 this.updateCameraControls(cappedDeltaTime);
                 this.update(cappedDeltaTime);
-                this.scene.render();
+                // Embaixo da tela de pausa nada se mexe: desenha ~10 vezes por segundo em vez de 60 (GPU e bateria)
+                if (this.gameState !== 'paused' || currentTime - (this.lastPausedRender || 0) >= 100) {
+                    this.lastPausedRender = currentTime;
+                    this.scene.render();
+                }
             } catch (error) {
                 console.error('❌ Erro durante render:', error);
                 this.renderState.corruptionCount++;

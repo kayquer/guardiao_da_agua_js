@@ -11,6 +11,11 @@ class GridManager {
     static TERRAIN_BEVEL = 0.045;
     static TERRAIN_BRIGHTNESS = 1.3;
     static TERRAIN_CHUNK = 10;
+    // A terra toda fica este tanto acima do fundo; a água de cada lago/rio fica WATER_MARGIN abaixo da margem mais
+    // baixa dele (nunca acima da terra em volta — antes a água rasa ficava mais alta que a margem). Mínimo WATER_MIN.
+    static TERRAIN_BASE = 0.3;
+    static WATER_MARGIN = 0.12;
+    static WATER_MIN = 0.12;
 
     constructor(scene) {
         log('🗂️ Inicializando GridManager...');
@@ -44,6 +49,7 @@ class GridManager {
     // ===== INICIALIZAÇÃO =====
     initializeGrid() {
         this.waterBodySizes = null; // getWaterBodySize recalcula para o terreno novo
+        this.waterLevels = null;    // getWaterLevel também
         log(`🗂️ Criando grid ${this.gridSize}x${this.gridSize}...`);
 
         // Verificar se gridSize é válido
@@ -313,6 +319,46 @@ class GridManager {
         return this.getTerrainType(x, z) === 'water' ? 0 : this.getTerrainBlockHeight(x, z);
     }
 
+    /**
+     * Nível (topo) da água de cada célula: o lago/rio inteiro fica plano, WATER_MARGIN abaixo da terra mais baixa
+     * da margem dele. Grade calculada uma vez (o terreno não muda na partida).
+     */
+    static measureWaterLevels(terrainGrid, size, landHeight) {
+        const levels = Array.from({ length: size }, () => new Array(size).fill(0));
+        const seen = Array.from({ length: size }, () => new Array(size).fill(false));
+        const isWater = (x, z) => x >= 0 && z >= 0 && x < size && z < size && terrainGrid[x]?.[z] === 'water';
+        for (let x = 0; x < size; x++) {
+            for (let z = 0; z < size; z++) {
+                if (!isWater(x, z) || seen[x][z]) continue;
+                const cells = [[x, z]];
+                seen[x][z] = true;
+                let shore = Infinity;
+                for (let i = 0; i < cells.length; i++) {
+                    const [cx, cz] = cells[i];
+                    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+                        const nx = cx + dx, nz = cz + dz;
+                        if (nx < 0 || nz < 0 || nx >= size || nz >= size) continue;
+                        if (isWater(nx, nz)) {
+                            if (!seen[nx][nz]) { seen[nx][nz] = true; cells.push([nx, nz]); }
+                        } else shore = Math.min(shore, landHeight(nx, nz));
+                    }
+                }
+                const level = Math.max(GridManager.WATER_MIN, (isFinite(shore) ? shore : GridManager.TERRAIN_BASE) - GridManager.WATER_MARGIN);
+                cells.forEach(([cx, cz]) => { levels[cx][cz] = level; });
+            }
+        }
+        return levels;
+    }
+
+    /** Topo da água da célula (0 se não é água). */
+    getWaterLevel(gridX, gridZ) {
+        if (!this.waterLevels) {
+            this.waterLevels = GridManager.measureWaterLevels(this.terrainGrid, this.gridSize,
+                (x, z) => this.getTerrainBlockHeight(x, z));
+        }
+        return this.waterLevels[gridX]?.[gridZ] || 0;
+    }
+
     /** Profundidade do bloco de água da célula (mais funda onde a elevação é baixa). */
     getWaterDepth(x, z) {
         const elevation = this.elevationGrid[x]?.[z] || 0;
@@ -386,15 +432,15 @@ class GridManager {
     }
 
     /**
-     * Geometria da água das células [x0, x1) × [z0, z1): uma lâmina por célula do tamanho inteiro dela (topo em
-     * profundidade + 0,05) e laterais onde o vizinho é mais baixo. Além de positions/normals/colors/indices,
+     * Geometria da água das células [x0, x1) × [z0, z1): uma lâmina por célula do tamanho inteiro dela (topo no
+     * nível plano do lago/rio, getWaterLevel, abaixo da margem) e laterais onde o vizinho é mais baixo. Além de positions/normals/colors/indices,
      * `cells` (vec4 por vértice: célula x, z, profundidade, 1 = topo que ondula) alimenta o shader da água.
      */
     buildWaterGeometry(x0, z0, x1, z1) {
         const out = { positions: [], normals: [], colors: [], indices: [], cells: [] };
         const cs = this.cellSize;
         const half = (this.gridSize * cs) / 2;
-        const waterTop = (x, z) => this.getWaterDepth(x, z) + 0.05;
+        const waterTop = (x, z) => this.getWaterLevel(x, z);
         for (let x = x0; x < x1; x++) {
             for (let z = z0; z < z1; z++) {
                 if (this.getTerrainType(x, z) !== 'water') continue;
@@ -616,16 +662,19 @@ class GridManager {
             }
         }
 
+        // Água: a superfície do lago/rio (prédios sobre a água ficam boiando nela, não afundados)
+        if (terrainType === 'water' && this.terrainGrid?.length) return this.getWaterLevel(gridX, gridZ);
+        const base = GridManager.TERRAIN_BASE;
         if (terrainType === 'hill') {
             // Colinas são significativamente mais altas
-            return Math.max(0.8, elevation * 1.5 + 0.5);
+            return base + Math.max(0.8, elevation * 1.5 + 0.5);
         }
         if (terrainType === 'lowland') {
             // Planícies baixas são mais baixas
-            return Math.max(0.05, elevation * 0.3 + 0.05);
+            return base + Math.max(0.05, elevation * 0.3 + 0.05);
         }
         // Pastagem e outros terrenos têm altura padrão
-        return Math.max(0.1, elevation * 0.5 + 0.1);
+        return base + Math.max(0.1, elevation * 0.5 + 0.1);
     }
 
     // ===== CONVERSÕES DE COORDENADAS =====

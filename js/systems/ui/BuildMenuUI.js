@@ -176,8 +176,15 @@ mixin(UIManager, {
         if (type.runoffAbsorption) add('🌧️ Segura a enxurrada', `${fmt(type.runoffAbsorption)} (menos enchente)`, 'good');
         if (type.earlyWarning) add('📡 Avisa antes', 'eventos chegam com o dobro de aviso', 'good');
         if (type.nearbyEfficiencyBonus) add('🔬 Melhora os vizinhos', `+${Math.round(type.nearbyEfficiencyBonus * 100)}% de eficiência`, 'good');
-        if (type.runoffImpervious) add('🌧️ Chão impermeável', 'a chuva escorre (mais enchente)', 'bad');
+        if (type.runoffImpervious) {
+            // Ruas: quanto da chuva escorre (asfalto 1 = toda; cascalho e terra deixam a água entrar no chão)
+            const share = type.runoffImpervious;
+            if (share >= 0.8) add('🌧️ Chão impermeável', 'quase toda a chuva escorre (mais enxurrada e enchente)', 'bad');
+            else if (share >= 0.3) add('🌧️ Chão semipermeável', `parte da chuva entra entre as pedras (${Math.round((1 - share) * 100)}% infiltra)`, 'good');
+            else add('🌧️ Chão permeável', `a chuva entra no chão (${Math.round((1 - share) * 100)}% infiltra), mas pode virar lama e erosão`, 'good');
+        }
         if (type.plantedTree) add('🌳 Cresce e limpa o ar', '4 fases', 'good');
+        if (type.recycleBonus) add('♻️ Reciclar prédios', `+${Math.round(type.recycleBonus * 100)}% no valor (uma vez por tipo)`, 'good');
         if (type.maintenanceCost) add('🔧 Manutenção', `R$ ${fmt(type.maintenanceCost)}/min`, 'bad');
         if (!building) add('📐 Tamanho', `${type.size}×${type.size} quadrados`);
         return lines;

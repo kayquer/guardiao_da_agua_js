@@ -67,13 +67,13 @@ test('anel de seleção, marcador e overlay de construção ficam acima do topo 
     // Overlay de posicionamento: cada célula logo acima do bloco dela (antes: elevação × gridHeight + 0.75)
     const overlay = await page.evaluate(async () => {
         const gm = window.gameManager;
-        await gm.createPlacementOverlay('water_pump');
-        const bad = gm.placementOverlayMeshes.filter(p => {
-            const [, x, z] = p.name.split('_').map(Number);
-            const top = gm.gridManager.getTerrainBlockHeight(x, z);
-            return p.position.y <= top || p.position.y > top + 0.2;
+        gm.createPlacementOverlay('water_pump');
+        // Uma malha só (antes 1.600 planos); a altura de cada célula fica em placementOverlayCells
+        const bad = gm.placementOverlayCells.filter(c => {
+            const top = gm.gridManager.getTerrainBlockHeight(c.x, c.z);
+            return c.y <= top || c.y > top + 0.2;
         }).length;
-        const total = gm.placementOverlayMeshes.length;
+        const total = gm.placementOverlayMeshes.length === 1 ? gm.placementOverlayCells.length : -1;
         gm.clearPlacementOverlay();
         return { bad, total };
     });

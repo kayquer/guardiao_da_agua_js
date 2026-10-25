@@ -77,6 +77,9 @@ const FEATURE_FLAGS = {
         'power_pole',
         'thermal_plant',
         'coal_plant',
+        'nuclear_plant', // ocultas por enquanto (pedido de 10/2026)
+        'tidal_plant',
+        'desalination_plant',
         'house',      // casa e prédio avulsos: a categoria Residencial mostra só as zonas (a cidade cresce por elas)
         'apartment'
     ],

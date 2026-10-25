@@ -28,6 +28,20 @@ class StreamTrack {
         this.onEnded = null;
     }
 
+    /**
+     * Próxima faixa da playlist em ordem aleatória: sorteia entre as que ainda não tocaram nesta rodada (nunca a
+     * mesma de agora); quando todas tocaram, começa outra rodada.
+     */
+    nextIndex() {
+        if (this.files.length < 2) return this.index;
+        this.played = this.played || new Set([this.index]);
+        if (this.played.size >= this.files.length) this.played = new Set([this.index]);
+        const options = this.files.map((_, i) => i).filter(i => !this.played.has(i));
+        const pick = options[Math.floor(Math.random() * options.length)];
+        this.played.add(pick);
+        return pick;
+    }
+
     start(fadeMs = 1500) {
         this.spawn(this.files[this.index], fadeMs);
     }
@@ -101,7 +115,7 @@ class StreamTrack {
                 v.next = true;
                 v.target = 0;
                 v.rate = 1 / xf;
-                if (this.files.length > 1) this.index = (this.index + 1) % this.files.length;
+                this.index = this.nextIndex();
                 this.spawn(this.files[this.index], xf * 1000);
             }
             this.apply(v);

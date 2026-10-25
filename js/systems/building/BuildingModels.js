@@ -379,7 +379,9 @@ mixin(BuildingSystem, {
                 if (!running) continue;
                 const factor = part.kind === 'rotor' ? windFactor : 1;
                 part.angle = (part.angle + part.speed * factor * Math.max(0.3, b.efficiency ?? 1) * dt) % (Math.PI * 2);
-                part.mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(part.axis, -part.angle);
+                // Reaproveita o quaternion (antes: um novo por peça a cada quadro)
+                if (part.mesh.rotationQuaternion) BABYLON.Quaternion.RotationAxisToRef(part.axis, -part.angle, part.mesh.rotationQuaternion);
+                else part.mesh.rotationQuaternion = BABYLON.Quaternion.RotationAxis(part.axis, -part.angle);
             }
         }
     },

@@ -36,6 +36,11 @@ const MenuIntro = {
         return GraphicsQuality.current();
     },
 
+    /** Seletor de Gráficos mexido com o menu aberto: a abertura muda de qualidade na hora. */
+    applyQuality() {
+        this.cinematic?.setQuality?.(this.quality());
+    },
+
     /** Monta a cidade atrás da tela de carregamento. Nunca lança: sem abertura, o menu segue normal. */
     async prepare(onProgress = () => {}) {
         this.renderBillboard();

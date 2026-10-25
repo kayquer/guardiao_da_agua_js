@@ -77,3 +77,46 @@ test('trânsito: segue em frente, não dá meia-volta, só volta em ponta', () =
         cur = next;
     }
 });
+
+// Perfil de altura: rampa subindo a colina, ponte sobre a água e ponte entre dois montes
+test('perfil: rampa na reta encostada numa rua mais alta; degrau pequeno fica plano', () => {
+    const net = new RoadNetwork([{ x: 0, z: 0 }, { x: 0, z: 1 }, { x: 0, z: 2 }, { x: 0, z: 3 }]);
+    const heights = { '0,0': 0.4, '0,1': 0.4, '0,2': 1.6, '0,3': 1.65 };
+    const p = net.profile((x, z) => heights[`${x},${z}`], () => false);
+    const ramp = p.get('0,1');
+    assert.strictEqual(ramp.kind, 'ramp');
+    assert.strictEqual(ramp.dir, 0, 'sobe para o norte');
+    assert.ok(Math.abs(ramp.rise - 1.2) < 1e-9);
+    assert.strictEqual(p.get('0,0').kind, 'flat');
+    assert.strictEqual(p.get('0,3').kind, 'flat', '0,05 de degrau não vira rampa');
+    // carros: borda baixa, meio e borda alta da rampa
+    assert.ok(Math.abs(RoadNetwork.edgeHeight(p, { x: 0, z: 1 }, { x: 0, z: 0 }) - 0.4) < 1e-9);
+    assert.ok(Math.abs(RoadNetwork.edgeHeight(p, { x: 0, z: 1 }, { x: 0, z: 2 }) - 1.6) < 1e-9);
+    assert.ok(Math.abs(RoadNetwork.centerHeight(p, { x: 0, z: 1 }) - 1.0) < 1e-9);
+    assert.ok(Math.abs(RoadNetwork.edgeHeight(p, { x: 0, z: 2 }, { x: 0, z: 1 }) - 1.6) < 1e-9, 'a vizinha encosta no topo da rampa');
+});
+
+test('perfil: ponte sobre a água (vão de até 4) e entre dois montes, na altura do apoio mais baixo', () => {
+    const line = n => Array.from({ length: n }, (_, i) => ({ x: i, z: 0 }));
+    const net = new RoadNetwork(line(5));
+    const water = new Set(['1,0', '2,0', '3,0']);
+    const g = { '0,0': 0.5, '1,0': 0.3, '2,0': 0.3, '3,0': 0.3, '4,0': 0.6 };
+    const p = net.profile((x, z) => g[`${x},${z}`], (x, z) => water.has(`${x},${z}`));
+    for (const k of ['1,0', '2,0', '3,0']) {
+        assert.strictEqual(p.get(k).kind, 'bridge', k);
+        assert.strictEqual(p.get(k).base, 0.5, 'tabuleiro na altura do apoio mais baixo');
+    }
+    assert.strictEqual(p.get('0,0').kind, 'flat');
+
+    // Vão de 5 é longo demais: sem ponte
+    const longNet = new RoadNetwork(line(7));
+    const longWater = new Set(['1,0', '2,0', '3,0', '4,0', '5,0']);
+    const q = longNet.profile(() => 0.4, (x, z) => longWater.has(`${x},${z}`));
+    assert.strictEqual(q.get('3,0').kind, 'flat');
+
+    // Vale entre dois montes (terra baixa entre colinas)
+    const hills = { '0,0': 1.7, '1,0': 0.45, '2,0': 1.8 };
+    const v = new RoadNetwork(line(3)).profile((x, z) => hills[`${x},${z}`], () => false);
+    assert.strictEqual(v.get('1,0').kind, 'bridge');
+    assert.strictEqual(v.get('1,0').base, 1.7);
+});

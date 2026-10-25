@@ -164,6 +164,8 @@ function initializeGraphicsPickers() {
         if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_click', 0.6);
     }));
     GraphicsQuality.onChange(render);
+    // No menu, a cidade da abertura também muda na hora (no jogo, GameManager.applyGraphicsQuality)
+    GraphicsQuality.onChange(() => { if (typeof MenuIntro !== 'undefined') MenuIntro.applyQuality(); });
     render();
 }
 
