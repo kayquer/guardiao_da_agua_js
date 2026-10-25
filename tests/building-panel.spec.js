@@ -235,7 +235,7 @@ test('guia de energia: a primeira falta de energia abre a Cláudia no lugar do a
     test.skip(testInfo.project.name === 'mobile', 'alvos do desktop');
     const problems = watchErrors(page);
     // Outros guias já vistos; 'energy' não
-    await begin(page, { guides: ['roads', 'storage', 'zoning', 'public', 'tourism', 'industrial', 'commercial'] });
+    await begin(page, { guides: ['roads', 'rivers', 'storage', 'zoning', 'public', 'tourism', 'industrial', 'commercial'] });
     const title = page.locator('#tutorial-title');
 
     expect(await place(page, 'water_pump')).toBeTruthy(); // bomba sem usina: falta energia

@@ -127,10 +127,13 @@ test('chuva intensa limpa um pouco o rio e enche a produção', () => {
     assert.strictEqual(res.pollution.reduction, 5);
     assert.strictEqual(res.water.production, 20);
     assert.strictEqual(res.water.aquiferRecharge, 4, 'a chuva infiltra e recarrega o aquífero');
+    assert.strictEqual(res.water.riverRecharge, 5, 'e enche os rios e lagos');
     es.endEvent(ev.id);
     const after = JSON.parse(snapshot(rm));
     assert.strictEqual(after.water.aquiferRecharge, 0);
+    assert.strictEqual(after.water.riverRecharge, 0);
     delete after.water.aquiferRecharge;
+    delete after.water.riverRecharge;
     assert.strictEqual(JSON.stringify(after), before);
 });
 

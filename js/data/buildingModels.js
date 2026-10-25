@@ -38,7 +38,8 @@ const BUILDING_MODELS = {
     water_quality_monitor: { file: 'blender/water_quality_monitor.glb', tris: 508 },
 
     // ===== TRATAMENTO (modelos próprios) =====
-    treatment_plant:       { file: 'blender/treatment_plant.glb', tris: 1142 },
+    treatment_plant:       { file: 'blender/treatment_plant.glb', tris: 1232 }, // ETE (esgoto); a ponte do decantador gira (gira_1)
+    water_treatment_plant: { file: 'blender/water_treatment_plant.glb', tris: 1268 }, // ETA (água de rio/lago)
     filter_station:        { file: 'blender/filter_station.glb', tris: 984 },
     // lixo e reciclagem ("gira_N" = peça que gira: exaustor da cooperativa, tambor da composteira)
     recycling_point:       { file: 'blender/recycling_point.glb', tris: 832 },

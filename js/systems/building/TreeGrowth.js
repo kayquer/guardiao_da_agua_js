@@ -47,6 +47,16 @@ mixin(BuildingSystem, {
         return { water: data.waterConsumption || 0, pollution: (data.pollutionReduction || 0) * factor };
     },
 
+    /** %/min que as árvores plantadas devolvem ao aquífero agora (treeStages[etapa].aquiferRecharge; obra = 0). */
+    getPlantedTreeAquiferRecharge() {
+        let total = 0;
+        for (const building of this.buildings.values()) {
+            if (this.getTreeStage(building) === null) continue;
+            total += this.getTreeStageData(building)?.aquiferRecharge || 0;
+        }
+        return total;
+    },
+
     isRiparianTree(building) {
         const grid = this.gridManager || this.gameManager?.gridManager;
         return typeof TreeSystem !== 'undefined' && TreeSystem.isRiparianCell(grid, building.gridX, building.gridZ);

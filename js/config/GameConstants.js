@@ -68,7 +68,8 @@ const TREES = {
     GREEN_BONUS_MAX: 8,           // satisfação extra com todas as árvores iniciais em pé
     FELL_POLLUTION: 0.6,          // poluição (%) que sobe na hora por árvore derrubada
     RIPARIAN_DISTANCE: 2,         // mata ciliar: até 2 células da água (TreeSystem.isRiparianCell)
-    RIPARIAN_FACTOR: 2.5          // árvore de mata ciliar limpa 2,5× mais (nativa ou muda plantada)
+    RIPARIAN_FACTOR: 2.5,         // árvore de mata ciliar limpa 2,5× mais (nativa ou muda plantada)
+    AQUIFER_RECHARGE: 0.008       // %/min que cada árvore nativa devolve ao aquífero (~140 árvores ≈ 1,1%/min)
 };
 
 // ===== FEATURE FLAGS (o que aparece na versão de release) =====

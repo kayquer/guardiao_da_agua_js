@@ -14,6 +14,10 @@ const SFX = 'cozy kids city-building game, friendly and charming, not scary, no 
 const jobs = [];
 const voice = (name, text, seconds) => jobs.push({ name, text: `${text}, ${VOICE}`, seconds, kind: 'voice' });
 const sel = (group, text, seconds = 0.9) => { for (let i = 1; i <= 3; i++) jobs.push({ name: `sfx_select_${group}_${i}`, text: `${text}, ${SFX}`, seconds, kind: 'select' }); };
+// Efeito com 3 variações (mesmo prompt; a ElevenLabs sorteia cada uma): <nome>_1.._3
+const fx3 = (name, text, seconds) => { for (let i = 1; i <= 3; i++) jobs.push({ name: `${name}_${i}`, text: `${text}, ${SFX}`, seconds, kind: 'sfx' }); };
+// Loop de máquina (masterizado à parte como ambiente: estéreo, -22 LUFS)
+const loop = (name, text, seconds) => jobs.push({ name, text: `${text}, seamless loop, no music, no voice, stereo, calm`, seconds, kind: 'loop' });
 
 // ----- Vozes de entrada (normal ×5, animado, preocupado, triste) -----
 voice('voc_claudia_hello_2', "Friendly adult Brazilian woman's short warm 'hey!' greeting vocal, smiling", 0.5);
@@ -65,6 +69,10 @@ sel('roads', 'Selecting a city street: a small car passing by with a light frien
 sel('soil', 'Clicking on grassy ground: soft footsteps on grass and earth with a tiny pebble crunch', 0.6);
 sel('trees', 'Clicking on a tree: leaves rustling in a breeze and a bird chirping', 0.8);
 sel('river', 'Clicking on a river: gentle water lapping and a small fish splash', 0.8);
+
+// ----- Captação de superfície (ETA) e esgoto (ETE), 10/2026 -----
+fx3('sfx_pipe_install', 'Installing a water pipeline: two hollow metal pipe clanks, a wrench tightening a joint, then water rushing through the pipe', 2.2);
+loop('sfx_sewage_treatment', 'Sewage treatment plant: air bubbling up through big aeration tanks, slow rotating clarifier arm, low pump hum', 4);
 
 const filter = process.argv[2];
 fs.writeFileSync(path.join(RAW, 'jobs.json'), JSON.stringify(jobs, null, 2));

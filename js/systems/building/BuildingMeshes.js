@@ -800,6 +800,7 @@ mixin(BuildingSystem, {
             // Infraestrutura de água
             'water_pump': 1.8,
             'treatment_plant': 2.2,
+            'water_treatment_plant': 2.2,
             'water_tank': 3.5,
             'water_tower': 4.5,
 

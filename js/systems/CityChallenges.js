@@ -45,7 +45,7 @@ mixin(QuestSystem, {
 
     /** Monta o desafio n: os modelos se revezam e pulam os que não fazem sentido para a cidade de agora. */
     buildCityChallenge(n) {
-        const templates = ['growth', 'aquifer', 'drought', 'satisfaction', 'technology'];
+        const templates = ['growth', 'aquifer', 'drought', 'satisfaction', 'technology', 'river'];
         const r = this.gameManager.resourceManager?.resources;
         if (!r) return null;
         for (let i = 0; i < templates.length; i++) {
@@ -99,6 +99,21 @@ mixin(QuestSystem, {
                     objectives: [
                         goal('aquifer', `Aquífero acima de ${target}%`, { type: 'resource', target: 'aquifer', required: target, comparison: 'greater' }),
                         goal('reserve', `Guardar ${reserve} L de água`, { type: 'resource', target: 'water', required: reserve, comparison: 'greater' })
+                    ],
+                    starSpec: { parMs: 480000 }
+                };
+            }
+            case 'river': {
+                // Só com ETA captando (sem ela o rio não baixa) e o rio abaixo de 90%
+                const river = Number.isFinite(r.water?.river) ? r.water.river : 100;
+                if (river >= 90 || !(r.water?.surfaceProduction > 0)) return null;
+                const target = Math.min(95, Math.max(60, Math.ceil((river + 10) / 5) * 5));
+                return {
+                    name: 'Rio cheio de novo',
+                    description: `Os rios estão em ${Math.round(river)}%. Deixe o nível subir até ${target}%: trate o esgoto (ETE) para devolver água limpa ao rio e não capte mais do que ele aguenta.`,
+                    objectives: [
+                        goal('river', `Rios acima de ${target}%`, { type: 'resource', target: 'river', required: target, comparison: 'greater' }),
+                        goal('clean', 'Manter a poluição abaixo de 40%', { type: 'resource', target: 'pollution', required: 40, comparison: 'less' })
                     ],
                     starSpec: { parMs: 480000 }
                 };

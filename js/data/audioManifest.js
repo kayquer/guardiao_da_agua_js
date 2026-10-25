@@ -168,5 +168,8 @@ const SOUND_ALIASES = {
     sfx_build_error: 'sfx_error',
     sfx_ui_error: 'sfx_error',
     sfx_pickup: 'sfx_coin',
-    sfx_ui_success: 'sfx_success'
+    sfx_ui_success: 'sfx_success',
+    // ETA/ETE (10/2026): até gerar os próprios (scripts/sounds/generate.js já tem os pedidos), usam sons parecidos
+    sfx_pipe_install: 'sfx_water_clean',
+    sfx_sewage_treatment: 'sfx_water_treatment'
 };

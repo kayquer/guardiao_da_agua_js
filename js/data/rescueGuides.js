@@ -9,8 +9,9 @@ const RESCUE_GUIDES = {
         icon: '💧', title: 'A água não para de cair', category: 'water',
         targets: ['.resource-item:has(#water-amount)', '#compact-water'],
         suggest: [
-            { id: 'water_pump', why: 'tira água do rio, é barata e rápida' },
-            { id: 'water_well', why: 'tira mais água, do aquífero' },
+            { id: 'water_treatment_plant', why: 'capta muita água do rio ou do lago (precisa de água a até 10 blocos)' },
+            { id: 'water_pump', why: 'tira água do aquífero, é barata e rápida' },
+            { id: 'water_well', why: 'tira mais água, também do aquífero' },
             { id: 'loss_control_center', why: 'acha vazamentos e recupera a água perdida nos canos' },
             { id: 'water_reuse_plant', why: 'trata o esgoto e entrega água para as fábricas, sobrando a do rio para as casas' },
             { id: 'water_tank', why: 'guarda água para os momentos de aperto' }
@@ -33,7 +34,7 @@ const RESCUE_GUIDES = {
         icon: '🏭', title: 'A poluição só sobe', category: 'treatment',
         targets: ['.resource-item:has(#pollution-level)'],
         suggest: [
-            { id: 'treatment_plant', why: 'trata o esgoto antes de ele voltar para o rio' },
+            { id: 'treatment_plant', why: 'trata o esgoto e devolve água limpa ao rio' },
             { id: 'tree_sapling', why: 'árvores limpam o ar; perto do rio limpam ainda mais' },
             { id: 'floating_garden', why: 'as raízes das plantas filtram a água do rio' },
             { id: 'filter_station', why: 'filtra a água em camadas' },

@@ -474,7 +474,7 @@ test('evolução pede infraestrutura: equilibrada = tratamento ou reservatório;
     bs.buildings.set(light.id, light);
     const evo = bs.getZoneEvolution(light);
     assert.strictEqual(evo.ok, false);
-    assert.match(evo.reason, /Estação de Tratamento ou um Reservatório/);
+    assert.match(evo.reason, /Estação de Tratamento \(de água ou de esgoto\) ou um Reservatório/);
     bs.buildings.set('tank', { id: 'tank', type: 'water_tank', underConstruction: true });
     assert.strictEqual(bs.getZoneEvolution(light).ok, false, 'em obra não conta');
     bs.buildings.get('tank').underConstruction = false;

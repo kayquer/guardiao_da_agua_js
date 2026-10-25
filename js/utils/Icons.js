@@ -37,7 +37,7 @@ const UI_ICON_FILES = {
     'cat-zoning': 's', 'cat-commercial': 's', 'cat-tourism': 's', 'cat-industrial': 's', 'weather-sun': 'b',
     'weather-moon': 'b', 'weather-partly': 'b', 'weather-cloud': 'b', 'weather-fog': 'b',
     'weather-drizzle': 'b', 'weather-rain': 'b', 'weather-heavy-rain': 'b', 'weather-snow': 'b',
-    'weather-storm': 'b', 'water-pump': 'b', 'water-well': 'b', 'treatment-plant': 'b',
+    'weather-storm': 'b', 'water-pump': 'b', 'water-well': 'b', 'water-treatment-plant': 'b', 'treatment-plant': 'b',
     'filter-station': 'b', 'water-tank': 'b', 'water-tower': 'b', 'paved-road': 'b', 'dirt-road': 'b',
     'sidewalk': 'b', 'plaza': 'b', 'house': 'b', 'apartment': 'b', 'zone-residential-light': 'b',
     'zone-residential-balanced': 'b', 'zone-residential-heavy': 'b', 'zone-industrial-light': 'b',

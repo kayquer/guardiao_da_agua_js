@@ -127,6 +127,11 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         const recycleRate = recycleBs.getRecycleRate();
         if (recycleRate.percent < 0.2 || recycleRate.percent > 0.8) throw new Error(`taxa de reciclar fora: ${recycleRate.percent}`);
 
+        // building/WaterIntake: distância até a água e traçado da captação da ETA (fluxo completo em tests/rivers.spec.js)
+        const waterDist = recycleBs.getWaterDistance(0, 0, 2, 40);
+        if (!Number.isFinite(waterDist)) throw new Error('mapa sem água para a ETA');
+        recycleBs.describeWaterIntake(recycleBs.planWaterIntake(0, 0, 2, 40));
+
         // ui/EventUI + ui/EventDecisionUI: anúncio → modal do Paulo → escolha → aviso e evento com barra de tempo
         const es = window.gameManager.eventSystem;
         const asked = es.announceEvent('flood');

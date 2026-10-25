@@ -1242,8 +1242,9 @@ mixin(BuildingSystem, {
     /**
      * Rótulo em texto junto do cursor durante a escolha do lugar (a cor do fantasma não é o único sinal):
      * state 'ok' | 'trees' (detail = quantas) | 'bad' (detail = motivo) | null (esconde).
+     * note = linha extra quando pode construir (ETA: distância da água e canos, WaterIntake.describeWaterIntake).
      */
-    updatePlacementLabel(state, detail) {
+    updatePlacementLabel(state, detail, note = '') {
         let label = document.getElementById('placement-label');
         if (!state) {
             if (label) label.hidden = true;
@@ -1255,9 +1256,10 @@ mixin(BuildingSystem, {
             label.setAttribute('aria-live', 'polite');
             document.getElementById('game-screen')?.appendChild(label);
         }
-        const text = state === 'ok' ? '✓ Pode construir aqui'
+        const base = state === 'ok' ? '✓ Pode construir aqui'
             : state === 'trees' ? `🌳 Pode, mas derruba ${detail} ${detail === 1 ? 'árvore' : 'árvores'}`
                 : `✕ ${detail || 'Não dá para construir aqui'}`;
+        const text = note && state !== 'bad' ? `${base} · ${note}` : base;
         if (label.dataset.state !== state || label.textContent !== text) {
             label.dataset.state = state;
             label.textContent = text;

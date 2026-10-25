@@ -47,7 +47,7 @@ const ZONE_EVOLUTION = {
     // O que a cidade precisa ter (prédios prontos) para uma zona subir para este peso: crescer pede infraestrutura
     requires: {
         balanced: [
-            { ids: ['treatment_plant', 'water_tank'], label: 'uma Estação de Tratamento ou um Reservatório' }
+            { ids: ['treatment_plant', 'water_treatment_plant', 'water_tank'], label: 'uma Estação de Tratamento (de água ou de esgoto) ou um Reservatório' }
         ],
         heavy: [
             { ids: ['paved_road'], label: 'rua de asfalto' },

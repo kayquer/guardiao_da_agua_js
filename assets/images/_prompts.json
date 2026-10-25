@@ -393,13 +393,33 @@
       "prompt": "Educational cutaway illustration of a water filter station: a big transparent filter column showing layers from top to bottom (fine sand, coarse sand, gravel, activated charcoal), muddy brown water entering at the top and clear blue water coming out at the bottom, tiny dirt particles and microbe shapes trapped in the layers, pipes and valves around it. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
     },
     "assets/images/studies/estacao-de-tratamento.webp": {
-      "usedIn": "Estudo - Estacao de tratamento, pag. 1",
+      "usedIn": "Estudo - Estacao de Tratamento de Agua (ETA), pag. 1",
       "aspect": "16:9",
       "size": [
         960,
         540
       ],
       "prompt": "Educational aerial illustration of a water treatment plant beside a river, seen from above at an angle: river water enters, then open concrete tanks in sequence where the water color changes step by step from muddy brown (mixing and flocculation tanks), to settling tanks, to sand filter beds, to a clear blue treated water reservoir, and pipes leaving toward a town. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/estacao-de-esgoto.webp": {
+      "usedIn": "Estudo - Estacao de Tratamento de Esgoto (ETE), pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational aerial illustration of a sewage treatment plant beside a river, seen from above at an angle: dirty brown sewage arrives through a pipe and a bar screen, then a long rectangular aeration tank full of white bubbles, then a big round settling tank with a slowly rotating yellow scraper bridge, sludge drying beds with dark earth, and finally a pipe pouring clear turquoise treated water back into a healthy green river with fish and herons. The water color changes step by step from brown to clear. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "note": "Gerada em 2026-10-25 pelo endpoint /images do OpenRouter (openai/gpt-image-2.5-flare-20260908, quality medium, 1536x1024 → WebP 960 px, qualidade 74)."
+    },
+    "assets/images/studies/captacao-rio.webp": {
+      "usedIn": "Estudo - Estacao de Tratamento de Agua (ETA), pag. 2 (captacao no rio)",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational illustration of surface water intake for a town: a small floating pump house with a yellow motor on a concrete platform at the edge of a clean river, a blue pipeline half buried in the grass running from the river up to a water treatment plant with open concrete tanks, the town with red-tile roofs behind, riparian forest along the banks. Generic Brazilian setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "note": "Gerada em 2026-10-25 pelo endpoint /images do OpenRouter (openai/gpt-image-2.5-flare-20260908, quality medium, 1536x1024 → WebP 960 px, qualidade 74)."
     },
     "assets/images/studies/reservatorio.webp": {
       "usedIn": "Estudo - Reservatorio, pag. 1",

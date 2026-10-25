@@ -466,7 +466,8 @@ AudioManager.EVENT_SOUNDS = {
 AudioManager.BUILDING_LOOPS = {
     water_pump: 'sfx_water_pump_loop',
     water_well: 'sfx_water_pump_loop',
-    treatment_plant: 'sfx_water_treatment',
+    water_treatment_plant: 'sfx_water_treatment',
+    treatment_plant: 'sfx_sewage_treatment',
     filter_station: 'sfx_water_treatment',
     wind_farm: 'sfx_wind_turbine'
 };

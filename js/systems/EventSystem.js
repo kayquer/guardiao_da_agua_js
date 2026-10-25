@@ -134,7 +134,8 @@ class EventSystem {
             effects: {
                 waterProductionBonus: 20,
                 pollutionReduction: 5,
-                aquiferRecharge: 4 // a chuva infiltra e enche o aquífero
+                aquiferRecharge: 4, // a chuva infiltra e enche o aquífero
+                riverRecharge: 5 // e enche os rios e lagos (ResourceManager.updateRiver)
             },
             response: {
                 kind: 'opportunity',
@@ -655,7 +656,7 @@ class EventSystem {
         if (effects.waterDemandIncrease) effects.waterDemandIncrease = lerp(effects.waterDemandIncrease, 'waterDemandIncrease');
         if (effects.treatmentCostIncrease) effects.treatmentCostIncrease = lerp(effects.treatmentCostIncrease, 'treatmentCostIncrease');
         for (const key of ['waterConsumptionReduction', 'waterWasteIncrease', 'satisfactionBonus', 'pollutionReduction',
-            'populationIncrease', 'waterProductionBonus', 'aquiferRecharge', 'pollutionSpike', 'budgetBonus', 'maintenanceCost', 'repairCost']) {
+            'populationIncrease', 'waterProductionBonus', 'aquiferRecharge', 'riverRecharge', 'pollutionSpike', 'budgetBonus', 'maintenanceCost', 'repairCost']) {
             if (effects[key]) effects[key] *= k(key);
         }
         if (effects.populationIncrease) effects.populationIncrease = Math.round(effects.populationIncrease);
@@ -728,6 +729,10 @@ class EventSystem {
 
         if (effects.aquiferRecharge && resourceManager) {
             resourceManager.addAquiferRecharge(apply ? effects.aquiferRecharge : -effects.aquiferRecharge);
+        }
+
+        if (effects.riverRecharge && resourceManager) {
+            resourceManager.addRiverRecharge(apply ? effects.riverRecharge : -effects.riverRecharge);
         }
 
         if (effects.pollutionSpike && resourceManager && apply) {

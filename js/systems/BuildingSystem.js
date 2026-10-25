@@ -334,6 +334,16 @@ class BuildingSystem {
                 };
             }
 
+            // ETA: rio, lago ou represa a até N blocos (a bomba e os canos vêm sozinhos: WaterIntake.js)
+            const maxWater = buildingType.requirements.maxWaterDistance;
+            if (maxWater && !Number.isFinite(this.getWaterDistance(gridX, gridZ, buildingType.size || 1, maxWater))) {
+                return {
+                    canPlace: false,
+                    reason: `${buildingType.name} precisa de um rio, lago ou represa a até ${maxWater} blocos`,
+                    userFriendly: true
+                };
+            }
+
             if (buildingType.requirements.nearWater) {
                 if (!this.isNearWater(gridX, gridZ, buildingType.size)) {
                     if (!quiet) console.warn(`❌ Deve estar próximo à água em (${gridX}, ${gridZ})`);
@@ -456,6 +466,9 @@ class BuildingSystem {
         log(`🏗️ Building created: ${buildingId} (${buildingTypeId}) at (${gridX}, ${gridZ})`);
         log(`   📊 Total buildings: ${this.buildings.size + 1}`);
 
+        // ETA: traça a captação antes de ocupar o grid (a própria área não conta como obstáculo)
+        if (buildingType.surfaceWater) buildingData.intake = this.resolveWaterIntake(buildingData);
+
         this.buildings.set(buildingId, buildingData);
 
         // Iniciar processo de construção (rua: pronta na hora, efeitos pela via normal, sem animação)
@@ -500,6 +513,14 @@ class BuildingSystem {
 
         // ===== AUDIO FEEDBACK PARA COLOCAÇÃO =====
         this.playBuildingPlacementAudio(buildingType);
+
+        // ETA longe da água: bomba na margem e canos instalados junto com a obra (WaterIntake.js)
+        if (buildingType.surfaceWater) {
+            this.createWaterIntake(buildingData, { sound: true });
+            if (buildingData.intake?.pump) {
+                this.showNotification(`🔧 Bomba de captação e ${buildingData.intake.path.length} ${buildingData.intake.path.length === 1 ? 'cano instalado' : 'canos instalados'} até o rio.`, 'info');
+            }
+        }
 
         if (isRoad) {
             // Peça certa nesta célula e nas vizinhas (curva, T, cruzamento...) e trânsito
@@ -569,6 +590,7 @@ class BuildingSystem {
             this.removeRentalIcon(building);
             this.removePowerShortageIcon(building);
             this.removeNoRoadIcon(building);
+            this.removeWaterIntake(building); // bomba e canos da ETA
 
             // Remover indicador de seleção se existir
             if (window.gameManager && window.gameManager.selectedBuilding === building) {
@@ -750,6 +772,12 @@ class BuildingSystem {
                 .filter(b => b.effectsApplied && b.config?.aquiferRecharge)
                 .reduce((sum, b) => sum + b.config.aquiferRecharge, 0);
         }
+        // Rios (10/2026): ETE e filtros prontos antes do save já devolvem água ao rio (ETA ainda não existia)
+        if (!Number.isFinite(saved.water?.riverRecharge)) {
+            rm.resources.water.riverRecharge = buildings
+                .filter(b => b.effectsApplied && b.config?.riverRecharge)
+                .reduce((sum, b) => sum + b.config.riverRecharge, 0);
+        }
         if (!Number.isFinite(saved.population?.buildingSatisfaction)) {
             rm.resources.population.buildingSatisfaction = buildings
                 .filter(b => b.effectsApplied && !this.isPlantedTree?.(b))
@@ -785,12 +813,22 @@ class BuildingSystem {
                         const amount = config.waterProduction * building.efficiency;
                         resourceManager.addGroundwaterProduction(add ? amount : -amount);
                     }
+                    // ETA: a mesma água sai do rio (ResourceManager.updateRiver)
+                    if (config.surfaceWater) {
+                        const amount = config.waterProduction * building.efficiency;
+                        resourceManager.addSurfaceProduction(add ? amount : -amount);
+                    }
                 }
             }
 
             // Áreas verdes devolvem água da chuva ao aquífero
             if (config.aquiferRecharge) {
                 resourceManager.addAquiferRecharge(add ? config.aquiferRecharge : -config.aquiferRecharge);
+            }
+
+            // Esgoto tratado volta limpo ao rio (ETE, filtros)
+            if (config.riverRecharge) {
+                resourceManager.addRiverRecharge(add ? config.riverRecharge : -config.riverRecharge);
             }
             
             // Redução de poluição
@@ -1419,7 +1457,9 @@ class BuildingSystem {
             ...(Number.isInteger(building.treeStage) ? {
                 treeStage: building.treeStage,
                 treeProgress: Math.round((building.treeProgress || 0) * 1000) / 1000
-            } : {})
+            } : {}),
+            // ETA: bomba e canos (WaterIntake.js); salvo para o traçado não mudar com os prédios novos
+            ...(building.intake ? { intake: { pump: building.intake.pump || null, path: building.intake.path || [] } } : {})
         };
     }
 
@@ -1516,8 +1556,12 @@ class BuildingSystem {
         }
         mesh.metadata = { ...(mesh.metadata || {}), building: true, buildingId: saved.id, buildingType: buildingType.id, gridX, gridZ };
 
+        // ETA: captação do save (ou planejada agora, save de antes do campo)
+        if (buildingType.surfaceWater) buildingData.intake = this.resolveWaterIntake(buildingData, saved.intake);
+
         this.buildings.set(saved.id, buildingData);
         this.gridManager.occupyArea(gridX, gridZ, size);
+        if (buildingType.surfaceWater) this.createWaterIntake(buildingData);
         if (this.isInfrastructureBuilding(buildingType)) this.updateInfrastructureConnections(buildingData);
 
         if (buildingData.underConstruction && buildingType.roadType) {
@@ -1594,6 +1638,7 @@ class BuildingSystem {
         this.previewMode = false;
         this.selectedBuildingType = null;
         this.updatePlacementLabel(null);
+        this.clearIntakePreview();
         if (this.previewRotationObserver) {
             this.scene?.onBeforeRenderObservable?.remove(this.previewRotationObserver);
             this.previewRotationObserver = null;
@@ -1740,9 +1785,14 @@ class BuildingSystem {
                     this.previewMesh.material.alpha = 0.8;
                     this.previewMesh.material.emissiveColor = new BABYLON.Color3(0.2, 0, 0);
                 }
+                // ETA: fantasma da bomba e dos canos + quantos blocos até a água (WaterIntake.js)
+                const intakePlan = isValid && buildingType.surfaceWater
+                    ? this.planWaterIntake(gridX, gridZ, buildingType.size || 1, buildingType.requirements?.maxWaterDistance || 10) : null;
+                this.updateIntakePreview(gridX, gridZ, buildingType, intakePlan);
                 // A cor não é o único sinal (daltonismo): o rótulo junto do cursor diz o mesmo em texto
                 this.updatePlacementLabel(!isValid ? 'bad' : treesHere ? 'trees' : 'ok',
-                    !isValid ? (isWithinBounds ? canPlaceResult.reason : 'Fora do mapa') : treesHere);
+                    !isValid ? (isWithinBounds ? canPlaceResult.reason : 'Fora do mapa') : treesHere,
+                    this.describeWaterIntake(intakePlan));
             }
         }
 

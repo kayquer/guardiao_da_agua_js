@@ -140,7 +140,7 @@
 .trend-box { margin: 0.4rem 0 0.6rem; }
 .trend-box svg { display: block; width: 100%; height: 48px; }
 .trend-caption { font-size: 0.8rem; color: #444; }
-.aquifer-block, .flood-block { margin: 0.6rem 0; color: #222; font-family: 'Fredoka', sans-serif; }
-.aquifer-block h5, .flood-block h5 { color: var(--cartoon-purple); margin: 0 0 0.35rem; }
-.aquifer-block .stat-note, .flood-block .stat-note, .resource-details-panel > .stat-note { color: #333; }
+.aquifer-block, .river-block, .flood-block { margin: 0.6rem 0; color: #222; font-family: 'Fredoka', sans-serif; }
+.aquifer-block h5, .river-block h5, .flood-block h5 { color: var(--cartoon-purple); margin: 0 0 0.35rem; }
+.aquifer-block .stat-note, .river-block .stat-note, .flood-block .stat-note, .resource-details-panel > .stat-note { color: #333; }
 .resource-details-panel .negative { color: #c62828; }

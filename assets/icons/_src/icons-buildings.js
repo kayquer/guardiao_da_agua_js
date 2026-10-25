@@ -3,7 +3,7 @@
  * Grandes ficam sobre um "lote" de grama (elipse) e têm várias partes animadas.
  */
 'use strict';
-const { O, P, f1, rect, circ, ell, path, line, poly, g, A, box, ball, drop, cloud, gear, pivot, thick, flame, wrench, tree, boltD, starD, sparkD, waveD } = require('./core');
+const { O, P, f1, rect, circ, ell, path, line, poly, g, A, box, ball, drop, dropD, cloud, gear, pivot, thick, flame, wrench, tree, boltD, starD, sparkD, waveD } = require('./core');
 
 const BJ = 'js/data/buildings.js';
 const RP = 'js/systems/ui/ResourcePanels.js';
@@ -155,17 +155,51 @@ module.exports = [
             g(line('M16 10v3', { w: 1.3 }) + rect(14, 13, 4, 3.5, P.brown[0], { w: 1.3 }), { a: A('level', 3) }) +
             path('M7 20v7a9 2.5 0 0 0 18 0v-7', P.gray[0]) + ell(16, 20, 9, 2.5, P.water[0], { w: 1.6 }),
         [ST + ' (water_well)']),
-    B('treatment-plant', 'treatment_plant', 'Estação de Tratamento', '🏭',
-        () => ground() + path('M12 52v46a22 6 0 0 0 44 0V52', P.concrete[0]) + path('M44 54v49a22 6 0 0 0 12-5V52z', P.concrete[1], { s: 'none' }) +
-            path('M12 52v46a22 6 0 0 0 44 0V52') + ell(34, 52, 22, 6, P.water[0]) +
-            rect(23, 64, 22, 32, P.water[0], { rx: 4 }) +
-            [[29, 0], [36, 1], [40, 2]].map(([x, d]) => g(circ(x, 88, 2.6, '#fff', { w: 2 }), { a: A('rise', 3, d, 'center', 'ease-out') })).join('') +
-            thick('M56 96h6', P.gray[0], 6, { ow: 5 }) +
-            box(60, 50, 54, 56, 'blue', { rx: 3 }) + rect(56, 44, 62, 8, P.dark[0], { rx: 3 }) +
-            g(gear(87, 78, 12, 'yellow'), { a: A('spin', 5, 0, 'center', 'linear') }) +
-            g(drop(87, 26, 8), { a: A('bob', 3) }) + spark(104, 16, 5, 3) + spark(70, 30, 4, 3, 1.5),
-        () => rect(3, 10, 12, 18, P.concrete[0], { rx: 2 }) + rect(5.5, 14, 7, 10, P.water[0], { w: 1.5 }) +
-            box(16, 12, 13, 16, 'blue', { rx: 1.5 }) + g(gear(22.5, 20, 3.4, 'yellow', { teeth: 6 }), { a: A('spin', 6, 0, 'center', 'linear') }),
+    // ETA (10/2026): rio com ondas à esquerda, bomba amarela na margem, cano com água correndo até os tanques
+    // (marrom → verde → azul, bolhas no primeiro) e reservatório redondo com a gota limpa — como o modelo 3D.
+    B('water-treatment-plant', 'water_treatment_plant', 'Estação de Tratamento de Água (ETA)', '🏞️',
+        () => ground() +
+            path('M4 70c9-4 19 4 28 0v34c-9 4-19-4-28 0z', P.water[0]) +
+            g(line(waveD(7, 30, 80, 2, 8), { s: '#fff', w: 2 }), { a: A('drift', 2.6) }) +
+            g(line(waveD(7, 30, 92, 2, 8), { s: '#fff', w: 2 }), { a: A('drift', 2.6, 1.3) }) +
+            box(18, 54, 16, 14, 'yellow', { rx: 2 }) + rect(16, 50, 20, 5, P.blue[1], { rx: 2 }) +
+            thick('M34 64h16', P.water[1], 6, { ow: 4 }) +
+            g(line('M34 64h16', { s: '#E0F7FF', w: 2.5, da: '4 6' }), { a: A('flow', 0.9, 0, 'center', 'linear') }) +
+            box(48, 52, 52, 36, 'concrete', { rx: 3 }) +
+            rect(52, 58, 13, 26, '#A9875A', { rx: 2, w: 2 }) + rect(68, 58, 13, 26, '#8CCB9E', { rx: 2, w: 2 }) +
+            rect(84, 58, 13, 26, P.water[0], { rx: 2, w: 2 }) +
+            [[55, 0], [59, 0.9], [62, 1.8]].map(([x, d]) => g(circ(x, 78, 2.2, '#fff', { w: 1.5 }), { a: A('rise', 2.7, d, 'center', 'ease-out') })).join('') +
+            path('M102 66v30a10 3 0 0 0 20 0V66', P.concrete[0]) + ell(112, 66, 10, 3, P.water[0]) +
+            thick('M100 80h2', P.water[1], 5, { ow: 3 }) +
+            g(drop(112, 44, 8), { a: A('bob', 3) }) + spark(122, 30, 4.5, 3.2) + spark(60, 40, 4, 3, 1.4),
+        () => path('M1 20c4-2 8 2 12 0v10c-4 2-8-2-12 0z', P.water[0], { w: 1.4 }) +
+            g(line(waveD(2, 12, 24, 1, 4), { s: '#fff', w: 1.1 }), { a: A('drift', 2.6) }) +
+            line('M11 17h6', { s: P.water[1], w: 2.6 }) + g(line('M11 17h6', { s: '#E0F7FF', w: 1.2, da: '2 3' }), { a: A('flow', 0.9, 0, 'center', 'linear') }) +
+            rect(16, 12, 14, 14, P.concrete[0], { rx: 2, w: 1.5 }) + rect(18.5, 15, 4, 9, '#A9875A', { s: 'none' }) + rect(24, 15, 4, 9, P.water[0], { s: 'none' }) +
+            g(drop(23, 6, 3.4), { a: A('bob', 3) }),
+        [ST + ' (water_treatment_plant)']),
+    // ETE (10/2026): esgoto marrom chega pela esquerda, tanque de aeração com bolhas subindo, decantador redondo com a
+    // ponte raspadora girando (visto de cima, achatado) e cano de água limpa caindo no rio onde um peixe nada.
+    B('treatment-plant', 'treatment_plant', 'Estação de Tratamento de Esgoto (ETE)', '🏭',
+        () => ground() +
+            thick('M4 66h14', P.brown[1], 6, { ow: 4 }) +
+            g(drop(10, 76, 3.2, P.brown[0], { noHl: true, w: 1.8 }), { a: A('drip', 1.8, 0, 'center', 'ease-in') }) +
+            box(16, 56, 40, 32, 'concrete', { rx: 3 }) + rect(20, 62, 32, 22, '#8C8A4A', { rx: 2, w: 2 }) +
+            [[26, 0], [33, 0.6], [40, 1.2], [46, 1.8]].map(([x, d]) => g(circ(x, 80, 2.4, '#fff', { w: 1.5 }), { a: A('rise', 2.4, d, 'center', 'ease-out') })).join('') +
+            thick('M56 72h6', P.gray[0], 5, { ow: 3 }) +
+            ell(84, 74, 24, 11, P.concrete[1]) + ell(84, 73, 20, 8.5, P.water[0], { w: 2 }) +
+            g(g(line('M-19 0H19', { s: P.yellow[0], w: 5 }) + line('M-19 0H19', { w: 1.5 }) + circ(0, 0, 3.5, P.gray[0], { w: 1.5 }),
+                { a: A('spin', 7, 0, 'center', 'linear') }), { x: 'transform="translate(84 73) scale(1 0.42)"' }) +
+            thick('M106 76h10v8', P.water[1], 5, { ow: 4 }) +
+            g(drop(116, 90, 3.2, 'water', { noHl: true, w: 1.8 }), { a: A('drip', 1.6, 0, 'center', 'ease-in') }) +
+            path('M96 96c8-3 16 3 26 0v10c-10 3-18-3-26 0z', P.water[0]) +
+            g(ell(106, 100, 4, 2.2, P.orange[0], { w: 1.5 }) + poly('110,100 114,97 114,103', P.orange[0], { w: 1.5 }), { a: A('swim', 3.4) }) +
+            g(drop(84, 40, 8), { a: A('bob', 3) }) + spark(100, 28, 4.5, 3.2) + spark(30, 40, 4, 3, 1.4),
+        () => path(dropD(7, 14, 4.2), P.brown[0], { w: 1.4 }) +
+            line('M13 15h6l-2-2m2 2-2 2', { w: 1.8 }) +
+            g(drop(26, 14, 4.2, 'water', { w: 1.4, noHl: true }), { a: A('bob', 3, 0.6) }) +
+            rect(3, 23, 26, 7, '#8C8A4A', { rx: 2, w: 1.4 }) +
+            [[10, 0], [20, 1.1]].map(([x, d]) => g(circ(x, 27, 1.3, '#fff', { w: 0.8 }), { a: A('rise', 2.2, d, 'center', 'ease-out') })).join(''),
         [ST + ' (treatment_plant)']),
     B('filter-station', 'filter_station', 'Estação de Filtros', '🔧',
         () => ground() + thick('M92 96h14v8', P.gray[0], 7, { ow: 5 }) +

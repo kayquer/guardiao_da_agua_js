@@ -43,7 +43,7 @@ test('todo campo de efeito aparece na descrição do prédio (painel e menu)', (
     const body = source.slice(start, source.indexOf('\n    },', start));
     const shown = ['waterProduction', 'waterStorage', 'waterConsumption', 'powerGeneration', 'powerConsumption',
         'pollutionReduction', 'pollutionGeneration', 'satisfactionBonus', 'incomeGeneration', 'populationCapacity',
-        'aquiferRecharge', 'groundwater', 'plantedTree', 'runoffAbsorption', 'earlyWarning', 'nearbyEfficiencyBonus',
+        'aquiferRecharge', 'groundwater', 'surfaceWater', 'riverRecharge', 'plantedTree', 'runoffAbsorption', 'earlyWarning', 'nearbyEfficiencyBonus',
         'runoffImpervious', 'recycleBonus', 'maintenanceCost', 'powerSource', 'needsWater', 'needsCleanWater', 'rainwaterReuse', 'taxGroup'];
     for (const field of shown) assert.ok(body.includes(`type.${field}`), `${field} sem linha em getBuildingEffectLines`);
     const used = new Set(Object.values(BUILDINGS).flatMap(b => Object.keys(b)));
@@ -95,7 +95,7 @@ test('estudos apontam para prédios existentes e quiz tem ids sequenciais', () =
 
 // Tipos/alvos que QuestSystem.checkObjectiveProgress sabe medir. Objetivo fora disso nunca progride
 // (já existiram missões com 'observation', 'management', 'research'... impossíveis de concluir).
-const RESOURCE_TARGETS = ['water', 'pollution', 'population', 'satisfaction', 'budget', 'aquifer'];
+const RESOURCE_TARGETS = ['water', 'pollution', 'population', 'satisfaction', 'budget', 'aquifer', 'river'];
 const SUPPORTED = {
     build: o => ids.has(o.target),
     resource: o => RESOURCE_TARGETS.includes(o.target),

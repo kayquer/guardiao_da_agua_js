@@ -136,6 +136,9 @@ class ResourceManager {
         // Água debaixo da terra (bombas e poços tiram, chuva e verde devolvem)
         this.updateAquifer();
 
+        // Rios e lagos (a ETA tira, o fluxo natural, a chuva e o esgoto tratado devolvem)
+        this.updateRiver();
+
         // Atualizar energia
         this.updateElectricity();
 
@@ -437,7 +440,8 @@ class ResourceManager {
     // ===== AQUÍFERO (água subterrânea) =====
     // Bombas e poços (config.groundwater) tiram água do aquífero; chuva e áreas verdes (aquiferRecharge) devolvem.
     // Abaixo de AQUIFER_LOW, bombas e poços rendem menos: bombear demais seca a fonte.
-    static AQUIFER_DRAIN = 0.032;          // %/min de aquífero por L/min bombeado
+    static AQUIFER_CAPACITY = 1.2;         // aquífero 20% maior (10/2026: secava rápido demais): o bombeado tira menos %
+    static AQUIFER_DRAIN = 0.032;          // %/min de aquífero por L/min bombeado (÷ AQUIFER_CAPACITY)
     static AQUIFER_NATURAL_RECHARGE = 1;   // %/min que o solo devolve sozinho
     static AQUIFER_RAIN_RECHARGE = 2;      // %/min a mais com chuva forte de verdade (clima real, rain = 1)
     static AQUIFER_LOW = 30;               // abaixo disso a água subterrânea rende menos
@@ -455,14 +459,27 @@ class ResourceManager {
         return Math.max(ResourceManager.AQUIFER_MIN_FACTOR, level / ResourceManager.AQUIFER_LOW);
     }
 
-    /** %/min: { drain, recharge, net } — recarga = natural + áreas verdes + eventos + chuva real. */
+    /** %/min: { drain, recharge, trees, net } — recarga = natural + áreas verdes + eventos + chuva real + árvores. */
     getAquiferBalance() {
         const water = this.resources.water;
-        const drain = Math.max(0, water.groundwaterProduction || 0) * this.getAquiferFactor() * ResourceManager.AQUIFER_DRAIN;
+        const drain = Math.max(0, water.groundwaterProduction || 0) * this.getAquiferFactor() *
+            ResourceManager.AQUIFER_DRAIN / ResourceManager.AQUIFER_CAPACITY;
         const realRain = this.gameManager?.weatherEffects?.profile?.rain || 0;
+        const trees = this.getTreeAquiferRecharge();
         const recharge = ResourceManager.AQUIFER_NATURAL_RECHARGE + Math.max(0, water.aquiferRecharge || 0) +
-            realRain * ResourceManager.AQUIFER_RAIN_RECHARGE;
-        return { drain, recharge, net: recharge - drain };
+            realRain * ResourceManager.AQUIFER_RAIN_RECHARGE + trees;
+        return { drain, recharge, trees, net: recharge - drain };
+    }
+
+    /**
+     * %/min que as árvores devolvem ao aquífero: as raízes abrem caminho e a chuva entra no solo em vez de escorrer.
+     * Calculado na hora a partir das árvores em pé (nativas e mudas a partir de árvore jovem), sem conta no save.
+     */
+    getTreeAquiferRecharge() {
+        const gm = this.gameManager;
+        const native = (gm?.treeSystem?.trees?.size || 0) * TREES.AQUIFER_RECHARGE;
+        const planted = gm?.buildingSystem?.getPlantedTreeAquiferRecharge?.() || 0;
+        return native + planted;
     }
 
     addGroundwaterProduction(amount) {
@@ -489,6 +506,69 @@ class ResourceManager {
                         { speaker: 'Secretário Paulo' });
                 } else {
                     ui?.showNotification?.('🪨 Secretário Paulo: o aquífero já está pela metade. As bombas tiram mais água do que a chuva devolve.', 'warning', 8000);
+                }
+            }
+        }
+    }
+
+    // ===== RIOS E LAGOS (água de superfície) =====
+    // A ETA (config.surfaceWater) capta água de rios, lagos e represas: water.surfaceProduction. O nível dos rios
+    // (water.river, 0-100) desce com a captação e sobe com o fluxo natural (menor na seca), a chuva, os eventos de
+    // chuva e o esgoto tratado que volta ao rio (config.riverRecharge: ETE, filtros). Abaixo de RIVER_LOW a ETA rende
+    // menos e a hidrelétrica também (BuildingEfficiency.getWeatherContext).
+    static RIVER_DRAIN = 0.015;            // %/min do rio por L/min captado (uma ETA, 160 L/min ≈ 2,4%/min)
+    static RIVER_NATURAL_RECHARGE = 1.5;   // %/min que as nascentes e os afluentes trazem (× productionMultiplier: seca)
+    static RIVER_RAIN_RECHARGE = 3;        // %/min a mais com chuva forte de verdade (clima real, rain = 1)
+    static RIVER_LOW = 30;                 // abaixo disso a ETA capta menos
+    static RIVER_MIN_FACTOR = 0.2;         // rio quase seco: ETA a 20%
+
+    getRiverLevel() {
+        const level = this.resources.water.river;
+        return Number.isFinite(level) ? level : 100;
+    }
+
+    /** Fator (0,2-1) da água de superfície pelo nível dos rios. */
+    getRiverFactor() {
+        const level = this.getRiverLevel();
+        if (level >= ResourceManager.RIVER_LOW) return 1;
+        return Math.max(ResourceManager.RIVER_MIN_FACTOR, level / ResourceManager.RIVER_LOW);
+    }
+
+    /** %/min: { drain, natural, rain, returned, recharge, net } — returned = esgoto tratado + eventos de chuva. */
+    getRiverBalance() {
+        const water = this.resources.water;
+        const drain = Math.max(0, water.surfaceProduction || 0) * this.getRiverFactor() * ResourceManager.RIVER_DRAIN;
+        const natural = ResourceManager.RIVER_NATURAL_RECHARGE * (water.productionMultiplier ?? 1);
+        const rain = (this.gameManager?.weatherEffects?.profile?.rain || 0) * ResourceManager.RIVER_RAIN_RECHARGE;
+        const returned = Math.max(0, water.riverRecharge || 0);
+        const recharge = natural + rain + returned;
+        return { drain, natural, rain, returned, recharge, net: recharge - drain };
+    }
+
+    addSurfaceProduction(amount) {
+        const water = this.resources.water;
+        water.surfaceProduction = Math.max(0, (water.surfaceProduction || 0) + amount);
+    }
+
+    addRiverRecharge(amount) {
+        const water = this.resources.water;
+        water.riverRecharge = Math.max(0, (water.riverRecharge || 0) + amount);
+    }
+
+    updateRiver() {
+        const water = this.resources.water;
+        const before = this.getRiverLevel();
+        water.river = Math.max(0, Math.min(100, before + this.getRiverBalance().net / 60));
+        // Avisos ao descer, como o aquífero: 50% (toast) e 30% (alerta central: daqui para baixo a ETA capta menos)
+        for (const threshold of [30, 50]) {
+            if (before > threshold && water.river <= threshold) {
+                const ui = this.gameManager?.uiManager;
+                if (threshold === 30) {
+                    ui?.showCentralAlert?.('Rio Baixo', 'O rio está baixando: a ETA vai captar cada vez menos água e os peixes sofrem.',
+                        'warning', 'Tratar o esgoto devolve água limpa ao rio. A chuva também ajuda. Captar menos dá tempo para o rio se recuperar.',
+                        { speaker: 'Secretário Paulo' });
+                } else {
+                    ui?.showNotification?.('🏞️ Secretário Paulo: o rio já baixou pela metade. A cidade tira mais água do que ele recebe.', 'warning', 8000);
                 }
             }
         }
@@ -523,9 +603,10 @@ class ResourceManager {
     /** Produção que chega de fato (L/min): soma dos prédios × productionMultiplier (seca = 0,5). */
     getEffectiveWaterProduction() {
         const water = this.resources.water;
-        // Água subterrânea rende menos com o aquífero baixo
+        // Água subterrânea rende menos com o aquífero baixo; a de superfície, com o rio baixo
         const groundwaterLoss = Math.max(0, water.groundwaterProduction || 0) * (1 - this.getAquiferFactor());
-        return Math.max(0, ((water.production || 0) - groundwaterLoss) * (water.productionMultiplier ?? 1));
+        const surfaceLoss = Math.max(0, water.surfaceProduction || 0) * (1 - this.getRiverFactor());
+        return Math.max(0, ((water.production || 0) - groundwaterLoss - surfaceLoss) * (water.productionMultiplier ?? 1));
     }
 
     /** Multiplica productionMultiplier/demandMultiplier (o fim do evento passa 1/fator). */
@@ -924,6 +1005,7 @@ class ResourceManager {
             time: timestamp,
             current: this.resources.water.current,
             aquifer: this.getAquiferLevel(),
+            river: this.getRiverLevel(),
             production: this.resources.water.production,
             consumption: this.resources.water.consumption
         });

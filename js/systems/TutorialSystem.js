@@ -1127,8 +1127,9 @@ TutorialSystem.TOPICS = {
     water: {
         name: 'a água', title: 'Água', icon: '💧',
         steps: [
-            { title: 'O estoque de água', text: '{nome}, este número é a água guardada na cidade. Ele <b>sobe</b> com o que bombas e poços produzem e <b>desce</b> com o que as pessoas usam.', targets: ['.resource-item:has(#water-amount)', '#compact-water'] },
-            { title: 'Como conseguir mais', text: 'Na categoria <b>💧 Água</b> ficam bombas, poços e outras fontes. Quase todas precisam de <b>energia</b> para funcionar.', targets: ['.category-btn[data-category="water"]'] },
+            { title: 'O estoque de água', text: '{nome}, este número é a água guardada na cidade. Ele <b>sobe</b> com o que bombas, poços e a ETA produzem e <b>desce</b> com o que as pessoas usam.', targets: ['.resource-item:has(#water-amount)', '#compact-water'] },
+            { title: 'Como conseguir mais', text: 'Na categoria <b>💧 Água</b> ficam as fontes. Bombas e poços tiram água do <b>aquífero</b>, debaixo da terra. A <b>ETA</b> capta água de <b>rios e lagos</b> e precisa ficar a até 10 blocos da água. Quase todas precisam de <b>energia</b> para funcionar.', targets: ['.category-btn[data-category="water"]'] },
+            { title: 'Aquífero e rio têm limite', text: 'No painel da 💧 água aparecem o nível do <b>aquífero</b> e dos <b>rios e lagos</b>. Tirar demais esvazia os dois. <b>Árvores</b> e áreas verdes recarregam o aquífero; a <b>estação de esgoto</b> devolve água limpa ao rio.', targets: ['.resource-item:has(#water-amount)', '#compact-water'] },
             { title: 'Guardar para depois', text: 'Reservatórios da categoria <b>💧 Água</b> guardam água para os dias secos. Sem chuva, os rios baixam: veja o clima no relógio!', targets: ['.category-btn[data-category="water"]', '#clock-weather', '#compact-weather'] },
             { title: 'Não deixe acabar!', expression: 'worried', text: 'Se a água acabar, é <b>fim de jogo</b>. Construa novas fontes antes de faltar, e não só quando o número já estiver baixo.' }
         ]
@@ -1236,6 +1237,26 @@ TutorialSystem.GUIDES = [
             { title: 'Curvas e cruzamentos sozinhos', expression: 'happy', text: 'Encoste uma rua na outra e ela se liga sozinha: vira <b>curva</b>, <b>bifurcação</b> ou <b>cruzamento</b>, com faixa no meio e calçada nas bordas. Não precisa girar nada!' },
             { title: 'Cadê os carros?', text: 'Quando a cidade tiver <b>20 blocos de rua ligados</b>, carros e caminhões começam a circular. Quanto mais ruas, mais movimento, {nome}!' },
             { title: 'Rua também mexe com a água', expression: 'worried', text: 'O <b>asfalto</b> não deixa a chuva entrar no chão: a água corre por cima, vira <b>enxurrada</b> e leva lixo para o rio. A <b>estrada de terra</b> é de terra batida: entra pouca água e a enxurrada arrasta o barro (<b>erosão</b>), deixando o rio barrento. O <b>cascalho</b> é o melhor dos três para a chuva: entre as pedrinhas entra mais água e a enxurrada leva menos barro. Plante árvores e jardins de chuva perto das ruas!' }
+        ]
+    },
+    {
+        // Água de superfície (10/2026): primeira ETA construída, ou o aquífero baixando com a ETA já ao alcance
+        // (bombas/poços puxando e tecnologia alcançada). Sem 'after': vale a qualquer momento, uma vez por jogador.
+        id: 'rivers', title: 'Água dos rios', icon: '🏞️',
+        when: gm => gm.buildingSystem.getAllBuildings().some(b => b.config?.surfaceWater) ||
+            ((gm.resourceManager?.getAquiferLevel?.() ?? 100) <= 60 && (gm.techTree?.isReached?.('water_treatment_plant') ?? false)),
+        steps: [
+            { title: 'Água de baixo e água de cima', text: '{nome}, a cidade pode buscar água em dois lugares. <b>Embaixo da terra</b>, no <b>aquífero</b>, com bombas e poços. E <b>em cima</b>, nos <b>rios</b>, <b>lagos</b> e <b>represas</b>. Cada um tem seu limite: tirar demais esvazia os dois!', targets: ['.resource-item:has(#water-amount)', '#compact-water'] },
+            { title: 'A ETA busca água no rio', text: 'A <b>Estação de Tratamento de Água (ETA)</b> capta a água do rio e deixa ela boa para beber. Ela precisa ficar a até <b>10 blocos</b> de um rio ou lago. Encostada na água, capta direto. Mais longe, a cidade instala sozinha uma <b>bomba na margem</b> e os <b>canos</b> até a estação. Ela dá o dobro de água de um poço, mas os produtos do tratamento <b>poluem</b> um pouco e as máquinas gastam <b>energia</b>.<img src="assets/images/studies/captacao-rio.webp" alt="Bomba na beira do rio e um cano azul levando a água até a estação de tratamento" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin:8px 0;"/>' },
+            {
+                title: 'Construa uma ETA', waitFor: 'water_treatment_plant',
+                text: 'Abra <b>💧 Água</b> e construa uma <b>Estação de Tratamento de Água</b> perto de um rio ou lago. Está bloqueada? Clique nela para <b>estudar</b> e liberar. Sem dinheiro agora? Use <b>Fazer depois</b>.',
+                placingHint: '👆 Chegue perto da água (até 10 blocos). O texto junto do cursor mostra quantos canos serão instalados.',
+                enter: gm => gm.uiManager.uiState.currentCategory !== 'water' && gm.uiManager.selectCategory('water'),
+                targets: TutorialSystem.buildTargets('water_treatment_plant', 'water', 'a 🏞️ Estação de Tratamento de Água')
+            },
+            { title: 'O rio também tem limite', expression: 'worried', text: 'Clique na 💧 água lá em cima: o painel mostra o nível dos <b>Rios e lagos</b>. A ETA faz o rio baixar; as nascentes e a chuva enchem de novo, e na <b>seca</b> enchem menos. Rio baixo dá menos água para a cidade e para os peixes.', targets: ['.resource-item:has(#water-amount)', '#compact-water'] },
+            { title: 'Devolva a água limpa', expression: 'happy', text: 'O segredo é a <b>Estação de Tratamento de Esgoto (ETE)</b>, em <b>Tratamento</b>: ela limpa a água suja da cidade e devolve ao rio, que fica mais <b>cheio</b> e mais <b>vivo</b>. E as <b>árvores</b> ajudam o aquífero: as raízes deixam a chuva entrar no chão!', targets: ['.category-btn[data-category="treatment"]'] }
         ]
     },
     {

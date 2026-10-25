@@ -204,6 +204,7 @@ mixin(UIManager, {
 
                 ${this.renderTrend(this.gameManager.resourceManager.getHistorySeries('water'), { color: '#29b6f6', max: water.storage, caption: 'Água guardada nos últimos minutos' })}
                 ${this.renderAquiferBlock()}
+                ${this.renderRiverBlock()}
                 ${this.renderFloodRiskBlock()}
 
                 <div class="resource-sources">
@@ -670,7 +671,7 @@ mixin(UIManager, {
     renderAquiferBlock() {
         const rm = this.gameManager.resourceManager;
         const level = rm.getAquiferLevel();
-        const { drain, recharge, net } = rm.getAquiferBalance();
+        const { drain, recharge, trees = 0, net } = rm.getAquiferBalance();
         const factor = rm.getAquiferFactor();
         const color = level >= 50 ? '#29b6f6' : level >= ResourceManager.AQUIFER_LOW ? '#ffb74d' : '#ef5350';
         return `<div class="aquifer-block">
@@ -678,8 +679,29 @@ mixin(UIManager, {
             <div style="height:10px;border-radius:5px;background:rgba(0,0,0,0.25);overflow:hidden">
                 <div class="aquifer-bar" style="height:100%;width:${level.toFixed(1)}%;background:${color}"></div>
             </div>
-            <p class="stat-note">Bombas e poços tiram ${this.formatNumber(drain, 1)}%/min; chuva, solo e áreas verdes devolvem ${this.formatNumber(recharge, 1)}%/min
-                (${net >= 0 ? 'subindo' : 'descendo'}).${factor < 1 ? ` <b class="negative">Aquífero baixo: bombas e poços rendem ${Math.round(factor * 100)}%.</b>` : ''}</p>
+            <p class="stat-note">Bombas e poços tiram ${this.formatNumber(drain, 1)}%/min; chuva, solo, áreas verdes e árvores devolvem ${this.formatNumber(recharge, 1)}%/min
+                (${trees >= 0.05 ? `${this.formatNumber(trees, 1)}%/min só das árvores; ` : ''}${net >= 0 ? 'subindo' : 'descendo'}).${factor < 1 ? ` <b class="negative">Aquífero baixo: bombas e poços rendem ${Math.round(factor * 100)}%.</b>` : ''}</p>
+        </div>`;
+    },
+
+    /** Nível dos rios (ResourceManager.getRiverBalance): a ETA tira; nascentes, chuva e esgoto tratado devolvem. */
+    renderRiverBlock() {
+        const rm = this.gameManager.resourceManager;
+        if (!rm.getRiverLevel) return '';
+        const level = rm.getRiverLevel();
+        const { drain, natural, rain, returned, net } = rm.getRiverBalance();
+        const factor = rm.getRiverFactor();
+        const color = level >= 50 ? '#26c6da' : level >= ResourceManager.RIVER_LOW ? '#ffb74d' : '#ef5350';
+        const parts = [`nascentes ${this.formatNumber(natural, 1)}`];
+        if (rain > 0) parts.push(`chuva ${this.formatNumber(rain, 1)}`);
+        if (returned > 0) parts.push(`esgoto tratado ${this.formatNumber(returned, 1)}`);
+        return `<div class="river-block">
+            <h5>🏞️ Rios e lagos: ${Math.round(level)}%</h5>
+            <div style="height:10px;border-radius:5px;background:rgba(0,0,0,0.25);overflow:hidden">
+                <div class="river-bar" style="height:100%;width:${level.toFixed(1)}%;background:${color}"></div>
+            </div>
+            <p class="stat-note">${drain > 0 ? `A ETA tira ${this.formatNumber(drain, 1)}%/min` : 'Nenhuma ETA captando'}; voltam ${parts.join(' + ')} %/min
+                (${net >= 0 ? 'subindo' : 'descendo'}).${returned > 0 ? '' : ' Uma Estação de Tratamento de Esgoto devolveria água limpa ao rio.'}${factor < 1 ? ` <b class="negative">Rio baixo: a ETA capta ${Math.round(factor * 100)}%.</b>` : ''}</p>
         </div>`;
     },
 

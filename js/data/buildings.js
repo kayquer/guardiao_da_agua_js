@@ -9,7 +9,7 @@ const BUILDING_TYPES = {
         tier: 1, group: 'Captação', techRequires: [],
         groundwater: true, // tira água do aquífero (ResourceManager.updateAquifer)
         name: 'Bomba de Água',
-        description: 'Bombeia água do aquífero (água debaixo da terra). Tirar demais faz o nível do aquífero baixar',
+        description: 'Bombeia água do aquífero (água debaixo da terra). Tirar demais faz o nível do aquífero baixar; árvores e áreas verdes ajudam a recarregar',
         category: 'water',
         cost: 2500,
         size: 1,
@@ -44,16 +44,42 @@ const BUILDING_TYPES = {
         }
     },
 
+    // ETA: capta água de superfície (rio, lago, represa) e já vem com as bombas. Até requirements.maxWaterDistance
+    // blocos da água; encostada na água não precisa de cano, mais longe ganha bomba na margem e adutora
+    // automáticas (building/WaterIntake.js). Tira do nível dos rios (ResourceManager.updateRiver), não do aquífero.
+    water_treatment_plant: {
+        tier: 2, group: 'Captação', techRequires: [{ id: 'water_pump', count: 1 }],
+        surfaceWater: true,
+        name: 'Estação de Tratamento de Água (ETA)',
+        description: 'Capta água de rios, lagos e represas e trata para beber. Já vem com as bombas; longe da água, a cidade instala sozinha uma bomba na margem e os canos. Os produtos do tratamento poluem um pouco e as máquinas gastam energia',
+        category: 'water',
+        cost: 5000,
+        size: 2,
+        waterProduction: 160, // o dobro do poço artesiano
+        powerConsumption: 30, // bombas da captação, misturadores e filtros
+        pollutionGeneration: 4, // produtos químicos do tratamento e lodo
+        maintenanceCost: 200,
+        icon: '🏞️',
+        color: '#26C6DA',
+        requirements: {
+            terrain: ['grassland', 'lowland'],
+            nearWater: false,
+            maxWaterDistance: 10
+        }
+    },
+
     // CATEGORIA: TRATAMENTO
+    // ETE: trata o esgoto e devolve a água limpa ao rio (riverRecharge: %/min a mais no nível dos rios)
     treatment_plant: {
         tier: 2, group: 'Água e esgoto', techRequires: [{ id: 'water_pump', count: 2 }],
         reputationOnBuild: { environment: 3, citizens: 1 },
-        name: 'Estação de Tratamento',
-        description: 'Trata o esgoto da cidade em etapas (separa a sujeira, deixa assentar e filtra) antes de devolver a água ao rio',
+        name: 'Estação de Tratamento de Esgoto (ETE)',
+        description: 'Trata o esgoto da cidade em etapas (separa a sujeira, as bactérias comem o que sobrou e a água descansa) e devolve água limpa ao rio, que fica mais cheio',
         category: 'treatment',
         cost: 15000,
         size: 2,
         pollutionReduction: 30,
+        riverRecharge: 1.5,
         powerConsumption: 40,
         maintenanceCost: 300,
         icon: '🏭',
@@ -73,6 +99,7 @@ const BUILDING_TYPES = {
         cost: 20000,
         size: 1,
         pollutionReduction: 20,
+        riverRecharge: 0.5, // água mais limpa de volta ao rio
         maintenanceCost: 250,
         icon: '🔧',
         color: '#388E3C',
@@ -223,16 +250,17 @@ const BUILDING_TYPES = {
     tree_sapling: {
         tier: 1, group: 'Árvores', techRequires: [],
         name: 'Muda de Árvore',
-        description: 'Plante uma árvore! No começo ela só precisa de rega (gasta água); depois cresce e passa a limpar o ar.',
+        description: 'Plante uma árvore! No começo ela só precisa de rega (gasta água); depois cresce, limpa o ar e as raízes ajudam a chuva a entrar no chão e recarregar o aquífero.',
         category: 'nature',
         cost: 300,
         size: 1,
         plantedTree: true,
+        // aquiferRecharge: %/min devolvidos ao aquífero (ResourceManager.getTreeAquiferRecharge; a madura = TREES.AQUIFER_RECHARGE × 2)
         treeStages: [
-            { name: 'Muda', ms: 25000, scale: 0.32, waterConsumption: 3, pollutionReduction: 0 },
-            { name: 'Árvore jovem', ms: 35000, scale: 0.55, waterConsumption: 0, pollutionReduction: 0.3 },
-            { name: 'Árvore adulta', ms: 45000, scale: 0.8, waterConsumption: 0, pollutionReduction: 0.6 },
-            { name: 'Árvore madura', ms: null, scale: 1.05, waterConsumption: 0, pollutionReduction: 1 }
+            { name: 'Muda', ms: 25000, scale: 0.32, waterConsumption: 3, pollutionReduction: 0, aquiferRecharge: 0 },
+            { name: 'Árvore jovem', ms: 35000, scale: 0.55, waterConsumption: 0, pollutionReduction: 0.3, aquiferRecharge: 0.005 },
+            { name: 'Árvore adulta', ms: 45000, scale: 0.8, waterConsumption: 0, pollutionReduction: 0.6, aquiferRecharge: 0.01 },
+            { name: 'Árvore madura', ms: null, scale: 1.05, waterConsumption: 0, pollutionReduction: 1, aquiferRecharge: 0.016 }
         ],
         icon: '🌱',
         color: '#7CB342',

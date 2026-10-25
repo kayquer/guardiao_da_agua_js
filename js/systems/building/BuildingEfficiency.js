@@ -129,7 +129,7 @@ mixin(BuildingSystem, {
 
     /**
      * Quanto a usina entrega com o tempo de agora (1 sem dados de clima).
-     * weather = { wind (km/h), kind (sun/partly/cloud/…), isDay, waterFactor (seca: produção de água × 0,5) }
+     * weather = { wind (km/h), kind (sun/partly/cloud/…), isDay, waterFactor (seca × 0,5 e rio baixo: getRiverFactor) }
      */
     getWeatherPowerFactor(source, weather) {
         if (!weather) return 1;
@@ -154,7 +154,9 @@ mixin(BuildingSystem, {
             wind: profile && profile.kind !== 'none' ? profile.wind : undefined,
             kind: profile?.kind,
             isDay: day ? day !== 'night' : undefined, // GameManager.getDayNightState(): 'day' | 'night'
-            waterFactor: gm?.resourceManager?.resources?.water?.productionMultiplier
+            // seca × nível dos rios (rio baixo: menos água passando pelas turbinas)
+            waterFactor: (gm?.resourceManager?.resources?.water?.productionMultiplier ?? 1) *
+                (gm?.resourceManager?.getRiverFactor?.() ?? 1)
         };
     },
 
@@ -446,11 +448,13 @@ mixin(BuildingSystem, {
         const water = rm?.resources?.water || {};
         const efficiency = building.active && !building.underConstruction ? (building.efficiency ?? 1) : 0;
         const aquifer = config.groundwater && rm?.getAquiferFactor ? rm.getAquiferFactor() : 1;
+        const river = config.surfaceWater && rm?.getRiverFactor ? rm.getRiverFactor() : 1;
         const drought = water.productionMultiplier ?? 1;
         const reasons = [];
         if (efficiency < 1 && efficiency > 0) reasons.push(`eficiência ${Math.round(efficiency * 100)}%`);
         if (aquifer < 1) reasons.push(`aquífero baixo −${Math.round((1 - aquifer) * 100)}%`);
+        if (river < 1) reasons.push(`rio baixo −${Math.round((1 - river) * 100)}%`);
         if (drought < 1) reasons.push(`seca −${Math.round((1 - drought) * 100)}%`);
-        return { nominal, actual: nominal * efficiency * aquifer * drought, reasons };
+        return { nominal, actual: nominal * efficiency * aquifer * river * drought, reasons };
     },
 });

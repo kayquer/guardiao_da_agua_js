@@ -552,6 +552,7 @@ class QuestSystem {
             case 'satisfaction': return resources.population.satisfaction;
             case 'budget': return resources.budget.current;
             case 'aquifer': return Number.isFinite(resources.water.aquifer) ? resources.water.aquifer : 100;
+            case 'river': return Number.isFinite(resources.water.river) ? resources.water.river : 100;
             default: return 0;
         }
     }

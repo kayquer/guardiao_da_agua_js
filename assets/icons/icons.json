@@ -1763,8 +1763,26 @@
       "sm": "svg/water-well-sm.svg"
     }
   },
+  "water-treatment-plant": {
+    "title": "Estação de Tratamento de Água (ETA)",
+    "area": "building",
+    "emoji": [
+      "🏞️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (water_treatment_plant.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)",
+      "data/building-studies.json (water_treatment_plant)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/water-treatment-plant.svg",
+      "sm": "svg/water-treatment-plant-sm.svg"
+    }
+  },
   "treatment-plant": {
-    "title": "Estação de Tratamento",
+    "title": "Estação de Tratamento de Esgoto (ETE)",
     "area": "building",
     "emoji": [
       "🏭"

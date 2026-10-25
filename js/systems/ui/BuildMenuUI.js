@@ -173,6 +173,8 @@ mixin(UIManager, {
         if (type.populationCapacity || type.population) add('👥 Moradores', fmt(type.populationCapacity || type.population), 'good');
         if (type.aquiferRecharge) add('🪨 Recarrega o aquífero', `+${fmt(type.aquiferRecharge)}%/min`, 'good');
         if (type.groundwater) add('🪨 Tira água do aquífero', 'sim', 'bad');
+        if (type.surfaceWater) add('🏞️ Tira água do rio', 'baixa o nível dos rios (rio baixo = capta menos)', 'bad');
+        if (type.riverRecharge) add('🏞️ Devolve água limpa ao rio', `+${fmt(type.riverRecharge)}%/min no nível dos rios`, 'good');
         if (type.runoffAbsorption) add('🌧️ Segura a enxurrada', `${fmt(type.runoffAbsorption)} (menos enchente)`, 'good');
         if (type.earlyWarning) add('📡 Avisa antes', 'eventos chegam com o dobro de aviso', 'good');
         if (type.nearbyEfficiencyBonus) add('🔬 Melhora os vizinhos', `+${Math.round(type.nearbyEfficiencyBonus * 100)}% de eficiência`, 'good');
@@ -195,7 +197,7 @@ mixin(UIManager, {
         if (type.needsCleanWater) add('🛳️ Precisa de rio limpo', 'com poluição acima de 50% funciona a 50%', 'bad');
         if (type.rainwaterReuse) add('♻️ Reaproveita a chuva', 'gasta metade da água', 'good');
         if (type.taxGroup) add('🧾 Paga imposto', type.taxGroup === 'tourism' ? 'de turismo (R$ 100/min com a cidade crescendo)' : 'de comércio (R$ 50/min com a cidade crescendo)', 'good');
-        if (type.plantedTree) add('🌳 Cresce e limpa o ar', '4 fases', 'good');
+        if (type.plantedTree) add('🌳 Cresce, limpa o ar e recarrega o aquífero', '4 fases', 'good');
         if (type.recycleBonus) add('♻️ Reciclar prédios', `+${Math.round(type.recycleBonus * 100)}% no valor (uma vez por tipo)`, 'good');
         if (type.maintenanceCost) add('🔧 Manutenção', `R$ ${fmt(type.maintenanceCost)}/min`, 'bad');
         if (!building) add('📐 Tamanho', `${type.size}×${type.size} quadrados`);
@@ -223,7 +225,10 @@ mixin(UIManager, {
                     </li>`).join('')}
                 </ul>
             </div>` : '';
-        const near = type.requirements?.nearWater ? '<p class="build-info-desc">💧 Precisa ficar perto da água.</p>' : '';
+        const maxWater = type.requirements?.maxWaterDistance;
+        const near = maxWater
+            ? `<p class="build-info-desc">💧 Precisa de um rio, lago ou represa a até ${maxWater} blocos. Encostada na água capta direto; mais longe, a bomba e os canos são instalados sozinhos.</p>`
+            : type.requirements?.nearWater ? '<p class="build-info-desc">💧 Precisa ficar perto da água.</p>' : '';
         return uiIconsIn(`
             <h4>${type.name}</h4>
             <div class="build-info-meta">${TechTree.TIERS[tier]?.icon || ''} Nível ${tier} · ${tierName}${type.group ? ` · ${type.group}` : ''}</div>

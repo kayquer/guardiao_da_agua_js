@@ -651,40 +651,46 @@
       }
     ]
   },
-  "treatment_plant": {
-    "buildingId": "treatment_plant",
-    "buildingName": "Estação de Tratamento",
-    "category": "treatment",
+  "water_treatment_plant": {
+    "buildingId": "water_treatment_plant",
+    "buildingName": "Estação de Tratamento de Água (ETA)",
+    "category": "water",
     "difficulty": "intermediário",
     "studyTitle": "Estação de Tratamento de Água (ETA)",
-    "studyIcon": "🏗️",
-    "estimatedTime": "5 minutos",
+    "studyIcon": "🏞️",
+    "estimatedTime": "6 minutos",
     "learningObjectives": [
-      "Entender como a estação transforma água de rio em água boa para beber",
-      "Perceber por que a água tratada protege a saúde da cidade",
-      "Acompanhar, passo a passo, como a sujeira é separada da água"
+      "Entender de onde vem a água das torneiras: rios, lagos e represas",
+      "Ver como a estação transforma água de rio em água boa para beber",
+      "Perceber que tirar água demais faz o rio baixar e que tratar o esgoto ajuda o rio a se recuperar"
     ],
     "pages": [
       {
         "pageNumber": 1,
         "title": "Uma fábrica de água limpa",
-        "content": "<p>A <b>estação de tratamento</b> funciona como uma fábrica: entra água de rios, lagos e represas, e sai água segura para beber, cozinhar e tomar banho.</p><p>A água do rio pode até parecer limpa, mas carrega coisas que não vemos:</p><ul><li><b>Germes</b> (bactérias e vírus) que causam doenças.</li><li><b>Terra e areia</b>, que deixam a água turva.</li><li><b>Restos de plantas e algas</b>, que mudam o gosto e a cor.</li><li><b>Produtos</b> que escorrem das fazendas e das cidades.</li></ul><p>Sem a estação, essa água iria direto para as torneiras. Por isso ela é uma das construções mais importantes de uma cidade.</p>",
+        "content": "<p>A <b>Estação de Tratamento de Água</b>, a <b>ETA</b>, funciona como uma fábrica: entra água de rios, lagos e represas, e sai água segura para beber, cozinhar e tomar banho.</p><p>A água do rio pode até parecer limpa, mas carrega coisas que não vemos:</p><ul><li><b>Germes</b> (bactérias e vírus) que causam doenças.</li><li><b>Terra e areia</b>, que deixam a água turva.</li><li><b>Restos de plantas e algas</b>, que mudam o gosto e a cor.</li><li><b>Produtos</b> que escorrem das fazendas e das cidades.</li></ul><p>Sem a estação, essa água iria direto para as torneiras. Por isso ela é uma das construções mais importantes de uma cidade.</p>",
         "image": "assets/images/studies/estacao-de-tratamento.webp"
       },
       {
         "pageNumber": 2,
+        "title": "Buscando a água no rio",
+        "content": "<p>Antes de tratar, é preciso <b>buscar</b> a água. Isso se chama <b>captação</b>. A água pode vir de baixo da terra (os poços e as bombas do aquífero) ou da superfície: <b>rios</b>, <b>lagos</b> e <b>represas</b>.</p><p>Quando a estação fica bem na beira do rio, ela puxa a água direto. Quando fica mais longe, uma <b>bomba</b> na margem empurra a água por um cano grande, a <b>adutora</b>, até a estação. Quanto mais longe, mais cano e mais energia para bombear.</p><p><b>Atenção:</b> o rio não é infinito. Se a cidade tira água mais depressa do que as nascentes, os afluentes e a chuva conseguem repor, o rio <b>baixa</b>. Rio baixo deixa menos água para a cidade, para os peixes e para quem vive dele.</p><p>Por isso o <b>esgoto tratado</b> é tão importante: a estação de esgoto devolve ao rio uma água limpa, que ajuda o rio a se manter cheio e vivo.</p>",
+        "image": "assets/images/studies/captacao-rio.webp"
+      },
+      {
+        "pageNumber": 3,
         "title": "Juntando a sujeira",
         "content": "<p>Primeiro, bombas puxam a água do rio. Grades na entrada seguram galhos, folhas e lixo grande.</p><p>Depois, a estação coloca na água um produto que funciona como um <b>ímã de sujeira</b>: as partículas pequenininhas, que sozinhas nunca afundariam, começam a grudar umas nas outras.</p><p>Em seguida, a água é mexida devagar em tanques. As partículas vão se juntando e formam <b>flocos</b> cada vez maiores e mais pesados, parecidos com algodão sujo.</p><p><b>Pense assim:</b> jogue purpurina num copo d'água e depois um pouco de cola. A purpurina se junta em bolinhas maiores. É mais ou menos isso que acontece na estação.</p>",
         "image": null
       },
       {
-        "pageNumber": 3,
+        "pageNumber": 4,
         "title": "Separando e protegendo",
         "content": "<p>Agora a água descansa em tanques grandes, <b>parada</b>. Como os flocos são mais pesados que a água, eles afundam e formam uma camada de lodo no fundo. A água mais limpa fica em cima.</p><p>Essa água passa por <b>filtros</b> de areia, pedrinhas e carvão, que seguram a sujeira que ainda sobrou, como uma peneira bem fina.</p><p>No fim, entra o <b>cloro</b>, que mata os germes que restaram. Um pouquinho de cloro continua na água para protegê-la durante a viagem pelos canos até as casas. Também se coloca <b>flúor</b>, que ajuda a proteger os dentes contra cáries.</p>",
         "image": null
       },
       {
-        "pageNumber": 4,
+        "pageNumber": 5,
         "title": "Água tratada é saúde",
         "content": "<p>Antes das estações de tratamento, muita gente ficava doente ou até morria por beber água contaminada.</p><p>A água tratada ajuda a evitar doenças como:</p><ul><li>diarreia;</li><li>cólera e febre tifoide;</li><li>hepatite;</li><li>vermes e outros parasitas.</li></ul><p>Ainda existem muitos brasileiros sem água tratada em casa. Levar tratamento a todos é um desafio importante.</p><p>Tem mais: cuidar da água sai barato. O dinheiro gasto com tratamento e saneamento evita gastos muito maiores com remédios e hospitais. Cidade com água tratada é cidade com gente mais saudável.</p>",
         "image": null
@@ -708,33 +714,31 @@
         },
         {
           "id": 2,
-          "question": "Um prefeito quer economizar e pensa em cortar o dinheiro do tratamento de água. Pelo texto, qual seria a consequência mais provável?",
+          "question": "Uma cidade colocou muitas estações tirando água do mesmo rio, e o rio começou a baixar. Pelo texto, o que mais ajudaria o rio a se recuperar?",
           "options": [
-            "Mais pessoas ficariam doentes e a cidade gastaria mais com remédios e hospitais",
-            "A água ficaria mais gostosa, sem o gosto de cloro",
-            "Os rios ficariam mais limpos, porque a estação deixaria de puxar água",
-            "Nada mudaria, porque a água do rio já parece limpa"
+            "Construir mais uma estação para tirar água mais depressa",
+            "Tratar o esgoto e devolver água limpa ao rio, sem tirar mais do que ele consegue repor",
+            "Asfaltar a beira do rio para a água correr mais rápido",
+            "Jogar o esgoto direto no rio, porque assim ele recebe mais água"
           ],
-          "correctAnswer": 0,
-          "explanation": "O texto mostra que a água do rio carrega germes que não vemos e que tratar a água evita gastos muito maiores com hospitais."
+          "correctAnswer": 1,
+          "explanation": "A página \"Buscando a água no rio\" explica que o rio baixa quando a cidade tira mais do que ele recebe, e que o esgoto tratado devolve água limpa e ajuda o rio a se manter cheio."
         }
       ]
     },
     "relatedBuildings": [
-      "filter_station",
+      "treatment_plant",
       "water_pump",
+      "water_well",
       "water_quality_monitor"
     ],
     "relatedConcepts": [
       "water_treatment",
+      "surface_water",
       "public_health",
       "coagulation_flocculation"
     ],
     "sources": [
-      {
-        "label": "SABESP — Página principal",
-        "url": "https://www.sabesp.com.br"
-      },
       {
         "label": "Instituto Trata Brasil — Saneamento e saúde",
         "url": "https://tratabrasil.org.br/saneamento-e-saude/"
@@ -742,6 +746,105 @@
       {
         "label": "OMS — Água potável",
         "url": "https://www.who.int/news-room/fact-sheets/detail/drinking-water"
+      },
+      {
+        "label": "ANA — Agência Nacional de Águas e Saneamento Básico",
+        "url": "https://www.gov.br/ana/pt-br"
+      }
+    ]
+  },
+  "treatment_plant": {
+    "buildingId": "treatment_plant",
+    "buildingName": "Estação de Tratamento de Esgoto (ETE)",
+    "category": "treatment",
+    "difficulty": "intermediário",
+    "studyTitle": "Estação de Tratamento de Esgoto (ETE)",
+    "studyIcon": "🏭",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender para onde vai a água suja depois que sai das casas",
+      "Acompanhar como a estação limpa o esgoto, com a ajuda de bactérias",
+      "Perceber que devolver água limpa ao rio deixa o rio mais cheio e mais vivo"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Para onde vai a água suja?",
+        "content": "<p>Toda água que usamos vira <b>esgoto</b>: a do banho, da descarga, da louça e das fábricas. Ela desce pelos canos e corre por baixo da rua.</p><p>Se esse esgoto for jogado direto no rio, a sujeira e os germes deixam a água fedida e perigosa. Os peixes ficam sem ar, as pessoas ficam doentes e o rio morre aos poucos.</p><p>A <b>Estação de Tratamento de Esgoto</b>, a <b>ETE</b>, faz o caminho contrário da estação de água: ela recebe a água suja da cidade e só devolve ao rio depois de limpa.</p>",
+        "image": "assets/images/studies/estacao-de-esgoto.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Grades, areia e bactérias trabalhadoras",
+        "content": "<p>Primeiro, o esgoto passa por <b>grades</b> que seguram o lixo grande, como plástico e panos. Depois, a areia que veio junto afunda num tanque e é retirada.</p><p>Aí começa a parte mais curiosa: no <b>tanque de aeração</b>, máquinas sopram ar e a água fica cheia de bolhas. Esse ar alimenta milhões de <b>bactérias</b> do bem, que <b>comem a sujeira</b> dissolvida na água.</p><p><b>Pense assim:</b> é como um time de faxineiros minúsculos. Quanto mais ar eles recebem, mais rápido limpam.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "O lodo afunda, a água limpa volta",
+        "content": "<p>Depois da aeração, a água descansa num tanque redondo, o <b>decantador</b>. As bactérias e a sujeira que sobrou afundam e formam o <b>lodo</b>. Uma ponte gira devagar raspando o fundo e levando esse lodo embora.</p><p>O lodo seca em leitos de terra e pode virar <b>adubo</b> ou até energia.</p><p>A água de cima, já limpa, volta para o <b>rio</b>. Assim o rio recebe de volta a água que a cidade usou, e fica mais cheio, mais limpo e cheio de vida.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Esgoto tratado é rio vivo",
+        "content": "<p>Muitos lugares do Brasil ainda não têm o esgoto tratado. Quando a cidade investe em estações de esgoto, acontecem coisas boas:</p><ul><li>os peixes e as aves voltam para o rio;</li><li>menos gente fica doente;</li><li>a água que a próxima cidade vai buscar no rio chega mais limpa;</li><li>o rio não baixa tanto, porque recebe a água de volta.</li></ul><p>Tratar a água para beber e tratar o esgoto são as duas metades do mesmo cuidado: uma tira água do rio, a outra devolve.</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "No tanque de aeração, máquinas sopram muito ar na água. Por que isso ajuda a limpar o esgoto?",
+          "options": [
+            "O ar empurra a sujeira para fora do tanque",
+            "O ar alimenta as bactérias que comem a sujeira da água",
+            "O ar deixa a água mais gelada e a sujeira congela",
+            "O ar só serve para tirar o mau cheiro"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A página \"Grades, areia e bactérias trabalhadoras\" explica que o ar alimenta as bactérias do bem, e elas comem a sujeira dissolvida."
+        },
+        {
+          "id": 2,
+          "question": "Uma cidade passou a tratar todo o seu esgoto. Pelo texto, o que acontece com o rio?",
+          "options": [
+            "Ele fica mais vazio, porque a estação guarda a água",
+            "Nada muda, porque o esgoto não chegava ao rio",
+            "Ele recebe água limpa de volta, fica mais cheio e os peixes voltam",
+            "Ele fica mais sujo, por causa do lodo"
+          ],
+          "correctAnswer": 2,
+          "explanation": "O texto mostra que a água limpa volta para o rio, que fica mais cheio, mais limpo e com mais vida."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "water_treatment_plant",
+      "filter_station",
+      "water_reuse_plant",
+      "biodigester"
+    ],
+    "relatedConcepts": [
+      "sewage_treatment",
+      "river_health",
+      "public_health"
+    ],
+    "sources": [
+      {
+        "label": "Instituto Trata Brasil — Esgoto",
+        "url": "https://tratabrasil.org.br/esgoto/"
+      },
+      {
+        "label": "SABESP — Tratamento de esgotos",
+        "url": "https://www.sabesp.com.br"
+      },
+      {
+        "label": "ANA — Agência Nacional de Águas e Saneamento Básico",
+        "url": "https://www.gov.br/ana/pt-br"
       }
     ]
   },
