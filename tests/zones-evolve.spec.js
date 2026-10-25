@@ -20,6 +20,8 @@ async function ready(page) {
         gm.tutorialSystem.complete();
         gm.studySystem.isBuildingUnlocked = () => true;
         gm.resourceManager.resources.budget.current = 1e6;
+        // Energia de sobra: sem ela a zona não sobe e, abaixo de 50% de eficiência, volta de fase
+        gm.resourceManager.addElectricityGeneration(100000);
     });
 }
 

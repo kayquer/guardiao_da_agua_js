@@ -319,6 +319,9 @@ class AudioManager {
         }
         if (!this.canPlayEffects()) return false;
         const now = performance.now();
+        // Alguém quis tocar um som agora (mesmo que o intervalo mínimo da chave o bloqueie): o clique padrão dos
+        // botões (SoundDirector.setupUiSounds) não entra por cima do som próprio do botão
+        this.lastSfxIntentAt = now;
         if (entry.gap && now - (this.lastPlayAt.get(k) ?? -Infinity) < entry.gap) return false;
         if (opts.ifQuiet && now - this.lastSfxAt < opts.ifQuiet) return false;
         this.lastPlayAt.set(k, now);

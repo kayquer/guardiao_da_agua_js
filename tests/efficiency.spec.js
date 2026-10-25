@@ -112,9 +112,9 @@ test('zona consome energia pela fase e aparece no painel de energia e no da zona
     const stage3 = await info();
     expect(stage3.consumption).toBeCloseTo(stage3.full);
 
-    // Sem nenhuma usina: a zona rende metade (e sem rua, 75% disso), com o aviso de energia no painel
+    // Sem nenhuma usina: a zona rende 30% (e sem rua, 75% disso), com o aviso de energia no painel
     await page.evaluate(() => window.gameManager.buildingSystem.updateAllBuildingEfficiency());
-    expect(await page.evaluate(id => window.gameManager.buildingSystem.buildings.get(id).efficiency, zone.id)).toBeCloseTo(0.38);
+    expect(await page.evaluate(id => window.gameManager.buildingSystem.buildings.get(id).efficiency, zone.id)).toBeCloseTo(0.22);
     await page.evaluate(id => {
         const gm = window.gameManager;
         gm.selectBuilding(gm.buildingSystem.buildings.get(id));

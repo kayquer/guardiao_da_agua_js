@@ -73,9 +73,13 @@ test('eficiência: dano × sem rua × energia (só zonas) + pesquisa, sempre do 
 
     const zone = make('zone_commercial_light', 0, 0, { zoneStage: 1 });
     assert.strictEqual(bs.computeBuildingEfficiency(zone, { hasRoad: true, cityEnergy: 1 }), 1);
-    assert.strictEqual(bs.computeBuildingEfficiency(zone, { hasRoad: true, cityEnergy: 0 }), RULES.zoneEnergyFloor, 'zona sem energia rende metade');
-    assert.strictEqual(bs.computeBuildingEfficiency(zone, { hasRoad: true, cityEnergy: 0.5 }), 0.75);
-    assert.strictEqual(bs.computeBuildingEfficiency(zone, { hasRoad: false, cityEnergy: 0 }), 0.38, '0,75 × 0,5');
+    assert.strictEqual(bs.computeBuildingEfficiency(zone, { hasRoad: true, cityEnergy: 0 }), RULES.zoneEnergyFloor, 'zona sem energia rende 30%');
+    assert.strictEqual(bs.computeBuildingEfficiency(zone, { hasRoad: true, cityEnergy: 0.5 }), 0.65, '0,3 + 0,7 × 0,5');
+    assert.strictEqual(bs.computeBuildingEfficiency(zone, { hasRoad: false, cityEnergy: 0 }), 0.22, '0,75 × 0,3 (0,225 arredonda para baixo em ponto flutuante)');
+    // Água e poluição também pesam nas zonas (e só nelas)
+    assert.strictEqual(bs.computeBuildingEfficiency(zone, { hasRoad: true, cityEnergy: 1, waterShortage: true }), RULES.zoneNoWaterFactor);
+    assert.strictEqual(bs.computeBuildingEfficiency(zone, { hasRoad: true, cityEnergy: 1, highPollution: true }), RULES.zoneHighPollutionFactor);
+    assert.strictEqual(bs.computeBuildingEfficiency(pump, { hasRoad: true, cityEnergy: 1, waterShortage: true, highPollution: true }), 1, 'prédio comum não');
 });
 
 test('energia: toda zona consome, pela fase (0,25 → 1) e por tipo/peso', () => {

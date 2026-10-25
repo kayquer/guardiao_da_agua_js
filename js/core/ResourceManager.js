@@ -272,6 +272,15 @@ class ResourceManager {
         else if (waterRatio >= 0.5) factors.push({ key: 'water', icon: '💧', label: 'Água na caixa (pouca)', value: 10 });
         else factors.push({ key: 'water', icon: '🚱', label: 'Falta água guardada', value: -20 });
 
+        // Energia (só conta quando a cidade usa energia)
+        const electricity = this.resources.electricity || {};
+        if (electricity.consumption > 0) {
+            const energy = electricity.efficiency ?? 1;
+            if (energy >= 1) factors.push({ key: 'energy', icon: '⚡', label: 'Energia para todos', value: 5 });
+            else if (energy >= 0.5) factors.push({ key: 'energy', icon: '🔌', label: 'Falta um pouco de energia', value: -10 });
+            else factors.push({ key: 'energy', icon: '🔌', label: 'Cidade sem energia', value: -20 });
+        }
+
         if (pollution.current < 20) factors.push({ key: 'pollution', icon: '🌿', label: 'Ar e rio limpos', value: 15 });
         else if (pollution.current < 50) factors.push({ key: 'pollution', icon: '🌿', label: 'Poluição moderada', value: 5 });
         else factors.push({ key: 'pollution', icon: '🏭', label: 'Poluição alta', value: -15 });

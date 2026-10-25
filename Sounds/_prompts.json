@@ -810,16 +810,6 @@
       "loudnessTarget": "-16 LUFS (+17.9 dB)",
       "channels": 1
     },
-    "Sounds/SFX/Player/sfx_build.mp3": {
-      "generator": "ElevenLabs Sound Effects v2",
-      "model": "eleven_text_to_sound_v2",
-      "prompt": "Cartoon construction start: two light hammer hits on wood, a short burst of a toy electric drill, a wheelbarrow squeak, cheerful and busy, 1.1 seconds, dry, mono.",
-      "date": "2026-10-22",
-      "chosenVersion": "única",
-      "loop": false,
-      "loudnessTarget": "-16 LUFS (-7.6 dB)",
-      "channels": 1
-    },
     "Sounds/SFX/Player/sfx_build_complete.mp3": {
       "generator": "ElevenLabs Sound Effects v2",
       "model": "eleven_text_to_sound_v2",
@@ -829,36 +819,6 @@
       "loop": false,
       "loudnessTarget": "-16 LUFS (+2.0 dB)",
       "channels": 1
-    },
-    "Sounds/SFX/Player/sfx_build_place_1.mp3": {
-      "generator": "ElevenLabs Sound Effects v2",
-      "model": "eleven_text_to_sound_v2",
-      "prompt": "Satisfying placement sound: a wooden toy block set firmly on soft ground, warm low thud, a tiny dust puff, and a small click like snapping into place, 400 ms, dry, mono.",
-      "date": "2026-10-22",
-      "chosenVersion": "variação 1 de 2",
-      "loop": false,
-      "loudnessTarget": "-16 LUFS (-2.4 dB)",
-      "channels": 1
-    },
-    "Sounds/SFX/Player/sfx_build_place_2.mp3": {
-      "generator": "ElevenLabs Sound Effects v2",
-      "model": "eleven_text_to_sound_v2",
-      "prompt": "Satisfying placement sound: a wooden toy block set firmly on soft ground, warm low thud, a tiny dust puff, and a small click like snapping into place, 400 ms, dry, mono.",
-      "date": "2026-10-22",
-      "chosenVersion": "variação 2 de 2",
-      "loop": false,
-      "loudnessTarget": "-16 LUFS (+4.8 dB)",
-      "channels": 1
-    },
-    "Sounds/SFX/Player/sfx_build_progress.mp3": {
-      "generator": "ElevenLabs Sound Effects v2",
-      "model": "eleven_text_to_sound_v2",
-      "prompt": "Distant cartoon construction site loop: soft rhythmic hammering, an occasional small drill, light machinery hum, faint workers' tools clinking, gentle, seamless loop, 4 seconds, stereo, low intensity.",
-      "date": "2026-10-22",
-      "chosenVersion": "única",
-      "loop": true,
-      "loudnessTarget": "-22 LUFS (+15.1 dB)",
-      "channels": 2
     },
     "Sounds/SFX/Player/sfx_camera_rotate.mp3": {
       "generator": "ElevenLabs Sound Effects v2",
@@ -2588,26 +2548,6 @@
       "loudnessTarget": "-16 LUFS",
       "channels": 1
     },
-    "Sounds/SFX/Player/sfx_build_2.mp3": {
-      "generator": "ElevenLabs Sound Effects v2",
-      "model": "eleven_text_to_sound_v2",
-      "prompt": "Cartoon construction start: two light hammer hits on wood, a short burst of a toy electric drill, a wheelbarrow squeak, cheerful and busy, 1.1 seconds, dry, mono. Variation 2: a fresh take of the same sound, slightly different timing and character, same mood and length.",
-      "date": "2026-10-25",
-      "chosenVersion": "variação 2 de 3",
-      "loop": false,
-      "loudnessTarget": "-16 LUFS",
-      "channels": 1
-    },
-    "Sounds/SFX/Player/sfx_build_3.mp3": {
-      "generator": "ElevenLabs Sound Effects v2",
-      "model": "eleven_text_to_sound_v2",
-      "prompt": "Cartoon construction start: two light hammer hits on wood, a short burst of a toy electric drill, a wheelbarrow squeak, cheerful and busy, 1.1 seconds, dry, mono. Variation 3: a fresh take of the same sound, slightly different timing and character, same mood and length.",
-      "date": "2026-10-25",
-      "chosenVersion": "variação 3 de 3",
-      "loop": false,
-      "loudnessTarget": "-16 LUFS",
-      "channels": 1
-    },
     "Sounds/SFX/Player/sfx_build_complete_2.mp3": {
       "generator": "ElevenLabs Sound Effects v2",
       "model": "eleven_text_to_sound_v2",
@@ -2622,16 +2562,6 @@
       "generator": "ElevenLabs Sound Effects v2",
       "model": "eleven_text_to_sound_v2",
       "prompt": "Cheerful construction complete: rising glockenspiel sparkle, then a bright two-note marimba \"ta-da\" (low then high), tiny bell shimmer tail, 1 second, mono. Variation 3: a fresh take of the same sound, slightly different timing and character, same mood and length.",
-      "date": "2026-10-25",
-      "chosenVersion": "variação 3 de 3",
-      "loop": false,
-      "loudnessTarget": "-16 LUFS",
-      "channels": 1
-    },
-    "Sounds/SFX/Player/sfx_build_place_3.mp3": {
-      "generator": "ElevenLabs Sound Effects v2",
-      "model": "eleven_text_to_sound_v2",
-      "prompt": "Satisfying placement sound: a wooden toy block set firmly on soft ground, warm low thud, a tiny dust puff, and a small click like snapping into place, 400 ms, dry, mono. Variation 3: a fresh take of the same sound, slightly different timing and character, same mood and length.",
       "date": "2026-10-25",
       "chosenVersion": "variação 3 de 3",
       "loop": false,
@@ -3787,6 +3717,155 @@
       "loop": false,
       "loudnessTarget": "-20 LUFS",
       "channels": 2
+    },
+    "Sounds/SFX/Player/sfx_build_start.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Construction work starting: two heavy hammer hits on a wooden beam, a short burst of a big low-rumbling drill, a wheelbarrow rolling on gravel, heavy-duty professional power tool, low RPM, deep rumbling bass-heavy motor, muffled, warm, low-pitched, no high whine, no shrill squeal, realistic close-mic recording, no music, no voice",
+      "date": "2026-10-25",
+      "chosenVersion": "escolhido pelo usuário entre 18 candidatos (07b-inicio-de-obra)",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1,
+      "why": "Troca dos sons de obra \"de brinquedo\" (agudos) por ferramentas reais e graves."
+    },
+    "Sounds/SFX/Player/sfx_tool_impact_driver.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Big cordless impact wrench driving a lag screw into a thick wooden post: deep thudding impacts, low growling motor, heavy-duty professional power tool, low RPM, deep rumbling bass-heavy motor, muffled, warm, low-pitched, no high whine, no shrill squeal, realistic close-mic recording, no music, no voice",
+      "date": "2026-10-25",
+      "chosenVersion": "escolhido pelo usuário entre 18 candidatos (01b-parafusadeira)",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1,
+      "why": "Troca dos sons de obra \"de brinquedo\" (agudos) por ferramentas reais e graves."
+    },
+    "Sounds/SFX/Player/sfx_tool_drill.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Large hammer drill slowly boring into a wooden beam: low rumbling motor drone, wood grinding, heavy-duty professional power tool, low RPM, deep rumbling bass-heavy motor, muffled, warm, low-pitched, no high whine, no shrill squeal, realistic close-mic recording, no music, no voice",
+      "date": "2026-10-25",
+      "chosenVersion": "escolhido pelo usuário entre 18 candidatos (02b-furadeira)",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1,
+      "why": "Troca dos sons de obra \"de brinquedo\" (agudos) por ferramentas reais e graves."
+    },
+    "Sounds/SFX/Player/sfx_tool_circular_saw.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Heavy worm-drive circular saw cutting a thick wooden board: low powerful motor roar, deep wood cutting, heavy-duty professional power tool, low RPM, deep rumbling bass-heavy motor, muffled, warm, low-pitched, no high whine, no shrill squeal, realistic close-mic recording, no music, no voice",
+      "date": "2026-10-25",
+      "chosenVersion": "escolhido pelo usuário entre 18 candidatos (06b-serra-circular)",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1,
+      "why": "Troca dos sons de obra \"de brinquedo\" (agudos) por ferramentas reais e graves."
+    },
+    "Sounds/SFX/Player/sfx_tool_hammer.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Carpenter hammering a large nail into a wooden plank: three solid hits with a deep wooden thump, the last one sinking the nail flush, realistic, close-mic recording, warm low-mid tones, full-bodied, not shrill, not high-pitched, not a toy, no music, no voice",
+      "date": "2026-10-25",
+      "chosenVersion": "escolhido pelo usuário entre 18 candidatos (03-martelo)",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1,
+      "why": "Troca dos sons de obra \"de brinquedo\" (agudos) por ferramentas reais e graves."
+    },
+    "Sounds/SFX/Player/sfx_tool_sledgehammer.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Sledgehammer driving a wooden stake into firm ground: two heavy dull thuds with ground resonance, realistic, close-mic recording, warm low-mid tones, full-bodied, not shrill, not high-pitched, not a toy, no music, no voice",
+      "date": "2026-10-25",
+      "chosenVersion": "escolhido pelo usuário entre 18 candidatos (04-marreta)",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1,
+      "why": "Troca dos sons de obra \"de brinquedo\" (agudos) por ferramentas reais e graves."
+    },
+    "Sounds/SFX/Player/sfx_tool_handsaw.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Hand saw cutting through a wooden board: steady back-and-forth rasping strokes, low and rough, the board snapping free at the end, realistic, close-mic recording, warm low-mid tones, full-bodied, not shrill, not high-pitched, not a toy, no music, no voice",
+      "date": "2026-10-25",
+      "chosenVersion": "escolhido pelo usuário entre 18 candidatos (05-serrote)",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1,
+      "why": "Troca dos sons de obra \"de brinquedo\" (agudos) por ferramentas reais e graves."
+    },
+    "Sounds/SFX/Player/sfx_tool_bricks.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Bricklayer laying bricks: a trowel scraping mortar, a heavy brick set down with a solid tap, the trowel handle tapping it level, realistic, close-mic recording, warm low-mid tones, full-bodied, not shrill, not high-pitched, not a toy, no music, no voice",
+      "date": "2026-10-25",
+      "chosenVersion": "escolhido pelo usuário entre 18 candidatos (10-tijolos)",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1,
+      "why": "Troca dos sons de obra \"de brinquedo\" (agudos) por ferramentas reais e graves."
+    },
+    "Sounds/SFX/Player/sfx_build_site.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Construction site at medium distance, seamless loop: steady hammering on wood, an occasional cordless drill with a deep motor, a concrete mixer turning, shovels scraping gravel, warm and calm, realistic, close-mic recording, warm low-mid tones, full-bodied, not shrill, not high-pitched, not a toy, no music, no voice",
+      "date": "2026-10-25",
+      "chosenVersion": "escolhido pelo usuário entre 18 candidatos (08-canteiro-loop)",
+      "loop": false,
+      "loudnessTarget": "-20 LUFS",
+      "channels": 1,
+      "why": "Troca dos sons de obra \"de brinquedo\" (agudos) por ferramentas reais e graves."
+    },
+    "Sounds/SFX/Player/sfx_click_4.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Very short soft UI click for a cozy kids city-building game: a rounded wooden tap layered with a tiny water-bubble pop, warm and neutral, mid pitch, 70 milliseconds, instant attack, very short decay, no reverb, no echo, mono, clean. Variation 4: slightly lower and rounder wooden tap.",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 4 de 8",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_click_5.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Very short soft UI click for a cozy kids city-building game: a rounded wooden tap layered with a tiny water-bubble pop, warm and neutral, mid pitch, 70 milliseconds, instant attack, very short decay, no reverb, no echo, mono, clean. Variation 5: a softer bubble pop, a touch brighter tap.",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 5 de 8",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_click_6.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Very short soft UI click for a cozy kids city-building game: a rounded wooden tap layered with a tiny water-bubble pop, warm and neutral, mid pitch, 70 milliseconds, instant attack, very short decay, no reverb, no echo, mono, clean. Variation 6: drier and shorter, like a gentle finger tap on a wooden toy button.",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 6 de 8",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_click_7.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Very short soft UI click for a cozy kids city-building game: a rounded wooden tap layered with a tiny water-bubble pop, warm and neutral, mid pitch, 70 milliseconds, instant attack, very short decay, no reverb, no echo, mono, clean. Variation 7: tap with a tiny hollow resonance, still very short.",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 7 de 8",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_click_8.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Very short soft UI click for a cozy kids city-building game: a rounded wooden tap layered with a tiny water-bubble pop, warm and neutral, mid pitch, 70 milliseconds, instant attack, very short decay, no reverb, no echo, mono, clean. Variation 8: a little more bubble than wood, friendly and light.",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 8 de 8",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
     }
   }
 }

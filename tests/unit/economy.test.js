@@ -67,6 +67,7 @@ test('satisfação dos prédios: soma, teto e retorno decrescente', () => {
 
     const park = make('park');
     const { bs, rm } = city([park]);
+    Object.assign(rm.resources.electricity, { generation: 1e6, efficiency: 1 }); // energia de sobra: mede só os serviços
     rm.updatePopulation();
     const before = rm.resources.population.satisfaction;
     bs.applyBuildingEffects(park, true);

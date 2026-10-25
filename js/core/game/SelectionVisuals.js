@@ -4,7 +4,7 @@
  */
 mixin(GameManager, {
     // ===== SELEÇÃO =====
-    /** sound: clique do jogador → um som só (o característico do prédio pronto, ou o clique numa obra) */
+    /** sound: clique do jogador → um som só (o característico do prédio pronto, ou uma ferramenta numa obra) */
     selectBuilding(building, { sound = false } = {}) {
         if (!building || !building.config) {
             console.warn('⚠️ Tentativa de selecionar edifício inválido');
@@ -14,7 +14,7 @@ mixin(GameManager, {
             if (!building.underConstruction && this.gameState === 'playing') {
                 AudioManager.onSelect(AudioManager.selectGroupFor({ ...building.config, id: building.type }));
             } else {
-                AudioManager.playSound('sfx_click', 0.8);
+                AudioManager.playSound('sfx_construction_click'); // obra em andamento: ferramenta (parafusadeira, serrote...)
             }
         }
 

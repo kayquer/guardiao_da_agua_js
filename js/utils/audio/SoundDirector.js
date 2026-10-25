@@ -359,17 +359,18 @@ mixin(AudioManager, {
 
     // ===== INTERFACE (delegação global) =====
     setupUiSounds() {
-        // Clique em botão: depois dos handlers; se nenhum deles tocou som, toca o clique padrão
+        // Clique em botão: depois dos handlers; se nenhum deles tocou (ou tentou tocar) um som próprio, toca o clique
+        // padrão. Espera um instante para pegar também os handlers que tocam o som logo depois (promessa, setTimeout 0)
         const CLICKABLE = 'button, [role="button"], .overlay-btn, .profile-card, .building-item, .goal-link, .mission-card, .lessons-card';
         document.addEventListener('click', event => {
             const el = event.target.closest?.(CLICKABLE);
             if (!el || el.disabled || el.closest('.pp-sound')) return;
             const at = performance.now();
             setTimeout(() => {
-                if (this.lastSfxAt >= at) return;
+                if (Math.max(this.lastSfxAt, this.lastSfxIntentAt ?? -Infinity) >= at) return;
                 const inGame = this.director.screen === 'game-screen' && !el.closest('.swal2-container');
                 this.playSound(inGame ? 'sfx_click' : 'sfx_ui_click', 0.8);
-            }, 0);
+            }, 40);
         }, true);
 
         document.addEventListener('change', event => {

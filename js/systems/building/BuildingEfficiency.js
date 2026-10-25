@@ -21,7 +21,11 @@
  */
 const EFFICIENCY_RULES = {
     noRoadFactor: 0.75,        // prédio sem rua encostada funciona a 75%
-    zoneEnergyFloor: 0.5,      // zona sem nenhuma energia rende metade (0,5 + 0,5 × eficiência elétrica)
+    zoneEnergyFloor: 0.3,      // zona sem nenhuma energia rende 30% (0,3 + 0,7 × eficiência elétrica)
+    zoneNoWaterFactor: 0.45,   // zona com a cidade sem água: × 0,45
+    zoneHighPollutionFactor: 0.75, // zona com poluição alta (≥ zoneHighPollution): × 0,75
+    zoneHighPollution: 70,
+    zoneRegressBelow: 0.5,     // abaixo disto a zona volta de fase (ZoneGrowth.updateZoneGrowth)
     researchBonusCap: 0.5      // soma dos bônus de centros de pesquisa/universidades próximos
 };
 
@@ -97,6 +101,9 @@ mixin(BuildingSystem, {
             const floor = EFFICIENCY_RULES.zoneEnergyFloor;
             efficiency *= floor + (1 - floor) * energy;
         }
+        // Os outros dois recursos principais das zonas: água e ar/rio limpos
+        if (isZone && ctx.waterShortage) efficiency *= EFFICIENCY_RULES.zoneNoWaterFactor;
+        if (isZone && ctx.highPollution) efficiency *= EFFICIENCY_RULES.zoneHighPollutionFactor;
         efficiency += ctx.researchBonus || 0;
         return Math.round(Math.min(2, Math.max(0, efficiency)) * 100) / 100;
     },
@@ -144,8 +151,11 @@ mixin(BuildingSystem, {
             this.updatePowerShortageVisuals(building, hasPowerShortage);
         }
 
+        const rm = this.gameManager?.resourceManager;
         const efficiency = this.computeBuildingEfficiency(building, {
-            hasRoad, cityEnergy, researchBonus: this.getResearchEfficiencyBonus(building)
+            hasRoad, cityEnergy, researchBonus: this.getResearchEfficiencyBonus(building),
+            waterShortage: !!rm?.hasWaterShortage?.(),
+            highPollution: (rm?.resources?.pollution?.current || 0) >= EFFICIENCY_RULES.zoneHighPollution
         });
         // Consumo de energia da zona fora do que está nos totais (save antigo): refaz os efeitos também
         const powerOutOfSync = building.effectsApplied && Number.isFinite(building.appliedPowerConsumption)
@@ -221,7 +231,17 @@ mixin(BuildingSystem, {
         const isZone = this.isZoneBuilding ? this.isZoneBuilding(building) : false;
         if (isZone && building.hasPowerShortage) {
             const energy = Math.round(this.getCityEnergyEfficiency() * 100);
-            html += `<div class="stat-item efficiency-warning zone-energy-warning" style="color:#ffb74d">⚡ Falta energia (${energy}% da demanda): a zona rende menos e cresce mais devagar.</div>`;
+            html += `<div class="stat-item efficiency-warning zone-energy-warning" style="color:#ffb74d">⚡ Falta energia (${energy}% da demanda): a zona rende menos e não sobe de fase.</div>`;
+        }
+        const rm = this.gameManager?.resourceManager;
+        if (isZone && rm?.hasWaterShortage?.()) {
+            html += '<div class="stat-item efficiency-warning zone-water-warning" style="color:#ffb74d">🚱 Falta água: a zona rende menos e não sobe de fase.</div>';
+        }
+        if (isZone && (rm?.resources?.pollution?.current || 0) >= EFFICIENCY_RULES.zoneHighPollution) {
+            html += '<div class="stat-item efficiency-warning zone-pollution-warning" style="color:#ffb74d">🏭 Poluição alta: a zona rende menos e não sobe de fase.</div>';
+        }
+        if (isZone && building.efficiency < EFFICIENCY_RULES.zoneRegressBelow && (this.getZoneStage?.(building) || 0) > 0) {
+            html += '<div class="stat-item efficiency-warning zone-regress-warning" style="color:#ff8a80">⬇️ Abaixo de 50%: a zona está perdendo moradores e voltando de fase!</div>';
         }
         return html;
     },

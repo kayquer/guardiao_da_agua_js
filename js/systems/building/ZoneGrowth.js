@@ -86,8 +86,25 @@ mixin(BuildingSystem, {
      * freia ou acelera na mesma proporção, nunca abaixo de 0,25×; sem água a zona para (0).
      * @param {{satisfaction:number, waterShortage:boolean, energyEfficiency:number, efficiency?:number}} c
      */
+    /** Algum dos 3 recursos principais faltando (energia, água, ar/rio limpos)? Então a zona não sobe de fase. */
+    zoneMissingResources(c) {
+        const missing = [];
+        if (Number.isFinite(c?.energyEfficiency) && c.energyEfficiency < 1) missing.push('energia');
+        if (c?.waterShortage) missing.push('água');
+        if (c?.highPollution) missing.push('ar limpo');
+        return missing;
+    },
+
+    /**
+     * Ritmo de crescimento (> 0 sobe, 0 parada, < 0 volta de fase). Sem algum recurso principal: parada; com a
+     * eficiência abaixo de ZONE_GROWTH.regressBelow (50%): volta, mais rápido quanto mais baixa.
+     */
     computeZoneGrowthRate(c) {
-        if (c.waterShortage) return 0;
+        const efficiency0 = Number.isFinite(c.efficiency) ? c.efficiency : null;
+        if (efficiency0 !== null && efficiency0 < ZONE_GROWTH.regressBelow) {
+            return -Math.min(1, 0.25 + (ZONE_GROWTH.regressBelow - efficiency0) * 2);
+        }
+        if (c.waterShortage || this.zoneMissingResources(c).length) return 0;
         const satisfaction = Math.max(0, Math.min(100, Number.isFinite(c.satisfaction) ? c.satisfaction : 50));
         const efficiency = Number.isFinite(c.efficiency) ? Math.max(0, Math.min(2, c.efficiency))
             : Number.isFinite(c.energyEfficiency) ? Math.max(0, Math.min(1, c.energyEfficiency)) : 1;
@@ -121,6 +138,7 @@ mixin(BuildingSystem, {
             waterShortage: !!rm.hasWaterShortage?.(),
             // sem consumo nenhum a eficiência fica 1; zona que gasta energia sente a falta
             energyEfficiency: electricity.consumption > 0 ? electricity.efficiency : 1,
+            highPollution: (rm.resources.pollution?.current || 0) >= (typeof EFFICIENCY_RULES !== 'undefined' ? EFFICIENCY_RULES.zoneHighPollution : 70),
             // produção × gasto de água (L/min) para o painel dizer quanto falta
             water: rm.getWaterBalance?.() || null
         };
@@ -142,7 +160,20 @@ mixin(BuildingSystem, {
      */
     advanceZoneProgress(building, dtMs, rate) {
         const stage = this.getZoneStage(building);
-        if (stage === null || stage >= 3 || !(dtMs > 0) || !(rate > 0)) return null;
+        if (stage === null || !(dtMs > 0)) return null;
+        if (rate < 0) {
+            // Voltando: o progresso da fase desce; ao zerar, cai uma fase (a área livre, fase 0, é o fundo)
+            if (stage === 0 && !(building.zoneProgress > 0)) return null;
+            const ms = ZONE_GROWTH.stageMs[Math.max(0, Math.min(2, stage - 1))];
+            const progress = (stage >= 3 ? 1 : (building.zoneProgress || 0)) + (dtMs * rate) / ms;
+            if (progress > 0 || stage === 0) {
+                building.zoneProgress = Math.max(0, progress);
+                return null;
+            }
+            building.zoneProgress = 0.99;
+            return stage - 1;
+        }
+        if (stage >= 3 || !(rate > 0)) return null;
         building.zoneProgress = (building.zoneProgress || 0) + (dtMs * rate) / ZONE_GROWTH.stageMs[stage];
         if (building.zoneProgress < 1) return null;
         building.zoneProgress = stage + 1 >= 3 ? 1 : Math.min(building.zoneProgress - 1, 0.99);
@@ -169,7 +200,16 @@ mixin(BuildingSystem, {
         const efficiency = this.getZoneEfficiency(building, c);
         const ms = this.getZoneTimeToNextStage(building, this.computeZoneGrowthRate({ ...c, efficiency }));
         if (ms === null) return null;
-        if (ms === Infinity) return { eta: 'Crescimento parado', reason: this.describeZoneWaterShortage(c) };
+        const rate = this.computeZoneGrowthRate({ ...c, efficiency });
+        if (rate < 0) {
+            const missing = this.zoneMissingResources(c);
+            return { eta: 'Voltando de fase!', reason: `A zona caiu para ${Math.round(efficiency * 100)}% e está perdendo moradores${missing.length ? `: falta ${missing.join(', ')}` : ''}.` };
+        }
+        if (ms === Infinity) {
+            const missing = this.zoneMissingResources(c);
+            if (c.waterShortage) return { eta: 'Crescimento parado', reason: this.describeZoneWaterShortage(c) };
+            return { eta: 'Crescimento parado', reason: `Não sobe de fase sem ${missing.join(', ')}.` };
+        }
         const scale = this.gameManager?.timeScale > 0 ? this.gameManager.timeScale : 1;
         const sec = Math.max(1, Math.ceil(ms / scale / 1000));
         const eta = sec < 60 ? `~${sec} s` : `~${Math.floor(sec / 60)} min${sec % 60 ? ` ${sec % 60} s` : ''}`;
@@ -260,15 +300,26 @@ mixin(BuildingSystem, {
         if (dt < 500) return;
         this.lastZoneGrowthTime = now;
         const conditions = this.getZoneGrowthConditions();
-        if (conditions.waterShortage) return this.updateZoneStagePanel();
         for (const building of this.buildings.values()) {
             if (!building.active || !this.isZoneBuilding(building)) continue;
+            const before = this.getZoneStage(building);
             const next = this.advanceZoneProgress(building, dt, this.getZoneGrowthRate(building, conditions));
             if (next !== null && this.setZoneStage(building, next) && typeof AudioManager !== 'undefined') {
-                AudioManager.playSound('sfx_zone_grow'); // casinhas brotando (gap no manifesto: várias zonas juntas = um som)
+                // casinhas brotando (gap no manifesto: várias zonas juntas = um som); voltando de fase: aviso
+                if (next > before) AudioManager.playSound('sfx_zone_grow');
+                else this.warnZoneRegress?.(building);
             }
         }
         this.updateZoneStagePanel();
+    },
+
+    /** Zona voltou de fase: um aviso por vez (cooldown) para o jogador saber o porquê. */
+    warnZoneRegress(building) {
+        const now = this.simNow();
+        if (this.lastZoneRegressWarn && now - this.lastZoneRegressWarn < 30000) return;
+        this.lastZoneRegressWarn = now;
+        const missing = this.zoneMissingResources(this.getZoneGrowthConditions());
+        this.showNotification?.(`⬇️ ${building.config.name} voltou de fase e perdeu moradores${missing.length ? `: falta ${missing.join(', ')}` : ''}.`, 'warning', 6000);
     },
 
     /** Debug/testes: põe a zona direto numa fase (?debug: gameManager.buildingSystem.forceZoneStage(id, 2)). */

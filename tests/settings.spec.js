@@ -154,3 +154,25 @@ test('selecionar um prédio pronto toca um som só, e o painel mostra todos os e
     await expect(panel).toContainText('Manutenção');
     expect(errors).toEqual([]);
 });
+
+test('onde o botão tem som próprio, o clique padrão não toca junto (nem em clique duplo rápido)', async ({ page }) => {
+    const errors = watchErrors(page);
+    await start(page);
+    await page.evaluate(() => {
+        const am = AudioManager.instance;
+        window.playedSounds = [];
+        const orig = am.playSound.bind(am);
+        am.playSound = (key, ...rest) => { window.playedSounds.push(key); return orig(key, ...rest); };
+        window.gameManager.pauseGame();
+    });
+    // Configurações tem som próprio (abrir painel); o segundo clique cai no intervalo mínimo do som e antes
+    // virava o clique padrão por cima
+    await page.click('#btn-settings');
+    await page.evaluate(() => window.gameManager.uiManager.closeSettingsPanel({ focus: false })); // Voltar não tem som próprio
+    await page.click('#btn-settings');
+    await page.waitForTimeout(200);
+    const played = await page.evaluate(() => window.playedSounds);
+    expect(played).toContain('sfx_panel_open');
+    expect(played).not.toContain('sfx_click');
+    expect(errors).toEqual([]);
+});

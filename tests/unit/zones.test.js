@@ -146,9 +146,14 @@ test('crescimento: ritmo pela satisfação, energia e água', () => {
     assert.strictEqual(bs.computeZoneGrowthRate({ satisfaction: 50, waterShortage: false, energyEfficiency: 1 }), 1);
     assert.strictEqual(bs.computeZoneGrowthRate({ satisfaction: 100, waterShortage: false, energyEfficiency: 1 }), 1.5);
     assert.strictEqual(bs.computeZoneGrowthRate({ satisfaction: 0, waterShortage: false, energyEfficiency: 1 }), 0.5);
-    assert.strictEqual(bs.computeZoneGrowthRate({ satisfaction: 50, waterShortage: false, energyEfficiency: 0.5 }), 0.5);
-    assert.strictEqual(bs.computeZoneGrowthRate({ satisfaction: 50, waterShortage: false, energyEfficiency: 0 }), 0.25, 'sem energia cresce bem devagar');
+    // Sem algum dos 3 recursos principais (energia, água, ar limpo) a zona não sobe de fase
+    assert.strictEqual(bs.computeZoneGrowthRate({ satisfaction: 50, waterShortage: false, energyEfficiency: 0.5 }), 0, 'falta energia: parada');
     assert.strictEqual(bs.computeZoneGrowthRate({ satisfaction: 100, waterShortage: true, energyEfficiency: 1 }), 0, 'sem água para');
+    assert.strictEqual(bs.computeZoneGrowthRate({ satisfaction: 100, waterShortage: false, energyEfficiency: 1, highPollution: true }), 0, 'poluição alta: parada');
+    // Abaixo de 50% de eficiência ela volta de fase (ritmo negativo, mais rápido quanto mais baixa)
+    const back = e => bs.computeZoneGrowthRate({ satisfaction: 50, waterShortage: false, energyEfficiency: 0, efficiency: e });
+    assert.ok(back(0.4) < 0 && back(0.1) < back(0.4));
+    assert.strictEqual(bs.computeZoneGrowthRate({ satisfaction: 50, waterShortage: false, energyEfficiency: 1, efficiency: 0.5 }), 0.5, '50% ainda cresce');
 });
 
 test('crescimento: tempo de jogo → fase (0 → 3) e para na fase final', () => {
@@ -190,7 +195,8 @@ test('indicador: tempo até a próxima fase (ritmo e 2x/3x) e o motivo', () => {
     assert.match(slow.eta, /~\d+ min/, 'acima de 1 minuto mostra minutos');
     assert.match(slow.reason, /insatisfeitos/);
     bs.getZoneGrowthConditions = () => ({ satisfaction: 50, waterShortage: false, energyEfficiency: 0.5 });
-    assert.match(bs.describeZoneGrowth(b).reason, /falta energia/);
+    assert.deepStrictEqual({ ...bs.describeZoneGrowth({ ...b, efficiency: 0.65 }) }, { eta: 'Crescimento parado', reason: 'Não sobe de fase sem energia.' });
+    assert.strictEqual(bs.describeZoneGrowth({ ...b, efficiency: 0.3 }).eta, 'Voltando de fase!');
     bs.getZoneGrowthConditions = () => ({ satisfaction: 50, waterShortage: true, energyEfficiency: 1 });
     assert.deepStrictEqual({ ...bs.describeZoneGrowth(b) }, { eta: 'Crescimento parado', reason: 'Falta água na cidade: a zona só cresce com água.' });
     assert.strictEqual(bs.describeZoneGrowth({ ...b, zoneStage: 3 }), null);
@@ -299,10 +305,10 @@ test('eficiência: ritmo = satisfação × eficiência da zona (mínimo com a en
     assert.strictEqual(bs.getZoneGrowthRate(z(1), c), 1);
     assert.strictEqual(bs.getZoneGrowthRate(z(0.5), c), 0.5, 'zona a 50% cresce na metade');
     assert.strictEqual(bs.getZoneGrowthRate(z(1.3), c), 1.3, 'bônus de pesquisa acelera');
-    assert.strictEqual(bs.getZoneGrowthRate(z(0), c), 0.25, 'nunca abaixo de 0,25×');
+    assert.ok(bs.getZoneGrowthRate(z(0), c) < 0, 'abaixo de 50%: volta de fase');
     const low = { ...c, energyEfficiency: 0.5 };
-    assert.strictEqual(bs.getZoneGrowthRate(z(0.5), low), 0.5, 'eficiência do prédio que já conta a energia: 0,5, não 0,25');
-    assert.strictEqual(bs.getZoneGrowthRate(z(1), low), 0.5, 'energia da cidade limita');
+    assert.strictEqual(bs.getZoneGrowthRate(z(0.65), low), 0, 'falta energia: não sobe');
+    assert.strictEqual(bs.getZoneGrowthRate(z(1), low), 0);
     assert.strictEqual(bs.getZoneGrowthRate(z(1), { ...c, waterShortage: true }), 0);
 
     // O tempo até a próxima fase usa o ritmo da zona (uma vez só)
@@ -443,4 +449,19 @@ test('evolução: sem dinheiro ou sem espaço o botão fica desabilitado com o m
     assert.strictEqual(JSON.stringify([b.gridX, b.gridZ]), '[9,9]');
     assert.strictEqual(b.zoneStage, 2, 'industrial equilibrada → pesada começa na fase 2 (75 empregos ≥ 60)');
     for (let x = 9; x < 12; x++) for (let z = 9; z < 12; z++) assert.ok(ok.busy.has(`${x},${z}`), `célula ${x},${z} ocupada`);
+});
+
+test('zona abaixo de 50% volta de fase: o progresso desce e, ao zerar, cai uma fase (nunca abaixo da área livre)', () => {
+    const { bs } = system();
+    const b = zone('zone_residential_light', { zoneStage: 2, zoneProgress: 0.1 });
+    assert.strictEqual(bs.advanceZoneProgress(b, 1000, -0.5), null, 'ainda tem progresso');
+    assert.ok(b.zoneProgress < 0.1);
+    assert.strictEqual(bs.advanceZoneProgress(b, GROWTH.stageMs[1], -1), 1, 'zerou: volta para a fase 1');
+    assert.strictEqual(b.zoneProgress, 0.99, 'chega no fim da fase anterior');
+    const top = zone('zone_residential_light', { zoneStage: 3, zoneProgress: 1 });
+    assert.strictEqual(bs.advanceZoneProgress(top, GROWTH.stageMs[2] * 2, -1), 2, 'a zona completa também volta');
+    const floor = zone('zone_residential_light', { zoneStage: 0, zoneProgress: 0.2 });
+    assert.strictEqual(bs.advanceZoneProgress(floor, GROWTH.stageMs[0] * 5, -1), null);
+    assert.strictEqual(floor.zoneStage, 0);
+    assert.strictEqual(floor.zoneProgress, 0, 'área livre é o fundo');
 });
