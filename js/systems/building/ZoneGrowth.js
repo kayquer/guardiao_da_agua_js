@@ -67,6 +67,11 @@ mixin(BuildingSystem, {
         return Math.round(config.incomeGeneration * efficiency * this.getZoneEffectScale(building));
     },
 
+    /** Água e poluição do lote da zona acompanham a fase (área livre quase nada, completa tudo); prédio comum = 1. */
+    getZoneResourceScale(building) {
+        return this.isZoneBuilding(building) ? this.getZoneEffectScale(building) : 1;
+    },
+
     /**
      * Escala da receita dentro de applyBuildingEffects: ao somar grava a escala usada (zoneAppliedScale), ao
      * tirar usa a gravada — assim um save antigo (receita cheia nos totais) desconta o que somou.

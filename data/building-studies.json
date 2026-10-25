@@ -22,13 +22,13 @@
       {
         "pageNumber": 2,
         "title": "Como a água chega lá embaixo",
-        "content": "<p>A água subterrânea vem da chuva. O caminho é assim:</p><ul><li><b>Chuva:</b> a água cai sobre o solo.</li><li><b>Infiltração:</b> ela entra na terra por pequenos buracos e rachaduras.</li><li><b>Descida:</b> vai descendo até encontrar uma rocha que não deixa passar.</li><li><b>Reservatório:</b> ali ela se acumula, formando o aquífero.</li></ul><p>⚠️ Esse caminho é <b>muito lento</b>. A natureza demora bastante para encher o aquífero de novo. Se a bomba tirar água mais rápido do que a chuva repõe, o reservatório vai secando aos poucos.</p>",
+        "content": "<p>A água subterrânea vem da chuva. O caminho é assim:</p><ul><li><b>Chuva:</b> a água cai sobre o solo.</li><li><b>Infiltração:</b> ela entra na terra por pequenos buracos e rachaduras.</li><li><b>Percolação:</b> depois de entrar, ela vai descendo devagar pelo solo e pelas rochas até encontrar uma camada que não deixa a água passar.</li><li><b>Reservatório:</b> ali ela se acumula, formando o aquífero.</li></ul><p>⚠️ Esse caminho é <b>muito lento</b>. A natureza demora bastante para encher o aquífero de novo. Se a bomba tirar água mais rápido do que a chuva repõe, o reservatório vai secando aos poucos.</p>",
         "image": null
       },
       {
         "pageNumber": 3,
         "title": "Quando se bombeia demais",
-        "content": "<p>Tirar água demais traz problemas para a cidade e para a natureza:</p><ul><li><b>A água fica mais funda:</b> o nível baixa e fica mais difícil alcançar.</li><li><b>O chão pode afundar:</b> o espaço vazio que a água deixou faz o terreno ceder.</li><li><b>Água salgada invade:</b> perto do mar, o sal pode estragar a água doce.</li><li><b>Rios e plantas sofrem:</b> muitos rios e árvores dependem dessa água escondida.</li></ul><p>A bomba também gasta <b>energia elétrica</b>. Quanto mais funda está a água, mais energia ela precisa para puxá-la.</p>",
+        "content": "<p>Tirar água demais traz problemas para a cidade e para a natureza:</p><ul><li><b>A água fica mais funda:</b> o nível baixa e fica mais difícil alcançar.</li><li><b>O chão pode afundar:</b> sem a água que ocupava os espaços entre os grãos, as camadas de terra se apertam e o terreno cede.</li><li><b>Água salgada invade:</b> perto do mar, o sal pode estragar a água doce.</li><li><b>Rios e plantas sofrem:</b> muitos rios e árvores dependem dessa água escondida.</li></ul><p>A bomba também gasta <b>energia elétrica</b>. Quanto mais funda está a água, mais energia ela precisa para puxá-la.</p>",
         "image": null
       },
       {
@@ -39,8 +39,34 @@
       }
     ],
     "quiz": {
-      "enabled": false,
-      "questions": []
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Uma cidade tira água do aquífero com a bomba muito mais rápido do que a chuva consegue repor. O que deve acontecer com o tempo?",
+          "options": [
+            "O aquífero enche mais rápido, porque a bomba puxa a chuva",
+            "O nível da água lá embaixo baixa e o aquífero vai secando aos poucos",
+            "Nada muda, porque a água subterrânea nunca acaba",
+            "A água do aquífero vira água de chuva de novo"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A página sobre o caminho da água explica que o aquífero enche muito devagar. Se a bomba tira mais do que a chuva repõe, o nível baixa e o reservatório vai secando."
+        },
+        {
+          "id": 2,
+          "question": "A cidade cobriu de asfalto a área verde onde a chuva entrava na terra. Por que isso é ruim para a bomba de água?",
+          "options": [
+            "Porque o asfalto deixa a água do aquífero salgada",
+            "Porque menos chuva entra no solo, e o aquífero recebe menos água para repor o que a bomba tira",
+            "Porque o asfalto faz a bomba gastar menos energia",
+            "Porque a bomba só funciona embaixo de grama"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Para o aquífero encher, a chuva precisa entrar no solo. Com asfalto, ela escorre pela rua, e sobra menos água para repor o que a bomba tira."
+        }
+      ]
     },
     "relatedBuildings": [
       "well",
@@ -50,6 +76,20 @@
       "hydrological_cycle",
       "groundwater_protection",
       "sustainable_water_management"
+    ],
+    "sources": [
+      {
+        "label": "USGS Water Science School — Aquíferos e água subterrânea",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/aquifers-and-groundwater"
+      },
+      {
+        "label": "USGS Water Science School — Afundamento do terreno",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/land-subsidence"
+      },
+      {
+        "label": "CETESB — Águas subterrâneas",
+        "url": "https://cetesb.sp.gov.br/aguas-subterraneas/"
+      }
     ]
   },
   "rain_garden": {
@@ -92,8 +132,34 @@
       }
     ],
     "quiz": {
-      "enabled": false,
-      "questions": []
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Um bairro cheio de asfalto alaga em toda chuva forte. Como jardins de chuva espalhados pelas ruas ajudariam?",
+          "options": [
+            "Eles fazem parar de chover no bairro",
+            "Eles recebem a água da rua e a deixam entrar no solo, e chega menos água de uma vez aos bueiros",
+            "Eles mandam a água mais rápido para os bueiros",
+            "Eles cobrem a rua com mais asfalto"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A última página explica que, com asfalto, a água corre toda de uma vez para os bueiros. O jardim de chuva segura parte dela e a deixa entrar no solo, então os bueiros enchem menos."
+        },
+        {
+          "id": 2,
+          "question": "Por que a planta de um jardim de chuva precisa aguentar tanto ficar molhada quanto dias secos?",
+          "options": [
+            "Porque o jardim fica encharcado depois da chuva e seco quando passa muito tempo sem chover",
+            "Porque ela vai ser regada com água salgada",
+            "Porque assim ela se espalha e toma o lugar das outras plantas",
+            "Porque o jardim fica escondido embaixo da terra"
+          ],
+          "correctAnswer": 0,
+          "explanation": "A página sobre as plantas diz que a planta certa precisa gostar de ficar molhada depois da chuva e também aguentar os dias secos, porque o jardim passa pelos dois."
+        }
+      ]
     },
     "relatedBuildings": [
       "water_pump",
@@ -104,6 +170,20 @@
       "green_infrastructure",
       "urban_drainage",
       "water_quality"
+    ],
+    "sources": [
+      {
+        "label": "USGS Water Science School — Infiltração e ciclo da água",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/infiltration-and-water-cycle"
+      },
+      {
+        "label": "USGS Water Science School — Escoamento superficial",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/runoff-surface-and-overland-water-runoff"
+      },
+      {
+        "label": "EPA — Infraestrutura verde",
+        "url": "https://www.epa.gov/green-infrastructure"
+      }
     ]
   },
   "floating_garden": {
@@ -129,13 +209,13 @@
       {
         "pageNumber": 2,
         "title": "Plantas que limpam a água",
-        "content": "<p>As plantas limpam a água de várias formas:</p><ul><li><b>Bebem a sujeira:</b> puxam pela raiz restos de adubo e metais.</li><li><b>Quebram a sujeira:</b> transformam alguns poluentes em coisas menos perigosas.</li><li><b>Seguram partículas:</b> as raízes funcionam como uma peneira.</li><li><b>Prendem no fundo:</b> impedem que a sujeira volte a se espalhar.</li></ul><p>Algumas plantas brasileiras boas nisso são o <b>aguapé</b>, a <b>alface-d'água</b> e a <b>elódea</b>, que ainda solta oxigênio na água.</p><p>🔬 Em poucas semanas, as plantas certas já deixam a água bem mais limpa.</p>",
+        "content": "<p>As plantas limpam a água de várias formas:</p><ul><li><b>Bebem a sujeira:</b> puxam pela raiz restos de adubo e metais.</li><li><b>Quebram a sujeira:</b> transformam alguns poluentes em coisas menos perigosas.</li><li><b>Seguram partículas:</b> as raízes funcionam como uma peneira.</li><li><b>Ajudam a assentar:</b> a água fica mais calma entre as raízes, e as partículas afundam em vez de ficar boiando.</li></ul><p>Na plataforma costumam ir plantas de brejo, como a <b>taboa</b>. Plantas que boiam sozinhas, como o <b>aguapé</b> e a <b>alface-d'água</b>, também ajudam a limpar a água.</p><p>🔬 Com o tempo, as plantas certas deixam a água mais limpa. Mas elas não fazem milagre: se a sujeira continua chegando, é preciso cortá-la na origem.</p>",
         "image": null
       },
       {
         "pageNumber": 3,
         "title": "Para que serve na cidade",
-        "content": "<p>Jardins flutuantes ajudam a recuperar lagos, rios e córregos poluídos. Também viram abrigo para peixes e aves.</p><p>Quando a água recebe sujeira demais, como adubo e esgoto, as algas crescem sem parar, cobrem tudo e roubam o oxigênio. Os peixes morrem. As plantas do jardim comem esse excesso, então sobra menos comida para as algas.</p><ul><li>💰 Custa bem menos do que uma estação de tratamento comum.</li><li>⚡ Não precisa de energia elétrica.</li><li>🔧 Dá pouco trabalho para manter.</li><li>♻️ As plantas cortadas viram adubo.</li></ul>",
+        "content": "<p>Jardins flutuantes ajudam a recuperar lagos, rios e córregos poluídos. Também viram abrigo para peixes e aves.</p><p>Quando a água recebe sujeira demais, como adubo e esgoto, as algas crescem sem parar e cobrem a superfície. Quando elas morrem, as bactérias que as decompõem gastam o oxigênio da água, e os peixes morrem. As plantas do jardim comem esse excesso, então sobra menos comida para as algas.</p><ul><li>💰 Custa bem menos do que uma estação de tratamento, mas não a substitui: ajuda a terminar a limpeza.</li><li>⚡ Não precisa de energia elétrica.</li><li>🔧 Dá pouco trabalho para manter.</li><li>♻️ As plantas cortadas viram adubo.</li></ul>",
         "image": "assets/images/studies/lagoa-recuperada.webp"
       },
       {
@@ -146,8 +226,34 @@
       }
     ],
     "quiz": {
-      "enabled": false,
-      "questions": []
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Um lago recebe adubo demais das plantações, as algas cobrem tudo e os peixes começam a morrer. Por que os peixes morrem?",
+          "options": [
+            "Porque as algas comem os peixes",
+            "Porque, quando as algas morrem, as bactérias que as decompõem gastam o oxigênio da água",
+            "Porque o adubo deixa a água gelada",
+            "Porque as algas deixam a água salgada"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A página sobre a cidade explica que, quando as algas morrem, as bactérias que as decompõem gastam o oxigênio. Sem oxigênio, os peixes morrem."
+        },
+        {
+          "id": 2,
+          "question": "Por que é preciso podar e retirar as plantas do jardim flutuante de vez em quando?",
+          "options": [
+            "Para o jardim afundar mais rápido",
+            "Porque elas guardam a sujeira dentro de si e, se morrerem na água, devolvem tudo",
+            "Porque plantas cortadas soltam oxigênio demais",
+            "Porque as plantas param de crescer se ninguém mexer nelas"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A última página avisa que as plantas guardam a sujeira que puxaram. Se morrerem e apodrecerem na água, essa sujeira volta para o lago."
+        }
+      ]
     },
     "relatedBuildings": [
       "rain_garden",
@@ -158,6 +264,16 @@
       "phytoremediation",
       "natural_treatment",
       "wetland_ecology"
+    ],
+    "sources": [
+      {
+        "label": "USGS Water Science School — Oxigênio dissolvido na água",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/dissolved-oxygen-and-water"
+      },
+      {
+        "label": "CETESB — Águas interiores",
+        "url": "https://cetesb.sp.gov.br/aguas-interiores/"
+      }
     ]
   },
   "monitoring_station": {
@@ -177,7 +293,7 @@
       {
         "pageNumber": 1,
         "title": "Uma vigia para a água",
-        "content": "<p>A estação de monitoramento é como um vigia que nunca dorme. Ela fica perto de rios, lagos e reservatórios e confere a água o tempo todo, sozinha.</p><ul><li>🔬 <b>Sensores:</b> medem como está a água.</li><li>📡 <b>Antena:</b> manda as informações na hora para a cidade.</li><li>☀️ <b>Painel solar:</b> dá energia mesmo em lugares sem tomada.</li><li>💾 <b>Memória:</b> guarda tudo caso o sinal caia.</li><li>🤖 <b>Programa esperto:</b> percebe quando algo foge do normal.</li></ul><p>💡 Uma estação moderna descobre uma contaminação em poucos minutos.</p>",
+        "content": "<p>A estação de monitoramento é como um vigia que nunca dorme. Ela fica perto de rios, lagos e reservatórios e confere a água o tempo todo, sozinha.</p><ul><li>🔬 <b>Sensores:</b> medem como está a água.</li><li>📡 <b>Antena:</b> manda as informações na hora para a cidade.</li><li>☀️ <b>Painel solar:</b> dá energia mesmo em lugares sem tomada.</li><li>💾 <b>Memória:</b> guarda tudo caso o sinal caia.</li><li>🤖 <b>Programa esperto:</b> percebe quando algo foge do normal.</li></ul><p>💡 Uma estação moderna percebe em poucos minutos quando a água muda de repente.</p>",
         "image": "assets/images/studies/estacao-monitoramento.webp"
       },
       {
@@ -207,10 +323,10 @@
           "id": 1,
           "question": "A estação mostra que o oxigênio de um rio está caindo depois que começou a chegar esgoto nele. O que melhor explica isso?",
           "options": [
-            "O esgoto deixa a água mais fria, e água fria segura menos oxigênio",
+            "Os peixes fogem do esgoto e levam o oxigênio com eles",
             "Os micróbios que comem a sujeira do esgoto gastam o oxigênio da água",
             "O esgoto deixa a água turva, e a turbidez apaga o sensor de oxigênio",
-            "Os peixes passam a respirar mais rápido quando a água fica suja"
+            "A chuva para de cair quando chega esgoto no rio"
           ],
           "correctAnswer": 1,
           "explanation": "A página sobre como saber se a água está boa explica que os micróbios que comem a sujeira gastam o oxigênio. Por isso, pouco oxigênio é sinal de poluição."
@@ -237,6 +353,20 @@
       "water_quality_parameters",
       "real_time_monitoring",
       "data_analytics"
+    ],
+    "sources": [
+      {
+        "label": "ANA — Qualidade da água",
+        "url": "https://www.gov.br/ana/pt-br/assuntos/monitoramento-e-eventos-criticos/qualidade-da-agua"
+      },
+      {
+        "label": "USGS Water Science School — Oxigênio dissolvido na água",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/dissolved-oxygen-and-water"
+      },
+      {
+        "label": "USGS Water Science School — Turbidez da água",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/turbidity-and-water"
+      }
     ]
   },
   "water_quality_monitor": {
@@ -317,6 +447,20 @@
       "analytical_chemistry",
       "water_legislation",
       "laboratory_quality_assurance"
+    ],
+    "sources": [
+      {
+        "label": "ANA — Qualidade da água",
+        "url": "https://www.gov.br/ana/pt-br/assuntos/monitoramento-e-eventos-criticos/qualidade-da-agua"
+      },
+      {
+        "label": "CETESB — Águas interiores",
+        "url": "https://cetesb.sp.gov.br/aguas-interiores/"
+      },
+      {
+        "label": "OMS — Água potável",
+        "url": "https://www.who.int/news-room/fact-sheets/detail/drinking-water"
+      }
     ]
   },
   "water_well": {
@@ -342,7 +486,7 @@
       {
         "pageNumber": 2,
         "title": "De onde vem a água subterrânea?",
-        "content": "<p>A chuva não some quando cai no chão. Parte dela entra na terra, passa entre grãos de areia e rachaduras e vai descendo, como numa esponja gigante. Lá embaixo, ela se junta em camadas de rocha cheias de buraquinhos: o <b>aquífero</b>.</p><ul><li><b>Aquífero livre:</b> fica mais perto da superfície e recebe a chuva direto. É como um balde aberto.</li><li><b>Aquífero confinado:</b> fica apertado entre duas rochas que não deixam a água passar. É como uma garrafa fechada: quando se fura, a água sobe sozinha!</li></ul><p>🌧️ A água de um poço pode ter caído como chuva há muitíssimo tempo.</p>",
+        "content": "<p>A chuva não some quando cai no chão. Parte dela entra na terra, passa entre grãos de areia e rachaduras e vai descendo, como numa esponja gigante. Lá embaixo, ela se junta em camadas de rocha cheias de buraquinhos: o <b>aquífero</b>.</p><ul><li><b>Aquífero livre:</b> fica mais perto da superfície e recebe a chuva direto. É como um balde aberto.</li><li><b>Aquífero confinado:</b> fica apertado entre duas rochas que não deixam a água passar. É como uma garrafa fechada: quando se fura, a água sobe sozinha pelo tubo, às vezes até jorrar!</li></ul><p>Na verdade, só é artesiano o poço que fura um aquífero confinado. No dia a dia, muita gente chama qualquer poço fundo de artesiano.</p><p>🌧️ A água de um poço pode ter caído como chuva há muitíssimo tempo.</p>",
         "image": null
       },
       {
@@ -359,8 +503,34 @@
       }
     ],
     "quiz": {
-      "enabled": false,
-      "questions": []
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Um poço fura um aquífero confinado, apertado entre duas rochas que não deixam a água passar. O que pode acontecer?",
+          "options": [
+            "A água sobe sozinha pelo tubo, como numa garrafa fechada que é furada",
+            "O poço seca na mesma hora",
+            "A água vira água salgada",
+            "A chuva para de cair na região"
+          ],
+          "correctAnswer": 0,
+          "explanation": "A página sobre a água subterrânea compara o aquífero confinado a uma garrafa fechada: quando se fura, a água sobe sozinha. É esse poço que é artesiano de verdade."
+        },
+        {
+          "id": 2,
+          "question": "Uma família quer abrir um poço ao lado de um lixão sem proteção. Por que essa não é uma boa ideia?",
+          "options": [
+            "Porque o lixão deixa a água mais quente",
+            "Porque o que suja o solo desce com a chuva e pode contaminar a água subterrânea",
+            "Porque o lixão tampa o aquífero",
+            "Porque perto de lixão não chove"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A última página explica que a água lá de baixo pode ser contaminada pelo que acontece em cima: o que suja o solo desce junto com a chuva."
+        }
+      ]
     },
     "relatedBuildings": [
       "water_pump",
@@ -371,6 +541,20 @@
       "groundwater",
       "aquifer_guarani",
       "water_infiltration"
+    ],
+    "sources": [
+      {
+        "label": "USGS Water Science School — Água e poços artesianos",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/artesian-water-and-artesian-wells"
+      },
+      {
+        "label": "USGS Water Science School — Aquíferos e água subterrânea",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/aquifers-and-groundwater"
+      },
+      {
+        "label": "CETESB — Águas subterrâneas",
+        "url": "https://cetesb.sp.gov.br/aguas-subterraneas/"
+      }
     ]
   },
   "filter_station": {
@@ -408,7 +592,7 @@
       {
         "pageNumber": 4,
         "title": "Membranas: os filtros do futuro",
-        "content": "<p>As <b>membranas</b> são como peneiras com furinhos tão pequenos que nem dá para ver no microscópio comum.</p><ul><li>🔵 Furos maiores: seguram bactérias e partículas.</li><li>🟢 Furos menores: seguram até vírus.</li><li>🔴 Furos mínimos: seguram quase tudo, até o <b>sal</b>!</li></ul><p>Quanto menor o furo, mais limpa sai a água, mas também é preciso mais força, e mais energia, para empurrar a água pela membrana.</p><p>🌍 Alguns países já transformam esgoto tratado em água de beber com membranas. No sertão do Brasil, elas tiram o sal da água de poços.</p><p>✅ Agora teste seus conhecimentos!</p>",
+        "content": "<p>As <b>membranas</b> são como peneiras com furinhos tão pequenos que, nos mais finos, só dá para ver com microscópios muito potentes.</p><ul><li>🔵 Furos maiores: seguram bactérias e partículas.</li><li>🟢 Furos menores: seguram até vírus.</li><li>🔴 Furos mínimos: seguram quase tudo, até o <b>sal</b>!</li></ul><p>Quanto menor o furo, mais limpa sai a água, mas também é preciso mais força, e mais energia, para empurrar a água pela membrana.</p><p>🌍 Alguns países já transformam esgoto tratado em água de beber com membranas. No sertão do Brasil, elas tiram o sal da água de poços.</p><p>✅ Agora teste seus conhecimentos!</p>",
         "image": null
       }
     ],
@@ -430,15 +614,15 @@
         },
         {
           "id": 2,
-          "question": "A água de uma cidade sai do tratamento com gosto de cloro e um pouco de agrotóxico dissolvido. Qual etapa faltou?",
+          "question": "A água de um poço está transparente, mas tem cheiro ruim e um pouco de agrotóxico dissolvido. Qual filtro do texto ajuda mais?",
           "options": [
-            "Passar a água pelo carvão ativado, que prende essas impurezas",
-            "Colocar uma camada de pedras grossas no começo do filtro",
-            "Deixar a água parada mais tempo antes de distribuir",
-            "Lavar o filtro rápido jogando água ao contrário"
+            "O carvão ativado, que prende cheiros e agrotóxicos dissolvidos",
+            "Uma camada de pedras grossas, que segura a sujeira grande",
+            "Um filtro rápido de areia, lavado com água ao contrário",
+            "Deixar a água parada num balde por mais tempo"
           ],
           "correctAnswer": 0,
-          "explanation": "A página do carvão ativado mostra que ele tira o gosto de cloro e prende agrotóxicos dissolvidos. As pedras e a areia seguram sujeira sólida, não o que está dissolvido."
+          "explanation": "A página do carvão ativado mostra que ele tira cheiros ruins e prende agrotóxicos dissolvidos. Pedras e areia seguram sujeira sólida, e essa água já está transparente."
         }
       ]
     },
@@ -451,6 +635,20 @@
       "water_filtration",
       "activated_carbon",
       "membrane_technology"
+    ],
+    "sources": [
+      {
+        "label": "SABESP — Página principal",
+        "url": "https://www.sabesp.com.br"
+      },
+      {
+        "label": "OMS — Água potável",
+        "url": "https://www.who.int/news-room/fact-sheets/detail/drinking-water"
+      },
+      {
+        "label": "MIDR — Programa Água Doce",
+        "url": "https://www.gov.br/mdr/pt-br/assuntos/seguranca-hidrica/programa-agua-doce"
+      }
     ]
   },
   "treatment_plant": {
@@ -531,6 +729,20 @@
       "water_treatment",
       "public_health",
       "coagulation_flocculation"
+    ],
+    "sources": [
+      {
+        "label": "SABESP — Página principal",
+        "url": "https://www.sabesp.com.br"
+      },
+      {
+        "label": "Instituto Trata Brasil — Saneamento e saúde",
+        "url": "https://tratabrasil.org.br/saneamento-e-saude/"
+      },
+      {
+        "label": "OMS — Água potável",
+        "url": "https://www.who.int/news-room/fact-sheets/detail/drinking-water"
+      }
     ]
   },
   "water_tank": {
@@ -556,13 +768,13 @@
       {
         "pageNumber": 2,
         "title": "A ajuda da gravidade",
-        "content": "<p>A água sempre desce. Os engenheiros aproveitam essa força da natureza, a <b>gravidade</b>, para gastar menos energia.</p><ul><li>Bombas levam a água até um reservatório alto.</li><li>Lá em cima, ela fica guardada.</li><li>Quando você abre a torneira, a gravidade faz a água descer pelos canos até a sua casa.</li></ul><p>Quanto mais alto o reservatório, mais forte a água sai na torneira.</p><p><b>Vantagens:</b> as bombas não precisam ficar ligadas o tempo todo, a água continua chegando mesmo se faltar luz (até o tanque esvaziar) e a cidade gasta menos com máquinas.</p><p><b>Teste em casa:</b> fure a tampa de uma garrafa cheia e segure-a de cabeça para baixo. A água sai sozinha!</p>",
+        "content": "<p>A água sempre desce. Os engenheiros aproveitam essa força da natureza, a <b>gravidade</b>, para gastar menos energia.</p><ul><li>Bombas levam a água até um reservatório alto.</li><li>Lá em cima, ela fica guardada.</li><li>Quando você abre a torneira, a gravidade faz a água descer pelos canos até a sua casa.</li></ul><p>Quanto mais alto o reservatório, mais forte a água sai na torneira.</p><p><b>Vantagens:</b> as bombas não precisam ficar ligadas o tempo todo, a água continua chegando mesmo se faltar luz (até o tanque esvaziar) e a cidade gasta menos com máquinas.</p><p><b>Teste em casa, com um adulto:</b> faça um furinho na lateral de uma garrafa, perto do fundo, e encha de água sobre a pia. Com a garrafa cheia, o jato sai forte; conforme o nível desce, ele enfraquece. Quanto mais água em cima, mais força!</p>",
         "image": null
       },
       {
         "pageNumber": 3,
         "title": "Pronto para emergências",
-        "content": "<p>Os reservatórios não servem só para o dia a dia. Eles salvam a cidade quando algo dá errado:</p><ul><li><b>Falta de luz:</b> a bomba para, mas a água guardada continua descendo.</li><li><b>Conserto de canos:</b> o abastecimento continua enquanto a equipe trabalha.</li><li><b>Incêndios:</b> os bombeiros precisam de muita água de uma vez.</li><li><b>Seca:</b> a reserva ajuda a água durar mais tempo.</li><li><b>Enchentes:</b> se a captação no rio fica ruim, a reserva segura a cidade por um tempo.</li></ul><p>Por isso as cidades guardam água suficiente para um ou dois dias de uso normal. Na seca, economizar água ajuda a reserva não acabar.</p>",
+        "content": "<p>Os reservatórios não servem só para o dia a dia. Eles salvam a cidade quando algo dá errado:</p><ul><li><b>Falta de luz:</b> a bomba para, mas a água guardada continua descendo.</li><li><b>Conserto de canos:</b> o abastecimento continua enquanto a equipe trabalha.</li><li><b>Incêndios:</b> os bombeiros precisam de muita água de uma vez.</li><li><b>Seca:</b> a reserva dá um fôlego a mais, mas não cria água nova. Quem segura a cidade na seca são as represas e a economia de todos.</li><li><b>Enchentes:</b> se a captação no rio fica ruim, a reserva segura a cidade por um tempo.</li></ul><p>Os reservatórios da cidade costumam guardar água para algumas horas de uso, e a caixa d'água de casa, para cerca de um dia. Na seca, economizar água ajuda a reserva não acabar.</p>",
         "image": null
       },
       {
@@ -573,8 +785,34 @@
       }
     ],
     "quiz": {
-      "enabled": false,
-      "questions": []
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Faltou luz na cidade e as bombas pararam. Por que muitas casas continuam recebendo água por um tempo?",
+          "options": [
+            "Porque os canos guardam eletricidade",
+            "Porque a água guardada no reservatório alto continua descendo pela gravidade",
+            "Porque a estação de tratamento passa a funcionar com a chuva",
+            "Porque as torneiras têm motor próprio"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A página da gravidade e a das emergências explicam que, sem luz, a bomba para, mas a água guardada no alto continua descendo até o tanque esvaziar."
+        },
+        {
+          "id": 2,
+          "question": "Onde é melhor construir um reservatório para a água chegar com força e limpa às casas?",
+          "options": [
+            "Num lugar baixo, no fundo de um vale",
+            "Num lugar alto, ligado à rede e longe da poluição",
+            "Ao lado de uma fábrica que solta poluição",
+            "Longe de qualquer cano da cidade"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A última página diz que o lugar alto aproveita a gravidade, a ligação com a rede leva a água às casas e ficar longe da poluição mantém a água limpa."
+        }
+      ]
     },
     "relatedBuildings": [
       "water_tower",
@@ -585,6 +823,16 @@
       "water_storage",
       "gravity_distribution",
       "emergency_supply"
+    ],
+    "sources": [
+      {
+        "label": "SABESP — Página principal",
+        "url": "https://www.sabesp.com.br"
+      },
+      {
+        "label": "ANA — Saneamento básico",
+        "url": "https://www.gov.br/ana/pt-br/assuntos/saneamento-basico"
+      }
     ]
   },
   "water_tower": {
@@ -604,13 +852,13 @@
       {
         "pageNumber": 1,
         "title": "Guardiãs nas alturas",
-        "content": "<p>Caixas d'água e torres d'água guardam água no alto e usam a <b>gravidade</b> para levá-la até as torneiras.</p><ul><li><b>Caixa d'água:</b> fica no telhado de uma casa ou prédio.</li><li><b>Torre d'água:</b> uma estrutura bem alta que abastece um bairro inteiro.</li></ul><p>Elas podem ser feitas de plástico (leve e barato, comum nas casas), fibra de vidro (não enferruja), concreto (para as torres grandes) ou aço.</p><p><b>Curiosidade:</b> a torre d'água também é chamada de <b>castelo d'água</b>, porque as primeiras torres tinham jeito de castelo!</p>",
+        "content": "<p>Caixas d'água e torres d'água guardam água no alto e usam a <b>gravidade</b> para levá-la até as torneiras.</p><ul><li><b>Caixa d'água:</b> fica no telhado de uma casa ou prédio.</li><li><b>Torre d'água:</b> uma estrutura bem alta que abastece um bairro inteiro.</li></ul><p>Elas podem ser feitas de plástico (leve e barato, comum nas casas), fibra de vidro (não enferruja), concreto (para as torres grandes) ou aço.</p><p><b>Curiosidade:</b> a torre d'água também é chamada de <b>castelo d'água</b>. O nome vem dos romanos antigos, que chamavam de castelo o tanque onde a água dos aquedutos era guardada e repartida.</p>",
         "image": "assets/images/studies/caixa-dagua.webp"
       },
       {
         "pageNumber": 2,
         "title": "Como a gravidade faz a mágica",
-        "content": "<p>Como a água sai da torneira sem motor? É mais simples do que parece:</p><ul><li>Uma bomba leva a água até a caixa, lá em cima.</li><li>A água fica guardada, parada.</li><li>Quando você abre a torneira, a gravidade puxa a água para baixo.</li></ul><p><b>Quanto mais alta a caixa, mais forte a água sai.</b> Por isso:</p><ul><li>uma casa térrea tem a água mais fraquinha;</li><li>um prédio alto já tem uma pressão boa;</li><li>uma torre d'água bem alta dá pressão excelente.</li></ul><p><b>Dica:</b> chuveiro fraco pode ser sinal de que a caixa está pouco acima do banheiro.</p>",
+        "content": "<p>Como a água sai da torneira sem motor? É mais simples do que parece:</p><ul><li>Uma bomba leva a água até a caixa, lá em cima.</li><li>A água fica guardada, parada.</li><li>Quando você abre a torneira, a gravidade puxa a água para baixo.</li></ul><p><b>Quanto mais alta a caixa, mais forte a água sai.</b> Por isso:</p><ul><li>numa casa térrea, a caixa fica pouco acima das torneiras, e a água sai mais fraquinha;</li><li>num prédio, nos andares de baixo a água sai forte, porque a caixa está bem acima; no último andar, logo abaixo da caixa, ela sai mais fraca;</li><li>uma torre d'água bem alta dá boa pressão para o bairro todo.</li></ul><p><b>Dica:</b> chuveiro fraco pode ser sinal de que a caixa está pouco acima do banheiro.</p>",
         "image": null
       },
       {
@@ -627,8 +875,34 @@
       }
     ],
     "quiz": {
-      "enabled": false,
-      "questions": []
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Num prédio, a caixa d'água fica no telhado. Em qual andar a água do chuveiro costuma sair mais fraca?",
+          "options": [
+            "No térreo, bem abaixo da caixa",
+            "No último andar, logo abaixo da caixa",
+            "Sai igual em todos os andares",
+            "Na garagem, embaixo do térreo"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Quanto mais alta a caixa fica em relação à torneira, mais forte a água sai. No último andar a caixa está logo acima, então a água sai mais fraca."
+        },
+        {
+          "id": 2,
+          "question": "Por que a tampa da caixa d'água deve ficar sempre fechada?",
+          "options": [
+            "Para a água esquentar mais rápido",
+            "Para não entrarem insetos e sujeira, e o mosquito da dengue não achar água parada",
+            "Para a gravidade conseguir funcionar",
+            "Para a água não sair pelas torneiras"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A página sobre limpeza explica que a tampa fechada impede a entrada de insetos e sujeira e não deixa o mosquito da dengue achar água parada."
+        }
+      ]
     },
     "relatedBuildings": [
       "water_tank",
@@ -639,6 +913,16 @@
       "water_pressure",
       "gravity_distribution",
       "water_maintenance"
+    ],
+    "sources": [
+      {
+        "label": "SABESP — Página principal",
+        "url": "https://www.sabesp.com.br"
+      },
+      {
+        "label": "Ministério da Saúde — Página principal",
+        "url": "https://www.gov.br/saude/pt-br"
+      }
     ]
   },
   "research_center": {
@@ -664,7 +948,7 @@
       {
         "pageNumber": 2,
         "title": "Invenções que ajudam",
-        "content": "<p>Cientistas do Brasil e do mundo criam ideias incríveis:</p><ul><li><b>Água do mar com a força do sol:</b> o calor do sol separa o sal da água.</li><li><b>Bactérias faxineiras:</b> pequenos seres que “comem” a poluição.</li><li><b>Teste no celular:</b> a câmera ajuda a ver se a água está boa.</li><li><b>Copiar a natureza:</b> filtros inspirados em plantas e animais.</li><li><b>Redes de neblina:</b> capturam as gotinhas do nevoeiro e viram água.</li></ul><p>Um exemplo brasileiro: um filtro <b>baratinho</b>, feito com sementes de uma planta, que deixa a água turva limpa. Ele ajuda comunidades pobres, longe das cidades, que não têm estação de tratamento.</p>",
+        "content": "<p>Cientistas do Brasil e do mundo criam ideias incríveis:</p><ul><li><b>Água do mar com a força do sol:</b> o calor do sol separa o sal da água.</li><li><b>Bactérias faxineiras:</b> pequenos seres que “comem” a poluição.</li><li><b>Teste no celular:</b> a câmera ajuda a ver se a água está boa.</li><li><b>Copiar a natureza:</b> filtros inspirados em plantas e animais.</li><li><b>Redes de neblina:</b> capturam as gotinhas do nevoeiro e viram água.</li></ul><p>Um exemplo brasileiro: um filtro <b>baratinho</b>, feito com sementes de uma planta, que faz a sujeira da água turva grudar e afundar, deixando a água bem mais clara. Depois, ainda é preciso ferver ou desinfetar a água para matar os germes. Ele ajuda comunidades pobres, longe das cidades, que não têm estação de tratamento.</p>",
         "image": null
       },
       {
@@ -702,11 +986,11 @@
           "options": [
             "Uma grande estação de tratamento cheia de máquinas caras",
             "Robôs que vigiam rios no mundo inteiro",
-            "Um filtro barato feito com sementes de uma planta que limpa a água turva",
+            "Um filtro barato feito com sementes de uma planta, que deixa a água turva mais clara",
             "Redes de neblina, mesmo onde quase nunca há nevoeiro"
           ],
           "correctAnswer": 2,
-          "explanation": "O texto conta que o filtro de sementes é baratinho, limpa água turva e ajuda comunidades pobres sem estação de tratamento."
+          "explanation": "O texto conta que o filtro de sementes é baratinho, deixa a água turva mais clara e ajuda comunidades pobres sem estação de tratamento. Depois dele, a água ainda precisa ser fervida ou desinfetada."
         }
       ]
     },
@@ -719,6 +1003,20 @@
       "scientific_method",
       "water_technology",
       "citizen_science"
+    ],
+    "sources": [
+      {
+        "label": "ANA — Monitoramento e eventos críticos",
+        "url": "https://www.gov.br/ana/pt-br/assuntos/monitoramento-e-eventos-criticos"
+      },
+      {
+        "label": "Embrapa — Página principal",
+        "url": "https://www.embrapa.br"
+      },
+      {
+        "label": "MCTI — Ciência, Tecnologia e Inovação",
+        "url": "https://www.gov.br/mcti/pt-br"
+      }
     ]
   },
   "university": {
@@ -800,6 +1098,16 @@
       "higher_education",
       "water_careers",
       "sustainable_development_goals"
+    ],
+    "sources": [
+      {
+        "label": "ANA — Panorama das águas",
+        "url": "https://www.gov.br/ana/pt-br/assuntos/gestao-das-aguas/panorama-das-aguas"
+      },
+      {
+        "label": "MCTI — Ciência, Tecnologia e Inovação",
+        "url": "https://www.gov.br/mcti/pt-br"
+      }
     ]
   },
   "water_research_center": {
@@ -831,7 +1139,7 @@
       {
         "pageNumber": 3,
         "title": "Tecnologias de tratamento",
-        "content": "<p>Os pesquisadores criam jeitos cada vez melhores de limpar a água:</p><ul><li><b>Membranas superfinas:</b> funcionam como uma peneira com furinhos tão pequenos que até germes ficam presos.</li><li><b>Luz especial:</b> uma luz parecida com a do sol, mas mais forte, mata germes sem usar produtos químicos.</li><li><b>Limpeza natural:</b> plantas e pequenos seres vivos limpam a água sozinhos.</li><li><b>Partículas minúsculas:</b> pegam a poluição como se fossem ímãs.</li></ul><p><b>Você sabia?</b> Na estação espacial, os astronautas transformam até o próprio xixi em água de beber, usando filtros muito avançados!</p>",
+        "content": "<p>Os pesquisadores criam jeitos cada vez melhores de limpar a água:</p><ul><li><b>Membranas superfinas:</b> funcionam como uma peneira com furinhos tão pequenos que até germes ficam presos.</li><li><b>Luz especial:</b> um tipo de luz invisível, que também vem do sol; bem forte, ela mata germes sem usar produtos químicos.</li><li><b>Limpeza natural:</b> plantas e pequenos seres vivos limpam a água sozinhos.</li><li><b>Partículas minúsculas:</b> pegam a poluição como se fossem ímãs.</li></ul><p><b>Você sabia?</b> Na estação espacial, os astronautas transformam até o próprio xixi em água de beber, usando filtros muito avançados!</p>",
         "image": null
       },
       {
@@ -879,6 +1187,16 @@
       "water_quality",
       "water_treatment_technology",
       "scientific_research"
+    ],
+    "sources": [
+      {
+        "label": "ANA — Panorama das águas",
+        "url": "https://www.gov.br/ana/pt-br/assuntos/gestao-das-aguas/panorama-das-aguas"
+      },
+      {
+        "label": "USGS Water Science School — Oxigênio dissolvido na água",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/dissolved-oxygen-and-water"
+      }
     ]
   },
   "linear_park": {
@@ -921,9 +1239,34 @@
       }
     ],
     "quiz": {
-      "enabled": false,
+      "enabled": true,
       "passingScore": 50,
-      "questions": []
+      "questions": [
+        {
+          "id": 1,
+          "question": "Numa chuva forte, por que um bairro com parque linear na beira do rio alaga menos?",
+          "options": [
+            "Porque o parque faz o rio correr para trás",
+            "Porque o rio pode transbordar sobre o gramado do parque, e não sobre ruas e casas",
+            "Porque as ciclovias puxam a água para dentro dos canos",
+            "Porque o parque impede a chuva de cair"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A página sobre como o parque protege a água diz que, na chuva forte, o rio transborda sobre o gramado, e não sobre ruas e casas. A terra sem asfalto ainda absorve parte da chuva."
+        },
+        {
+          "id": 2,
+          "question": "Uma cidade tirou as árvores da beira de um córrego e construiu casas coladas na água. O que costuma acontecer?",
+          "options": [
+            "O córrego fica mais limpo",
+            "Os barrancos desmoronam, o rio enche de lama e aumentam as enchentes e a sujeira",
+            "Os peixes passam a ter mais comida",
+            "Nada muda, porque as árvores não têm relação com o rio"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O texto explica que as raízes seguram o barranco e a vegetação filtra a sujeira. Sem elas, e com casas coladas no rio, o resultado costuma ser enchente e água suja."
+        }
+      ]
     },
     "relatedBuildings": [
       "park",
@@ -934,6 +1277,20 @@
       "riparian_protection",
       "flood_prevention",
       "urban_green_spaces"
+    ],
+    "sources": [
+      {
+        "label": "Planalto — Código Florestal (proteção da vegetação nativa)",
+        "url": "https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2012/lei/l12651.htm"
+      },
+      {
+        "label": "USGS Water Science School — Escoamento superficial",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/runoff-surface-and-overland-water-runoff"
+      },
+      {
+        "label": "USGS Water Science School — Infiltração e ciclo da água",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/infiltration-and-water-cycle"
+      }
     ]
   },
   "green_wall": {
@@ -953,7 +1310,7 @@
       {
         "pageNumber": 1,
         "title": "O que é um Muro Verde?",
-        "content": "<p>Um muro verde, ou <b>jardim vertical</b>, é uma parede coberta de plantas vivas. Em vez de concreto cinza, imagine uma parede inteira cheia de folhas e flores!</p><p>Como ele funciona:</p><ul><li><b>Suporte:</b> uma grade ou painel preso na parede.</li><li><b>Lugar para as raízes:</b> vasos, fibra de coco ou um tipo de tecido.</li><li><b>Rega:</b> pequenos canos que pingam água em cada planta.</li><li><b>Plantas resistentes</b>, que gostam de crescer na vertical.</li></ul><p>Existem muros verdes enormes pelo mundo, do tamanho de um campo de futebol!</p>",
+        "content": "<p>Um muro verde, ou <b>jardim vertical</b>, é uma parede coberta de plantas vivas. Em vez de concreto cinza, imagine uma parede inteira cheia de folhas e flores!</p><p>Como ele funciona:</p><ul><li><b>Suporte:</b> uma grade ou painel preso na parede.</li><li><b>Lugar para as raízes:</b> vasos, fibra de coco ou um tipo de tecido.</li><li><b>Rega:</b> pequenos canos que pingam água em cada planta.</li><li><b>Plantas resistentes</b>, que gostam de crescer na vertical.</li></ul><p>Existem muros verdes enormes pelo mundo, que cobrem prédios inteiros!</p>",
         "image": "assets/images/studies/muro-verde.webp"
       },
       {
@@ -1014,6 +1371,16 @@
       "urban_heat_island",
       "vertical_gardens",
       "green_infrastructure"
+    ],
+    "sources": [
+      {
+        "label": "EPA — Infraestrutura verde",
+        "url": "https://www.epa.gov/green-infrastructure"
+      },
+      {
+        "label": "USGS Water Science School — Escoamento superficial",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/runoff-surface-and-overland-water-runoff"
+      }
     ]
   },
   "green_roof": {
@@ -1094,6 +1461,16 @@
       "urban_heat_island",
       "stormwater_management",
       "green_infrastructure"
+    ],
+    "sources": [
+      {
+        "label": "EPA — Telhados verdes contra ilhas de calor",
+        "url": "https://www.epa.gov/heatislands/using-green-roofs-reduce-heat-islands"
+      },
+      {
+        "label": "USGS Water Science School — Escoamento superficial",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/runoff-surface-and-overland-water-runoff"
+      }
     ]
   },
   "wind_farm": {
@@ -1173,6 +1550,16 @@
       "renewable_energy",
       "wind_power",
       "clean_energy"
+    ],
+    "sources": [
+      {
+        "label": "EPE — Fontes de energia",
+        "url": "https://www.epe.gov.br/pt/abcdenergia/fontes-de-energia"
+      },
+      {
+        "label": "CRESESB/CEPEL — Energia solar e eólica",
+        "url": "https://cresesb.cepel.br"
+      }
     ]
   },
   "solar_farm": {
@@ -1252,6 +1639,16 @@
       "renewable_energy",
       "solar_power",
       "photovoltaic_technology"
+    ],
+    "sources": [
+      {
+        "label": "EPE — Fontes de energia",
+        "url": "https://www.epe.gov.br/pt/abcdenergia/fontes-de-energia"
+      },
+      {
+        "label": "CRESESB/CEPEL — Energia solar e eólica",
+        "url": "https://cresesb.cepel.br"
+      }
     ]
   },
   "hydroelectric_plant": {
@@ -1277,7 +1674,7 @@
       {
         "pageNumber": 2,
         "title": "O Outro Lado da Moeda",
-        "content": "<p>A água não acaba, mas as grandes usinas causam <b>impactos fortes</b>:</p><ul><li><b>Áreas alagadas:</b> o lago cobre florestas, plantações, cachoeiras e até cidades.</li><li><b>Pessoas deslocadas:</b> comunidades da beira do rio e povos indígenas perdem suas terras.</li><li><b>Peixes presos:</b> a barragem bloqueia o caminho dos peixes rio acima.</li><li><b>Gases:</b> as plantas que ficam debaixo d'água apodrecem e soltam gases que esquentam o planeta.</li><li><b>Rio diferente:</b> abaixo da barragem, o rio passa a correr de outro jeito.</li></ul><p>Por isso, construir uma grande usina sempre gera muito debate.</p>",
+        "content": "<p>A água do rio se renova com a chuva, mas as grandes usinas causam <b>impactos fortes</b>:</p><ul><li><b>Áreas alagadas:</b> o lago cobre florestas, plantações, cachoeiras e até cidades.</li><li><b>Pessoas deslocadas:</b> comunidades da beira do rio e povos indígenas perdem suas terras.</li><li><b>Peixes presos:</b> a barragem bloqueia o caminho dos peixes rio acima.</li><li><b>Gases:</b> as plantas que ficam debaixo d'água apodrecem e soltam gases que esquentam o planeta.</li><li><b>Rio diferente:</b> abaixo da barragem, o rio passa a correr de outro jeito.</li></ul><p>Por isso, construir uma grande usina sempre gera muito debate.</p>",
         "image": null
       },
       {
@@ -1332,6 +1729,16 @@
       "hydroelectric_power",
       "water_energy_nexus",
       "renewable_energy"
+    ],
+    "sources": [
+      {
+        "label": "USGS Water Science School — Como funciona a hidrelétrica",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/hydroelectric-power-how-it-works"
+      },
+      {
+        "label": "EPE — Matriz energética e elétrica",
+        "url": "https://www.epe.gov.br/pt/abcdenergia/matriz-energetica-e-eletrica"
+      }
     ]
   },
   "recycling_point": {
@@ -1412,6 +1819,16 @@
       "selective_collection",
       "solid_waste",
       "urban_drainage"
+    ],
+    "sources": [
+      {
+        "label": "Planalto — Política Nacional de Resíduos Sólidos",
+        "url": "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2010/lei/l12305.htm"
+      },
+      {
+        "label": "CETESB — Resíduos sólidos",
+        "url": "https://cetesb.sp.gov.br/residuos-solidos/"
+      }
     ]
   },
   "recycling_coop": {
@@ -1492,6 +1909,16 @@
       "recycling",
       "circular_economy",
       "social_inclusion"
+    ],
+    "sources": [
+      {
+        "label": "Planalto — Política Nacional de Resíduos Sólidos",
+        "url": "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2010/lei/l12305.htm"
+      },
+      {
+        "label": "MMA — Ministério do Meio Ambiente",
+        "url": "https://www.gov.br/mma/pt-br"
+      }
     ]
   },
   "landfill": {
@@ -1572,6 +1999,20 @@
       "leachate",
       "groundwater_protection",
       "solid_waste"
+    ],
+    "sources": [
+      {
+        "label": "Planalto — Política Nacional de Resíduos Sólidos",
+        "url": "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2010/lei/l12305.htm"
+      },
+      {
+        "label": "CETESB — Resíduos sólidos",
+        "url": "https://cetesb.sp.gov.br/residuos-solidos/"
+      },
+      {
+        "label": "USGS Water Science School — Qualidade da água subterrânea",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/groundwater-quality"
+      }
     ]
   },
   "composting_yard": {
@@ -1591,7 +2032,7 @@
       {
         "pageNumber": 1,
         "title": "Lixo que volta para a terra",
-        "content": "<p>Casca de banana, borra de café, folhas secas e galhos de poda. Tudo isso é <b>lixo orgânico</b>: coisas que vieram da natureza e podem voltar para ela.</p><p>No pátio de compostagem, esses restos são juntados em montes compridos chamados <b>leiras</b>. Com o tempo, eles se transformam em <b>composto</b>, um adubo escuro e cheiroso como terra de mata.</p><p>💡 Sabia que <b>metade do lixo de casa</b> é orgânico? É muita coisa que poderia virar adubo em vez de ir para o aterro!</p>",
+        "content": "<p>Casca de banana, borra de café, folhas secas e galhos de poda. Tudo isso é <b>lixo orgânico</b>: coisas que vieram da natureza e podem voltar para ela.</p><p>No pátio de compostagem, esses restos são juntados em montes compridos chamados <b>leiras</b>. Com o tempo, eles se transformam em <b>composto</b>, um adubo escuro e cheiroso como terra de mata.</p><p>💡 Sabia que <b>cerca de metade do lixo de casa</b> é orgânico? É muita coisa que poderia virar adubo em vez de ir para o aterro!</p>",
         "image": "assets/images/studies/patio-compostagem.webp"
       },
       {
@@ -1603,7 +2044,7 @@
       {
         "pageNumber": 3,
         "title": "Por que é bom para a água",
-        "content": "<p>Lembra do <b>chorume</b>, aquele líquido escuro do lixo podre? A maior parte dele vem justamente dos <b>restos de comida</b> misturados com o resto do lixo.</p><ul><li>🗑️ Menos orgânico no aterro, <b>menos chorume</b> ameaçando a água debaixo da terra.</li><li>🚛 Menos caminhões levando lixo para longe.</li><li>🌍 Menos gás que esquenta o planeta.</li></ul><p>E o adubo ainda deixa o solo mais fofo, o que ajuda a <b>chuva a entrar na terra</b> em vez de escorrer.</p>",
+        "content": "<p>Lembra do <b>chorume</b>, aquele líquido escuro do lixo podre? Boa parte dele vem justamente dos <b>restos de comida</b> misturados com o resto do lixo: eles têm muita água e apodrecem rápido.</p><ul><li>🗑️ Menos orgânico no aterro, <b>menos chorume</b> ameaçando a água debaixo da terra.</li><li>🚛 Menos caminhões levando lixo para longe.</li><li>🌍 Menos gás que esquenta o planeta.</li></ul><p>E o adubo ainda deixa o solo mais fofo, o que ajuda a <b>chuva a entrar na terra</b> em vez de escorrer.</p>",
         "image": null
       },
       {
@@ -1622,24 +2063,24 @@
           "question": "Uma cidade passou a mandar todos os restos de comida para o pátio de compostagem em vez do aterro. O que deve acontecer no aterro?",
           "options": [
             "Vai sair mais chorume, porque o aterro fica vazio",
-            "Vai sair menos chorume, porque a maior parte dele vem dos restos de comida",
+            "Vai sair menos chorume, porque boa parte dele vem dos restos de comida",
             "O aterro vai começar a produzir adubo",
             "Nada muda no aterro"
           ],
           "correctAnswer": 1,
-          "explanation": "O texto explica que a maior parte do chorume vem dos restos de comida, então tirar o orgânico do aterro diminui o chorume."
+          "explanation": "O texto explica que boa parte do chorume vem dos restos de comida, que têm muita água e apodrecem rápido. Tirar o orgânico do aterro diminui o chorume."
         },
         {
           "id": 2,
-          "question": "O monte de compostagem ficou fedido e cheio de moscas. O que provavelmente foi colocado nele?",
+          "question": "Alguém jogou restos de carne e óleo de fritura no monte de compostagem. O que deve acontecer?",
           "options": [
-            "Folhas secas e serragem",
-            "Cascas de frutas e verduras",
-            "Carne e óleo",
-            "Galhos de poda"
+            "O monte vira adubo mais rápido",
+            "O monte atrai bichos e fica com cheiro ruim",
+            "O monte fica seco demais",
+            "Nada, porque tudo que é comida pode entrar"
           ],
-          "correctAnswer": 2,
-          "explanation": "A página sobre quem faz o trabalho avisa que carne, óleo e fezes de animais não entram, porque atraem bichos e dão cheiro ruim."
+          "correctAnswer": 1,
+          "explanation": "A página sobre quem faz o trabalho avisa que carne, óleo e fezes de animais não entram no monte, porque atraem bichos e dão cheiro ruim."
         }
       ]
     },
@@ -1652,6 +2093,16 @@
       "composting",
       "organic_waste",
       "soil_health"
+    ],
+    "sources": [
+      {
+        "label": "CETESB — Resíduos sólidos",
+        "url": "https://cetesb.sp.gov.br/residuos-solidos/"
+      },
+      {
+        "label": "Planalto — Política Nacional de Resíduos Sólidos",
+        "url": "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2010/lei/l12305.htm"
+      }
     ]
   },
   "biodigester": {
@@ -1732,6 +2183,16 @@
       "biogas",
       "anaerobic_digestion",
       "renewable_energy"
+    ],
+    "sources": [
+      {
+        "label": "CETESB — Biogás",
+        "url": "https://cetesb.sp.gov.br/biogas/"
+      },
+      {
+        "label": "Embrapa — Página principal",
+        "url": "https://www.embrapa.br"
+      }
     ]
   },
   "ecopark": {
@@ -1813,6 +2274,16 @@
       "circular_economy",
       "zero_waste",
       "waste_technology"
+    ],
+    "sources": [
+      {
+        "label": "Planalto — Política Nacional de Resíduos Sólidos",
+        "url": "https://www.planalto.gov.br/ccivil_03/_ato2007-2010/2010/lei/l12305.htm"
+      },
+      {
+        "label": "CETESB — Resíduos sólidos",
+        "url": "https://cetesb.sp.gov.br/residuos-solidos/"
+      }
     ]
   },
   "sugarcane_mill": {
@@ -1844,13 +2315,13 @@
       {
         "pageNumber": 3,
         "title": "Os cuidados com a água",
-        "content": "<p>A usina também traz desafios, e muitos têm a ver com a água:</p><ul><li>💧 <b>Usa muita água</b> para lavar a cana e esfriar as máquinas. Usinas modernas reaproveitam boa parte dela.</li><li>🟤 Fazer etanol deixa um líquido escuro chamado <b>vinhaça</b>. Se cair no rio, os peixes morrem por falta de ar na água.</li><li>🌱 Bem usada, a vinhaça vira <b>adubo</b>: ela é espalhada com cuidado nos canaviais, o que se chama <b>fertirrigação</b>.</li></ul><p>A mesma vinhaça que mata um rio pode ajudar a plantação a crescer. Tudo depende de como é usada!</p>",
+        "content": "<p>A usina também traz desafios, e muitos têm a ver com a água:</p><ul><li>💧 <b>Usa muita água</b> para lavar a cana e esfriar as máquinas. Usinas modernas reaproveitam boa parte dela.</li><li>🟤 Fazer etanol deixa um líquido escuro chamado <b>vinhaça</b>. Se cair no rio, os micróbios que a decompõem gastam o oxigênio da água, e os peixes morrem sufocados.</li><li>🌱 Bem usada, a vinhaça vira <b>adubo</b>: ela é espalhada com cuidado nos canaviais, o que se chama <b>fertirrigação</b>.</li></ul><p>A mesma vinhaça que mata um rio pode ajudar a plantação a crescer. Tudo depende de como é usada!</p>",
         "image": null
       },
       {
         "pageNumber": 4,
         "title": "Queimadas e monocultura",
-        "content": "<p>Outros cuidados importantes:</p><ul><li>🔥 Antigamente era comum <b>queimar a palha</b> do canavial antes da colheita. A fumaça faz mal para quem respira e suja o ar das cidades. Hoje, máquinas colhem a cana crua e a palha fica protegendo o solo.</li><li>🌾 A <b>monocultura</b>, que é plantar só cana em áreas enormes, deixa o solo cansado e espanta bichos e plantas nativas.</li><li>🌳 Manter as <b>matas na beira dos rios</b> no meio do canavial protege a água e a vida.</li></ul><p>Uma usina bem cuidada gera energia renovável. Mal cuidada, polui o ar, a terra e a água.</p><p>✅ Agora teste seus conhecimentos!</p>",
+        "content": "<p>Outros cuidados importantes:</p><ul><li>🔥 Antigamente era comum <b>queimar a palha</b> do canavial antes da colheita. A fumaça faz mal para quem respira e suja o ar das cidades. Hoje, na maior parte dos canaviais, máquinas colhem a cana crua e a palha fica protegendo o solo.</li><li>🌾 A <b>monocultura</b>, que é plantar só cana em áreas enormes, deixa o solo cansado e espanta bichos e plantas nativas.</li><li>🌳 Manter as <b>matas na beira dos rios</b> no meio do canavial protege a água e a vida.</li></ul><p>Uma usina bem cuidada gera energia renovável. Mal cuidada, polui o ar, a terra e a água.</p><p>✅ Agora teste seus conhecimentos!</p>",
         "image": null
       }
     ],
@@ -1863,12 +2334,12 @@
           "question": "Uma usina despejou vinhaça direto no rio, em vez de usar nos canaviais. O que pode acontecer com os peixes?",
           "options": [
             "Eles crescem mais, porque a vinhaça é adubo",
-            "Eles podem morrer por falta de ar na água",
+            "Eles podem morrer, porque os micróbios que decompõem a vinhaça gastam o oxigênio da água",
             "Nada acontece, porque a vinhaça é só água doce",
             "Eles mudam de cor e ficam mais bonitos"
           ],
           "correctAnswer": 1,
-          "explanation": "O texto explica que a vinhaça que cai no rio faz os peixes morrerem por falta de ar na água; bem usada nos canaviais, ela vira adubo."
+          "explanation": "O texto explica que, no rio, os micróbios que decompõem a vinhaça gastam o oxigênio e os peixes morrem sufocados. Bem usada nos canaviais, ela vira adubo."
         },
         {
           "id": 2,
@@ -1893,6 +2364,20 @@
       "bioenergy",
       "ethanol",
       "water_use"
+    ],
+    "sources": [
+      {
+        "label": "EPE — Fontes de energia",
+        "url": "https://www.epe.gov.br/pt/abcdenergia/fontes-de-energia"
+      },
+      {
+        "label": "CETESB — Águas interiores",
+        "url": "https://cetesb.sp.gov.br/aguas-interiores/"
+      },
+      {
+        "label": "CETESB — Qualidade do ar",
+        "url": "https://cetesb.sp.gov.br/ar/"
+      }
     ]
   },
   "biomass_plant": {
@@ -1973,6 +2458,16 @@
       "biomass",
       "renewable_energy",
       "air_quality"
+    ],
+    "sources": [
+      {
+        "label": "EPE — Fontes de energia",
+        "url": "https://www.epe.gov.br/pt/abcdenergia/fontes-de-energia"
+      },
+      {
+        "label": "CETESB — Qualidade do ar",
+        "url": "https://cetesb.sp.gov.br/ar/"
+      }
     ]
   },
   "nuclear_plant": {
@@ -1992,7 +2487,7 @@
       {
         "pageNumber": 1,
         "title": "Energia de dentro do átomo",
-        "content": "<p>Tudo no mundo é feito de pecinhas minúsculas chamadas <b>átomos</b>. Alguns átomos bem pesados, como o do <b>urânio</b>, podem ser partidos ao meio. Isso se chama <b>fissão</b>.</p><p>Quando um átomo se parte, ele solta <b>muito calor</b>. E na usina nuclear isso acontece com uma quantidade enorme de átomos, dentro de uma peça bem protegida chamada <b>reator</b>.</p><p>💡 Um punhado pequeno de combustível nuclear gera tanta energia quanto montanhas de carvão!</p>",
+        "content": "<p>Tudo no mundo é feito de pecinhas minúsculas chamadas <b>átomos</b>. Alguns átomos bem pesados, como o do <b>urânio</b>, podem ser partidos em dois pedaços. Isso se chama <b>fissão</b>.</p><p>Quando um átomo se parte, ele solta <b>muito calor</b>. E na usina nuclear isso acontece com uma quantidade enorme de átomos, dentro de uma peça bem protegida chamada <b>reator</b>.</p><p>💡 Um punhado pequeno de combustível nuclear gera tanta energia quanto montanhas de carvão!</p>",
         "image": "assets/images/studies/usina-nuclear.webp"
       },
       {
@@ -2004,7 +2499,7 @@
       {
         "pageNumber": 3,
         "title": "Uma usina que bebe muita água",
-        "content": "<p>O vapor que sai da turbina precisa ser <b>esfriado</b> para virar água de novo. Para isso, a usina usa <b>muita, muita água</b>:</p><ul><li>🌊 Pode puxar água do <b>mar</b> ou de um <b>rio</b> grande.</li><li>☁️ Ou usar <b>torres de resfriamento</b>, aquelas chaminés largas que soltam nuvens brancas. Aquilo é só vapor de água, não é fumaça!</li></ul><p>⚠️ A água devolvida ao mar ou ao rio volta <b>morna</b>. Água mais quente guarda menos ar, e isso atrapalha <b>peixes</b>, corais e outros bichos que vivem ali.</p><p>Por isso a usina nuclear é construída perto de muita água e precisa ser vigiada o tempo todo.</p>",
+        "content": "<p>O vapor que sai da turbina precisa ser <b>esfriado</b> para virar água de novo. Para isso, a usina usa <b>muita, muita água</b>:</p><ul><li>🌊 Pode puxar água do <b>mar</b> ou de um <b>rio</b> grande.</li><li>☁️ Ou usar <b>torres de resfriamento</b>, aquelas chaminés largas que soltam nuvens brancas. Aquilo é só vapor de água, não é fumaça!</li></ul><p>⚠️ A água devolvida ao mar ou ao rio volta <b>morna</b>. Água mais quente guarda menos oxigênio, e isso atrapalha <b>peixes</b>, corais e outros bichos que vivem ali.</p><p>Por isso a usina nuclear é construída perto de muita água e precisa ser vigiada o tempo todo.</p>",
         "image": null
       },
       {
@@ -2023,12 +2518,12 @@
           "question": "A usina nuclear devolve ao rio a água que usou para esfriar o vapor, só que morna. Por que isso pode prejudicar os peixes?",
           "options": [
             "Porque a água morna é radioativa",
-            "Porque a água mais quente guarda menos ar, e os peixes precisam desse ar",
+            "Porque a água mais quente guarda menos oxigênio, e os peixes precisam dele para respirar",
             "Porque os peixes só gostam de água gelada para beber",
             "Porque a água morna faz o rio secar na hora"
           ],
           "correctAnswer": 1,
-          "explanation": "A página sobre a água explica que água mais quente guarda menos ar, e isso atrapalha peixes, corais e outros bichos."
+          "explanation": "A página sobre a água explica que água mais quente guarda menos oxigênio, e isso atrapalha peixes, corais e outros bichos."
         },
         {
           "id": 2,
@@ -2053,6 +2548,20 @@
       "nuclear_energy",
       "cooling_water",
       "radioactive_waste"
+    ],
+    "sources": [
+      {
+        "label": "Eletronuclear — Página principal",
+        "url": "https://www.eletronuclear.gov.br"
+      },
+      {
+        "label": "CNEN — Comissão Nacional de Energia Nuclear",
+        "url": "https://www.cnen.gov.br/"
+      },
+      {
+        "label": "USGS Water Science School — Água nas usinas termelétricas",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/thermoelectric-power-water-use"
+      }
     ]
   },
   "tidal_plant": {
@@ -2072,7 +2581,7 @@
       {
         "pageNumber": 1,
         "title": "O mar que sobe e desce",
-        "content": "<p>Quem já foi à praia percebeu: em algumas horas o mar <b>avança</b> sobre a areia e, depois, <b>recua</b>. Isso é a <b>maré</b>.</p><p>Quem puxa a água é a <b>Lua</b>! A força da gravidade dela atrai os oceanos, e a Terra girando faz o mar subir e descer todos os dias, sempre no mesmo ritmo.</p><p>💡 Por isso os pescadores consultam a tabela das marés antes de sair com o barco.</p>",
+        "content": "<p>Quem já foi à praia percebeu: em algumas horas o mar <b>avança</b> sobre a areia e, depois, <b>recua</b>. Isso é a <b>maré</b>.</p><p>Quem puxa a água é principalmente a <b>Lua</b>! A força da gravidade dela atrai os oceanos, e o Sol ajuda um pouco. Com a Terra girando, o mar sobe e desce todos os dias, num ritmo que dá para prever com antecedência.</p><p>💡 Por isso os pescadores consultam a tabela das marés antes de sair com o barco.</p>",
         "image": "assets/images/studies/usina-maremotriz.webp"
       },
       {
@@ -2090,7 +2599,7 @@
       {
         "pageNumber": 4,
         "title": "Vantagens e cuidados",
-        "content": "<ul><li>✅ A maré nunca falta: a Lua aparece todos os dias, faça sol ou chuva.</li><li>✅ Não solta fumaça nem queima combustível.</li><li>⚠️ A barragem muda o caminho da água: peixes e manguezais precisam de passagens e de cuidado.</li><li>⚠️ É cara e difícil de construir, por isso é uma tecnologia avançada.</li></ul><p>✅ Agora teste seus conhecimentos!</p>",
+        "content": "<ul><li>✅ A maré nunca falta: a Lua puxa o mar todos os dias, mesmo quando não a vemos no céu, faça sol ou chuva.</li><li>✅ Não solta fumaça nem queima combustível.</li><li>⚠️ A barragem muda o caminho da água: peixes e manguezais precisam de passagens e de cuidado.</li><li>⚠️ É cara e difícil de construir, por isso é uma tecnologia avançada.</li></ul><p>✅ Agora teste seus conhecimentos!</p>",
         "image": null
       }
     ],
@@ -2103,12 +2612,12 @@
           "question": "Segundo o texto, quem puxa a água do mar e faz a maré subir e descer?",
           "options": [
             "O vento forte",
-            "A força da gravidade da Lua",
+            "Principalmente a força da gravidade da Lua",
             "Os barcos dos pescadores",
             "A chuva que cai no oceano"
           ],
           "correctAnswer": 1,
-          "explanation": "O texto explica que a gravidade da Lua atrai os oceanos e, com a Terra girando, o mar sobe e desce todos os dias."
+          "explanation": "O texto explica que é principalmente a gravidade da Lua, com uma ajuda do Sol, que atrai os oceanos; com a Terra girando, o mar sobe e desce todos os dias."
         },
         {
           "id": 2,
@@ -2125,7 +2634,17 @@
       ]
     },
     "relatedBuildings": [],
-    "relatedConcepts": []
+    "relatedConcepts": [],
+    "sources": [
+      {
+        "label": "NOAA Ocean Service — Marés e nível da água",
+        "url": "https://oceanservice.noaa.gov/education/tutorial_tides/"
+      },
+      {
+        "label": "EPE — Fontes de energia",
+        "url": "https://www.epe.gov.br/pt/abcdenergia/fontes-de-energia"
+      }
+    ]
   },
   "loss_control_center": {
     "buildingId": "loss_control_center",
@@ -2144,7 +2663,7 @@
       {
         "pageNumber": 1,
         "title": "A água que some",
-        "content": "<p>A água sai limpinha da estação de tratamento e viaja por canos debaixo da rua até as casas. Mas no caminho <b>muita água escapa</b>!</p><p>No Brasil, quase <b>um terço</b> da água tratada se perde antes de chegar à torneira, por canos velhos, rachados ou por ligações clandestinas, os famosos <b>gatos</b>.</p><p>💡 É como encher um balde furado: a gente gasta para tratar a água e ela vaza pelo caminho.</p>",
+        "content": "<p>A água sai limpinha da estação de tratamento e viaja por canos debaixo da rua até as casas. Mas no caminho <b>muita água escapa</b>!</p><p>No Brasil, <b>mais de um terço</b> da água tratada se perde antes de chegar à torneira: vaza por canos velhos e rachados ou é desviada por ligações clandestinas, os famosos <b>gatos</b>.</p><p>💡 É como encher um balde furado: a gente gasta para tratar a água e ela vaza pelo caminho.</p>",
         "image": "assets/images/studies/controle-de-perdas.webp"
       },
       {
@@ -2197,7 +2716,17 @@
       ]
     },
     "relatedBuildings": [],
-    "relatedConcepts": []
+    "relatedConcepts": [],
+    "sources": [
+      {
+        "label": "Instituto Trata Brasil — Perdas de água",
+        "url": "https://tratabrasil.org.br/perdas-de-agua/"
+      },
+      {
+        "label": "SABESP — Página principal",
+        "url": "https://www.sabesp.com.br"
+      }
+    ]
   },
   "underground_dam": {
     "buildingId": "underground_dam",
@@ -2269,7 +2798,17 @@
       ]
     },
     "relatedBuildings": [],
-    "relatedConcepts": []
+    "relatedConcepts": [],
+    "sources": [
+      {
+        "label": "Embrapa Semiárido",
+        "url": "https://www.embrapa.br/semiarido"
+      },
+      {
+        "label": "Articulação Semiárido Brasileiro — Página principal",
+        "url": "https://www.asabrasil.org.br"
+      }
+    ]
   },
   "water_reuse_plant": {
     "buildingId": "water_reuse_plant",
@@ -2341,7 +2880,17 @@
       ]
     },
     "relatedBuildings": [],
-    "relatedConcepts": []
+    "relatedConcepts": [],
+    "sources": [
+      {
+        "label": "SABESP — Página principal",
+        "url": "https://www.sabesp.com.br"
+      },
+      {
+        "label": "USGS Water Science School — Tratamento de esgoto",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/wastewater-treatment-water-use"
+      }
+    ]
   },
   "desalination_plant": {
     "buildingId": "desalination_plant",
@@ -2366,13 +2915,13 @@
       {
         "pageNumber": 2,
         "title": "A osmose reversa",
-        "content": "<p>A técnica mais usada empurra a água do mar com <b>muita força</b> contra uma membrana especial.</p><ul><li>🧂 Os grãos de sal ficam presos na membrana.</li><li>💧 Só a água passa para o outro lado, doce e pronta para tratar.</li><li>⚡ Para empurrar com tanta força, as bombas gastam <b>muita energia elétrica</b>.</li></ul><p>💡 É como espremer uma esponja num coador finíssimo!</p>",
+        "content": "<p>A técnica mais usada empurra a água do mar com <b>muita força</b> contra uma membrana especial.</p><ul><li>🧂 O sal, que está dissolvido na água, não consegue atravessar a membrana e fica para trás.</li><li>💧 Só a água passa para o outro lado, doce e pronta para tratar.</li><li>⚡ Para empurrar com tanta força, as bombas gastam <b>muita energia elétrica</b>.</li></ul><p>💡 É como espremer uma esponja num coador finíssimo!</p>",
         "image": null
       },
       {
         "pageNumber": 3,
         "title": "Exemplos no Brasil",
-        "content": "<p>Em <b>Fernando de Noronha</b>, uma ilha no meio do mar, boa parte da água de beber vem da dessalinização.</p><p>No semiárido, o programa <b>Água Doce</b> instalou pequenos dessalinizadores para tirar o sal da água salobra dos poços. E <b>Fortaleza</b> está construindo uma grande usina para abastecer a cidade.</p>",
+        "content": "<p>Em <b>Fernando de Noronha</b>, uma ilha no meio do mar, boa parte da água de beber vem da dessalinização.</p><p>No semiárido, o programa <b>Água Doce</b> instalou pequenos dessalinizadores para tirar o sal da água salobra dos poços. E <b>Fortaleza</b> prepara uma grande usina para ajudar a abastecer a cidade.</p>",
         "image": null
       },
       {
@@ -2413,6 +2962,16 @@
       ]
     },
     "relatedBuildings": [],
-    "relatedConcepts": []
+    "relatedConcepts": [],
+    "sources": [
+      {
+        "label": "MIDR — Programa Água Doce",
+        "url": "https://www.gov.br/mdr/pt-br/assuntos/seguranca-hidrica/programa-agua-doce"
+      },
+      {
+        "label": "USGS Water Science School — Água salgada e salinidade",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/saline-water-and-salinity"
+      }
+    ]
   }
 }

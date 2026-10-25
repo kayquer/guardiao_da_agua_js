@@ -160,7 +160,7 @@ class TutorialSystem {
             chapter: 1, bookOnly: true,
             character: 'Claudia',
             title: 'Quanta Água Dá para Beber?',
-            text: 'Se toda a água da Terra coubesse numa garrafa grande, quase tudo seria <b>água salgada</b> dos oceanos, cerca de 97%! Sobra só um pouquinho de <b>água doce</b>, e a maior parte dela está <b>congelada</b> nas geleiras ou <b>escondida</b> debaixo da terra. <br><br>A água dos rios e lagos, que é a mais fácil de usar, é só uma gotinha dessa garrafa. <br><br>O Brasil tem sorte: guarda uma das <b>maiores reservas de água doce do mundo</b>, cerca de 12% da água doce de superfície do planeta. Só que ela está mal distribuída: a maior parte fica na Amazônia, onde mora pouca gente, e falta em muitas cidades grandes. Ter muita água não quer dizer que ela nunca vai faltar!',
+            text: 'Se toda a água da Terra coubesse numa garrafa grande, quase tudo seria <b>água salgada</b>, cerca de 97%, quase toda nos oceanos! Sobra só um pouquinho de <b>água doce</b>, e a maior parte dela está <b>congelada</b> nas geleiras ou <b>escondida</b> debaixo da terra. <br><br>A água dos rios e lagos, que é a mais fácil de usar, é só uma gotinha dessa garrafa. <br><br>O Brasil tem sorte: guarda uma das <b>maiores reservas de água doce do mundo</b>, cerca de 12% da água doce de superfície do planeta. Só que ela está mal distribuída: a maior parte fica na Amazônia, onde mora pouca gente, e falta em muitas cidades grandes. Ter muita água não quer dizer que ela nunca vai faltar!',
             icon: '🧊'
         },
 
@@ -170,7 +170,7 @@ class TutorialSystem {
             character: 'Claudia',
             background: 'assets/images/tutorial/bg-ciclo-agua.webp',
             title: 'O Ciclo Hidrológico: O Motor da Vida',
-            text: 'Agora vem a parte mais legal: o <b>ciclo da água</b>! É como uma brincadeira de transformações. <img src="assets/images/lessons/ciclo-da-agua.webp" alt="O ciclo da água: o sol evapora a água, as nuvens viram chuva e a chuva volta para o rio" style="width:100%; border-radius:8px; margin:10px 0;"/> O Sol esquenta o rio e a água <b>evapora</b>, igual à fumacinha da panela. Lá em cima, ela vira <b>nuvem</b>. Quando a nuvem fica pesada, cai como <b>chuva</b>, enche os rios e tudo recomeça! Uma parte acontece no céu e a outra no chão. Se a gente estragar qualquer pedaço dessa roda, a natureza inteira sente.',
+            text: 'Agora vem a parte mais legal: o <b>ciclo da água</b>! É como uma brincadeira de transformações. <img src="assets/images/lessons/ciclo-da-agua.webp" alt="O ciclo da água: o sol evapora a água, as nuvens viram chuva e a chuva volta para o rio" style="width:100%; border-radius:8px; margin:10px 0;"/> O Sol esquenta o mar, os rios e os lagos, e a água <b>evapora</b>: vira vapor, um gás invisível, como a água da panela no fogo, que vai sumindo. As plantas também soltam vapor pelas folhas. Lá em cima, o vapor esfria e vira gotinhas: é a <b>condensação</b>, que forma as <b>nuvens</b>. Quando as gotinhas crescem e ficam pesadas, caem como <b>chuva</b>. Uma parte da chuva escorre para os rios e outra <b>infiltra</b> no chão e vai encher a água subterrânea. E tudo recomeça! Uma parte acontece no céu e a outra no chão. Se a gente estragar qualquer pedaço dessa roda, a natureza inteira sente.',
             icon: '🔄',
             educationalTopic: 'ciclo_hidrologico'
         },
@@ -181,7 +181,7 @@ class TutorialSystem {
             character: 'Claudia',
             background: 'assets/images/tutorial/bg-bacia.webp',
             title: 'A Bacia Hidrográfica: Como uma Grande Tigela',
-            text: 'Vou te contar um segredo: uma <b>bacia hidrográfica</b> funciona como uma tigela gigante! <img src="assets/images/lessons/bacia-hidrografica.webp" alt="Uma bacia hidrográfica vista de cima: os riozinhos se juntam no rio principal" style="width:100%; border-radius:8px; margin:10px 0;"/> Os riozinhos, chamados <b>afluentes</b>, se juntam e formam o <b>rio principal</b>. Toda chuva que cai na tigela escorre para o mesmo lugar. O rio nasce na <b>nascente</b>, as bordas da tigela são os <b>divisores de água</b> e o fim do rio é a <b>foz</b>. Agora o mais importante: se alguém suja a água lá no alto, quem mora lá embaixo recebe água suja!',
+            text: 'Vou te contar um segredo: uma <b>bacia hidrográfica</b> funciona como uma tigela gigante! <img src="assets/images/lessons/bacia-hidrografica.webp" alt="Uma bacia hidrográfica vista de cima: os riozinhos se juntam no rio principal" style="width:100%; border-radius:8px; margin:10px 0;"/> Os riozinhos, chamados <b>afluentes</b>, desaguam no <b>rio principal</b>. A água da chuva que escorre dentro da tigela vai toda para a mesma saída. O rio nasce na <b>nascente</b>, as bordas da tigela, as partes mais altas do terreno, são os <b>divisores de água</b> e o ponto onde o rio termina é a <b>foz</b>. Agora o mais importante: se alguém suja a água lá no alto, quem mora lá embaixo recebe água suja!',
             icon: '🏞️',
             educationalTopic: 'bacia_hidrografica'
         },
@@ -190,7 +190,7 @@ class TutorialSystem {
             chapter: 2, bookOnly: true,
             character: 'Claudia',
             title: 'As Plantas Também Fazem Chover',
-            text: 'As plantas também participam do ciclo da água! Elas puxam água do solo pelas raízes e soltam vapor pelas folhas. Isso se chama <b>transpiração</b>, como se a árvore suasse. <br><br>Na Amazônia, são tantas árvores fazendo isso ao mesmo tempo que se formam os <b>rios voadores</b>: correntes de vapor que viajam pelo céu e levam chuva para o Centro-Oeste e o Sudeste do Brasil. Ou seja, a floresta em pé ajuda a encher as represas de cidades bem longe dali! <br><br>O Brasil tem grandes bacias hidrográficas, como a do <b>Amazonas</b>, a do <b>São Francisco</b> e a do <b>Paraná</b>. Você mora em alguma delas. Que tal descobrir qual é?',
+            text: 'As plantas também participam do ciclo da água! Elas puxam água do solo pelas raízes e soltam vapor pelas folhas. Isso se chama <b>transpiração</b>, como se a árvore suasse. <br><br>Na Amazônia, são tantas árvores fazendo isso ao mesmo tempo que se formam os <b>rios voadores</b>: correntes de vapor que viajam pelo céu e ajudam a trazer chuva para o Centro-Oeste, o Sudeste e o Sul do Brasil. Ou seja, a floresta em pé ajuda a encher as represas de cidades bem longe dali! <br><br>O Brasil tem grandes bacias hidrográficas, como a do <b>Amazonas</b>, a do <b>São Francisco</b> e a do <b>Paraná</b>. Toda cidade fica dentro de alguma bacia, inclusive a sua. Que tal descobrir qual é?',
             icon: '🌳'
         },
 
@@ -200,7 +200,7 @@ class TutorialSystem {
             character: 'Claudia',
             background: 'assets/images/tutorial/bg-agua-para-todos.webp',
             title: 'Recursos Hídricos: Água para Todos',
-            text: 'Água não é brinquedo de loja para ser vendida a quem paga mais! <img src="assets/images/lessons/agua-para-todos.webp" alt="Um rio dividindo a água entre a casa, a plantação, a fábrica e o pescador" style="width:100%; border-radius:8px; margin:10px 0;"/> Os <b>recursos hídricos</b> são toda a água que temos para usar. E todo mundo quer um pedaço: as pessoas precisam beber, as fábricas precisam trabalhar e as plantações precisam crescer. É como dividir uma pizza numa festa cheia: se ninguém organiza, alguém fica sem. Por isso a água é <b>fonte de vida</b> e precisa chegar a todos. Seu papel, {nome}, é equilibrar essa divisão!',
+            text: 'Água não é uma mercadoria qualquer, para ficar só com quem paga mais! <img src="assets/images/lessons/agua-para-todos.webp" alt="Um rio dividindo a água entre a casa, a plantação, a fábrica e o pescador" style="width:100%; border-radius:8px; margin:10px 0;"/> Os <b>recursos hídricos</b> são toda a água que temos para usar. E todo mundo quer um pedaço: as pessoas precisam beber, as fábricas precisam trabalhar e as plantações precisam crescer. É como dividir uma pizza numa festa cheia: se ninguém organiza, alguém fica sem. Por isso a água é <b>fonte de vida</b> e precisa chegar a todos. Seu papel, {nome}, é equilibrar essa divisão!',
             icon: '⚖️',
             educationalTopic: 'recursos_hidricos'
         },
@@ -222,7 +222,7 @@ class TutorialSystem {
             character: 'Claudia',
             background: 'assets/images/tutorial/bg-agricultura.webp',
             title: 'Agricultura: Produzir Alimentos sem Destruir',
-            text: 'A <b>agricultura</b> é super importante: é dela que vem a comida do nosso prato! Mas ela bebe muita, muita água. <img src="assets/images/lessons/agricultura.webp" alt="Canavial e gado perto do rio: com mata na margem a água fica limpa, sem ela fica suja" style="width:100%; border-radius:8px; margin:10px 0;"/> A <b>cana-de-açúcar</b> e a criação de gado ajudam a região a ganhar dinheiro. Só que os <b>agrotóxicos</b>, venenos que matam insetos, podem escorrer para os rios. E o cocô do gado também suja a água. Seu desafio é produzir comida SEM destruir a natureza. Agora quero te apresentar alguém que sente na pele quando a gente erra nisso...',
+            text: 'A <b>agricultura</b> é super importante: é dela que vem a comida do nosso prato! Mas ela bebe muita, muita água. <img src="assets/images/lessons/agricultura.webp" alt="Canavial e gado perto do rio: com mata na margem a água fica limpa, sem ela fica suja" style="width:100%; border-radius:8px; margin:10px 0;"/> A <b>cana-de-açúcar</b> e a criação de gado ajudam a região a ganhar dinheiro. Só que os <b>agrotóxicos</b>, venenos usados contra insetos, fungos e ervas daninhas, podem escorrer com a chuva para os rios ou afundar no solo até a água subterrânea. E o cocô do gado também suja a água. Seu desafio é produzir comida SEM destruir a natureza. Agora quero te apresentar alguém que sente na pele quando a gente erra nisso...',
             icon: '🌾',
             educationalTopic: 'agricultura_agua'
         },
@@ -231,7 +231,7 @@ class TutorialSystem {
             chapter: 3, bookOnly: true,
             character: 'Claudia',
             title: 'Quem Decide Sobre a Água?',
-            text: 'No Brasil existe a <b>Lei das Águas</b>. Ela diz que a água é um <b>bem de todos</b>: ninguém é dono de um rio. Quando a água fica escassa, a prioridade é matar a sede das <b>pessoas</b> e dos <b>animais</b>. <br><br>As decisões são tomadas nos <b>comitês de bacia</b>, uma espécie de reunião onde governo, empresas, agricultores e moradores conversam e combinam como dividir a água do rio. É democracia da água! <br><br>E você também ajuda em casa: fechar a torneira ao escovar os dentes, tomar banhos curtos e consertar vazamentos fazem diferença quando milhões de pessoas fazem o mesmo.',
+            text: 'No Brasil existe a <b>Lei das Águas</b>. Ela diz que a água é um <b>bem público</b>: ninguém é dono de um rio. Quando a água fica escassa, a prioridade é matar a sede das <b>pessoas</b> e dos <b>animais</b>. <br><br>Muitas decisões são tomadas nos <b>comitês de bacia</b>, uma espécie de reunião onde governo, empresas, agricultores e grupos de moradores conversam e combinam como dividir a água do rio. É democracia da água! <br><br>E você também ajuda em casa: fechar a torneira ao escovar os dentes, tomar banhos curtos e consertar vazamentos fazem diferença quando milhões de pessoas fazem o mesmo.',
             icon: '🤝'
         },
 
@@ -241,7 +241,7 @@ class TutorialSystem {
             character: JOSE,
             background: 'assets/images/tutorial/bg-rio-pescador.webp',
             title: 'Prazer, eu sou o José!',
-            text: 'Oi, {nome}! Eu sou o José, pescador deste rio. Aprendi a pescar com meu pai, que aprendeu com meu avô, e conheço cada curva dessa água desde menino. E vou te contar o segredo de um rio cheio de peixe: a <b>Mata Ciliar</b>! <img src="assets/images/lessons/mata-ciliar.webp" alt="Mata ciliar fazendo sombra no rio, com peixes e um martim-pescador" style="width:100%; border-radius:8px; margin:10px 0;"/> Sabe por que ela tem esse nome? Porque protege o rio igual os cílios protegem os seus olhos! As árvores da margem fazem sombra e deixam a água fresquinha, do jeito que o peixe gosta. As raízes seguram a terra para ela não cair no rio, e as frutas e os insetos que caem das galhadas viram comida para os peixes. Por isso essas margens são <b>Áreas de Preservação Permanente</b>: a lei não deixa construir nem cortar árvore ali. É na sombra dessas árvores que os peixes se escondem e desovam.',
+            text: 'Oi, {nome}! Eu sou o José, pescador deste rio. Aprendi a pescar com meu pai, que aprendeu com meu avô, e conheço cada curva dessa água desde menino. E vou te contar o segredo de um rio cheio de peixe: a <b>Mata Ciliar</b>! <img src="assets/images/lessons/mata-ciliar.webp" alt="Mata ciliar fazendo sombra no rio, com peixes e um martim-pescador" style="width:100%; border-radius:8px; margin:10px 0;"/> Sabe por que ela tem esse nome? Porque protege o rio igual os cílios protegem os seus olhos! As árvores da margem fazem sombra e deixam a água fresquinha, do jeito que o peixe gosta. As raízes seguram a terra para ela não cair no rio, e as frutas e os insetos que caem das galhadas viram comida para os peixes. Por isso essas margens são <b>Áreas de Preservação Permanente</b>: a lei não deixa desmatar nem construir ali, a não ser em casos especiais. É na sombra dessas árvores que muitos peixes se escondem, comem e se reproduzem.',
             icon: '🎣',
             educationalTopic: 'mata_ciliar_app'
         },
@@ -253,7 +253,7 @@ class TutorialSystem {
             background: 'assets/images/tutorial/bg-erosao.webp',
             title: 'O Rio que Eu Conheci Está Sumindo',
             expression: 'worried',
-            text: 'Quando cortam as árvores da margem, é um desastre! A chuva arrasta a terra solta para dentro do rio. Isso é a <b>erosão</b>! <img src="assets/images/lessons/erosao.webp" alt="Margem sem árvores: a chuva leva a terra para o rio e forma um banco de areia" style="width:100%; border-radius:8px; margin:10px 0;"/> Aí vem o <b>assoreamento</b>: o rio vai enchendo de terra, lama e areia, fica raso e com cor de café com leite. Onde eu passava de barco quando era moço, hoje encalho num banco de areia. O barro entope as brânquias dos peixes, que funcionam como o nariz deles, e cobre o fundo onde eles botam os ovos. Tem dia que eu jogo a rede e ela volta vazia. Por favor, proteja as árvores da margem! Mas tem uma coisa pior, que nem dá para ver... a Pesquisadora Márcia vai te explicar.',
+            text: 'Quando cortam as árvores da margem, é um desastre! A chuva arrasta a terra solta para dentro do rio. Isso é a <b>erosão</b>! <img src="assets/images/lessons/erosao.webp" alt="Margem sem árvores: a chuva leva a terra para o rio e forma um banco de areia" style="width:100%; border-radius:8px; margin:10px 0;"/> Aí vem o <b>assoreamento</b>: o rio vai enchendo de terra, lama e areia, fica raso e com cor de café com leite. Onde eu passava de barco quando era moço, hoje encalho num banco de areia. O barro entope as brânquias dos peixes, que funcionam como os pulmões deles, e cobre o fundo onde eles botam os ovos. Tem dia que eu jogo a rede e ela volta vazia. Por favor, proteja as árvores da margem! Mas tem uma coisa pior, que nem dá para ver... a Pesquisadora Márcia vai te explicar.',
             icon: '🧱',
             educationalTopic: 'erosao_assoreamento'
         },
@@ -265,7 +265,7 @@ class TutorialSystem {
             background: 'assets/images/tutorial/bg-coleta-rio.webp',
             title: 'Márcia e o Perigo Invisível! ☣️',
             expression: 'worried',
-            text: 'Olá, {nome}! Eu sou a Márcia, pesquisadora de <b>qualidade da água e saneamento</b>. Passo boa parte do tempo na beira do rio, de bota e binóculo, coletando amostras de água para analisar. E os resultados trazem um alerta: cuidado com o <b>esgoto</b>! <img src="assets/images/lessons/esgoto-oxigenio.webp" alt="Cano de esgoto sujando o rio e peixes sem ar na superfície" style="width:100%; border-radius:8px; margin:10px 0;"/> Quando o esgoto cai no rio sem tratamento, as bactérias que comem essa sujeira gastam o <b>oxigênio dissolvido</b> na água, o mesmo oxigênio que os peixes respiram. Quando eu meço e esse número despenca, já sei: os peixes vão sufocar. É por isso que a rede do José volta vazia! E tem mais: nas amostras aparecem bactérias que vêm do cocô, os <b>coliformes</b>, sinal de que a água pode causar doenças como a diarreia. Por isso precisamos de <b>estações de tratamento de esgoto</b>: elas limpam a água suja antes de devolvê-la ao rio.',
+            text: 'Olá, {nome}! Eu sou a Márcia, pesquisadora de <b>qualidade da água e saneamento</b>. Passo boa parte do tempo na beira do rio, de bota e binóculo, coletando amostras de água para analisar. E os resultados trazem um alerta: cuidado com o <b>esgoto</b>! <img src="assets/images/lessons/esgoto-oxigenio.webp" alt="Cano de esgoto sujando o rio e peixes sem ar na superfície" style="width:100%; border-radius:8px; margin:10px 0;"/> Quando o esgoto cai no rio sem tratamento, as bactérias que comem essa sujeira gastam o <b>oxigênio dissolvido</b> na água, o mesmo oxigênio que os peixes respiram. Quando eu meço e esse número despenca, já sei: os peixes vão sufocar. É por isso que a rede do José volta vazia! E tem mais: nas amostras aparecem bactérias que vêm do cocô, como os <b>coliformes fecais</b>, sinal de que a água pode causar doenças como a diarreia. Por isso precisamos de <b>rede de coleta de esgoto</b>, que leva a sujeira pelos canos, e de <b>estações de tratamento de esgoto</b>, que limpam essa água antes de devolvê-la ao rio.',
             icon: '🧪',
             educationalTopic: 'esgoto_contaminacao'
         },
@@ -274,7 +274,7 @@ class TutorialSystem {
             chapter: 4, bookOnly: true,
             character: JOSE,
             title: 'Os Bichos Contam se a Água Está Boa',
-            text: 'Quem vive do rio aprende a ler a água pelos bichos. Quando eu era menino, a gente virava as pedras do fundo e achava um monte de larvinhas. Alguns insetos e larvas só vivem em água limpa e cheia de oxigênio: se eles somem, é sinal de poluição. A Márcia me contou que os cientistas chamam esses bichinhos de <b>bioindicadores</b>. Os sapos e as rãs também avisam: eles têm a pele fina e sentem a sujeira da água antes de todo mundo. <br><br>Ela também me explicou o <b>oxigênio dissolvido</b>: a água limpa tem ar misturado nela, e é dele que os peixes respiram. Esgoto e água quente diminuem esse ar. <br><br>Por isso a lei brasileira, o <b>Código Florestal</b>, obriga a manter a mata nas margens dos rios. Quanto mais largo o rio, maior a faixa de floresta que precisa ficar em pé. Essa lei é boa para o rio e para quem vive dele!',
+            text: 'Quem vive do rio aprende a ler a água pelos bichos. Quando eu era menino, a gente virava as pedras do fundo e achava um monte de larvinhas. Alguns insetos e larvas só vivem em água limpa e cheia de oxigênio: se eles somem, é sinal de poluição. A Márcia me contou que os cientistas chamam esses bichinhos de <b>bioindicadores</b>. Os sapos e as rãs também avisam: eles têm a pele fina, que deixa a sujeira da água passar, e estão entre os primeiros a sofrer com ela. <br><br>Ela também me explicou o <b>oxigênio dissolvido</b>: a água limpa tem oxigênio misturado nela, e é dele que os peixes respiram. Esgoto e água quente diminuem esse oxigênio. <br><br>Por isso a lei brasileira, o <b>Código Florestal</b>, obriga a manter a mata nas margens dos rios. Quanto mais largo o rio, maior a faixa de floresta que precisa ficar em pé. Essa lei é boa para o rio e para quem vive dele!',
             icon: '🔍'
         },
 
@@ -285,7 +285,7 @@ class TutorialSystem {
             background: 'assets/images/tutorial/bg-agua-subterranea.webp',
             title: 'A Água Subterrânea: O Tesouro Escondido',
             expression: 'worried',
-            text: '{nome}, olha esse perigo escondido! Debaixo da terra existe um mundo de água: os <b>aquíferos</b> e os <b>lençóis freáticos</b>. <img src="assets/images/lessons/agua-subterranea.webp" alt="Corte do solo mostrando o aquífero, um poço e a sujeira do lixão afundando" style="width:100%; border-radius:8px; margin:10px 0;"/> Funcionam como uma grande caixa-d\'água subterrânea que abastece poços e nascentes. Mas quando vaza sujeira no chão, como o <b>chorume</b> do lixão, gasolina ou agrotóxicos, ela afunda e contamina essa água. E o pior: limpar um aquífero sujo pode demorar mais que a vida inteira dos seus avós! Proteja as <b>nascentes</b> como tesouros, porque elas alimentam os rios.',
+            text: '{nome}, olha esse perigo escondido! Debaixo da terra existe um mundo de água: os <b>aquíferos</b> e os <b>lençóis freáticos</b>. <img src="assets/images/lessons/agua-subterranea.webp" alt="Corte do solo mostrando o aquífero, um poço e a sujeira do lixão afundando" style="width:100%; border-radius:8px; margin:10px 0;"/> Não são lagos escondidos: na maior parte dos lugares, a água fica nos espacinhos entre os grãos de areia e nas rachaduras das rochas, como numa esponja. Essa reserva abastece poços e nascentes. Mas quando vaza sujeira no chão, como o <b>chorume</b> do lixão, gasolina ou agrotóxicos, ela afunda e contamina essa água. E o pior: limpar um aquífero sujo é difícil e pode levar muitas e muitas décadas! Proteja as <b>nascentes</b> como tesouros, porque elas alimentam os rios.',
             icon: '💧',
             educationalTopic: 'agua_subterranea'
         },
@@ -296,7 +296,7 @@ class TutorialSystem {
             character: 'Claudia',
             background: 'assets/images/tutorial/bg-cidade-rio.webp',
             title: 'Cidades Inteligentes: Respeitar o Rio',
-            text: 'Sabe o que acontece quando a cidade cresce do jeito errado? Enchente! O rio precisa de espaço para respirar. <img src="assets/images/lessons/enchente.webp" alt="Casas construídas na várzea do rio, alagadas na enchente" style="width:100%; border-radius:8px; margin:10px 0;"/> A <b>várzea</b> é a área de segurança do rio: quando chove muito, a água se espalha por ali. Mas tem gente que constrói casa bem nesse lugar! Resultado: na enchente, as casas ficam debaixo d\'água. E o asfalto e o concreto não deixam a chuva entrar no chão. Precisamos de um <b>planejamento urbano inteligente</b>, que respeite o espaço da natureza.',
+            text: 'Sabe o que acontece quando a cidade cresce do jeito errado? Casas debaixo d\'água! O rio precisa de espaço para respirar. <img src="assets/images/lessons/enchente.webp" alt="Casas construídas na várzea do rio, alagadas na enchente" style="width:100%; border-radius:8px; margin:10px 0;"/> A <b>várzea</b> é a área de segurança do rio: quando chove muito, o rio enche (é a <b>enchente</b>) e transborda para ali (é a <b>inundação</b>). Mas tem gente que constrói casa bem nesse lugar! Resultado: as casas ficam debaixo d\'água. E o asfalto e o concreto não deixam a chuva entrar no chão: a água corre toda de uma vez pelas ruas, causa <b>alagamentos</b> e chega mais rápido ao rio. Precisamos de um <b>planejamento urbano inteligente</b>, que respeite o espaço da natureza.',
             icon: '🏗️',
             educationalTopic: 'ocupacao_urbana'
         },
@@ -315,7 +315,7 @@ class TutorialSystem {
             character: 'Claudia',
             background: 'assets/images/tutorial/bg-solucoes-verdes.webp',
             title: 'Soluções Verdes: Tecnologia a Favor da Natureza',
-            text: 'Agora as soluções incríveis! A <b>infraestrutura verde</b> usa a própria natureza como tecnologia. <img src="assets/images/lessons/infraestrutura-verde.webp" alt="Rua com jardim de chuva, telhado verde e calçada que deixa a água passar" style="width:100%; border-radius:8px; margin:10px 0;"/> Os <b>jardins de chuva</b> são canteiros que chupam a água como uma esponja. Os <b>tetos verdes</b> são telhados cheios de plantas que seguram a chuva e refrescam a cidade. E os <b>pavimentos permeáveis</b> são calçadas com furinhos que deixam a água passar para o chão. É a engenharia copiando a natureza! Assim a gente evita enchentes e ainda deixa a cidade mais bonita.',
+            text: 'Agora as soluções incríveis! A <b>infraestrutura verde</b> usa a própria natureza como tecnologia. <img src="assets/images/lessons/infraestrutura-verde.webp" alt="Rua com jardim de chuva, telhado verde e calçada que deixa a água passar" style="width:100%; border-radius:8px; margin:10px 0;"/> Os <b>jardins de chuva</b> são canteiros mais baixos que a rua: recebem a enxurrada e deixam a água infiltrar devagar no solo, como uma esponja. Os <b>tetos verdes</b> são telhados cheios de plantas que seguram a chuva e refrescam a cidade. E os <b>pavimentos permeáveis</b> são calçadas com espaços ou poros que deixam a água passar para o chão. É a engenharia copiando a natureza! Assim a gente diminui as enchentes e ainda deixa a cidade mais bonita.',
             icon: '🌿',
             educationalTopic: 'infraestrutura_verde'
         },
@@ -326,7 +326,7 @@ class TutorialSystem {
             character: MARCIA,
             background: 'assets/images/tutorial/bg-jardins-flutuantes.webp',
             title: 'Jardins Flutuantes: Ilhas que Limpam a Água',
-            text: 'Uma das soluções que eu mais gosto de estudar são os <b>jardins flutuantes</b>! São ilhas de plantas que boiam no rio ou no lago. <img src="assets/images/lessons/jardim-flutuante.webp" alt="Jardim flutuante com raízes na água, peixinhos e um sapo" style="width:100%; border-radius:8px; margin:10px 0;"/> As raízes ficam penduradas na água e funcionam como o filtro de uma geladeira: elas absorvem o excesso de adubo e de esgoto que faz as algas crescerem sem parar, e os micróbios que vivem grudados nelas ajudam a desmanchar a sujeira. Quando eu comparo as amostras, a água em volta deles sai mais limpa! E ainda viram abrigo: os peixes se escondem e desovam entre as raízes, os sapos caçam insetos nas folhas e até passarinho faz ninho ali. O José jura que já viu cardume voltando perto de um deles. Limpeza, beleza e vida juntas!',
+            text: 'Uma das soluções que eu mais gosto de estudar são os <b>jardins flutuantes</b>! São ilhas de plantas que boiam no rio ou no lago. <img src="assets/images/lessons/jardim-flutuante.webp" alt="Jardim flutuante com raízes na água, peixinhos e um sapo" style="width:100%; border-radius:8px; margin:10px 0;"/> As raízes ficam penduradas na água e funcionam como o filtro de uma geladeira: elas absorvem os nutrientes que sobram do adubo e do esgoto, que fazem as algas crescerem sem parar, e os micróbios que vivem grudados nelas ajudam a desmanchar a sujeira. Quando eu comparo as amostras, a água em volta deles sai mais limpa! E ainda viram abrigo: os peixes se escondem e desovam entre as raízes, os sapos caçam insetos nas folhas e até passarinho faz ninho ali. O José jura que já viu cardume voltando perto de um deles. Limpeza, beleza e vida juntas!',
             icon: '🪷',
             educationalTopic: 'jardins_flutuantes'
         },
@@ -335,7 +335,7 @@ class TutorialSystem {
             chapter: 6, bookOnly: true,
             character: 'Claudia',
             title: 'Cidades-Esponja',
-            text: 'Já imaginou uma cidade que funciona como uma <b>esponja</b>? Essa ideia está sendo usada no mundo todo! Em vez de jogar a chuva rapidinho para canos e bueiros, a cidade-esponja <b>guarda e infiltra</b> a água: parques que alagam de propósito, lagoas, jardins de chuva e calçadas que deixam a água passar. <br><br>Isso faz parte das <b>Soluções Baseadas na Natureza</b>: usar plantas, solo e água a nosso favor. Os <b>alagados construídos</b>, por exemplo, são brejos feitos pelas pessoas onde as plantas limpam o esgoto, como um filtro vivo. <br><br>Menos enchente, mais verde e água mais limpa. A natureza é a melhor engenheira, {nome}!',
+            text: 'Já imaginou uma cidade que funciona como uma <b>esponja</b>? Essa ideia já é usada em várias cidades do mundo! Em vez de jogar a chuva rapidinho para canos e bueiros, a cidade-esponja <b>guarda e infiltra</b> a água: parques que alagam de propósito, lagoas, jardins de chuva e calçadas que deixam a água passar. <br><br>Isso faz parte das <b>Soluções Baseadas na Natureza</b>: usar plantas, solo e água a nosso favor. Os <b>alagados construídos</b>, por exemplo, são brejos feitos pelas pessoas onde plantas, areia, pedras e micróbios ajudam a limpar o esgoto, como um filtro vivo. <br><br>Menos enchente, mais verde e água mais limpa. A natureza é a melhor engenheira, {nome}!',
             icon: '🧽'
         },
 
@@ -364,7 +364,7 @@ class TutorialSystem {
         {
             group: 'missions', mode: 'coach', character: 'Claudia', icon: '📖',
             title: 'Os detalhes',
-            text: 'Aqui está <b>o que fazer</b> e <b>o que você ganha</b>: dinheiro e novas construções! Use <b>← Voltar</b> para ver a lista de novo.',
+            text: 'Aqui está <b>o que fazer</b> e <b>o que você ganha</b>: dinheiro, pontos e às vezes a dica de um estudo que libera novas construções! Use <b>← Voltar</b> para ver a lista de novo.',
             enter: gm => {
                 if (document.querySelector('.mission-details')) return;
                 const id = [...gm.questSystem.activeQuests][0];
@@ -1232,7 +1232,7 @@ TutorialSystem.GUIDES = [
             },
             { title: 'Curvas e cruzamentos sozinhos', expression: 'happy', text: 'Encoste uma rua na outra e ela se liga sozinha: vira <b>curva</b>, <b>bifurcação</b> ou <b>cruzamento</b>, com faixa no meio e calçada nas bordas. Não precisa girar nada!' },
             { title: 'Cadê os carros?', text: 'Quando a cidade tiver <b>20 blocos de rua ligados</b>, carros e caminhões começam a circular. Quanto mais ruas, mais movimento, {nome}!' },
-            { title: 'Rua também mexe com a água', expression: 'worried', text: 'O <b>asfalto</b> não deixa a chuva entrar no chão: a água corre por cima, vira <b>enxurrada</b> e leva lixo para o rio. A <b>estrada de terra</b> deixa a água entrar, mas a chuva arrasta a terra (<b>erosão</b>) e o rio fica barrento. O <b>cascalho</b> fica no meio: deixa a água passar entre as pedrinhas e quase não vira lama. Plante árvores e jardins de chuva perto das ruas!' }
+            { title: 'Rua também mexe com a água', expression: 'worried', text: 'O <b>asfalto</b> não deixa a chuva entrar no chão: a água corre por cima, vira <b>enxurrada</b> e leva lixo para o rio. A <b>estrada de terra</b> é de terra batida: entra pouca água e a enxurrada arrasta o barro (<b>erosão</b>), deixando o rio barrento. O <b>cascalho</b> é o melhor dos três para a chuva: entre as pedrinhas entra mais água e a enxurrada leva menos barro. Plante árvores e jardins de chuva perto das ruas!' }
         ]
     },
     {
@@ -1273,7 +1273,7 @@ TutorialSystem.GUIDES = [
         when: gm => TutorialSystem.completedBuildings(gm, c => !!c.zoneType),
         steps: [
             { title: 'Serviços para a população', text: 'Agora que a cidade tem moradores, eles precisam de <b>escola</b>, <b>hospital</b>, <b>bombeiros</b> e <b>polícia</b>. Ficam em <b>🏛️ Públicos</b> e deixam as pessoas mais <b>satisfeitas</b>.', targets: ['.category-btn[data-category="public"]'] },
-            { title: 'Áreas verdes também contam', text: 'Parques, tetos e paredes verdes deixam a cidade mais fresca, ajudam a chuva a infiltrar no solo e limpam o ar, igual às árvores do mapa!', targets: ['.resource-item:has(#satisfaction-level)'] }
+            { title: 'Áreas verdes também contam', text: 'Parques deixam a chuva infiltrar no solo; tetos e paredes verdes seguram parte da chuva e refrescam os prédios. Todos deixam a cidade mais fresca e ajudam a limpar o ar, igual às árvores do mapa!', targets: ['.resource-item:has(#satisfaction-level)'] }
         ]
     },
     {
@@ -1289,7 +1289,7 @@ TutorialSystem.GUIDES = [
         when: () => true,
         steps: [
             { title: 'Fábricas geram empregos', text: 'Em <b>🏭 Industrial</b> ficam as zonas industriais, fábricas, centro tecnológico e porto. Eles rendem muito dinheiro e empregos.', targets: ['.category-btn[data-category="industrial"]'] },
-            { title: 'E também poluem', expression: 'worried', text: 'Indústria é a maior fonte de <b>poluição</b> da água e do ar. Construa <b>estações de tratamento</b> e mantenha as indústrias longe dos rios e das árvores, {nome}.', targets: ['.resource-item:has(#pollution-level)'] }
+            { title: 'E também poluem', expression: 'worried', text: 'Indústria pode sujar muito a água e o ar, e junto com o esgoto das casas é uma das grandes fontes de <b>poluição</b> dos rios. Construa <b>estações de tratamento</b> e mantenha as indústrias longe dos rios e das árvores, {nome}.', targets: ['.resource-item:has(#pollution-level)'] }
         ]
     },
     {

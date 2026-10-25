@@ -34,6 +34,17 @@ mixin(UIManager, {
         AudioManager.playSound('sfx_book_open');
     },
 
+    /** Fontes do estudo (data/building-studies.json → sources: [{ label, url }]), na última página, como nas aulas. */
+    renderStudySources(studyContent) {
+        const sources = (studyContent?.sources || []).filter(s => s?.label && /^https:\/\//.test(s.url || ''));
+        if (!sources.length) return '';
+        const esc = text => String(text).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+        return `<div class="book-sources">
+            <h5>📎 Fontes para saber mais</h5>
+            <ul>${sources.map(s => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)}</a></li>`).join('')}</ul>
+        </div>`;
+    },
+
     /**
      * @param {'next'|'prev'|null} [turn] direção da folha virando; null = abertura do livro
      *   (anima o livro abrindo, sem folha virando)
@@ -89,6 +100,7 @@ mixin(UIManager, {
                         </div>
                         ${currentPage.image ? `<div class="page-image"><img src="${currentPage.image}" alt="${currentPage.title}" onerror="this.parentElement.style.display='none'"></div>` : ''}
                         <div class="page-text">${currentPage.content}</div>
+                        ${isLastPage ? this.renderStudySources(studyContent) : ''}
                         ${quizHTML}
                     </div>
 

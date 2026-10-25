@@ -51,7 +51,7 @@ const MISSIONS = {
         description: 'A poluição está afetando a qualidade da água. Construa uma estação de tratamento.',
         type: 'tutorial',
         category: 'secondary',
-        lesson: 4, // aula ao concluir: a vida no rio: o esgoto que a ETA trata
+        lesson: 4, // aula ao concluir: a vida no rio: o esgoto que a estação trata
         prerequisites: ['tutorial_01'],
         stars: { parMs: 420000 },
         objectives: [

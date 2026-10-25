@@ -113,3 +113,11 @@ test('todo objetivo de missão é de um tipo que o motor mede', () => {
         }
     }
 });
+
+test('todo estudo cita de 1 a 3 fontes com link https (mostradas na última página do livro)', () => {
+    const studies = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/building-studies.json'), 'utf8'));
+    for (const [id, s] of Object.entries(studies)) {
+        assert.ok(Array.isArray(s.sources) && s.sources.length >= 1 && s.sources.length <= 3, `${id}: fontes`);
+        for (const src of s.sources) assert.ok(src.label && /^https:\/\//.test(src.url), `${id}: fonte sem nome ou sem https`);
+    }
+});

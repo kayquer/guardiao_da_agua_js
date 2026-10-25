@@ -35,10 +35,12 @@ test('usina maremotriz: só em água, num corpo d\'água de 8 blocos ou mais, e 
     assert.ok(tidal.powerGeneration > 0);
 });
 
-test('enxurrada: asfalto > cascalho > terra (runoffImpervious) e a estrada de cascalho sobe colina', () => {
+test('enxurrada: asfalto > terra batida > cascalho (runoffImpervious) e a estrada de cascalho sobe colina', () => {
     const imp = id => BUILDINGS[id].runoffImpervious;
-    assert.ok(imp('paved_road') > imp('gravel_road') && imp('gravel_road') > imp('dirt_road'));
-    assert.ok(BUILDINGS.gravel_road.requirements.terrain.includes('hill'));
+    // terra batida (compactada) deixa entrar pouca água: escoa mais que o cascalho, menos que o asfalto
+    assert.ok(imp('paved_road') > imp('dirt_road') && imp('dirt_road') > imp('gravel_road'));
+    // as três ruas sobem colina (rampas) e viram ponte sobre a água (RoadPlacement.canPlaceRoadAt)
+    for (const id of ['paved_road', 'dirt_road', 'gravel_road']) assert.ok(BUILDINGS[id].requirements.terrain.includes('hill'), id);
     assert.strictEqual(BUILDINGS.gravel_road.roadType, 'gravel');
     const study = fs.readFileSync(path.join(ROOT, 'js/systems/StudySystem.js'), 'utf8');
     assert.ok(study.includes("'gravel_road'"), 'rua nunca pede estudo');

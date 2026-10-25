@@ -185,8 +185,9 @@ mixin(UIManager, {
             // Ruas: quanto da chuva escorre (asfalto 1 = toda; cascalho e terra deixam a água entrar no chão)
             const share = type.runoffImpervious;
             if (share >= 0.8) add('🌧️ Chão impermeável', 'quase toda a chuva escorre (mais enxurrada e enchente)', 'bad');
+            else if (type.roadType === 'dirt') add('🌧️ Terra batida', `pouca chuva entra no chão (${Math.round((1 - share) * 100)}% infiltra) e a enxurrada leva barro para o rio (erosão)`, 'bad');
             else if (share >= 0.3) add('🌧️ Chão semipermeável', `parte da chuva entra entre as pedras (${Math.round((1 - share) * 100)}% infiltra)`, 'good');
-            else add('🌧️ Chão permeável', `a chuva entra no chão (${Math.round((1 - share) * 100)}% infiltra), mas pode virar lama e erosão`, 'good');
+            else add('🌧️ Chão permeável', `a chuva entra no chão (${Math.round((1 - share) * 100)}% infiltra)`, 'good');
         }
         if (type.powerSource) add({ wind: '🌬️ Depende do vento', solar: '☀️ Depende do sol', hydro: '💧 Depende do rio' }[type.powerSource],
             { wind: 'pouco vento = menos energia; ventania forte desliga', solar: 'nuvem, chuva e noite = menos energia', hydro: 'na seca o rio baixa e gera menos' }[type.powerSource], 'bad');

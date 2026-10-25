@@ -9,13 +9,13 @@ const BUILDING_TYPES = {
         tier: 1, group: 'Captação', techRequires: [],
         groundwater: true, // tira água do aquífero (ResourceManager.updateAquifer)
         name: 'Bomba de Água',
-        description: 'Extrai água de fontes subterrâneas',
+        description: 'Bombeia água do aquífero (água debaixo da terra). Tirar demais faz o nível do aquífero baixar',
         category: 'water',
         cost: 2500,
         size: 1,
         waterProduction: 50,
         powerConsumption: 20,
-        pollutionGeneration: 5,
+        pollutionGeneration: 2, // motor e óleo do bombeamento (bombear não suja a água; o impacto é baixar o aquífero)
         maintenanceCost: 100,
         icon: '💧',
         color: '#2196F3',
@@ -29,12 +29,12 @@ const BUILDING_TYPES = {
         tier: 2, group: 'Captação', techRequires: [{ id: 'water_pump', count: 3 }],
         groundwater: true,
         name: 'Poço Artesiano',
-        description: 'Poço profundo para extração de água limpa',
+        description: 'Poço profundo que chega a um aquífero confinado, onde a água sobe pela própria pressão. Também tira água do aquífero',
         category: 'water',
         cost: 4000,
         size: 1,
         waterProduction: 80,
-        pollutionGeneration: 2,
+        pollutionGeneration: 1, // motor da bomba
         maintenanceCost: 150,
         icon: '🕳️',
         color: '#1976D2',
@@ -49,7 +49,7 @@ const BUILDING_TYPES = {
         tier: 2, group: 'Água e esgoto', techRequires: [{ id: 'water_pump', count: 2 }],
         reputationOnBuild: { environment: 3, citizens: 1 },
         name: 'Estação de Tratamento',
-        description: 'Reduz a poluição da água',
+        description: 'Trata o esgoto da cidade em etapas (separa a sujeira, deixa assentar e filtra) antes de devolver a água ao rio',
         category: 'treatment',
         cost: 15000,
         size: 2,
@@ -68,7 +68,7 @@ const BUILDING_TYPES = {
         tier: 3, group: 'Água e esgoto', techRequires: [{ id: 'treatment_plant', count: 1 }, { id: 'water_quality_monitor', count: 1 }],
         reputationOnBuild: { environment: 2 },
         name: 'Estação de Filtros',
-        description: 'Sistema avançado de filtração',
+        description: 'Camadas de areia, cascalho e carvão seguram a sujeira que sobrou na água: o rio recebe água mais limpa',
         category: 'treatment',
         cost: 20000,
         size: 1,
@@ -163,7 +163,7 @@ const BUILDING_TYPES = {
         waste: true,
         reputationOnBuild: { environment: 2 },
         name: 'Pátio de Compostagem',
-        description: 'Restos de comida e podas viram adubo: metade do lixo de casa volta para a terra',
+        description: 'Restos de comida e podas viram adubo: boa parte do lixo de casa volta para a terra',
         category: 'treatment',
         cost: 7000,
         size: 2,
@@ -342,7 +342,7 @@ const BUILDING_TYPES = {
     paved_road: {
         tier: 1, group: 'Ruas', techRequires: [],
         name: 'Rua Asfaltada',
-        description: 'Arraste para traçar. Liga sozinha nas curvas e cruzamentos',
+        description: 'Arraste para traçar; liga sozinha nas curvas e cruzamentos, sobe colinas e vira ponte sobre a água. O asfalto não deixa a chuva entrar no chão',
         category: 'roads',
         cost: 40,
         size: 1,
@@ -352,7 +352,7 @@ const BUILDING_TYPES = {
         icon: '🛣️',
         color: '#424242',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland', 'lowland', 'hill'], // sobe colina como as outras ruas (rampa: RoadNetwork.profile)
             nearWater: false
         }
     },
@@ -360,12 +360,12 @@ const BUILDING_TYPES = {
     dirt_road: {
         tier: 1, group: 'Ruas', techRequires: [],
         name: 'Estrada de Terra',
-        description: 'Mais barata e sobe colinas, mas a chuva leva a terra',
+        description: 'A mais barata. A terra batida deixa entrar pouca água, e a enxurrada leva barro para o rio',
         category: 'roads',
         cost: 20,
         size: 1,
         roadType: 'dirt',
-        runoffImpervious: 0.2,
+        runoffImpervious: 0.6, // terra batida (compactada): pouca infiltração e muito sedimento — mais que o cascalho
         icon: '🛤️',
         color: '#8D6E63',
         requirements: {
@@ -377,7 +377,7 @@ const BUILDING_TYPES = {
     gravel_road: {
         tier: 1, group: 'Ruas', techRequires: [],
         name: 'Estrada de Cascalho',
-        description: 'Pedrinhas soltas: sobe colinas, a chuva entra no chão e quase não vira lama',
+        description: 'Pedrinhas soltas: entre elas a chuva entra no chão, e a enxurrada leva pouco barro',
         category: 'roads',
         cost: 30,
         size: 1,
@@ -466,8 +466,10 @@ const BUILDING_TYPES = {
     zone_residential_light: {
         tier: 1, group: 'Zonas residenciais', techRequires: [{ id: 'city_hall', count: 1 }],
         name: 'Zona Residencial Leve',
-        description: 'Área para casas pequenas e baixa densidade populacional',
+        description: 'Casas com quintal: poucos moradores por lote e a chuva entra na terra dos jardins',
         category: 'residential',
+        pollutionGeneration: 1, // quintais regados e o esgoto do bairro (além do que cada morador gasta)
+        waterConsumption: 5,
         cost: 1000,
         size: 2,
         zoneType: 'residential_light',
@@ -475,7 +477,6 @@ const BUILDING_TYPES = {
         satisfactionBonus: 4, // bairro tranquilo
         powerConsumption: 8, // MW na fase completa (ZoneGrowth: pela fase)
         populationCapacity: 50,
-        waterConsumptionPerPerson: 1.5,
         growthRate: 0.1,
         icon: '🏘️',
         color: '#81C784',
@@ -488,15 +489,16 @@ const BUILDING_TYPES = {
     zone_residential_balanced: {
         tier: 2, group: 'Zonas residenciais', techRequires: [{ id: 'zone_residential_light', count: 2 }],
         name: 'Zona Residencial Equilibrada',
-        description: 'Área para casas suburbanas de densidade média',
+        description: 'Casas e sobrados mais juntos: mais moradores, menos quintal e mais esgoto',
         category: 'residential',
+        pollutionGeneration: 3, // mais casas por lote: mais rega, lavagem e esgoto
+        waterConsumption: 15,
         cost: 2000,
         size: 2,
         zoneType: 'residential_balanced',
         runoffImpervious: 0.3,
         powerConsumption: 15, // MW na fase completa (ZoneGrowth: pela fase)
         populationCapacity: 100,
-        waterConsumptionPerPerson: 2.0,
         growthRate: 0.15,
         icon: '🏘️',
         color: '#66BB6A',
@@ -509,7 +511,7 @@ const BUILDING_TYPES = {
     zone_residential_heavy: {
         tier: 3, group: 'Zonas residenciais', techRequires: [{ id: 'zone_residential_balanced', count: 2 }],
         name: 'Zona Residencial Pesada',
-        description: 'Área para prédios de apartamentos de alta densidade',
+        description: 'Prédios de apartamentos: muita gente, telhados e asfalto fazem a chuva escorrer e o esgoto aumenta. Precisa de drenagem por perto',
         category: 'residential',
         cost: 4000,
         size: 2,
@@ -518,7 +520,6 @@ const BUILDING_TYPES = {
         waterConsumption: 40, // bombear água até os andares altos
         pollutionGeneration: 8, // esgoto concentrado
         populationCapacity: 200,
-        waterConsumptionPerPerson: 2.5,
         powerConsumption: 30,
         growthRate: 0.2,
         icon: '🏢',
@@ -534,7 +535,7 @@ const BUILDING_TYPES = {
         tier: 1, group: 'Zonas industriais', techRequires: [{ ids: ['zone_residential_light', 'zone_residential_balanced', 'zone_residential_heavy'], count: 2, label: 'Zonas Residenciais' }],
         reputationOnBuild: { business: 2, environment: -2 },
         name: 'Zona Industrial Leve',
-        description: 'Área para indústrias leves e manufatura',
+        description: 'Pequenas fábricas e oficinas: gastam um pouco de água e soltam alguma poluição',
         category: 'industrial',
         cost: 3000,
         size: 2,
@@ -557,7 +558,7 @@ const BUILDING_TYPES = {
         tier: 2, group: 'Zonas industriais', techRequires: [{ id: 'zone_industrial_light', count: 2 }],
         reputationOnBuild: { business: 2, environment: -2 },
         name: 'Zona Industrial Equilibrada',
-        description: 'Área para indústrias de porte médio',
+        description: 'Indústrias médias: mais empregos, mais água gasta e mais efluentes para tratar',
         category: 'industrial',
         cost: 5000,
         size: 2,
@@ -580,7 +581,7 @@ const BUILDING_TYPES = {
         tier: 3, group: 'Zonas industriais', techRequires: [{ id: 'zone_industrial_balanced', count: 2 }],
         reputationOnBuild: { business: 2, environment: -2 },
         name: 'Zona Industrial Pesada',
-        description: 'Área para indústrias pesadas e químicas',
+        description: 'Indústrias pesadas e químicas: muitos empregos, mas gastam muita água e despejam efluentes que precisam de tratamento',
         category: 'industrial',
         cost: 8000,
         size: 3,
@@ -606,6 +607,7 @@ const BUILDING_TYPES = {
         name: 'Zona Comercial Leve',
         description: 'Área para comércio local e serviços básicos',
         category: 'commercial',
+        pollutionGeneration: 1, // lixo e esgoto das lojas
         taxGroup: 'commerce', // imposto de comércio (ResourceManager.calculateTaxRevenue)
         cost: 2500,
         size: 2,
@@ -630,6 +632,7 @@ const BUILDING_TYPES = {
         name: 'Zona Comercial Equilibrada',
         description: 'Área para shopping centers e comércio médio',
         category: 'commercial',
+        pollutionGeneration: 3, // mais lojas, mais carros e entregas
         taxGroup: 'commerce', // imposto de comércio (ResourceManager.calculateTaxRevenue)
         cost: 4500,
         size: 2,
@@ -659,7 +662,7 @@ const BUILDING_TYPES = {
         size: 3,
         zoneType: 'commercial_heavy',
         runoffImpervious: 0.8,
-        pollutionGeneration: 5, // movimento de carros e entregas
+        pollutionGeneration: 5,
         powerConsumption: 45, // MW na fase completa (ZoneGrowth: pela fase)
         jobCapacity: 100,
         waterConsumption: 60,
@@ -677,7 +680,7 @@ const BUILDING_TYPES = {
     hydroelectric_plant: {
         tier: 3, group: 'Renováveis', techRequires: [{ id: 'solar_farm', count: 1 }],
         name: 'Hidrelétrica',
-        description: 'Usina hidrelétrica limpa de alta capacidade',
+        description: 'Gera muita energia com a força da água do rio. É renovável, mas a barragem alaga terras e muda a vida do rio; na seca gera menos',
         category: 'power',
         powerSource: 'hydro', // na seca o rio baixa e a usina entrega menos
         cost: 11250,
@@ -790,7 +793,7 @@ const BUILDING_TYPES = {
     solar_farm: {
         tier: 2, group: 'Renováveis', techRequires: [{ id: 'wind_farm', count: 1 }],
         name: 'Usina Solar',
-        description: 'Fazenda solar fotovoltaica limpa',
+        description: 'Painéis transformam a luz do sol em eletricidade, sem fumaça. Com nuvens e à noite gera menos',
         category: 'power',
         powerSource: 'solar', // entrega pelo sol: menos com nuvem, chuva e de noite
         cost: 9000,
@@ -810,7 +813,7 @@ const BUILDING_TYPES = {
     wind_farm: {
         tier: 1, group: 'Renováveis', techRequires: [],
         name: 'Campo Eólico',
-        description: 'Parque eólico de energia limpa',
+        description: 'Turbinas giram com o vento e geram eletricidade sem fumaça. Com pouco vento gera menos',
         category: 'power',
         powerSource: 'wind', // entrega pelo vento real (BuildingEfficiency.getWeatherPowerFactor)
         cost: 10000,
@@ -870,6 +873,8 @@ const BUILDING_TYPES = {
         name: 'Prefeitura Municipal',
         description: 'Centro administrativo da cidade - simboliza o desenvolvimento urbano',
         category: 'public',
+        pollutionGeneration: 1, // banheiros e limpeza do prédio
+        waterConsumption: 10,
         cost: 25000,
         size: 2,
         populationCapacity: 0,
@@ -890,6 +895,8 @@ const BUILDING_TYPES = {
         name: 'Escola',
         description: 'Instituição de ensino que aumenta a satisfação da população',
         category: 'public',
+        pollutionGeneration: 1, // banheiros, cozinha e limpeza para muitos alunos
+        waterConsumption: 20,
         cost: 15000,
         size: 2,
         satisfactionBonus: 15,
@@ -910,6 +917,8 @@ const BUILDING_TYPES = {
         name: 'Escola Técnica',
         description: 'Cursos técnicos de construção, saneamento e reciclagem: a cidade aproveita melhor o material ao reciclar prédios',
         category: 'public',
+        pollutionGeneration: 2, // oficinas e laboratórios geram resíduos
+        waterConsumption: 20,
         cost: 22000,
         size: 2,
         satisfactionBonus: 8,
@@ -929,6 +938,8 @@ const BUILDING_TYPES = {
         name: 'Hospital',
         description: 'Centro médico que melhora a saúde e satisfação dos cidadãos',
         category: 'public',
+        pollutionGeneration: 4, // limpeza constante; o esgoto hospitalar precisa de tratamento
+        waterConsumption: 50,
         cost: 20000,
         size: 2,
         satisfactionBonus: 18,
@@ -947,6 +958,8 @@ const BUILDING_TYPES = {
         name: 'Corpo de Bombeiros',
         description: 'Estação de bombeiros que protege a cidade',
         category: 'public',
+        pollutionGeneration: 1, // água para treinar e abastecer os caminhões
+        waterConsumption: 30,
         cost: 12000,
         size: 1,
         satisfactionBonus: 12,
@@ -965,6 +978,8 @@ const BUILDING_TYPES = {
         name: 'Delegacia de Polícia',
         description: 'Estação policial que mantém a segurança urbana',
         category: 'public',
+        pollutionGeneration: 1, // banheiros e limpeza
+        waterConsumption: 8,
         cost: 10000,
         size: 1,
         satisfactionBonus: 10,
@@ -1039,6 +1054,7 @@ const BUILDING_TYPES = {
         name: 'Centro Comercial',
         description: 'Grande centro comercial que guarda a água da chuva do telhado e gasta metade da água',
         category: 'commercial',
+        pollutionGeneration: 4, // estacionamento grande e muito lixo
         rainwaterReuse: true, // guarda a chuva do telhado para os banheiros: gasta metade
         taxGroup: 'commerce', // imposto de comércio (ResourceManager.calculateTaxRevenue)
         cost: 50000,
@@ -1062,6 +1078,7 @@ const BUILDING_TYPES = {
         name: 'Edifício de Escritórios',
         description: 'Escritórios com reúso da água da chuva nos banheiros',
         category: 'commercial',
+        pollutionGeneration: 2, // esgoto e lixo dos escritórios
         rainwaterReuse: true,
         taxGroup: 'commerce', // imposto de comércio (ResourceManager.calculateTaxRevenue)
         cost: 35000,
@@ -1085,6 +1102,7 @@ const BUILDING_TYPES = {
         name: 'Banco',
         description: 'Banco com telhado que coleta água da chuva para limpeza e banheiros',
         category: 'commercial',
+        pollutionGeneration: 1, // esgoto e lixo
         rainwaterReuse: true,
         taxGroup: 'commerce', // imposto de comércio (ResourceManager.calculateTaxRevenue)
         cost: 40000,
@@ -1107,6 +1125,7 @@ const BUILDING_TYPES = {
         name: 'Restaurante',
         description: 'Restaurante que atrai turistas; a cozinha precisa de água para funcionar',
         category: 'commercial',
+        pollutionGeneration: 3, // gordura e óleo na pia vão para o esgoto
         needsWater: true, // cozinha não funciona sem água
         taxGroup: 'commerce', // imposto de comércio (ResourceManager.calculateTaxRevenue)
         cost: 20000,
@@ -1130,6 +1149,7 @@ const BUILDING_TYPES = {
         name: 'Museu',
         description: 'Museu que atrai turistas e gera receita através de ingressos',
         category: 'commercial',
+        pollutionGeneration: 1, // esgoto e lixo dos visitantes
         taxGroup: 'tourism', // imposto de turismo (ResourceManager.calculateTaxRevenue)
         cost: 60000,
         size: 3,
@@ -1155,6 +1175,7 @@ const BUILDING_TYPES = {
         name: 'Parque Turístico',
         description: 'Parque temático que atrai visitantes e gera receita',
         category: 'commercial',
+        pollutionGeneration: 2, // lixo deixado pelos visitantes
         taxGroup: 'tourism', // imposto de turismo (ResourceManager.calculateTaxRevenue)
         cost: 80000,
         size: 4,
@@ -1177,6 +1198,7 @@ const BUILDING_TYPES = {
         name: 'Monumento Histórico',
         description: 'Marco histórico que atrai turistas e aumenta o prestígio da cidade',
         category: 'commercial',
+        pollutionGeneration: 1, // lixo deixado pelos visitantes
         taxGroup: 'tourism', // imposto de turismo (ResourceManager.calculateTaxRevenue)
         cost: 45000,
         size: 2,
@@ -1199,6 +1221,7 @@ const BUILDING_TYPES = {
         name: 'Hotel',
         description: 'Hotel para turistas: gasta muita água e, se a cidade ficar sem água, os hóspedes vão embora',
         category: 'commercial',
+        pollutionGeneration: 3, // lavanderia e cozinha: esgoto com sabão e gordura
         needsWater: true, // sem água na cidade, os hóspedes vão embora
         taxGroup: 'tourism', // imposto de turismo (ResourceManager.calculateTaxRevenue)
         cost: 55000,
@@ -1342,7 +1365,7 @@ const BUILDING_TYPES = {
         pollutionReduction: 15, // vegetação da margem filtra o que escorre para o rio
         maintenanceCost: 300,
         needsRoad: false, // solução da natureza: funciona sem rua
-        description: 'Parque linear que protege rios urbanos e oferece lazer sustentável',
+        description: 'Faixa verde ao longo do rio: protege as margens, deixa a chuva entrar no chão, diminui enchentes e aproxima as pessoas do rio',
         educationalContent: {
             concepts: ['parque linear', 'proteção de rios', 'lazer sustentável'],
             facts: [
@@ -1373,7 +1396,7 @@ const BUILDING_TYPES = {
         satisfactionBonus: 10,
         maintenanceCost: 60,
         needsRoad: false, // solução da natureza: funciona sem rua
-        description: 'Sistema natural de drenagem que reduz enchentes e filtra água',
+        description: 'Canteiro mais baixo que a rua recebe a enxurrada: a água infiltra no solo, recarrega o aquífero e chega mais limpa ao rio',
         educationalContent: {
             concepts: ['jardim de chuva', 'drenagem sustentável', 'infiltração'],
             facts: [
@@ -1404,7 +1427,7 @@ const BUILDING_TYPES = {
         satisfactionBonus: 12,
         maintenanceCost: 80,
         needsRoad: false, // solução da natureza: funciona sem rua
-        description: 'Cobertura vegetal que reduz escoamento e melhora eficiência energética',
+        description: 'Plantas no telhado seguram parte da chuva, diminuem a enxurrada e deixam o prédio mais fresco',
         educationalContent: {
             concepts: ['tetos verdes', 'eficiência energética', 'retenção de água'],
             facts: [
@@ -1462,7 +1485,7 @@ const BUILDING_TYPES = {
         satisfactionBonus: 20,
         maintenanceCost: 120,
         needsRoad: false, // solução da natureza: funciona sem rua
-        description: 'Sistema flutuante com plantas filtradoras que purificam a água',
+        description: 'Ilhas de plantas sobre a água: as raízes filtram a sujeira e ajudam a limpar o rio',
         educationalContent: {
             concepts: ['jardins flutuantes', 'plantas filtradoras', 'fitorremediação'],
             facts: [
@@ -1535,6 +1558,7 @@ const BUILDING_TYPES = {
         name: 'Controle de Erosão',
         icon: '🛡️',
         category: 'nature',
+        runoffAbsorption: 6, // terraços diminuem a velocidade da enxurrada e aumentam a infiltração
         cost: 15000,
         buildTime: 20,
         size: 1,
@@ -1544,7 +1568,7 @@ const BUILDING_TYPES = {
         pollutionReduction: 6, // menos terra descendo para o rio
         maintenanceCost: 80,
         needsRoad: false, // solução da natureza: funciona sem rua
-        description: 'Terraços e barreiras para prevenir erosão e assoreamento',
+        description: 'Terraços, barreiras e plantas nas encostas freiam a enxurrada: a terra não desce para o rio e ele não fica assoreado',
         educationalContent: {
             concepts: ['erosão', 'assoreamento', 'sedimentação', 'conservação do solo'],
             facts: [

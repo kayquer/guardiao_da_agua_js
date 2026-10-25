@@ -205,7 +205,7 @@ test('livro de estudo vira a página', async ({ page }, testInfo) => {
     page.on('console', m => { if (m.type() === 'error') problems.push(`console.error: ${m.text()}`); });
 
     await startGame(page);
-    // monitoring_station: estudo com quiz habilitado (o da bomba não tem)
+    // monitoring_station: estudo com quiz (hoje todos têm)
     await page.evaluate(() => window.gameManager.tutorialSystem.complete());
     await page.waitForFunction(() => window.gameManager.studySystem.contentLoaded);
     await page.evaluate(() => window.gameManager.uiManager.openStudyBook('monitoring_station'));

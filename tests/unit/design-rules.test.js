@@ -128,3 +128,29 @@ test('relatório de escolhas repetidas marca o que 80% ou mais fazem igual', () 
     assert.ok(!r.flags.includes('opening'), '75% não chega a 80%');
     assert.ok(!r.flags.includes('energy'));
 });
+
+test('zonas residenciais e comerciais, prédios comerciais e públicos gastam água e poluem, crescendo com o peso', () => {
+    const hidden = ['house', 'apartment'];
+    for (const [id, b] of Object.entries(BUILDINGS)) {
+        if (!['residential', 'commercial', 'public'].includes(b.category) || hidden.includes(id)) continue;
+        assert.ok(b.waterConsumption > 0, `${id} sem gasto de água`);
+        assert.ok(b.pollutionGeneration > 0, `${id} sem poluição`);
+    }
+    for (const kind of ['residential', 'commercial']) {
+        const [l, m, h] = ['light', 'balanced', 'heavy'].map(w => BUILDINGS[`zone_${kind}_${w}`]);
+        assert.ok(l.pollutionGeneration < m.pollutionGeneration && m.pollutionGeneration < h.pollutionGeneration, `${kind}: poluição gradual`);
+        assert.ok(l.waterConsumption < m.waterConsumption && m.waterConsumption < h.waterConsumption, `${kind}: água gradual`);
+    }
+});
+
+test('água e poluição da zona acompanham a fase e saem exatamente como entraram', () => {
+    const zone = make('zone_residential_heavy', { zoneStage: 0 });
+    const { bs, rm } = city([zone]);
+    const water0 = rm.resources.water.buildingConsumption || 0;
+    bs.applyBuildingEffects(zone, true);
+    const scale = g('ZONE_GROWTH').effectScale[0];
+    assert.strictEqual((rm.resources.water.buildingConsumption || 0) - water0, BUILDINGS.zone_residential_heavy.waterConsumption * scale);
+    zone.zoneStage = 3; // mudou de fase sem refazer (o jogo refaz; aqui confere que a saída usa o que entrou)
+    bs.applyBuildingEffects(zone, false);
+    assert.strictEqual(rm.resources.water.buildingConsumption || 0, water0);
+});

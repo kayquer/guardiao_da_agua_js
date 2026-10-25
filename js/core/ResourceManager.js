@@ -24,7 +24,7 @@ class ResourceManager {
             },
             budget: {
                 current: GAME_CONFIG.resources.initialBudget,
-                income: 400, // Receita por minuto = BASE_INCOME + impostos + buildingIncome (calculateTaxRevenue)
+                income: 800, // Receita por minuto = BASE_INCOME + impostos + buildingIncome (calculateTaxRevenue)
                 buildingIncome: 0, // R$/min de prédios, zonas e aluguel (add/removeIncome)
                 expenses: 0
             },
@@ -347,7 +347,8 @@ class ResourceManager {
         log(`👥 Capacidade populacional atualizada: ${totalCapacity}`);
     }
 
-    static BASE_POPULATION_CAPACITY = 500;
+    // 100 (era 500): sem casas a cidade quase não tem onde morar; quem traz moradores são as zonas residenciais
+    static BASE_POPULATION_CAPACITY = 100;
 
     /**
      * Os fatores que decidem se gente nova chega (os mesmos de calculatePopulationAttraction e updatePopulation),
@@ -591,8 +592,9 @@ class ResourceManager {
     }
     
     // Receita fixa dos prédios (R$/min) fica em buildingIncome, porque calculateTaxRevenue recalcula income a cada ciclo
-    // 400 (era 1000): a renda fixa sozinha pagava uma bomba a cada 2,5 min; agora quem paga a cidade são os moradores
-    static BASE_INCOME = 400;
+    // 800: com a cidade começando com 30 moradores (eram 75), mantém a renda do começo em ~R$ 1.060/min (800 + 30 × 7 × 1,25),
+    // a mesma de antes; o resto da renda vem dos moradores e das zonas
+    static BASE_INCOME = 800;
 
     addIncome(amount) {
         const budget = this.resources.budget;
@@ -714,7 +716,7 @@ class ResourceManager {
         let fixedSum = 0;
         let housedPeople = 0;
         buildings.forEach(b => {
-            const fixed = b.effectsApplied ? ResourceManager.buildingWaterUse(b) : 0;
+            const fixed = b.effectsApplied ? (Number.isFinite(b.appliedWaterUse) ? b.appliedWaterUse : ResourceManager.buildingWaterUse(b)) : 0;
             const residents = share.get(b) || 0;
             if (fixed <= 0 && residents <= 0) return;
             fixedSum += fixed;
@@ -1005,7 +1007,7 @@ class ResourceManager {
             },
             budget: {
                 current: GAME_CONFIG.resources.initialBudget,
-                income: 400,
+                income: 800,
                 buildingIncome: 0,
                 expenses: 0
             },

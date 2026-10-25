@@ -802,12 +802,14 @@ class BuildingSystem {
                 }
             }
             
-            // Geração de poluição
+            // Geração de poluição (zona: pela fase, como a receita; tira exatamente o que somou — appliedPollution)
             if (config.pollutionGeneration) {
                 if (add) {
-                    resourceManager.addPollutionSource(config.pollutionGeneration);
+                    building.appliedPollution = config.pollutionGeneration * (this.getZoneResourceScale?.(building) ?? 1);
+                    resourceManager.addPollutionSource(building.appliedPollution);
                 } else {
-                    resourceManager.removePollutionSource(config.pollutionGeneration);
+                    resourceManager.removePollutionSource(Number.isFinite(building.appliedPollution) ? building.appliedPollution : config.pollutionGeneration);
+                    building.appliedPollution = undefined;
                 }
             }
             
@@ -909,13 +911,15 @@ class BuildingSystem {
                 }
             }
 
-            // Consumo de água (mesmo valor que o painel 💧 lista: ResourceManager.getWaterConsumers)
+            // Consumo de água (mesmo valor que o painel 💧 lista: ResourceManager.getWaterConsumers); zona: pela fase
             const waterUse = ResourceManager.buildingWaterUse(building);
             if (waterUse) {
                 if (add) {
-                    resourceManager.addWaterConsumption(waterUse);
+                    building.appliedWaterUse = waterUse * (this.getZoneResourceScale?.(building) ?? 1);
+                    resourceManager.addWaterConsumption(building.appliedWaterUse);
                 } else {
-                    resourceManager.removeWaterConsumption(waterUse);
+                    resourceManager.removeWaterConsumption(Number.isFinite(building.appliedWaterUse) ? building.appliedWaterUse : waterUse);
+                    building.appliedWaterUse = undefined;
                 }
             }
         }
@@ -1403,6 +1407,8 @@ class BuildingSystem {
             // Energia que está nos totais (zona: pela fase) e dano de evento (BuildingEfficiency.js)
             ...(Number.isFinite(building.appliedPowerConsumption) ? { appliedPowerConsumption: building.appliedPowerConsumption } : {}),
             ...(Number.isFinite(building.appliedPowerGeneration) ? { appliedPowerGeneration: building.appliedPowerGeneration } : {}),
+            ...(Number.isFinite(building.appliedWaterUse) ? { appliedWaterUse: building.appliedWaterUse } : {}),
+            ...(Number.isFinite(building.appliedPollution) ? { appliedPollution: building.appliedPollution } : {}),
             ...(Number.isFinite(building.damageFactor) ? { damageFactor: building.damageFactor } : {}),
             // Zona pronta: fase (0-3) e progresso da fase (ZoneGrowth.js)
             ...(Number.isInteger(building.zoneStage) ? {
@@ -1502,6 +1508,8 @@ class BuildingSystem {
         // Energia nos totais salvos. Save antigo: só a zona residencial pesada consumia (cheio); as outras zonas, nada
         if (Number.isFinite(saved.appliedPowerConsumption)) buildingData.appliedPowerConsumption = saved.appliedPowerConsumption;
         if (Number.isFinite(saved.appliedPowerGeneration)) buildingData.appliedPowerGeneration = saved.appliedPowerGeneration;
+        if (Number.isFinite(saved.appliedWaterUse)) buildingData.appliedWaterUse = saved.appliedWaterUse;
+        if (Number.isFinite(saved.appliedPollution)) buildingData.appliedPollution = saved.appliedPollution;
         else if (buildingData.effectsApplied && buildingType.powerConsumption) {
             buildingData.appliedPowerConsumption = buildingType.zoneType && saved.type !== 'zone_residential_heavy'
                 ? 0 : buildingType.powerConsumption;

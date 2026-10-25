@@ -27,7 +27,7 @@ const GAME_CONFIG = {
     resources: {
         initialWater: 1000,
         initialBudget: 22000, // era 40000: o começo ficava fácil demais (dava para construir quase tudo); agora cada obra é uma escolha
-        initialPopulation: 75,
+        initialPopulation: 30, // era 75: a cidade começa pequena e cresce com as zonas residenciais
         initialSatisfaction: 50,
         initialPollution: 15
     },

@@ -114,7 +114,7 @@ class EventSystem {
                 ]
             },
             educationalContent: {
-                message: 'Enchentes podem contaminar fontes de água e danificar sistemas de tratamento.',
+                message: 'Com o chão coberto por asfalto e telhados, a chuva não entra na terra e escorre de uma vez para os rios: as enchentes ficam maiores e podem sujar as fontes de água.',
                 tips: [
                     'Construa sistemas de drenagem adequados',
                     'Eleve estruturas críticas acima do nível de enchente',
@@ -765,7 +765,7 @@ class EventSystem {
         buildings.forEach(b => {
             if (b.underConstruction) return;
             const cfg = b.config || {};
-            // Ruas: quanto do chão a chuva não atravessa (runoffImpervious: asfalto 1, cascalho 0,4, terra 0,2)
+            // Ruas: quanto do chão a chuva não atravessa (runoffImpervious: asfalto 1, terra batida 0,6, cascalho 0,4)
             if (cfg.roadType) impervious += cfg.runoffImpervious || 0;
             // Zonas: fração do lote coberta (leve 0,1 com quintais … pesada até 0,9); os outros prédios cobrem 0,3
             else if (Number.isFinite(cfg.runoffImpervious)) impervious += (cfg.size || 1) ** 2 * cfg.runoffImpervious;
