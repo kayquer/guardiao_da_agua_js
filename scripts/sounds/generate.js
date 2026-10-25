@@ -15,20 +15,26 @@ const jobs = [];
 const voice = (name, text, seconds) => jobs.push({ name, text: `${text}, ${VOICE}`, seconds, kind: 'voice' });
 const sel = (group, text, seconds = 0.9) => { for (let i = 1; i <= 3; i++) jobs.push({ name: `sfx_select_${group}_${i}`, text: `${text}, ${SFX}`, seconds, kind: 'select' }); };
 
-// ----- Vozes de entrada (normal ×3, animado, preocupado, triste) -----
+// ----- Vozes de entrada (normal ×5, animado, preocupado, triste) -----
 voice('voc_claudia_hello_2', "Friendly adult Brazilian woman's short warm 'hey!' greeting vocal, smiling", 0.5);
 voice('voc_claudia_hello_3', "Adult woman's soft cheerful inviting 'mm-hm?' hum, friendly and curious", 0.6);
+voice('voc_claudia_hello_4', "Adult Brazilian woman's gentle welcoming 'oi!' greeting vocal, kind teacher smile", 0.5);
+voice('voc_claudia_hello_5', "Adult woman's short pleased 'aha!' vocal, warm and encouraging", 0.5);
 voice('voc_claudia_happy', "Adult woman's delighted short laugh 'ha-ha!', joyful and celebrating", 0.8);
 voice('voc_claudia_sad', "Adult woman's soft sad sigh 'aww...', gently disappointed", 0.9);
 
 voice('voc_jose_hello_2', "Warm older Brazilian man's friendly calling 'ô!' greeting vocal, relaxed and kind", 0.5);
 voice('voc_jose_hello_3', "Older man's calm content 'hmm-hm' hum, kind and easygoing", 0.6);
+voice('voc_jose_hello_4', "Older Brazilian man's relaxed friendly 'eh-eh' little chuckle greeting, easygoing fisherman", 0.6);
+voice('voc_jose_hello_5', "Older man's warm calm 'opa' greeting vocal, slow and kind", 0.5);
 voice('voc_jose_happy', "Older man's hearty happy laugh 'ha-ha-ha', proud and warm", 0.9);
 voice('voc_jose_worried', "Older man's low concerned 'hmm...' grumble, worried", 0.8);
 voice('voc_jose_sad', "Older man's heavy sad sigh, tired and disappointed", 0.9);
 
 voice('voc_marcia_hello_2', "Young adult woman's bright energetic 'hey!' vocal chirp, friendly", 0.5);
 voice('voc_marcia_hello_3', "Young woman's curious thoughtful upward 'hmm?' hum, interested", 0.6);
+voice('voc_marcia_hello_4', "Young adult woman's quick upbeat 'oi-oi!' greeting vocal, lively", 0.5);
+voice('voc_marcia_hello_5', "Young woman's interested 'ooh!' vocal reaction, curious and friendly", 0.5);
 voice('voc_marcia_happy', "Young woman's excited 'yay!' cheer with a small laugh, joyful", 0.8);
 voice('voc_marcia_worried', "Young woman's anxious short 'uh-oh' gasp, worried", 0.7);
 voice('voc_marcia_sad', "Young woman's soft disappointed 'ohh...' sigh, sad", 0.9);
@@ -36,6 +42,8 @@ voice('voc_marcia_sad', "Young woman's soft disappointed 'ohh...' sigh, sad", 0.
 voice('voc_paulo_hello_1', "Middle-aged Brazilian man's friendly energetic 'hey!' greeting vocal, confident and warm", 0.5);
 voice('voc_paulo_hello_2', "Middle-aged man's warm approving 'mm-hm!' hum, confident and kind", 0.6);
 voice('voc_paulo_hello_3', "Middle-aged man's upbeat short 'opa!' exclamation vocal, cheerful", 0.5);
+voice('voc_paulo_hello_4', "Middle-aged Brazilian man's friendly 'e aí!' greeting vocal, relaxed and confident", 0.5);
+voice('voc_paulo_hello_5', "Middle-aged man's short affirmative 'hm-hm!' nod sound, warm and reliable", 0.5);
 voice('voc_paulo_happy', "Middle-aged man's hearty cheerful laugh 'ha-ha!', excited", 0.8);
 voice('voc_paulo_worried', "Middle-aged man's concerned 'hmm...' with a tense exhale, worried", 0.8);
 voice('voc_paulo_sad', "Middle-aged man's disappointed long sigh 'aaah...', sad", 0.9);

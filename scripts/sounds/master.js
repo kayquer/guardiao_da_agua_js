@@ -5,7 +5,13 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '..', '..');
 const RAW = process.env.SOUNDS_RAW || path.join(require('os').tmpdir(), 'guardiao-sounds-raw');
-const jobs = JSON.parse(fs.readFileSync(path.join(RAW, 'jobs.json'), 'utf8'));
+const allJobs = JSON.parse(fs.readFileSync(path.join(RAW, 'jobs.json'), 'utf8'));
+// node master.js [filtro]: só os sons cujo nome contém o filtro (não regrava os que já estão no jogo)
+const filter = process.argv[2];
+const jobs = allJobs.filter(job => !filter || job.name.includes(filter));
+const today = new Date().toISOString().slice(0, 10);
+// Quantas variações tem o som (voc_x_hello_1.._5 → 5), para o registro "variação N de M"
+const variationsOf = name => allJobs.filter(j => j.name.replace(/_\d$/, '') === name.replace(/_\d$/, '')).length;
 const promptsFile = path.join(ROOT, 'Sounds/_prompts.json');
 const raw = fs.readFileSync(promptsFile, 'utf8');
 const crlf = raw.includes('\r\n');
@@ -22,7 +28,7 @@ for (const job of jobs) {
     const variation = job.name.match(/_(\d)$/);
     prompts.sfx[rel] = {
         generator: 'ElevenLabs Sound Effects v2', model: 'eleven_text_to_sound_v2', prompt: job.text,
-        date: '2026-10-24', chosenVersion: variation ? `variação ${variation[1]} de 3` : 'única', loop: false,
+        date: today, chosenVersion: variation ? `variação ${variation[1]} de ${Math.max(variationsOf(job.name), Number(variation[1]))}` : 'única', loop: false,
         loudnessTarget: '-18 LUFS', channels: 1
     };
     done.push(`${rel} ${(fs.statSync(out).size / 1024).toFixed(1)} KB`);

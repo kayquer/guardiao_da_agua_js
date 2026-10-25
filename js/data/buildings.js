@@ -73,12 +73,31 @@ const BUILDING_TYPES = {
         cost: 20000,
         size: 1,
         pollutionReduction: 20,
-        waterEfficiency: 1.2, // Melhora eficiência
         maintenanceCost: 250,
         icon: '🔧',
         color: '#388E3C',
         requirements: {
             terrain: ['grassland', 'lowland', 'hill'],
+            nearWater: false
+        }
+    },
+
+    water_reuse_plant: {
+        tier: 5, group: 'Água e esgoto', techRequires: [{ id: 'filter_station', count: 1 }, { id: 'research_center', count: 1 }, { ids: ['zone_industrial_light', 'zone_industrial_balanced', 'zone_industrial_heavy'], count: 1, label: 'Zona Industrial' }],
+        name: 'Estação de Água de Reúso',
+        description: 'Trata o esgoto até virar água boa para as fábricas: menos poluição e menos água tirada do rio',
+        category: 'treatment',
+        cost: 26000,
+        size: 3,
+        pollutionReduction: 35,
+        waterProduction: 120, // água de reúso para a indústria (sobra a do rio para as casas)
+        powerConsumption: 50,
+        maintenanceCost: 420,
+        reputationOnBuild: { environment: 3, business: 2 },
+        icon: '🔁',
+        color: '#26A69A',
+        requirements: {
+            terrain: ['grassland', 'lowland'],
             nearWater: false
         }
     },
@@ -188,7 +207,7 @@ const BUILDING_TYPES = {
         incomeGeneration: 500,
         satisfactionBonus: 10,
         maintenanceCost: 600,
-        icon: '🏞️',
+        icon: '⚙️', // central de tratamento avançada (o ícone SVG ecopark mostra engrenagens, gota e folha)
         color: '#00897B',
         requirements: { terrain: ['grassland', 'lowland'], nearWater: false }
     },
@@ -245,13 +264,73 @@ const BUILDING_TYPES = {
         cost: 12000,
         size: 1,
         waterStorage: 800,
-        distributionBonus: 1.5,
         maintenanceCost: 150,
         icon: '🗼',
         color: '#F57C00',
         requirements: {
             terrain: ['hill', 'grassland'],
             nearWater: false
+        }
+    },
+
+    // Nível avançado/especialista da água (inspirados em soluções brasileiras; estudos em data/building-studies.json)
+    loss_control_center: {
+        tier: 4, group: 'Controle e reúso', techRequires: [{ id: 'water_tower', count: 1 }, { id: 'water_quality_monitor', count: 1 }],
+        name: 'Centro de Controle de Perdas',
+        description: 'Sensores e setores na rede acham vazamentos: a água que se perdia volta a chegar às casas',
+        category: 'water',
+        cost: 9000,
+        size: 2,
+        waterProduction: 60, // água recuperada de vazamentos (vale como água nova)
+        powerConsumption: 15,
+        maintenanceCost: 180,
+        reputationOnBuild: { citizens: 2, government: 1 },
+        icon: '📶',
+        color: '#0288D1',
+        requirements: {
+            terrain: ['grassland', 'lowland'],
+            nearWater: false
+        }
+    },
+
+    underground_dam: {
+        tier: 4, group: 'Captação', techRequires: [{ id: 'water_well', count: 1 }, { id: 'rain_garden', count: 1 }],
+        name: 'Barragem Subterrânea',
+        description: 'Parede escondida no chão do riacho segura a água da chuva na terra e enche o aquífero',
+        category: 'water',
+        cost: 7000,
+        size: 2,
+        aquiferRecharge: 2.5, // %/min devolvidos ao aquífero
+        runoffAbsorption: 12,
+        waterStorage: 300,
+        maintenanceCost: 60,
+        needsRoad: false,
+        reputationOnBuild: { environment: 2, citizens: 1 },
+        icon: '🧱',
+        color: '#8D6E63',
+        requirements: {
+            terrain: ['grassland', 'lowland'],
+            nearWater: true
+        }
+    },
+
+    desalination_plant: {
+        tier: 5, group: 'Captação', techRequires: [{ id: 'water_research_center', count: 1 }, { id: 'loss_control_center', count: 1 }],
+        name: 'Usina de Dessalinização',
+        description: 'Membranas tiram o sal da água: muita água potável, mas gasta muita energia e devolve salmoura',
+        category: 'water',
+        cost: 40000,
+        size: 3,
+        waterProduction: 400,
+        powerConsumption: 120,
+        pollutionGeneration: 4, // salmoura devolvida à água
+        maintenanceCost: 700,
+        reputationOnBuild: { citizens: 3, environment: -1 },
+        icon: '🧂',
+        color: '#4FC3F7',
+        requirements: {
+            terrain: ['grassland', 'lowland'],
+            nearWater: true
         }
     },
 
@@ -264,7 +343,7 @@ const BUILDING_TYPES = {
         cost: 40,
         size: 1,
         roadType: 'paved',
-        efficiency: 1.0,
+        runoffImpervious: 1, // asfalto não deixa a chuva entrar no chão (EventSystem.getFloodRisk)
         maintenanceCost: 1,
         icon: '🛣️',
         color: '#424242',
@@ -282,9 +361,26 @@ const BUILDING_TYPES = {
         cost: 20,
         size: 1,
         roadType: 'dirt',
-        efficiency: 0.7,
+        runoffImpervious: 0.2,
         icon: '🛤️',
         color: '#8D6E63',
+        requirements: {
+            terrain: ['grassland', 'lowland', 'hill'],
+            nearWater: false
+        }
+    },
+
+    gravel_road: {
+        tier: 1, group: 'Ruas', techRequires: [],
+        name: 'Estrada de Cascalho',
+        description: 'Pedrinhas soltas: sobe colinas, a chuva entra no chão e quase não vira lama',
+        category: 'roads',
+        cost: 30,
+        size: 1,
+        roadType: 'gravel',
+        runoffImpervious: 0.4,
+        icon: '🪨',
+        color: '#9E9A92',
         requirements: {
             terrain: ['grassland', 'lowland', 'hill'],
             nearWater: false
@@ -364,10 +460,10 @@ const BUILDING_TYPES = {
 
     // CATEGORIA: ZONAS RESIDENCIAIS
     zone_residential_light: {
-        tier: 1, group: 'Residencial', techRequires: [{ id: 'city_hall', count: 1 }],
+        tier: 1, group: 'Zonas residenciais', techRequires: [{ id: 'city_hall', count: 1 }],
         name: 'Zona Residencial Leve',
         description: 'Área para casas pequenas e baixa densidade populacional',
-        category: 'zoning',
+        category: 'residential',
         cost: 1000,
         size: 2,
         zoneType: 'residential_light',
@@ -384,10 +480,10 @@ const BUILDING_TYPES = {
     },
 
     zone_residential_balanced: {
-        tier: 2, group: 'Residencial', techRequires: [{ id: 'zone_residential_light', count: 2 }],
+        tier: 2, group: 'Zonas residenciais', techRequires: [{ id: 'zone_residential_light', count: 2 }],
         name: 'Zona Residencial Equilibrada',
         description: 'Área para casas suburbanas de densidade média',
-        category: 'zoning',
+        category: 'residential',
         cost: 2000,
         size: 2,
         zoneType: 'residential_balanced',
@@ -404,10 +500,10 @@ const BUILDING_TYPES = {
     },
 
     zone_residential_heavy: {
-        tier: 3, group: 'Residencial', techRequires: [{ id: 'zone_residential_balanced', count: 2 }],
+        tier: 3, group: 'Zonas residenciais', techRequires: [{ id: 'zone_residential_balanced', count: 2 }],
         name: 'Zona Residencial Pesada',
         description: 'Área para prédios de apartamentos de alta densidade',
-        category: 'zoning',
+        category: 'residential',
         cost: 4000,
         size: 2,
         zoneType: 'residential_heavy',
@@ -425,11 +521,11 @@ const BUILDING_TYPES = {
 
     // CATEGORIA: ZONAS INDUSTRIAIS
     zone_industrial_light: {
-        tier: 1, group: 'Industrial', techRequires: [{ ids: ['zone_residential_light', 'zone_residential_balanced', 'zone_residential_heavy'], count: 2, label: 'Zonas Residenciais' }],
+        tier: 1, group: 'Zonas industriais', techRequires: [{ ids: ['zone_residential_light', 'zone_residential_balanced', 'zone_residential_heavy'], count: 2, label: 'Zonas Residenciais' }],
         reputationOnBuild: { business: 2, environment: -2 },
         name: 'Zona Industrial Leve',
         description: 'Área para indústrias leves e manufatura',
-        category: 'zoning',
+        category: 'industrial',
         cost: 3000,
         size: 2,
         zoneType: 'industrial_light',
@@ -447,11 +543,11 @@ const BUILDING_TYPES = {
     },
 
     zone_industrial_balanced: {
-        tier: 2, group: 'Industrial', techRequires: [{ id: 'zone_industrial_light', count: 2 }],
+        tier: 2, group: 'Zonas industriais', techRequires: [{ id: 'zone_industrial_light', count: 2 }],
         reputationOnBuild: { business: 2, environment: -2 },
         name: 'Zona Industrial Equilibrada',
         description: 'Área para indústrias de porte médio',
-        category: 'zoning',
+        category: 'industrial',
         cost: 5000,
         size: 2,
         zoneType: 'industrial_balanced',
@@ -469,11 +565,11 @@ const BUILDING_TYPES = {
     },
 
     zone_industrial_heavy: {
-        tier: 3, group: 'Industrial', techRequires: [{ id: 'zone_industrial_balanced', count: 2 }],
+        tier: 3, group: 'Zonas industriais', techRequires: [{ id: 'zone_industrial_balanced', count: 2 }],
         reputationOnBuild: { business: 2, environment: -2 },
         name: 'Zona Industrial Pesada',
         description: 'Área para indústrias pesadas e químicas',
-        category: 'zoning',
+        category: 'industrial',
         cost: 8000,
         size: 3,
         zoneType: 'industrial_heavy',
@@ -492,11 +588,11 @@ const BUILDING_TYPES = {
 
     // CATEGORIA: ZONAS COMERCIAIS
     zone_commercial_light: {
-        tier: 1, group: 'Comercial', techRequires: [{ ids: ['zone_residential_light', 'zone_residential_balanced', 'zone_residential_heavy'], count: 1, label: 'Zona Residencial' }],
+        tier: 1, group: 'Zonas comerciais', techRequires: [{ ids: ['zone_residential_light', 'zone_residential_balanced', 'zone_residential_heavy'], count: 1, label: 'Zona Residencial' }],
         reputationOnBuild: { business: 2 },
         name: 'Zona Comercial Leve',
         description: 'Área para comércio local e serviços básicos',
-        category: 'zoning',
+        category: 'commercial',
         cost: 2500,
         size: 2,
         zoneType: 'commercial_light',
@@ -514,11 +610,11 @@ const BUILDING_TYPES = {
     },
 
     zone_commercial_balanced: {
-        tier: 2, group: 'Comercial', techRequires: [{ id: 'zone_commercial_light', count: 2 }],
+        tier: 2, group: 'Zonas comerciais', techRequires: [{ id: 'zone_commercial_light', count: 2 }],
         reputationOnBuild: { business: 2 },
         name: 'Zona Comercial Equilibrada',
         description: 'Área para shopping centers e comércio médio',
-        category: 'zoning',
+        category: 'commercial',
         cost: 4500,
         size: 2,
         zoneType: 'commercial_balanced',
@@ -536,11 +632,11 @@ const BUILDING_TYPES = {
     },
 
     zone_commercial_heavy: {
-        tier: 3, group: 'Comercial', techRequires: [{ id: 'zone_commercial_balanced', count: 2 }],
+        tier: 3, group: 'Zonas comerciais', techRequires: [{ id: 'zone_commercial_balanced', count: 2 }],
         reputationOnBuild: { business: 2 },
         name: 'Zona Comercial Pesada',
         description: 'Área para grandes centros comerciais e escritórios',
-        category: 'zoning',
+        category: 'commercial',
         cost: 7000,
         size: 3,
         zoneType: 'commercial_heavy',
@@ -574,6 +670,24 @@ const BUILDING_TYPES = {
         requirements: {
             terrain: ['water'],
             nearWater: true
+        }
+    },
+
+    tidal_plant: {
+        tier: 4, group: 'Renováveis', techRequires: [{ id: 'hydroelectric_plant', count: 1 }, { id: 'research_center', count: 1 }],
+        name: 'Usina Maremotriz',
+        description: 'Turbinas debaixo d\'água giram com a maré. Só cabe num corpo d\'água grande (8 blocos ou mais)',
+        category: 'power',
+        cost: 18000,
+        size: 2,
+        powerGeneration: 300,
+        maintenanceCost: 260,
+        reputationOnBuild: { environment: 2 },
+        icon: '🌗',
+        color: '#00838F',
+        requirements: {
+            terrain: ['water'],
+            minWaterBody: 8 // células de água ligadas (GridManager.getWaterBodySize)
         }
     },
 
@@ -697,7 +811,7 @@ const BUILDING_TYPES = {
         powerGeneration: 140,
         pollutionGeneration: 8,
         maintenanceCost: 200,
-        icon: '🪵',
+        icon: '🎋', // bagaço de cana (o ícone SVG biomass-plant mostra a pilha de bagaço e a caldeira)
         color: '#6D4C41',
         requirements: { terrain: ['grassland', 'lowland'], nearWater: false }
     },
@@ -911,7 +1025,7 @@ const BUILDING_TYPES = {
     },
 
     bank: {
-        tier: 3, group: 'Comércio e serviços', techRequires: [{ id: 'office_building', count: 1 }],
+        tier: 4, group: 'Comércio e serviços', techRequires: [{ id: 'office_building', count: 1 }],
         reputationOnBuild: { business: 2 },
         name: 'Banco',
         description: 'Instituição financeira que gera receita através de serviços bancários',
@@ -951,12 +1065,12 @@ const BUILDING_TYPES = {
         }
     },
 
-    // CATEGORIA: TURISMO (Revenue-Generating)
+    // CATEGORIA: COMERCIAL — TURISMO (cultura, hospedagem e lazer; antes era a categoria "tourism")
     museum: {
         tier: 3, group: 'Cultura', techRequires: [{ id: 'monument', count: 1 }],
         name: 'Museu',
         description: 'Museu que atrai turistas e gera receita através de ingressos',
-        category: 'tourism',
+        category: 'commercial',
         cost: 60000,
         size: 3,
         incomeGeneration: 1200, // R$ por minuto
@@ -980,7 +1094,7 @@ const BUILDING_TYPES = {
         reputationOnBuild: { citizens: 3, environment: 1 },
         name: 'Parque Turístico',
         description: 'Parque temático que atrai visitantes e gera receita',
-        category: 'tourism',
+        category: 'commercial',
         cost: 80000,
         size: 4,
         incomeGeneration: 2500, // R$ por minuto
@@ -1001,7 +1115,7 @@ const BUILDING_TYPES = {
         tier: 2, group: 'Cultura', techRequires: [{ id: 'school', count: 1 }],
         name: 'Monumento Histórico',
         description: 'Marco histórico que atrai turistas e aumenta o prestígio da cidade',
-        category: 'tourism',
+        category: 'commercial',
         cost: 45000,
         size: 2,
         incomeGeneration: 900, // R$ por minuto
@@ -1022,7 +1136,7 @@ const BUILDING_TYPES = {
         tier: 3, group: 'Hospedagem e lazer', techRequires: [{ id: 'restaurant', count: 1 }],
         name: 'Hotel',
         description: 'Hotel que hospeda turistas e gera receita através de hospedagem',
-        category: 'tourism',
+        category: 'commercial',
         cost: 55000,
         size: 3,
         incomeGeneration: 1800, // R$ por minuto

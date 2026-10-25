@@ -46,6 +46,10 @@ const BUILDING_MODELS = {
     landfill:              { file: 'blender/landfill.glb', tris: 1482 },
     composting_yard:       { file: 'blender/composting_yard.glb', tris: 1158 },
     biodigester:           { file: 'blender/biodigester.glb', tris: 1408 },
+    water_reuse_plant:     { file: 'blender/water_reuse_plant.glb', tris: 938 },
+    loss_control_center:   { file: 'blender/loss_control_center.glb', tris: 964 },
+    underground_dam:       { file: 'blender/underground_dam.glb', tris: 592 },
+    desalination_plant:    { file: 'blender/desalination_plant.glb', tris: 1468 },
     ecopark:               { file: 'blender/ecopark.glb', tris: 1480 },
 
     // ===== ARMAZENAMENTO (reservatório = modelo próprio) =====
@@ -54,6 +58,7 @@ const BUILDING_MODELS = {
 
     // ===== ENERGIA (modelos próprios; as pás da eólica são nós "pas_N" no .glb e giram no jogo) =====
     hydroelectric_plant:   { file: 'blender/hydroelectric_plant.glb', tris: 972 },
+    tidal_plant:           { file: 'blender/tidal_plant.glb', tris: 640 },
     solar_farm:            { file: 'blender/solar_farm.glb', tris: 944 },
     wind_farm:             { file: 'blender/wind_farm.glb', tris: 846 },
     nuclear_plant:         { file: 'blender/nuclear_plant.glb', tris: 1488 },

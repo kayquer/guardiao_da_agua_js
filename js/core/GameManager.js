@@ -460,8 +460,8 @@ class GameManager {
                 // Rua: o traçado já construiu no pointerup; aqui só o toque sintetizado do mobile (uma célula)
                 this.buildingSystem.placeRoadAtClick(this.pickTerrainCell(x, y));
             } else if (this.buildMode && this.buildingSystem && this.buildingSystem.previewMode) {
-                // Building placement mode
-                this.handleBuildingPlacement(x, y);
+                // Building placement mode (Shift segurado: continua construindo o mesmo tipo)
+                this.handleBuildingPlacement(x, y, { keep: !!event.shiftKey });
             } else {
                 // Building selection mode
                 this.handleBuildingSelection(x, y);
@@ -472,7 +472,7 @@ class GameManager {
         }
     }
 
-    handleBuildingPlacement(x, y) {
+    handleBuildingPlacement(x, y, { keep = false } = {}) {
         const gridPos = this.pickTerrainCell(x, y);
         if (gridPos) {
             // Attempt to place building at this position
@@ -480,8 +480,8 @@ class GameManager {
 
             if (success) {
                 log(`✅ Building placed successfully at (${gridPos.x}, ${gridPos.z})`);
-                // Exit build mode after successful placement
-                this.exitBuildMode();
+                // Sai do modo construção, a não ser com Shift (fora dos tutoriais, que esperam uma obra por passo)
+                if (!keep || this.tutorialSystem?.isActive) this.exitBuildMode();
             } else {
                 console.warn(`⚠️ Cannot place building at (${gridPos.x}, ${gridPos.z})`);
                 // Play error sound
@@ -532,10 +532,7 @@ class GameManager {
                 const buildingId = pickInfo.pickedMesh.metadata.buildingId;
                 const building = this.buildingSystem.buildings.get(buildingId);
                 if (building) {
-                    this.selectBuilding(building);
-                    if (typeof AudioManager !== 'undefined') {
-                        AudioManager.playSound('sfx_click', 0.8);
-                    }
+                    this.selectBuilding(building, { sound: true });
                     log(`🏢 Building selected: ${building.config.name} at (${building.gridX}, ${building.gridZ})`);
                     return;
                 }
@@ -544,10 +541,7 @@ class GameManager {
             // Fallback: find building by mesh reference
             const building = this.findBuildingByMesh(pickInfo.pickedMesh);
             if (building) {
-                this.selectBuilding(building);
-                if (typeof AudioManager !== 'undefined') {
-                    AudioManager.playSound('sfx_click', 0.8);
-                }
+                this.selectBuilding(building, { sound: true });
                 log(`🏢 Building selected: ${building.config.name} at (${building.gridX}, ${building.gridZ})`);
             } else {
                 // Click on terrain or non-building mesh
@@ -1303,6 +1297,18 @@ class GameManager {
         const name = this.buildingSystem?.buildingTypes.get(buildingType)?.name || 'construção';
         const keyHint = this.uiManager?.isMobile ? '' : ' <small>(Esc)</small>';
         button.innerHTML = `✖ Cancelar ${name}${keyHint}`;
+        // Dica do Shift (só no computador; ruas já continuam sozinhas)
+        let hint = document.getElementById('build-shift-hint');
+        const showHint = !this.uiManager?.isMobile && !this.buildingSystem?.isRoadType?.(buildingType);
+        if (showHint && !hint) {
+            hint = document.createElement('div');
+            hint.id = 'build-shift-hint';
+            hint.className = 'build-shift-hint';
+            hint.innerHTML = 'Segure <kbd>Shift</kbd> ao clicar para construir mais iguais';
+            document.getElementById('game-screen')?.appendChild(hint);
+        } else if (!showHint && hint) {
+            hint.remove();
+        }
     }
 
     exitBuildMode() {
@@ -1318,6 +1324,7 @@ class GameManager {
         // Clear placement overlay
         this.clearPlacementOverlay();
         document.getElementById('cancel-build-btn')?.remove();
+        document.getElementById('build-shift-hint')?.remove();
 
         // Clear UI selection and feedback
         this.uiManager.clearBuildingSelection();

@@ -141,26 +141,45 @@ mixin(UIManager, {
         });
     },
 
-    /** Linhas de efeito do prédio a partir dos campos que a simulação lê (applyBuildingEffects). */
-    getBuildingEffectLines(type) {
+    /**
+     * Linhas de efeito do prédio a partir dos campos que a simulação lê (applyBuildingEffects, EventSystem).
+     * Uma fonte só para o menu de construção (type) e para o painel do prédio pronto (com building: valores reais —
+     * rendimento de água com seca/aquífero, energia pela fase da zona). tests/unit/data.test.js confere a cobertura.
+     */
+    getBuildingEffectLines(type, building = null) {
         const lines = [];
-        const add = (label, value, cls = '') => lines.push({ label, value, cls });
-        const fmt = n => Number(n).toLocaleString('pt-BR');
-        if (type.waterProduction) add('💧 Produz água', `${fmt(type.waterProduction)} L/min`, 'good');
+        const add = (label, value, cls = '', key = '') => lines.push({ label, value, cls, key });
+        const fmt = n => Number(n).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+        const bs = this.gameManager?.buildingSystem;
+        const rented = building?.isRented ? ' (alugado)' : '';
+        if (type.waterProduction && building && bs?.getBuildingWaterYield) {
+            const y = bs.getBuildingWaterYield(building);
+            const why = y.actual < y.nominal && y.reasons.length ? ` de ${fmt(y.nominal)} (${y.reasons.join(', ')})` : '';
+            add('💧 Produz água', `${fmt(y.actual)} L/min${why}${rented}`, y.actual < y.nominal ? 'bad' : 'good', 'water-yield');
+        } else if (type.waterProduction) add('💧 Produz água', `${fmt(type.waterProduction)} L/min`, 'good');
         if (type.waterStorage) add('🛢️ Guarda água', `${fmt(type.waterStorage)} L`, 'good');
         if (type.waterConsumption) add('🚰 Gasta água', `${fmt(type.waterConsumption)} L/min`, 'bad');
-        if (type.powerGeneration) add('⚡ Gera energia', `${fmt(type.powerGeneration)} MW`, 'good');
-        if (type.powerConsumption) add('🔌 Usa energia', `${fmt(type.powerConsumption)} MW`, 'bad');
+        if (type.powerGeneration) add('⚡ Gera energia', `${fmt(type.powerGeneration)} MW${rented}`, 'good');
+        if (type.powerConsumption) {
+            // Zona consome pela fase (BuildingEfficiency.getBuildingPowerConsumption)
+            const now = building?.active && bs?.getBuildingPowerConsumption ? bs.getBuildingPowerConsumption(building) : type.powerConsumption;
+            const ofFull = now !== type.powerConsumption ? ` (de ${fmt(type.powerConsumption)} MW com a zona completa)` : '';
+            add('🔌 Usa energia', `${fmt(now)} MW${ofFull}`, 'bad', 'power-consumption');
+        }
         if (type.pollutionReduction) add('🌿 Limpa a poluição', `-${fmt(type.pollutionReduction)}/min`, 'good');
         if (type.pollutionGeneration) add('🏭 Polui', `+${fmt(type.pollutionGeneration)}/min`, 'bad');
         if (type.satisfactionBonus) add('😊 Satisfação', `+${fmt(type.satisfactionBonus)}`, 'good');
-        if (type.incomeGeneration) add('💵 Rende', `R$ ${fmt(type.incomeGeneration)}/min`, 'good');
+        if (type.incomeGeneration) add('💵 Rende', `R$ ${fmt(type.incomeGeneration)}/min${rented}`, 'good');
         if (type.populationCapacity || type.population) add('👥 Moradores', fmt(type.populationCapacity || type.population), 'good');
         if (type.aquiferRecharge) add('🪨 Recarrega o aquífero', `+${fmt(type.aquiferRecharge)}%/min`, 'good');
         if (type.groundwater) add('🪨 Tira água do aquífero', 'sim', 'bad');
+        if (type.runoffAbsorption) add('🌧️ Segura a enxurrada', `${fmt(type.runoffAbsorption)} (menos enchente)`, 'good');
+        if (type.earlyWarning) add('📡 Avisa antes', 'eventos chegam com o dobro de aviso', 'good');
+        if (type.nearbyEfficiencyBonus) add('🔬 Melhora os vizinhos', `+${Math.round(type.nearbyEfficiencyBonus * 100)}% de eficiência`, 'good');
+        if (type.runoffImpervious) add('🌧️ Chão impermeável', 'a chuva escorre (mais enchente)', 'bad');
         if (type.plantedTree) add('🌳 Cresce e limpa o ar', '4 fases', 'good');
         if (type.maintenanceCost) add('🔧 Manutenção', `R$ ${fmt(type.maintenanceCost)}/min`, 'bad');
-        add('📐 Tamanho', `${type.size}×${type.size} quadrados`);
+        if (!building) add('📐 Tamanho', `${type.size}×${type.size} quadrados`);
         return lines;
     },
 

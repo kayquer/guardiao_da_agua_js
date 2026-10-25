@@ -226,6 +226,7 @@ class UIManager {
         // Histórico de notificações na tela de pausa (o toast fecha pelo próprio clique, em showNotification)
         this.setupNotificationHistory();
         this.setupResearchPanel();
+        this.setupSettingsPanel();
 
         // ===== ENHANCED RESOURCE PANEL INTERACTION SYSTEM =====
         this.setupEnhancedResourcePanelInteractions();
@@ -571,7 +572,9 @@ class UIManager {
             { id: 'power', name: '⚡ Energia', icon: '⚡' },
             { id: 'roads', name: '🛣️ Asfalto', icon: '🛣️' },
             { id: 'infrastructure', name: '🛣️ Infraestrutura', icon: '🛣️' },
-            { id: 'zoning', name: '🏘️ Zoneamento', icon: '🏘️' }
+            { id: 'residential', name: '🏘️ Residencial', icon: '🏘️' },
+            { id: 'commercial', name: '🏬 Comercial', icon: '🏬' },
+            { id: 'industrial', name: '🏭 Industrial', icon: '🏭' }
         ];
 
         // ===== FEATURE FLAGS: Hide categories based on release configuration =====
@@ -610,6 +613,7 @@ class UIManager {
             this.flushDeferredAlerts();
             this.updateEventTracker(); // barra do tempo de cada evento/aviso (ui/EventUI.js)
             this.flushEventDecisions(); // anúncio de evento esperando o modal do Paulo (ui/EventDecisionUI.js)
+            this.tickSimulatedWeather(); // clima simulado muda a cada hora de jogo (ui/WeatherUI.js)
         }
     }
 
@@ -652,14 +656,14 @@ class UIManager {
         const popups = [
             '.swal2-container', '.central-alert-overlay', '#study-book-overlay', '#controls-modal',
             '#weather-modal', '#lessons-hub', '#lesson-book', '.mission-interface', '.choice-dialog', '.loan-interface',
-            '.resource-details-panel', '#notification-history', '#research-panel', '#tech-modal', '#event-decision'
+            '.resource-details-panel', '#notification-history', '#research-panel', '#settings-panel', '#tech-modal', '#event-decision'
         ];
         return popups.some(selector => shown(document.querySelector(selector)));
     }
 
     updateSoftPauseBadge() {
         // Na tela de pausa (e no histórico de notificações dela) o jogo já está parado: o selo só cobriria o título
-        const pauseScreen = ['#pause-overlay', '#notification-history', '#research-panel']
+        const pauseScreen = ['#pause-overlay', '#notification-history', '#research-panel', '#settings-panel']
             .some(sel => document.querySelector(sel)?.getClientRects().length > 0);
         const paused = this.gameManager?.pauseReasons?.size > 0 && this.gameManager.gameState === 'playing' && !pauseScreen;
         let badge = document.getElementById('soft-pause-badge');
@@ -1252,6 +1256,7 @@ class UIManager {
             this.renderPlayerPanel();
             this.closeNotificationHistory({ focus: false });
             this.closeResearchPanel({ focus: false });
+            this.closeSettingsPanel({ focus: false });
             this.elements.pauseOverlay.classList.remove('hidden');
         }
     }
@@ -1824,7 +1829,7 @@ class UIManager {
         if (this.isMobile) return;
         const hudRight = document.querySelector('.hud-right');
         if (!hudRight) return;
-        if (hudRight.style.display !== 'flex' && typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_panel_open');
+        if (hudRight.style.display !== 'flex' && !this.quietPanelOpen && typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_panel_open');
         hudRight.style.display = 'flex';
     }
 
@@ -1846,10 +1851,8 @@ class UIManager {
     // ===== INFORMAÇÕES DE SELEÇÃO DE EDIFÍCIOS =====
     showBuildingSelectionInfo(building) {
         if (!building) return;
-        // Som característico do prédio pronto (AudioManager.onSelect); obra em andamento: só o clique de sempre
-        if (building.config && !building.underConstruction && this.gameManager?.gameState === 'playing') {
-            AudioManager.onSelect(AudioManager.selectGroupFor({ ...building.config, id: building.type }));
-        }
+        // O som da seleção toca só no clique (GameManager.selectBuilding com sound): este painel é refeito sozinho
+        // quando a eficiência, a fase da zona ou a árvore mudam, e o som do prédio voltava sem ninguém clicar
 
         // ===== ZERO-ERROR POLICY FIX: Validar config antes de usar =====
         if (!building.config) {
@@ -1973,43 +1976,9 @@ class UIManager {
     }
 
     generateBuildingStats(building) {
-        let stats = '';
-        const config = building.config;
-
-        if (config.waterProduction > 0) {
-            const status = building.isRented ? ' (Alugado)' : '';
-            stats += `<div class="stat-item">💧 Produção de Água: ${config.waterProduction}L/min${status}</div>`;
-        }
-
-        if (config.waterConsumption > 0) {
-            stats += `<div class="stat-item">🚰 Consumo de Água: ${config.waterConsumption}L/min</div>`;
-        }
-
-        if (config.powerGeneration > 0) {
-            const status = building.isRented ? ' (Alugado)' : '';
-            stats += `<div class="stat-item">⚡ Geração de Energia: ${config.powerGeneration} MW${status}</div>`;
-        }
-
-        if (config.powerConsumption > 0) {
-            // Zona consome pela fase (BuildingEfficiency.getBuildingPowerConsumption)
-            const bs = this.gameManager?.buildingSystem;
-            const now = building.active && bs?.getBuildingPowerConsumption ? bs.getBuildingPowerConsumption(building) : config.powerConsumption;
-            const ofFull = now !== config.powerConsumption ? ` (de ${config.powerConsumption} MW com a zona completa)` : '';
-            stats += `<div class="stat-item power-consumption">🔌 Consumo de Energia: ${now} MW${ofFull}</div>`;
-        }
-
-        if (config.incomeGeneration > 0) {
-            const status = building.isRented ? ' (Alugado)' : '';
-            stats += `<div class="stat-item">💵 Receita: R$ ${config.incomeGeneration}/min${status}</div>`;
-        }
-
-        if (config.maintenanceCost > 0) {
-            stats += `<div class="stat-item">💰 Manutenção: R$ ${config.maintenanceCost}/min</div>`;
-        }
-
-        if (config.pollutionGeneration > 0) {
-            stats += `<div class="stat-item">🏭 Poluição: +${config.pollutionGeneration}/s</div>`;
-        }
+        // Mesmos efeitos do menu de construção (BuildMenuUI.getBuildingEffectLines), com os valores reais deste prédio
+        const lines = building.type && !building.config.roadType ? this.getBuildingEffectLines({ ...building.config, id: building.type }, building) : [];
+        let stats = lines.map(l => `<div class="stat-item effect-line ${l.cls} ${l.key}">${l.label}: <b>${l.value}</b></div>`).join('');
 
         stats += this.gameManager?.buildingSystem?.generateEfficiencyWarnings?.(building) || ''; // sem rua, falta de energia
         stats += this.generateResidentStats(building);
@@ -2140,9 +2109,7 @@ class UIManager {
             'power': 'Energia',
             'roads': 'Asfalto',
             'infrastructure': 'Infraestrutura',
-            'zoning': 'Zoneamento',
             'commercial': 'Comercial',
-            'tourism': 'Turismo',
             'industrial': 'Industrial',
             'public': 'Público'
         };

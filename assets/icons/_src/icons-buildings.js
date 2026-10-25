@@ -49,6 +49,30 @@ const sawFactory = (x, base, w, h, c = 'orange', sw = 3) => {
     d += `V${base}z`;
     return path(d, P[c][0], { w: sw });
 };
+/** Três setas da reciclagem em círculo (centro cx, cy; raio r; cor c; espessura w). */
+function recyc(cx, cy, r, c, w) {
+    let s = '';
+    for (let i = 0; i < 3; i++) {
+        const a0 = (-80 + i * 120) * Math.PI / 180, a1 = a0 + 78 * Math.PI / 180;
+        const x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0), x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+        const tx = -Math.sin(a1), ty = Math.cos(a1), nx = Math.cos(a1), ny = Math.sin(a1), h = w * 1.5;
+        s += thick(`M${f1(x0)} ${f1(y0)}A${f1(r)} ${f1(r)} 0 0 1 ${f1(x1)} ${f1(y1)}`, c, w, { ow: Math.max(1.6, w * 0.8) }) +
+            poly(`${f1(x1 + tx * h * 1.2)},${f1(y1 + ty * h * 1.2)} ${f1(x1 + nx * h)},${f1(y1 + ny * h)} ${f1(x1 - nx * h)},${f1(y1 - ny * h)}`, c, { w: f1(Math.max(1, w * 0.4)) });
+    }
+    return s;
+}
+/** Clip-path inline: o id usa "§" (vira o prefixo do arquivo). */
+const clip = (id, shapes) => `<clipPath id="§${id}">${shapes}</clipPath>`;
+const clipped = (id, inner) => g(inner, { x: `clip-path="url(#§${id})"` });
+/** Chama (laranja com miolo amarelo) com a base em (x, y); s = escala (1 ≈ 22 de altura). */
+const FLAME = 'c-8 0-10-6-6-12 0 4 2 4 3 2-1-4 1-8 5-10-1 4 4 6 4 12 0 5-3 8-6 8z';
+const flame = (x, y, s, dur = 0.8, c = 'orange') => g(
+    path(`M${f1(x)} ${f1(y)}` + FLAME.replace(/-?\d+(\.\d+)?/g, n => f1(n * s)), P[c][0], { w: f1(Math.max(1.2, 2.2 * s)) }) +
+    ell(x + s, y - 4 * s, 2.2 * s, 3.5 * s, P.yellow[0], { s: 'none' }), { a: A('flicker', dur, 0, '50% 100%') });
+/** Fiapo de vapor subindo (traço branco ondulado). */
+const wisp = (x, y, s, dur, delay, w = 3) => g(thick(`M${x} ${y}c${f1(-3 * s)} ${f1(-3 * s)} ${f1(3 * s)} ${f1(-6 * s)} 0 ${f1(-10 * s)}`, '#fff', w, { ow: w * 0.8 }), { a: A('steam', dur, delay, 'center', 'ease-out') });
+const TURQ = '#2EE6D6';
+const STRAW = '#E8D592';
 const ZONE = {
     residential: { c: P.green[0], light: '#C9FFE2', name: 'Residencial' },
     industrial: { c: P.yellow[0], light: '#FFF3B0', name: 'Industrial' },
@@ -310,17 +334,32 @@ module.exports = [
             g(rect(30, 74, 10, 8, P.dark[0], { w: 2 }), { a: A('slide', 3, 0, 'center', 'linear') }) + line('M22 84l24-6', { w: 2.5 }),
         () => rect(10, 8, 4, 12, P.gray[0], { w: 1.5 }) + rect(18, 10, 4, 10, P.gray[0], { w: 1.5 }) + smokeSm(12, 5.5, 2.2, 'soot', 3.2) +
             box(5, 18, 22, 10, 'dark') + rect(9, 21.5, 4, 3, P.yellow[0], { w: 1.1 })),
+    // Sol com raios girando, brilho varrendo os painéis (clip) e pulsos de energia correndo pelo cabo até a torre.
     B('solar-farm', 'solar_farm', 'Usina Solar', '☀️',
-        () => ground() + g(pivot(98, 28, 22) + [0, 45, 90, 135, 180, 225, 270, 315].map(a => line('M98 10v-6', { s: P.yellow[0], w: 4, x: `transform="rotate(${a} 98 28)"` })).join(''), { a: A('spin', 12, 0, 'center', 'linear') }) +
-            ball(98, 28, 12, 'yellow') +
-            [[14, 74], [46, 82], [78, 74]].map(([x, y], i) =>
-                line(`M${x + 16} ${y + 16}v${100 - y - 10}`, { w: 3 }) +
-                poly(`${x},${y + 22} ${x + 8},${y} ${x + 40},${y} ${x + 32},${y + 22}`, P.blue[1]) +
-                line(`M${x + 16} ${y}l-8 22M${x + 24} ${y}l-8 22M${x + 4} ${y + 11}h32`, { s: P.glass[0], w: 1.8 }) +
-                poly(`${x},${y + 22} ${x + 8},${y} ${x + 40},${y} ${x + 32},${y + 22}`, 'none') +
-                spark(x + 28, y + 6, 5, 3, i)).join(''),
-        () => g(circ(25, 7, 4.5, P.yellow[0], { w: 1.5 }), { a: A('breathe', 3) }) + line('M13 23v6M21 23v6', { w: 1.6 }) +
-            poly('3,24 8,13 29,13 24,24', P.blue[1]) + line('M15 13l-5 11M22 13l-5 11M5.5 18.5h21', { s: P.glass[0], w: 1 }) + poly('3,24 8,13 29,13 24,24', 'none'),
+        () => {
+            const PN = [[6, 72], [36, 80], [66, 72]];
+            const pts = (x, y) => `${x},${y + 18} ${x + 7},${y} ${x + 33},${y} ${x + 26},${y + 18}`;
+            return ground() +
+                g(pivot(26, 26, 22) + [0, 45, 90, 135, 180, 225, 270, 315].map(a => line('M26 8v-6', { s: P.yellow[0], w: 4, x: `transform="rotate(${a} 26 26)"` })).join(''), { a: A('spin', 10, 0, 'center', 'linear') }) +
+                g(ball(26, 26, 12, 'yellow'), { a: A('breathe', 3) }) +
+                line('M100 104l6-52M116 104l-6-52M102 88h12M104 72h8M101 96l13-14M103 80l9-10', { w: 3 }) + rect(98, 48, 20, 5, P.gray[0], { rx: 2, w: 2.5 }) +
+                line('M100 50q8 6 24 2', { w: 2 }) +
+                PN.map(([x, y]) => line(`M${x + 16} ${y + 18}V100`, { w: 3 })).join('') +
+                thick('M18 100H108V54', P.dark[0], 3, { ow: 2 }) + g(line('M18 100H108V54', { s: P.yellow[0], w: 3, da: '4 8' }), { a: A('flow', 0.8, 0, 'center', 'linear') }) +
+                PN.map(([x, y]) => poly(pts(x, y), P.blue[1], { s: 'none' }) +
+                    line(`M${x + 15.7} ${y}l-7 18M${x + 24.3} ${y}l-7 18M${x + 3.5} ${y + 9}h26`, { s: P.glass[0], w: 1.8 })).join('') +
+                clip('pn', PN.map(([x, y]) => poly(pts(x, y), '#000')).join('')) +
+                clipped('pn', g(rect(46, 60, 9, 44, '#fff', { s: 'none', op: 0.75 }) + rect(58, 60, 4, 44, '#fff', { s: 'none', op: 0.5 }), { a: A('sweep', 2.8) })) +
+                PN.map(([x, y]) => poly(pts(x, y), 'none')).join('') +
+                g(path(boltD(118, 36, 0.5), P.yellow[0], { w: 2 }), { a: A('zap', 2.4, 0, 'center', 'linear') }) +
+                spark(56, 40, 4.5, 3.4, 1.5);
+        },
+        () => g(pivot(8, 8, 7.5) + line([0, 60, 120, 180, 240, 300].map(a => { const r = a * Math.PI / 180, c = Math.cos(r), s = Math.sin(r); return `M${f1(8 + 5.6 * c)} ${f1(8 + 5.6 * s)}L${f1(8 + 7.4 * c)} ${f1(8 + 7.4 * s)}`; }).join(''), { s: P.yellow[1], w: 1.6 }), { a: A('spin', 8, 0, 'center', 'linear') }) +
+            circ(8, 8, 4, P.yellow[0], { w: 1.4 }) + line('M15 23v5', { w: 1.6 }) +
+            line('M15 28h14V14', { w: 3 }) + g(line('M15 28h14V14', { s: P.yellow[0], w: 1.4, da: '2 4' }), { a: A('march', 0.8, 0, 'center', 'linear') }) +
+            poly('3,23 8,13 27,13 22,23', P.blue[1]) + line('M14.3 13l-5 10M20.7 13l-5 10M5.5 18h19', { s: P.glass[0], w: 1 }) +
+            clip('p', poly('3,23 8,13 27,13 22,23', '#000')) + clipped('p', g(rect(13, 10, 3.5, 16, '#fff', { s: 'none', op: 0.8 }), { a: A('sweep', 2.8) })) +
+            poly('3,23 8,13 27,13 22,23', 'none'),
         [ST + ' (solar_farm)']),
     B('wind-farm', 'wind_farm', 'Campo Eólico', '💨',
         () => ground() + g(cloud(100, 22, 0.5), { a: A('drift', 7) }) +
@@ -608,5 +647,280 @@ module.exports = [
             line('M14.5 27c0-4 .3-8 1.3-12', { w: 3.4 }) + line('M14.5 27c0-4 .3-8 1.3-12', { s: P.brown[0], w: 1.6 }) +
             line('M15.5 20h5.5', { s: P.sand[1], w: 1.4 }) +
             g(ball(15, 10, 7, 'lime', { w: 1.6 }) + circ(13, 8, 1.5, '#fff', { s: 'none', op: 0.45 }), { a: A('sway', 4, 0, '50% 100%') }),
-        [UI + ' (TreeInfoUI: árvore plantada, linha no painel de poluição)'])
+        [UI + ' (TreeInfoUI: árvore plantada, linha no painel de poluição)']),
+    // ----- LIXO E RECICLAGEM -----
+    // Contêineres da coleta seletiva soltos na calçada (sem galpão: a cooperativa é que tem prédio).
+    B('recycling-point', 'recycling_point', 'Ponto de Coleta Reciclável', '♻️',
+        () => {
+            const bins = [['blue', 12], ['red', 40], ['leaf', 68], ['yellow', 96]];
+            const glyph = (k, cx) => [
+                rect(cx - 5, 72, 10, 13, '#fff', { w: 2 }) + line(`M${cx - 3} 76h6M${cx - 3} 80h6`, { w: 1.5 }),
+                path(`M${cx - 2} 69h4v3l2.5 3v11h-9V75l2.5-3z`, '#fff', { w: 2 }),
+                path(`M${cx - 1.5} 68h3v6c3 1 3.5 3 3.5 5v7h-10v-7c0-2 .5-4 3.5-5z`, '#fff', { w: 2 }),
+                rect(cx - 4.5, 71, 9, 14, '#fff', { rx: 2, w: 2 }) + line(`M${cx - 4.5} 75h9M${cx - 4.5} 81h9`, { w: 1.5 })][k];
+            return ground() + rect(6, 94, 116, 9, P.concrete[0], { rx: 3 }) +
+                g(path('M78 30h3v4l2 2.5V46h-7v-9.5l2-2.5z', P.leaf[0], { w: 2 }), { a: A('fall', 2.4, 0, 'center', 'ease-in') }) +
+                g(rect(19, 32, 10, 12, '#fff', { w: 2 }), { a: A('fall', 2.4, 1.2, 'center', 'ease-in') }) +
+                bins.map(([c, x], i) => box(x, 60, 22, 34, c, { rx: 3 }) + glyph(i, x + 11) +
+                    circ(x + 5, 97, 2.8, P.dark[0], { w: 2 }) + circ(x + 17, 97, 2.8, P.dark[0], { w: 2 }) +
+                    g(rect(x - 2, 53, 26, 8, P[c][1], { rx: 3, w: 2.5 }) + rect(x + 7, 50, 8, 4, P.dark[0], { rx: 1.5, w: 2 }),
+                        i === 1 ? { a: A('shake', 2.6, 0, '0% 100%') } : {})).join('') +
+                spark(110, 30, 6, 3.4) + spark(58, 36, 4, 3.4, 1.7);
+        },
+        () => [['blue', 2], ['red', 9.5], ['leaf', 17], ['yellow', 24.5]].map(([c, x], i) =>
+            rect(x, 15, 6, 12, P[c][0], { rx: 1, w: 1.4 }) +
+            g(rect(x - 0.6, 12, 7.2, 3, P[c][1], { rx: 1, w: 1.3 }), i === 1 ? { a: A('shake', 2.6, 0, '0% 100%') } : {})).join('') +
+            g(path('M19.2 3h1.6v1.5l1 1.2V10h-3.6V5.7l1-1.2z', '#fff', { w: 1 }), { a: A('fall', 2.4, 0, 'center', 'ease-in') }) +
+            line('M1 28.5h30', { w: 1.6 })),
+
+    // Galpão de portas abertas: esteira levando recicláveis, fardos prensados e as setas na fachada.
+    B('recycling-coop', 'recycling_coop', 'Cooperativa de Reciclagem', '♻️',
+        () => ground() +
+            poly('6,58 52,26 98,58', P.leaf[0]) + poly('52,30 92,57 60,57', P.leaf[1], { s: 'none' }) + poly('6,58 52,26 98,58', 'none') +
+            circ(52, 45, 9, '#fff', { w: 2.5 }) + g(pivot(52, 45, 7) + recyc(52, 45, 5.2, P.leaf[1], 2), { a: A('spin', 8, 0, 'center', 'linear') }) +
+            box(12, 58, 80, 48, 'concrete') + rect(20, 66, 64, 40, P.dark[1], { rx: 3 }) +
+            line('M30 70v6M52 70v6M74 70v6', { s: P.yellow[0], w: 2.5 }) +
+            [['blue', 0], ['red', 1], ['yellow', 2]].map(([c, d]) => g(rect(14, 82, 10, 9, P[c][0], { rx: 2, w: 2 }), { a: A('slide', 3, d, 'center', 'linear') })).join('') +
+            g(path('M30 91h3v-9h4v9h3z', P.leaf[0], { w: 1.6 }), { a: A('slide', 3, 1.5, 'center', 'linear') }) +
+            rect(6, 91, 88, 8, P.dark[0], { rx: 4 }) + g(line('M10 95h80', { s: P.gray[0], w: 3, da: '6 6' }), { a: A('flow', 1, 0, 'center', 'linear') }) +
+            line('M16 99v7M50 99v7M84 99v7', { w: 3 }) +
+            box(96, 86, 26, 20, 'sand', { rx: 2 }) + line('M103 86v20M115 86v20', { s: P.brown[1], w: 2 }) +
+            box(98, 66, 22, 20, 'blue', { rx: 2 }) + line('M104 66v20M114 66v20', { s: P.dark[0], w: 2 }) +
+            spark(112, 50, 5, 3.4) + spark(20, 34, 4, 3.4, 1.7),
+        () => poly('2,13 15,4 28,13', P.leaf[0], { w: 1.5 }) + rect(4, 13, 22, 15, P.concrete[0], { w: 1.5 }) + rect(7, 16, 16, 12, P.dark[1], { w: 1.2 }) +
+            g(rect(8, 20, 4, 3.5, P.red[0], { w: 1 }), { a: A('slide', 2.6, 0, 'center', 'linear') }) +
+            rect(2, 23.5, 22, 3, P.dark[0], { rx: 1.5, w: 1.2 }) + g(line('M4 25h18', { s: P.gray[0], w: 1.2, da: '2 2' }), { a: A('march', 1, 0, 'center', 'linear') }) +
+            rect(25, 20, 6, 8, P.sand[0], { w: 1.3 }) + line('M28 20v8', { s: P.brown[1], w: 1 })),
+
+    // Leiras de composto soltando vapor, folhas caindo, forcado e composteira giratória.
+    B('composting-yard', 'composting_yard', 'Pátio de Compostagem', '🍂',
+        () => ground() +
+            wisp(30, 66, 1.2, 3.4, 0) + wisp(66, 64, 1.4, 3.4, 1.1) + wisp(84, 70, 1.2, 3.4, 2.2) +
+            path('M10 100c4-20 14-30 26-30s22 10 26 30z', P.soil[0]) + path('M44 70c10 2 16 12 18 30H50c0-14-2-24-6-30z', P.soil[1], { s: 'none' }) + path('M10 100c4-20 14-30 26-30s22 10 26 30z') +
+            line('M80 72l10-28', { s: P.brown[0], w: 4 }) + line('M86 46l8 3M85 42l4 14M89 43l3 9', { w: 2.5 }) +
+            path('M36 106c4-24 16-34 32-34s28 10 32 34z', P.brown[0]) + path('M80 74c10 6 16 16 20 32H86c0-12-2-24-6-32z', P.brown[1], { s: 'none' }) + path('M36 106c4-24 16-34 32-34s28 10 32 34z') +
+            [[52, 92, 'orange'], [66, 84, 'lime'], [80, 96, 'orange'], [60, 100, 'leaf'], [24, 86, 'lime'], [40, 92, 'orange'], [72, 94, 'yellow']]
+                .map(([x, y, c], i) => ell(x, y, 3.2, 1.8, P[c][0], { w: 1.5, x: `transform="rotate(${i * 40 - 60} ${x} ${y})"` })).join('') +
+            [[46, 86], [88, 100], [30, 94], [64, 96]].map(([x, y]) => circ(x, y, 1.3, P.soil[1], { s: 'none' })).join('') +
+            line('M100 92l-6 14M116 92l6 14', { w: 3 }) +
+            g(pivot(108, 76, 14) + circ(108, 76, 14, P.leaf[0], { w: 3 }) + circ(108, 76, 9, P.leaf[1], { w: 2 }) + line('M99 76h18M108 67v18', { w: 2.5 }), { a: A('spin', 6, 0, 'center', 'linear') }) +
+            circ(108, 76, 2.5, P.dark[0], { w: 1.5 }) +
+            g(g(path('M24 36c4-6 10-6 12-4-2 4-8 6-12 4z', P.orange[0], { w: 2 }), { a: A('sway', 1.6) }), { a: A('fall', 3, 0, 'center', 'ease-in') }) +
+            g(g(path('M60 28c4-6 10-6 12-4-2 4-8 6-12 4z', P.lime[0], { w: 2 }), { a: A('sway', 1.6, 0.8) }), { a: A('fall', 3, 1.5, 'center', 'ease-in') }),
+        () => wisp(14, 13, 0.55, 3, 0, 1.4) + wisp(21, 14, 0.5, 3, 1.5, 1.4) +
+            path('M2 28c2-9 7-14 14-14s12 5 14 14z', P.brown[0], { w: 1.6 }) +
+            ell(10, 23, 2, 1.1, P.orange[0], { w: 1 }) + ell(20, 21, 2, 1.1, P.lime[0], { w: 1 }) + ell(23, 25.5, 2, 1.1, P.orange[0], { w: 1 }) +
+            g(path('M5 6c2-3 5-3 6-2-1 2-4 3-6 2z', P.orange[0], { w: 1.1 }), { a: A('fall', 3, 0, 'center', 'ease-in') })),
+
+    // Corte do aterro: manta no fundo, camadas de lixo cobertas de terra, trator compactando e o gás queimado no flare.
+    B('landfill', 'landfill', 'Aterro Sanitário', '🚛',
+        () => {
+            const L = y => f1(10 + (104 - y) * 0.53), R = y => f1(118 - (104 - y) * 0.53);
+            const band = (y0, y1, c) => poly(`${L(y1)},${y1} ${R(y1)},${y1} ${R(y0)},${y0} ${L(y0)},${y0}`, c, { s: 'none' });
+            return ground() + rect(106, 40, 8, 64, P.gray[0]) + rect(106, 50, 8, 5, P.red[0], { w: 2 }) + flame(111, 40, 0.9) +
+                band(70, 104, P.gray[0]) + band(70, 76, P.grass[0]) + band(83, 88, P.brown[0]) + band(97, 104, P.dark[1]) +
+                [[34, 80, 'red'], [52, 79, 'blue'], [70, 80, 'yellow'], [88, 79, 'white'], [26, 92, 'blue'], [44, 93, 'yellow'], [62, 91, 'red'], [82, 93, 'lime'], [98, 91, 'white']]
+                    .map(([x, y, c]) => rect(x, y, 6, 3.5, P[c][0], { w: 1.5 })).join('') +
+                [32, 52, 72, 92].map(x => circ(x, 100.5, 1.8, '#fff', { w: 1.2 })).join('') +
+                line(`M${L(104)} 104L${L(70)} 70H${R(70)}L${R(104)} 104z`) + line(`M${L(97)} 97H${R(97)}`, { w: 2 }) +
+                thick('M98 82h8', P.gray[0], 4, { ow: 3 }) +
+                g(rect(46, 62, 28, 8, P.dark[0], { rx: 4 }) + circ(51, 66, 2, P.gray[0], { w: 1.5 }) + circ(69, 66, 2, P.gray[0], { w: 1.5 }) +
+                    box(52, 50, 20, 12, 'yellow', { rx: 2 }) + rect(58, 41, 11, 10, P.glass[0], { w: 2.5 }) +
+                    path('M46 66l-6-14h4l6 10', P.gray[0], { w: 2.5 }), { a: A('scan', 4) }) +
+                spark(20, 40, 5, 3.4);
+        },
+        () => poly('3,28 29,28 24,16 8,16', P.gray[0], { s: 'none' }) + poly('3,28 29,28 28,25.5 4,25.5', P.dark[1], { s: 'none' }) +
+            poly('7,19 25,19 24,16 8,16', P.grass[0], { s: 'none' }) + line('M5.5 22h21', { s: P.brown[0], w: 1.8 }) +
+            line('M3 28h26l-5-12H8z', { w: 1.6 }) + rect(25.5, 8, 3, 12, P.gray[0], { w: 1.3 }) + flame(27, 8, 0.32, 0.8)),
+
+    // Tanque de concreto com cúpula verde; no corte, o lodo borbulha; o biogás sai pelo cano e vira chama azul.
+    B('biodigester', 'biodigester', 'Biodigestor', '🫧',
+        () => ground() + thick('M56 34V22h50v28', P.gray[0], 5, { ow: 4 }) +
+            circ(82, 22, 6, '#fff', { w: 2.5 }) + g(line('M82 22l3-3', { w: 2 }), { a: A('tilt', 2, 0, '0% 100%') }) +
+            rect(98, 50, 16, 10, P.dark[0], { rx: 2 }) + flame(106, 50, 0.85, 0.7, 'blue') +
+            path('M8 76h16l-3 10h-10z', P.gray[0]) + thick('M16 86v6h6', P.gray[0], 4, { ow: 3 }) +
+            box(20, 66, 72, 40, 'concrete') +
+            path('M18 68a38 34 0 0 1 76 0z', P.leaf[0], { s: 'none' }) + path('M74 40a38 34 0 0 1 20 28H76c0-10-2-20-2-28z', P.leaf[1], { s: 'none' }) +
+            path('M18 68a38 34 0 0 1 76 0z') + line('M30 52a28 24 0 0 1 16-14', { s: '#fff', w: 3, op: 0.7 }) + rect(14, 66, 84, 5, P.concrete[1], { rx: 2 }) +
+            rect(30, 76, 52, 24, '#8C6A3C', { rx: 3 }) + line(waveD(30, 82, 80, 1.5, 8), { s: '#B9915A', w: 2.5 }) +
+            [[38, 0], [50, 0.8], [62, 1.6], [74, 0.4], [44, 2]].map(([x, d]) => g(circ(x, 94, 2.8, '#C6F6D5', { w: 1.8 }), { a: A('rise', 2.4, d, 'center', 'ease-out') })).join('') +
+            spark(112, 80, 5, 3.4) + spark(20, 40, 4, 3.4, 1.7),
+        () => rect(4, 18, 22, 10, P.concrete[0], { w: 1.5 }) + path('M3 19a12 11 0 0 1 24 0z', P.leaf[0], { w: 1.6 }) +
+            rect(7, 21, 16, 5, '#8C6A3C', { w: 1 }) + g(circ(12, 24.5, 1.3, '#C6F6D5', { w: 0.8 }), { a: A('rise', 2.2, 0, 'center', 'ease-out') }) +
+            g(circ(18, 24.5, 1.3, '#C6F6D5', { w: 0.8 }), { a: A('rise', 2.2, 1.1, 'center', 'ease-out') }) +
+            line('M15 8V5h12v8', { w: 1.6 }) + flame(27, 14, 0.3, 0.7, 'blue')),
+
+    // Central de tratamento avançado: engrenagens da triagem automática, tanque de água limpa, gota e folha (energia e adubo).
+    B('ecopark', 'ecopark', 'Ecoparque', '🏭',
+        () => ground() +
+            path('M88 66v36a16 4 0 0 0 32 0V66', P.concrete[0]) + path('M110 69v36a16 4 0 0 0 10-3V66z', P.concrete[1], { s: 'none' }) + path('M88 66v36a16 4 0 0 0 32 0V66') +
+            ell(104, 66, 16, 4, P.water[0], { w: 2.5 }) + g(ell(104, 66, 8, 2, 'none', { s: '#fff', w: 2 }), { a: A('ripple', 2.4, 0, 'center', 'ease-out') }) +
+            thick('M84 92h6', P.gray[0], 6, { ow: 4 }) +
+            box(12, 50, 74, 56, 'blue', { rx: 3 }) + rect(8, 44, 82, 8, P.dark[0], { rx: 3 }) +
+            circ(36, 80, 19, P.blue[1], { s: 'none' }) +
+            g(gear(36, 80, 13, 'yellow'), { a: A('spin', 6, 0, 'center', 'linear') }) +
+            g(gear(62, 66, 8, 'concrete', { teeth: 6 }), { a: A('spinr', 3.7, 0, 'center', 'linear') }) +
+            lit(56, 82, 10, 9, 5) + lit(70, 82, 10, 9, 5, 2.5) + rect(58, 96, 18, 10, P.dark[1], { w: 2.5 }) +
+            line('M28 44V30', { w: 3 }) + circ(28, 22, 10, '#fff', { w: 2.5 }) +
+            g(pivot(28, 22, 8) + recyc(28, 22, 6, P.leaf[1], 2.2), { a: A('spin', 8, 0, 'center', 'linear') }) +
+            g(path('M70 44c-10-2-14-10-12-18 8 0 14 8 12 18z', P.green[0], { w: 2.5 }) + line('M70 44c-2-6-4-10-8-14', { w: 2 }), { a: A('sway', 3.5, 0, '50% 100%') }) +
+            g(drop(104, 40, 9), { a: A('bob', 3) }) + spark(118, 22, 5, 3.4) + spark(90, 26, 4, 3.4, 1.7),
+        () => rect(3, 13, 18, 15, P.blue[0], { w: 1.5 }) + rect(2, 11, 20, 3, P.dark[0], { rx: 1, w: 1.2 }) +
+            g(gear(11, 21, 4, 'yellow', { teeth: 6 }), { a: A('spin', 6, 0, 'center', 'linear') }) +
+            path('M17 11c-3-1-4-4-3-6 3 0 4 3 3 6z', P.green[0], { w: 1.1 }) +
+            g(drop(26, 20, 4, 'water', { noHl: true, w: 1.4 }), { a: A('bob', 3) }) + line('M1 28.5h30', { w: 1.6 })),
+
+    // ----- ENERGIA (novos) -----
+    // Bagaço de cana moído sobe na esteira até a caldeira; chaminé solta vapor claro e o exaustor gira.
+    B('biomass-plant', 'biomass_plant', 'Usina de Biomassa', '🎋',
+        () => ground() + smokes(99, 24, 7, 'white', 3.4, 3) + rect(94, 28, 10, 22, P.gray[0]) + rect(94, 34, 10, 5, P.leaf[0], { w: 2 }) +
+            box(64, 50, 46, 56, 'concrete') + rect(60, 44, 54, 8, P.leaf[1], { rx: 3 }) +
+            circ(78, 76, 10, P.dark[0], { w: 2.5 }) +
+            g(pivot(78, 76, 8) + [0, 90, 180, 270].map(a => path('M78 76c2-3 6-4 7-1-1 2-4 3-7 1z', P.concrete[0], { w: 1.5, x: `transform="rotate(${a} 78 76)"` })).join(''), { a: A('spin', 1.6, 0, 'center', 'linear') }) +
+            circ(78, 76, 2, P.gray[0], { w: 1.5 }) +
+            rect(90, 82, 14, 12, P.dark[0], { rx: 2, w: 2.5 }) + g(rect(92, 84, 10, 8, P.orange[0], { s: 'none' }), { a: A('fade', 1.4) }) +
+            rect(70, 96, 12, 10, P.dark[1], { w: 2.5 }) +
+            line('M40 104l2-20M58 104V64', { w: 3 }) +
+            thick('M26 96L70 46', P.dark[0], 7, { ow: 3 }) + g(line('M26 96L70 46', { s: STRAW, w: 4, da: '5 7' }), { a: A('flow', 1.2, 0, 'center', 'linear') }) +
+            path('M4 106c3-18 12-30 24-30s20 12 24 30z', STRAW) + path('M38 80c8 6 12 14 14 26H40c0-10-1-18-2-26z', P.sand[1], { s: 'none' }) + path('M4 106c3-18 12-30 24-30s20 12 24 30z') +
+            line('M14 96l6-4M24 88l7 2M30 98l6-5M18 104l5-3M40 96l4 4M28 82l4-3', { s: P.sand[1], w: 2 }) +
+            g(path(boltD(118, 34, 0.55), P.yellow[0], { w: 2 }), { a: A('zap', 2.4, 0, 'center', 'linear') }),
+        () => smokeSm(23, 4, 2, 'white', 3.2) + rect(21, 6, 4, 9, P.gray[0], { w: 1.3 }) + rect(14, 14, 15, 14, P.concrete[0], { w: 1.5 }) +
+            rect(13, 12, 17, 3, P.leaf[1], { rx: 1, w: 1.2 }) + g(rect(19, 20, 5, 4, P.orange[0], { w: 1 }), { a: A('fade', 1.4) }) +
+            line('M7 23L15 14', { w: 3.2 }) + g(line('M7 23L15 14', { s: STRAW, w: 1.6, da: '2 2' }), { a: A('march', 1, 0, 'center', 'linear') }) +
+            path('M1 28c1-6 4-9 7-9s6 3 7 9z', STRAW, { w: 1.5 })),
+
+    // Cana verde balançando, moenda com rolos girando (sai caldo) e fábrica soltando vapor.
+    B('sugarcane-mill', 'sugarcane_mill', 'Usina Sucroenergética', '🌾',
+        () => {
+            const cane = (x, h, d) => g(rect(x - 2.5, 104 - h, 5, h, P.lime[0], { w: 2 }) +
+                line(Array.from({ length: Math.floor(h / 12) }, (_, i) => `M${x - 2.5} ${104 - 12 * (i + 1)}h5`).join(''), { w: 1.5 }) +
+                path(`M${x} ${104 - h}c-6-2-10-8-10-14 6 2 9 7 10 14zM${x} ${104 - h}c6-4 12-6 16-4-4 4-10 5-16 4z`, P.leaf[0], { w: 2 }), { a: A('sway', 3.4, d, '50% 100%') });
+            return ground() + smokes(102, 26, 7, 'white', 3.6, 3) + rect(97, 30, 10, 26, P.gray[0]) + rect(97, 36, 10, 5, P.red[0], { w: 2 }) +
+                box(78, 56, 40, 50, 'white') + roof(74, 40, 48, 18, 'red') + lit(84, 66, 10, 9, 5) + lit(102, 66, 10, 9, 5, 2.5) + doorL(90, 88, 14, 18, 'brown') +
+                cane(12, 62, 0) + cane(22, 74, 1) + cane(32, 56, 2) +
+                box(40, 58, 32, 44, 'gray', { rx: 3 }) +
+                g(gear(56, 70, 8, 'yellow', { teeth: 10 }), { a: A('spin', 3, 0, 'center', 'linear') }) +
+                g(gear(56, 89, 8, 'yellow', { teeth: 10 }), { a: A('spinr', 3, 0, 'center', 'linear') }) +
+                ell(56, 106, 12, 3, P.lime[1], { w: 2 }) +
+                g(drop(66, 101, 3, P.lime[0], { noHl: true, w: 2 }), { a: A('drip', 1.6, 0, 'center', 'ease-in') }) +
+                spark(64, 30, 5, 3.4);
+        },
+        () => g(rect(4, 9, 3, 19, P.lime[0], { w: 1.3 }) + line('M4 15h3M4 21h3', { w: 1 }) + path('M5.5 9c-3-1-4-4-4-6 3 1 4 3 4 6zM5.5 9c3-2 5-2 7-1-2 2-5 2-7 1z', P.leaf[0], { w: 1.1 }), { a: A('sway', 3.4, 0, '50% 100%') }) +
+            rect(10, 12, 9, 16, P.gray[0], { w: 1.4 }) + [17, 24].map((y, i) => g(circ(14.5, y, 3, P.yellow[0], { w: 1.2 }) + line(`M12.5 ${y}h4M14.5 ${y - 2}v4`, { w: 1 }), { a: A(i ? 'spinr' : 'spin', 3, 0, 'center', 'linear') })).join('') +
+            rect(21, 16, 9, 12, '#fff', { w: 1.4 }) + rect(25, 7, 3, 9, P.gray[0], { w: 1.2 }) + smokeSm(26.5, 4.5, 1.8, 'white', 3.2)),
+
+    // Estrada de pedrinhas cinza-claras: a chuva infiltra entre elas (gotas somem no chão).
+    B('gravel-road', 'gravel_road', 'Estrada de Cascalho', '🪨',
+        () => ground() + tree(16, 76, 0.75, { a: A('sway', 4, 0, '50% 100%') }) +
+            poly('50,18 78,18 118,110 10,110', '#CBD3D8') + poly('64,18 78,18 118,110 80,110', '#B4BEC5', { s: 'none' }) + line('M50 18L10 110M78 18l40 92') +
+            [[40, 92, 4, 'gray'], [86, 98, 3.5, 'white'], [60, 74, 3, 'soot'], [72, 50, 2.5, 'gray'], [56, 48, 2.5, 'white'], [96, 84, 3.5, 'gray'], [30, 102, 3, 'white'],
+                [64, 96, 3.5, 'soot'], [48, 66, 2.8, 'white'], [78, 70, 3, 'gray'], [62, 30, 2, 'soot'], [104, 102, 3, 'soot'], [70, 84, 2.4, 'white']]
+                .map(([x, y, r, c]) => ell(x, y, r * 1.3, r, P[c][0], { w: 2 })).join('') +
+            g(ell(52, 86, 4.5, 3.4, P.gray[1], { w: 2 }), { a: A('hop', 2.2) }) + g(ell(84, 60, 3.6, 2.7, P.white[1], { w: 2 }), { a: A('hop', 2.2, 1.1) }) +
+            g(drop(70, 30, 3.5, 'water', { noHl: true, w: 2 }), { a: A('fall', 2.2, 0, 'center', 'ease-in') }) +
+            g(drop(44, 48, 3.5, 'water', { noHl: true, w: 2 }), { a: A('fall', 2.2, 1.1, 'center', 'ease-in') }) +
+            path('M104 50l4-8 4 8M112 50l3-6 3 6', 'none', { s: P.leaf[0], w: 3 }),
+        () => poly('11.5,3 20.5,3 29,29 3,29', '#CBD3D8') +
+            [[11, 22, 1.6], [21, 16, 1.3], [15, 10, 1.1], [23, 25, 1.5], [17, 19, 1.2]].map(([x, y, r]) => ell(x, y, r * 1.3, r, P.gray[0], { w: 1 })).join('') +
+            g(ell(14, 26, 1.8, 1.3, P.white[1], { w: 1 }), { a: A('hop', 2.2) })),
+
+    // Corte da barragem na maré: mar alto à esquerda, bacia à direita, turbina girando no túnel e a Lua puxando a maré.
+    B('tidal-plant', 'tidal_plant', 'Usina Maremotriz', '🌗',
+        () => ground() +
+            g(path('M30 8a14 14 0 1 0 12 22a11 11 0 1 1-12-22z', P.yellow[0], { w: 2.5 }), { a: A('breathe', 4) }) +
+            g(path(starD(56, 14, 4), '#fff', { w: 1.5 }), { a: A('twinkle', 2.6) }) + g(path(starD(112, 24, 3.5), '#fff', { w: 1.5 }), { a: A('twinkle', 2.6, 1.3) }) +
+            rect(6, 62, 50, 44, P.water[0], { rx: 6 }) + rect(72, 74, 50, 32, P.water[0], { rx: 6 }) +
+            g(line(waveD(10, 50, 66, 2.5, 10), { s: '#fff', w: 2.5 }), { a: A('drift', 2.6) }) +
+            g(line(waveD(76, 118, 78, 2, 10), { s: '#fff', w: 2.5 }), { a: A('drift', 2.6, 1.3) }) +
+            g(path('M20 82l5-7 5 7M20 90l5 7 5-7', 'none', { s: '#fff', w: 2.5 }), { a: A('fade', 2.4) }) +
+            rect(6, 100, 116, 8, P.sand[0], { rx: 3 }) +
+            poly('50,56 78,56 86,106 42,106', P.concrete[0]) + poly('68,56 78,56 86,106 72,106', P.concrete[1], { s: 'none' }) + poly('50,56 78,56 86,106 42,106', 'none') +
+            box(55, 44, 18, 12, 'white') + rect(53, 40, 22, 5, P.dark[0], { rx: 2 }) +
+            rect(42, 82, 44, 16, P.water[1], { rx: 2 }) +
+            g(line('M44 86h40M44 94h40', { s: '#fff', w: 2, da: '6 6' }), { a: A('flow', 1, 0, 'center', 'linear') }) +
+            g(pivot(64, 90, 8) + [0, 120, 240].map(a => path('M64 90c3-2 4-7 0-9-3 2-3 6 0 9z', P.yellow[0], { w: 1.8, x: `transform="rotate(${a} 64 90)"` })).join(''), { a: A('spin', 2, 0, 'center', 'linear') }) +
+            circ(64, 90, 2.4, P.dark[0], { w: 1.5 }) +
+            line('M64 40V32', { w: 2.5 }) + g(path(boltD(64, 26, 0.4), P.yellow[0], { w: 1.8 }), { a: A('zap', 2.4, 0, 'center', 'linear') }),
+        () => path('M8 2a5 5 0 1 0 4 8a4 4 0 1 1-4-8z', P.yellow[0], { w: 1.2 }) +
+            rect(1, 15, 12, 14, P.water[0], { w: 1.4 }) + rect(19, 19, 12, 10, P.water[0], { w: 1.4 }) + poly('12.5,9 19.5,9 22,29 10,29', P.concrete[0], { w: 1.5 }) +
+            g(pivot(16, 23, 3.4) + line('M16 19.6v6.8M13 23h6', { s: P.dark[0], w: 1.6 }), { a: A('spin', 2, 0, 'center', 'linear') }) +
+            g(line('M2 17q2-1.5 4 0t4 0', { s: '#fff', w: 1.1 }), { a: A('drift', 2.6) })),
+
+    // ----- ÁGUA (novos) -----
+    // Sala de controle: mapa da rede com o vazamento piscando e antena mandando sinal dos sensores.
+    B('loss-control-center', 'loss_control_center', 'Centro de Controle de Perdas', '📶',
+        () => ground() + line('M88 38V14M82 24l6-4 6 4M83 32l5-3 5 3', { w: 3 }) +
+            g(circ(88, 12, 3.5, P.red[0], { w: 2 }), { a: A('blinkx', 1.4) }) +
+            [0, 1, 2].map(i => g(path(`M${96 + i * 6} ${4 - i * 2}a${10 + i * 6} ${10 + i * 6} 0 0 1 0 ${16 + i * 4}`, 'none', { s: P.blue[0], w: 3 }), { a: A('fade', 1.8, i * 0.6) })).join('') +
+            box(14, 44, 82, 62, 'concrete') + rect(10, 38, 90, 8, P.dark[0], { rx: 3 }) +
+            rect(22, 52, 66, 36, '#16324A', { rx: 4 }) +
+            line('M28 62h54M28 78h54M40 56v28M66 56v28M52 62v16', { s: P.water[0], w: 3.5 }) +
+            [[40, 62], [40, 78], [52, 70], [66, 78], [82, 62], [28, 78]].map(([x, y]) => circ(x, y, 2.2, '#fff', { w: 1.2 })).join('') +
+            g(circ(66, 62, 9, 'none', { s: P.red[0], w: 2.5 }), { a: A('ripple', 1.6, 0, 'center', 'ease-out') }) +
+            g(circ(66, 62, 4, P.red[0], { w: 2 }), { a: A('blink', 1) }) +
+            rect(24, 94, 10, 8, P.glass[0], { w: 2.5 }) + doorL(46, 92, 16, 14, 'blue') + lit(74, 94, 12, 8, 4) +
+            g(drop(110, 92, 4.5, 'water', { noHl: true, w: 2 }), { a: A('hop', 2) }) + spark(112, 58, 5, 3.4),
+        () => rect(3, 10, 22, 18, '#16324A', { rx: 2, w: 1.6 }) + line('M6 15h16M6 23h16M11 13v12M18 13v12', { s: P.water[0], w: 1.4 }) +
+            g(circ(18, 15, 2, P.red[0], { w: 1 }), { a: A('blink', 1) }) + line('M26 10V4', { w: 1.5 }) +
+            g(path('M28 3a4 4 0 0 1 0 6', 'none', { s: P.blue[0], w: 1.4 }), { a: A('fade', 1.6) }) + line('M1 28.5h28', { w: 1.6 })),
+
+    // Corte do solo: parede enterrada segura a água da chuva na areia (turquesa), poço tira a água; chuva entrando no chão.
+    B('underground-dam', 'underground_dam', 'Barragem Subterrânea', '🧱',
+        () => ground() + rect(8, 50, 112, 56, P.sand[0], { rx: 6 }) +
+            g(rect(10, 64, 66, 40, TURQ, { s: 'none', rx: 3, op: 0.85 }), { a: A('grows', 4, 0, '50% 100%') }) +
+            g(line(waveD(12, 74, 70, 1.5, 10), { s: '#fff', w: 2 }), { a: A('fade', 2.4) }) +
+            g(line('M20 86h10M48 94h12M40 78h8', { s: '#fff', w: 2, op: 0.8 }), { a: A('drift', 3) }) +
+            [[18, 60], [34, 68], [52, 62], [66, 72], [24, 80], [44, 88], [60, 82], [30, 98], [70, 96], [92, 66], [104, 80], [96, 94], [112, 64], [110, 98]]
+                .map(([x, y]) => circ(x, y, 1.8, P.sand[1], { s: 'none' })).join('') +
+            rect(76, 56, 9, 50, P.dark[0], { w: 2.5 }) + line('M76 66h9M76 78h9M76 90h9', { s: P.soot[0], w: 1.5 }) +
+            path('M8 56c0-4 2-6 6-6h40c6 0 8 6 14 6h4c6 0 8-6 14-6h28c4 0 6 2 6 6z', P.grass[0]) +
+            rect(26, 36, 14, 18, P.concrete[0], { w: 2.5 }) + ell(33, 36, 7, 2.5, P.water[0], { w: 2 }) +
+            line('M33 54v40', { s: P.gray[0], w: 4 }) + g(line('M33 92V40', { s: P.water[0], w: 2, da: '4 6' }), { a: A('flow', 1.2, 0, 'center', 'linear') }) +
+            rect(8, 50, 112, 56, 'none', { rx: 6 }) +
+            g(cloud(70, 20, 0.6), { a: A('drift', 6) }) +
+            g(drop(62, 34, 3.5, 'water', { noHl: true, w: 2 }), { a: A('fall', 2.2, 0, 'center', 'ease-in') }) +
+            g(drop(80, 36, 3.5, 'water', { noHl: true, w: 2 }), { a: A('fall', 2.2, 1.1, 'center', 'ease-in') }),
+        () => rect(2, 10, 28, 19, P.sand[0], { rx: 2, w: 1.4 }) +
+            g(rect(3, 16, 15, 12, TURQ, { s: 'none' }), { a: A('grows', 4, 0, '50% 100%') }) +
+            rect(18, 12, 3, 17, P.dark[0], { w: 1.1 }) + rect(2, 9, 28, 3, P.grass[0], { rx: 1, w: 1.3 }) + rect(2, 10, 28, 19, 'none', { rx: 2, w: 1.4 }) +
+            g(drop(10, 4, 1.8, 'water', { noHl: true, w: 1.1 }), { a: A('fall', 2.2, 0, 'center', 'ease-in') })),
+
+    // Tanque de esgoto tratado borbulhando; cano ROXO (cor da água de reúso no Brasil) leva a água até a fábrica.
+    B('water-reuse-plant', 'water_reuse_plant', 'Estação de Água de Reúso', '🔁',
+        () => ground() +
+            g(pivot(64, 30, 18) + recyc(64, 30, 14, P.purple[0], 4.5), { a: A('spin', 9, 0, 'center', 'linear') }) +
+            g(drop(64, 32, 5, P.purple[0], { noHl: true, w: 2 }), { a: A('bob', 3) }) +
+            rect(98, 52, 9, 30, P.gray[0]) + smokes(102, 48, 5, 'white', 3.6, 2) +
+            sawFactory(76, 106, 44, 34, 'concrete') + win(82, 88, 9, 8) + win(98, 88, 9, 8) + rect(108, 92, 8, 14, P.dark[1], { w: 2.5 }) +
+            path('M8 64v36a22 6 0 0 0 44 0V64', P.concrete[0]) + path('M40 66v39a22 6 0 0 0 12-5V64z', P.concrete[1], { s: 'none' }) + path('M8 64v36a22 6 0 0 0 44 0V64') +
+            ell(30, 64, 22, 6, '#7FDCCB') + rect(16, 74, 28, 24, '#7FDCCB', { rx: 3 }) +
+            [[22, 0], [30, 0.8], [38, 1.6]].map(([x, d]) => g(circ(x, 92, 2.6, '#fff', { w: 1.8 }), { a: A('rise', 2.6, d, 'center', 'ease-out') })).join('') +
+            thick('M52 94h26', P.purple[0], 6, { ow: 4 }) + g(line('M52 94h26', { s: '#E9D5FF', w: 2.5, da: '4 8' }), { a: A('flow', 0.9, 0, 'center', 'linear') }) +
+            thick('M44 64V52h10', P.purple[0], 5, { ow: 4 }) +
+            spark(112, 36, 5, 3.4),
+        () => g(pivot(16, 8, 6) + recyc(16, 8, 4.5, P.purple[0], 1.5), { a: A('spin', 9, 0, 'center', 'linear') }) +
+            rect(2, 17, 11, 11, '#7FDCCB', { rx: 1.5, w: 1.4 }) + g(circ(7.5, 24, 1.3, '#fff', { w: 0.8 }), { a: A('rise', 2.4, 0, 'center', 'ease-out') }) +
+            line('M13 23h6', { s: P.purple[0], w: 2.4 }) + path('M19 28v-7l3.5-2v2l3.5-2v2l3.5-2v9z', P.concrete[0], { w: 1.4 })),
+
+    // Mar entra, membranas brancas seguram o sal (cristais) e sai uma gota doce turquesa; o raio lembra que gasta muita energia.
+    B('desalination-plant', 'desalination_plant', 'Usina de Dessalinização', '🧂',
+        () => ground() + rect(6, 82, 40, 24, P.water[0], { rx: 6 }) +
+            g(line(waveD(10, 44, 86, 2.5, 10), { s: '#fff', w: 2.5 }), { a: A('drift', 2.6) }) +
+            g(line(waveD(10, 40, 96, 2, 10), { s: '#fff', w: 2 }), { a: A('drift', 2.6, 1.3) }) +
+            thick('M28 84V68h12', P.gray[0], 5, { ow: 4 }) +
+            box(38, 42, 64, 48, 'concrete', { rx: 4 }) +
+            [48, 61, 74].map(y => rect(44, y, 52, 9, '#fff', { rx: 4.5, w: 2.5 }) + rect(44, y, 6, 9, P.gray[0], { w: 2 }) + rect(90, y, 6, 9, P.gray[0], { w: 2 })).join('') +
+            g(line('M52 52.5h36M52 65.5h36M52 78.5h36', { s: TURQ, w: 2.5, da: '5 7' }), { a: A('flow', 1, 0, 'center', 'linear') }) +
+            [[40, 96, 0], [46, 101, 0.6], [34, 101, 1.2]].map(([x, y, d]) => g(rect(x - 2.5, y - 2.5, 5, 5, '#fff', { w: 1.5, x: `transform="rotate(45 ${x} ${y})"` }), { a: A('twinkle', 2, d) })).join('') +
+            thick('M102 74h12v10', P.gray[0], 5, { ow: 4 }) +
+            g(drop(114, 92, 4, TURQ, { noHl: true, w: 2 }), { a: A('drip', 1.6, 0, 'center', 'ease-in') }) +
+            ell(114, 106, 10, 3, TURQ, { w: 2 }) +
+            g(drop(112, 40, 9, TURQ), { a: A('bob', 3) }) +
+            line('M70 42V30h-8', { w: 3 }) + g(path(boltD(56, 26, 0.7), P.yellow[0], { w: 2 }), { a: A('zap', 2.2, 0, 'center', 'linear') }) +
+            spark(20, 50, 5, 3.4),
+        () => rect(1, 21, 9, 8, P.water[0], { w: 1.3 }) + g(line('M2 23q1.5-1.5 3 0t3 0', { s: '#fff', w: 1 }), { a: A('drift', 2.6) }) +
+            rect(8, 10, 16, 5, '#fff', { rx: 2.5, w: 1.4 }) + rect(8, 17, 16, 5, '#fff', { rx: 2.5, w: 1.4 }) +
+            path(boltD(14, 5, 0.3), P.yellow[0], { w: 1 }) +
+            g(drop(27, 22, 3, TURQ, { noHl: true, w: 1.3 }), { a: A('bob', 3) }))
 ];

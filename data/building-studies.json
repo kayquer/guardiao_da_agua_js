@@ -2054,5 +2054,365 @@
       "cooling_water",
       "radioactive_waste"
     ]
+  },
+  "tidal_plant": {
+    "buildingId": "tidal_plant",
+    "buildingName": "Usina Maremotriz",
+    "category": "power",
+    "difficulty": "avançado",
+    "studyTitle": "Usina Maremotriz: Energia que Vem da Maré",
+    "studyIcon": "🌗",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender o que é a maré e por que ela acontece",
+      "Descobrir como a maré pode gerar energia",
+      "Perceber por que essa usina só funciona em água aberta e grande"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O mar que sobe e desce",
+        "content": "<p>Quem já foi à praia percebeu: em algumas horas o mar <b>avança</b> sobre a areia e, depois, <b>recua</b>. Isso é a <b>maré</b>.</p><p>Quem puxa a água é a <b>Lua</b>! A força da gravidade dela atrai os oceanos, e a Terra girando faz o mar subir e descer todos os dias, sempre no mesmo ritmo.</p><p>💡 Por isso os pescadores consultam a tabela das marés antes de sair com o barco.</p>",
+        "image": "assets/images/studies/usina-maremotriz.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Água em movimento é energia",
+        "content": "<p>Uma usina maremotriz fecha parte de uma baía com uma <b>barragem baixa</b> cheia de comportas.</p><ul><li>🌊 Quando a maré sobe, a água entra pelos canais.</li><li>⚙️ No caminho ela gira <b>turbinas</b> escondidas debaixo d'água.</li><li>⚡ As turbinas giram geradores, que fazem eletricidade.</li></ul><p>Quando a maré desce, a água sai pelo mesmo caminho e gira as turbinas de novo!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Por que precisa de muita água?",
+        "content": "<p>A maré só empurra bastante água em lugares <b>abertos e grandes</b>, como baías e estuários, onde o rio encontra o mar.</p><p>No Brasil, a costa do <b>Maranhão</b> tem uma das maiores marés do país, e a região de São Luís já estudou usinas assim.</p><p>No jogo, a usina só pode ser construída num <b>corpo d'água grande</b>: um laguinho não tem maré que chegue.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "Vantagens e cuidados",
+        "content": "<ul><li>✅ A maré nunca falta: a Lua aparece todos os dias, faça sol ou chuva.</li><li>✅ Não solta fumaça nem queima combustível.</li><li>⚠️ A barragem muda o caminho da água: peixes e manguezais precisam de passagens e de cuidado.</li><li>⚠️ É cara e difícil de construir, por isso é uma tecnologia avançada.</li></ul><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Segundo o texto, quem puxa a água do mar e faz a maré subir e descer?",
+          "options": [
+            "O vento forte",
+            "A força da gravidade da Lua",
+            "Os barcos dos pescadores",
+            "A chuva que cai no oceano"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O texto explica que a gravidade da Lua atrai os oceanos e, com a Terra girando, o mar sobe e desce todos os dias."
+        },
+        {
+          "id": 2,
+          "question": "Por que no jogo a usina maremotriz não pode ficar num laguinho?",
+          "options": [
+            "Porque o laguinho é raso demais para o barco",
+            "Porque laguinho pequeno não tem maré forte para girar as turbinas",
+            "Porque a água do laguinho é salgada",
+            "Porque a lei proíbe usinas em lagos"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A maré só empurra bastante água em lugares abertos e grandes, como baías. Num corpo d'água pequeno não há maré que chegue."
+        }
+      ]
+    },
+    "relatedBuildings": [],
+    "relatedConcepts": []
+  },
+  "loss_control_center": {
+    "buildingId": "loss_control_center",
+    "buildingName": "Centro de Controle de Perdas",
+    "category": "water",
+    "difficulty": "avançado",
+    "studyTitle": "Caça aos Vazamentos: a Água que Some no Caminho",
+    "studyIcon": "📶",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Descobrir que muita água tratada se perde antes de chegar às casas",
+      "Entender como sensores e setores ajudam a achar vazamentos",
+      "Perceber que economizar água perdida vale como água nova"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "A água que some",
+        "content": "<p>A água sai limpinha da estação de tratamento e viaja por canos debaixo da rua até as casas. Mas no caminho <b>muita água escapa</b>!</p><p>No Brasil, quase <b>um terço</b> da água tratada se perde antes de chegar à torneira, por canos velhos, rachados ou por ligações clandestinas, os famosos <b>gatos</b>.</p><p>💡 É como encher um balde furado: a gente gasta para tratar a água e ela vaza pelo caminho.</p>",
+        "image": "assets/images/studies/controle-de-perdas.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Ouvindo o cano",
+        "content": "<p>Um vazamento debaixo da terra quase nunca aparece na rua. Por isso as equipes usam truques espertos:</p><ul><li>🎧 <b>Geofone</b>: um aparelho que escuta o chiado da água escapando.</li><li>📶 <b>Sensores e telemetria</b>: medidores que avisam pela internet quando a pressão cai de repente.</li><li>🗺️ <b>Setores</b>: a cidade é dividida em pedaços com medidores na entrada. Se entra mais água do que as casas usam, tem vazamento ali!</li></ul>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Consertar é como achar água nova",
+        "content": "<p>Cada vazamento consertado é água que <b>volta a chegar às casas</b> sem precisar tirar mais nada do rio ou do aquífero.</p><p>Por isso, no jogo, o Centro de Controle de Perdas <b>aumenta a água disponível</b>: é a água que antes se perdia.</p><p>Cidades como São Paulo e Curitiba têm centros que vigiam a rede o dia inteiro.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "E em casa?",
+        "content": "<ul><li>🚿 Torneira pingando também é perda! Avise um adulto para trocar o reparo.</li><li>🚽 Descarga que fica escorrendo gasta muita água sem ninguém ver.</li><li>📏 O relógio de água ajuda a descobrir vazamentos: com tudo fechado, ele não pode girar.</li></ul><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Por que consertar vazamentos funciona como \"achar água nova\" para a cidade?",
+          "options": [
+            "Porque o conserto faz chover mais",
+            "Porque a água que se perdia passa a chegar às casas sem tirar mais do rio",
+            "Porque o cano novo fabrica água",
+            "Porque a água vazada volta limpa para a estação"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O texto explica que cada vazamento consertado é água que volta a chegar às casas sem precisar tirar mais nada do rio ou do aquífero."
+        },
+        {
+          "id": 2,
+          "question": "Num setor da cidade entra muito mais água do que as casas usam. O que isso indica?",
+          "options": [
+            "Que os moradores estão economizando",
+            "Que há um vazamento ou ligação escondida naquele setor",
+            "Que choveu demais",
+            "Que o medidor está desligado"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Os setores têm medidores na entrada: se entra mais água do que as casas usam, a diferença está escapando ali."
+        }
+      ]
+    },
+    "relatedBuildings": [],
+    "relatedConcepts": []
+  },
+  "underground_dam": {
+    "buildingId": "underground_dam",
+    "buildingName": "Barragem Subterrânea",
+    "category": "water",
+    "difficulty": "avançado",
+    "studyTitle": "Barragem Subterrânea: Guardando Água Dentro da Terra",
+    "studyIcon": "🧱",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Conhecer uma solução criada para o semiárido brasileiro",
+      "Entender como a água pode ser guardada dentro da areia",
+      "Perceber a ligação entre a chuva, o solo e o aquífero"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "O riacho que some",
+        "content": "<p>No <b>semiárido nordestino</b>, chove pouco e só em alguns meses. Os riachos enchem com a chuva e, logo depois, <b>somem</b>: a água escorre embora ou entra na areia.</p><p>Mas a água que entra na areia não desaparece! Ela fica <b>escondida</b> entre os grãos, andando devagar por baixo do leito seco.</p>",
+        "image": "assets/images/studies/barragem-subterranea.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Uma parede escondida",
+        "content": "<p>A barragem subterrânea é uma <b>parede enterrada</b> atravessando o leito do riacho, do fundo de pedra até perto da superfície. Ela é feita de lona plástica ou de barro bem socado.</p><ul><li>🌧️ Quando chove, a água entra na areia.</li><li>🧱 A parede impede que ela vá embora riacho abaixo.</li><li>💧 A areia fica <b>encharcada</b> por meses, como uma esponja.</li></ul><p>Como a água fica dentro da terra, o sol forte quase não consegue evaporá-la!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Comida o ano inteiro",
+        "content": "<p>Na terra úmida perto da barragem, as famílias plantam feijão, milho, hortaliças e frutas mesmo na época seca.</p><p>Um <b>poço amazonas</b>, largo e raso, tira a água guardada quando é preciso.</p><p>Programas da <b>Articulação Semiárido Brasileiro</b> e da Embrapa já ajudaram muitas famílias a construir as suas.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "No jogo",
+        "content": "<ul><li>🪨 A barragem <b>recarrega o aquífero</b>: a água da chuva entra no chão em vez de escorrer.</li><li>🌧️ Ela <b>segura a enxurrada</b>, diminuindo o risco de enchente.</li><li>🛢️ E guarda um pouco de água para os dias secos.</li></ul><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Por que a água guardada pela barragem subterrânea quase não evapora?",
+          "options": [
+            "Porque é água salgada",
+            "Porque fica escondida dentro da areia, longe do sol forte",
+            "Porque a lona esfria a água",
+            "Porque chove todos os dias no semiárido"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O texto explica que, como a água fica dentro da terra, o sol forte quase não consegue evaporá-la."
+        },
+        {
+          "id": 2,
+          "question": "O que a parede enterrada faz com a água da chuva que entra na areia?",
+          "options": [
+            "Leva a água embora mais rápido",
+            "Impede que ela vá embora riacho abaixo, deixando a areia encharcada",
+            "Transforma a água em gelo",
+            "Joga a água de volta para as nuvens"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A parede atravessa o leito e segura a água dentro da areia, que fica encharcada por meses como uma esponja."
+        }
+      ]
+    },
+    "relatedBuildings": [],
+    "relatedConcepts": []
+  },
+  "water_reuse_plant": {
+    "buildingId": "water_reuse_plant",
+    "buildingName": "Estação de Água de Reúso",
+    "category": "treatment",
+    "difficulty": "especialista",
+    "studyTitle": "Água de Reúso: o Esgoto que Volta a Trabalhar",
+    "studyIcon": "🔁",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender o que é água de reúso",
+      "Saber para que ela serve e para que não serve",
+      "Perceber como o reúso protege os rios e a água de beber"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Esgoto pode virar recurso?",
+        "content": "<p>Depois que o esgoto passa pela estação de tratamento, a água já sai bem mais limpa. Normalmente ela volta para o rio.</p><p>Mas dá para ir além: com mais etapas de limpeza, essa água vira <b>água de reúso</b>, boa para trabalhar em fábricas, lavar ruas e regar parques.</p><p>💡 A água não é para beber, mas faz muitos serviços que hoje gastam água potável!</p>",
+        "image": "assets/images/studies/agua-de-reuso.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Os filtros finíssimos",
+        "content": "<ul><li>🫧 Primeiro, tanques com <b>bolhas de ar</b> ajudam bactérias a comer a sujeira que sobrou.</li><li>🧪 Depois, a água atravessa <b>membranas</b>, filtros com furinhos tão pequenos que seguram até micróbios.</li><li>🟣 No fim, ela segue em <b>canos roxos ou lilás</b>, a cor usada para avisar: esta água não é para beber.</li></ul>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "O exemplo de São Paulo",
+        "content": "<p>O <b>Aquapolo</b>, em São Paulo, é uma das maiores estações de reúso do Hemisfério Sul. Ele manda água de reúso para um grande polo de indústrias.</p><p>Assim, as fábricas deixam de usar a água tratada que poderia ir para as casas. Em tempos de seca, isso faz muita diferença!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "No jogo",
+        "content": "<ul><li>🌿 A estação <b>reduz bastante a poluição</b>: menos esgoto vai para o rio.</li><li>💧 E entrega <b>água de reúso</b> para a indústria, sobrando mais água do rio para os moradores.</li><li>⚡ Mas gasta energia e precisa de tecnologia: é um prédio especialista.</li></ul><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Por que a água de reúso corre em canos roxos ou lilás?",
+          "options": [
+            "Porque é mais bonita assim",
+            "Para avisar que aquela água não é para beber",
+            "Porque a água fica roxa depois do filtro",
+            "Para esquentar a água no sol"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O texto conta que os canos roxos ou lilás são a cor usada para avisar que a água de reúso não é para beber."
+        },
+        {
+          "id": 2,
+          "question": "Como o reúso nas fábricas ajuda os moradores numa seca?",
+          "options": [
+            "As fábricas fecham durante a seca",
+            "As fábricas usam água de reúso e sobra mais água tratada para as casas",
+            "A água de reúso faz chover",
+            "Os moradores passam a beber a água das fábricas"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Com a água de reúso, as fábricas deixam de usar a água tratada que poderia ir para as casas, o que faz diferença na seca."
+        }
+      ]
+    },
+    "relatedBuildings": [],
+    "relatedConcepts": []
+  },
+  "desalination_plant": {
+    "buildingId": "desalination_plant",
+    "buildingName": "Usina de Dessalinização",
+    "category": "water",
+    "difficulty": "especialista",
+    "studyTitle": "Dessalinização: Tirando o Sal da Água",
+    "studyIcon": "🧂",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender por que a água do mar não serve para beber",
+      "Descobrir como a osmose reversa tira o sal",
+      "Pensar nas vantagens e nos custos da dessalinização"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Tanta água e tão pouca para beber",
+        "content": "<p>Quase toda a água do planeta está nos oceanos, mas ela é <b>salgada</b>. Beber água do mar dá ainda mais sede e faz mal ao corpo.</p><p>Em lugares com pouca chuva e perto do mar, uma ideia é <b>tirar o sal</b> da água. Isso se chama <b>dessalinização</b>.</p>",
+        "image": "assets/images/studies/dessalinizacao.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "A osmose reversa",
+        "content": "<p>A técnica mais usada empurra a água do mar com <b>muita força</b> contra uma membrana especial.</p><ul><li>🧂 Os grãos de sal ficam presos na membrana.</li><li>💧 Só a água passa para o outro lado, doce e pronta para tratar.</li><li>⚡ Para empurrar com tanta força, as bombas gastam <b>muita energia elétrica</b>.</li></ul><p>💡 É como espremer uma esponja num coador finíssimo!</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Exemplos no Brasil",
+        "content": "<p>Em <b>Fernando de Noronha</b>, uma ilha no meio do mar, boa parte da água de beber vem da dessalinização.</p><p>No semiárido, o programa <b>Água Doce</b> instalou pequenos dessalinizadores para tirar o sal da água salobra dos poços. E <b>Fortaleza</b> está construindo uma grande usina para abastecer a cidade.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 4,
+        "title": "O preço do sal",
+        "content": "<ul><li>✅ Dá muita água mesmo na seca, porque o mar não seca.</li><li>⚠️ Gasta muita energia: no jogo, prepare usinas antes de construir.</li><li>⚠️ Sobra a <b>salmoura</b>, uma água muito salgada que precisa voltar ao mar com cuidado para não prejudicar peixes e corais. No jogo, ela polui um pouco.</li></ul><p>Primeiro economizar e cuidar da água; depois, se precisar, dessalinizar!</p><p>✅ Agora teste seus conhecimentos!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Por que uma usina de dessalinização gasta tanta energia?",
+          "options": [
+            "Porque precisa esquentar o mar inteiro",
+            "Porque as bombas empurram a água com muita força contra a membrana",
+            "Porque acende muitas luzes à noite",
+            "Porque transporta o sal de caminhão"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Na osmose reversa a água é empurrada com muita força contra a membrana, e as bombas gastam muita energia para isso."
+        },
+        {
+          "id": 2,
+          "question": "O que é a salmoura e por que exige cuidado?",
+          "options": [
+            "É a água doce que sobra, e precisa ser guardada",
+            "É uma água muito salgada que sobra e pode prejudicar peixes e corais",
+            "É o sal de cozinha vendido no mercado",
+            "É a chuva que cai no mar"
+          ],
+          "correctAnswer": 1,
+          "explanation": "O texto explica que sobra a salmoura, uma água muito salgada que precisa voltar ao mar com cuidado para não prejudicar peixes e corais."
+        }
+      ]
+    },
+    "relatedBuildings": [],
+    "relatedConcepts": []
   }
 }

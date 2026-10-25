@@ -300,6 +300,7 @@ mixin(UIManager, {
             setTimeout(() => {
                 this.closeStudyBook();
                 this.loadBuildingItemsWithStateManagement();
+                this.openStudiedBuilding(buildingId);
             }, 2500);
 
         } else {
@@ -313,6 +314,7 @@ mixin(UIManager, {
 
             // Refresh building items to show unlocked state
             this.loadBuildingItemsWithStateManagement();
+            this.openStudiedBuilding(buildingId);
         }
     },
 
@@ -407,5 +409,15 @@ mixin(UIManager, {
         this.loadBuildingItemsWithStateManagement();
         const name = this.gameManager.buildingSystem.buildingTypes.get(buildingId)?.name || 'Prédio';
         this.showNotification(`🔓 ${name} liberado! Lembre-se das dicas da revisão.`, 'success', 4000);
+        this.openStudiedBuilding(buildingId);
+    },
+
+    /** Estudo concluído: o passo seguinte é construir, então abre o menu de construção já com o prédio escolhido. */
+    openStudiedBuilding(buildingId) {
+        if (this.gameManager.tutorialSystem?.isActive) return; // o tutorial conduz o próximo passo
+        setTimeout(() => {
+            if (document.getElementById('study-book-overlay') || this.gameManager.buildMode) return;
+            if (this.gameManager.studySystem.isBuildingUnlocked(buildingId)) this.focusBuildingItem(buildingId);
+        }, 450); // depois do livro sair da tela (closeStudyBook remove em 300 ms)
     },
 });

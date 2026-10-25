@@ -684,8 +684,9 @@ class EventSystem {
         buildings.forEach(b => {
             if (b.underConstruction) return;
             const cfg = b.config || {};
-            if (b.type === 'paved_road') impervious += 1;
-            else if (!cfg.roadType && !cfg.runoffAbsorption && !cfg.plantedTree) impervious += (cfg.size || 1) ** 2 * 0.3;
+            // Ruas: quanto do chão a chuva não atravessa (runoffImpervious: asfalto 1, cascalho 0,4, terra 0,2)
+            if (cfg.roadType) impervious += cfg.runoffImpervious || 0;
+            else if (!cfg.runoffAbsorption && !cfg.plantedTree) impervious += (cfg.size || 1) ** 2 * 0.3;
             absorption += cfg.runoffAbsorption || 0;
             if (cfg.plantedTree) absorption += 0.5;
         });

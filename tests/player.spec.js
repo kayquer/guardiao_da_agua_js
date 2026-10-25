@@ -273,12 +273,12 @@ test('guias em sequência: água + energia → reservatório → zoneamento → 
     // Públicos só depois de uma zona pronta. A obra da zona (R$ 1000) leva ~3 s: estica para ela não terminar
     // sozinha durante a espera (o guia é checado a cada 2 s)
     await page.evaluate(() => window.gameManager.buildingSystem.getAllBuildings()
-        .filter(b => b.config.category === 'zoning' && b.underConstruction).forEach(b => { b.constructionDuration = 1e9; }));
+        .filter(b => b.config.zoneType && b.underConstruction).forEach(b => { b.constructionDuration = 1e9; }));
     await page.waitForTimeout(4000);
     expect(await page.evaluate(() => window.gameManager.tutorialSystem.isActive)).toBe(false);
     await page.evaluate(() => {
         const bs = window.gameManager.buildingSystem;
-        bs.getAllBuildings().filter(b => b.config.category === 'zoning').forEach(b => bs.completeConstruction(b));
+        bs.getAllBuildings().filter(b => b.config.zoneType).forEach(b => bs.completeConstruction(b));
     });
     await expect(title).toHaveText('Serviços para a população', { timeout: 8000 });
     await page.click('#tutorial-skip-btn'); // "Fazer depois" também conta como visto

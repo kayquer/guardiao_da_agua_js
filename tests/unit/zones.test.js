@@ -76,14 +76,14 @@ function pieceFootprint(piece) {
 }
 
 test('lotes: toda zona de BUILDING_TYPES tem lote com 4 fases, e todo lote é de uma zona', () => {
-    const zones = Object.entries(BUILDINGS).filter(([, t]) => t.category === 'zoning').map(([id]) => id);
+    const zones = Object.entries(BUILDINGS).filter(([, t]) => t.zoneType).map(([id]) => id);
     assert.strictEqual(zones.length, 9);
     for (const id of zones) {
         assert.ok(LOTS[id], `${id} sem lote em ZONE_LOTS`);
         assert.strictEqual(LOTS[id].stages.length, 4, `${id}: 4 fases`);
         assert.ok(['grass', 'paved', 'concrete'].includes(LOTS[id].ground), `${id}.ground`);
     }
-    for (const id of Object.keys(LOTS)) assert.strictEqual(BUILDINGS[id]?.category, 'zoning', `lote de algo que não é zona: ${id}`);
+    for (const id of Object.keys(LOTS)) assert.ok(BUILDINGS[id]?.zoneType, `lote de algo que não é zona: ${id}`);
 });
 
 test('lotes: arquivos existem, peças válidas e dentro de size × size células', () => {

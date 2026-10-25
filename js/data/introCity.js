@@ -204,7 +204,7 @@ const INTRO_SHOTS = {
 /** Painel de destaque do menu (estilo "billboard"): alterna sozinho. ícone = id de js/utils/Icons.js */
 const MENU_BILLBOARD = [
     { icon: 'ui-books', tag: 'Aulas', title: 'Aprenda com a água', text: 'Seis aulas curtas sobre o ciclo da água, a vida no rio e as soluções verdes, com a Pesquisadora Cláudia.' },
-    { icon: 'weather-partly', tag: 'Clima real', title: 'O tempo da sua cidade', text: 'O jogo usa o clima de verdade do lugar onde você mora: chuva, sol e vento mudam a sua cidade.' },
+    { icon: 'weather-partly', tag: 'Clima real', title: 'O tempo da sua cidade', text: 'O jogo usa o clima de verdade do lugar onde você mora (ou um clima simulado, nas Configurações): chuva, sol e vento mudam a sua cidade.' },
     { icon: 'treatment-plant', tag: 'Dica do Guardião', title: 'Trate antes de devolver', text: 'Estações de tratamento limpam a água e reduzem a poluição. Um rio limpo é uma cidade saudável.' },
     { icon: 'wind-farm', tag: 'Energia limpa', title: 'Vento e sol trabalham por você', text: 'Turbinas eólicas e usinas solares dão energia sem sujar o ar nem o rio.' }
 ];

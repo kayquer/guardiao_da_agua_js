@@ -32,7 +32,7 @@ mixin(BuildingSystem, {
     buildingNeedsRoad(buildingOrType) {
         const config = buildingOrType?.config || buildingOrType;
         if (!config || config.roadType || config.needsRoad === false) return false;
-        return config.category === 'zoning' || !!(config.waterProduction || config.pollutionReduction || config.incomeGeneration);
+        return !!config.zoneType || !!(config.waterProduction || config.pollutionReduction || config.incomeGeneration);
     },
 
     /** Alguma célula vizinha (N/L/S/O) ao quadrado size×size em (x, z) é rua? `isRoad(x, z)` diz se a célula é rua. */
@@ -296,5 +296,25 @@ mixin(BuildingSystem, {
         plane.isVisible = false; // só as instâncias aparecem
         this.noRoadIconTemplate = plane;
         return plane;
-    }
+    },
+
+    /**
+     * Água que o prédio entrega de verdade (L/min): produção × eficiência × aquífero (se tira do subsolo) × seca —
+     * o mesmo que ResourceManager.getEffectiveWaterProduction faz no total da cidade. reasons = o que está tirando.
+     */
+    getBuildingWaterYield(building) {
+        const config = building?.config;
+        const nominal = config?.waterProduction || 0;
+        if (!nominal) return { nominal: 0, actual: 0, reasons: [] };
+        const rm = this.gameManager?.resourceManager;
+        const water = rm?.resources?.water || {};
+        const efficiency = building.active && !building.underConstruction ? (building.efficiency ?? 1) : 0;
+        const aquifer = config.groundwater && rm?.getAquiferFactor ? rm.getAquiferFactor() : 1;
+        const drought = water.productionMultiplier ?? 1;
+        const reasons = [];
+        if (efficiency < 1 && efficiency > 0) reasons.push(`eficiência ${Math.round(efficiency * 100)}%`);
+        if (aquifer < 1) reasons.push(`aquífero baixo −${Math.round((1 - aquifer) * 100)}%`);
+        if (drought < 1) reasons.push(`seca −${Math.round((1 - drought) * 100)}%`);
+        return { nominal, actual: nominal * efficiency * aquifer * drought, reasons };
+    },
 });

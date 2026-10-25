@@ -76,6 +76,7 @@ test('tamanho do texto: escolhido na pausa, salvo e aplicado nos textos de leitu
     await startGame(page);
     await page.evaluate(() => window.gameManager.tutorialSystem.complete());
     await page.evaluate(() => window.gameManager.pauseGame());
+    await page.click('#btn-settings');
     await expect(page.locator('#pause-text [data-text-size="normal"]')).toHaveAttribute('aria-checked', 'true');
     await page.click('#pause-text [data-text-size="xlarge"]');
     await expect(page.locator('#pause-text [data-text-size="xlarge"]')).toHaveAttribute('aria-checked', 'true');

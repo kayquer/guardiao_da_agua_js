@@ -43,6 +43,7 @@ class GridManager {
 
     // ===== INICIALIZAÇÃO =====
     initializeGrid() {
+        this.waterBodySizes = null; // getWaterBodySize recalcula para o terreno novo
         log(`🗂️ Criando grid ${this.gridSize}x${this.gridSize}...`);
 
         // Verificar se gridSize é válido
@@ -745,6 +746,37 @@ class GridManager {
         }
     }
     
+    /**
+     * Tamanho (em células) de cada corpo d'água ligado (vizinhos N/S/L/O). Puro: recebe a grade de terreno.
+     * Devolve uma grade com o tamanho do corpo d'água em cada célula de água (0 em terra).
+     */
+    static measureWaterBodies(terrainGrid, size) {
+        const sizes = Array.from({ length: size }, () => new Array(size).fill(0));
+        const isWater = (x, z) => x >= 0 && z >= 0 && x < size && z < size && terrainGrid[x]?.[z] === 'water';
+        for (let x = 0; x < size; x++) {
+            for (let z = 0; z < size; z++) {
+                if (!isWater(x, z) || sizes[x][z]) continue;
+                const cells = [[x, z]];
+                sizes[x][z] = -1;
+                for (let i = 0; i < cells.length; i++) {
+                    const [cx, cz] = cells[i];
+                    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+                        const nx = cx + dx, nz = cz + dz;
+                        if (isWater(nx, nz) && !sizes[nx][nz]) { sizes[nx][nz] = -1; cells.push([nx, nz]); }
+                    }
+                }
+                cells.forEach(([cx, cz]) => { sizes[cx][cz] = cells.length; });
+            }
+        }
+        return sizes;
+    }
+
+    /** Quantas células tem o corpo d'água desta célula (0 se não é água). O terreno não muda na partida: cache. */
+    getWaterBodySize(gridX, gridZ) {
+        if (!this.waterBodySizes) this.waterBodySizes = GridManager.measureWaterBodies(this.terrainGrid, this.gridSize);
+        return this.waterBodySizes[gridX]?.[gridZ] || 0;
+    }
+
     getTerrainType(gridX, gridZ) {
         if (gridX < 0 || gridX >= this.gridSize || gridZ < 0 || gridZ >= this.gridSize) {
             return 'unknown';

@@ -80,7 +80,7 @@ test('eficiência: dano × sem rua × energia (só zonas) + pesquisa, sempre do 
 
 test('energia: toda zona consome, pela fase (0,25 → 1) e por tipo/peso', () => {
     const { bs } = system();
-    const zones = Object.keys(BUILDINGS).filter(id => BUILDINGS[id].category === 'zoning');
+    const zones = Object.keys(BUILDINGS).filter(id => BUILDINGS[id].zoneType);
     assert.ok(zones.length >= 9);
     for (const id of zones) {
         const full = BUILDINGS[id].powerConsumption;

@@ -1,0 +1,29 @@
+/* "⚙️ Configurações" na tela de pausa (ui/SettingsUI.js). O painel reaproveita .notif-history (css/toasts.css). */
+#settings-panel[hidden] {
+    display: none !important; /* .overlay-content tem display próprio: sem isto a pausa acharia um popup aberto */
+}
+
+.settings-body {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.settings-body .gfx-picker--panel,
+.settings-body .pp-sound {
+    margin: 0;
+}
+
+.climate-picker .gfx-seg button {
+    flex: 1 1 auto;
+}
+
+/* Popup do clima: aviso de clima simulado (ui/WeatherUI.js) */
+.weather-sim-note {
+    margin: 0.2rem 0 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    opacity: 0.85;
+}

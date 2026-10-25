@@ -14,7 +14,8 @@ mixin(BuildingSystem, {
 
     ROAD_COLORS: {
         paved: { slab: '#b9b5ab', slabSide: '#9a968d', road: '#4b4f55', curb: '#e4e1d8', dash: '#f2c230', zebra: '#f1efe8' },
-        dirt: { slab: '#6f9b45', slabSide: '#5a7d38', road: '#a47d52', curb: '#8a6a45', dash: null, zebra: null }
+        dirt: { slab: '#6f9b45', slabSide: '#5a7d38', road: '#a47d52', curb: '#8a6a45', dash: null, zebra: null },
+        gravel: { slab: '#76a04c', slabSide: '#5f843d', road: '#a9a49a', curb: '#8c877e', dash: null, zebra: null }
     },
 
     isRoadType(typeOrId) {
@@ -164,9 +165,9 @@ mixin(BuildingSystem, {
         const cached = this.roadAccessTemplates.get(roadType);
         if (cached && !cached.isDisposed()) return cached;
         const h = this.gridManager.cellSize / 2;
-        const colors = roadType === 'dirt'
-            ? { pad: '#b4905f', wing: '#9a7a4e', line: '#8a6a45' }
-            : { pad: '#d9d5cc', wing: '#bdb8ad', line: '#a7a297' };
+        const colors = roadType === 'dirt' ? { pad: '#b4905f', wing: '#9a7a4e', line: '#8a6a45' }
+            : roadType === 'gravel' ? { pad: '#bdb8ae', wing: '#a39e94', line: '#8c877e' }
+                : { pad: '#d9d5cc', wing: '#bdb8ad', line: '#a7a297' };
         const W = 0.3 * h, F = 0.1 * h, Y = 0.034; // meia largura, aba da rampa, acima do meio-fio (0,03)
         const positions = [], indices = [], vcolors = [], normals = [];
         const quad = (pts, color, y = Y) => {

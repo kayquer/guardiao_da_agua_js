@@ -4,19 +4,30 @@
  */
 mixin(GameManager, {
     // ===== SELEÇÃO =====
-    selectBuilding(building) {
+    /** sound: clique do jogador → um som só (o característico do prédio pronto, ou o clique numa obra) */
+    selectBuilding(building, { sound = false } = {}) {
         if (!building || !building.config) {
             console.warn('⚠️ Tentativa de selecionar edifício inválido');
             return;
+        }
+        if (sound && typeof AudioManager !== 'undefined') {
+            if (!building.underConstruction && this.gameState === 'playing') {
+                AudioManager.onSelect(AudioManager.selectGroupFor({ ...building.config, id: building.type }));
+            } else {
+                AudioManager.playSound('sfx_click', 0.8);
+            }
         }
 
         this.clearBuildingSelection();
         this.selectedBuilding = building;
         this.addSelectionIndicator(building);
+        // O painel abre calado: o som da seleção já tocou (o "abrir painel" junto encobria o do prédio)
+        this.uiManager.quietPanelOpen = true;
         this.refreshInfoPanel();
 
         // FIX #4: Show building info in details panel (removed showMissionPanel interference)
         this.uiManager.showBuildingSelectionInfo(building);
+        this.uiManager.quietPanelOpen = false;
         this.uiManager.toggleMobilePanel('right');
 
         log(`🏢 Selecionado: ${building.config.name}`);

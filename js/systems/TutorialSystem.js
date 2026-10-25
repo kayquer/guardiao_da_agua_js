@@ -1118,7 +1118,7 @@ TutorialSystem.TOPICS = {
         steps: [
             { title: 'O estoque de água', text: '{nome}, este número é a água guardada na cidade. Ele <b>sobe</b> com o que bombas e poços produzem e <b>desce</b> com o que as pessoas usam.', targets: ['.resource-item:has(#water-amount)', '#compact-water'] },
             { title: 'Como conseguir mais', text: 'Na categoria <b>💧 Água</b> ficam bombas, poços e outras fontes. Quase todas precisam de <b>energia</b> para funcionar.', targets: ['.category-btn[data-category="water"]'] },
-            { title: 'Guardar para depois', text: 'Reservatórios da categoria <b>💧 Água</b> guardam água para os dias secos. Sem chuva, os rios baixam: veja o clima da sua cidade no relógio!', targets: ['.category-btn[data-category="water"]', '#clock-weather', '#compact-weather'] },
+            { title: 'Guardar para depois', text: 'Reservatórios da categoria <b>💧 Água</b> guardam água para os dias secos. Sem chuva, os rios baixam: veja o clima no relógio!', targets: ['.category-btn[data-category="water"]', '#clock-weather', '#compact-weather'] },
             { title: 'Não deixe acabar!', expression: 'worried', text: 'Se a água acabar, é <b>fim de jogo</b>. Construa novas fontes antes de faltar, e não só quando o número já estiver baixo.' }
         ]
     },
@@ -1134,7 +1134,7 @@ TutorialSystem.TOPICS = {
         name: 'a população', title: 'População', icon: '👥',
         steps: [
             { title: 'Quem mora aqui', text: 'Este número mostra quantas pessoas vivem na cidade. Mais gente traz mais impostos, mas também gasta mais <b>água</b> e <b>energia</b>.', targets: ['.resource-item:has(#population-count)', '#compact-population'] },
-            { title: 'Onde morar', text: 'As casas e zonas da categoria <b>🏘️ Zoneamento</b> trazem novos moradores para a cidade.', targets: ['.category-btn[data-category="zoning"]'] },
+            { title: 'Onde morar', text: 'As zonas da categoria <b>🏘️ Residencial</b> trazem novos moradores para a cidade.', targets: ['.category-btn[data-category="residential"]'] },
             { title: 'Crescer com cuidado', text: 'Antes de a cidade crescer, garanta que tem <b>água e energia</b> para todo mundo. Cidade grande sem água vira problema grande!' }
         ]
     },
@@ -1224,7 +1224,7 @@ TutorialSystem.GUIDES = [
             },
             { title: 'Curvas e cruzamentos sozinhos', expression: 'happy', text: 'Encoste uma rua na outra e ela se liga sozinha: vira <b>curva</b>, <b>bifurcação</b> ou <b>cruzamento</b>, com faixa no meio e calçada nas bordas. Não precisa girar nada!' },
             { title: 'Cadê os carros?', text: 'Quando a cidade tiver <b>20 blocos de rua ligados</b>, carros e caminhões começam a circular. Quanto mais ruas, mais movimento, {nome}!' },
-            { title: 'Rua também mexe com a água', expression: 'worried', text: 'O <b>asfalto</b> não deixa a chuva entrar no chão: a água corre por cima, vira <b>enxurrada</b> e leva lixo para o rio. A <b>estrada de terra</b> deixa a água entrar, mas a chuva arrasta a terra (<b>erosão</b>) e o rio fica barrento. Plante árvores e jardins de chuva perto das ruas!' }
+            { title: 'Rua também mexe com a água', expression: 'worried', text: 'O <b>asfalto</b> não deixa a chuva entrar no chão: a água corre por cima, vira <b>enxurrada</b> e leva lixo para o rio. A <b>estrada de terra</b> deixa a água entrar, mas a chuva arrasta a terra (<b>erosão</b>) e o rio fica barrento. O <b>cascalho</b> fica no meio: deixa a água passar entre as pedrinhas e quase não vira lama. Plante árvores e jardins de chuva perto das ruas!' }
         ]
     },
     {
@@ -1248,13 +1248,13 @@ TutorialSystem.GUIDES = [
         id: 'zoning', after: 'storage', title: 'Zoneamento', icon: '🏘️',
         when: () => true, // logo depois do armazenamento
         steps: [
-            { title: 'Onde as pessoas vão morar?', text: 'Uma cidade cresce por <b>zonas</b>: <b>residencial</b> (casas), <b>comercial</b> (lojas) e <b>industrial</b> (fábricas). Cada uma pode ser <b>leve</b>, <b>equilibrada</b> ou <b>pesada</b>: quanto mais pesada, mais gente e mais gasto de água e energia.', targets: ['.category-btn[data-category="zoning"]'] },
+            { title: 'Onde as pessoas vão morar?', text: 'Uma cidade cresce por <b>zonas</b>: <b>residencial</b> (casas), <b>comercial</b> (lojas) e <b>industrial</b> (fábricas). Cada uma pode ser <b>leve</b>, <b>equilibrada</b> ou <b>pesada</b>: quanto mais pesada, mais gente e mais gasto de água e energia. As casas ficam em <b>🏘️ Residencial</b>; lojas e fábricas, em Comercial e Industrial.', targets: ['.category-btn[data-category="residential"]'] },
             {
-                title: 'Crie uma zona residencial', waitForCategory: 'zoning',
-                text: 'Abra <b>🏘️ Zoneamento</b> e construa uma <b>Zona Residencial Leve</b>. É a mais barata e traz os primeiros moradores!',
+                title: 'Crie uma zona residencial', waitForCategory: 'residential',
+                text: 'Abra <b>🏘️ Residencial</b> e construa uma <b>Zona Residencial Leve</b>. É a mais barata e traz os primeiros moradores!',
                 placingHint: '👆 Escolha um terreno livre perto da cidade.',
-                enter: gm => gm.uiManager.uiState.currentCategory !== 'zoning' && gm.uiManager.selectCategory('zoning'),
-                targets: TutorialSystem.buildTargets('zone_residential_light', 'zoning', 'a 🏘️ Zona Residencial Leve')
+                enter: gm => gm.uiManager.uiState.currentCategory !== 'residential' && gm.uiManager.selectCategory('residential'),
+                targets: TutorialSystem.buildTargets('zone_residential_light', 'residential', 'a 🏘️ Zona Residencial Leve')
             },
             { title: 'Novos moradores a caminho', text: 'Quando a zona ficar pronta, chegam moradores. Lembre-se: mais gente = mais <b>água</b> e <b>energia</b>. Cresça com cuidado, {nome}!', targets: ['.resource-item:has(#population-count)', '#compact-population'] }
         ]
@@ -1262,7 +1262,7 @@ TutorialSystem.GUIDES = [
     {
         id: 'public', after: 'zoning', title: 'Prédios públicos', icon: '🏛️',
         // com a primeira zona pronta, a cidade já tem moradores para atender
-        when: gm => TutorialSystem.completedBuildings(gm, c => c.category === 'zoning'),
+        when: gm => TutorialSystem.completedBuildings(gm, c => !!c.zoneType),
         steps: [
             { title: 'Serviços para a população', text: 'Agora que a cidade tem moradores, eles precisam de <b>escola</b>, <b>hospital</b>, <b>bombeiros</b> e <b>polícia</b>. Ficam em <b>🏛️ Públicos</b> e deixam as pessoas mais <b>satisfeitas</b>.', targets: ['.category-btn[data-category="public"]'] },
             { title: 'Áreas verdes também contam', text: 'Parques, tetos e paredes verdes deixam a cidade mais fresca, ajudam a chuva a infiltrar no solo e limpam o ar, igual às árvores do mapa!', targets: ['.resource-item:has(#satisfaction-level)'] }
@@ -1272,7 +1272,7 @@ TutorialSystem.GUIDES = [
         id: 'tourism', after: 'public', title: 'Turismo', icon: '🎡',
         when: () => true,
         steps: [
-            { title: 'Visitantes trazem dinheiro', text: 'Em <b>🎡 Turismo</b> ficam museus, hotéis e monumentos. Eles atraem visitantes e aumentam a <b>receita</b> da cidade, mas custam caro: junte dinheiro antes!', targets: ['.category-btn[data-category="tourism"]', '.resource-item:has(#budget-amount)'] },
+            { title: 'Visitantes trazem dinheiro', text: 'Em <b>🏬 Comercial</b>, nas partes <b>Cultura</b> e <b>Hospedagem e lazer</b>, ficam museus, hotéis e monumentos. Eles atraem visitantes e aumentam a <b>receita</b> da cidade, mas custam caro: junte dinheiro antes!', targets: ['.category-btn[data-category="commercial"]', '.resource-item:has(#budget-amount)'] },
             { title: 'Turista também usa água', text: 'Hotel cheio gasta muita água! Antes de investir em turismo, garanta <b>água guardada</b> e <b>tratamento</b> para todos.' }
         ]
     },
@@ -1280,7 +1280,7 @@ TutorialSystem.GUIDES = [
         id: 'industrial', after: 'tourism', title: 'Indústria', icon: '🏭',
         when: () => true,
         steps: [
-            { title: 'Fábricas geram empregos', text: 'Em <b>🏭 Industrial</b> ficam fábricas, centro tecnológico e porto. Eles rendem muito dinheiro e empregos.', targets: ['.category-btn[data-category="industrial"]'] },
+            { title: 'Fábricas geram empregos', text: 'Em <b>🏭 Industrial</b> ficam as zonas industriais, fábricas, centro tecnológico e porto. Eles rendem muito dinheiro e empregos.', targets: ['.category-btn[data-category="industrial"]'] },
             { title: 'E também poluem', expression: 'worried', text: 'Indústria é a maior fonte de <b>poluição</b> da água e do ar. Construa <b>estações de tratamento</b> e mantenha as indústrias longe dos rios e das árvores, {nome}.', targets: ['.resource-item:has(#pollution-level)'] }
         ]
     },
@@ -1288,7 +1288,7 @@ TutorialSystem.GUIDES = [
         id: 'commercial', after: 'industrial', title: 'Comércio', icon: '🏬',
         when: () => true,
         steps: [
-            { title: 'Lojas e serviços', text: 'Em <b>🏬 Comercial</b> ficam restaurantes, bancos, escritórios e shopping. Eles movimentam a economia e pagam <b>impostos</b> para a cidade.', targets: ['.category-btn[data-category="commercial"]'] },
+            { title: 'Lojas e serviços', text: 'Em <b>🏬 Comercial</b> ficam as zonas comerciais, restaurantes, bancos, escritórios, shopping e o turismo. Eles movimentam a economia e pagam <b>impostos</b> para a cidade.', targets: ['.category-btn[data-category="commercial"]'] },
             { title: 'Equilíbrio é tudo', text: 'Cidade boa mistura casas, comércio, indústria, serviços e muito verde. Sempre com <b>água</b> e <b>energia</b> para todos. Agora é com você!' }
         ]
     }

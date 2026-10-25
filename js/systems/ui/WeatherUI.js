@@ -30,6 +30,8 @@ mixin(UIManager, {
     },
 
     async refreshWeather({ force = false } = {}) {
+        // Configurações → Clima: Simulado (SimulatedWeather) não busca nada na internet
+        if (SimulatedWeather.mode() === 'simulated') return this.applySimulatedWeather();
         let profile = PlayerProfile.getActive();
         // Sem coordenadas (rede caiu no cadastro): tenta localizar a cidade de novo e guarda no perfil
         if (profile && (profile.lat == null || profile.lon == null)) {
@@ -41,9 +43,8 @@ mixin(UIManager, {
             }
         }
         if (!profile || profile.lat == null || profile.lon == null) {
-            this.weather = { status: 'nolocation' };
-            this.renderWeatherCard();
-            return;
+            // Sem localização da cidade: o jogo inventa o tempo (melhor que ficar sem chuva, vento e previsão)
+            return this.applySimulatedWeather({ fallback: true });
         }
         if (!this.weather?.data) {
             this.weather = { status: 'loading' };
@@ -51,6 +52,7 @@ mixin(UIManager, {
         }
         try {
             const data = await WeatherService.fetch(profile.lat, profile.lon, { force });
+            if (SimulatedWeather.mode() === 'simulated') return; // trocou de modo enquanto buscava
             this.weather = { status: 'ok', data };
             this.gameManager.applyWeather?.(data.current); // chuva, vento, nuvens e sol no mapa 3D
         } catch (error) {
@@ -60,6 +62,30 @@ mixin(UIManager, {
         }
         this.renderWeatherCard();
         if (document.getElementById('weather-modal')) this.renderWeatherModal();
+    },
+
+    /**
+     * Clima simulado para o dia e a hora do relógio do jogo (mesma semente por perfil: o tempo de cada dia é sempre o
+     * mesmo). fallback = modo real, mas a cidade não tem localização.
+     */
+    applySimulatedWeather({ fallback = false } = {}) {
+        const gm = this.gameManager;
+        const date = gm?.gameClockTime instanceof Date ? gm.gameClockTime : new Date();
+        const isDay = gm?.getDayNightState ? gm.getDayNightState() !== 'night' : true;
+        const data = SimulatedWeather.generate({ seed: SimulatedWeather.seedFrom(PlayerProfile.getActive()?.id), date, isDay });
+        this.weather = { status: 'ok', data, simulated: true, fallback };
+        this.simulatedWeatherHour = date.toDateString() + ' ' + date.getHours();
+        gm?.applyWeather?.(data.current);
+        this.renderWeatherCard();
+        if (document.getElementById('weather-modal')) this.renderWeatherModal();
+    },
+
+    /** A cada hora de jogo, o clima simulado anda (chamado pelo UIManager.update). */
+    tickSimulatedWeather() {
+        if (!this.weather?.simulated) return;
+        const date = this.gameManager?.gameClockTime;
+        if (!(date instanceof Date)) return;
+        if (date.toDateString() + ' ' + date.getHours() !== this.simulatedWeatherHour) this.applySimulatedWeather({ fallback: this.weather.fallback });
     },
 
     weatherAnimationHtml(anim, isDay = true) {
@@ -99,7 +125,9 @@ mixin(UIManager, {
             card.className = `weather-card weather-card--${info.anim}${current.isDay ? '' : ' weather-card--night'}`;
             card.innerHTML = `${this.weatherAnimationHtml(info.anim, current.isDay)}
                 <span class="weather-temp">${Math.round(current.temperature)}°</span>`;
-            card.title = `${info.label} agora em ${PlayerProfile.getActive()?.city || 'sua cidade'} — clique para ver a previsão`;
+            card.title = this.weather.simulated
+                ? `${info.label} agora (clima simulado) — clique para ver a previsão`
+                : `${info.label} agora em ${PlayerProfile.getActive()?.city || 'sua cidade'} — clique para ver a previsão`;
         } else {
             const text = uiIcon({ loading: 'status-pending', error: 'status-warning' }[state] || 'res-temperature');
             card.className = 'weather-card weather-card--empty';
@@ -170,7 +198,10 @@ mixin(UIManager, {
         }
         modal.innerHTML = `<div class="weather-modal-card" role="dialog" aria-label="Clima">
             <button class="weather-modal-close" aria-label="Fechar">${uiIcon('ui-close')}</button>
-            <h3>${uiIcon('weather-drizzle', 'lg')} Clima em ${place}</h3>
+            <h3>${uiIcon('weather-drizzle', 'lg')} ${this.weather?.simulated ? 'Clima simulado' : `Clima em ${place}`}</h3>
+            ${this.weather?.simulated ? `<p class="weather-sim-note">${this.weather.fallback
+        ? 'Não encontramos a localização da sua cidade: o jogo está inventando o tempo.'
+        : 'Você escolheu o clima simulado em ⚙️ Configurações: o jogo inventa o tempo de cada dia.'}</p>` : ''}
             ${body}
         </div>`;
     },

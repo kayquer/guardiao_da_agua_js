@@ -383,7 +383,8 @@ mixin(AudioManager, {
     // ===== CONTROLES DE SOM NA PAUSA =====
     /** Bloco "Som" na tela de pausa (#pause-overlay): música / efeitos / ambiente + mudo, salvos no navegador. */
     setupSoundPanel() {
-        const panel = document.querySelector('#pause-overlay .player-panel');
+        // Fica no painel ⚙️ Configurações da pausa (ui/SettingsUI.js)
+        const panel = document.querySelector('#settings-panel .settings-body');
         if (!panel || document.getElementById('pp-sound')) return;
         const section = document.createElement('section');
         section.id = 'pp-sound';
@@ -401,8 +402,7 @@ mixin(AudioManager, {
             ${slider('pp-sfx-volume', 'Efeitos', this.sfxVolume)}
             ${slider('pp-ambient-volume', 'Ambiente', this.ambientVolume)}
             <button type="button" id="pp-mute" class="overlay-btn secondary pp-mute"></button>`;
-        const buttons = panel.querySelector('.pp-buttons');
-        panel.insertBefore(section, buttons || null);
+        panel.appendChild(section);
 
         const bind = (id, setter, preview) => {
             const input = section.querySelector(`#${id}`);
@@ -465,9 +465,11 @@ AudioManager.selectGroupFor = config => {
     if (config.roadType || config.category === 'roads') return 'roads';
     if (config.category === 'treatment') return config.waste ? 'waste' : 'treatment';
     if (config.category === 'power') return config.group === 'Renováveis' ? 'power_clean' : 'power_heavy';
-    if (config.category === 'zoning' || config.category === 'residential') {
+    if (config.zoneType || config.category === 'residential') {
         return id.includes('commercial') ? 'commerce' : id.includes('industrial') ? 'industry' : 'homes';
     }
+    // Turismo agora fica em Comercial: o som de turismo continua pelo grupo (Cultura, Hospedagem e lazer)
+    if (config.group === 'Cultura' || config.group === 'Hospedagem e lazer') return 'tourism';
     const byCategory = { water: 'water', nature: 'nature', science: 'science', public: 'public', commercial: 'commerce',
         industrial: 'industry', tourism: 'tourism', infrastructure: 'roads' };
     return byCategory[config.category] || 'public';

@@ -316,6 +316,16 @@ class BuildingSystem {
                 };
             }
 
+            // Usina maremotriz: precisa de um corpo d'água grande (as marés só existem em água aberta)
+            const minWater = buildingType.requirements.minWaterBody;
+            if (minWater && this.gridManager.getWaterBodySize?.(gridX, gridZ) < minWater) {
+                return {
+                    canPlace: false,
+                    reason: `${buildingType.name} precisa de um corpo d'água com pelo menos ${minWater} blocos`,
+                    userFriendly: true
+                };
+            }
+
             if (buildingType.requirements.nearWater) {
                 if (!this.isNearWater(gridX, gridZ, buildingType.size)) {
                     console.warn(`❌ Deve estar próximo à água em (${gridX}, ${gridZ})`);
@@ -1500,7 +1510,7 @@ class BuildingSystem {
         // Energia nos totais salvos. Save antigo: só a zona residencial pesada consumia (cheio); as outras zonas, nada
         if (Number.isFinite(saved.appliedPowerConsumption)) buildingData.appliedPowerConsumption = saved.appliedPowerConsumption;
         else if (buildingData.effectsApplied && buildingType.powerConsumption) {
-            buildingData.appliedPowerConsumption = buildingType.category === 'zoning' && saved.type !== 'zone_residential_heavy'
+            buildingData.appliedPowerConsumption = buildingType.zoneType && saved.type !== 'zone_residential_heavy'
                 ? 0 : buildingType.powerConsumption;
         }
         mesh.metadata = { ...(mesh.metadata || {}), building: true, buildingId: saved.id, buildingType: buildingType.id, gridX, gridZ };
@@ -2031,9 +2041,7 @@ class BuildingSystem {
     isInfrastructureBuilding(buildingType) {
         // Ruas se ligam pelo auto-encaixe (js/systems/roads/RoadMeshes.js), não por peças de conexão
         if (buildingType.roadType) return false;
-        return buildingType.category === 'infrastructure' ||
-               buildingType.category === 'zoning' ||
-               buildingType.zoneType;
+        return buildingType.category === 'infrastructure' || !!buildingType.zoneType;
     }
 
     updateInfrastructureConnections(building) {

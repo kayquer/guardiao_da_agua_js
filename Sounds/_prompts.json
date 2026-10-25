@@ -122,6 +122,171 @@
       "why": "v2 (corte de 10 s): dinâmica mais estável e cauda final mais baixa.",
       "loudness": "-11.30 → -15.46 LUFS, pico -4.82 dBTP",
       "seconds": 10.0
+    },
+    "Sounds/BGM/gameplay-day-3.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Background gameplay music for a relaxing city-building game, daytime, building a green city by a river. Instrumental, no vocals, about 3 minutes, loopable. Light pizzicato strings, marimba, acoustic guitar, soft glockenspiel, gentle hand percussion, warm bass. Steady, productive, cheerful but unobtrusive, low dynamic range so it sits under sound effects. 105 BPM, G major. New composition in the same style: a different main melody and chord progression.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 3 da playlist",
+      "source": "gameplay-day-2.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-12.17 → -16.45 LUFS, pico -3.56 dBTP",
+      "seconds": 177
+    },
+    "Sounds/BGM/gameplay-day-4.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Background gameplay music for a relaxing city-building game, daytime, building a green city by a river. Instrumental, no vocals, about 3 minutes, loopable. Light pizzicato strings, marimba, acoustic guitar, soft glockenspiel, gentle hand percussion, warm bass. Steady, productive, cheerful but unobtrusive, low dynamic range so it sits under sound effects. 105 BPM, G major. New composition in the same style: a different melody led by another instrument of the same palette, slightly different groove.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 4 da playlist",
+      "source": "gameplay-day-3.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-12.25 → -16.45 LUFS, pico -3.77 dBTP",
+      "seconds": 171.8
+    },
+    "Sounds/BGM/gameplay-day-5.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Background gameplay music for a relaxing city-building game, daytime, building a green city by a river. Instrumental, no vocals, about 3 minutes, loopable. Light pizzicato strings, marimba, acoustic guitar, soft glockenspiel, gentle hand percussion, warm bass. Steady, productive, cheerful but unobtrusive, low dynamic range so it sits under sound effects. 105 BPM, G major. New composition in the same style: a fresh theme with a gentle key change in the middle, same tempo and mood.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 5 da playlist",
+      "source": "gameplay-day-4.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-12.06 → -16.44 LUFS, pico -3.60 dBTP",
+      "seconds": 177.8
+    },
+    "Sounds/BGM/gameplay-night-2.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Night-time ambient music for a city-building game. Instrumental, no vocals, about 3 minutes, loopable. Soft Rhodes electric piano, mellow nylon guitar, warm sustained pads, very light brushed drums. Peaceful, reflective, cozy, city lights over a calm river. 80 BPM. Low dynamics, no sudden changes. New composition in the same style: a different main melody and chord progression.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 2 da playlist",
+      "source": "gameplay-night-2.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-12.29 → -16.40 LUFS, pico -1.61 dBTP",
+      "seconds": 176
+    },
+    "Sounds/BGM/gameplay-night-3.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Night-time ambient music for a city-building game. Instrumental, no vocals, about 3 minutes, loopable. Soft Rhodes electric piano, mellow nylon guitar, warm sustained pads, very light brushed drums. Peaceful, reflective, cozy, city lights over a calm river. 80 BPM. Low dynamics, no sudden changes. New composition in the same style: a different melody led by another instrument of the same palette, slightly different groove.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 3 da playlist",
+      "source": "gameplay-night-3.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-12.38 → -16.44 LUFS, pico -3.36 dBTP",
+      "seconds": 177.1
+    },
+    "Sounds/BGM/gameplay-night-4.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Night-time ambient music for a city-building game. Instrumental, no vocals, about 3 minutes, loopable. Soft Rhodes electric piano, mellow nylon guitar, warm sustained pads, very light brushed drums. Peaceful, reflective, cozy, city lights over a calm river. 80 BPM. Low dynamics, no sudden changes. New composition in the same style: a fresh theme with a gentle key change in the middle, same tempo and mood.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 4 da playlist",
+      "source": "gameplay-night-4.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-12.69 → -16.44 LUFS, pico -3.46 dBTP",
+      "seconds": 176.1
+    },
+    "Sounds/BGM/gameplay-rain-2.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Gentle rainy-day music for a water-themed city-building game. Instrumental, no vocals, about 3 minutes, loopable. Soft piano, harp ripples, cello pad, delicate plucked textures like raindrops, subtle low percussion. Calm, slightly melancholic but hopeful: rain fills the reservoirs. 85 BPM, A minor resolving to C major. Unobtrusive background mix. New composition in the same style: a different main melody and chord progression.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 2 da playlist",
+      "source": "gameplay-rain-2.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-12.08 → -16.45 LUFS, pico -3.95 dBTP",
+      "seconds": 179.6
+    },
+    "Sounds/BGM/gameplay-rain-3.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Gentle rainy-day music for a water-themed city-building game. Instrumental, no vocals, about 3 minutes, loopable. Soft piano, harp ripples, cello pad, delicate plucked textures like raindrops, subtle low percussion. Calm, slightly melancholic but hopeful: rain fills the reservoirs. 85 BPM, A minor resolving to C major. Unobtrusive background mix. New composition in the same style: a different melody led by another instrument of the same palette, slightly different groove.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 3 da playlist",
+      "source": "gameplay-rain-3.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-11.76 → -16.44 LUFS, pico -4.34 dBTP",
+      "seconds": 176.6
+    },
+    "Sounds/BGM/gameplay-rain-4.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Gentle rainy-day music for a water-themed city-building game. Instrumental, no vocals, about 3 minutes, loopable. Soft piano, harp ripples, cello pad, delicate plucked textures like raindrops, subtle low percussion. Calm, slightly melancholic but hopeful: rain fills the reservoirs. 85 BPM, A minor resolving to C major. Unobtrusive background mix. New composition in the same style: a fresh theme with a gentle key change in the middle, same tempo and mood.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 4 da playlist",
+      "source": "gameplay-rain-4.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-11.87 → -16.44 LUFS, pico -4.07 dBTP",
+      "seconds": 175.7
+    },
+    "Sounds/BGM/gameplay-alert-2.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Tense but kid-friendly background music for a city-building game when water is running out or pollution is high. Instrumental, no vocals, about 2 minutes, loopable. Pulsing staccato strings, low marimba ostinato, ticking clock-like percussion, rising synth pad, occasional hopeful horn phrase suggesting the player can fix it. Urgent, focused, never scary or dark. 115 BPM, D minor. No loud hits. New composition in the same style: a different main melody and chord progression.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 2 da playlist",
+      "source": "gameplay-alert-2.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-12.40 → -16.43 LUFS, pico -3.24 dBTP",
+      "seconds": 118.7
+    },
+    "Sounds/BGM/gameplay-alert-3.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Tense but kid-friendly background music for a city-building game when water is running out or pollution is high. Instrumental, no vocals, about 2 minutes, loopable. Pulsing staccato strings, low marimba ostinato, ticking clock-like percussion, rising synth pad, occasional hopeful horn phrase suggesting the player can fix it. Urgent, focused, never scary or dark. 115 BPM, D minor. No loud hits. New composition in the same style: a different melody led by another instrument of the same palette, slightly different groove.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 3 da playlist",
+      "source": "gameplay-alert-3.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-12.14 → -16.43 LUFS, pico -3.33 dBTP",
+      "seconds": 124.8
+    },
+    "Sounds/BGM/gameplay-alert-4.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Tense but kid-friendly background music for a city-building game when water is running out or pollution is high. Instrumental, no vocals, about 2 minutes, loopable. Pulsing staccato strings, low marimba ostinato, ticking clock-like percussion, rising synth pad, occasional hopeful horn phrase suggesting the player can fix it. Urgent, focused, never scary or dark. 115 BPM, D minor. No loud hits. New composition in the same style: a fresh theme with a gentle key change in the middle, same tempo and mood.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 4 da playlist",
+      "source": "gameplay-alert-4.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-11.67 → -16.42 LUFS, pico -4.04 dBTP",
+      "seconds": 119.3
+    },
+    "Sounds/BGM/gameplay-thriving-2.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Upbeat, proud background music for a thriving sustainable city in a city-building game. Instrumental, no vocals, about 3 minutes, loopable. Bright acoustic guitar strumming, marimba melody, light samba-inspired percussion with pandeiro and shaker, warm bass, soft brass accents. Joyful, accomplished, clean energy and clean rivers. 110 BPM, A major. Balanced mix for background play. New composition in the same style: a different main melody and chord progression.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 2 da playlist",
+      "source": "gameplay-thriving-2.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-12.32 → -16.45 LUFS, pico -3.53 dBTP",
+      "seconds": 174.1
+    },
+    "Sounds/BGM/gameplay-thriving-3.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Upbeat, proud background music for a thriving sustainable city in a city-building game. Instrumental, no vocals, about 3 minutes, loopable. Bright acoustic guitar strumming, marimba melody, light samba-inspired percussion with pandeiro and shaker, warm bass, soft brass accents. Joyful, accomplished, clean energy and clean rivers. 110 BPM, A major. Balanced mix for background play. New composition in the same style: a different melody led by another instrument of the same palette, slightly different groove.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 3 da playlist",
+      "source": "gameplay-thriving-3.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-12.13 → -16.43 LUFS, pico -3.63 dBTP",
+      "seconds": 179
+    },
+    "Sounds/BGM/gameplay-thriving-4.mp3": {
+      "generator": "Google Lyria 3 (OpenRouter)",
+      "model": "google/lyria-3-pro-preview",
+      "prompt": "Upbeat, proud background music for a thriving sustainable city in a city-building game. Instrumental, no vocals, about 3 minutes, loopable. Bright acoustic guitar strumming, marimba melody, light samba-inspired percussion with pandeiro and shaker, warm bass, soft brass accents. Joyful, accomplished, clean energy and clean rivers. 110 BPM, A major. Balanced mix for background play. New composition in the same style: a fresh theme with a gentle key change in the middle, same tempo and mood.",
+      "date": "2026-10-24",
+      "chosenVersion": "faixa 4 da playlist",
+      "source": "gameplay-thriving-4.mp3",
+      "why": "Variação nova do mesmo prompt da categoria (mais faixas na playlist, menos repetição).",
+      "loudness": "-12.46 → -16.43 LUFS, pico -3.21 dBTP",
+      "seconds": 171.3
     }
   },
   "sfx": {
@@ -875,7 +1040,7 @@
       "model": "eleven_text_to_sound_v2",
       "prompt": "Quick soft asphalt tile placement, a short rubbery thump with a faint gravel crunch, 120 ms, very short decay, dry, mono, suitable for rapid repetition.",
       "date": "2026-10-22",
-      "chosenVersion": "variação 4 de 4",
+      "chosenVersion": "variação 4 de 5",
       "loop": false,
       "loudnessTarget": "-16 LUFS (+18 dB)",
       "channels": 1
@@ -1018,7 +1183,7 @@
       "model": "eleven_text_to_sound_v2",
       "prompt": "Tiny soft typing tick, like a pencil tap on paper, 30 ms, very quiet, mono.",
       "date": "2026-10-22",
-      "chosenVersion": "variação 4 de 4",
+      "chosenVersion": "variação 4 de 5",
       "loop": false,
       "loudnessTarget": "-24 LUFS (+8.3 dB)",
       "channels": 1
@@ -1979,6 +2144,86 @@
       "prompt": "Clicking on a river: gentle water lapping and a small fish splash, cozy kids city-building game, friendly and charming, not scary, no music, no voice, mono, dry",
       "date": "2026-10-24",
       "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_claudia_hello_4.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Adult Brazilian woman's gentle welcoming 'oi!' greeting vocal, kind teacher smile, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 4 de 5",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_jose_hello_4.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Older Brazilian man's relaxed friendly 'eh-eh' little chuckle greeting, easygoing fisherman, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 4 de 5",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_marcia_hello_4.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Young adult woman's quick upbeat 'oi-oi!' greeting vocal, lively, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 4 de 5",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_paulo_hello_4.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Middle-aged Brazilian man's friendly 'e aí!' greeting vocal, relaxed and confident, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 4 de 5",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_claudia_hello_5.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Adult woman's short pleased 'aha!' vocal, warm and encouraging, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 5 de 5",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_jose_hello_5.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Older man's warm calm 'opa' greeting vocal, slow and kind, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 5 de 5",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_marcia_hello_5.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Young woman's interested 'ooh!' vocal reaction, curious and friendly, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 5 de 5",
+      "loop": false,
+      "loudnessTarget": "-18 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/voc_paulo_hello_5.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Middle-aged man's short affirmative 'hm-hm!' nod sound, warm and reliable, no words, close-mic, dry, no music, no background",
+      "date": "2026-10-24",
+      "chosenVersion": "variação 5 de 5",
       "loop": false,
       "loudnessTarget": "-18 LUFS",
       "channels": 1

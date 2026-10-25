@@ -16,16 +16,17 @@
     <link rel="stylesheet" href="css/tutorial.css?v=9060ec61">
     <link rel="stylesheet" href="css/lessons.css?v=75823501">
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
-    <link rel="stylesheet" href="css/player.css?v=8b928c2c">
+    <link rel="stylesheet" href="css/player.css?v=1ce63634">
     <link rel="stylesheet" href="css/menu.css?v=ad09dab4">
     <link rel="stylesheet" href="css/notice.css?v=86b1e0da">
     <link rel="stylesheet" href="css/research.css?v=ee08fec9">
-    <link rel="stylesheet" href="css/accessibility.css?v=8078e52f">
+    <link rel="stylesheet" href="css/settings.css?v=4caa15a0">
+    <link rel="stylesheet" href="css/accessibility.css?v=facb0713">
     <link rel="stylesheet" href="css/toasts.css?v=bcd03933">
     <link rel="stylesheet" href="css/events.css?v=02eb4409">
-    <link rel="stylesheet" href="css/event-decision.css?v=a0abc448">
-    <link rel="stylesheet" href="css/mission-bar.css?v=702b887c">
-    <link rel="stylesheet" href="css/build-menu.css?v=a5c9d3be">
+    <link rel="stylesheet" href="css/event-decision.css?v=a2b7ac78">
+    <link rel="stylesheet" href="css/mission-bar.css?v=6474f36a">
+    <link rel="stylesheet" href="css/build-menu.css?v=6a2bed6d">
 
     <!-- Babylon.js CDN -->
     <script src="https://cdn.babylonjs.com/v9.31.2/babylon.js"></script>
@@ -352,9 +353,8 @@
                         <button class="category-btn" data-category="power"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-power.svg" alt="" aria-hidden="true" draggable="false"> Energia</button>
                         <button class="category-btn" data-category="roads"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-roads.svg" alt="" aria-hidden="true" draggable="false"> Asfalto</button>
                         <button class="category-btn" data-category="infrastructure"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-infrastructure.svg" alt="" aria-hidden="true" draggable="false"> Infraestrutura</button>
-                        <button class="category-btn" data-category="zoning"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-zoning.svg" alt="" aria-hidden="true" draggable="false"> Zoneamento</button>
+                        <button class="category-btn" data-category="residential"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-zoning.svg" alt="" aria-hidden="true" draggable="false"> Residencial</button>
                         <button class="category-btn" data-category="commercial"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-commercial.svg" alt="" aria-hidden="true" draggable="false"> Comercial</button>
-                        <button class="category-btn" data-category="tourism"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-tourism.svg" alt="" aria-hidden="true" draggable="false"> Turismo</button>
                         <button class="category-btn" data-category="industrial"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/cat-industrial.svg" alt="" aria-hidden="true" draggable="false"> Industrial</button>
                     </div>
                     <!-- Os cards ficam no #build-modal (UIManager.setupBuildModal move o #building-items para lá) -->
@@ -455,30 +455,50 @@
                     <span class="pp-paused"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-pause.svg" alt="" aria-hidden="true" draggable="false"> Pausado</span>
                 </div>
                 <div class="pp-stats" id="pp-stats"></div>
-                <div id="pause-gfx" class="gfx-picker gfx-picker--panel" data-gfx-picker>
-                    <span class="gfx-title" id="pause-gfx-title"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-settings.svg" alt="" aria-hidden="true" draggable="false"> Gráficos</span>
-                    <div class="gfx-seg" role="radiogroup" aria-labelledby="pause-gfx-title">
-                        <button type="button" role="radio" data-quality="low">Baixa</button>
-                        <button type="button" role="radio" data-quality="medium">Média</button>
-                        <button type="button" role="radio" data-quality="high">Alta</button>
-                    </div>
-                    <p class="gfx-hint" aria-live="polite"></p>
-                </div>
-                <div id="pause-text" class="gfx-picker gfx-picker--panel text-picker" data-text-picker>
-                    <span class="gfx-title" id="pause-text-title">🔠 Texto</span>
-                    <div class="gfx-seg" role="radiogroup" aria-labelledby="pause-text-title">
-                        <button type="button" role="radio" data-text-size="normal">Normal</button>
-                        <button type="button" role="radio" data-text-size="large">Grande</button>
-                        <button type="button" role="radio" data-text-size="xlarge">Maior</button>
-                    </div>
-                </div>
                 <div class="overlay-buttons pp-buttons">
                     <button id="btn-resume" class="overlay-btn primary">▶ Continuar</button>
+                    <button id="btn-settings" class="overlay-btn secondary" aria-haspopup="dialog">⚙️ Configurações</button>
                     <button id="btn-help" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-help.svg" alt="" aria-hidden="true" draggable="false"> Ajuda e controles</button>
                     <button id="btn-notifications" class="overlay-btn secondary" aria-haspopup="dialog"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-history.svg" alt="" aria-hidden="true" draggable="false"> Notificações</button>
                     <button id="btn-research" class="overlay-btn secondary" aria-haspopup="dialog">📊 Dados da pesquisa</button>
                     <button id="btn-save-game" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-save.svg" alt="" aria-hidden="true" draggable="false"> Salvar jogo</button>
                     <button id="btn-main-menu" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-home.svg" alt="" aria-hidden="true" draggable="false"> Menu principal</button>
+                </div>
+            </div>
+            <!-- Configurações (gráficos, texto, clima e som): ui/SettingsUI.js; o bloco de som entra por setupSoundPanel -->
+            <div id="settings-panel" class="overlay-content notif-history settings-panel" role="dialog" aria-modal="true" aria-labelledby="st-title" hidden>
+                <div class="nh-head">
+                    <h2 id="st-title">⚙️ Configurações</h2>
+                </div>
+                <div class="settings-body">
+                    <div id="pause-gfx" class="gfx-picker gfx-picker--panel" data-gfx-picker>
+                        <span class="gfx-title" id="pause-gfx-title"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-settings.svg" alt="" aria-hidden="true" draggable="false"> Gráficos</span>
+                        <div class="gfx-seg" role="radiogroup" aria-labelledby="pause-gfx-title">
+                            <button type="button" role="radio" data-quality="low">Baixa</button>
+                            <button type="button" role="radio" data-quality="medium">Média</button>
+                            <button type="button" role="radio" data-quality="high">Alta</button>
+                        </div>
+                        <p class="gfx-hint" aria-live="polite"></p>
+                    </div>
+                    <div id="pause-text" class="gfx-picker gfx-picker--panel text-picker" data-text-picker>
+                        <span class="gfx-title" id="pause-text-title">🔠 Texto</span>
+                        <div class="gfx-seg" role="radiogroup" aria-labelledby="pause-text-title">
+                            <button type="button" role="radio" data-text-size="normal">Normal</button>
+                            <button type="button" role="radio" data-text-size="large">Grande</button>
+                            <button type="button" role="radio" data-text-size="xlarge">Maior</button>
+                        </div>
+                    </div>
+                    <div id="pause-climate" class="gfx-picker gfx-picker--panel climate-picker" data-climate-picker>
+                        <span class="gfx-title" id="pause-climate-title">🌦️ Clima</span>
+                        <div class="gfx-seg" role="radiogroup" aria-labelledby="pause-climate-title">
+                            <button type="button" role="radio" data-climate="real">Real da cidade</button>
+                            <button type="button" role="radio" data-climate="simulated">Simulado</button>
+                        </div>
+                        <p class="gfx-hint climate-hint" aria-live="polite"></p>
+                    </div>
+                </div>
+                <div class="overlay-buttons nh-buttons">
+                    <button id="btn-settings-back" class="overlay-btn primary">⬅ Voltar</button>
                 </div>
             </div>
             <!-- Registro de pesquisa do perfil (ResearchLog) e exportação: ui/ResearchUI.js -->
@@ -702,16 +722,16 @@
     <!-- Scripts do Jogo - Ordem correta de dependências -->
 
     <!-- Clean Code Refactoring: Game Constants (loaded first) -->
-    <script src="js/config/GameConstants.js?v=78fe112d"></script>
-    <script src="js/data/buildings.js?v=d6291717"></script>
-    <script src="js/data/buildingModels.js?v=e030b14f"></script>
+    <script src="js/config/GameConstants.js?v=20533cc9"></script>
+    <script src="js/data/buildings.js?v=d1ca88e8"></script>
+    <script src="js/data/buildingModels.js?v=91a22967"></script>
     <script src="js/data/zoneLots.js?v=6509f3b0"></script>
     <script src="js/data/missions.js?v=8217ca2a"></script>
     <script src="js/data/brazil.js?v=c0fa1745"></script>
     <script src="js/data/lessons.js?v=06e4cea9"></script>
-    <script src="js/data/introCity.js?v=db7ab833"></script>
+    <script src="js/data/introCity.js?v=a2e6387e"></script>
     <script src="js/data/portraits.js?v=939f497c"></script>
-    <script src="js/data/audioManifest.js?v=07e651b9"></script>
+    <script src="js/data/audioManifest.js?v=8bc7d016"></script>
 
     <!-- ===== TUTORIAL SYSTEM ===== -->
     <!-- Tutorial: modo 'story' (tela cheia) ou 'coach' (card + spotlight sobre o HUD) — TutorialSystem.js -->
@@ -794,72 +814,74 @@
 
     <!-- Utilitários primeiro -->
     <script src="js/utils/GameUtils.js?v=ca581bc5"></script>
-    <script src="js/utils/Icons.js?v=584556c7"></script>
+    <script src="js/utils/Icons.js?v=b5256b94"></script>
     <script src="js/utils/GameLogo.js?v=f238ea7b"></script>
     <script src="js/utils/AssetLoader.js?v=92c41b47"></script>
     <script src="js/utils/AudioManager.js?v=bc85f67c"></script>
-    <script src="js/utils/audio/SoundDirector.js?v=699f6ada"></script>
+    <script src="js/utils/audio/SoundDirector.js?v=b64c6efb"></script>
     <script src="js/ui/AnimatedPortrait.js?v=7a5cbd3d"></script>
 
     <!-- Core systems - ordem de dependência -->
     <script src="js/systems/TextSize.js?v=ce837765"></script>
     <script src="js/systems/GraphicsQuality.js?v=082950a2"></script>
-    <script src="js/core/GridManager.js?v=1782dd90"></script>
+    <script src="js/core/GridManager.js?v=40c741b7"></script>
     <script src="js/core/ResourceManager.js?v=400812e6"></script>
 
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=845fd95d"></script>
 
-    <script src="js/core/GameManager.js?v=0378569d"></script>
+    <script src="js/core/GameManager.js?v=1f1e3dd7"></script>
     <script src="js/core/game/Diagnostics.js?v=7a3bbf0a"></script>
-    <script src="js/core/game/SelectionVisuals.js?v=4ce5ba4f"></script>
+    <script src="js/core/game/SelectionVisuals.js?v=bfe1d1f4"></script>
     <script src="js/core/game/CameraGuard.js?v=47e1747c"></script>
 
     <!-- Game systems -->
-    <script src="js/systems/BuildingSystem.js?v=e3324d09"></script>
-    <script src="js/systems/building/BuildingMeshes.js?v=a95bab25"></script>
+    <script src="js/systems/BuildingSystem.js?v=5fe7db15"></script>
+    <script src="js/systems/building/BuildingMeshes.js?v=ce82c716"></script>
     <script src="js/systems/building/BuildingFeedback.js?v=3c20c840"></script>
     <script src="js/systems/building/BuildingModels.js?v=bcde47c0"></script>
-    <script src="js/systems/building/ZoneGrowth.js?v=c28b8797"></script>
+    <script src="js/systems/building/ZoneGrowth.js?v=9d58462a"></script>
     <script src="js/systems/building/TreeGrowth.js?v=1dea3ded"></script>
-    <script src="js/systems/building/BuildingEfficiency.js?v=69a29fbd"></script>
+    <script src="js/systems/building/BuildingEfficiency.js?v=41deaf33"></script>
     <script src="js/systems/roads/RoadNetwork.js?v=3f427dee"></script>
-    <script src="js/systems/roads/RoadMeshes.js?v=59096103"></script>
-    <script src="js/systems/roads/RoadPlacement.js?v=dad65faf"></script>
+    <script src="js/systems/roads/RoadMeshes.js?v=949bb3f7"></script>
+    <script src="js/systems/roads/RoadPlacement.js?v=6fa3b054"></script>
     <script src="js/systems/shared/VehicleMeshes.js?v=53516ed0"></script>
     <script src="js/systems/CityLifeSystem.js?v=75ebc9a1"></script>
     <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
-    <script src="js/systems/UIManager.js?v=caa4701c"></script>
-    <script src="js/systems/ui/MobileTouch.js?v=107709dc"></script>
-    <script src="js/systems/ui/StudyBookUI.js?v=601d476f"></script>
+    <script src="js/systems/UIManager.js?v=7e382128"></script>
+    <script src="js/systems/ui/MobileTouch.js?v=6023dd14"></script>
+    <script src="js/systems/ui/StudyBookUI.js?v=3feae40e"></script>
     <script src="js/systems/ui/LoanUI.js?v=057d32de"></script>
-    <script src="js/systems/ui/ResourcePanels.js?v=ca0b386a"></script>
+    <script src="js/systems/ui/ResourcePanels.js?v=19d70c13"></script>
     <script src="js/systems/ui/EventUI.js?v=5269f61e"></script>
     <script src="js/systems/ui/EventDecisionUI.js?v=805243da"></script>
     <script src="js/systems/ui/BuildPreview.js?v=46accd5f"></script>
-    <script src="js/systems/ui/BuildMenuUI.js?v=81ff8eb3"></script>
+    <script src="js/systems/ui/BuildMenuUI.js?v=e85cb645"></script>
     <script src="js/systems/ui/MissionBar.js?v=7d936c04"></script>
-    <script src="js/systems/ui/TechTreeUI.js?v=52a8b5b3"></script>
+    <script src="js/systems/ui/TechTreeUI.js?v=2ee956b7"></script>
     <script src="js/systems/ui/MobilePanels.js?v=a6989c98"></script>
-    <script src="js/systems/ui/WeatherUI.js?v=f5c4df70"></script>
+    <script src="js/systems/ui/WeatherUI.js?v=50f7ef6f"></script>
     <script src="js/systems/ui/CompassUI.js?v=9e3e44fa"></script>
     <script src="js/systems/ui/ResearchUI.js?v=dde2417e"></script>
+    <script src="js/systems/ui/SettingsUI.js?v=ea95d176"></script>
     <script src="js/systems/ui/LessonBookUI.js?v=3122a13a"></script>
     <script src="js/systems/ui/TreeInfoUI.js?v=e348aba5"></script>
     <script src="js/systems/LoanManager.js?v=16a6bedc"></script>
     <script src="js/systems/QuestSystem.js?v=aae0a671"></script>
     <script src="js/systems/ui/MissionUI.js?v=c0c04f37"></script>
-    <script src="js/systems/EventSystem.js?v=26a42c92"></script>
+    <script src="js/systems/EventSystem.js?v=e9a993b7"></script>
     <script src="js/systems/SaveSystem.js?v=62eb9f81"></script>
-    <script src="js/systems/StudySystem.js?v=09a9c52e"></script>
+    <script src="js/systems/StudySystem.js?v=df487ae5"></script>
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
-    <script src="js/systems/TutorialSystem.js?v=4e807afb"></script>
+    <script src="js/systems/TutorialSystem.js?v=3d9cd921"></script>
     <script src="js/systems/GameOverSystem.js?v=6571abaa"></script>
     <script src="js/systems/PlayerProfile.js?v=868ad2db"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
     <script src="js/systems/TreeSystem.js?v=aafb661e"></script>
     <script src="js/systems/WeatherService.js?v=ece5b194"></script>
+    <script src="js/systems/SimulatedWeather.js?v=46e8a1c7"></script>
     <script src="js/systems/ResearchLog.js?v=0311d1da"></script>
     <script src="js/systems/LessonProgress.js?v=9769f14b"></script>
 
@@ -869,6 +891,6 @@
     <script src="js/systems/intro/MenuIntro.js?v=83e477fc"></script>
 
     <!-- Main initialization -->
-    <script src="js/main.js?v=984bd948"></script>
+    <script src="js/main.js?v=69c94d8f"></script>
 </body>
 </html>

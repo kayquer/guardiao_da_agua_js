@@ -135,7 +135,12 @@
     transition: transform 0.08s ease, filter 0.08s ease;
 }
 
-.decision-option:hover:not(:disabled), .decision-option:focus-visible { transform: translateY(-3px); filter: brightness(1.1); outline: none; }
+.decision-option:focus-visible { transform: translateY(-3px); filter: brightness(1.1); outline: none; }
+/* Hover só com mouse: no toque o "hover" fica preso no último toque, e o cartão subindo e descendo sob o ponteiro
+   tremia sem parar (e o Playwright não conseguia clicar) */
+@media (hover: hover) and (pointer: fine) {
+    .decision-option:hover:not(:disabled) { transform: translateY(-3px); filter: brightness(1.1); }
+}
 .decision-option.tier-max { background: linear-gradient(170deg, #2e9d55, #1d7a40); border-color: #a5d6a7; }
 .decision-option.tier-mid { background: linear-gradient(170deg, #1e88e5, #1565c0); }
 .decision-option.tier-low { background: linear-gradient(170deg, #8e7cc3, #6a5aa8); }

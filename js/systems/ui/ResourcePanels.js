@@ -212,7 +212,7 @@ mixin(UIManager, {
 
         if (waterProducers.length > 0) {
             detailsHTML += this.renderBuildingGroups(waterProducers,
-                b => b.config.waterProduction * (b.efficiency ?? 1),
+                b => this.gameManager.buildingSystem.getBuildingWaterYield(b).actual, // seca e aquífero inclusos (= total)
                 (total, count) => `${count > 1 ? 'produzindo ' : ''}+${this.formatNumber(total, 1)} L/min`);
         } else {
             detailsHTML += '<p class="no-sources">Nenhuma fonte de água ativa</p>';

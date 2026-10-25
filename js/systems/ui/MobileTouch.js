@@ -278,7 +278,7 @@ mixin(UIManager, {
 
                                 if (building) {
                                     // ===== FIX: Call GameManager.selectBuilding to trigger aura effect =====
-                                    this.gameManager.selectBuilding(building);
+                                    this.gameManager.selectBuilding(building, { sound: true });
                                     log(`🏢 Building selected via tap with aura: ${building.config.name}`);
                                 }
                             } else if (this.gameManager.treeSystem?.selectAt(touch.clientX, touch.clientY)) {
@@ -333,7 +333,7 @@ mixin(UIManager, {
 
             if (building) {
                 // ===== FIX: Use GameManager.selectBuilding to trigger aura effect =====
-                this.gameManager.selectBuilding(building);
+                this.gameManager.selectBuilding(building, { sound: true });
 
                 // Also show a quick tooltip for immediate feedback
                 infoTitle = building.config.name;

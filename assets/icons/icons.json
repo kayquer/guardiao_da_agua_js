@@ -2350,6 +2350,244 @@
       "sm": "svg/tree-sapling-sm.svg"
     }
   },
+  "recycling-point": {
+    "title": "Ponto de Coleta Reciclável",
+    "area": "building",
+    "emoji": [
+      "♻️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (recycling_point.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/recycling-point.svg",
+      "sm": "svg/recycling-point-sm.svg"
+    }
+  },
+  "recycling-coop": {
+    "title": "Cooperativa de Reciclagem",
+    "area": "building",
+    "emoji": [
+      "♻️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (recycling_coop.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/recycling-coop.svg",
+      "sm": "svg/recycling-coop-sm.svg"
+    }
+  },
+  "composting-yard": {
+    "title": "Pátio de Compostagem",
+    "area": "building",
+    "emoji": [
+      "🍂"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (composting_yard.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/composting-yard.svg",
+      "sm": "svg/composting-yard-sm.svg"
+    }
+  },
+  "landfill": {
+    "title": "Aterro Sanitário",
+    "area": "building",
+    "emoji": [
+      "🚛"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (landfill.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/landfill.svg",
+      "sm": "svg/landfill-sm.svg"
+    }
+  },
+  "biodigester": {
+    "title": "Biodigestor",
+    "area": "building",
+    "emoji": [
+      "🫧"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (biodigester.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/biodigester.svg",
+      "sm": "svg/biodigester-sm.svg"
+    }
+  },
+  "ecopark": {
+    "title": "Ecoparque",
+    "area": "building",
+    "emoji": [
+      "🏭"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (ecopark.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/ecopark.svg",
+      "sm": "svg/ecopark-sm.svg"
+    }
+  },
+  "biomass-plant": {
+    "title": "Usina de Biomassa",
+    "area": "building",
+    "emoji": [
+      "🎋"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (biomass_plant.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/biomass-plant.svg",
+      "sm": "svg/biomass-plant-sm.svg"
+    }
+  },
+  "sugarcane-mill": {
+    "title": "Usina Sucroenergética",
+    "area": "building",
+    "emoji": [
+      "🌾"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (sugarcane_mill.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/sugarcane-mill.svg",
+      "sm": "svg/sugarcane-mill-sm.svg"
+    }
+  },
+  "gravel-road": {
+    "title": "Estrada de Cascalho",
+    "area": "building",
+    "emoji": [
+      "🪨"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (gravel_road.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/gravel-road.svg",
+      "sm": "svg/gravel-road-sm.svg"
+    }
+  },
+  "tidal-plant": {
+    "title": "Usina Maremotriz",
+    "area": "building",
+    "emoji": [
+      "🌗"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (tidal_plant.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/tidal-plant.svg",
+      "sm": "svg/tidal-plant-sm.svg"
+    }
+  },
+  "loss-control-center": {
+    "title": "Centro de Controle de Perdas",
+    "area": "building",
+    "emoji": [
+      "📶"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (loss_control_center.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/loss-control-center.svg",
+      "sm": "svg/loss-control-center-sm.svg"
+    }
+  },
+  "underground-dam": {
+    "title": "Barragem Subterrânea",
+    "area": "building",
+    "emoji": [
+      "🧱"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (underground_dam.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/underground-dam.svg",
+      "sm": "svg/underground-dam-sm.svg"
+    }
+  },
+  "water-reuse-plant": {
+    "title": "Estação de Água de Reúso",
+    "area": "building",
+    "emoji": [
+      "🔁"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (water_reuse_plant.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/water-reuse-plant.svg",
+      "sm": "svg/water-reuse-plant-sm.svg"
+    }
+  },
+  "desalination-plant": {
+    "title": "Usina de Dessalinização",
+    "area": "building",
+    "emoji": [
+      "🧂"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (desalination_plant.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/desalination-plant.svg",
+      "sm": "svg/desalination-plant-sm.svg"
+    }
+  },
   "lesson-planet": {
     "title": "Aula 1: A água do planeta",
     "area": "lesson",

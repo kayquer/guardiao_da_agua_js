@@ -35,6 +35,21 @@ test('todo prédio tem efeito que a simulação lê (sem `effects` aninhado)', (
     }
 });
 
+// O painel do prédio e o menu de construção usam BuildMenuUI.getBuildingEffectLines: todo campo de efeito que a
+// simulação lê precisa de uma linha lá (em 10/2026 o painel escondia a limpeza de poluição de todo prédio de tratamento)
+test('todo campo de efeito aparece na descrição do prédio (painel e menu)', () => {
+    const source = fs.readFileSync(path.join(ROOT, 'js/systems/ui/BuildMenuUI.js'), 'utf8');
+    const start = source.indexOf('getBuildingEffectLines(type');
+    const body = source.slice(start, source.indexOf('\n    },', start));
+    const shown = ['waterProduction', 'waterStorage', 'waterConsumption', 'powerGeneration', 'powerConsumption',
+        'pollutionReduction', 'pollutionGeneration', 'satisfactionBonus', 'incomeGeneration', 'populationCapacity',
+        'aquiferRecharge', 'groundwater', 'plantedTree', 'runoffAbsorption', 'earlyWarning', 'nearbyEfficiencyBonus',
+        'runoffImpervious', 'maintenanceCost'];
+    for (const field of shown) assert.ok(body.includes(`type.${field}`), `${field} sem linha em getBuildingEffectLines`);
+    const used = new Set(Object.values(BUILDINGS).flatMap(b => Object.keys(b)));
+    for (const field of shown) assert.ok(used.has(field) || field === 'runoffImpervious', `${field} não é usado por nenhum prédio`);
+});
+
 test('missões só referenciam prédios e missões que existem', () => {
     for (const [mid, m] of Object.entries(MISSIONS)) {
         const objectives = [...(m.objectives || []), ...(m.dynamicObjectives || [])];

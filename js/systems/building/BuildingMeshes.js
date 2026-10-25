@@ -1015,7 +1015,7 @@ mixin(BuildingSystem, {
             material.backFaceCulling = false; // Para melhor visualização dos blocos
 
             // Transparência para zonas
-            if (buildingType.category === 'zoning') {
+            if (buildingType.zoneType) {
                 material.alpha = 0.6;
             }
 
@@ -1078,6 +1078,7 @@ mixin(BuildingSystem, {
         const type = buildingType.id;
 
         try {
+            if (type.zoneType) return this.createZoneMesh(type, size); // zona: lote plano (qualquer categoria)
             switch (category) {
                 case 'water':
                     return this.createWaterFacilityMesh(type, size);
@@ -1089,7 +1090,7 @@ mixin(BuildingSystem, {
                     return this.createResidentialMesh(type, size);
                 case 'infrastructure':
                     return this.createInfrastructureMesh(type, size);
-                case 'zoning':
+                case 'zoning': // categoria antiga; zonas são reconhecidas pelo zoneType acima
                     return this.createZoneMesh(type, size);
                 case 'power':
                     return this.createPowerFacilityMesh(type, size);
@@ -1580,7 +1581,7 @@ mixin(BuildingSystem, {
             material.specularColor = new BABYLON.Color3(0.3, 0.3, 0.3);
 
             // Transparência para zonas
-            if (buildingType.category === 'zoning') {
+            if (buildingType.zoneType) {
                 material.alpha = 0.6;
             }
 

@@ -485,3 +485,16 @@
 @media (prefers-reduced-motion: reduce) {
     .build-modal.open { animation: none; }
 }
+
+/* Painel do prédio pronto: as mesmas linhas de efeito do menu (UIManager.generateBuildingStats) */
+.stat-item.effect-line b {
+    font-weight: 800;
+}
+
+.stat-item.effect-line.bad b {
+    color: #b71c1c;
+}
+
+.stat-item.effect-line.good b {
+    color: #1b5e20;
+}

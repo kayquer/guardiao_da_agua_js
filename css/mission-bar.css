@@ -48,6 +48,8 @@
     body.mission-bar-hidden .compass { bottom: 24px; }
     .cancel-build-btn { bottom: 90px; }
     body.mission-bar-hidden .cancel-build-btn { bottom: 70px; }
+    .build-shift-hint { bottom: 146px; }
+    body.mission-bar-hidden .build-shift-hint { bottom: 126px; }
 
     /* Botão para trazer a barra de volta */
     .mission-peek-btn {

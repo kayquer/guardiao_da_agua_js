@@ -25,7 +25,8 @@ mixin(BuildingSystem, {
     /** É uma zona com lote em ZONE_LOTS? Aceita o prédio (buildingData) ou o tipo. */
     isZoneBuilding(buildingOrType) {
         const config = buildingOrType?.config || buildingOrType;
-        return !!config && config.category === 'zoning' && typeof ZONE_LOTS !== 'undefined' && !!ZONE_LOTS[config.id];
+        // Zona = tem zoneType e lote em ZONE_LOTS (a categoria agora é residential/commercial/industrial, não 'zoning')
+        return !!config && !!config.zoneType && typeof ZONE_LOTS !== 'undefined' && !!ZONE_LOTS[config.id];
     },
 
     /** Fase atual (0-3) de uma zona pronta; null se não é zona ou ainda está em obra. */

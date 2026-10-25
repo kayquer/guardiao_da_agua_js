@@ -1514,3 +1514,30 @@
         justify-self: stretch;
     }
 }
+
+/* Dica abaixo do "Cancelar" no modo construção (GameManager.showCancelBuildButton): Shift continua construindo */
+.build-shift-hint {
+    position: absolute;
+    left: 50%;
+    bottom: 128px;
+    transform: translateX(-50%);
+    z-index: 950;
+    padding: 0.2rem 0.75rem;
+    border-radius: 50px;
+    background: rgba(0, 0, 0, 0.62);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    white-space: nowrap;
+    pointer-events: none;
+    animation: cancel-build-in 0.25s ease-out;
+}
+
+.build-shift-hint kbd {
+    display: inline-block;
+    padding: 0 0.35rem;
+    border: 1px solid #fff;
+    border-bottom-width: 3px;
+    border-radius: 5px;
+    font: inherit;
+}

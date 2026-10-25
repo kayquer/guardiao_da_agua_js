@@ -77,10 +77,13 @@ test('cada personagem do tutorial tem a voz de entrada', () => {
     for (const id of ids) assert.ok(MANIFEST[`voc_${id}_hello`], `voc_${id}_hello não existe`);
 });
 
-test('música total cabe no orçamento (< 25 MB) e efeitos curtos são pequenos', () => {
+// Música é streaming (uma faixa por vez, nunca pré-carregada): o orçamento total é do repositório, e cada faixa
+// tem um teto para começar rápido. Em 10/2026 as playlists ganharam 3 faixas por categoria (25 → 64 MB).
+test('música total cabe no orçamento (< 64 MB, faixa < 4 MB) e efeitos curtos são pequenos', () => {
     const size = files => files.reduce((sum, f) => sum + fs.statSync(path.join(ROOT, f)).size, 0);
     const music = Object.values(MANIFEST).filter(e => e.kind === 'music' || e.kind === 'jingle').flatMap(e => e.files);
-    assert.ok(size(music) < 25 * 1024 * 1024, `música: ${(size(music) / 1048576).toFixed(1)} MB`);
+    assert.ok(size(music) < 64 * 1024 * 1024, `música: ${(size(music) / 1048576).toFixed(1)} MB`);
+    for (const f of music) assert.ok(size([f]) < 4 * 1024 * 1024, `${f}: faixa grande demais`);
     for (const [key, entry] of Object.entries(MANIFEST)) {
         if (entry.kind !== 'sfx' && entry.kind !== 'voice') continue;
         for (const f of entry.files) assert.ok(size([f]) < 150 * 1024, `${key}: ${f} grande demais para pré-carregar`);

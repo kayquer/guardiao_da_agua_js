@@ -48,7 +48,10 @@ const UI_ICON_FILES = {
     'office-building': 'b', 'bank': 'b', 'restaurant': 'b', 'museum': 'b', 'park': 'b', 'monument': 'b',
     'hotel': 'b', 'factory': 'b', 'tech-center': 'b', 'port': 'b', 'water-research-center': 'b',
     'linear-park': 'b', 'rain-garden': 'b', 'green-roof': 'b', 'green-wall': 'b', 'floating-garden': 'b',
-    'monitoring-station': 'b', 'water-quality-monitor': 'b', 'erosion-control': 'b', 'tree-sapling': 'b', 'lesson-planet': 'b',
+    'monitoring-station': 'b', 'water-quality-monitor': 'b', 'erosion-control': 'b', 'tree-sapling': 'b',
+    'recycling-point': 'b', 'recycling-coop': 'b', 'composting-yard': 'b', 'landfill': 'b', 'biodigester': 'b',
+    'ecopark': 'b', 'biomass-plant': 'b', 'sugarcane-mill': 'b', 'gravel-road': 'b', 'tidal-plant': 'b',
+    'loss-control-center': 'b', 'underground-dam': 'b', 'water-reuse-plant': 'b', 'desalination-plant': 'b', 'lesson-planet': 'b',
     'lesson-water-cycle': 'b', 'lesson-sharing': 'b', 'lesson-river-life': 'b', 'lesson-hidden-water': 'b',
     'lesson-green-solutions': 'b', 'mission-new-manager': 'b'
 };
@@ -135,7 +138,8 @@ function lessonIcon(chapter, size = 'lg', extraClass = '') {
 }
 
 /** Ícone de uma categoria de construção (water, treatment, ...). Natureza e Ciência usam ícones genéricos. */
-const UI_CATEGORY_ICON_ALIASES = { nature: 'ui-tree', science: 'ui-microscope' };
+// Residencial usa o desenho das zonas (cat-zoning: casas); a categoria "zoning" deixou de existir em 10/2026
+const UI_CATEGORY_ICON_ALIASES = { nature: 'ui-tree', science: 'ui-microscope', residential: 'cat-zoning' };
 function categoryIcon(category, size = 'sm', extraClass = '') {
     return uiIcon(UI_CATEGORY_ICON_ALIASES[category] || `cat-${category}`, size, extraClass);
 }

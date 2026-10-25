@@ -133,6 +133,7 @@ function initializeMenuSystem() {
     initializeProfileScreen();
     initializeGraphicsPickers();
     initializeTextPickers();
+    initializeClimatePickers();
 }
 
 // ===== QUALIDADE GRÁFICA (GraphicsQuality) =====
@@ -185,6 +186,37 @@ function initializeTextPickers() {
         if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_click', 0.6);
     }));
     TextSize.onChange(render);
+    render();
+}
+
+// ===== CLIMA REAL OU SIMULADO (SimulatedWeather) =====
+// Seletor nas Configurações da pausa ([data-climate-picker]); salvo no navegador, vale na hora (refaz o clima).
+function initializeClimatePickers() {
+    const pickers = document.querySelectorAll('[data-climate-picker]');
+    const render = () => {
+        const mode = SimulatedWeather.mode();
+        pickers.forEach(picker => {
+            picker.querySelectorAll('[data-climate]').forEach(button => {
+                const on = button.dataset.climate === mode;
+                button.classList.toggle('active', on);
+                button.setAttribute('aria-checked', String(on));
+            });
+            const hint = picker.querySelector('.climate-hint');
+            if (hint) hint.textContent = mode === 'real'
+                ? 'Chuva, vento e previsão de verdade da sua cidade (precisa de internet).'
+                : 'O jogo inventa o tempo de cada dia: sol, nuvens, chuva e tempestades, sem internet.';
+        });
+    };
+    pickers.forEach(picker => picker.addEventListener('click', event => {
+        const button = event.target.closest('[data-climate]');
+        if (!button || button.dataset.climate === SimulatedWeather.mode()) return;
+        SimulatedWeather.setMode(button.dataset.climate);
+        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_click', 0.6);
+    }));
+    SimulatedWeather.onChange(() => {
+        render();
+        if (gameManager?.initialized) gameManager.uiManager?.refreshWeather({ force: true });
+    });
     render();
 }
 

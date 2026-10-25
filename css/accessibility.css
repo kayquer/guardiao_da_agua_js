@@ -7,15 +7,23 @@
 .page-text,
 .question-text,
 .option-text,
-.decision-speech,
 .central-alert-message,
 .mission-details-text,
 .build-info-desc,
 .build-info-stats,
 .nh-list,
-.toast,
 .swal2-html-container {
     zoom: var(--text-scale, 1);
+}
+
+/* Balão do Paulo e toasts: tamanho da fonte em vez de zoom (o zoom deixava o modal "instável" a cada quadro do
+   retrato animado e tirava os toasts do canto por meio pixel) */
+html .decision-speech { /* html: vence o css/event-decision.css, carregado depois */
+    font-size: calc(1rem * var(--text-scale, 1));
+}
+
+html .toast {
+    font-size: calc(0.95rem * var(--text-scale, 1));
 }
 
 /* ===== Números do topo: além da cor, um selo com símbolo (! atenção, ✕ crítico) no canto da pílula ===== */

@@ -19,7 +19,7 @@ mixin(BuildingSystem, {
         if (!this.gridManager.canPlaceBuilding(gridX, gridZ, 1)) return { ok: false, reason: 'Lugar ocupado' };
         const allowed = type.requirements?.terrain;
         if (allowed && !allowed.includes(terrain)) {
-            return { ok: false, reason: terrain === 'hill' ? `${type.name} não sobe colina: use a Estrada de Terra` : `${type.name} não pode ser feita aqui` };
+            return { ok: false, reason: terrain === 'hill' ? `${type.name} não sobe colina: use a Estrada de Terra ou de Cascalho` : `${type.name} não pode ser feita aqui` };
         }
         return { ok: true };
     },

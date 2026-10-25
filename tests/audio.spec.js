@@ -78,6 +78,7 @@ test('música e ambiente seguem o contexto do jogo; pausa e volumes', async ({ p
         return { amb, music: am.trackVolume(am.musicTrack) };
     `);
     expect(vols.amb.every(v => v === 0)).toBe(true);
+    await page.click('#btn-settings'); // o bloco Som fica no painel ⚙️ Configurações
     const sound = page.locator('#pp-sound');
     await expect(sound).toBeVisible();
     await expect(sound.locator('input[type=range]')).toHaveCount(3);

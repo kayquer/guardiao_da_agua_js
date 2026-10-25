@@ -76,12 +76,13 @@ const FEATURE_FLAGS = {
     HIDDEN_BUILDINGS: [
         'power_pole',
         'thermal_plant',
-        'coal_plant'
+        'coal_plant',
+        'house',      // casa e prédio avulsos: a categoria Residencial mostra só as zonas (a cidade cresce por elas)
+        'apartment'
     ],
 
     HIDDEN_CATEGORIES: [
-        'infrastructure', // calçada e praça
-        'residential'     // casa e prédio avulsos (sem botão): a cidade cresce pelas zonas
+        'infrastructure' // calçada e praça
     ],
 
     HIDDEN_UI_FEATURES: {

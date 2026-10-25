@@ -57,6 +57,7 @@ test('na pausa: trocar a qualidade aplica na hora (baixa sem sombras, alta com) 
     expect(await state()).toMatchObject({ level: 'low', shadows: false, scale: 1.6, fxaa: false, waterShader: false, msaa: false });
 
     await page.evaluate(() => window.gameManager.pauseGame());
+    await page.click('#btn-settings'); // gráficos, texto, clima e som ficam no painel ⚙️ Configurações
     const picker = page.locator('#pause-gfx');
     await expect(picker).toBeVisible();
     await expect(picker.locator('[data-quality="low"]')).toHaveAttribute('aria-checked', 'true');

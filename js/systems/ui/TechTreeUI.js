@@ -9,7 +9,7 @@
  * Dados: tier/techRequires/group em js/data/buildings.js; regras em js/systems/TechTree.js.
  */
 // Ramos da árvore = categorias do menu de construção, na ordem dos botões
-const TECH_BRANCHES = ['water', 'treatment', 'nature', 'science', 'power', 'public', 'zoning', 'commercial', 'tourism', 'industrial'];
+const TECH_BRANCHES = ['water', 'treatment', 'nature', 'science', 'power', 'public', 'residential', 'commercial', 'industrial'];
 
 mixin(UIManager, {
     setupTechTree() {

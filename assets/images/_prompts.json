@@ -748,6 +748,51 @@
       ],
       "prompt": "Illustration of a nuclear power plant on the green, mountainous Atlantic Forest coast of Brazil: a dome-shaped reactor building, a turbine hall, a wide cooling tower releasing white water vapor clouds, pipes taking seawater in and returning warm water to the bay, a cutaway inset showing heat boiling water into steam that spins a turbine, fish swimming in the cool part of the sea, security fences and protected forest around it. Generic setting with no famous landmarks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
       "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/usina-maremotriz.webp": {
+      "usedIn": "Estudo - Usina Maremotriz, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational illustration of a tidal power plant in a wide bay in northeastern Brazil: a low concrete barrage crossing the water with sluice gates, the tide flowing through a channel and spinning an underwater turbine shown in a cutaway, the moon in the sky pulling the sea, small fishing boats, mangrove trees on the shore, power lines carrying clean energy to a coastal city. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/controle-de-perdas.webp": {
+      "usedIn": "Estudo - Centro de Controle de Perdas, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational illustration of a Brazilian water utility loss control center: technicians in a control room watching a big screen with a map of blue water pipes and a red blinking leak, a cutaway street below showing an underground pipe leaking water into the soil, a worker with an acoustic listening device on the sidewalk, smart water meters on houses, a repair crew fixing the pipe with orange cones. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/barragem-subterranea.webp": {
+      "usedIn": "Estudo - Barragem Subterrânea, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational cutaway illustration of an underground dam in the Brazilian semi-arid region (caatinga): a dry sandy riverbed on the surface, below it a cross section of soil showing a dark plastic wall buried down to the bedrock holding wet sand full of turquoise water upstream, a round concrete hand-dug well with a wooden windlass, a family farmer harvesting green vegetables next to it, caatinga trees and a blue sky. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/agua-de-reuso.webp": {
+      "usedIn": "Estudo - Estação de Água de Reúso, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational illustration of a water reuse plant like Aquapolo in São Paulo, Brazil: treated sewage flowing into aeration tanks with bubbles, a building with membrane filter tubes shown in a cutaway, clean reclaimed water flowing through purple pipes to a big factory with cooling towers, while the river next to the city stays clean and full, workers in safety vests, green trees around. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/dessalinizacao.webp": {
+      "usedIn": "Estudo - Usina de Dessalinização, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational cutaway illustration of a seawater desalination plant on the coast of Ceará, Brazil: a large pipe taking sea water from the ocean, pre-filters, a building with rows of white reverse osmosis membrane tubes shown in a cutaway, salt being held back while fresh turquoise water flows to a blue reservoir and to the city of Fortaleza, a separate brown pipe returning concentrated brine far into the sea, high-voltage power lines feeding the plant, coconut palms on the beach. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
     }
   }
 }
