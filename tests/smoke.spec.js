@@ -186,6 +186,9 @@ test('tutorial congela o jogo e guia a construção da prefeitura', async ({ pag
 
     // Missão concluída → a próxima aula (a 1, só vista pela metade) abre sozinha no livro, com o jogo pausado
     await page.evaluate(() => window.gameManager.questSystem.completeQuest('tutorial_01'));
+    // Primeiro a comemoração (cartão com estrelas); a aula espera ele fechar
+    await expect(page.locator('#mission-card')).toBeVisible();
+    await page.locator('#mission-card-ok').click();
     const book = page.locator('#lesson-book');
     await expect(book).toBeVisible({ timeout: 10000 });
     await expect(book.locator('.book-chapter')).toContainText('Aula 1');

@@ -1157,6 +1157,240 @@
       "sm": "svg/ui-medal-sm.svg"
     }
   },
+  "res-water-great": {
+    "title": "Água de sobra (cachoeira)",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-water-great.svg"
+    }
+  },
+  "res-water-low": {
+    "title": "Água acabando (torneira pingando)",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-water-low.svg"
+    }
+  },
+  "res-water-critical": {
+    "title": "Sem água (deserto)",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-water-critical.svg"
+    }
+  },
+  "res-pollution-great": {
+    "title": "Ar e rio limpos",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-pollution-great.svg"
+    }
+  },
+  "res-pollution-low": {
+    "title": "Poluição subindo",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-pollution-low.svg"
+    }
+  },
+  "res-pollution-critical": {
+    "title": "Poluição crítica",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-pollution-critical.svg"
+    }
+  },
+  "res-population-great": {
+    "title": "Cidade cheia e animada",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-population-great.svg"
+    }
+  },
+  "res-population-low": {
+    "title": "Pouca gente na cidade",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-population-low.svg"
+    }
+  },
+  "res-population-critical": {
+    "title": "Moradores indo embora",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-population-critical.svg"
+    }
+  },
+  "res-satisfaction-great": {
+    "title": "Moradores muito felizes",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-satisfaction-great.svg"
+    }
+  },
+  "res-satisfaction-low": {
+    "title": "Moradores insatisfeitos",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-satisfaction-low.svg"
+    }
+  },
+  "res-satisfaction-critical": {
+    "title": "Moradores revoltados",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-satisfaction-critical.svg"
+    }
+  },
+  "res-budget-great": {
+    "title": "Cofre cheio",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-budget-great.svg"
+    }
+  },
+  "res-budget-low": {
+    "title": "Dinheiro curto",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-budget-low.svg"
+    }
+  },
+  "res-budget-critical": {
+    "title": "Sem dinheiro",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-budget-critical.svg"
+    }
+  },
+  "res-energy-great": {
+    "title": "Energia de sobra",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-energy-great.svg"
+    }
+  },
+  "res-energy-low": {
+    "title": "Energia faltando",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-energy-low.svg"
+    }
+  },
+  "res-energy-critical": {
+    "title": "Sem energia",
+    "area": "hud",
+    "emoji": [],
+    "usedIn": [
+      "js/systems/ui/ResourceHud.js",
+      "js/data/resourceStates.js"
+    ],
+    "size": "sm",
+    "files": {
+      "sm": "svg/res-energy-critical.svg"
+    }
+  },
   "cat-water": {
     "title": "Categoria Água",
     "area": "cat",

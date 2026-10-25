@@ -43,7 +43,18 @@ const ZONE_GROWTH = {
 const ZONE_EVOLUTION = {
     weights: ['light', 'balanced', 'heavy'],
     weightNames: { light: 'Leve', balanced: 'Equilibrada', heavy: 'Pesada' },
-    keepStats: ['population', 'jobs', 'income']
+    keepStats: ['population', 'jobs', 'income'],
+    // O que a cidade precisa ter (prédios prontos) para uma zona subir para este peso: crescer pede infraestrutura
+    requires: {
+        balanced: [
+            { ids: ['treatment_plant', 'water_tank'], label: 'uma Estação de Tratamento ou um Reservatório' }
+        ],
+        heavy: [
+            { ids: ['paved_road'], label: 'rua de asfalto' },
+            { ids: ['rain_garden', 'linear_park', 'green_roof', 'erosion_control'], label: 'um controle de enxurrada (jardim de chuva, parque linear, telhado verde ou controle de erosão)' },
+            { energySpare: true, label: 'energia sobrando para o bairro maior' }
+        ]
+    }
 };
 
 // Peças de obra procedurais (BuildingSystem.createZonePropTemplate). Tamanho base em células (w × d × h)

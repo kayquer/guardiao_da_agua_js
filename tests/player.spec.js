@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { mockExternalApis, startGame } = require('./helpers');
+const { mockExternalApis, startGame, closeCards } = require('./helpers');
 
 // Jogador (perfil, clima, tela de perfil/pausa), pausa de verdade, cancelar construção, aulas e o
 // tutorial de missões que avança no clique. Qualquer erro de JS ou console.error reprova.
@@ -241,6 +241,7 @@ test('guias em sequência: água + energia → reservatório → zoneamento → 
     // Água sem energia ainda não abre nada
     expect(await build('water_pump')).toBe(true);
     await page.waitForTimeout(2500);
+    await closeCards(page, 500); // a bomba conclui a 1ª missão: cartão de comemoração
     expect(await page.evaluate(() => window.gameManager.tutorialSystem.isActive)).toBe(false);
     const power = await page.evaluate(() => [...window.gameManager.buildingSystem.buildingTypes].find(([, t]) => t.powerGeneration > 0 && t.visible)[0]);
     expect(await build(power)).toBe(true);

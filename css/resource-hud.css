@@ -1,0 +1,74 @@
+/* Botões de recurso do topo que mostram como o recurso vai (js/systems/ui/ResourceHud.js):
+   seta de tendência + visual por faixa (res-tier-great / ok / low / critical). */
+
+/* ===== Seta de gráfico ===== */
+.res-trend {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-right: 4px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    border: 2px solid #1a1a1a;
+    color: #6b7780;
+    pointer-events: none;
+}
+
+.res-trend svg { width: 13px; height: 13px; display: block; }
+.res-trend--good { color: #00a651; }
+.res-trend--bad { color: #e53935; }
+.res-trend--up.res-trend--good, .res-trend--down.res-trend--good { animation: res-trend-good 1.6s ease-in-out infinite; }
+.res-trend--up.res-trend--bad, .res-trend--down.res-trend--bad { animation: res-trend-bad 1.1s ease-in-out infinite; }
+
+@keyframes res-trend-good { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes res-trend-bad { 0%, 100% { transform: scale(1); background: rgba(255, 255, 255, 0.92); } 50% { transform: scale(1.12); background: #ffe3e3; } }
+
+.compact-resource-item .res-trend { width: 16px; height: 16px; margin: 0 0 0 2px; border-width: 1.5px; }
+.compact-resource-item .res-trend svg { width: 10px; height: 10px; }
+
+/* ===== Faixas do botão ===== */
+
+/* Muito bem: cores vivas e brilho pulsando */
+.resource-item.res-tier-great {
+    background: linear-gradient(145deg, #FFF06A, #FFC400 55%, #FFA500);
+    border-color: #FFB300;
+    animation: res-tier-glow 2.4s ease-in-out infinite;
+}
+
+.resource-item.res-tier-great .resource-icon img { filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.9)); }
+
+@keyframes res-tier-glow {
+    0%, 100% { box-shadow: var(--shadow-cartoon), inset 0 -4px 0 rgba(0, 0, 0, 0.2), 0 0 0 rgba(255, 236, 120, 0); }
+    50% { box-shadow: var(--shadow-cartoon), inset 0 -4px 0 rgba(0, 0, 0, 0.2), 0 0 18px rgba(255, 236, 120, 0.95); }
+}
+
+/* Piorando: cor apagada, empoeirada */
+.resource-item.res-tier-low {
+    background: linear-gradient(145deg, #F4D27A, #D9A54A);
+    border-color: #B9782C;
+    filter: saturate(0.8);
+}
+
+/* Crítico: seco como areia rachada, com borda vermelha pulsando */
+.resource-item.res-tier-critical {
+    background:
+        repeating-linear-gradient(115deg, transparent 0 9px, rgba(120, 70, 30, 0.22) 9px 10px),
+        linear-gradient(145deg, #EBC995, #C48F55);
+    border-color: #E53935;
+    animation: res-tier-alarm 1.2s ease-in-out infinite;
+}
+
+@keyframes res-tier-alarm {
+    0%, 100% { box-shadow: var(--shadow-cartoon), inset 0 -4px 0 rgba(0, 0, 0, 0.2), 0 0 0 rgba(229, 57, 53, 0); }
+    50% { box-shadow: var(--shadow-cartoon), inset 0 -4px 0 rgba(0, 0, 0, 0.2), 0 0 16px rgba(229, 57, 53, 0.85); }
+}
+
+/* Celular: o mesmo recado nos indicadores compactos */
+.compact-resource-item.res-tier-great { background: rgba(255, 215, 0, 0.32); box-shadow: 0 0 10px rgba(255, 236, 120, 0.7); }
+.compact-resource-item.res-tier-low { background: rgba(217, 165, 74, 0.35); }
+.compact-resource-item.res-tier-critical { background: rgba(229, 57, 53, 0.35); animation: res-tier-compact 1.2s ease-in-out infinite; }
+
+@keyframes res-tier-compact { 0%, 100% { box-shadow: none; } 50% { box-shadow: 0 0 10px rgba(229, 57, 53, 0.9); } }

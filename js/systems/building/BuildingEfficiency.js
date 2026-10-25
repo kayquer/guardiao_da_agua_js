@@ -26,7 +26,18 @@ const EFFICIENCY_RULES = {
     zoneHighPollutionFactor: 0.75, // zona com poluição alta (≥ zoneHighPollution): × 0,75
     zoneHighPollution: 70,
     zoneRegressBelow: 0.5,     // abaixo disto a zona volta de fase (ZoneGrowth.updateZoneGrowth)
-    researchBonusCap: 0.5      // soma dos bônus de centros de pesquisa/universidades próximos
+    researchBonusCap: 0.5,     // soma dos bônus de centros de pesquisa/universidades próximos
+    // Zona pesada (lote quase todo coberto) sem controle de enxurrada perto: com chuva os bueiros não dão conta
+    heavyRunoff: 0.7,          // runoffImpervious a partir do qual a zona precisa de drenagem por perto
+    drainageRadius: 4,         // quadrados em volta do lote onde vale um jardim de chuva, parque linear, muda…
+    undrainedRainFactor: 0.7,
+    needsWaterFactor: 0.5,     // hotel/restaurante (needsWater) com a cidade sem água
+    cleanWaterPollution: 50,   // porto (needsCleanWater) com o rio poluído a partir disto
+    cleanWaterFactor: 0.5,
+    // Energia que depende do tempo (powerSource): vento em km/h, sol pelo céu do clima, rio pela seca
+    windSteps: [[8, 0.5], [15, 0.8], [40, 1.1], [70, 1.25], [Infinity, 0.6]], // [até km/h, fator]; ventania desliga
+    sunByKind: { sun: 1.2, partly: 1, cloud: 0.7, fog: 0.6, rain: 0.5, storm: 0.4, snow: 0.5 },
+    solarNight: 0.5            // de noite a usina solar só entrega o que guardou nas baterias
 };
 
 mixin(BuildingSystem, {
@@ -104,8 +115,85 @@ mixin(BuildingSystem, {
         // Os outros dois recursos principais das zonas: água e ar/rio limpos
         if (isZone && ctx.waterShortage) efficiency *= EFFICIENCY_RULES.zoneNoWaterFactor;
         if (isZone && ctx.highPollution) efficiency *= EFFICIENCY_RULES.zoneHighPollutionFactor;
+        // Bairro pesado sem drenagem por perto: alaga com chuva
+        if (isZone && ctx.undrained && ctx.raining) efficiency *= EFFICIENCY_RULES.undrainedRainFactor;
+        // Prédios que vivem da água: hotel/restaurante sem água, porto com o rio sujo
+        const config = building.config || {};
+        if (config.needsWater && ctx.waterShortage) efficiency *= EFFICIENCY_RULES.needsWaterFactor;
+        if (config.needsCleanWater && (ctx.pollution || 0) >= EFFICIENCY_RULES.cleanWaterPollution) efficiency *= EFFICIENCY_RULES.cleanWaterFactor;
+        // Energia que depende do tempo: vento, sol, rio
+        if (config.powerSource) efficiency *= this.getWeatherPowerFactor(config.powerSource, ctx.weather);
         efficiency += ctx.researchBonus || 0;
         return Math.round(Math.min(2, Math.max(0, efficiency)) * 100) / 100;
+    },
+
+    /**
+     * Quanto a usina entrega com o tempo de agora (1 sem dados de clima).
+     * weather = { wind (km/h), kind (sun/partly/cloud/…), isDay, waterFactor (seca: produção de água × 0,5) }
+     */
+    getWeatherPowerFactor(source, weather) {
+        if (!weather) return 1;
+        if (source === 'wind') {
+            if (!Number.isFinite(weather.wind)) return 1;
+            return EFFICIENCY_RULES.windSteps.find(([max]) => weather.wind < max)[1];
+        }
+        if (source === 'solar') {
+            if (weather.isDay === false) return EFFICIENCY_RULES.solarNight;
+            return EFFICIENCY_RULES.sunByKind[weather.kind] ?? 1;
+        }
+        if (source === 'hydro') return Number.isFinite(weather.waterFactor) ? Math.max(0.3, Math.min(1, weather.waterFactor)) : 1;
+        return 1;
+    },
+
+    /** Tempo de agora para as usinas (WeatherEffects.profile + dia/noite do jogo + seca). */
+    getWeatherContext() {
+        const gm = this.gameManager;
+        const profile = gm?.weatherEffects?.profile;
+        const day = gm?.getDayNightState?.();
+        return {
+            wind: profile && profile.kind !== 'none' ? profile.wind : undefined,
+            kind: profile?.kind,
+            isDay: day ? day !== 'night' : undefined, // GameManager.getDayNightState(): 'day' | 'night'
+            waterFactor: gm?.resourceManager?.resources?.water?.productionMultiplier
+        };
+    },
+
+    /** Está chovendo (clima real/simulado) ou há chuva forte/enchente em andamento? */
+    isRainingNow() {
+        const gm = this.gameManager;
+        if ((gm?.weatherEffects?.profile?.rain || 0) > 0) return true;
+        return ['heavy_rain', 'flood'].some(t => gm?.eventSystem?.hasActiveEventOfType?.(t));
+    },
+
+    /** Zona pesada (lote quase todo coberto) sem nenhum controle de enxurrada a até drainageRadius quadrados. */
+    isZoneUndrained(building) {
+        const config = building?.config || {};
+        if (!config.zoneType || !((config.runoffImpervious || 0) >= EFFICIENCY_RULES.heavyRunoff)) return false;
+        const r = EFFICIENCY_RULES.drainageRadius;
+        const size = config.size || 1;
+        for (const other of this.buildings.values()) {
+            if (other === building || other.underConstruction) continue;
+            const c = other.config || {};
+            if (!(c.runoffAbsorption > 0) && !c.plantedTree) continue;
+            const os = c.size || 1;
+            const dx = Math.max(0, building.gridX - (other.gridX + os - 1), other.gridX - (building.gridX + size - 1));
+            const dz = Math.max(0, building.gridZ - (other.gridZ + os - 1), other.gridZ - (building.gridZ + size - 1));
+            if (Math.max(dx, dz) <= r) return false;
+        }
+        return true;
+    },
+
+    /** Prédio perto (até 3 quadrados) de uma zona pesada sem drenagem: a enchente atinge mais (EventSystem.damageInfrastructure). */
+    isNearUndrainedZone(building) {
+        const size = building?.config?.size || 1;
+        for (const zone of this.buildings.values()) {
+            if (!zone.undrained) continue;
+            const zs = zone.config?.size || 1;
+            const dx = Math.max(0, building.gridX - (zone.gridX + zs - 1), zone.gridX - (building.gridX + size - 1));
+            const dz = Math.max(0, building.gridZ - (zone.gridZ + zs - 1), zone.gridZ - (building.gridZ + size - 1));
+            if (Math.max(dx, dz) <= 3) return true;
+        }
+        return false;
     },
 
     /** Eficiência elétrica da cidade (1 sem consumo). */
@@ -152,10 +240,16 @@ mixin(BuildingSystem, {
         }
 
         const rm = this.gameManager?.resourceManager;
+        building.undrained = this.isZoneUndrained(building);
+        const pollution = rm?.resources?.pollution?.current || 0;
         const efficiency = this.computeBuildingEfficiency(building, {
             hasRoad, cityEnergy, researchBonus: this.getResearchEfficiencyBonus(building),
             waterShortage: !!rm?.hasWaterShortage?.(),
-            highPollution: (rm?.resources?.pollution?.current || 0) >= EFFICIENCY_RULES.zoneHighPollution
+            highPollution: pollution >= EFFICIENCY_RULES.zoneHighPollution,
+            pollution,
+            undrained: building.undrained,
+            raining: building.undrained && this.isRainingNow(),
+            weather: building.config?.powerSource ? this.getWeatherContext() : null
         });
         // Consumo de energia da zona fora do que está nos totais (save antigo): refaz os efeitos também
         const powerOutOfSync = building.effectsApplied && Number.isFinite(building.appliedPowerConsumption)
@@ -183,7 +277,8 @@ mixin(BuildingSystem, {
         return this.computeBuildingEfficiency(building, {
             hasRoad: this.hasRoadLink(building),
             cityEnergy: this.getCityEnergyEfficiency(),
-            researchBonus: this.getResearchEfficiencyBonus(building)
+            researchBonus: this.getResearchEfficiencyBonus(building),
+            weather: building.config?.powerSource ? this.getWeatherContext() : null
         });
     },
 
@@ -239,6 +334,27 @@ mixin(BuildingSystem, {
         }
         if (isZone && (rm?.resources?.pollution?.current || 0) >= EFFICIENCY_RULES.zoneHighPollution) {
             html += '<div class="stat-item efficiency-warning zone-pollution-warning" style="color:#ffb74d">🏭 Poluição alta: a zona rende menos e não sobe de fase.</div>';
+        }
+        if (isZone && building.undrained) {
+            const raining = this.isRainingNow();
+            const percent = Math.round(EFFICIENCY_RULES.undrainedRainFactor * 100);
+            html += `<div class="stat-item efficiency-warning zone-drainage-warning" style="color:${raining ? '#ff8a80' : '#ffb74d'}">🌧️ ${raining
+                ? `Chovendo e sem drenagem por perto: o bairro alaga e rende ${percent}%.`
+                : 'Sem drenagem por perto: quando chover, o bairro alaga e rende menos (e a enchente atinge mais as quadras em volta).'} Construa um jardim de chuva, parque linear, telhado verde, controle de erosão ou plante mudas a até ${EFFICIENCY_RULES.drainageRadius} quadrados.</div>`;
+        }
+        const config = building.config || {};
+        if (config.needsWater && rm?.hasWaterShortage?.()) {
+            html += `<div class="stat-item efficiency-warning needs-water-warning" style="color:#ffb74d">🚱 Sem água na cidade: funciona a ${Math.round(EFFICIENCY_RULES.needsWaterFactor * 100)}%.</div>`;
+        }
+        if (config.needsCleanWater && (rm?.resources?.pollution?.current || 0) >= EFFICIENCY_RULES.cleanWaterPollution) {
+            html += `<div class="stat-item efficiency-warning clean-water-warning" style="color:#ffb74d">🛳️ Rio poluído: menos navios querem atracar (funciona a ${Math.round(EFFICIENCY_RULES.cleanWaterFactor * 100)}%).</div>`;
+        }
+        if (config.powerSource) {
+            const factor = this.getWeatherPowerFactor(config.powerSource, this.getWeatherContext());
+            const why = { wind: 'do vento', solar: 'do sol', hydro: 'da água do rio' }[config.powerSource];
+            if (Math.abs(factor - 1) > 0.01) {
+                html += `<div class="stat-item efficiency-warning weather-power" style="color:${factor > 1 ? '#81c784' : '#ffb74d'}">${factor > 1 ? '⬆️' : '⬇️'} Depende ${why}: agora entrega ${Math.round(factor * 100)}%.</div>`;
+            }
         }
         if (isZone && building.efficiency < EFFICIENCY_RULES.zoneRegressBelow && (this.getZoneStage?.(building) || 0) > 0) {
             html += '<div class="stat-item efficiency-warning zone-regress-warning" style="color:#ff8a80">⬇️ Abaixo de 50%: a zona está perdendo moradores e voltando de fase!</div>';

@@ -29,8 +29,57 @@ const EXTRAS = {
             `Tree branches creaking and leaves thrashing in a stormy wind, ${STORM}`
         ],
         seconds: [3, 3.5, 4, 2.5, 3]
-    }
+    },
+    // Alertas dos botões de recurso do HUD (ui/ResourceHud.js): um som próprio por recurso quando ele piora de faixa,
+    // e um de recuperação quando volta a ficar bem
+    ...resourceAlerts()
 };
+
+function resourceAlerts() {
+    const UI = 'short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry';
+    const alerts = {
+        sfx_alert_water: [
+            `Water running out: the last drops gurgle down an empty metal pipe and stop with a hollow plop, ${UI}`,
+            `A tap sputtering and coughing air, a few final drips and then dry silence, ${UI}`,
+            `Water level dropping in a tank: a descending glug-glug and a small empty echo, ${UI}`
+        ],
+        sfx_alert_energy: [
+            `Electricity powering down: a soft electric hum sliding down in pitch with a little flicker buzz, ${UI}`,
+            `A light bulb buzzing, flickering twice and switching off with a soft click, ${UI}`,
+            `Machine running out of power: a whirring motor slowing down to a stop with a low electric sigh, ${UI}`
+        ],
+        sfx_alert_pollution: [
+            `Pollution warning: a factory chimney puffing thick smoke with a hiss, then a soft muffled cough, ${UI}`,
+            `Dirty air alert: a low murky whoosh of smog rolling in and a tiny wheezy cough, ${UI}`,
+            `Sludgy polluted water bubble pops and a smoky hiss, a short warning tone underneath, ${UI}`
+        ],
+        sfx_alert_money: [
+            `Money running low: a few coins dropping into an almost empty tin, the last one rolling and wobbling to a stop, ${UI}`,
+            `An empty wallet being opened, a single coin falls out and spins on a wooden table, ${UI}`,
+            `Piggy bank shaken with only one coin rattling inside, then a soft descending two-note tone, ${UI}`
+        ],
+        sfx_alert_population: [
+            `People leaving town: footsteps and suitcase wheels rolling away on a sidewalk, fading out, ${UI}`,
+            `A small crowd murmur fading away into the distance and a door closing softly, ${UI}`,
+            `Moving truck door sliding shut and the engine driving away, short and gentle, ${UI}`
+        ],
+        sfx_alert_satisfaction: [
+            `Unhappy citizens: a small group making a disappointed non-verbal groan, soft and comic, ${UI}`,
+            `A short descending sad trombone-like wobble played on a soft woodwind, ${UI}`,
+            `A few people tutting and sighing in disappointment, non-verbal, gentle, ${UI}`
+        ],
+        sfx_alert_recover: [
+            `Resource recovered: a bright rising three-note marimba chime with a tiny sparkle, ${UI}`,
+            `Things are getting better: a soft upward whoosh ending in a warm bell ding, ${UI}`,
+            `Happy little rising glockenspiel arpeggio with a water-bubble pop at the end, ${UI}`
+        ]
+    };
+    const out = {};
+    for (const [key, prompts] of Object.entries(alerts)) {
+        out[key] = { dir: 'Sounds/SFX/Player', volume: 0.6, gap: 4000, lufs: -16, channels: 1, prompts, seconds: [1.6, 1.6, 1.6] };
+    }
+    return out;
+}
 
 function loadManifest() {
     const ctx = {};

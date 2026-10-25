@@ -12,6 +12,7 @@ const { svg } = require('./core');
 
 const defs = [
     ...require('./icons-ui'),
+    ...require('./icons-res-states'),
     ...require('./icons-cat-weather'),
     ...require('./icons-buildings'),
     ...require('./icons-content')

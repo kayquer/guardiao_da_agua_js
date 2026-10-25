@@ -381,7 +381,12 @@ class BuildingSystem {
         }
 
         // ===== RESEARCH CENTERS AND UNIVERSITIES: Apply cost reduction =====
-        const actualCost = this.calculateConstructionCostWithBonuses(buildingTypeId, gridX, gridZ);
+        // A obra grátis do tutorial (prefeitura) nem passa pelo caixa: ela custa mais que o orçamento inicial
+        const tutorialFree = this.gameManager?.tutorialSystem?.isFreeBuilding?.(buildingTypeId);
+        const baseCost = tutorialFree ? 0 : this.calculateConstructionCostWithBonuses(buildingTypeId, gridX, gridZ);
+        // Prêmio de missão (desconto ou obra grátis, QuestSystem.getPerkCost): gasto só depois de pagar
+        const perkCost = tutorialFree ? 0 : (this.gameManager?.questSystem?.getPerkCost?.(buildingTypeId, baseCost) ?? baseCost);
+        const actualCost = perkCost;
 
         // Verificar orçamento (usando custo com desconto)
         if (window.gameManager && gameManager.resourceManager) {
@@ -477,6 +482,7 @@ class BuildingSystem {
         // ===== RESEARCH CENTERS AND UNIVERSITIES: Deduct actual cost with bonuses =====
         if (window.gameManager && gameManager.resourceManager) {
             const success = gameManager.resourceManager.spendBudget(actualCost);
+            if (success && actualCost < baseCost) this.gameManager?.questSystem?.consumeBuildPerk?.(buildingTypeId);
             if (success) {
                 const savings = buildingType.cost - actualCost;
                 if (savings > 0) {
@@ -829,10 +835,14 @@ class BuildingSystem {
             if (config.powerGeneration) {
                 const isRented = building.isRented || false;
                 if (!isRented) {
+                    // × eficiência (o tempo muda a eólica/solar/hidrelétrica, BuildingEfficiency.getWeatherPowerFactor);
+                    // tira exatamente o que somou (appliedPowerGeneration; save antigo: a geração cheia)
                     if (add) {
-                        resourceManager.addElectricityGeneration(config.powerGeneration);
+                        building.appliedPowerGeneration = config.powerGeneration * (building.efficiency ?? 1);
+                        resourceManager.addElectricityGeneration(building.appliedPowerGeneration);
                     } else {
-                        resourceManager.removeElectricityGeneration(config.powerGeneration);
+                        resourceManager.removeElectricityGeneration(building.appliedPowerGeneration ?? config.powerGeneration);
+                        building.appliedPowerGeneration = undefined;
                     }
                 }
             }
@@ -1392,6 +1402,7 @@ class BuildingSystem {
             effectsApplied: !!building.effectsApplied,
             // Energia que está nos totais (zona: pela fase) e dano de evento (BuildingEfficiency.js)
             ...(Number.isFinite(building.appliedPowerConsumption) ? { appliedPowerConsumption: building.appliedPowerConsumption } : {}),
+            ...(Number.isFinite(building.appliedPowerGeneration) ? { appliedPowerGeneration: building.appliedPowerGeneration } : {}),
             ...(Number.isFinite(building.damageFactor) ? { damageFactor: building.damageFactor } : {}),
             // Zona pronta: fase (0-3) e progresso da fase (ZoneGrowth.js)
             ...(Number.isInteger(building.zoneStage) ? {
@@ -1490,6 +1501,7 @@ class BuildingSystem {
         if (Number.isFinite(saved.damageFactor)) buildingData.damageFactor = saved.damageFactor;
         // Energia nos totais salvos. Save antigo: só a zona residencial pesada consumia (cheio); as outras zonas, nada
         if (Number.isFinite(saved.appliedPowerConsumption)) buildingData.appliedPowerConsumption = saved.appliedPowerConsumption;
+        if (Number.isFinite(saved.appliedPowerGeneration)) buildingData.appliedPowerGeneration = saved.appliedPowerGeneration;
         else if (buildingData.effectsApplied && buildingType.powerConsumption) {
             buildingData.appliedPowerConsumption = buildingType.zoneType && saved.type !== 'zone_residential_heavy'
                 ? 0 : buildingType.powerConsumption;

@@ -16,13 +16,16 @@
     <link rel="stylesheet" href="css/tutorial.css?v=9060ec61">
     <link rel="stylesheet" href="css/lessons.css?v=75823501">
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
-    <link rel="stylesheet" href="css/player.css?v=1ce63634">
+    <link rel="stylesheet" href="css/player.css?v=ba48e239">
     <link rel="stylesheet" href="css/menu.css?v=ad09dab4">
     <link rel="stylesheet" href="css/notice.css?v=86b1e0da">
     <link rel="stylesheet" href="css/research.css?v=ee08fec9">
     <link rel="stylesheet" href="css/settings.css?v=4caa15a0">
     <link rel="stylesheet" href="css/accessibility.css?v=11a95adf">
-    <link rel="stylesheet" href="css/toasts.css?v=bcd03933">
+    <link rel="stylesheet" href="css/toasts.css?v=bdc73b51">
+    <link rel="stylesheet" href="css/resource-hud.css?v=c17137eb">
+    <link rel="stylesheet" href="css/achievements.css?v=60aad0d5">
+    <link rel="stylesheet" href="css/mission-card.css?v=5099022c">
     <link rel="stylesheet" href="css/events.css?v=02eb4409">
     <link rel="stylesheet" href="css/event-decision.css?v=a2b7ac78">
     <link rel="stylesheet" href="css/mission-bar.css?v=6474f36a">
@@ -460,6 +463,7 @@
                     <button id="btn-settings" class="overlay-btn secondary" aria-haspopup="dialog">⚙️ Configurações</button>
                     <button id="btn-help" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-help.svg" alt="" aria-hidden="true" draggable="false"> Ajuda e controles</button>
                     <button id="btn-notifications" class="overlay-btn secondary" aria-haspopup="dialog"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-history.svg" alt="" aria-hidden="true" draggable="false"> Notificações</button>
+                    <button id="btn-achievements" class="overlay-btn secondary" aria-haspopup="dialog">🏅 Conquistas</button>
                     <button id="btn-research" class="overlay-btn secondary" aria-haspopup="dialog">📊 Dados da pesquisa</button>
                     <button id="btn-save-game" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-save.svg" alt="" aria-hidden="true" draggable="false"> Salvar jogo</button>
                     <button id="btn-main-menu" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-home.svg" alt="" aria-hidden="true" draggable="false"> Menu principal</button>
@@ -501,6 +505,17 @@
                     <button id="btn-settings-back" class="overlay-btn primary">⬅ Voltar</button>
                 </div>
             </div>
+            <!-- Vitrine: conquistas e estrelas das missões (ui/AchievementsUI.js) -->
+            <div id="achievements-panel" class="overlay-content notif-history achievements-panel" role="dialog" aria-modal="true" aria-labelledby="ach-heading" hidden>
+                <div class="nh-head">
+                    <h2 id="ach-heading">🏅 Conquistas</h2>
+                    <span class="nh-count" id="ach-count"></span>
+                </div>
+                <div id="ach-body" class="ach-body"></div>
+                <div class="overlay-buttons nh-buttons">
+                    <button id="btn-achievements-back" class="overlay-btn primary">⬅ Voltar</button>
+                </div>
+            </div>
             <!-- Registro de pesquisa do perfil (ResearchLog) e exportação: ui/ResearchUI.js -->
             <div id="research-panel" class="overlay-content notif-history research-panel" role="dialog" aria-modal="true" aria-labelledby="rs-title" hidden>
                 <div class="nh-head">
@@ -509,6 +524,7 @@
                 </div>
                 <p class="nh-hint">Para o professor e a pesquisa: o que este jogador leu, respondeu e decidiu. Fica só neste navegador; o arquivo sai sem o apelido (perfil, idade e cidade).</p>
                 <div id="rs-summary" class="rs-summary"></div>
+                <div id="rs-strategy" class="rs-strategy"></div>
                 <div class="overlay-buttons nh-buttons rs-buttons">
                     <button id="btn-research-csv" class="overlay-btn secondary">⬇ Baixar planilha (CSV)</button>
                     <button id="btn-research-json" class="overlay-btn secondary">⬇ Baixar dados completos (JSON)</button>
@@ -722,16 +738,17 @@
     <!-- Scripts do Jogo - Ordem correta de dependências -->
 
     <!-- Clean Code Refactoring: Game Constants (loaded first) -->
-    <script src="js/config/GameConstants.js?v=2b5a9337"></script>
-    <script src="js/data/buildings.js?v=4f47ae44"></script>
+    <script src="js/config/GameConstants.js?v=7b189c77"></script>
+    <script src="js/data/buildings.js?v=14a1c530"></script>
     <script src="js/data/buildingModels.js?v=5616dc59"></script>
-    <script src="js/data/zoneLots.js?v=2170ef97"></script>
-    <script src="js/data/missions.js?v=8217ca2a"></script>
+    <script src="js/data/zoneLots.js?v=3bf239c4"></script>
+    <script src="js/data/resourceStates.js?v=c0802704"></script>
+    <script src="js/data/missions.js?v=cf622be9"></script>
     <script src="js/data/brazil.js?v=c0fa1745"></script>
     <script src="js/data/lessons.js?v=06e4cea9"></script>
     <script src="js/data/introCity.js?v=a2e6387e"></script>
     <script src="js/data/portraits.js?v=939f497c"></script>
-    <script src="js/data/audioManifest.js?v=0e3a6df8"></script>
+    <script src="js/data/audioManifest.js?v=40904b38"></script>
 
     <!-- ===== TUTORIAL SYSTEM ===== -->
     <!-- Tutorial: modo 'story' (tela cheia) ou 'coach' (card + spotlight sobre o HUD) — TutorialSystem.js -->
@@ -825,65 +842,71 @@
     <script src="js/systems/TextSize.js?v=ce837765"></script>
     <script src="js/systems/GraphicsQuality.js?v=082950a2"></script>
     <script src="js/core/GridManager.js?v=9c63f863"></script>
-    <script src="js/core/ResourceManager.js?v=d6bbd713"></script>
+    <script src="js/core/ResourceManager.js?v=6dd6f84f"></script>
 
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=845fd95d"></script>
 
-    <script src="js/core/GameManager.js?v=c61aa434"></script>
+    <script src="js/core/GameManager.js?v=30cbb454"></script>
     <script src="js/core/game/Diagnostics.js?v=7a3bbf0a"></script>
     <script src="js/core/game/SelectionVisuals.js?v=51e9f911"></script>
     <script src="js/core/game/CameraGuard.js?v=47e1747c"></script>
 
     <!-- Game systems -->
-    <script src="js/systems/BuildingSystem.js?v=ae3a1619"></script>
+    <script src="js/systems/BuildingSystem.js?v=022613bb"></script>
     <script src="js/systems/building/BuildingMeshes.js?v=67e9a6e1"></script>
     <script src="js/systems/building/BuildingFeedback.js?v=11332a51"></script>
     <script src="js/systems/building/BuildingModels.js?v=01697f49"></script>
-    <script src="js/systems/building/ZoneGrowth.js?v=2cfbcd67"></script>
+    <script src="js/systems/building/ZoneGrowth.js?v=d512a8d8"></script>
     <script src="js/systems/building/TreeGrowth.js?v=1dea3ded"></script>
     <script src="js/systems/building/BuildingRecycle.js?v=556bf5c8"></script>
-    <script src="js/systems/building/BuildingEfficiency.js?v=61dfad26"></script>
+    <script src="js/systems/building/BuildingEfficiency.js?v=7c4c4dae"></script>
     <script src="js/systems/roads/RoadNetwork.js?v=9cef4abd"></script>
     <script src="js/systems/roads/RoadMeshes.js?v=ccb485f2"></script>
     <script src="js/systems/roads/RoadPlacement.js?v=d35ca730"></script>
     <script src="js/systems/shared/VehicleMeshes.js?v=53516ed0"></script>
     <script src="js/systems/CityLifeSystem.js?v=54ff85d0"></script>
     <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
-    <script src="js/systems/UIManager.js?v=dddd4854"></script>
+    <script src="js/systems/ResourceTrends.js?v=16c746be"></script>
+    <script src="js/systems/UIManager.js?v=6667eaf2"></script>
     <script src="js/systems/ui/MobileTouch.js?v=6023dd14"></script>
-    <script src="js/systems/ui/StudyBookUI.js?v=3feae40e"></script>
+    <script src="js/systems/ui/StudyBookUI.js?v=376ecf46"></script>
     <script src="js/systems/ui/LoanUI.js?v=057d32de"></script>
+    <script src="js/systems/ui/ResourceHud.js?v=c698f1d9"></script>
+    <script src="js/systems/ui/IdleHints.js?v=ba0120d6"></script>
+    <script src="js/systems/ui/AchievementsUI.js?v=60a2c5ff"></script>
+    <script src="js/systems/ui/MissionCardUI.js?v=73d93ae8"></script>
     <script src="js/systems/ui/ResourcePanels.js?v=d332588f"></script>
     <script src="js/systems/ui/EventUI.js?v=72f71fc0"></script>
-    <script src="js/systems/ui/EventDecisionUI.js?v=3c8547dd"></script>
+    <script src="js/systems/ui/EventDecisionUI.js?v=faa32f6d"></script>
     <script src="js/systems/ui/BuildPreview.js?v=7993662a"></script>
-    <script src="js/systems/ui/BuildMenuUI.js?v=8ac4f8fa"></script>
+    <script src="js/systems/ui/BuildMenuUI.js?v=4318597f"></script>
     <script src="js/systems/ui/MissionBar.js?v=7d936c04"></script>
     <script src="js/systems/ui/TechTreeUI.js?v=2ee956b7"></script>
     <script src="js/systems/ui/MobilePanels.js?v=a6989c98"></script>
     <script src="js/systems/ui/WeatherUI.js?v=50f7ef6f"></script>
     <script src="js/systems/ui/CompassUI.js?v=9e3e44fa"></script>
-    <script src="js/systems/ui/ResearchUI.js?v=dde2417e"></script>
+    <script src="js/systems/ui/ResearchUI.js?v=36dc9e9d"></script>
     <script src="js/systems/ui/SettingsUI.js?v=ea95d176"></script>
     <script src="js/systems/ui/LessonBookUI.js?v=3122a13a"></script>
     <script src="js/systems/ui/TreeInfoUI.js?v=e348aba5"></script>
-    <script src="js/systems/LoanManager.js?v=16a6bedc"></script>
-    <script src="js/systems/QuestSystem.js?v=daf66318"></script>
-    <script src="js/systems/ui/MissionUI.js?v=c0c04f37"></script>
-    <script src="js/systems/EventSystem.js?v=6cad336c"></script>
+    <script src="js/systems/LoanManager.js?v=2b4b4ec4"></script>
+    <script src="js/systems/QuestSystem.js?v=69877cdb"></script>
+    <script src="js/systems/ui/MissionUI.js?v=3edf76db"></script>
+    <script src="js/systems/CityChallenges.js?v=f3906cb3"></script>
+    <script src="js/systems/EventSystem.js?v=68debe2c"></script>
     <script src="js/systems/SaveSystem.js?v=62eb9f81"></script>
     <script src="js/systems/StudySystem.js?v=df487ae5"></script>
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
-    <script src="js/systems/TutorialSystem.js?v=3d9cd921"></script>
-    <script src="js/systems/GameOverSystem.js?v=6571abaa"></script>
+    <script src="js/systems/TutorialSystem.js?v=1993f7e0"></script>
+    <script src="js/systems/GameOverSystem.js?v=f2965ad2"></script>
     <script src="js/systems/PlayerProfile.js?v=868ad2db"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
     <script src="js/systems/TreeSystem.js?v=aafb661e"></script>
     <script src="js/systems/WeatherService.js?v=ece5b194"></script>
     <script src="js/systems/SimulatedWeather.js?v=46e8a1c7"></script>
-    <script src="js/systems/ResearchLog.js?v=0311d1da"></script>
+    <script src="js/systems/ResearchLog.js?v=5dc82846"></script>
     <script src="js/systems/LessonProgress.js?v=9769f14b"></script>
 
     <!-- Abertura cinematográfica do menu (cena Babylon própria; usa o carregador de modelos do BuildingSystem) -->

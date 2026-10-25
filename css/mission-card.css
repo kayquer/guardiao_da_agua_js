@@ -1,0 +1,145 @@
+/* Cartão de comemoração da missão e de "que bom ter você de volta" (js/systems/ui/MissionCardUI.js) */
+
+.mission-card-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: safe center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(10, 30, 50, 0.55);
+    overflow-y: auto;
+    animation: mission-card-fade 0.25s ease-out;
+}
+
+.mission-card-overlay.closing { animation: mission-card-fade 0.2s ease-in reverse forwards; }
+
+@keyframes mission-card-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.mission-card {
+    position: relative;
+    width: min(440px, 100%);
+    overflow: visible; /* o retrato sai para fora do cartão; quem rola é o overlay */
+    padding: 64px 22px 20px;
+    margin-top: 48px;
+    background: #fffdf5;
+    border: 4px solid #1a1a1a;
+    border-radius: 22px;
+    box-shadow: 8px 8px 0 #1a1a1a;
+    color: #1a1a1a;
+    text-align: center;
+    font-family: system-ui, sans-serif;
+    zoom: var(--text-scale, 1);
+    animation: mission-card-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes mission-card-pop { from { transform: scale(0.7) translateY(30px); } to { transform: scale(1) translateY(0); } }
+
+.mission-card-portrait {
+    position: absolute;
+    top: -54px;
+    left: 50%;
+    width: 104px;
+    height: 104px;
+    margin-left: -52px;
+    object-fit: cover;
+    object-position: 50% 18%;
+    border: 4px solid #1a1a1a;
+    border-radius: 50%;
+    background: #bff3ff;
+    box-shadow: 0 0 0 6px #ffd700;
+}
+
+.mission-card-kicker { font-size: 0.95rem; color: #3b4a55; }
+
+.mission-card-title {
+    margin: 4px 0 8px;
+    font-family: 'Lilita One', system-ui, sans-serif;
+    font-weight: 400;
+    font-size: 1.6rem;
+    line-height: 1.15;
+}
+
+.mission-card-stars { display: flex; justify-content: center; gap: 6px; margin: 4px 0 10px; }
+
+.mission-card-star {
+    font-size: 3rem;
+    line-height: 1;
+    color: #d5dce0;
+    -webkit-text-stroke: 2px #1a1a1a;
+}
+
+.mission-card-star.earned {
+    color: #ffd700;
+    animation: mission-card-star 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    text-shadow: 0 0 14px rgba(255, 215, 0, 0.85);
+}
+
+.mission-card-star:nth-child(2) { font-size: 3.6rem; margin-top: -8px; }
+
+@keyframes mission-card-star {
+    0% { transform: scale(0) rotate(-40deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.mission-card-goals {
+    list-style: none;
+    margin: 0 0 10px;
+    padding: 0;
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+.mission-card-goals li {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    padding: 5px 8px;
+    border-bottom: 1px dashed #c9d3d9;
+}
+
+.mission-card-goals li b { margin-left: auto; white-space: nowrap; }
+.mission-card-goals li.missed { color: #66727a; }
+.mission-card-check { flex: 0 0 auto; width: 1.2em; text-align: center; color: #e5a800; font-weight: 700; }
+.mission-card-goals li.missed .mission-card-check { color: #9aa7b0; }
+
+.mission-card-rewards { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 6px 0 10px; }
+
+.mission-card-rewards .reward-chip {
+    display: inline-flex;
+    align-items: safe center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 2px solid #1a1a1a;
+    border-radius: 999px;
+    background: #fff3b0;
+    font-size: 0.9rem;
+}
+
+.mission-card-text { margin: 6px 0; text-align: left; font-size: 0.98rem; }
+
+.mission-card-tip {
+    margin: 8px 0 14px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: #e6f7ff;
+    text-align: left;
+    font-size: 0.92rem;
+}
+
+.mission-card-tip.perfect { background: #fff3b0; }
+.mission-card-tip.warn { background: #ffe3e3; }
+
+.mission-card .ui-icon { width: 1.1em; height: 1.1em; vertical-align: -0.15em; }
+
+.mission-card-ok { min-width: 160px; font-size: 1.1rem; }
+
+/* Painel de missões: metas de cada estrela (ui/MissionUI.js renderStarGoals) */
+.mission-star-count { color: #e5a800; letter-spacing: 1px; white-space: nowrap; }
+.mission-star-goals { list-style: none; margin: 4px 0; padding: 0; font-size: 0.92rem; }
+.mission-star-goals li { padding: 3px 0; color: #4a5560; }
+.mission-star-goals li span { color: #9aa7b0; }
+.mission-star-goals li.done { color: inherit; }
+.mission-star-goals li.done span { color: #e5a800; }
+.mission-star-note { margin: 2px 0 8px; font-size: 0.82rem; color: #66727a; }

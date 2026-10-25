@@ -496,8 +496,21 @@ class EventSystem {
         return !ongoing.some(t => enemies.includes(t));
     }
 
+    /**
+     * Pressão da cidade (1 a 1 + MAX_PRESSURE): cresce com as missões cumpridas e com a população.
+     * Cidade maior = eventos mais frequentes e ameaças mais fortes, para o desafio acompanhar a habilidade.
+     */
+    getCityPressure() {
+        const done = this.gameManager?.questSystem?.completedQuests?.size || 0;
+        const population = this.gameManager?.resourceManager?.resources?.population?.current || 0;
+        // a população só pesa acima da capacidade inicial (500): cidade nova = eventos como sempre foram
+        return 1 + Math.min(EventSystem.MAX_PRESSURE, done * 0.07 + Math.max(0, population - 500) / 6000);
+    }
+
+    static MAX_PRESSURE = 0.6;
+
     tryGenerateEvent() {
-        if (Math.random() > this.eventProbability * this.difficultyMultiplier) {
+        if (Math.random() > this.eventProbability * this.difficultyMultiplier * this.getCityPressure()) {
             return; // Não gerar evento desta vez
         }
         
@@ -575,7 +588,11 @@ class EventSystem {
             event.effectScale = eventType.response.kind === 'opportunity' ? (response.gain ?? 1) : (response.impact ?? 1);
         }
         if (eventTypeId === 'flood') event.effectScale = (event.effectScale ?? 1) * this.getFloodRisk().risk;
-        
+        // Ameaças crescem com a cidade (getCityPressure); a seca de missão mantém a força escrita no texto dela
+        if (eventType.response?.kind === 'threat' && !Number.isFinite(options.duration)) {
+            event.effectScale = (event.effectScale ?? 1) * this.getCityPressure();
+        }
+
         this.activeEvents.set(event.id, event);
         
         // Aplicar efeitos
@@ -631,7 +648,8 @@ class EventSystem {
 
         if (!effects) return;
         const k = key => (!scaledKeys || scaledKeys.includes(key) ? scale : 1);
-        const lerp = (f, key) => 1 + (f - 1) * k(key);
+        // Nunca abaixo de 0,15×: com a pressão da cidade (escala > 1) a seca de 0,5× chegaria a zero ou negativo
+        const lerp = (f, key) => Math.max(0.15, 1 + (f - 1) * k(key));
         effects = { ...effects };
         if (effects.waterProductionMultiplier) effects.waterProductionMultiplier = lerp(effects.waterProductionMultiplier, 'waterProductionMultiplier');
         if (effects.waterDemandIncrease) effects.waterDemandIncrease = lerp(effects.waterDemandIncrease, 'waterDemandIncrease');
@@ -749,6 +767,8 @@ class EventSystem {
             const cfg = b.config || {};
             // Ruas: quanto do chão a chuva não atravessa (runoffImpervious: asfalto 1, cascalho 0,4, terra 0,2)
             if (cfg.roadType) impervious += cfg.runoffImpervious || 0;
+            // Zonas: fração do lote coberta (leve 0,1 com quintais … pesada até 0,9); os outros prédios cobrem 0,3
+            else if (Number.isFinite(cfg.runoffImpervious)) impervious += (cfg.size || 1) ** 2 * cfg.runoffImpervious;
             else if (!cfg.runoffAbsorption && !cfg.plantedTree) impervious += (cfg.size || 1) ** 2 * 0.3;
             absorption += cfg.runoffAbsorption || 0;
             if (cfg.plantedTree) absorption += 0.5;
@@ -788,7 +808,9 @@ class EventSystem {
     getWarningTime() {
         const monitored = (this.gameManager.buildingSystem?.getAllBuildings() || [])
             .some(b => b.config?.earlyWarning && b.active && !b.underConstruction);
-        return EventSystem.WARNING_MS * (monitored ? 2 : 1);
+        // Estação de monitoramento ou prêmio de missão (rewards.earlyWarningMs): o dobro de tempo para se preparar
+        const rewarded = !!this.gameManager.questSystem?.isEarlyWarningActive?.();
+        return EventSystem.WARNING_MS * (monitored || rewarded ? 2 : 1);
     }
 
     /**
@@ -994,11 +1016,20 @@ class EventSystem {
     }
     
     damageInfrastructure(damagePercentage) {
-        const buildings = this.gameManager.buildingSystem.getAllBuildings();
+        const bs = this.gameManager.buildingSystem;
+        const buildings = bs.getAllBuildings();
         const buildingsToAffect = Math.ceil(buildings.length * damagePercentage);
-        
+        // Perto de bairro pesado sem drenagem (BuildingEfficiency.isNearUndrainedZone) a água sobe mais: peso 3
+        const weights = buildings.map(b => (bs.isNearUndrainedZone?.(b) ? 3 : 1));
+        const total = weights.reduce((sum, w) => sum + w, 0);
+        const pick = () => {
+            let r = Math.random() * total;
+            for (let i = 0; i < buildings.length; i++) if ((r -= weights[i]) <= 0) return buildings[i];
+            return buildings[buildings.length - 1];
+        };
+
         for (let i = 0; i < buildingsToAffect; i++) {
-            const randomBuilding = buildings[Math.floor(Math.random() * buildings.length)];
+            const randomBuilding = pick();
             const damage = Number.isFinite(randomBuilding.damageFactor) ? randomBuilding.damageFactor : 1;
             if (damage > 0.5) {
                 // O dano entra na conta da eficiência (BuildingEfficiency.js), que tira os efeitos com a

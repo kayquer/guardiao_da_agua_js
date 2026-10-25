@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { startGame, TEST_PROFILE } = require('./helpers');
+const { startGame, TEST_PROFILE, closeCards } = require('./helpers');
 
 // Categoria 🛣️ Asfalto: ruas instantâneas e baratas, traçadas arrastando, com auto-encaixe
 // (js/systems/roads/RoadNetwork.js → peças de RoadMeshes.js) e trânsito (CityLifeSystem) a partir de 20 blocos.
@@ -194,6 +194,7 @@ test('Asfalto: curva, T e cruzamento se encaixam; com 20 blocos o trânsito anda
     await expect(dialog).toBeVisible();
     await dialog.locator('.swal2-confirm').click();
     await page.waitForFunction(() => window.gameManager?.initialized && window.gameManager.gameState === 'playing', null, { timeout: 45000 });
+    await closeCards(page); // "que bom ter você de volta" pausa o jogo (e o trânsito)
     expect(await roadCount(page)).toBe(before);
     expect(await pieceAt(page, ox + 8, oz)).toBe('curva');
     expect(await pieceAt(page, ox + 4, oz)).toBe('T');

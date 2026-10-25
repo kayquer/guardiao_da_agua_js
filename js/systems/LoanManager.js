@@ -171,10 +171,11 @@ class LoanManager {
     }
     
     getMonthlyIncome() {
-        if (!this.gameManager.resourceManager) return 1000; // Fallback
+        if (!this.gameManager.resourceManager) return 800; // Fallback
         
+        // budget.income é por minuto; o "mês" do empréstimo dura MONTH_MS de jogo (2 min)
         const budget = this.gameManager.resourceManager.getBudget();
-        return budget.income || 1000;
+        return (budget.income || 400) * (LoanManager.MONTH_MS / 60000);
     }
     
     // ===== PROCESSAMENTO DE PAGAMENTOS =====

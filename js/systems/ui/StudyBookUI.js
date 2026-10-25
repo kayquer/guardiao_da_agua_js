@@ -322,6 +322,13 @@ mixin(UIManager, {
         const resultsContainer = document.querySelector('.quiz-container');
         if (!resultsContainer) return;
 
+        // Reprovações por estudo: na 1ª o aluno relê ou tenta de novo; "Continuar e desbloquear" só da 2ª em diante
+        const study = this.gameManager.studySystem;
+        if (!passed) {
+            study.quizFailures ||= {};
+            study.quizFailures[study.currentStudy] = (study.quizFailures[study.currentStudy] || 0) + 1;
+        }
+
         const resultClass = passed ? 'quiz-passed' : 'quiz-failed';
         const resultIcon = passed ? '🎉' : '❌';
         const resultTitle = passed ? 'Parabéns! Você foi aprovado!' : 'Não foi dessa vez...';
@@ -362,7 +369,10 @@ mixin(UIManager, {
 
     /** Reprovou: mostra rapidinho onde errou (resposta dada × certa + explicação) e deixa escolher o que fazer. */
     renderQuizReview() {
-        const wrong = this.gameManager.studySystem.getWrongAnswers();
+        const study = this.gameManager.studySystem;
+        const wrong = study.getWrongAnswers();
+        // Desbloquear sem acertar só depois de uma segunda tentativa: a recompensa vem de ler, não de pular
+        const canContinue = (study.quizFailures?.[study.currentStudy] || 0) >= 2;
         const items = wrong.map(w => `
             <li class="quiz-review-item">
                 <p class="quiz-review-question">${w.question}</p>
@@ -375,11 +385,25 @@ mixin(UIManager, {
                 <h4>📝 Onde você errou</h4>
                 <ul>${items}</ul>
             </div>
-            <p class="quiz-review-ask">E agora, ${PlayerProfile.displayName()}? Quer tentar de novo ou seguir em frente?</p>
+            ${canContinue
+                ? `<p class="quiz-review-ask">E agora, ${PlayerProfile.displayName()}? Quer tentar de novo ou seguir em frente?</p>`
+                : `<p class="quiz-review-ask">Leia as explicações acima, ${PlayerProfile.displayName()}: com elas você acerta! Releia o estudo ou tente de novo.</p>`}
             <div class="quiz-review-actions">
+                ${canContinue ? '' : `<button class="reread-btn" onclick="window.gameManager.uiManager.rereadStudy()">${uiIcon('ui-book')} Reler o estudo</button>`}
                 <button class="retry-btn" onclick="window.gameManager.uiManager.retryQuiz()">🔄 Tentar de novo</button>
-                <button class="continue-btn" onclick="window.gameManager.uiManager.continueAfterQuiz()">${uiIcon('status-done')} Continuar e desbloquear</button>
+                ${canContinue ? `<button class="continue-btn" onclick="window.gameManager.uiManager.continueAfterQuiz()">${uiIcon('status-done')} Continuar e desbloquear</button>` : ''}
             </div>`;
+    },
+
+    /** Volta para a primeira página do estudo (respostas zeradas); o quiz está no fim, como da primeira vez. */
+    rereadStudy() {
+        const study = this.gameManager.studySystem;
+        study.currentQuizAnswers = {};
+        study.quizScore = 0;
+        study.currentPage = 0;
+        this.showStudyBookInterface(study.getStudyContent(study.currentStudy), 'prev');
+        this.showNotification('📖 Releia com calma: as respostas estão no texto.', 'info', 3000);
+        AudioManager.playSound('sfx_book_page');
     },
 
     retryQuiz() {
@@ -397,7 +421,7 @@ mixin(UIManager, {
         AudioManager.playSound('sfx_book_page');
     },
 
-    /** Depois de ver os erros, o aluno pode seguir: o prédio é liberado mesmo sem a nota mínima. */
+    /** Da 2ª reprovação em diante, depois de ver os erros, o aluno pode seguir: o prédio é liberado sem a nota mínima. */
     continueAfterQuiz() {
         const studySystem = this.gameManager.studySystem;
         const buildingId = studySystem.currentStudy;

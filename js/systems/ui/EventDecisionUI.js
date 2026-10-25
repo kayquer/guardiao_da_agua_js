@@ -33,7 +33,7 @@ mixin(UIManager, {
         const gm = this.gameManager;
         return gm?.gameState === 'playing' && !gm.tutorialSystem?.isActive && !this.isReadingOverlayOpen()
             && !document.querySelector('.swal2-container, .central-alert-overlay, #pause-overlay:not(.hidden)')
-            && !this.isTechTreeOpen?.();
+            && !this.isTechTreeOpen?.() && !this.isMissionCardOpen?.();
     },
 
     getEventDecisionModal() {

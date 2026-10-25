@@ -14,6 +14,7 @@ const MISSIONS = {
         estimatedTime: '5 minutos',
         lesson: 1, // aula ao concluir: a água do planeta: de onde vem a água da bomba
         prerequisites: [],
+        stars: { parMs: 180000 }, // ⭐⭐ em até 3 min de jogo; ⭐⭐⭐ cidade sem recurso no vermelho (QuestSystem.computeStars)
         objectives: [
             {
                 id: 'build_water_pump',
@@ -52,6 +53,7 @@ const MISSIONS = {
         category: 'secondary',
         lesson: 4, // aula ao concluir: a vida no rio: o esgoto que a ETA trata
         prerequisites: ['tutorial_01'],
+        stars: { parMs: 420000 },
         objectives: [
             {
                 id: 'build_treatment',
@@ -72,6 +74,7 @@ const MISSIONS = {
             }
         ],
         rewards: {
+            freeBuilds: { tree_sapling: 3 }, // 3 mudas de graça: árvore perto do rio limpa mais
             score: 200,
             budget: 3000,
             recommendStudy: ['filter_station']
@@ -95,6 +98,7 @@ const MISSIONS = {
         category: 'secondary',
         lesson: 5, // aula ao concluir: água escondida: aquíferos e reservatórios
         prerequisites: ['tutorial_02'],
+        stars: { parMs: 420000 },
         objectives: [
             {
                 id: 'build_storage',
@@ -115,6 +119,7 @@ const MISSIONS = {
             }
         ],
         rewards: {
+            discount: { water_tower: 50 }, // a próxima Torre d'Água sai pela metade
             score: 150,
             budget: 2500,
             recommendStudy: ['water_tower']
@@ -139,6 +144,7 @@ const MISSIONS = {
         category: 'primary',
         lesson: 6, // aula ao concluir: soluções verdes: crescer sem sujar o rio
         prerequisites: ['tutorial_03'],
+        stars: { parMs: 900000 },
         objectives: [
             {
                 id: 'population_growth',
@@ -169,6 +175,7 @@ const MISSIONS = {
             }
         ],
         rewards: {
+            emergency: 1, // mais uma declaração de emergência (GameOverSystem.extraEmergencies)
             score: 500,
             budget: 10000,
             achievement: 'sustainable_city'
@@ -193,6 +200,7 @@ const MISSIONS = {
         category: 'secondary',
         lesson: 2, // aula ao concluir: o caminho da água: por que a seca acontece
         prerequisites: ['tutorial_03'],
+        stars: { minWater: 0.3 }, // ⭐⭐ sem deixar a reserva baixar de 30% durante a seca
         startEvent: { type: 'drought', durationMs: 240000 }, // a missão começa a seca (QuestSystem.startQuest)
         objectives: [
             {
@@ -213,6 +221,7 @@ const MISSIONS = {
             }
         ],
         rewards: {
+            discount: { water_well: 50 }, // o próximo Poço Artesiano sai pela metade
             score: 300,
             budget: 5000,
             achievement: 'crisis_manager'
@@ -238,6 +247,7 @@ const MISSIONS = {
         category: 'secondary',
         lesson: 3, // aula ao concluir: água para todos: dividir a água entre os grupos
         prerequisites: ['tutorial_01'],
+        stars: { parMs: 480000 },
         difficulty: 'beginner',
         estimatedTime: '8 minutos',
         chainId: 'nova_gestora',
@@ -286,6 +296,7 @@ const MISSIONS = {
             }
         ],
         rewards: {
+            earlyWarningMs: 600000, // 10 min de jogo com os eventos avisando com o dobro de antecedência
             score: 150,
             budget: 3000,
             experience: 75,
@@ -301,6 +312,7 @@ const MISSIONS = {
         type: 'main',
         category: 'primary',
         prerequisites: ['main_01', 'challenge_01'],
+        stars: { parMs: 1200000 },
         missionIcon: '🏆',
         victory: true,
         objectives: [

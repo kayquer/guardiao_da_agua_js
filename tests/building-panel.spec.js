@@ -116,6 +116,7 @@ test('rotação: prédio nasce de frente para a câmera, botões giram e a rota�
     for (const alpha of [-Math.PI / 2, 0, 2.2, Math.PI, -2.6]) {
         const facing = await page.evaluate(alpha => {
             const gm = window.gameManager, cam = gm.camera, bs = gm.buildingSystem;
+            gm.resourceManager.resources.budget.current = 1e6; // 5 reservatórios: o caixa inicial não cobre
             cam.alpha = alpha;
             cam.getViewMatrix(true); // recalcula a posição da câmera para este alpha
             const expected = bs.getDefaultBuildingRotation(bs.buildingTypes.get('water_tank'));

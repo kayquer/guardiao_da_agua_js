@@ -218,11 +218,12 @@ class QuestSystem {
 
         // ===== ENHANCED COMPLETION SYSTEM =====
 
-        // Calculate performance-based rewards
+        // Estrelas (1 a 3): cumprir, cumprir bem (tempo/reserva) e com a cidade saudável. Cada estrela a mais = +25% de dinheiro
+        quest.stars = this.computeStars(quest);
         const performanceMultiplier = this.calculatePerformanceMultiplier(quest);
-
-        // Aplicar recompensas (with scaling if enabled)
+        const budgetBefore = this.gameManager.resourceManager?.resources?.budget?.current || 0;
         this.applyQuestRewards(quest, performanceMultiplier);
+        const budgetGained = (this.gameManager.resourceManager?.resources?.budget?.current || 0) - budgetBefore;
 
         // Fim da campanha: tela de vitória; o jogo continua no modo livre
         if (quest.victory) this.gameManager.gameOverSystem?.showVictory?.();
@@ -232,16 +233,15 @@ class QuestSystem {
         // Atualizar UI
         this.updateQuestUI();
 
-        // Enhanced notification with performance feedback
-        if (this.gameManager.uiManager) {
-            const performanceText = performanceMultiplier > 1 ?
-                ` (Desempenho Excelente! +${Math.round((performanceMultiplier - 1) * 100)}% bônus)` : '';
-
-            this.gameManager.uiManager.showNotification(
-                `Missão completa: ${PlayerProfile.personalize(quest.title)}${performanceText}`,
-                'success',
-                5000
-            );
+        // Comemoração: missão grande para o jogo um instante (cartão com estrelas e o que ganhou, ui/MissionCardUI.js);
+        // a missão final já tem a tela de vitória. Sem o cartão (testes de unidade), fica o aviso de sempre.
+        const ui = this.gameManager.uiManager;
+        if (ui?.queueMissionCelebration && !quest.victory) {
+            ui.queueMissionCelebration(quest, {
+                stars: quest.stars, budget: budgetGained, goals: this.getStarGoals(quest), results: quest.starResults
+            });
+        } else if (ui) {
+            ui.showNotification(`Missão completa: ${PlayerProfile.personalize(quest.title)} ${'⭐'.repeat(quest.stars)}`, 'success', 5000);
         }
 
         // ===== ENHANCED MISSION COMPLETION AUDIO FEEDBACK =====
@@ -251,48 +251,68 @@ class QuestSystem {
         return true;
     }
 
+    /** Recompensa × estrelas: 1 estrela = 1×, 2 = 1,25×, 3 = 1,5× (o jingle de 3 estrelas é o "excelente"). */
     calculatePerformanceMultiplier(quest) {
-        if (!quest.scalingRewards) return 1.0;
-
-        let multiplier = 1.0;
-        const completionTime = quest.completionTime - quest.startTime;
-
-        // Time bonus (faster completion = higher multiplier)
-        if (quest.estimatedTime) {
-            const estimatedMs = this.parseTimeToMs(quest.estimatedTime);
-            if (completionTime < estimatedMs * 0.8) {
-                multiplier += 0.3; // 30% bonus for fast completion
-            } else if (completionTime < estimatedMs) {
-                multiplier += 0.1; // 10% bonus for on-time completion
-            }
-        }
-
-        // Objective completion bonus
-        const perfectCompletion = quest.objectives.every(obj => obj.current >= obj.required);
-        if (perfectCompletion) {
-            multiplier += 0.2; // 20% bonus for perfect completion
-        }
-
-        return Math.min(multiplier, 2.0); // Cap at 2x multiplier
+        return 1 + QuestSystem.STAR_BONUS * (Math.max(1, quest.stars || 1) - 1);
     }
 
-    parseTimeToMs(timeString) {
-        // Convert "5 minutos" to milliseconds
-        const match = timeString.match(/(\d+)\s*(minuto|hora)/);
-        if (!match) return 300000; // Default 5 minutes
+    static STAR_BONUS = 0.25;
 
-        const value = parseInt(match[1]);
-        const unit = match[2];
-
-        if (unit.startsWith('minuto')) {
-            return value * 60 * 1000;
-        } else if (unit.startsWith('hora')) {
-            return value * 60 * 60 * 1000;
-        }
-
-        return 300000; // Default 5 minutes
+    /** Meta das estrelas: js/data/missions.js (stars) ou a do desafio gerado (starSpec). */
+    getStarSpec(quest) {
+        return (typeof MISSIONS !== 'undefined' && MISSIONS[quest.id]?.stars) || quest.starSpec || {};
     }
-    
+
+    /**
+     * Estrelas de uma missão concluída agora:
+     * ⭐ cumpriu; ⭐ em até stars.parMs de jogo (ou, com stars.minWater, a reserva nunca abaixo dessa fração);
+     * ⭐ cidade saudável ao terminar: água, poluição, satisfação e energia fora de "piorando"/"crítico".
+     */
+    computeStars(quest) {
+        const spec = this.getStarSpec(quest);
+        const results = [true]; // na ordem de getStarGoals: o cartão marca qual meta faltou
+        if (Number.isFinite(spec.parMs)) {
+            results.push((quest.completionTime ?? this.simNow()) - (quest.startTime ?? 0) <= spec.parMs);
+        } else if (Number.isFinite(spec.minWater)) {
+            results.push((quest.lowestWater ?? 1) >= spec.minWater);
+        }
+        results.push(this.isCityHealthy());
+        quest.starResults = results;
+        return results.filter(Boolean).length;
+    }
+
+    /** Nenhum recurso principal no vermelho (mesmas faixas dos botões do HUD, js/systems/ResourceTrends.js). */
+    isCityHealthy() {
+        const r = this.gameManager.resourceManager?.resources;
+        if (!r || typeof ResourceTrends === 'undefined') return false;
+        return ['water', 'pollution', 'satisfaction', 'energy'].every(id => {
+            const tier = ResourceTrends.tierOf(id, r);
+            return tier === 'great' || tier === 'ok';
+        });
+    }
+
+    /** As metas de cada estrela em texto (painel da missão e cartão de comemoração). */
+    getStarGoals(quest) {
+        const spec = this.getStarSpec(quest);
+        const second = Number.isFinite(spec.parMs)
+            ? `Terminar em até ${Math.round(spec.parMs / 60000)} min de jogo`
+            : Number.isFinite(spec.minWater)
+                ? `Não deixar a reserva de água baixar de ${Math.round(spec.minWater * 100)}%`
+                : null;
+        return ['Cumprir a missão', second, 'Terminar com água, poluição, satisfação e energia fora do vermelho'].filter(Boolean);
+    }
+
+    /** Menor fração da caixa d'água durante as missões com stars.minWater (para a 2ª estrela). */
+    trackStarConditions() {
+        const water = this.gameManager.resourceManager?.resources?.water;
+        if (!water) return;
+        const ratio = (water.current || 0) / Math.max(1, water.storage || water.max || 1);
+        this.activeQuests.forEach(id => {
+            const quest = this.quests.get(id);
+            if (quest && Number.isFinite(this.getStarSpec(quest).minWater)) quest.lowestWater = Math.min(quest.lowestWater ?? 1, ratio);
+        });
+    }
+
     // ===== ENHANCED UPDATE SYSTEM =====
     update(deltaTime) {
         // Missões conferidas 4× por segundo (antes a cada quadro: cópia profunda dos recursos por objetivo, a 60 fps).
@@ -302,10 +322,15 @@ class QuestSystem {
         deltaTime = this.updateAccumulator;
         this.updateAccumulator = 0;
 
+        this.trackStarConditions();
+
         // Atualizar progresso das missões ativas
         this.activeQuests.forEach(questId => {
             this.updateQuestProgress(questId, deltaTime);
         });
+
+        // Sem missão nenhuma (campanha acabou ou falhou): um desafio novo, do tamanho da cidade (CityChallenges.js)
+        this.updateCityChallenges?.();
 
         // ===== NEW UPDATE FEATURES =====
 
@@ -561,12 +586,16 @@ class QuestSystem {
             const buildingType = buildingSystem?.buildingTypes?.get(buildingTypeId);
             const unlocked = this.gameManager.studySystem?.isBuildingUnlocked?.(buildingTypeId);
             if (buildingType && !unlocked) {
+                // Informativo: selo "novo" na categoria + histórico (o cartão da missão já mostra o estudo)
+                this.gameManager.uiManager?.markNewStudy?.(buildingTypeId);
                 this.gameManager.uiManager?.showNotification(
                     `📖 Novo estudo recomendado: ${buildingType.name}. Clique nele na aba de construções para estudar e liberar.`,
-                    'info', 8000
+                    'info', 8000, { quiet: true }
                 );
             }
         });
+
+        this.applyRewardPerks(quest.rewards);
 
         // Conquistas
         if (quest.rewards.achievement) {
@@ -589,6 +618,57 @@ class QuestSystem {
                 // TODO: Implement special unlocks
             });
         }
+    }
+
+    // ===== RECOMPENSAS QUE RESOLVEM O PRÓXIMO PROBLEMA =====
+    // rewards.discount { tipo: % } (uma obra), rewards.freeBuilds { tipo: n } (n obras de graça),
+    // rewards.earlyWarningMs (eventos avisam com o dobro de antecedência por esse tempo de jogo), rewards.emergency (+n)
+    getPerks() {
+        if (!this.perks) this.perks = { discounts: {}, freeBuilds: {}, earlyWarningUntil: 0 };
+        return this.perks;
+    }
+
+    applyRewardPerks(rewards = {}) {
+        const perks = this.getPerks();
+        for (const [type, percent] of Object.entries(rewards.discount || {})) perks.discounts[type] = Math.max(perks.discounts[type] || 0, percent);
+        for (const [type, count] of Object.entries(rewards.freeBuilds || {})) perks.freeBuilds[type] = (perks.freeBuilds[type] || 0) + count;
+        if (rewards.earlyWarningMs) perks.earlyWarningUntil = Math.max(perks.earlyWarningUntil, this.simNow()) + rewards.earlyWarningMs;
+        if (rewards.emergency && this.gameManager.gameOverSystem) {
+            this.gameManager.gameOverSystem.extraEmergencies = (this.gameManager.gameOverSystem.extraEmergencies || 0) + rewards.emergency;
+        }
+    }
+
+    /** Preço da próxima obra deste tipo com o prêmio de missão (sem gastar o prêmio). */
+    getPerkCost(typeId, cost) {
+        const perks = this.getPerks();
+        if (perks.freeBuilds[typeId] > 0) return 0;
+        const percent = perks.discounts[typeId];
+        return percent ? Math.round(cost * (1 - percent / 100)) : cost;
+    }
+
+    /** A obra foi paga com o prêmio: gasta uma obra grátis ou o desconto. */
+    consumeBuildPerk(typeId) {
+        const perks = this.getPerks();
+        if (perks.freeBuilds[typeId] > 0) {
+            if (--perks.freeBuilds[typeId] <= 0) delete perks.freeBuilds[typeId];
+        } else if (perks.discounts[typeId]) {
+            delete perks.discounts[typeId];
+        }
+    }
+
+    isEarlyWarningActive() {
+        return this.getPerks().earlyWarningUntil > this.simNow();
+    }
+
+    /** Selos dos prêmios de uma missão (painel e cartão de comemoração). */
+    describeRewardPerks(rewards = {}) {
+        const name = id => this.gameManager.buildingSystem?.buildingTypes?.get(id)?.name || id;
+        const chips = [];
+        for (const [type, percent] of Object.entries(rewards.discount || {})) chips.push(`🏷️ ${name(type)} com ${percent}% de desconto`);
+        for (const [type, count] of Object.entries(rewards.freeBuilds || {})) chips.push(`🎁 ${count}× ${name(type)} de graça`);
+        if (rewards.earlyWarningMs) chips.push(`📡 Avisos de evento em dobro por ${Math.round(rewards.earlyWarningMs / 60000)} min`);
+        if (rewards.emergency) chips.push(`🚨 +${rewards.emergency} declaração de emergência`);
+        return chips;
     }
 
     // ===== INTERACTIVE CHOICE SYSTEM =====
@@ -989,12 +1069,16 @@ class QuestSystem {
             questCounter: this.questCounter,
             achievements: Array.from(this.achievements),
             stakeholderReputation: { ...this.stakeholderReputation },
+            cityChallenges: this.getCityChallengeSaveData?.(),
+            perks: structuredClone(this.getPerks()),
             questStates: Array.from(this.quests.entries()).map(([id, quest]) => ({
                 id,
                 status: quest.status,
                 startTime: quest.startTime,
                 completionTime: quest.completionTime,
                 progress: quest.progress,
+                stars: quest.stars,
+                lowestWater: quest.lowestWater,
                 timeWindow: quest.timeWindow,
                 objectives: quest.objectives.map(objectiveState),
                 dynamicObjectives: (quest.dynamicObjectives || []).filter(o => o.activated).map(o => o.id),
@@ -1005,6 +1089,9 @@ class QuestSystem {
 
     loadData(data) {
         if (!data) return;
+        // Desafios da cidade gerados na partida voltam antes do estado (eles não estão em js/data/missions.js)
+        this.loadCityChallenges?.(data.cityChallenges);
+        if (data.perks) this.perks = { discounts: {}, freeBuilds: {}, earlyWarningUntil: 0, ...data.perks };
         // save antigo pode citar missões removidas de js/data/missions.js
         const known = id => this.quests.has(id);
         this.activeQuests = new Set((data.activeQuests || []).filter(known));
@@ -1022,6 +1109,8 @@ class QuestSystem {
             quest.startTime = state.startTime;
             quest.completionTime = state.completionTime;
             quest.progress = state.progress || 0;
+            if (Number.isFinite(state.stars)) quest.stars = state.stars;
+            if (Number.isFinite(state.lowestWater)) quest.lowestWater = state.lowestWater;
             if (state.timeWindow !== undefined) quest.timeWindow = state.timeWindow;
 
             // Objetivos dinâmicos que já tinham aparecido voltam para a lista antes do progresso
@@ -1057,7 +1146,7 @@ class QuestSystem {
     // Jingle com a música abaixada (AudioManager.onMissionComplete); desempenho excelente ganha a conquista.
     playMissionCompletionAudio(quest, performanceMultiplier) {
         if (typeof AudioManager === 'undefined') return;
-        AudioManager.onMissionComplete(performanceMultiplier >= 1.5);
+        AudioManager.onMissionComplete(performanceMultiplier >= 1.5); // 3 estrelas
         log(`🔊 Som de missão concluída: "${quest.title}"`);
     }
 }

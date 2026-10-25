@@ -26,7 +26,7 @@ const GAME_CONFIG = {
 
     resources: {
         initialWater: 1000,
-        initialBudget: 40000,
+        initialBudget: 22000, // era 40000: o começo ficava fácil demais (dava para construir quase tudo); agora cada obra é uma escolha
         initialPopulation: 75,
         initialSatisfaction: 50,
         initialPollution: 15

@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { startGame, TEST_PROFILE } = require('./helpers');
+const { startGame, TEST_PROFILE, closeCards } = require('./helpers');
 
 // Salvar e carregar de verdade: joga um pouco, salva pela tela de pausa, recarrega a página e continua pelo
 // perfil. Tudo tem de voltar igual (prédios, obra em andamento, árvores, recursos, missões, estudos, tempo)
@@ -102,6 +102,7 @@ test('salvar, recarregar a página e continuar: o jogo volta exatamente como est
     });
     expect(felled).toBeTruthy();
     await dismissEnergyAlert(page);
+    await closeCards(page, 1500); // bomba pronta → missão concluída → cartão (pausa)
     await page.waitForFunction(() => window.gameManager.gameTime > 1500);
 
     // 2b) Um evento danifica a bomba pronta: fica inativa e SEM efeitos nos totais (effectsApplied = false).
@@ -137,6 +138,7 @@ test('salvar, recarregar a página e continuar: o jogo volta exatamente como est
     await expect(dialog).toContainText('2 construções');
     await dialog.locator('.swal2-confirm').click();
     await page.waitForFunction(() => window.gameManager?.initialized && window.gameManager.gameState === 'playing', null, { timeout: 45000 });
+    await closeCards(page); // "que bom ter você de volta"
 
     // Sem tutorial inicial: o jogo já roda
     await expect(page.locator('#game-screen')).toBeVisible();

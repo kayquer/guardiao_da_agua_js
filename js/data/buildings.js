@@ -471,6 +471,8 @@ const BUILDING_TYPES = {
         cost: 1000,
         size: 2,
         zoneType: 'residential_light',
+        runoffImpervious: 0.1, // quintais e jardins: a chuva entra no chão
+        satisfactionBonus: 4, // bairro tranquilo
         powerConsumption: 8, // MW na fase completa (ZoneGrowth: pela fase)
         populationCapacity: 50,
         waterConsumptionPerPerson: 1.5,
@@ -491,6 +493,7 @@ const BUILDING_TYPES = {
         cost: 2000,
         size: 2,
         zoneType: 'residential_balanced',
+        runoffImpervious: 0.3,
         powerConsumption: 15, // MW na fase completa (ZoneGrowth: pela fase)
         populationCapacity: 100,
         waterConsumptionPerPerson: 2.0,
@@ -511,6 +514,9 @@ const BUILDING_TYPES = {
         cost: 4000,
         size: 2,
         zoneType: 'residential_heavy',
+        runoffImpervious: 0.7, // prédios e estacionamentos: quase toda a chuva escorre
+        waterConsumption: 40, // bombear água até os andares altos
+        pollutionGeneration: 8, // esgoto concentrado
         populationCapacity: 200,
         waterConsumptionPerPerson: 2.5,
         powerConsumption: 30,
@@ -533,6 +539,7 @@ const BUILDING_TYPES = {
         cost: 3000,
         size: 2,
         zoneType: 'industrial_light',
+        runoffImpervious: 0.3,
         powerConsumption: 20, // MW na fase completa (ZoneGrowth: pela fase)
         jobCapacity: 30,
         pollutionGeneration: 10,
@@ -555,6 +562,7 @@ const BUILDING_TYPES = {
         cost: 5000,
         size: 2,
         zoneType: 'industrial_balanced',
+        runoffImpervious: 0.5,
         powerConsumption: 40, // MW na fase completa (ZoneGrowth: pela fase)
         jobCapacity: 60,
         pollutionGeneration: 20,
@@ -577,10 +585,11 @@ const BUILDING_TYPES = {
         cost: 8000,
         size: 3,
         zoneType: 'industrial_heavy',
+        runoffImpervious: 0.9,
         powerConsumption: 70, // MW na fase completa (ZoneGrowth: pela fase)
         jobCapacity: 100,
-        pollutionGeneration: 40,
-        waterConsumption: 80,
+        pollutionGeneration: 55, // por real de renda, suja mais que a leve: é o preço de crescer pesado
+        waterConsumption: 100,
         incomeGeneration: 800,
         icon: '🏭',
         color: '#FF5722',
@@ -597,9 +606,11 @@ const BUILDING_TYPES = {
         name: 'Zona Comercial Leve',
         description: 'Área para comércio local e serviços básicos',
         category: 'commercial',
+        taxGroup: 'commerce', // imposto de comércio (ResourceManager.calculateTaxRevenue)
         cost: 2500,
         size: 2,
         zoneType: 'commercial_light',
+        runoffImpervious: 0.2,
         powerConsumption: 12, // MW na fase completa (ZoneGrowth: pela fase)
         jobCapacity: 25,
         waterConsumption: 15,
@@ -619,9 +630,11 @@ const BUILDING_TYPES = {
         name: 'Zona Comercial Equilibrada',
         description: 'Área para shopping centers e comércio médio',
         category: 'commercial',
+        taxGroup: 'commerce', // imposto de comércio (ResourceManager.calculateTaxRevenue)
         cost: 4500,
         size: 2,
         zoneType: 'commercial_balanced',
+        runoffImpervious: 0.4,
         powerConsumption: 24, // MW na fase completa (ZoneGrowth: pela fase)
         jobCapacity: 50,
         waterConsumption: 30,
@@ -641,9 +654,12 @@ const BUILDING_TYPES = {
         name: 'Zona Comercial Pesada',
         description: 'Área para grandes centros comerciais e escritórios',
         category: 'commercial',
+        taxGroup: 'commerce', // imposto de comércio (ResourceManager.calculateTaxRevenue)
         cost: 7000,
         size: 3,
         zoneType: 'commercial_heavy',
+        runoffImpervious: 0.8,
+        pollutionGeneration: 5, // movimento de carros e entregas
         powerConsumption: 45, // MW na fase completa (ZoneGrowth: pela fase)
         jobCapacity: 100,
         waterConsumption: 60,
@@ -663,6 +679,7 @@ const BUILDING_TYPES = {
         name: 'Hidrelétrica',
         description: 'Usina hidrelétrica limpa de alta capacidade',
         category: 'power',
+        powerSource: 'hydro', // na seca o rio baixa e a usina entrega menos
         cost: 11250,
         size: 3,
         powerGeneration: 500,
@@ -775,6 +792,7 @@ const BUILDING_TYPES = {
         name: 'Usina Solar',
         description: 'Fazenda solar fotovoltaica limpa',
         category: 'power',
+        powerSource: 'solar', // entrega pelo sol: menos com nuvem, chuva e de noite
         cost: 9000,
         size: 3,
         powerGeneration: 200,
@@ -794,6 +812,7 @@ const BUILDING_TYPES = {
         name: 'Campo Eólico',
         description: 'Parque eólico de energia limpa',
         category: 'power',
+        powerSource: 'wind', // entrega pelo vento real (BuildingEfficiency.getWeatherPowerFactor)
         cost: 10000,
         size: 2,
         powerGeneration: 180,
@@ -1018,8 +1037,10 @@ const BUILDING_TYPES = {
         tier: 4, group: 'Comércio e serviços', techRequires: [{ id: 'bank', count: 1 }, { id: 'zone_commercial_heavy', count: 1 }],
         reputationOnBuild: { business: 2 },
         name: 'Centro Comercial',
-        description: 'Grande centro comercial que gera receita através de aluguéis',
+        description: 'Grande centro comercial que guarda a água da chuva do telhado e gasta metade da água',
         category: 'commercial',
+        rainwaterReuse: true, // guarda a chuva do telhado para os banheiros: gasta metade
+        taxGroup: 'commerce', // imposto de comércio (ResourceManager.calculateTaxRevenue)
         cost: 50000,
         size: 3,
         incomeGeneration: 2000, // R$ por minuto
@@ -1039,8 +1060,10 @@ const BUILDING_TYPES = {
         tier: 3, group: 'Comércio e serviços', techRequires: [{ id: 'restaurant', count: 1 }],
         reputationOnBuild: { business: 2 },
         name: 'Edifício de Escritórios',
-        description: 'Complexo de escritórios que gera receita através de aluguéis comerciais',
+        description: 'Escritórios com reúso da água da chuva nos banheiros',
         category: 'commercial',
+        rainwaterReuse: true,
+        taxGroup: 'commerce', // imposto de comércio (ResourceManager.calculateTaxRevenue)
         cost: 35000,
         size: 2,
         incomeGeneration: 1500, // R$ por minuto
@@ -1060,8 +1083,10 @@ const BUILDING_TYPES = {
         tier: 4, group: 'Comércio e serviços', techRequires: [{ id: 'office_building', count: 1 }],
         reputationOnBuild: { business: 2 },
         name: 'Banco',
-        description: 'Instituição financeira que gera receita através de serviços bancários',
+        description: 'Banco com telhado que coleta água da chuva para limpeza e banheiros',
         category: 'commercial',
+        rainwaterReuse: true,
+        taxGroup: 'commerce', // imposto de comércio (ResourceManager.calculateTaxRevenue)
         cost: 40000,
         size: 2,
         incomeGeneration: 1800, // R$ por minuto
@@ -1080,8 +1105,10 @@ const BUILDING_TYPES = {
     restaurant: {
         tier: 2, group: 'Comércio e serviços', techRequires: [{ ids: ['zone_commercial_light', 'zone_commercial_balanced', 'zone_commercial_heavy'], count: 1, label: 'Zona Comercial' }],
         name: 'Restaurante',
-        description: 'Estabelecimento gastronômico que atrai turistas e gera receita',
+        description: 'Restaurante que atrai turistas; a cozinha precisa de água para funcionar',
         category: 'commercial',
+        needsWater: true, // cozinha não funciona sem água
+        taxGroup: 'commerce', // imposto de comércio (ResourceManager.calculateTaxRevenue)
         cost: 20000,
         size: 1,
         incomeGeneration: 800, // R$ por minuto
@@ -1103,6 +1130,7 @@ const BUILDING_TYPES = {
         name: 'Museu',
         description: 'Museu que atrai turistas e gera receita através de ingressos',
         category: 'commercial',
+        taxGroup: 'tourism', // imposto de turismo (ResourceManager.calculateTaxRevenue)
         cost: 60000,
         size: 3,
         incomeGeneration: 1200, // R$ por minuto
@@ -1127,6 +1155,7 @@ const BUILDING_TYPES = {
         name: 'Parque Turístico',
         description: 'Parque temático que atrai visitantes e gera receita',
         category: 'commercial',
+        taxGroup: 'tourism', // imposto de turismo (ResourceManager.calculateTaxRevenue)
         cost: 80000,
         size: 4,
         incomeGeneration: 2500, // R$ por minuto
@@ -1148,6 +1177,7 @@ const BUILDING_TYPES = {
         name: 'Monumento Histórico',
         description: 'Marco histórico que atrai turistas e aumenta o prestígio da cidade',
         category: 'commercial',
+        taxGroup: 'tourism', // imposto de turismo (ResourceManager.calculateTaxRevenue)
         cost: 45000,
         size: 2,
         incomeGeneration: 900, // R$ por minuto
@@ -1167,8 +1197,10 @@ const BUILDING_TYPES = {
     hotel: {
         tier: 3, group: 'Hospedagem e lazer', techRequires: [{ id: 'restaurant', count: 1 }],
         name: 'Hotel',
-        description: 'Hotel que hospeda turistas e gera receita através de hospedagem',
+        description: 'Hotel para turistas: gasta muita água e, se a cidade ficar sem água, os hóspedes vão embora',
         category: 'commercial',
+        needsWater: true, // sem água na cidade, os hóspedes vão embora
+        taxGroup: 'tourism', // imposto de turismo (ResourceManager.calculateTaxRevenue)
         cost: 55000,
         size: 3,
         incomeGeneration: 1800, // R$ por minuto
@@ -1234,8 +1266,9 @@ const BUILDING_TYPES = {
         tier: 5, group: 'Indústria', techRequires: [{ id: 'tech_center', count: 1 }],
         reputationOnBuild: { business: 2, environment: -2 },
         name: 'Porto Comercial',
-        description: 'Porto para exportação de mercadorias que gera alta receita',
+        description: 'Porto de mercadorias: precisa de um rio limpo e fundo, e com o rio poluído menos navios atracam',
         category: 'industrial',
+        needsCleanWater: true, // rio poluído e assoreado espanta os navios
         cost: 120000,
         size: 5,
         incomeGeneration: 4000, // R$ por minuto

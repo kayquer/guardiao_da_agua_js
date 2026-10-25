@@ -109,6 +109,33 @@ class ResearchLog {
         };
     }
 
+    static ENERGY_TYPES = ['wind_farm', 'solar_farm', 'hydroelectric_plant', 'biomass_plant', 'sugarcane_mill', 'thermal_plant', 'coal_plant'];
+
+    /**
+     * Escolhas que se repetem entre os perfis deste computador (sinal de estratégia dominante, auditoria de design):
+     * a abertura (3 primeiras obras), a usina mais escolhida e a resposta mais dada ao Paulo. Uma escolha com
+     * pelo menos 80% (e amostra de 3 ou mais) entra em flags.
+     */
+    static strategyReport(all = ResearchLog.readAll()) {
+        const profiles = Object.values(all).filter(e => Array.isArray(e?.events));
+        const top = values => {
+            const counts = {};
+            values.forEach(v => { counts[v] = (counts[v] || 0) + 1; });
+            const [key, n] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0] || [null, 0];
+            return { key, count: n, total: values.length, share: values.length ? n / values.length : 0 };
+        };
+        const openings = profiles.map(p => p.events.filter(e => e.type === 'build').slice(0, 3).map(e => e.target))
+            .filter(o => o.length === 3).map(o => o.join(' → '));
+        const energy = profiles.flatMap(p => p.events.filter(e => e.type === 'build' && ResearchLog.ENERGY_TYPES.includes(e.target)).map(e => e.target));
+        const decisions = profiles.flatMap(p => p.events.filter(e => e.type === 'event_decision' && !e.auto).map(e => e.tier || e.value));
+        const report = { profiles: profiles.length, opening: top(openings), energy: top(energy), decisions: top(decisions), flags: [] };
+        for (const kind of ['opening', 'energy', 'decisions']) {
+            const r = report[kind];
+            if (r.total >= 3 && r.share >= 0.8) report.flags.push(kind);
+        }
+        return report;
+    }
+
     static profileInfo(profileId) {
         const profile = typeof PlayerProfile !== 'undefined' ? PlayerProfile.get(profileId) : null;
         return { id: profileId, age: profile?.age ?? null, uf: profile?.uf ?? null, city: profile?.city ?? null };

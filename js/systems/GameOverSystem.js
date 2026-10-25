@@ -222,7 +222,12 @@ class GameOverSystem {
     }
 
     getEmergenciesLeft() {
-        return Math.max(0, GameOverSystem.EMERGENCY_LIVES - this.emergenciesUsed);
+        return Math.max(0, this.getEmergencyLimit() - this.emergenciesUsed);
+    }
+
+    /** 3 declarações + as ganhas em missão (rewards.emergency). */
+    getEmergencyLimit() {
+        return GameOverSystem.EMERGENCY_LIVES + (this.extraEmergencies || 0);
     }
 
     /** Botão "Declarar situação de emergência" e o que ela traz e custa (some quando acabam as declarações). */
@@ -232,18 +237,18 @@ class GameOverSystem {
         const left = this.getEmergenciesLeft();
         if (button) {
             button.style.display = left > 0 ? '' : 'none';
-            button.innerHTML = `🚨 Declarar situação de emergência <small>(${left} de ${GameOverSystem.EMERGENCY_LIVES})</small>`;
+            button.innerHTML = `🚨 Declarar situação de emergência <small>(${left} de ${this.getEmergencyLimit()})</small>`;
         }
         if (!text) return;
         const fmt = n => `R$ ${n.toLocaleString('pt-BR')}`;
         text.insertAdjacentHTML('beforeend', left > 0 ? `
             <div class="emergency-offer">
-                <p><strong>🚨 Ainda dá para pedir ajuda ao Estado</strong> (restam ${left} de ${GameOverSystem.EMERGENCY_LIVES} declarações).</p>
+                <p><strong>🚨 Ainda dá para pedir ajuda ao Estado</strong> (restam ${left} de ${this.getEmergencyLimit()} declarações).</p>
                 <p>✅ <b>Ajuda:</b> carros-pipa enchem a caixa até a metade, uma força-tarefa limpa o rio (poluição até ${GameOverSystem.EMERGENCY_POLLUTION}%),
                 ${fmt(GameOverSystem.EMERGENCY_FUNDS)} chegam na hora e a Defesa Civil segura novos problemas por um tempo.</p>
                 <p>⚠️ <b>Preço:</b> o dinheiro é um empréstimo com juros maiores, o governo, os moradores e o comércio confiam menos
                 na prefeitura e o Estado intervém por alguns minutos (moradores menos satisfeitos).</p>
-            </div>` : `<p class="emergency-offer used"><strong>🚨 As ${GameOverSystem.EMERGENCY_LIVES} declarações de emergência já foram usadas.</strong> Desta vez não há mais ajuda do Estado.</p>`);
+            </div>` : `<p class="emergency-offer used"><strong>🚨 As ${this.getEmergencyLimit()} declarações de emergência já foram usadas.</strong> Desta vez não há mais ajuda do Estado.</p>`);
     }
 
     /**
@@ -300,11 +305,12 @@ class GameOverSystem {
     }
 
     getSaveData() {
-        return { used: this.emergenciesUsed };
+        return { used: this.emergenciesUsed, extra: this.extraEmergencies || 0 };
     }
 
     loadData(data) {
-        this.emergenciesUsed = Math.max(0, Math.min(GameOverSystem.EMERGENCY_LIVES, Number(data?.used) || 0));
+        this.extraEmergencies = Math.max(0, Number(data?.extra) || 0);
+        this.emergenciesUsed = Math.max(0, Math.min(this.getEmergencyLimit(), Number(data?.used) || 0));
     }
 
     // ===== VITÓRIA (missão com victory: true) =====

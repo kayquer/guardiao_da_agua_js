@@ -329,12 +329,14 @@ test('eficiência: empregos e receita caem com ela; moradia não', () => {
 
 // ===== Evoluir para o próximo peso =====
 
-function evolutionSystem({ budget = 1e6, occupied = [] } = {}) {
+// infra: a cidade já tem o que ZONE_EVOLUTION.requires pede (tratamento, asfalto, controle de enxurrada, energia sobrando)
+function evolutionSystem({ budget = 1e6, occupied = [], infra = true } = {}) {
     const { bs, calls } = system();
     bs.buildingTypes = new Map(Object.entries(BUILDINGS).map(([id, cfg]) => [id, { ...cfg, id }]));
+    if (infra) ['treatment_plant', 'paved_road', 'rain_garden'].forEach(type => bs.buildings.set(`infra_${type}`, { id: `infra_${type}`, type, underConstruction: false }));
     const busy = new Set(occupied.map(([x, z]) => `${x},${z}`));
     const rm = {
-        resources: { budget: { current: budget } },
+        resources: { budget: { current: budget }, electricity: { generation: infra ? 1000 : 0, consumption: 0 } },
         canAfford(n) { return this.resources.budget.current >= n; },
         spendBudget(n) { if (!this.canAfford(n)) return false; this.resources.budget.current -= n; return true; }
     };
@@ -464,4 +466,36 @@ test('zona abaixo de 50% volta de fase: o progresso desce e, ao zerar, cai uma f
     assert.strictEqual(bs.advanceZoneProgress(floor, GROWTH.stageMs[0] * 5, -1), null);
     assert.strictEqual(floor.zoneStage, 0);
     assert.strictEqual(floor.zoneProgress, 0, 'área livre é o fundo');
+});
+
+test('evolução pede infraestrutura: equilibrada = tratamento ou reservatório; pesada = asfalto, controle de enxurrada e energia sobrando', () => {
+    const { bs, rm } = evolutionSystem({ infra: false });
+    const light = zone('zone_residential_light', { zoneStage: 3, effectsApplied: true, zoneAppliedScale: 1, gridX: 5, gridZ: 5 });
+    bs.buildings.set(light.id, light);
+    const evo = bs.getZoneEvolution(light);
+    assert.strictEqual(evo.ok, false);
+    assert.match(evo.reason, /Estação de Tratamento ou um Reservatório/);
+    bs.buildings.set('tank', { id: 'tank', type: 'water_tank', underConstruction: true });
+    assert.strictEqual(bs.getZoneEvolution(light).ok, false, 'em obra não conta');
+    bs.buildings.get('tank').underConstruction = false;
+    assert.strictEqual(bs.getZoneEvolution(light).ok, true);
+
+    const balanced = zone('zone_residential_balanced', { id: 'building_2', zoneStage: 3, effectsApplied: true, zoneAppliedScale: 1, gridX: 20, gridZ: 20 });
+    bs.buildings.set(balanced.id, balanced);
+    assert.strictEqual(bs.getZoneEvolution(balanced).missing.length, 3, 'asfalto, enxurrada e energia');
+    bs.buildings.set('road', { id: 'road', type: 'paved_road', underConstruction: false });
+    bs.buildings.set('garden', { id: 'garden', type: 'rain_garden', underConstruction: false });
+    assert.deepStrictEqual([...bs.getZoneEvolution(balanced).missing], ['energia sobrando para o bairro maior']);
+    rm.resources.electricity.generation = 100; // a pesada gasta 30 - 15 = 15 MW a mais
+    assert.strictEqual(bs.getZoneEvolution(balanced).ok, true);
+});
+
+test('pesos de zona com troca real: a leve deixa a chuva entrar e agrada; a pesada cobre o chão, gasta água e suja', () => {
+    const light = BUILDINGS.zone_residential_light, heavy = BUILDINGS.zone_residential_heavy;
+    assert.ok(light.runoffImpervious < heavy.runoffImpervious);
+    assert.ok(light.satisfactionBonus > 0 && !heavy.satisfactionBonus);
+    assert.ok(heavy.waterConsumption > 0 && heavy.pollutionGeneration > 0);
+    // indústria pesada suja mais por real de renda que a leve
+    const ratio = id => BUILDINGS[id].pollutionGeneration / BUILDINGS[id].incomeGeneration;
+    assert.ok(ratio('zone_industrial_heavy') > ratio('zone_industrial_light'));
 });

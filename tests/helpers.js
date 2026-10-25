@@ -53,4 +53,22 @@ async function startGame(page, { profile = TEST_PROFILE, forecast, url = '/index
     await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
 }
 
-module.exports = { TEST_PROFILE, FORECAST, CLEAR_SKY, mockExternalApis, startGame };
+/**
+ * Fecha os cartões que pausam o jogo (comemoração da missão, "que bom ter você de volta", zona que evoluiu:
+ * ui/MissionCardUI.js). Espera até `wait` ms o primeiro aparecer; testes que não são sobre eles usam isto.
+ */
+async function closeCards(page, wait = 5000) {
+    await page.waitForSelector('#mission-card', { timeout: wait }).catch(() => {});
+    for (let i = 0; i < 5; i++) {
+        const open = await page.evaluate(() => {
+            const ui = window.gameManager?.uiManager;
+            if (!document.getElementById('mission-card')) return false;
+            ui.closeMissionCard();
+            return true;
+        });
+        if (!open) break;
+        await page.waitForTimeout(300); // o próximo da fila abre no flush seguinte (200 ms)
+    }
+}
+
+module.exports = { TEST_PROFILE, FORECAST, CLEAR_SKY, mockExternalApis, startGame, closeCards };

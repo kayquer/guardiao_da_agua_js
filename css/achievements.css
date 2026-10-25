@@ -1,0 +1,43 @@
+/* Vitrine de conquistas na pausa (js/systems/ui/AchievementsUI.js) e escolhas repetidas no painel de pesquisa */
+
+.ach-body { max-height: 60vh; overflow-y: auto; padding: 4px 2px; zoom: var(--text-scale, 1); }
+
+.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+
+.ach-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 8px;
+    border: 3px solid #1a1a1a;
+    border-radius: 14px;
+    background: #fffdf5;
+    color: #1a1a1a;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.ach-badge b { font-size: 0.98rem; }
+.ach-badge span:last-child { color: #4a5560; }
+.ach-badge.earned { background: linear-gradient(160deg, #fff7c2, #ffe066); box-shadow: 0 0 12px rgba(255, 215, 0, 0.6); }
+.ach-badge.locked { opacity: 0.6; filter: grayscale(0.8); }
+.ach-icon { font-size: 2rem; line-height: 1; }
+.ach-icon .ui-icon { width: 48px; height: 48px; }
+
+.ach-title { margin: 14px 0 6px; font-size: 1.05rem; }
+.ach-title small { font-weight: 400; opacity: 0.8; }
+.ach-missions { list-style: none; margin: 0; padding: 0; }
+.ach-missions li { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; border-bottom: 1px dashed rgba(255, 255, 255, 0.25); }
+.ach-stars { color: #ffd700; letter-spacing: 1px; white-space: nowrap; }
+
+.rs-strategy { margin-top: 10px; }
+.rs-strategy-title { margin: 0 0 4px; font-size: 1rem; }
+.rs-strategy-title small { font-weight: 400; opacity: 0.8; }
+.rs-strategy ul { margin: 0; padding-left: 18px; }
+.rs-strategy li { margin: 3px 0; }
+.rs-strategy li.rs-flag { color: #ff8a80; font-weight: 700; }
+
+#achievements-panel[hidden] {
+    display: none !important;
+}

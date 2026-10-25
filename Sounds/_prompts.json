@@ -3866,6 +3866,216 @@
       "loop": false,
       "loudnessTarget": "-16 LUFS",
       "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_water_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Water running out: the last drops gurgle down an empty metal pipe and stop with a hollow plop, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_water_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "A tap sputtering and coughing air, a few final drips and then dry silence, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_water_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Water level dropping in a tank: a descending glug-glug and a small empty echo, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_energy_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Electricity powering down: a soft electric hum sliding down in pitch with a little flicker buzz, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_energy_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "A light bulb buzzing, flickering twice and switching off with a soft click, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_energy_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Machine running out of power: a whirring motor slowing down to a stop with a low electric sigh, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_pollution_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Pollution warning: a factory chimney puffing thick smoke with a hiss, then a soft muffled cough, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_pollution_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Dirty air alert: a low murky whoosh of smog rolling in and a tiny wheezy cough, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_pollution_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Sludgy polluted water bubble pops and a smoky hiss, a short warning tone underneath, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_money_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Money running low: a few coins dropping into an almost empty tin, the last one rolling and wobbling to a stop, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_money_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "An empty wallet being opened, a single coin falls out and spins on a wooden table, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_money_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Piggy bank shaken with only one coin rattling inside, then a soft descending two-note tone, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_population_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "People leaving town: footsteps and suitcase wheels rolling away on a sidewalk, fading out, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_population_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "A small crowd murmur fading away into the distance and a door closing softly, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_population_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Moving truck door sliding shut and the engine driving away, short and gentle, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_satisfaction_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Unhappy citizens: a small group making a disappointed non-verbal groan, soft and comic, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_satisfaction_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "A short descending sad trombone-like wobble played on a soft woodwind, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_satisfaction_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "A few people tutting and sighing in disappointment, non-verbal, gentle, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_recover_1.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Resource recovered: a bright rising three-note marimba chime with a tiny sparkle, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 1 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_recover_2.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Things are getting better: a soft upward whoosh ending in a warm bell ding, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 2 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
+    },
+    "Sounds/SFX/Player/sfx_alert_recover_3.mp3": {
+      "generator": "ElevenLabs Sound Effects v2",
+      "model": "eleven_text_to_sound_v2",
+      "prompt": "Happy little rising glockenspiel arpeggio with a water-bubble pop at the end, short game UI alert for a cozy kids city-building game, clear and readable, gentle not scary, no music, no voice, no words, mono, dry",
+      "date": "2026-10-25",
+      "chosenVersion": "variação 3 de 3",
+      "loop": false,
+      "loudnessTarget": "-16 LUFS",
+      "channels": 1
     }
   }
 }

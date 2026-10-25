@@ -30,7 +30,7 @@ test('empréstimo aprovado credita o orçamento e registra a dívida', () => {
 
 test('empréstimo acima de 5x a receita mensal é recusado', () => {
     const gm = setup();
-    const income = gm.resourceManager.resources.budget.income;
+    const income = gm.loanManager.getMonthlyIncome(); // renda por minuto × 2 (o mês dura 2 min de jogo)
     assert.strictEqual(gm.loanManager.requestLoan(income * 5 + 1, 12).approved, false);
 });
 

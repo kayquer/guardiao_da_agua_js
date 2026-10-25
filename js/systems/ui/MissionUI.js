@@ -138,6 +138,22 @@ mixin(QuestSystem, {
         </ul>`;
     },
 
+    /** ★★☆ de uma missão concluída. */
+    renderStarCount(mission) {
+        const stars = Math.max(0, Math.min(3, mission.stars || 0));
+        return stars ? `<span class="mission-star-count" aria-label="${stars} de 3 estrelas">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</span>` : '';
+    },
+
+    /** As metas de cada estrela (QuestSystem.getStarGoals); cada estrela a mais dá +25% de dinheiro. */
+    renderStarGoals(mission) {
+        const goals = this.getStarGoals(mission);
+        const results = mission.starResults || [];
+        const done = i => mission.status === 'completed' && results[i];
+        return `<ul class="mission-star-goals">${goals.map((goal, i) =>
+            `<li class="${done(i) ? 'done' : ''}"><span aria-hidden="true">${done(i) ? '★' : '☆'}</span> ${goal}</li>`).join('')}</ul>
+            <p class="mission-star-note">Cada estrela a mais vale +${Math.round(QuestSystem.STAR_BONUS * 100)}% de dinheiro na recompensa.</p>`;
+    },
+
     /** Meta "Construir X" clicada: fecha as missões e mostra o prédio na aba de construções. */
     goToBuildGoal(buildingId) {
         this.closeMissionInterface();
@@ -153,6 +169,7 @@ mixin(QuestSystem, {
         if (rewards.budget) chips.push(`${uiIcon('res-budget')} R$ ${Number(rewards.budget).toLocaleString('pt-BR')}`);
         if (rewards.score) chips.push(`${uiIcon('status-star')} ${rewards.score} pontos`);
         (rewards.recommendStudy || []).forEach(id => chips.push(`${uiIcon('ui-book')} Estudo: ${buildingName(id)}`));
+        this.describeRewardPerks(rewards).forEach(text => chips.push(text));
         return chips.length
             ? `<div class="mission-rewards-chips">${chips.map(c => `<span class="reward-chip">${c}</span>`).join('')}</div>`
             : '';
@@ -250,7 +267,7 @@ mixin(QuestSystem, {
             <div class="mission-card simple ${urgent ? 'urgent' : ''}" onclick="window.gameManager.questSystem.showMissionDetails('${mission.id}')">
                 <div class="mission-card-top">
                     <span class="mission-icon">${uiIcon(mission.missionIcon || category.icon || 'ui-target', 'lg')}</span>
-                    <h4 class="mission-card-title">${PlayerProfile.personalize(mission.title)}</h4>
+                    <h4 class="mission-card-title">${PlayerProfile.personalize(mission.title)} ${mission.status === 'completed' ? this.renderStarCount(mission) : ''}</h4>
                     ${urgent ? `<span class="mission-urgent-tag">${uiIcon('res-energy')} Urgente</span>` : ''}
                 </div>
                 ${this.renderMissionGoals(mission)}
@@ -916,6 +933,9 @@ mixin(QuestSystem, {
 
                 <h4 class="mission-section-title">Você ganha</h4>
                 ${this.renderMissionRewards(mission) || '<p class="mission-empty">Experiência e uma cidade melhor!</p>'}
+
+                <h4 class="mission-section-title">Estrelas ${isCompleted ? this.renderStarCount(mission) : ''}</h4>
+                ${this.renderStarGoals(mission)}
 
                 ${fact ? `<div class="mission-fact"><b>${uiIcon('status-tip')} Você sabia?</b> ${fact}</div>` : ''}
                 ${tips.length ? `

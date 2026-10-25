@@ -158,7 +158,7 @@ mixin(UIManager, {
             add('💧 Produz água', `${fmt(y.actual)} L/min${why}${rented}`, y.actual < y.nominal ? 'bad' : 'good', 'water-yield');
         } else if (type.waterProduction) add('💧 Produz água', `${fmt(type.waterProduction)} L/min`, 'good');
         if (type.waterStorage) add('🛢️ Guarda água', `${fmt(type.waterStorage)} L`, 'good');
-        if (type.waterConsumption) add('🚰 Gasta água', `${fmt(type.waterConsumption)} L/min`, 'bad');
+        if (type.waterConsumption) add('🚰 Gasta água', `${fmt(type.waterConsumption * (type.rainwaterReuse ? 0.5 : 1))} L/min`, 'bad');
         if (type.powerGeneration) add('⚡ Gera energia', `${fmt(type.powerGeneration)} MW${rented}`, 'good');
         if (type.powerConsumption) {
             // Zona consome pela fase (BuildingEfficiency.getBuildingPowerConsumption)
@@ -176,13 +176,24 @@ mixin(UIManager, {
         if (type.runoffAbsorption) add('🌧️ Segura a enxurrada', `${fmt(type.runoffAbsorption)} (menos enchente)`, 'good');
         if (type.earlyWarning) add('📡 Avisa antes', 'eventos chegam com o dobro de aviso', 'good');
         if (type.nearbyEfficiencyBonus) add('🔬 Melhora os vizinhos', `+${Math.round(type.nearbyEfficiencyBonus * 100)}% de eficiência`, 'good');
-        if (type.runoffImpervious) {
+        if (type.runoffImpervious && type.zoneType) {
+            // Zonas: quanto do lote é chão coberto (a leve tem quintais; a pesada é quase toda telhado e asfalto)
+            const share = type.runoffImpervious;
+            if (share >= 0.5) add('🌧️ Lote coberto', `${Math.round(share * 100)}% do chão é telhado e asfalto: mais enxurrada e enchente`, 'bad');
+            else add('🌧️ Lote com quintais', `só ${Math.round(share * 100)}% do chão é coberto: a chuva entra na terra`, 'good');
+        } else if (type.runoffImpervious) {
             // Ruas: quanto da chuva escorre (asfalto 1 = toda; cascalho e terra deixam a água entrar no chão)
             const share = type.runoffImpervious;
             if (share >= 0.8) add('🌧️ Chão impermeável', 'quase toda a chuva escorre (mais enxurrada e enchente)', 'bad');
             else if (share >= 0.3) add('🌧️ Chão semipermeável', `parte da chuva entra entre as pedras (${Math.round((1 - share) * 100)}% infiltra)`, 'good');
             else add('🌧️ Chão permeável', `a chuva entra no chão (${Math.round((1 - share) * 100)}% infiltra), mas pode virar lama e erosão`, 'good');
         }
+        if (type.powerSource) add({ wind: '🌬️ Depende do vento', solar: '☀️ Depende do sol', hydro: '💧 Depende do rio' }[type.powerSource],
+            { wind: 'pouco vento = menos energia; ventania forte desliga', solar: 'nuvem, chuva e noite = menos energia', hydro: 'na seca o rio baixa e gera menos' }[type.powerSource], 'bad');
+        if (type.needsWater) add('🚱 Precisa de água', 'sem água na cidade funciona a 50%', 'bad');
+        if (type.needsCleanWater) add('🛳️ Precisa de rio limpo', 'com poluição acima de 50% funciona a 50%', 'bad');
+        if (type.rainwaterReuse) add('♻️ Reaproveita a chuva', 'gasta metade da água', 'good');
+        if (type.taxGroup) add('🧾 Paga imposto', type.taxGroup === 'tourism' ? 'de turismo (R$ 100/min com a cidade crescendo)' : 'de comércio (R$ 50/min com a cidade crescendo)', 'good');
         if (type.plantedTree) add('🌳 Cresce e limpa o ar', '4 fases', 'good');
         if (type.recycleBonus) add('♻️ Reciclar prédios', `+${Math.round(type.recycleBonus * 100)}% no valor (uma vez por tipo)`, 'good');
         if (type.maintenanceCost) add('🔧 Manutenção', `R$ ${fmt(type.maintenanceCost)}/min`, 'bad');
@@ -236,7 +247,11 @@ mixin(UIManager, {
         button.hidden = false;
         button.classList.toggle('study', state === 'locked');
         button.dataset.state = state;
-        const cost = `R$ ${type.cost.toLocaleString('pt-BR')}`;
+        // Prêmio de missão (desconto/obra grátis): mostra o preço com ele
+        const perkCost = this.gameManager.questSystem?.getPerkCost?.(type.id, type.cost) ?? type.cost;
+        const cost = perkCost < type.cost
+            ? (perkCost === 0 ? 'grátis (prêmio)' : `R$ ${perkCost.toLocaleString('pt-BR')} (prêmio)`)
+            : `R$ ${type.cost.toLocaleString('pt-BR')}`;
         if (state === 'tech') {
             button.disabled = true;
             button.innerHTML = `${uiIcon('status-locked')} Tecnologia bloqueada`;
@@ -247,7 +262,7 @@ mixin(UIManager, {
             if (hint) hint.textContent = 'Um estudo rápido libera este prédio.';
         } else if (state === 'disabled') {
             button.disabled = true;
-            const missing = type.cost - (this.gameManager.resourceManager?.resources.budget.current || 0);
+            const missing = perkCost - (this.gameManager.resourceManager?.resources.budget.current || 0);
             button.innerHTML = `${uiIcon('ui-build')} Construir · ${cost}`;
             if (hint) hint.textContent = `Falta R$ ${Math.max(0, Math.ceil(missing)).toLocaleString('pt-BR')} no caixa.`;
         } else {

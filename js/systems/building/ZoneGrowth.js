@@ -370,6 +370,23 @@ mixin(BuildingSystem, {
         return scale.length - 1;
     },
 
+    /**
+     * O que a cidade ainda não tem para a zona subir de peso (ZONE_EVOLUTION.requires): prédios prontos de uma
+     * lista ({ ids }) ou energia sobrando para o consumo a mais da zona maior ({ energySpare }). Lista de rótulos.
+     */
+    getZoneEvolutionMissing(building, nextConfig) {
+        const weight = ZONE_EVOLUTION.weights.find(w => nextConfig.id?.endsWith(`_${w}`) || nextConfig.zoneType?.endsWith(`_${w}`));
+        const rules = ZONE_EVOLUTION.requires?.[weight] || [];
+        return rules.filter(rule => {
+            if (rule.energySpare) {
+                const e = this.gameManager?.resourceManager?.resources?.electricity || {};
+                const extra = Math.max(0, (nextConfig.powerConsumption || 0) - (building.appliedPowerConsumption ?? building.config.powerConsumption ?? 0));
+                return (e.generation || 0) - (e.consumption || 0) < extra;
+            }
+            return !rule.ids.some(id => this.getBuildingsByType(id).some(b => !b.underConstruction));
+        }).map(rule => rule.label);
+    },
+
     /** Custo da evolução: a diferença entre os custos dos dois pesos (o que falta pagar). */
     getZoneEvolutionCost(fromConfig, toConfig) {
         return Math.max(0, Math.round((toConfig?.cost || 0) - (fromConfig?.cost || 0)));
@@ -421,6 +438,12 @@ mixin(BuildingSystem, {
         const info = { ok: false, reason: '', next, nextConfig, cost, startStage };
         if (!this.isBuildingUnlocked(next)) {
             info.reason = `Estude a ${nextConfig.name} para liberar a evolução.`;
+            return info;
+        }
+        const missing = this.getZoneEvolutionMissing(building, nextConfig);
+        if (missing.length) {
+            info.missing = missing;
+            info.reason = `Para crescer, a cidade precisa de: ${missing.join('; ')}.`;
             return info;
         }
         const rm = this.gameManager?.resourceManager;
@@ -521,7 +544,9 @@ mixin(BuildingSystem, {
         this.replaceZoneLotMesh(building);
 
         if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_zone_grow');
-        this.showNotification(`⬆️ ${oldConfig.name} evoluiu para ${evo.nextConfig.name}!`, 'success');
+        // Marco: cartão com o que melhorou e o que piorou (ui/MissionCardUI.js); sem ele (testes de unidade), o aviso
+        if (this.gameManager?.uiManager?.queueZoneEvolution) this.gameManager.uiManager.queueZoneEvolution(oldConfig, evo.nextConfig);
+        else this.showNotification(`⬆️ ${oldConfig.name} evoluiu para ${evo.nextConfig.name}!`, 'success');
         // Lugar/tamanho novo: rua e energia contam de novo no próximo update (BuildingEfficiency.js)
         this.markEfficiencyDirty?.();
         // Gasta mais energia no peso novo? Avisa já (como na colocação)

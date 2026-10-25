@@ -278,3 +278,32 @@
     width: 100%;
     margin: 0;
 }
+
+/* Avisos informativos (showNotification(..., { quiet: true })): bolinha no botão do jogador até abrir o histórico */
+.player-chip.has-unread { position: relative; }
+.player-chip.has-unread::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #1a1a1a;
+    border-radius: 50%;
+    background: #ff4757;
+}
+
+/* Estudo novo recomendado por missão: selo "novo" no botão da categoria (UIManager.markNewStudy) */
+.category-btn.has-new { position: relative; }
+.category-btn.has-new::after {
+    content: 'novo';
+    position: absolute;
+    top: -7px;
+    right: -4px;
+    padding: 0 6px;
+    border: 2px solid #1a1a1a;
+    border-radius: 999px;
+    background: #ffd700;
+    color: #1a1a1a;
+    font: 700 11px/16px system-ui, sans-serif;
+}

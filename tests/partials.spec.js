@@ -85,6 +85,21 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         ui.calculateLoanPreview();
         ui.closeLoanInterface();
 
+        // ui/AchievementsUI + ui/IdleHints
+        ui.openAchievementsPanel();
+        ui.closeAchievementsPanel({ focus: false });
+        ui.pickIdleHint();
+        ui.isPlayerWaiting();
+
+        // ui/MissionCardUI + CityChallenges
+        ui.queueWelcomeBack();
+        ui.flushMissionCards();
+        ui.closeMissionCard();
+        gm.questSystem.buildCityChallenge(1);
+
+        // ui/ResourceHud
+        ui.updateResourceHud(gm.resourceManager.resources);
+
         // ui/ResourcePanels
         for (const t of ['water', 'budget', 'energy', 'satisfaction']) ui.showResourcePanel(t);
         ui.closeResourcePanel();

@@ -57,6 +57,28 @@ mixin(UIManager, {
         ].join('');
         const count = document.getElementById('rs-count');
         if (count) count.textContent = `${s.events} registros`;
+        this.renderStrategyReport();
+    },
+
+    /** Escolhas repetidas entre os perfis deste computador: ajuda a achar uma "receita" que domina o jogo. */
+    renderStrategyReport() {
+        const box = document.getElementById('rs-strategy');
+        if (!box) return;
+        const r = ResearchLog.strategyReport();
+        const types = this.gameManager.buildingSystem?.buildingTypes;
+        const name = id => types?.get(id)?.name || id;
+        const tiers = { max: 'a resposta mais forte', mid: 'a resposta média', low: 'a resposta mínima', none: 'não fazer nada' };
+        const line = (label, data, show) => data.total
+            ? `<li class="${r.flags.includes(label) ? 'rs-flag' : ''}">${show(data.key)} — ${Math.round(data.share * 100)}% (${data.count} de ${data.total})${r.flags.includes(label) ? ' ⚠️ quase todos fazem igual' : ''}</li>`
+            : '';
+        const items = [
+            line('opening', r.opening, key => `Abertura mais comum: ${key.split(' → ').map(name).join(' → ')}`),
+            line('energy', r.energy, key => `Usina mais construída: ${name(key)}`),
+            line('decisions', r.decisions, key => `Resposta mais dada ao Paulo: ${tiers[key] || key}`)
+        ].join('');
+        box.innerHTML = `<h3 class="rs-strategy-title">🔁 Escolhas repetidas <small>(${r.profiles} ${r.profiles === 1 ? 'perfil' : 'perfis'} neste computador)</small></h3>
+            ${items ? `<ul>${items}</ul>` : '<p class="nh-hint">Ainda não há jogadas suficientes para comparar.</p>'}
+            <p class="nh-hint">Se 80% ou mais fazem a mesma escolha, ela pode estar forte demais (estratégia dominante).</p>`;
     },
 
     /** Baixa o arquivo pelo navegador (nada sai do computador sem esse clique). */

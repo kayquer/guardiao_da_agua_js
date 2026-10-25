@@ -24,7 +24,7 @@ class ResourceManager {
             },
             budget: {
                 current: GAME_CONFIG.resources.initialBudget,
-                income: 1000, // Receita por minuto = BASE_INCOME + impostos + buildingIncome (calculateTaxRevenue)
+                income: 400, // Receita por minuto = BASE_INCOME + impostos + buildingIncome (calculateTaxRevenue)
                 buildingIncome: 0, // R$/min de prédios, zonas e aluguel (add/removeIncome)
                 expenses: 0
             },
@@ -77,7 +77,7 @@ class ResourceManager {
 
         // Tax rates (per minute)
         this.taxRates = {
-            perCitizen: 10,           // R$ 10 per citizen per minute
+            perCitizen: 7,            // R$ 7 por morador por minuto (era 10)
             perCommercial: 50,        // R$ 50 per commercial building per minute
             perTourism: 100,          // R$ 100 per tourism building per minute
             developmentMultiplier: 1.0 // Increases with city development
@@ -214,27 +214,13 @@ class ResourceManager {
         // Population tax (income tax from citizens)
         this.taxRevenue.population = population * this.taxRates.perCitizen * this.taxRates.developmentMultiplier;
 
-        // Business tax (from commercial buildings)
-        const commercialBuildings = buildings.filter(b =>
-            b.type && (
-                b.type.includes('commercial') ||
-                b.type.includes('shop') ||
-                b.type.includes('market') ||
-                b.type.includes('mall')
-            )
-        );
+        // Imposto de comércio e de turismo: pelo campo de dado taxGroup (antes era pelo nome do tipo, e "park" no
+        // nome fazia o parque linear e o ecoparque pagarem imposto de turismo)
+        const finished = buildings.filter(b => !b.underConstruction);
+        const commercialBuildings = finished.filter(b => b.config?.taxGroup === 'commerce');
         this.taxRevenue.business = commercialBuildings.length * this.taxRates.perCommercial * this.taxRates.developmentMultiplier;
 
-        // Tourism tax (from tourism buildings)
-        const tourismBuildings = buildings.filter(b =>
-            b.type && (
-                b.type.includes('tourism') ||
-                b.type.includes('hotel') ||
-                b.type.includes('museum') ||
-                b.type.includes('park') ||
-                b.type.includes('monument')
-            )
-        );
+        const tourismBuildings = finished.filter(b => b.config?.taxGroup === 'tourism');
         this.taxRevenue.tourism = tourismBuildings.length * this.taxRates.perTourism * this.taxRates.developmentMultiplier;
 
         // Calculate total tax revenue
@@ -605,7 +591,8 @@ class ResourceManager {
     }
     
     // Receita fixa dos prédios (R$/min) fica em buildingIncome, porque calculateTaxRevenue recalcula income a cada ciclo
-    static BASE_INCOME = 1000;
+    // 400 (era 1000): a renda fixa sozinha pagava uma bomba a cada 2,5 min; agora quem paga a cidade são os moradores
+    static BASE_INCOME = 400;
 
     addIncome(amount) {
         const budget = this.resources.budget;
@@ -684,7 +671,8 @@ class ResourceManager {
     /** L/min que um prédio pronto consome (fixo, fora os moradores). Muda plantada: o que está aplicado na etapa. */
     static buildingWaterUse(building) {
         if (building?.treeApplied) return Number(building.treeApplied.water) || 0;
-        return Number(building?.config?.waterConsumption) || 0;
+        // Reúso da água da chuva (shopping, escritório, banco): metade do gasto
+        return (Number(building?.config?.waterConsumption) || 0) * (building?.config?.rainwaterReuse ? 0.5 : 1);
     }
 
     /** R$/min de manutenção de um prédio pronto. */
@@ -1017,7 +1005,7 @@ class ResourceManager {
             },
             budget: {
                 current: GAME_CONFIG.resources.initialBudget,
-                income: 1000,
+                income: 400,
                 buildingIncome: 0,
                 expenses: 0
             },

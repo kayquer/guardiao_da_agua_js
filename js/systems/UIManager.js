@@ -222,6 +222,8 @@ class UIManager {
         // Histórico de notificações na tela de pausa (o toast fecha pelo próprio clique, em showNotification)
         this.setupNotificationHistory();
         this.setupResearchPanel();
+        this.setupAchievementsPanel();
+        this.setupIdleHints();
         this.setupSettingsPanel();
 
         // ===== ENHANCED RESOURCE PANEL INTERACTION SYSTEM =====
@@ -609,13 +611,15 @@ class UIManager {
             this.flushDeferredAlerts();
             this.updateEventTracker(); // barra do tempo de cada evento/aviso (ui/EventUI.js)
             this.flushEventDecisions(); // anúncio de evento esperando o modal do Paulo (ui/EventDecisionUI.js)
+            this.flushMissionCards(); // comemoração da missão / bem-vindo de volta (ui/MissionCardUI.js)
+            this.updateIdleHints(); // dica durante a espera (ui/IdleHints.js)
             this.tickSimulatedWeather(); // clima simulado muda a cada hora de jogo (ui/WeatherUI.js)
         }
     }
 
     // Livro de aulas, central de aulas, tutorial (story ou coach) ou livro de estudo visível
     isReadingOverlayOpen() {
-        return ['#lessons-hub', '#lesson-book', '#study-book-overlay', '#tutorial-container']
+        return ['#lessons-hub', '#lesson-book', '#study-book-overlay', '#tutorial-container', '#mission-card']
             .some(selector => (document.querySelector(selector)?.getClientRects().length || 0) > 0);
     }
 
@@ -652,7 +656,7 @@ class UIManager {
         const popups = [
             '.swal2-container', '.central-alert-overlay', '#study-book-overlay', '#controls-modal',
             '#weather-modal', '#lessons-hub', '#lesson-book', '.mission-interface', '.choice-dialog', '.loan-interface',
-            '.resource-details-panel', '#notification-history', '#research-panel', '#settings-panel', '#tech-modal', '#event-decision'
+            '.resource-details-panel', '#notification-history', '#research-panel', '#achievements-panel', '#settings-panel', '#tech-modal', '#event-decision', '#mission-card'
         ];
         return popups.some(selector => shown(document.querySelector(selector)));
     }
@@ -758,6 +762,9 @@ class UIManager {
 
         // ===== UPDATE COMPACT RESOURCE INDICATORS (MOBILE) =====
         this.updateCompactResourceIndicators(resources);
+
+        // Seta de tendência, ícone/visual por faixa e alerta sonoro (ui/ResourceHud.js)
+        this.updateResourceHud(resources);
     }
 
     updateCompactResourceIndicators(resources) {
@@ -828,8 +835,15 @@ class UIManager {
     }
     
     // ===== CONSTRUÇÃO =====
+    /** Selo "novo" no botão da categoria do prédio (estudo recomendado por missão); some ao abrir a categoria. */
+    markNewStudy(buildingId) {
+        const category = this.gameManager.buildingSystem?.buildingTypes?.get(buildingId)?.category;
+        if (category) document.querySelector(`.category-btn[data-category="${category}"]`)?.classList.add('has-new');
+    }
+
     selectCategory(category) {
         if (!category) return;
+        document.querySelector(`.category-btn[data-category="${category}"]`)?.classList.remove('has-new');
         this.hideStudyTooltip(); // a lista é refeita: o mouseleave do item removido não chega
 
         // Clicar na categoria que está aberta fecha o modal (como o acordeão fazia)
@@ -979,7 +993,9 @@ class UIManager {
             return study && !study.isTechReached?.(buildingType.id) ? 'tech' : 'locked';
         }
         const rm = this.gameManager.resourceManager;
-        return !rm || rm.canAfford(buildingType.cost) ? 'ok' : 'disabled';
+        if (this.gameManager.tutorialSystem?.isFreeBuilding?.(buildingType.id)) return 'ok';
+        const cost = this.gameManager.questSystem?.getPerkCost?.(buildingType.id, buildingType.cost) ?? buildingType.cost;
+        return !rm || rm.canAfford(cost) ? 'ok' : 'disabled';
     }
 
     /** Classes e textos do card conforme o estado (criação e refreshBuildingItemStates). */
@@ -1232,6 +1248,7 @@ class UIManager {
             this.renderPlayerPanel();
             this.closeNotificationHistory({ focus: false });
             this.closeResearchPanel({ focus: false });
+            this.closeAchievementsPanel({ focus: false });
             this.closeSettingsPanel({ focus: false });
             this.elements.pauseOverlay.classList.remove('hidden');
         }
@@ -1473,7 +1490,17 @@ class UIManager {
     // inferior (não cobre o menu de construção nem o painel da direita); no celular, no topo, logo abaixo dos recursos.
     // Somem sozinhos, clique fecha, no máximo maxVisibleToasts na tela (o mais antigo sai). Cada aviso também vai
     // para o histórico da partida (notificationLog, salvo com o jogo), revisto na pausa em "📜 Notificações".
-    showNotification(message, type = 'info', duration = 5000) {
+    /**
+     * Avisos em três níveis (auditoria de design: avisos demais com o mesmo peso viram ruído):
+     * crítico = cartão ou alerta central (showCentralAlert, ui/MissionCardUI.js); importante = este toast com som;
+     * informativo = options.quiet: só vai para o histórico (📜 na pausa) e acende uma bolinha no botão do jogador.
+     */
+    showNotification(message, type = 'info', duration = 5000, options = {}) {
+        if (options.quiet) {
+            this.recordNotification(message, type);
+            document.getElementById('player-chip')?.classList.add('has-unread');
+            return null;
+        }
         // Bolha baixinha só com o jogo rodando e se nenhum outro som acabou de tocar (a ação já tem o dela)
         if (typeof AudioManager !== 'undefined' && this.gameManager?.gameState === 'playing') {
             AudioManager.playSound('sfx_notification', 1, { ifQuiet: 500 });
@@ -1584,6 +1611,7 @@ class UIManager {
     }
 
     openNotificationHistory() {
+        document.getElementById('player-chip')?.classList.remove('has-unread'); // viu os avisos informativos
         const panel = document.getElementById('notification-history');
         const playerPanel = this.elements.pauseOverlay?.querySelector('.player-panel');
         if (!panel) return;

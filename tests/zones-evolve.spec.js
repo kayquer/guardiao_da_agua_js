@@ -22,6 +22,8 @@ async function ready(page) {
         gm.resourceManager.resources.budget.current = 1e6;
         // Energia de sobra: sem ela a zona não sobe e, abaixo de 50% de eficiência, volta de fase
         gm.resourceManager.addElectricityGeneration(100000);
+        // Infraestrutura pedida para evoluir (ZONE_EVOLUTION.requires) fica fora daqui: tests/unit/zones.test.js cobre
+        gm.buildingSystem.getZoneEvolutionMissing = () => [];
     });
 }
 
@@ -118,6 +120,7 @@ test('zona na fase final: botão evoluir troca o peso sem perder nada, cobra a d
     }, id);
     expect(before.spent).toBe(1000);
     await waitPieces(page, id);
+    await page.locator('#mission-card-ok').click(); // cartão "o bairro cresceu" (ui/MissionCardUI.js)
     const after = await page.evaluate(id => {
         const gm = window.gameManager, bs = gm.buildingSystem, b = bs.buildings.get(id);
         return {
@@ -139,6 +142,7 @@ test('zona na fase final: botão evoluir troca o peso sem perder nada, cobra a d
     await expect(button).toContainText('Evoluir para Pesada');
     await button.click();
     await page.waitForFunction(id => window.gameManager.buildingSystem.buildings.get(id).type === 'zone_residential_heavy', id);
+    await page.locator('#mission-card-ok').click(); // cartão "o bairro cresceu" (ui/MissionCardUI.js)
     await page.evaluate(id => window.gameManager.buildingSystem.forceZoneStage(id, 3), id);
     await expect(page.locator('.stat-item.zone-stage')).toContainText('Completa');
     await expect(button).toHaveCount(0);

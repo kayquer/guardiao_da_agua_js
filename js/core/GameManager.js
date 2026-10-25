@@ -932,7 +932,10 @@ class GameManager {
         this.tutorialDone = false; // TutorialSystem.complete() libera o save
         this.uiManager?.notificationLog?.clear(); // histórico de notificações é por partida
         this.techTree?.reset();
-        if (this.gameOverSystem) this.gameOverSystem.emergenciesUsed = 0; // as 3 declarações de emergência voltam
+        if (this.gameOverSystem) { // as 3 declarações de emergência voltam; as ganhas em missão somem
+            this.gameOverSystem.emergenciesUsed = 0;
+            this.gameOverSystem.extraEmergencies = 0;
+        }
 
         this.initializeGameClock();
 
@@ -1142,6 +1145,7 @@ class GameManager {
 
             this.autoSaveTimer = 0;
             this.gameState = 'playing';
+            this.uiManager?.queueWelcomeBack?.(); // "você estava em…" (ui/MissionCardUI.js)
             log('✅ Jogo carregado');
             return true;
 

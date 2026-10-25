@@ -621,19 +621,22 @@ class TutorialSystem {
      */
     onMissionCompleted(missionId) {
         if (!this.lessonsDeferred) return;
-        setTimeout(() => { // depois da comemoração da missão: a aula ligada à missão (LessonProgress.forMission)
+        const open = () => { // depois da comemoração da missão: a aula ligada à missão (LessonProgress.forMission)
+            // o cartão de comemoração (ui/MissionCardUI.js) ainda na tela ou na fila: espera ele fechar
+            const ui = this.gameManager.uiManager;
+            if (ui?.isMissionCardOpen?.() || ui?.missionCardQueue?.length) return setTimeout(open, 1000);
             const next = LessonProgress.forMission(missionId);
             if (next == null) {
                 this.lessonsDeferred = false;
                 return;
             }
             if (this.isActive || this.gameManager.gameState !== 'playing') return;
-            const ui = this.gameManager.uiManager;
             if (Number(MISSIONS[missionId]?.lesson) === next) {
                 ui.showNotification(`📖 Aula ${next}: ${LESSON_CHAPTERS[next].title}. Tem tudo a ver com a missão que você acabou de concluir!`, 'info', 6000);
             }
             ui.openLessonBook(next);
-        }, 4000);
+        };
+        setTimeout(open, 4000);
     }
 
     /** run: 'tutorial' (início do jogo) ou 'topic' (aula rápida de um painel de recurso) */
@@ -923,6 +926,12 @@ class TutorialSystem {
      * Hook chamado por BuildingSystem.placeBuilding. A prefeitura do tutorial é
      * grátis e fica pronta na hora (o loop está congelado, a obra nunca terminaria).
      */
+    /** O passo atual dá este prédio de graça (a prefeitura)? placeBuilding cobra 0 e o card fica liberado. */
+    isFreeBuilding(typeId) {
+        const step = this.steps?.[this.currentStep];
+        return !!(this.isActive && step?.free && step.waitFor === typeId);
+    }
+
     onBuildingPlaced(building) {
         const step = this.steps[this.currentStep];
         if (!this.isActive || !this.stepWantsBuilding(step, building)) return;
@@ -930,8 +939,7 @@ class TutorialSystem {
         const gm = this.gameManager;
         gm.uiManager?.dismissBuildModal?.(); // o menu aberto pelo passo não fica por cima dos próximos destaques
         if (!step.free) return this.next(); // guias: a obra é paga e termina quando o jogo voltar a rodar
-        gm.resourceManager.adjustResource('budget', building.config.cost);
-        gm.buildingSystem.buildingCooldown.active = false;
+        gm.buildingSystem.buildingCooldown.active = false; // não cobrou nada (isFreeBuilding), não há o que devolver
         gm.buildingSystem.completeConstruction(building);
         if (building.type === 'city_hall') {
             gm.addCityHallLightingEffects(building);
