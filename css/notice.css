@@ -92,6 +92,25 @@
     margin: 0 0 20px;
 }
 
+/* Aviso de celular/tablet (StartNotice.isMobileDevice) */
+.start-notice__device {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0 0 20px;
+    padding: 14px 16px;
+    border: 2px solid #f0b400;
+    border-radius: 16px;
+    background: #fff8dc;
+    text-align: left;
+}
+
+.start-notice__device[hidden] { display: none; }
+
+.start-notice__device-icon { flex: none; font-size: 28px; line-height: 1; }
+
+.start-notice__device p { margin: 0; }
+
 .start-notice strong {
     font-weight: 800;
     color: #2b2b2b;

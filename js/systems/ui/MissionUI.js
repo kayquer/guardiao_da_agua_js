@@ -106,8 +106,10 @@ mixin(QuestSystem, {
     renderAchievements() {
         if (!this.achievements.size) return '';
         const items = [...this.achievements].map(id => {
-            const a = (typeof ACHIEVEMENTS !== 'undefined' && ACHIEVEMENTS[id]) || { icon: '🏆', name: id };
-            return `<li class="mission-mini done" title="${a.description || ''}"><span class="mission-mini-icon">${a.icon}</span><span class="mission-mini-text">${a.name}</span></li>`;
+            // achievementInfo resolve também as de nível (track_<trilha>_<n>): sem ele o id cru aparecia na lista
+            const a = QuestSystem.achievementInfo(id);
+            const name = a.level ? `${a.name} <small>Nível ${a.level} · ${a.levelName}</small>` : a.name;
+            return `<li class="mission-mini done" title="${a.description || ''}"><span class="mission-mini-icon">${uiIcon(a.icon)}</span><span class="mission-mini-text">${name}</span></li>`;
         }).join('');
         return `<h4 class="mission-section-title">🏅 Conquistas</h4><ul class="mission-mini-list achievements-list">${items}</ul>`;
     },

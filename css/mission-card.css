@@ -17,7 +17,7 @@
 
 @keyframes mission-card-fade { from { opacity: 0; } to { opacity: 1; } }
 
-.mission-card {
+.mission-card-overlay .mission-card {
     position: relative;
     width: min(440px, 100%);
     overflow: visible; /* o retrato sai para fora do cartão; quem rola é o overlay */
@@ -53,7 +53,7 @@
 
 .mission-card-kicker { font-size: 0.95rem; color: #3b4a55; }
 
-.mission-card-title {
+.mission-card-overlay .mission-card-title {
     margin: 4px 0 8px;
     font-family: 'Lilita One', system-ui, sans-serif;
     font-weight: 400;
@@ -131,7 +131,7 @@
 .mission-card-tip.perfect { background: #fff3b0; }
 .mission-card-tip.warn { background: #ffe3e3; }
 
-.mission-card .ui-icon { width: 1.1em; height: 1.1em; vertical-align: -0.15em; }
+.mission-card-overlay .mission-card .ui-icon { width: 1.1em; height: 1.1em; vertical-align: -0.15em; }
 
 .mission-card-ok { min-width: 160px; font-size: 1.1rem; }
 

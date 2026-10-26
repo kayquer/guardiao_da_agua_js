@@ -369,9 +369,9 @@ class GameManager {
         // ===== BUILDING PLACEMENT MOUSE INTERACTION =====
         this.setupBuildingPlacementControls();
 
-        this.scene.onKeyboardObservable.add((kbInfo) => {
-            this.handleKeyboardEvent(kbInfo);
-        });
+        // Atalhos no document (não no scene.onKeyboardObservable do Babylon, que só recebe a tecla com o canvas em foco:
+        // depois de clicar num botão do HUD, Espaço e 1/2/3 paravam de funcionar)
+        document.addEventListener('keydown', event => this.handleKeyboardEvent(event));
 
         log('🎮 Controles inicializados: SimCity Camera + Building Placement');
     }
@@ -1253,31 +1253,36 @@ class GameManager {
         log(`⏱️ Velocidade alterada: ${speedInfo}`);
     }
 
-    handleKeyboardEvent(kbInfo) {
-        const isKeyDown = kbInfo.type === BABYLON.KeyboardEventTypes.KEYDOWN;
+    /**
+     * Espaço (pausa/continua) e 1/2/3 (velocidade) de qualquer lugar da tela. O Esc fica com os listeners próprios
+     * (cancelar obra, fechar painéis, pausa em captura).
+     */
+    handleKeyboardEvent(event) {
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
+        // Digitando num campo, ou num diálogo cujos botões o Espaço aciona: a tecla é deles
+        const el = event.target;
+        if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+        if (document.querySelector('.swal2-container')) return;
+        const interactive = el?.closest?.('button, a[href], [role="button"], summary');
+        if (interactive?.closest(GameManager.KEY_DIALOGS)) return;
 
-        if (isKeyDown) {
-            switch (kbInfo.event.code) {
-                case 'Space':
-                    if (this.gameState === 'playing') {
-                        this.pauseGame();
-                    } else if (this.gameState === 'paused') {
-                        this.resumeGame();
-                    }
-                    break;
-                case 'Escape':
-                    this.exitBuildMode();
-                    break;
-                case 'Digit1':
-                    this.setTimeScale(1);
-                    break;
-                case 'Digit2':
-                    this.setTimeScale(2);
-                    break;
-                case 'Digit3':
-                    this.setTimeScale(3);
-                    break;
-            }
+        switch (event.code) {
+            case 'Space':
+                if (event.repeat || (this.gameState !== 'playing' && this.gameState !== 'paused')) break;
+                event.preventDefault(); // não rola a página
+                // Botão do HUD em foco: solta o foco, senão o Espaço também o "clicaria" ao soltar a tecla
+                if (interactive && interactive === document.activeElement) interactive.blur();
+                if (this.gameState === 'playing') this.pauseGame();
+                else this.resumeGame();
+                break;
+            case 'Digit1':
+            case 'Digit2':
+            case 'Digit3':
+            case 'Numpad1':
+            case 'Numpad2':
+            case 'Numpad3':
+                if (this.gameState === 'playing' || this.gameState === 'paused') this.setTimeScale(Number(event.code.slice(-1)));
+                break;
         }
     }
 
@@ -1515,6 +1520,10 @@ class GameManager {
         log('🗑️ GameManager disposed');
     }
 }
+
+/** Diálogos em que o Espaço aciona o botão em foco (handleKeyboardEvent não pausa por cima deles). */
+GameManager.KEY_DIALOGS = '[role="dialog"], .modal-overlay, .central-alert-overlay, #tutorial-container, #event-decision, '
+    + '#mission-card, #study-book-overlay, #lesson-book, #lessons-hub, #build-modal, #tech-modal, #weather-modal, #player-menu, #speed-menu';
 
 // Exportar para escopo global
 window.GameManager = GameManager;

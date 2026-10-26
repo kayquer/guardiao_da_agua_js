@@ -42,8 +42,8 @@
     .hud-bottom .mission-progress { width: 160px; flex: none; }
 
     /* Painéis laterais, bússola e cancelar obra descem junto com a barra */
-    .hud-left, .hud-right { bottom: 68px; transition: bottom 0.3s ease; }
-    body.mission-bar-hidden .hud-left, body.mission-bar-hidden .hud-right { bottom: 8px; }
+    .hud-left, .hud-right { bottom: 64px; transition: bottom 0.3s ease; }
+    body.mission-bar-hidden .hud-left, body.mission-bar-hidden .hud-right { bottom: 0; }
     .compass { bottom: 84px; transition: bottom 0.3s ease; }
     body.mission-bar-hidden .compass { bottom: 24px; }
     .cancel-build-btn { bottom: 90px; }

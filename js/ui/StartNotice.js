@@ -18,7 +18,23 @@ const StartNotice = {
         return /[?&]aviso\b/.test(location.search) || !navigator.webdriver;
     },
 
+    /**
+     * Celular ou tablet: user agent (iPadOS se passa por Mac, então conta o toque) ou tela pequena com toque.
+     * O jogo foi feito para computador nesta fase da pesquisa: o aviso recomenda teclado e mouse.
+     */
+    isMobileDevice() {
+        const ua = navigator.userAgent || '';
+        if (navigator.userAgentData?.mobile) return true;
+        if (/Android|iPhone|iPad|iPod|Mobile|IEMobile|Opera Mini|Silk|Kindle/i.test(ua)) return true;
+        if (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) return true;
+        const coarse = window.matchMedia?.('(pointer: coarse)').matches;
+        const shortSide = Math.min(window.screen?.width || innerWidth, window.screen?.height || innerHeight);
+        return !!coarse && shortSide <= 900;
+    },
+
     init() {
+        const mobileNote = document.getElementById('start-notice-mobile');
+        if (mobileNote) mobileNote.hidden = !StartNotice.isMobileDevice();
         if (!StartNotice.enabled()) {
             StartNotice.el.remove();
             StartNotice.accepted = Promise.resolve();

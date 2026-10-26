@@ -693,6 +693,7 @@
     border-radius: 16px;
     background: linear-gradient(145deg, #3b4a8a, #26305e);
     box-shadow: 0 5px 0 rgba(0, 0, 0, 0.45);
+    color: #fff;
     cursor: pointer;
     transition: transform 0.15s ease;
 }

@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "Se usar este jogo numa aula, trabalho ou pesquisa, cite-o assim."
+type: software
+title: "Guardião da Água: jogo educativo para Educação Ambiental no Ensino Fundamental — recursos hídricos em foco"
+abstract: >-
+  Jogo educativo gratuito de construção de cidade, de navegador e em português, sobre recursos hídricos
+  (captação, tratamento, esgoto, aquíferos, rios, mata ciliar, enchentes, energia e poluição) para o Ensino
+  Fundamental anos finais (6º ao 9º ano, 11 a 14 anos). Produto educacional da pesquisa de mestrado
+  "Desenvolvimento de aplicativo para Educação Ambiental (EA) no Ensino Fundamental: recursos hídricos em foco",
+  Programa de Pós-Graduação em Geografia — Mestrado Profissional — Recursos Hídricos e Meio Ambiente,
+  Faculdade de Ciências e Tecnologia, Unesp, Presidente Prudente/SP.
+authors:
+  - family-names: Roxinol
+    given-names: Cláudia Dias
+    affiliation: "Universidade Estadual Paulista (Unesp), Faculdade de Ciências e Tecnologia, Presidente Prudente/SP"
+  - family-names: Rotondo
+    given-names: Kayque
+date-released: 2026-10-26
+url: "https://kayquer.github.io/guardiao_da_agua_js/"
+repository-code: "https://github.com/kayquer/guardiao_da_agua_js"
+license: MIT
+keywords:
+  - jogo educativo
+  - educação ambiental
+  - recursos hídricos
+  - gestão da água
+  - serious game
+  - city builder
+  - ensino de geografia
+  - ensino fundamental
+  - Unesp
+  - Babylon.js

@@ -31,6 +31,18 @@ test('aviso aparece primeiro, segura menu e abertura até "Aceitar" e volta a ca
     await expect(page.locator('#start-notice')).toBeVisible();
 });
 
+test('no celular o aviso recomenda computador com teclado e mouse; no computador, não', async ({ page }, testInfo) => {
+    await mockExternalApis(page);
+    await page.goto('/index.html?aviso&nointro');
+    const note = page.locator('#start-notice-mobile');
+    if (testInfo.project.name === 'mobile') {
+        await expect(note).toBeVisible();
+        await expect(note).toContainText('computador com teclado e mouse');
+    } else {
+        await expect(note).toBeHidden();
+    }
+});
+
 test('"Recusar" leva à página inicial do Google', async ({ page }) => {
     await mockExternalApis(page);
     await page.route('https://www.google.com.br/**', route => route.fulfill({ contentType: 'text/html', body: '<title>Google</title>' }));

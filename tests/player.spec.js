@@ -172,6 +172,37 @@ test('Esc e o botão cancelam a construção', async ({ page }, testInfo) => {
     expect(problems).toEqual([]);
 });
 
+test('atalhos de teclado funcionam com o foco fora do canvas (Espaço pausa, 1/2/3 velocidade)', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'atalhos de teclado são do computador');
+    const problems = watchErrors(page);
+    await startGame(page);
+    await page.evaluate(() => window.gameManager.tutorialSystem.complete());
+    const state = () => page.evaluate(() => ({ state: window.gameManager.gameState, speed: window.gameManager.timeScale }));
+
+    // Foco num botão do HUD (antes, só o canvas em foco recebia os atalhos do Babylon)
+    await page.focus('#btn-speed');
+    await page.keyboard.press('Digit2');
+    expect((await state()).speed).toBe(2);
+    await page.keyboard.press('Space');
+    expect((await state()).state).toBe('paused');
+    // O botão perdeu o foco: o Espaço não abriu o menu de velocidade
+    await expect(page.locator('#speed-menu')).toBeHidden();
+    await page.keyboard.press('Space');
+    expect((await state()).state).toBe('playing');
+
+    // Digitando num campo, a tecla é do campo
+    await page.evaluate(() => {
+        const input = document.createElement('input');
+        input.id = 'tmp-input';
+        document.body.appendChild(input);
+        input.focus();
+    });
+    await page.keyboard.press('Digit3');
+    await page.keyboard.press('Space');
+    expect(await state()).toEqual({ state: 'playing', speed: 2 });
+    expect(problems).toEqual([]);
+});
+
 test('tutorial das missões avança quando o aluno clica no que está destacado', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'alvos do desktop (o mobile usa os mesmos passos com outros alvos)');
     const problems = watchErrors(page);

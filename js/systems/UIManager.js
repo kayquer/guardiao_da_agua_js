@@ -1784,26 +1784,6 @@ class UIManager {
 
         // Store for use in showHelpModal
         this._showDeviceControls = showDeviceControls;
-
-        // Help tab switching
-        document.querySelectorAll('.help-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabId = tab.dataset.tab;
-                document.querySelectorAll('.help-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.help-tab-content').forEach(c => c.classList.remove('active'));
-                tab.classList.add('active');
-                const content = document.getElementById(`help-tab-${tabId}`);
-                if (content) content.classList.add('active');
-            });
-        });
-
-        // FAQ accordion
-        document.querySelectorAll('.faq-question').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const item = btn.closest('.faq-item');
-                if (item) item.classList.toggle('open');
-            });
-        });
     }
 
     showHelpModal() {
@@ -1838,7 +1818,7 @@ class UIManager {
             'Sem Dinheiro Suficiente',
             'Seu saldo atual (' + currentBudget + ') não é suficiente para essa construção.',
             'warning',
-            'Dica: Aumente a população e construa edifícios comerciais para gerar mais receita. Verifique a seção de ajuda para mais informações.',
+            'Dica: Aumente a população e construa edifícios comerciais para gerar mais receita. As aulas (clique no seu nome → Aulas e estudos) explicam como a cidade ganha dinheiro.',
             { whenBusy: 'toast', sound: 'sfx_no_money' }
         );
     }

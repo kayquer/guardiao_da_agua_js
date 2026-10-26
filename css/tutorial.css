@@ -599,6 +599,30 @@
     padding-top: 0.6rem;
 }
 
+/* Texto longo no coach: a linha do grid fica presa ao max-height do cartão, só #tutorial-text rola
+   e cabeçalho, dica e rodapé ficam fixos (o rodapé ficava cortado e não dava para clicar) */
+.tutorial--coach .tut-card {
+    grid-template-rows: minmax(0, 1fr);
+}
+
+.tutorial--coach .tut-body {
+    min-height: 0;
+    overflow: hidden;
+}
+
+.tutorial--coach .tut-header,
+.tutorial--coach .tut-hint,
+.tutorial--coach .tut-footer {
+    flex-shrink: 0;
+}
+
+.tutorial--coach .tut-text {
+    flex: 1 1 auto;
+    min-height: 3em;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
 .tutorial--coach .tut-btn {
     min-height: 40px;
     padding: 0.5rem 1rem;
@@ -722,7 +746,7 @@
 
     .tutorial--coach .tut-card {
         grid-template-columns: 72px minmax(0, 1fr);
-        grid-template-rows: none;
+        grid-template-rows: minmax(0, 1fr);
         width: 100%;
         max-height: 50vh;
         border-radius: 16px;
@@ -776,6 +800,7 @@
     }
 
     .tutorial--coach .tut-card {
+        grid-template-rows: minmax(0, 1fr);
         max-height: 70vh;
         width: min(560px, 100%);
     }
