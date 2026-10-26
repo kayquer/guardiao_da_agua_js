@@ -53,7 +53,7 @@ class StreamTrack {
         const voice = { el, fade: fadeMs > 0 ? 0 : 1, target: 1, rate: fadeMs > 0 ? 1000 / fadeMs : Infinity, next: false };
         el.addEventListener('ended', () => this.onVoiceEnded(voice));
         el.addEventListener('error', () => {
-            console.warn(`⚠️ Áudio não carregou: ${file}`);
+            logWarn(`⚠️ Áudio não carregou: ${file}`);
             this.dropVoice(voice);
         });
         this.voices.push(voice);
@@ -176,7 +176,7 @@ class AudioManager {
         this.loadSettings();
         this.initialized = !!window.Audio;
         if (!this.initialized) {
-            console.warn('⚠️ Áudio não suportado neste navegador');
+            logWarn('⚠️ Áudio não suportado neste navegador');
             this.enabled = false;
             return;
         }
@@ -234,7 +234,7 @@ class AudioManager {
                 if (!r.ok) throw new Error(`HTTP ${r.status}`);
                 return r.arrayBuffer();
             });
-            p.catch(err => console.warn(`⚠️ Som não carregou: ${file} (${err.message})`));
+            p.catch(err => logWarn(`⚠️ Som não carregou: ${file} (${err.message})`));
             this.rawFiles.set(file, p);
         }
         return this.rawFiles.get(file);
@@ -252,7 +252,7 @@ class AudioManager {
                     return buffer;
                 })
                 .catch(err => {
-                    console.warn(`⚠️ Som não decodificou: ${file}`, err?.message || err);
+                    logWarn(`⚠️ Som não decodificou: ${file}`, err?.message || err);
                     return null;
                 });
             this.decoding.set(file, p);
@@ -267,7 +267,7 @@ class AudioManager {
             // O que já foi baixado decodifica agora
             this.rawFiles.forEach((p, file) => this.decodeFile(file));
         } catch (error) {
-            console.warn('⚠️ Web Audio indisponível, usando HTMLAudio', error);
+            logWarn('⚠️ Web Audio indisponível, usando HTMLAudio', error);
         }
         return this.audioContext;
     }
@@ -430,7 +430,7 @@ class AudioManager {
         const k = this.resolve(key);
         const entry = this.manifest[k];
         if (!entry || entry.kind !== 'music') {
-            console.warn(`⚠️ Música não encontrada: ${key}`);
+            logWarn(`⚠️ Música não encontrada: ${key}`);
             return;
         }
         this.musicMultiplier = volumeMultiplier ?? 1;
@@ -594,7 +594,7 @@ class AudioManager {
         try {
             localStorage.setItem('guardiao_agua_audio', JSON.stringify(settings));
         } catch (error) {
-            console.warn('⚠️ Não deu para salvar o volume:', error);
+            logWarn('⚠️ Não deu para salvar o volume:', error);
         }
     }
 
@@ -611,7 +611,7 @@ class AudioManager {
             this.sfxVolume = num(s.sfxVolume, this.sfxVolume);
             this.ambientVolume = num(s.ambientVolume, this.ambientVolume);
         } catch (error) {
-            console.warn('⚠️ Erro ao carregar configurações de áudio:', error);
+            logWarn('⚠️ Erro ao carregar configurações de áudio:', error);
         }
     }
 

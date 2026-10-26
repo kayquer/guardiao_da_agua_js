@@ -135,3 +135,110 @@ test('câmera: "para a direita" anda para a direita de quem olha, com a câmera 
     expect(initial.edge.dz).toBeCloseTo(Math.SQRT1_2, 5);
     expect(problems).toEqual([]);
 });
+
+// Câmera: limites iguais nos 4 lados do mapa (centrado em 0) e girar muitas voltas não quebra a câmera.
+// Antes os limites eram -20..60 (parava antes da borda em dois lados) e o ângulo passava do limite da
+// validação depois de ~1,5 volta: a "recuperação" punha alpha = Infinity e o circuit breaker parava o render.
+test('câmera: chega à borda nos 4 lados e gira várias voltas sem travar', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'mouse');
+    const problems = watchErrors(page);
+    await playing(page);
+    const edges = await page.evaluate(() => {
+        const c = window.gameManager.cameraControls;
+        const half = GAME_CONFIG.grid.size * GAME_CONFIG.grid.cellSize / 2;
+        return [[-1, 0], [1, 0], [0, -1], [0, 1]].map(([x, z]) => {
+            c.targetPosition.set(x * 1000, 0, z * 1000);
+            c.enforceTargetBounds();
+            return { reach: Math.abs(x ? c.targetPosition.x : c.targetPosition.z), half };
+        });
+    });
+    for (const e of edges) expect(e.reach).toBeGreaterThanOrEqual(e.half);
+    expect(new Set(edges.map(e => e.reach)).size).toBe(1); // mesma folga nos 4 lados
+
+    // Botão do meio arrastando para o lado, muitas vezes (≈ 6 voltas)
+    const box = await page.locator('#game-canvas').boundingBox();
+    const y = box.y + box.height / 2;
+    await page.mouse.move(box.x + 100, y);
+    await page.mouse.down({ button: 'middle' });
+    for (let i = 0; i < 12; i++) {
+        await page.mouse.move(box.x + box.width - 100, y, { steps: 4 });
+        await page.mouse.move(box.x + 100, y, { steps: 1 });
+    }
+    await page.mouse.up({ button: 'middle' });
+    await page.evaluate(() => { const c = window.gameManager.cameraControls; c.targetAlpha += 40; });
+    await page.waitForTimeout(800);
+    const state = await page.evaluate(() => {
+        const gm = window.gameManager;
+        return {
+            alpha: gm.camera.alpha, target: gm.cameraControls.targetAlpha,
+            sameCamera: gm.cameraControls.camera === gm.camera,
+            breaker: gm.renderState.circuitBreakerActive, corruptions: gm.renderState.corruptionCount,
+            valid: gm.validateCameraStateWithBreaker()
+        };
+    });
+    expect(Number.isFinite(state.alpha)).toBe(true);
+    expect(Math.abs(state.target)).toBeLessThanOrEqual(Math.PI + 1e-9);
+    expect(state).toMatchObject({ sameCamera: true, breaker: false, corruptions: 0, valid: true });
+    expect(problems).toEqual([]);
+});
+
+test('velocidade: um botão só abre o menu 1x/2x/3x; escolher muda o jogo e fecha; Esc e clique fora fecham', async ({ page }, testInfo) => {
+    const problems = watchErrors(page);
+    await playing(page);
+    if (testInfo.project.name === 'mobile') {
+        await page.evaluate(() => document.querySelector('.control-buttons').classList.add('mobile-visible'));
+    }
+    await expect(page.locator('.speed-btn')).toHaveCount(1);
+    const btn = page.locator('#btn-speed');
+    const menu = page.locator('#speed-menu');
+    await expect(btn).toContainText('1x');
+    await expect(menu).toBeHidden();
+
+    await btn.click();
+    await expect(menu).toBeVisible();
+    await expect(btn).toHaveAttribute('aria-expanded', 'true');
+    await menu.locator('[data-speed="3"]').click();
+    await expect(menu).toBeHidden();
+    await expect(btn).toContainText('3x');
+    expect(await page.evaluate(() => window.gameManager.timeScale)).toBe(3);
+    await expect(menu.locator('[data-speed="3"]')).toHaveAttribute('aria-checked', 'true');
+
+    await btn.click();
+    await expect(menu).toBeVisible();
+    // fora do menu (no canvas o clique poderia abrir o painel do terreno por cima do botão)
+    await page.evaluate(() => document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })));
+    await expect(menu).toBeHidden();
+
+    if (testInfo.project.name !== 'mobile') {
+        await btn.click();
+        await page.keyboard.press('Escape');
+        await expect(menu).toBeHidden();
+        expect(await page.evaluate(() => window.gameManager.getGameState())).toBe('playing'); // Esc não pausou
+    }
+    expect(problems).toEqual([]);
+});
+
+test('estudo aprovado: o livro espera o clique e "Ver o prédio liberado" fecha e abre o prédio', async ({ page }) => {
+    const problems = watchErrors(page);
+    await playing(page);
+    await page.waitForFunction(() => window.gameManager.studySystem.contentLoaded);
+    await page.evaluate(() => {
+        const gm = window.gameManager;
+        gm.uiManager.openStudyBook('monitoring_station');
+        const ss = gm.studySystem;
+        ss.currentPage = ss.getStudyContent(ss.currentStudy).pages.length - 1;
+        gm.uiManager.showStudyBookInterface(ss.getStudyContent(ss.currentStudy));
+        ss.getQuiz().questions.forEach((q, i) => ss.submitQuizAnswer(q.id ?? i, q.correctAnswer));
+    });
+    await page.locator('#study-book-overlay .complete-btn').click();
+    await expect(page.locator('.quiz-results.quiz-passed')).toBeVisible();
+    const finish = page.locator('#study-book-overlay .study-finish-btn');
+    await expect(finish).toBeVisible();
+    await page.waitForTimeout(3000); // não fecha sozinho (era um temporizador de 2,5 s)
+    await expect(page.locator('#study-book-overlay')).toBeVisible();
+    await finish.click();
+    await expect(page.locator('#study-book-overlay')).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => window.gameManager.uiManager.isBuildModalOpen())).toBe(true);
+    expect(await page.evaluate(() => window.gameManager.studySystem.isBuildingUnlocked('monitoring_station'))).toBe(true);
+    expect(problems).toEqual([]);
+});

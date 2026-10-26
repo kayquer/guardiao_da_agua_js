@@ -1,0 +1,102 @@
+/* Velocidade do jogo: um botão (#btn-speed, mesmo visual dos .control-btn) que abre #speed-menu
+   com 1x/2x/3x (UIManager.setupSpeedMenu). Rosa quando o jogo está acelerado. */
+.speed-control {
+    position: relative;
+}
+
+#btn-speed {
+    flex-direction: column;
+    gap: 0;
+    line-height: 1;
+    font-family: 'Lilita One', cursive;
+    font-weight: 400;
+    font-size: 1.1rem;
+}
+
+/* Rosa só se acelerado; em 1x fica verde como os outros (sem o pulso) */
+#btn-speed:not(.active) {
+    animation: none;
+}
+
+#btn-speed .speed-caret {
+    font-size: 0.7rem;
+    opacity: 0.85;
+    margin-top: 1px;
+}
+
+.speed-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 150px;
+    padding: 6px;
+    background: #FFFFFF;
+    border: 3px solid #00D4FF;
+    border-radius: 14px;
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25), 0 10px 24px rgba(0, 0, 0, 0.25);
+    animation: speed-menu-in 0.15s ease-out;
+}
+
+.speed-menu[hidden] {
+    display: none;
+}
+
+.speed-option {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #2D3561;
+    font: inherit;
+    font-size: 0.9rem;
+    text-align: left;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.speed-option b {
+    font-family: 'Lilita One', cursive;
+    font-weight: 400;
+    font-size: 1.05rem;
+    min-width: 1.8em;
+}
+
+.speed-option:hover,
+.speed-option:focus-visible {
+    background: #E0F7FF;
+    outline: none;
+}
+
+.speed-option.active {
+    background: linear-gradient(145deg, #00FF88, #00D4AA);
+    color: #FFFFFF;
+}
+
+.speed-option.active::after {
+    content: '✓';
+    margin-left: auto;
+}
+
+@keyframes speed-menu-in {
+    from { opacity: 0; transform: translate(-50%, -6px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .speed-menu { animation: none; }
+}
+
+/* Mobile: a faixa .control-buttons esconde o que transborda enquanto está fechada; aberta, o menu precisa sair dela */
+@media (max-width: 768px) {
+    .control-buttons.mobile-visible {
+        overflow: visible;
+    }
+}

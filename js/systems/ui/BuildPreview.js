@@ -33,7 +33,7 @@ class BuildPreview {
         try {
             this.engine = new BABYLON.Engine(this.canvas, true, { preserveDrawingBuffer: false, stencil: false, powerPreference: 'low-power' }, true);
         } catch (error) {
-            console.warn('⚠️ Prévia 3D indisponível:', error?.message || error);
+            logWarn('⚠️ Prévia 3D indisponível:', error?.message || error);
             this.engine = null;
             return false;
         }
@@ -93,7 +93,7 @@ class BuildPreview {
             this.frame(node, typeId);
             return true;
         } catch (error) {
-            console.warn(`⚠️ Prévia 3D de ${typeId} indisponível:`, error?.message || error);
+            logWarn(`⚠️ Prévia 3D de ${typeId} indisponível:`, error?.message || error);
             if (token === this.token) this.clear();
             return false;
         }

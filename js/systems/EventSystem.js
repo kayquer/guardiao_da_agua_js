@@ -564,7 +564,7 @@ class EventSystem {
         }
         
         if (!forced && this.hasActiveEventOfType(eventTypeId)) {
-            console.warn(`⚠️ Evento já ativo: ${eventTypeId}`);
+            logWarn(`⚠️ Evento já ativo: ${eventTypeId}`);
             return null;
         }
         

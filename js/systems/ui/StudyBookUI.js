@@ -13,14 +13,14 @@ mixin(UIManager, {
 
         // Check if content is still loading
         if (!this.gameManager.studySystem.contentLoaded) {
-            console.warn('⏳ Conteúdo educacional ainda carregando...');
+            logWarn('⏳ Conteúdo educacional ainda carregando...');
             this.showNotification('⏳ Aguarde, carregando conteúdo educacional...', 'warning');
             return;
         }
 
         const studyContent = this.gameManager.studySystem.getStudyContent(buildingId);
         if (!studyContent) {
-            console.warn(`⚠️ No study content for building: ${buildingId}`);
+            logWarn(`⚠️ No study content for building: ${buildingId}`);
             this.showNotification('⚠️ Conteúdo educacional não disponível para este edifício', 'warning');
             return;
         }
@@ -308,12 +308,10 @@ mixin(UIManager, {
             AudioManager.playSound('sfx_quiz_right');
             setTimeout(() => AudioManager.onStudyUnlock(), 700);
 
-            // Close book after a delay to show results
-            setTimeout(() => {
-                this.closeStudyBook();
-                this.loadBuildingItemsWithStateManagement();
-                this.openStudiedBuilding(buildingId);
-            }, 2500);
+            // O livro fica aberto com o resultado até o aluno clicar: antes um temporizador de 2,5 s o fechava
+            // sozinho e o "Concluir Estudo" continuava na tela sem fazer nada (o estudo já estava concluído)
+            this.loadBuildingItemsWithStateManagement();
+            this.showStudyFinishButton(buildingId);
 
         } else {
             // No quiz - complete study directly
@@ -328,6 +326,24 @@ mixin(UIManager, {
             this.loadBuildingItemsWithStateManagement();
             this.openStudiedBuilding(buildingId);
         }
+    },
+
+    /** Aprovado: a navegação vira um botão só, que fecha o livro e abre o prédio liberado. */
+    showStudyFinishButton(buildingId) {
+        this.passedStudyId = buildingId;
+        const nav = document.querySelector('#study-book-overlay .book-navigation');
+        if (!nav) return;
+        nav.innerHTML = `<button class="nav-btn complete-btn study-finish-btn" onclick="window.gameManager.uiManager.finishPassedStudy()">
+                ${uiIcon('status-done')} Ver o prédio liberado ▶
+            </button>`;
+        nav.querySelector('.study-finish-btn')?.focus({ preventScroll: true });
+    },
+
+    finishPassedStudy() {
+        const buildingId = this.passedStudyId;
+        if (!buildingId) return;
+        this.closeStudyBook();
+        this.openStudiedBuilding(buildingId);
     },
 
     showQuizResults(passed, score, passingScore) {

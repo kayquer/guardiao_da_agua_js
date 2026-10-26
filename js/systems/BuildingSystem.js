@@ -274,7 +274,7 @@ class BuildingSystem {
     canPlaceBuilding(gridX, gridZ, buildingTypeId, { quiet = false } = {}) {
         const buildingType = this.buildingTypes.get(buildingTypeId);
         if (!buildingType) {
-            if (!quiet) console.warn(`❌ Tipo de edifício inválido: ${buildingTypeId}`);
+            if (!quiet) logWarn(`❌ Tipo de edifício inválido: ${buildingTypeId}`);
             return { canPlace: false, reason: 'Tipo de edifício inválido' };
         }
 
@@ -291,13 +291,13 @@ class BuildingSystem {
             buildingType.requirements.terrain.includes('water')) {
             // Validação especial para edifícios que podem ser construídos na água
             if (!this.canPlaceBuildingOnWater(gridX, gridZ, buildingType.size)) {
-                if (!quiet) console.warn(`❌ Área ocupada ou fora dos limites em (${gridX}, ${gridZ})`);
+                if (!quiet) logWarn(`❌ Área ocupada ou fora dos limites em (${gridX}, ${gridZ})`);
                 return { canPlace: false, reason: 'Área ocupada ou fora dos limites' };
             }
         } else {
             // Validação normal para outros edifícios
             if (!this.gridManager.canPlaceBuilding(gridX, gridZ, buildingType.size)) {
-                if (!quiet) console.warn(`❌ Área ocupada ou fora dos limites em (${gridX}, ${gridZ})`);
+                if (!quiet) logWarn(`❌ Área ocupada ou fora dos limites em (${gridX}, ${gridZ})`);
                 return { canPlace: false, reason: 'Área ocupada ou fora dos limites' };
             }
         }
@@ -346,7 +346,7 @@ class BuildingSystem {
 
             if (buildingType.requirements.nearWater) {
                 if (!this.isNearWater(gridX, gridZ, buildingType.size)) {
-                    if (!quiet) console.warn(`❌ Deve estar próximo à água em (${gridX}, ${gridZ})`);
+                    if (!quiet) logWarn(`❌ Deve estar próximo à água em (${gridX}, ${gridZ})`);
                     return {
                         canPlace: false,
                         reason: `${buildingType.name} deve estar próximo à água`,
@@ -386,7 +386,7 @@ class BuildingSystem {
         const canPlace = this.canPlaceBuilding(gridX, gridZ, buildingTypeId);
         if (!canPlace.canPlace) {
             this.showNotification(canPlace.reason, 'error');
-            console.warn(`⚠️ Não é possível construir: ${canPlace.reason}`);
+            logWarn(`⚠️ Não é possível construir: ${canPlace.reason}`);
             return null;
         }
 
@@ -402,7 +402,7 @@ class BuildingSystem {
         if (window.gameManager && gameManager.resourceManager) {
             if (!gameManager.resourceManager.canAfford(actualCost)) {
                 this.showNotification(`Orçamento insuficiente! Custo: R$ ${actualCost.toLocaleString()}`, 'error');
-                console.warn(`⚠️ Orçamento insuficiente: R$ ${actualCost} (original: R$ ${buildingType.cost}, disponível: R$ ${gameManager.resourceManager.resources.budget.current})`);
+                logWarn(`⚠️ Orçamento insuficiente: R$ ${actualCost} (original: R$ ${buildingType.cost}, disponível: R$ ${gameManager.resourceManager.resources.budget.current})`);
                 return null;
             }
         }
@@ -416,7 +416,7 @@ class BuildingSystem {
 
             if (this.constructionQueue.size >= this.maxSimultaneousConstructions) {
                 this.showNotification(`⚠️ Máximo de ${this.maxSimultaneousConstructions} construções simultâneas atingido`, 'warning');
-                console.warn(`⚠️ Máximo de ${this.maxSimultaneousConstructions} construções simultâneas atingido - aguarde a conclusão de uma construção`);
+                logWarn(`⚠️ Máximo de ${this.maxSimultaneousConstructions} construções simultâneas atingido - aguarde a conclusão de uma construção`);
                 return null;
             }
         }
@@ -645,7 +645,7 @@ class BuildingSystem {
 
         // Verificar se a fila não está crescendo indefinidamente
         if (this.disposalQueue.length > 100) {
-            console.warn(`⚠️ Fila de disposal muito grande (${this.disposalQueue.length} itens), limpando...`);
+            logWarn(`⚠️ Fila de disposal muito grande (${this.disposalQueue.length} itens), limpando...`);
             // Processar todos os itens imediatamente para evitar memory leak
             while (this.disposalQueue.length > 0) {
                 const item = this.disposalQueue.shift();
@@ -714,7 +714,7 @@ class BuildingSystem {
                         shadowTexture.dispose();
                     }
                 } catch (error) {
-                    console.warn(`⚠️ Erro ao remover textura ${shadowTexKey}:`, error);
+                    logWarn(`⚠️ Erro ao remover textura ${shadowTexKey}:`, error);
                 }
                 this.dynamicTextures.delete(shadowTexKey);
             }
@@ -728,7 +728,7 @@ class BuildingSystem {
             }
 
         } catch (error) {
-            console.warn(`⚠️ Erro durante disposal de ${item.meshName}:`, error);
+            logWarn(`⚠️ Erro durante disposal de ${item.meshName}:`, error);
         }
     }
 
@@ -1075,14 +1075,14 @@ class BuildingSystem {
             try {
                 this.updateZoneGrowth();
             } catch (error) {
-                console.warn('⚠️ Erro ao atualizar o crescimento das zonas:', error);
+                logWarn('⚠️ Erro ao atualizar o crescimento das zonas:', error);
             }
 
             // Árvores plantadas crescem em 4 etapas pelo tempo de jogo (TreeGrowth.js)
             try {
                 this.updateTreeGrowth?.();
             } catch (error) {
-                console.warn('⚠️ Erro ao atualizar o crescimento das árvores plantadas:', error);
+                logWarn('⚠️ Erro ao atualizar o crescimento das árvores plantadas:', error);
             }
 
             // Validação periódica do estado de construção (a cada 5 segundos)
@@ -1224,7 +1224,7 @@ class BuildingSystem {
         for (const [buildingId, buildingData] of this.constructionQueue) {
             const constructionAge = currentTime - buildingData.constructionStartTime;
             if (constructionAge > this.constructionTimeout) {
-                console.warn(`⚠️ Construção ${buildingId} excedeu timeout (${constructionAge}ms) - forçando conclusão`);
+                logWarn(`⚠️ Construção ${buildingId} excedeu timeout (${constructionAge}ms) - forçando conclusão`);
                 this.completeConstruction(buildingData);
             }
         }
@@ -1491,7 +1491,7 @@ class BuildingSystem {
             try {
                 if (this.restoreBuilding(saved)) restored++;
             } catch (error) {
-                console.warn(`⚠️ Prédio do save ignorado (${saved?.type} em ${saved?.gridX},${saved?.gridZ}):`, error);
+                logWarn(`⚠️ Prédio do save ignorado (${saved?.type} em ${saved?.gridX},${saved?.gridZ}):`, error);
             }
             const number = Number(String(saved?.id || '').replace('building_', ''));
             if (Number.isInteger(number)) highestId = Math.max(highestId, number);
@@ -1509,13 +1509,13 @@ class BuildingSystem {
     restoreBuilding(saved) {
         const buildingType = this.buildingTypes.get(saved?.type);
         if (!buildingType) {
-            console.warn(`⚠️ Tipo de prédio desconhecido no save: ${saved?.type}`);
+            logWarn(`⚠️ Tipo de prédio desconhecido no save: ${saved?.type}`);
             return null;
         }
         const { gridX, gridZ } = saved;
         const size = buildingType.size || 1;
         if (!Number.isInteger(gridX) || !Number.isInteger(gridZ) || !this.isPlacementWithinBounds(gridX, gridZ, size)) {
-            console.warn(`⚠️ Posição inválida no save: ${saved.type} em (${gridX}, ${gridZ})`);
+            logWarn(`⚠️ Posição inválida no save: ${saved.type} em (${gridX}, ${gridZ})`);
             return null;
         }
         if (this.buildings.has(saved.id)) return null;
@@ -1989,14 +1989,14 @@ class BuildingSystem {
 
         // Verificar se está dentro dos limites do grid
         if (!this.isPlacementWithinBounds(gridX, gridZ, buildingType.size)) {
-            console.warn(`⚠️ Construção fora dos limites do grid: (${gridX}, ${gridZ}) com tamanho ${buildingType.size}`);
+            logWarn(`⚠️ Construção fora dos limites do grid: (${gridX}, ${gridZ}) com tamanho ${buildingType.size}`);
             return false;
         }
 
         // Verificar se pode construir usando o método correto
         const canPlaceResult = this.canPlaceBuilding(gridX, gridZ, this.selectedBuildingType);
         if (!canPlaceResult.canPlace) {
-            console.warn(`⚠️ Não é possível construir: ${canPlaceResult.reason}`);
+            logWarn(`⚠️ Não é possível construir: ${canPlaceResult.reason}`);
             return false;
         }
 
@@ -2044,7 +2044,7 @@ class BuildingSystem {
                     material.dispose();
                 }
             } catch (error) {
-                console.warn('⚠️ Erro ao dispor material:', error);
+                logWarn('⚠️ Erro ao dispor material:', error);
             }
         });
         this.materials.clear();
@@ -2056,7 +2056,7 @@ class BuildingSystem {
                     texture.dispose();
                 }
             } catch (error) {
-                console.warn('⚠️ Erro ao dispor textura:', error);
+                logWarn('⚠️ Erro ao dispor textura:', error);
             }
         });
         this.dynamicTextures.clear();
@@ -2068,7 +2068,7 @@ class BuildingSystem {
                     shadow.dispose();
                 }
             } catch (error) {
-                console.warn('⚠️ Erro ao dispor sombra:', error);
+                logWarn('⚠️ Erro ao dispor sombra:', error);
             }
         });
         this.shadowMeshes.clear();
@@ -2080,7 +2080,7 @@ class BuildingSystem {
                     connection.dispose();
                 }
             } catch (error) {
-                console.warn('⚠️ Erro ao dispor conexão:', error);
+                logWarn('⚠️ Erro ao dispor conexão:', error);
             }
         });
         this.connectionMeshes.clear();
@@ -2384,13 +2384,13 @@ class BuildingSystem {
     toggleBuildingRental(buildingId) {
         const building = this.buildings.get(buildingId);
         if (!building) {
-            console.warn(`⚠️ Edifício não encontrado: ${buildingId}`);
+            logWarn(`⚠️ Edifício não encontrado: ${buildingId}`);
             return false;
         }
 
         // Verificar se o edifício pode ser alugado (água ou energia)
         if (!building.config.waterProduction && !building.config.powerGeneration) {
-            console.warn(`⚠️ Edifício ${building.config.name} não pode ser alugado`);
+            logWarn(`⚠️ Edifício ${building.config.name} não pode ser alugado`);
             return false;
         }
 
@@ -2530,7 +2530,7 @@ class BuildingSystem {
             buildingData.constructionMaterial = constructionMaterial;
 
         } catch (error) {
-            console.warn('⚠️ Erro ao aplicar material de construção:', error);
+            logWarn('⚠️ Erro ao aplicar material de construção:', error);
         }
     }
 
@@ -2568,7 +2568,7 @@ class BuildingSystem {
             }
 
         } catch (error) {
-            console.warn('⚠️ Erro ao criar partículas de construção:', error);
+            logWarn('⚠️ Erro ao criar partículas de construção:', error);
         }
     }
 
@@ -2646,7 +2646,7 @@ class BuildingSystem {
             animateConstruction();
 
         } catch (error) {
-            console.warn('⚠️ Erro ao iniciar animação de construção:', error);
+            logWarn('⚠️ Erro ao iniciar animação de construção:', error);
         }
     }
 
@@ -2701,7 +2701,7 @@ class BuildingSystem {
             }
 
         } catch (error) {
-            console.warn('⚠️ Erro ao remover efeitos de construção:', error);
+            logWarn('⚠️ Erro ao remover efeitos de construção:', error);
         }
     }
 
@@ -2744,7 +2744,7 @@ class BuildingSystem {
             }
 
         } catch (error) {
-            console.warn('⚠️ Erro ao reproduzir áudio de progresso:', error);
+            logWarn('⚠️ Erro ao reproduzir áudio de progresso:', error);
         }
     }
 

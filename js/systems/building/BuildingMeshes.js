@@ -1035,7 +1035,7 @@ mixin(BuildingSystem, {
             try {
                 this.addPixelatedTexture(material, buildingType);
             } catch (error) {
-                console.warn('⚠️ Não foi possível criar textura pixelada para', buildingType.id);
+                logWarn('⚠️ Não foi possível criar textura pixelada para', buildingType.id);
             }
 
             this.materials.set(materialName, material);
@@ -1110,7 +1110,7 @@ mixin(BuildingSystem, {
                     return null;
             }
         } catch (error) {
-            console.warn(`⚠️ Erro ao criar mesh especializado para ${type}:`, error);
+            logWarn(`⚠️ Erro ao criar mesh especializado para ${type}:`, error);
             return null;
         }
     },

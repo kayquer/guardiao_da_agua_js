@@ -22,9 +22,8 @@ class UIManager {
 
             // Controles
             pauseBtn: document.getElementById('btn-pause'),
-            speed1xBtn: document.getElementById('btn-speed-1x'),
-            speed2xBtn: document.getElementById('btn-speed-2x'),
-            speed3xBtn: document.getElementById('btn-speed-3x'),
+            speedBtn: document.getElementById('btn-speed'),
+            speedMenu: document.getElementById('speed-menu'),
             helpBtn: document.getElementById('btn-help'),
             menuBtn: document.getElementById('btn-menu'),
             missionBtn: document.getElementById('btn-missions'),
@@ -126,7 +125,7 @@ class UIManager {
 
         // Verificar se elementos existem
         if (!this.elements.waterAmount) {
-            console.warn('⚠️ Elementos da UI não encontrados - modo de teste');
+            logWarn('⚠️ Elementos da UI não encontrados - modo de teste');
             return;
         }
 
@@ -198,15 +197,13 @@ class UIManager {
     setupEventListeners() {
         // Verificar se elementos existem antes de adicionar listeners
         if (!this.elements.pauseBtn) {
-            console.warn('⚠️ Elementos da UI não encontrados - modo de teste');
+            logWarn('⚠️ Elementos da UI não encontrados - modo de teste');
             return;
         }
 
         // Controles de velocidade
         this.elements.pauseBtn?.addEventListener('click', () => this.togglePause());
-        this.elements.speed1xBtn?.addEventListener('click', () => this.setGameSpeed(1));
-        this.elements.speed2xBtn?.addEventListener('click', () => this.setGameSpeed(2));
-        this.elements.speed3xBtn?.addEventListener('click', () => this.setGameSpeed(3));
+        this.setupSpeedMenu();
         
         // Menu
         this.elements.menuBtn?.addEventListener('click', () => this.togglePause());
@@ -755,7 +752,7 @@ class UIManager {
                 if (timeEl.textContent !== time) timeEl.textContent = time;
                 if (dateEl.textContent !== date) dateEl.textContent = date;
             } catch (error) {
-                console.warn('⚠️ Erro ao atualizar relógio:', error);
+                logWarn('⚠️ Erro ao atualizar relógio:', error);
                 this.elements.gameClock.textContent = '00/00/0000 00:00';
             }
         }
@@ -927,7 +924,7 @@ class UIManager {
                         const item = this.createBuildingItem(buildingType);
                         this.elements.buildingItems.appendChild(item);
                     } catch (error) {
-                        console.warn(`⚠️ Error creating building item for ${buildingType.id}:`, error);
+                        logWarn(`⚠️ Error creating building item for ${buildingType.id}:`, error);
                     }
                 });
             });
@@ -1180,7 +1177,7 @@ class UIManager {
             // Use existing method but with enhanced error handling
             this.showBuildingRequirements(buildingType);
         } catch (error) {
-            console.warn('⚠️ Error showing building requirements:', error);
+            logWarn('⚠️ Error showing building requirements:', error);
             // Fallback to basic display
             this.showBasicBuildingInfo(buildingType);
         }
@@ -1229,17 +1226,57 @@ class UIManager {
         this.updateTimeScaleUI(speed);
         AudioManager.playSound('sfx_click');
     }
-    
-    updateTimeScaleUI(speed) {
-        // Atualizar botões de velocidade (só eles: missões/aulas têm o próprio estado ativo)
-        document.querySelectorAll('.speed-btn').forEach(btn => {
-            btn.classList.remove('active');
+
+    /** Um botão só (#btn-speed) com a velocidade atual; o clique abre #speed-menu com 1x/2x/3x. Fecha ao escolher,
+     *  ao clicar fora e no Esc (GameManager chama closeSpeedMenu antes de pensar em pausar). */
+    setupSpeedMenu() {
+        const { speedBtn, speedMenu } = this.elements;
+        if (!speedBtn || !speedMenu) return;
+        speedBtn.addEventListener('click', event => {
+            event.stopPropagation();
+            if (speedMenu.hidden) this.openSpeedMenu();
+            else this.closeSpeedMenu();
         });
-        
-        const activeBtn = document.getElementById(`btn-speed-${speed}x`);
-        if (activeBtn) {
-            activeBtn.classList.add('active');
-        }
+        speedMenu.addEventListener('click', event => {
+            const option = event.target.closest('.speed-option');
+            if (!option) return;
+            event.stopPropagation();
+            this.setGameSpeed(Number(option.dataset.speed));
+            this.closeSpeedMenu({ focus: true });
+        });
+        document.addEventListener('pointerdown', event => {
+            if (!speedMenu.hidden && !event.target.closest('#speed-control')) this.closeSpeedMenu();
+        });
+    }
+
+    openSpeedMenu() {
+        const { speedBtn, speedMenu } = this.elements;
+        if (!speedMenu) return;
+        speedMenu.hidden = false;
+        speedBtn.setAttribute('aria-expanded', 'true');
+        (speedMenu.querySelector('.speed-option.active') || speedMenu.querySelector('.speed-option'))?.focus({ preventScroll: true });
+    }
+
+    /** Fecha o menu de velocidade; devolve true se ele estava aberto (o Esc para por aqui). */
+    closeSpeedMenu({ focus = false } = {}) {
+        const { speedBtn, speedMenu } = this.elements;
+        if (!speedMenu || speedMenu.hidden) return false;
+        speedMenu.hidden = true;
+        speedBtn.setAttribute('aria-expanded', 'false');
+        if (focus) speedBtn.focus({ preventScroll: true });
+        return true;
+    }
+
+    updateTimeScaleUI(speed) {
+        const current = document.getElementById('speed-current');
+        if (current) current.textContent = `${speed}x`;
+        this.elements.speedBtn?.setAttribute('aria-label', `Velocidade do jogo: ${speed}x`);
+        this.elements.speedBtn?.classList.toggle('active', speed !== 1);
+        document.querySelectorAll('#speed-menu .speed-option').forEach(option => {
+            const on = Number(option.dataset.speed) === speed;
+            option.classList.toggle('active', on);
+            option.setAttribute('aria-checked', String(on));
+        });
     }
     
     // ===== OVERLAYS =====
@@ -1866,7 +1903,7 @@ class UIManager {
 
         // ===== ZERO-ERROR POLICY FIX: Validar config antes de usar =====
         if (!building.config) {
-            console.warn('⚠️ Tentativa de mostrar informações para edifício sem configuração:', building);
+            logWarn('⚠️ Tentativa de mostrar informações para edifício sem configuração:', building);
             return;
         }
 
@@ -2295,7 +2332,7 @@ class UIManager {
             }
 
         } catch (error) {
-            console.warn('⚠️ Error updating building placement feedback:', error);
+            logWarn('⚠️ Error updating building placement feedback:', error);
         }
     }
 
@@ -2349,7 +2386,7 @@ class UIManager {
             }
 
         } catch (error) {
-            console.warn('⚠️ Error handling mission objective click:', error);
+            logWarn('⚠️ Error handling mission objective click:', error);
         }
     }
 
@@ -2510,7 +2547,7 @@ class UIManager {
             log(`🌍 Terrain info displayed: ${terrain.name} at (${gridX}, ${gridZ})`);
 
         } catch (error) {
-            console.warn('⚠️ Error showing terrain info:', error);
+            logWarn('⚠️ Error showing terrain info:', error);
         }
     }
 
@@ -2536,7 +2573,7 @@ class UIManager {
             log('🌍 Terrain info hidden');
 
         } catch (error) {
-            console.warn('⚠️ Error hiding terrain info:', error);
+            logWarn('⚠️ Error hiding terrain info:', error);
         }
     }
 
@@ -2544,6 +2581,7 @@ class UIManager {
 
     closeStudyBook() {
         stopSpeaking();
+        this.passedStudyId = null;
         const bookOverlay = document.getElementById('study-book-overlay');
         if (bookOverlay) {
             bookOverlay.classList.remove('active');

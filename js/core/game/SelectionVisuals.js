@@ -7,7 +7,7 @@ mixin(GameManager, {
     /** sound: clique do jogador → um som só (o característico do prédio pronto, ou uma ferramenta numa obra) */
     selectBuilding(building, { sound = false } = {}) {
         if (!building || !building.config) {
-            console.warn('⚠️ Tentativa de selecionar edifício inválido');
+            logWarn('⚠️ Tentativa de selecionar edifício inválido');
             return;
         }
         if (sound && typeof AudioManager !== 'undefined') {
@@ -55,7 +55,7 @@ mixin(GameManager, {
 
     addSelectionIndicator(building) {
         if (!building.mesh || !building.config) {
-            console.warn('⚠️ Tentativa de adicionar indicador inválido');
+            logWarn('⚠️ Tentativa de adicionar indicador inválido');
             return;
         }
 
@@ -357,7 +357,7 @@ mixin(GameManager, {
     createPlacementOverlay(buildingType) {
         this.clearPlacementOverlay();
         if (!this.buildingSystem.buildingTypes.get(buildingType)) {
-            console.warn(`⚠️ Building type not found: ${buildingType}`);
+            logWarn(`⚠️ Building type not found: ${buildingType}`);
             return;
         }
         const gm = this.gridManager;

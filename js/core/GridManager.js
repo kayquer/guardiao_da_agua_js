@@ -86,7 +86,7 @@ class GridManager {
         try {
             // Verificar parâmetros
             if (typeof x !== 'number' || typeof z !== 'number') {
-                console.warn('⚠️ Parâmetros inválidos para generateElevation:', x, z);
+                logWarn('⚠️ Parâmetros inválidos para generateElevation:', x, z);
                 return 0;
             }
 
@@ -262,7 +262,7 @@ class GridManager {
         try {
             const positions = this.terrainMesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
             if (!positions) {
-                console.warn('⚠️ Não foi possível obter posições dos vértices');
+                logWarn('⚠️ Não foi possível obter posições dos vértices');
                 return;
             }
 
@@ -855,7 +855,7 @@ class GridManager {
         try {
             this.createMinecraftStyleTexture();
         } catch (error) {
-            console.warn('⚠️ Não foi possível criar textura procedural, usando cor sólida');
+            logWarn('⚠️ Não foi possível criar textura procedural, usando cor sólida');
             this.terrainMaterial.diffuseColor = this.getTerrainColor('dirt');
         }
     }

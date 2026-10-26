@@ -340,7 +340,9 @@ test('bússola clicável: vira a câmera para o norte e, se já estiver no norte
     await page.waitForTimeout(1500);
     await page.click('#compass');
     await expect.poll(async () => near(await north(), 0), { timeout: 8000 }).toBe(true);
-    expect(Math.abs(await page.evaluate(() => window.gameManager.cameraControls.targetAlpha - 7.3))).toBeLessThanOrEqual(Math.PI);
+    // O controle mantém o ângulo numa volta só (−π..π), então compara a diferença de ângulo, não o valor cru
+    const turned = await page.evaluate(() => window.gameManager.cameraControls.targetAlpha - 7.3);
+    expect(Math.abs(Math.atan2(Math.sin(turned), Math.cos(turned)))).toBeLessThanOrEqual(Math.PI);
     await page.waitForTimeout(400); // cooldown do clique
     await page.click('#compass');
     // O alvo já aponta para o sul na hora (α = +π/2); o giro suave é por quadro e no CI (GL por software,

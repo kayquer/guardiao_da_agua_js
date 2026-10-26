@@ -580,6 +580,14 @@ class SimCityCameraControls {
         BABYLON.Vector3.LerpToRef(this.camera.target, this.targetPosition, smoothing, next);
         this.camera.target = next;
 
+        // Mantém o ângulo numa volta só (−π..π): girando sem parar ele acumulava voltas, passava do limite da
+        // validação (CameraGuard) e a "recuperação" quebrava a câmera. Alvo e câmera andam juntos, sem pulo.
+        if (Math.abs(this.targetAlpha) > Math.PI) {
+            const turns = Math.round(this.targetAlpha / (2 * Math.PI)) * 2 * Math.PI;
+            this.targetAlpha -= turns;
+            this.camera.alpha -= turns;
+        }
+
         // Apply smoothing to rotation
         const alphaDiff = this.targetAlpha - this.camera.alpha;
         this.camera.alpha += alphaDiff * smoothing;

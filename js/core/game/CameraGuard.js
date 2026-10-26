@@ -36,7 +36,7 @@ mixin(GameManager, {
             const target = this.camera.getTarget();
             const position = this.camera.position;
             
-            if (!this.validate(alpha, 'number', {absMax: 10}) || !this.validate(beta, 'number', {absMax: 10}) || 
+            if (!this.validate(alpha) || !this.validate(beta, 'number', {absMax: 10}) || 
                 !this.validate(radius) || !this.validate(target, 'vector3') || 
                 !this.validate(position, 'vector3')) {
                 
@@ -120,7 +120,8 @@ mixin(GameManager, {
                 "recoveredCamera", safeAlpha, safeBeta, safeRadius, safeTarget, scene
             );
             
-            newCamera.attachControl(this.canvas, false);
+            // Sem attachControl: quem move a câmera é SimCityCameraControls. Os controles padrão do Babylon com
+            // angularSensibility 0 dividiam o arraste por zero (alpha = Infinity) e travavam a câmera de vez.
             newCamera.lowerRadiusLimit = 10;
             newCamera.upperRadiusLimit = 60;
             newCamera.inertia = 0.9;
@@ -129,6 +130,13 @@ mixin(GameManager, {
             
             this.camera = newCamera;
             scene.activeCamera = newCamera;
+            if (this.cameraControls) {
+                const controls = this.cameraControls;
+                controls.camera = newCamera;
+                controls.targetPosition = safeTarget.clone();
+                controls.targetAlpha = safeAlpha;
+                controls.targetRadius = safeRadius;
+            }
             
             this.isometricAngles = { alpha: safeAlpha, beta: safeBeta };
             
@@ -136,7 +144,7 @@ mixin(GameManager, {
                 try {
                     oldCamera.dispose();
                 } catch (disposeError) {
-                    console.warn('⚠️ Erro ao dispor câmera antiga:', disposeError);
+                    logWarn('⚠️ Erro ao dispor câmera antiga:', disposeError);
                 }
             }
             
@@ -215,7 +223,7 @@ mixin(GameManager, {
         if (!this.camera) return;
 
         if (!this.validateCameraStateWithBreaker()) {
-            console.warn('⚠️ Câmera inválida, pulando frame');
+            logWarn('⚠️ Câmera inválida, pulando frame');
             return;
         }
 
@@ -254,7 +262,7 @@ mixin(GameManager, {
                     this.camera.beta = targetBeta;
                 }
             } else {
-                console.warn('⚠️ Corrigindo ângulos inválidos da câmera');
+                logWarn('⚠️ Corrigindo ângulos inválidos da câmera');
                 this.camera.alpha = targetAlpha;
                 this.camera.beta = targetBeta;
             }

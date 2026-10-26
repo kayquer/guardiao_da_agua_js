@@ -261,7 +261,7 @@ class LoanManager {
             this.cityFinancialHealth.creditScore - 10
         );
         
-        console.warn(`⚠️ Pagamento em atraso para empréstimo ${loan.id}`);
+        logWarn(`⚠️ Pagamento em atraso para empréstimo ${loan.id}`);
         
         if (this.gameManager.uiManager) {
             this.gameManager.uiManager.showNotification(

@@ -39,7 +39,7 @@ mixin(UIManager, {
                 const coords = await PlayerProfile.geocode(profile.city, profile.uf);
                 if (coords) profile = PlayerProfile.update(profile.id, { lat: coords.lat, lon: coords.lon });
             } catch (error) {
-                console.warn('⚠️ Cidade ainda sem localização:', error.message);
+                logWarn('⚠️ Cidade ainda sem localização:', error.message);
             }
         }
         if (!profile || profile.lat == null || profile.lon == null) {
@@ -56,7 +56,7 @@ mixin(UIManager, {
             this.weather = { status: 'ok', data };
             this.gameManager.applyWeather?.(data.current); // chuva, vento, nuvens e sol no mapa 3D
         } catch (error) {
-            console.warn('⚠️ Clima indisponível:', error.message);
+            logWarn('⚠️ Clima indisponível:', error.message);
             // Mantém o último clima bom, se houver
             if (!this.weather?.data) this.weather = { status: 'error' };
         }

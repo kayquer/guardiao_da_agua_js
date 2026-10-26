@@ -68,7 +68,7 @@ const GraphicsQuality = {
         } catch (e) { /* sem localStorage: vale só nesta sessão (detected abaixo) */ }
         this.detected = level;
         this.listeners.slice().forEach(fn => {
-            try { fn(level); } catch (error) { console.warn('GraphicsQuality: erro ao aplicar', error); }
+            try { fn(level); } catch (error) { logWarn('GraphicsQuality: erro ao aplicar', error); }
         });
         return true;
     },

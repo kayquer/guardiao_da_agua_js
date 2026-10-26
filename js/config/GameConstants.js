@@ -7,10 +7,18 @@
  */
 
 // ===== LOG DE DESENVOLVIMENTO =====
-// Abra o jogo com ?debug na URL para ver os logs. console.warn/error aparecem sempre.
+// Por padrão o console só mostra o que é crítico (console.error). Os outros níveis ligam pela URL:
+//   ?log=warn  → também os alertas (logWarn)
+//   ?debug     → tudo: informativos (log), alertas e as ferramentas de debug do console
+// Use log(...) para informação e logWarn(...) para alerta; nunca console.log/console.warn direto.
 const DEBUG = new URLSearchParams(location.search).has('debug');
+const LOG_LEVEL = DEBUG ? 'debug' : (new URLSearchParams(location.search).get('log') || 'error');
+const LOG_WARN = LOG_LEVEL === 'debug' || LOG_LEVEL === 'warn';
 function log(...args) {
     if (DEBUG) console.log(...args);
+}
+function logWarn(...args) {
+    if (LOG_WARN) console.warn(...args);
 }
 
 // ===== CONFIGURAÇÃO DO JOGO (balanceamento) =====

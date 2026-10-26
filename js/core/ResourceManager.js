@@ -152,7 +152,7 @@ class ResourceManager {
         // Garantir que water.current não seja null ou undefined
         if (water.current === null || water.current === undefined || isNaN(water.current)) {
             water.current = GAME_CONFIG.resources.initialWater;
-            console.warn('⚠️ water.current era null/undefined, resetando para valor inicial:', water.current);
+            logWarn('⚠️ water.current era null/undefined, resetando para valor inicial:', water.current);
         }
 
         // Garantir que storage está definido
@@ -1069,7 +1069,7 @@ class ResourceManager {
         if (this.resources[resourceType]) {
             return { ...this.resources[resourceType] };
         }
-        console.warn(`⚠️ Recurso não encontrado: ${resourceType}`);
+        logWarn(`⚠️ Recurso não encontrado: ${resourceType}`);
         return null;
     }
 

@@ -348,7 +348,7 @@ mixin(BuildingSystem, {
             try {
                 textPlate.updateText(`${percentage}%`);
             } catch (error) {
-                console.warn('⚠️ Erro ao atualizar texto de progresso:', error);
+                logWarn('⚠️ Erro ao atualizar texto de progresso:', error);
             }
         }
     },
@@ -499,7 +499,7 @@ mixin(BuildingSystem, {
             animateRing();
 
         } catch (error) {
-            console.warn('⚠️ Erro ao criar celebração de conclusão:', error);
+            logWarn('⚠️ Erro ao criar celebração de conclusão:', error);
         }
     },
     createCompletionText(buildingData, worldPos) {
@@ -574,7 +574,7 @@ mixin(BuildingSystem, {
             animateText();
 
         } catch (error) {
-            console.warn('⚠️ Erro ao criar texto de conclusão:', error);
+            logWarn('⚠️ Erro ao criar texto de conclusão:', error);
         }
     },
 
@@ -744,7 +744,7 @@ mixin(BuildingSystem, {
                 try {
                     this.updateBuildingFx();
                 } catch (error) {
-                    console.warn('⚠️ Erro nos efeitos de obra:', error);
+                    logWarn('⚠️ Erro nos efeitos de obra:', error);
                 }
             });
         }
@@ -791,7 +791,7 @@ mixin(BuildingSystem, {
             this.fxSites.set(buildingData.id, site);
             buildingData.constructionFx = site;
         } catch (error) {
-            console.warn('⚠️ Erro ao criar efeitos de obra:', error);
+            logWarn('⚠️ Erro ao criar efeitos de obra:', error);
         }
     },
 
@@ -940,7 +940,7 @@ mixin(BuildingSystem, {
             glow.isPickable = false;
             this.fxBursts.push({ systems, glow, start: performance.now(), duration: 1800, size: half * 3.4 });
         } catch (error) {
-            console.warn('⚠️ Erro ao criar efeito de conclusão:', error);
+            logWarn('⚠️ Erro ao criar efeito de conclusão:', error);
         }
     },
 
@@ -1080,7 +1080,7 @@ mixin(BuildingSystem, {
             animateCompletion();
 
         } catch (error) {
-            console.warn('⚠️ Erro ao animar conclusão do edifício:', error);
+            logWarn('⚠️ Erro ao animar conclusão do edifício:', error);
         }
     },
 

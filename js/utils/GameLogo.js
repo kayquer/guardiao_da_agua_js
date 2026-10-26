@@ -39,7 +39,7 @@ const GameLogo = {
             else if (this.pending === 'hide') this.hide();
             this.pending = null;
         } catch (e) {
-            console.warn('GameLogo: mantendo o logo estático', e);
+            logWarn('GameLogo: mantendo o logo estático', e);
         }
         return this.svg;
     },

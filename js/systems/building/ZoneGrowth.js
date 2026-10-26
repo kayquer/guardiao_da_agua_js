@@ -678,7 +678,7 @@ mixin(BuildingSystem, {
                     }
                 }
             }).catch(error => {
-                console.warn(`⚠️ Peça de zona indisponível (${file}):`, error?.message || error);
+                logWarn(`⚠️ Peça de zona indisponível (${file}):`, error?.message || error);
             });
         });
     },

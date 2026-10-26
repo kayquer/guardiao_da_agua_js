@@ -393,7 +393,7 @@ async function loadCitiesFor(uf) {
         input.placeholder = 'Comece a digitar e escolha na lista';
         hint.textContent = `${cities.length} cidades em ${BRAZIL_STATES[uf]}`;
     } catch (error) {
-        console.warn('⚠️ Lista de cidades indisponível:', error.message);
+        logWarn('⚠️ Lista de cidades indisponível:', error.message);
         input.placeholder = 'Digite o nome da sua cidade';
         hint.textContent = 'Sem internet para a lista de cidades: digite o nome.';
     }
@@ -437,7 +437,7 @@ async function submitProfileForm(event) {
     try {
         coords = await PlayerProfile.geocode(data.city, data.uf);
     } catch (error) {
-        console.warn('⚠️ Não foi possível localizar a cidade (o clima fica indisponível):', error.message);
+        logWarn('⚠️ Não foi possível localizar a cidade (o clima fica indisponível):', error.message);
     }
     button.disabled = false;
     errorsEl.textContent = '';
@@ -768,7 +768,7 @@ window.addEventListener('error', function(e) {
         if (isCriticalError) {
             showLoadingError(e.error);
         } else {
-            console.warn('⚠️ Non-critical error during initialization:', e.error.message);
+            logWarn('⚠️ Non-critical error during initialization:', e.error.message);
         }
     }
 });

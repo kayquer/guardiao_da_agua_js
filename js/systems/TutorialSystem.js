@@ -612,7 +612,7 @@ class TutorialSystem {
             all[key] = [...new Set([...(all[key] || []), id])];
             localStorage.setItem(TutorialSystem.GUIDES_KEY, JSON.stringify(all));
         } catch (error) {
-            console.warn('⚠️ Não foi possível salvar o guia:', error.message);
+            logWarn('⚠️ Não foi possível salvar o guia:', error.message);
         }
     }
 

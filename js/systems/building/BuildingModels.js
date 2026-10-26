@@ -131,7 +131,7 @@ mixin(BuildingSystem, {
             this.upgradeBuildingsToModel(buildingType.id);
             this.upgradePreviewToModel(buildingType.id);
         }).catch(error => {
-            console.warn(`⚠️ Modelo de ${buildingType.id} indisponível, mantendo o procedural:`, error?.message || error);
+            logWarn(`⚠️ Modelo de ${buildingType.id} indisponível, mantendo o procedural:`, error?.message || error);
         });
     },
 
@@ -171,7 +171,7 @@ mixin(BuildingSystem, {
                 log(`🏠 Modelo carregado: ${file} (${data.vertexData.indices.length / 3} triângulos)`);
                 return data;
             } catch (error) {
-                console.warn(`⚠️ Não foi possível carregar o modelo ${file}; prédios usam o mesh procedural.`, error?.message || error);
+                logWarn(`⚠️ Não foi possível carregar o modelo ${file}; prédios usam o mesh procedural.`, error?.message || error);
                 return null;
             } finally {
                 this.modelLoadsInFlight--;

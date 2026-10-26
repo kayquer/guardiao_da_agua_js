@@ -345,13 +345,16 @@ class GameManager {
                 this
             );
 
-            // Configure camera bounds based on grid size
-            this.cameraControls.setBounds(-20, 60, -20, 60);
+            // Limites a partir do mapa (centrado em 0: vai de -metade a +metade), com a mesma folga nos 4 lados.
+            // Eram fixos em -20..60: de um lado a câmera parava antes da borda, do outro passava 20 dela.
+            const half = (GAME_CONFIG.grid.size * GAME_CONFIG.grid.cellSize) / 2;
+            const margin = GAME_CONFIG.grid.cellSize * 5;
+            this.cameraControls.setBounds(-half - margin, half + margin, -half - margin, half + margin);
             this.cameraControls.setZoomLimits(15, 80);
 
             log('🎮 SimCity-style camera controls initialized');
         } else {
-            console.warn('⚠️ SimCityCameraControls not found, falling back to basic zoom');
+            logWarn('⚠️ SimCityCameraControls not found, falling back to basic zoom');
             // Fallback to basic zoom only
             this.canvas.addEventListener('wheel', (event) => {
                 try {
@@ -438,7 +441,7 @@ class GameManager {
             }
 
         } catch (error) {
-            console.warn('⚠️ Error in building preview mouse move:', error);
+            logWarn('⚠️ Error in building preview mouse move:', error);
         }
     }
 
@@ -483,7 +486,7 @@ class GameManager {
                 // Sai do modo construção, a não ser com Shift (fora dos tutoriais, que esperam uma obra por passo)
                 if (!keep || this.tutorialSystem?.isActive) this.exitBuildMode();
             } else {
-                console.warn(`⚠️ Cannot place building at (${gridPos.x}, ${gridPos.z})`);
+                logWarn(`⚠️ Cannot place building at (${gridPos.x}, ${gridPos.z})`);
                 // Play error sound
                 if (typeof AudioManager !== 'undefined') {
                     AudioManager.playSound('sfx_build_error', 0.6);
@@ -643,7 +646,7 @@ class GameManager {
                 this.camera.beta = this.isometricAngles.beta;
                 this.validateCameraPositionChange('zoom operation', beforeState);
             } else {
-                console.warn('⚠️ Ângulos isométricos corrompidos, usando valores seguros');
+                logWarn('⚠️ Ângulos isométricos corrompidos, usando valores seguros');
                 this.camera.alpha = -Math.PI / 4;
                 this.camera.beta = Math.PI / 3.5;
                 this.isometricAngles = { alpha: -Math.PI / 4, beta: Math.PI / 3.5 };
@@ -676,7 +679,7 @@ class GameManager {
             const cappedDeltaTime = Math.min(deltaTime, 100);
 
             if (!this.validateCameraStateWithBreaker()) {
-                console.warn('⚠️ Câmera inválida detectada, tentando recuperação...');
+                logWarn('⚠️ Câmera inválida detectada, tentando recuperação...');
                 this.renderState.corruptionCount++;
                 this.renderState.lastCorruptionTime = currentTime;
                 
@@ -1039,7 +1042,7 @@ class GameManager {
 
     centerCameraOnCityHall(gridX, gridZ) {
         if (!this.camera || !this.gridManager) {
-            console.warn('⚠️ Câmera ou GridManager não disponível');
+            logWarn('⚠️ Câmera ou GridManager não disponível');
             return;
         }
 
@@ -1068,7 +1071,7 @@ class GameManager {
                     this.camera.alpha = this.isometricAngles.alpha;
                     this.camera.beta = this.isometricAngles.beta;
                 } else {
-                    console.warn('⚠️ Ângulos corrompidos, usando valores seguros');
+                    logWarn('⚠️ Ângulos corrompidos, usando valores seguros');
                     this.camera.alpha = -Math.PI / 4;
                     this.camera.beta = Math.PI / 3.5;
                     this.isometricAngles = { alpha: -Math.PI / 4, beta: Math.PI / 3.5 };
@@ -1150,7 +1153,7 @@ class GameManager {
             return true;
 
         } catch (error) {
-            console.warn('⚠️ Erro ao carregar o jogo salvo, começando um novo:', error);
+            logWarn('⚠️ Erro ao carregar o jogo salvo, começando um novo:', error);
             gameAlert('Jogo salvo com problema', 'Não foi possível abrir o jogo salvo. Vamos começar um jogo novo.', 'warning');
             this.buildingSystem?.clearAllBuildings();
             return this.startNewGame();
@@ -1246,11 +1249,8 @@ class GameManager {
             default: speedInfo = `${this.timeScale}x (velocidade customizada)`; break;
         }
 
+        // Sem toast: o botão de velocidade já mostra a atual (o aviso cobria o menu de velocidade)
         log(`⏱️ Velocidade alterada: ${speedInfo}`);
-
-        if (this.uiManager) {
-            this.uiManager.showNotification(`Velocidade: ${speedInfo}`, 'info');
-        }
     }
 
     handleKeyboardEvent(kbInfo) {
@@ -1393,8 +1393,12 @@ class GameManager {
                 return;
             }
             if (event.repeat) return;
-            // Árvore tecnológica e menu de construção fecham pelo Esc (antes de qualquer pausa)
+            // Menu de velocidade, árvore tecnológica e menu de construção fecham pelo Esc (antes de qualquer pausa)
             const ui = this.uiManager;
+            if (ui?.closeSpeedMenu?.({ focus: true })) {
+                event.stopImmediatePropagation();
+                return;
+            }
             if (ui?.isTechTreeOpen?.()) {
                 ui.closeTechTree();
                 event.stopImmediatePropagation();
@@ -1519,7 +1523,7 @@ log('🎮 GameManager carregado e exportado para window.GameManager');
 // ===== FUNÇÕES DE DEBUG GLOBAIS =====
 if (DEBUG) window.monitorCamera = () => {
     if (!window.gameManager) {
-        console.warn('⚠️ GameManager não inicializado');
+        logWarn('⚠️ GameManager não inicializado');
         return;
     }
     

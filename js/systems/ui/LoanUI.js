@@ -6,7 +6,7 @@ mixin(UIManager, {
     // ===== SISTEMA DE EMPRÉSTIMOS =====
     showLoanInterface() {
         if (!this.gameManager.loanManager) {
-            console.warn('⚠️ LoanManager não disponível');
+            logWarn('⚠️ LoanManager não disponível');
             return;
         }
 

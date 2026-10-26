@@ -218,7 +218,7 @@ mixin(BuildingSystem, {
             try {
                 this.updateBuildingEfficiency(building, roadKeys);
             } catch (error) {
-                console.warn(`⚠️ Erro ao atualizar eficiência do edifício ${building.id}:`, error);
+                logWarn(`⚠️ Erro ao atualizar eficiência do edifício ${building.id}:`, error);
             }
         }
         this.lastEfficiencyUpdate = Date.now();

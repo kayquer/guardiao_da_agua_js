@@ -124,7 +124,7 @@ class StudySystem {
     // Auto-unlock all buildings that don't have study content
     unlockBuildingsWithoutStudyContent() {
         if (!this.gameManager || !this.gameManager.buildingSystem) {
-            console.warn('⚠️ BuildingSystem not available for auto-unlock');
+            logWarn('⚠️ BuildingSystem not available for auto-unlock');
             return;
         }
 
@@ -181,7 +181,7 @@ class StudySystem {
     startStudy(buildingId) {
         const content = this.getStudyContent(buildingId);
         if (!content) {
-            console.warn(`⚠️ Conteúdo de estudo não encontrado para: ${buildingId}`);
+            logWarn(`⚠️ Conteúdo de estudo não encontrado para: ${buildingId}`);
             return false;
         }
 

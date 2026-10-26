@@ -66,7 +66,7 @@ const MenuIntro = {
             this.state = 'ready';
             return true;
         } catch (error) {
-            console.warn('MenuIntro: abertura indisponível, seguindo para o menu', error?.message || error);
+            logWarn('MenuIntro: abertura indisponível, seguindo para o menu', error?.message || error);
             this.dispose();
             return false;
         }

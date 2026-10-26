@@ -76,7 +76,7 @@ class AssetLoader {
             
         } catch (error) {
             if (optional) {
-                console.warn(`⚠️ Asset opcional não encontrado: ${key} (${path})`);
+                logWarn(`⚠️ Asset opcional não encontrado: ${key} (${path})`);
             } else {
                 console.error(`❌ Erro ao carregar asset: ${key}`, error);
                 // Para assets não opcionais, criar fallback

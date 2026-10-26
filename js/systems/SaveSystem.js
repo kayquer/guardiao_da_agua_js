@@ -33,7 +33,7 @@ class SaveSystem {
             localStorage.removeItem(test);
             return true;
         } catch (e) {
-            console.warn('⚠️ localStorage não disponível: o jogo não poderá ser salvo');
+            logWarn('⚠️ localStorage não disponível: o jogo não poderá ser salvo');
             return false;
         }
     }
@@ -133,7 +133,7 @@ class SaveSystem {
             log(`💾 Jogo salvo (${kind}) para o perfil ${profileId}`);
             return true;
         } catch (error) {
-            console.warn('⚠️ Não foi possível salvar o jogo:', error);
+            logWarn('⚠️ Não foi possível salvar o jogo:', error);
             return false;
         }
     }
@@ -143,7 +143,7 @@ class SaveSystem {
         if (!this.storageAvailable) return { ok: false, reason: 'missing' };
         const result = SaveSystem.parseEnvelope(localStorage.getItem(SaveSystem.keyFor(profileId)), profileId);
         if (!result.ok) {
-            if (result.reason !== 'missing') console.warn(`⚠️ Save do perfil ${profileId} recusado: ${result.reason}`);
+            if (result.reason !== 'missing') logWarn(`⚠️ Save do perfil ${profileId} recusado: ${result.reason}`);
             return result;
         }
         log(`📁 Jogo carregado do perfil ${profileId}`);

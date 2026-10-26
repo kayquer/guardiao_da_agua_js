@@ -64,7 +64,7 @@ mixin(GameManager, {
         const heapMB = memoryInfo.heapUsed / 1024 / 1024;
 
         if (heapMB > 100 && heapMB <= 200) {
-            console.warn(`⚠️ Uso de memória alto: ${heapMB.toFixed(2)}MB`);
+            logWarn(`⚠️ Uso de memória alto: ${heapMB.toFixed(2)}MB`);
         }
 
         if (heapMB > 200) {
@@ -120,7 +120,7 @@ mixin(GameManager, {
             }
 
             if (!placed) {
-                console.warn(`⚠️ Não foi possível colocar edifício ${i + 1}/20`);
+                logWarn(`⚠️ Não foi possível colocar edifício ${i + 1}/20`);
             }
         }
 

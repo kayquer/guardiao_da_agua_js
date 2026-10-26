@@ -52,7 +52,7 @@ mixin(UIManager, {
 
         // ===== VALIDATION =====
         if (!panelType) {
-            console.warn('⚠️ No panel type specified');
+            logWarn('⚠️ No panel type specified');
             return;
         }
 
@@ -118,7 +118,7 @@ mixin(UIManager, {
                 panelMethod();
                 log(`📊 Resource panel opened: ${panelType}`);
             } else {
-                console.warn(`⚠️ Unknown panel type: ${panelType}`);
+                logWarn(`⚠️ Unknown panel type: ${panelType}`);
                 this.updatePanelState(null); // FIX: Use updatePanelState
             }
 

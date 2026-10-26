@@ -43,7 +43,7 @@ class IntroCinematic {
                 preserveDrawingBuffer: false, stencil: false, powerPreference: 'high-performance'
             }, true);
         } catch (error) {
-            console.warn('IntroCinematic: sem WebGL para a abertura', error?.message || error);
+            logWarn('IntroCinematic: sem WebGL para a abertura', error?.message || error);
             return false;
         }
         // Celular: não renderiza na resolução nativa inteira (3x) — 1.5x já fica nítido; qualidade baixa: menos ainda
@@ -57,7 +57,7 @@ class IntroCinematic {
         scene.autoClear = true;
 
         this.layout = new IntroLayout(this.city);
-        if (this.layout.errors.length) console.warn('IntroCinematic: layout com problemas', this.layout.errors);
+        if (this.layout.errors.length) logWarn('IntroCinematic: layout com problemas', this.layout.errors);
 
         this.createAtmosphere();
         this.createCamera();
@@ -548,7 +548,7 @@ class IntroCinematic {
                 if (type === 'wind_farm') await this.createWindFarms(list);
                 else await this.createModelBuildings(loader, type, list);
             } catch (error) {
-                console.warn(`IntroCinematic: ${type} ficou de fora`, error?.message || error);
+                logWarn(`IntroCinematic: ${type} ficou de fora`, error?.message || error);
             }
             onProgress(++done / total);
         });
@@ -712,7 +712,7 @@ class IntroCinematic {
             p.imageProcessing.vignetteColor = new BABYLON.Color4(0.03, 0.08, 0.16, 0);
             this.pipeline = p;
         } catch (error) {
-            console.warn('IntroCinematic: sem pós-processamento', error?.message || error);
+            logWarn('IntroCinematic: sem pós-processamento', error?.message || error);
         }
     }
 
@@ -893,7 +893,7 @@ class IntroCinematic {
             this.scene?.dispose(); // meshes, materiais, texturas, luzes, sombras
             this.engine?.dispose();
         } catch (error) {
-            console.warn('IntroCinematic: erro ao descartar', error?.message || error);
+            logWarn('IntroCinematic: erro ao descartar', error?.message || error);
         }
         this.scene = null;
         this.engine = null;

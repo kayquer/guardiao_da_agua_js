@@ -17,7 +17,7 @@ function watchErrors(page) {
 /** Jogo rodando, sem popups segurando a pausa leve, com dinheiro e tudo desbloqueado. */
 async function start(page, quality) {
     if (quality) await page.addInitScript(q => localStorage.setItem('guardiao_agua_graphics', q), quality);
-    await startGame(page);
+    await startGame(page, { url: '/index.html?log=warn' }); // avisos só aparecem com ?log=warn
     await page.evaluate(() => {
         const gm = window.gameManager;
         gm.tutorialSystem.complete();

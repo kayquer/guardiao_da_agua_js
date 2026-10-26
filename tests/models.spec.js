@@ -172,7 +172,7 @@ test('sem o .glb (rota bloqueada) o prédio fica no procedural, sem erro', async
     const warnings = [];
     page.on('console', m => { if (m.type() === 'warning') warnings.push(m.text()); });
     await page.route('**/*.glb', route => route.abort());
-    await startGame(page);
+    await startGame(page, { url: '/index.html?log=warn' }); // alertas só aparecem no console com ?log=warn
     await page.evaluate(() => window.gameManager.tutorialSystem.complete());
 
     const id = await place(page, 'apartment');

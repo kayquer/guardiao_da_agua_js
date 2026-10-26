@@ -16,7 +16,7 @@ class PlayerProfile {
             const data = JSON.parse(localStorage.getItem(PlayerProfile.STORAGE_KEY));
             if (data && Array.isArray(data.profiles)) return data;
         } catch (error) {
-            console.warn('⚠️ Perfis corrompidos no localStorage, começando do zero:', error);
+            logWarn('⚠️ Perfis corrompidos no localStorage, começando do zero:', error);
         }
         return { profiles: [], activeId: null };
     }

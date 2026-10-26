@@ -164,13 +164,13 @@ class QuestSystem {
         }
         
         if (quest.status !== 'available') {
-            console.warn(`⚠️ Missão não disponível: ${questId}`);
+            logWarn(`⚠️ Missão não disponível: ${questId}`);
             return false;
         }
         
         // Verificar limite de missões ativas
         if (this.activeQuests.size >= this.maxActiveQuests && quest.type !== 'tutorial') {
-            console.warn('⚠️ Muitas missões ativas');
+            logWarn('⚠️ Muitas missões ativas');
             return false;
         }
         
