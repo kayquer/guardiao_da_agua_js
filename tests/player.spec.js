@@ -92,9 +92,10 @@ test('pausa congela de verdade: menu de pausa, popups e aula rápida', async ({ 
         await page.waitForFunction(t => window.gameManager.gameTime > t + 200, t0, { timeout: 5000 });
     };
 
-    // 1) Clique no nome → tela de perfil + pausa (com estatísticas e ajuda)
+    // 1) Clique no nome → menu do jogador → "Perfil e pausa" (com estatísticas e ajuda)
     await frozen('menu de pausa', async () => {
         await page.click('#player-chip');
+        await page.click('#player-menu [data-player-action="pause"]');
         await expect(page.locator('#pause-overlay')).toBeVisible();
         await expect(page.locator('#pp-name')).toHaveText('Teste');
         await expect(page.locator('#pp-stats')).toContainText('Missões concluídas');

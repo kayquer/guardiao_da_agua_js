@@ -242,3 +242,80 @@ test('estudo aprovado: o livro espera o clique e "Ver o prédio liberado" fecha 
     expect(await page.evaluate(() => window.gameManager.studySystem.isBuildingUnlocked('monitoring_station'))).toBe(true);
     expect(problems).toEqual([]);
 });
+
+test('menu do jogador: o nome abre o menu; cada item abre o seu painel; aulas saíram do topo', async ({ page }, testInfo) => {
+    const problems = watchErrors(page);
+    await playing(page);
+    await expect(page.locator('#btn-lessons')).toHaveCount(0);
+    const menu = page.locator('#player-menu');
+    const open = async () => {
+        await page.click('#player-chip');
+        await expect(menu).toBeVisible();
+        await expect(page.locator('#player-chip')).toHaveAttribute('aria-expanded', 'true');
+    };
+    const pick = action => menu.locator(`[data-player-action="${action}"]`).click();
+    const resume = async () => {
+        await page.evaluate(() => window.gameManager.resumeGame());
+        await expect(page.locator('#pause-overlay')).toBeHidden();
+    };
+
+    await open();
+    await expect(menu.locator('[data-player-action]')).toHaveText(['Perfil e pausa', 'Aulas e estudos', 'Conquistas', 'Configurações', 'Notificações', 'Dados da pesquisa', 'Salvar jogo']);
+    await pick('pause');
+    await expect(menu).toBeHidden();
+    await expect(page.locator('#pause-overlay')).toBeVisible();
+    await expect(page.locator('#pp-name')).toHaveText('Teste');
+    await resume();
+
+    for (const [action, panel] of [['achievements', '#achievements-panel'], ['settings', '#settings-panel'], ['notifications', '#notification-history'], ['research', '#research-panel']]) {
+        await open();
+        await pick(action);
+        await expect(page.locator(panel), action).toBeVisible();
+        expect(await page.evaluate(() => window.gameManager.gameState), action).toBe('paused');
+        await resume();
+    }
+
+    await open();
+    await pick('lessons');
+    await expect(page.locator('#lessons-hub')).toBeVisible();
+    await page.evaluate(() => window.gameManager.uiManager.closeLessonsHub());
+    await page.waitForFunction(() => window.gameManager.gameState === 'playing');
+    await open();
+    await pick('save');
+    await expect(page.locator('#toast-stack')).toContainText('Jogo salvo');
+    expect(await page.evaluate(() => !!localStorage.getItem(`guardiao_agua_save_${PlayerProfile.getActive().id}`))).toBe(true);
+
+    if (testInfo.project.name !== 'mobile') {
+        await open();
+        await page.keyboard.press('Escape');
+        await expect(menu).toBeHidden();
+        expect(await page.evaluate(() => window.gameManager.gameState)).toBe('playing'); // Esc só fechou o menu
+    }
+    expect(problems).toEqual([]);
+});
+
+test('painel da direita tem ✕ que fecha (como o Esc); construir fora do tutorial não dá erro', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'no mobile a gaveta tem o próprio ✕');
+    const problems = watchErrors(page);
+    await playing(page);
+    await page.evaluate(() => window.gameManager.uiManager.showResourcePanel('water'));
+    await expect(page.locator('.hud-right')).toBeVisible();
+    await page.click('#hud-right-close');
+    await expect(page.locator('.hud-right')).toBeHidden();
+
+    // Antes: TutorialSystem.onBuildingPlaced lia steps[...] com steps vazio fora do tutorial
+    const placed = await page.evaluate(() => {
+        const gm = window.gameManager;
+        gm.tutorialSystem.steps = undefined;
+        const bs = gm.buildingSystem;
+        gm.resourceManager.resources.budget.current = 1e6;
+        for (let x = 0; x < 39; x++) for (let z = 0; z < 39; z++) {
+            if (!bs.canPlaceBuilding(x, z, 'paved_road', { quiet: true }).canPlace) continue;
+            bs.buildingCooldown.active = false;
+            return !!bs.placeBuilding(x, z, 'paved_road');
+        }
+        return false;
+    });
+    expect(placed).toBe(true);
+    expect(problems).toEqual([]);
+});

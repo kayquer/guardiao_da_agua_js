@@ -11,12 +11,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
     <!-- CSS -->
     <link rel="stylesheet" href="css/styles.css?v=479ea2e3">
-    <link rel="stylesheet" href="css/ui.css?v=e40c3a6e">
-    <link rel="stylesheet" href="css/responsive.css?v=c86a8e7e">
+    <link rel="stylesheet" href="css/ui.css?v=7d6b7961">
+    <link rel="stylesheet" href="css/responsive.css?v=e5606ac1">
     <link rel="stylesheet" href="css/tutorial.css?v=9060ec61">
     <link rel="stylesheet" href="css/lessons.css?v=e68e4db9">
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
-    <link rel="stylesheet" href="css/player.css?v=ba48e239">
+    <link rel="stylesheet" href="css/player.css?v=d4e29f7d">
     <link rel="stylesheet" href="css/menu.css?v=ad09dab4">
     <link rel="stylesheet" href="css/notice.css?v=86b1e0da">
     <link rel="stylesheet" href="css/research.css?v=ee08fec9">
@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="css/events.css?v=f06ffb3d">
     <link rel="stylesheet" href="css/event-decision.css?v=a2b7ac78">
     <link rel="stylesheet" href="css/mission-bar.css?v=27778451">
+    <link rel="stylesheet" href="css/player-menu.css?v=90353729">
     <link rel="stylesheet" href="css/speed-menu.css?v=b403791f">
     <link rel="stylesheet" href="css/build-menu.css?v=6a2bed6d">
 
@@ -323,11 +324,21 @@
                     </div>
                 </div>
                 
-                <!-- Jogador (ui/WeatherUI.js) -->
+                <!-- Jogador (ui/WeatherUI.js): clicar abre o menu do jogador (ui/PlayerMenu.js) -->
                 <div class="player-hud">
-                    <div id="player-chip" class="player-chip" role="button" tabindex="0" title="Seu perfil e pausa">
+                    <div id="player-chip" class="player-chip" role="button" tabindex="0" title="Seu menu: perfil, aulas, conquistas e mais" aria-haspopup="true" aria-expanded="false" aria-controls="player-menu">
                         <span class="player-chip-icon"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-player.svg" alt="" aria-hidden="true" draggable="false"></span>
                         <span id="player-name">Guardião</span>
+                        <span class="player-caret" aria-hidden="true">▾</span>
+                    </div>
+                    <div id="player-menu" class="player-menu" role="menu" aria-label="Menu do jogador" hidden>
+                        <button type="button" role="menuitem" data-player-action="pause"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-pause.svg" alt="" aria-hidden="true" draggable="false"> Perfil e pausa</button>
+                        <button type="button" role="menuitem" data-player-action="lessons"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-books-sm.svg" alt="" aria-hidden="true" draggable="false"> Aulas e estudos</button>
+                        <button type="button" role="menuitem" data-player-action="achievements"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-medal-sm.svg" alt="" aria-hidden="true" draggable="false"> Conquistas</button>
+                        <button type="button" role="menuitem" data-player-action="settings"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-settings.svg" alt="" aria-hidden="true" draggable="false"> Configurações</button>
+                        <button type="button" role="menuitem" data-player-action="notifications"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-history.svg" alt="" aria-hidden="true" draggable="false"> Notificações</button>
+                        <button type="button" role="menuitem" data-player-action="research"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-stats.svg" alt="" aria-hidden="true" draggable="false"> Dados da pesquisa</button>
+                        <button type="button" role="menuitem" data-player-action="save"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-save.svg" alt="" aria-hidden="true" draggable="false"> Salvar jogo</button>
                     </div>
                 </div>
 
@@ -345,7 +356,6 @@
                     </div>
                     <button style="display: none;" id="btn-loans" class="control-btn loans-btn" title="Empréstimos" onclick="window.gameManager.uiManager.showLoanInterface()"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/bank-sm.svg" alt="" aria-hidden="true" draggable="false"></button>
                     <button id="btn-missions" class="control-btn missions-btn" title="Missões" aria-label="Missões"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-target-sm.svg" alt="" aria-hidden="true" draggable="false"></button>
-                    <button id="btn-lessons" class="control-btn help-btn" title="Aulas sobre a água" aria-label="Aulas sobre a água"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-books-sm.svg" alt="" aria-hidden="true" draggable="false"></button>
                 </div>
             </div>
 
@@ -402,6 +412,8 @@
             <!-- Painel Direito - Detalhes -->
             <div class="hud-right">
                 <div class="details-panel" id="details-panel">
+                    <!-- Fecha o painel inteiro, como o Esc (UIManager.closeRightPanel); no mobile há o do cabeçalho da gaveta -->
+                    <button type="button" id="hud-right-close" class="hud-right-close" aria-label="Fechar painel de informações" title="Fechar (Esc)"><span aria-hidden="true">✕</span></button>
                     <h3>Informações</h3>
                     <div class="details-content" id="details-content">
                         <p>Selecione um item para ver detalhes</p>
@@ -856,7 +868,7 @@
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=f9674bb9"></script>
 
-    <script src="js/core/GameManager.js?v=77574762"></script>
+    <script src="js/core/GameManager.js?v=bb1d44cf"></script>
     <script src="js/core/game/Diagnostics.js?v=8ec9d8c0"></script>
     <script src="js/core/game/SelectionVisuals.js?v=034e13b1"></script>
     <script src="js/core/game/CameraGuard.js?v=2024c210"></script>
@@ -879,13 +891,14 @@
     <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
     <script src="js/systems/ResourceTrends.js?v=16c746be"></script>
     <script src="js/systems/DeclineWatch.js?v=e0e70d98"></script>
-    <script src="js/systems/UIManager.js?v=d6d6baa3"></script>
+    <script src="js/systems/UIManager.js?v=b812fa59"></script>
     <script src="js/systems/ui/MobileTouch.js?v=6023dd14"></script>
     <script src="js/systems/ui/StudyBookUI.js?v=1d82ff75"></script>
     <script src="js/systems/ui/LoanUI.js?v=58e6338c"></script>
     <script src="js/systems/ui/ResourceHud.js?v=c698f1d9"></script>
     <script src="js/systems/ui/IdleHints.js?v=c75e6450"></script>
     <script src="js/systems/ui/AchievementsUI.js?v=1799e7e6"></script>
+    <script src="js/systems/ui/PlayerMenu.js?v=126d5aa6"></script>
     <script src="js/systems/ui/MissionCardUI.js?v=73d93ae8"></script>
     <script src="js/systems/ui/ResourcePanels.js?v=20b31666"></script>
     <script src="js/systems/ui/EventUI.js?v=72f71fc0"></script>
@@ -911,8 +924,8 @@
     <script src="js/systems/SaveSystem.js?v=a34bab17"></script>
     <script src="js/systems/StudySystem.js?v=ad22fb8a"></script>
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
-    <script src="js/systems/TutorialSystem.js?v=5f33ff91"></script>
-    <script src="js/systems/RescueGuides.js?v=5137ce55"></script>
+    <script src="js/systems/TutorialSystem.js?v=7706ba0b"></script>
+    <script src="js/systems/RescueGuides.js?v=c4db5930"></script>
     <script src="js/systems/GameOverSystem.js?v=f2965ad2"></script>
     <script src="js/systems/PlayerProfile.js?v=08ed2695"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>

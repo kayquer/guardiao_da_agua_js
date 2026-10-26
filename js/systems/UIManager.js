@@ -229,18 +229,11 @@ class UIManager {
         // ===== COMPACT RESOURCE INDICATORS CLICK HANDLERS (MOBILE) =====
         this.setupCompactResourceClickHandlers();
 
-        // Esc fecha o painel da direita (recurso, terreno, missões ou prédio selecionado) junto com o conteúdo
+        // Esc e o ✕ do painel fecham o painel da direita (recurso, terreno, missões ou prédio selecionado)
         document.addEventListener('keydown', (event) => {
-            if (event.key !== 'Escape') return;
-            const panel = this.uiState.currentOpenPanel;
-            if (panel === 'missions') this.closeMissionPanel();
-            else if (panel === 'selection') this.gameManager.deselectBuilding?.();
-            else if (panel) this.closeCurrentPanel();
-            if (panel || this.isHudRightVisible()) {
-                this.closeResourcePanel();
-                this.hideHudRight();
-            }
+            if (event.key === 'Escape') this.closeRightPanel();
         });
+        document.getElementById('hud-right-close')?.addEventListener('click', () => this.closeRightPanel());
 
         // ===== ENHANCED MOBILE TOUCH SUPPORT =====
         this.setupMobileTouchSupport();
@@ -1252,7 +1245,9 @@ class UIManager {
     openSpeedMenu() {
         const { speedBtn, speedMenu } = this.elements;
         if (!speedMenu) return;
+        this.closePlayerMenu?.();
         speedMenu.hidden = false;
+        document.body.classList.add('top-menu-open'); // esconde os avisos que cobririam o menu (css/player-menu.css)
         speedBtn.setAttribute('aria-expanded', 'true');
         (speedMenu.querySelector('.speed-option.active') || speedMenu.querySelector('.speed-option'))?.focus({ preventScroll: true });
     }
@@ -1262,6 +1257,7 @@ class UIManager {
         const { speedBtn, speedMenu } = this.elements;
         if (!speedMenu || speedMenu.hidden) return false;
         speedMenu.hidden = true;
+        document.body.classList.remove('top-menu-open');
         speedBtn.setAttribute('aria-expanded', 'false');
         if (focus) speedBtn.focus({ preventScroll: true });
         return true;
@@ -1888,6 +1884,19 @@ class UIManager {
         hudRight.style.display = 'none';
     }
 
+    /** Fecha o painel da direita junto com o conteúdo (missões, prédio selecionado, recurso, terreno). */
+    closeRightPanel() {
+        const panel = this.uiState.currentOpenPanel;
+        if (panel === 'missions') this.closeMissionPanel();
+        else if (panel === 'selection') this.gameManager.deselectBuilding?.();
+        else if (panel) this.closeCurrentPanel();
+        if (panel || this.isHudRightVisible()) {
+            this.closeResourcePanel();
+            this.hideHudRight();
+        }
+        this.gameManager.treeSystem?.clearSelection?.();
+    }
+
     /** O painel da direita está na tela (desktop: display; mobile: gaveta .active). */
     isHudRightVisible() {
         const hudRight = document.querySelector('.hud-right');
@@ -2422,19 +2431,8 @@ class UIManager {
             }
         });
 
-        // Nome do jogador → tela de perfil + pausa (o ❓ de ajuda fica dentro dela; setupHelpModal liga o #btn-help)
-        const playerChip = document.getElementById('player-chip');
-        if (playerChip) {
-            const openPlayerPanel = () => {
-                if (this.gameManager.gameState !== 'playing') return;
-                this.gameManager.pauseGame();
-                AudioManager.playSound('sfx_panel_open');
-            };
-            playerChip.addEventListener('click', openPlayerPanel);
-            playerChip.addEventListener('keydown', e => {
-                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPlayerPanel(); }
-            });
-        }
+        // Nome do jogador → menu do jogador (ui/PlayerMenu.js): perfil e pausa, aulas, conquistas, configurações...
+        this.setupPlayerMenu();
 
         // Enhanced missions button - TOGGLE FUNCTIONALITY
         const missionsBtn = document.getElementById('btn-missions');

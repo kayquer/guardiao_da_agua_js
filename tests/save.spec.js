@@ -115,6 +115,7 @@ test('salvar, recarregar a página e continuar: o jogo volta exatamente como est
 
     // 3) Pausa (tela do jogador) e "💾 Salvar jogo": o tempo para, então o retrato é o que foi salvo
     await page.click('#player-chip');
+    await page.click('#player-menu [data-player-action="pause"]');
     await expect(page.locator('#pause-overlay')).toBeVisible();
     await page.click('#btn-save-game');
     // O ✅ virou ícone SVG (status-done): confere o texto e o ícone

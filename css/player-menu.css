@@ -1,0 +1,97 @@
+/* Menu do jogador: clicar no nome (#player-chip) abre #player-menu (ui/PlayerMenu.js).
+   Mesmo visual do menu de velocidade (css/speed-menu.css). */
+.player-hud {
+    position: relative;
+}
+
+.player-caret {
+    font-size: 0.7rem;
+    opacity: 0.85;
+    margin-left: 0.1rem;
+}
+
+.player-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 210px;
+    padding: 6px;
+    background: #FFFFFF;
+    border: 3px solid #7c3aed;
+    border-radius: 14px;
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25), 0 10px 24px rgba(0, 0, 0, 0.25);
+    animation: player-menu-in 0.15s ease-out;
+}
+
+.player-menu[hidden] {
+    display: none;
+}
+
+.player-menu button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #2D3561;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.player-menu button:hover,
+.player-menu button:focus-visible {
+    background: #F1E9FF;
+    outline: none;
+}
+
+/* Primeiro item (perfil e pausa) separado dos atalhos */
+.player-menu button[data-player-action="pause"] {
+    margin-bottom: 4px;
+    background: linear-gradient(145deg, var(--cartoon-purple), #7c3aed);
+    color: #FFFFFF;
+}
+
+/* Com um menu do topo aberto (jogador ou velocidade) os avisos somem por um instante: o HUD fica abaixo
+   da camada dos avisos (z-index 50 × 99) e eles cobriam os itens */
+body.top-menu-open .toast-stack {
+    visibility: hidden;
+}
+
+/* Aviso informativo não lido: a bolinha do nome aparece também no item Notificações */
+.player-chip.has-unread ~ .player-menu button[data-player-action="notifications"]::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    margin-left: auto;
+    border-radius: 50%;
+    background: #FF3B30;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes player-menu-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .player-menu { animation: none; }
+}
+
+@media (max-width: 768px) {
+    .player-menu {
+        min-width: 190px;
+        font-size: 0.9rem;
+    }
+}

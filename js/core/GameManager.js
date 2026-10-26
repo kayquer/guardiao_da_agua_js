@@ -1395,7 +1395,7 @@ class GameManager {
             if (event.repeat) return;
             // Menu de velocidade, árvore tecnológica e menu de construção fecham pelo Esc (antes de qualquer pausa)
             const ui = this.uiManager;
-            if (ui?.closeSpeedMenu?.({ focus: true })) {
+            if (ui?.closeSpeedMenu?.({ focus: true }) || ui?.closePlayerMenu?.({ focus: true })) {
                 event.stopImmediatePropagation();
                 return;
             }

@@ -59,11 +59,6 @@ class TutorialSystem {
         setupReadAloud(document.getElementById('tutorial-read-btn'), () =>
             `${document.getElementById('tutorial-title').innerText}. ${document.getElementById('tutorial-text').innerText}`);
 
-        // 📚 abre a central de aulas (ui/LessonBookUI.js): o aluno escolhe o tema
-        document.getElementById('btn-lessons')?.addEventListener('click', () => {
-            if (!this.isActive && this.gameManager.gameState === 'playing') this.gameManager.uiManager.openLessonsHub();
-        });
-
         log('✅ Tutorial event listeners configured');
     }
 
@@ -451,9 +446,15 @@ class TutorialSystem {
             text: 'Arraste para mover, segure o <b>botão direito</b> para girar e use a <b>roda do mouse</b> para zoom (teclado: setas/WASD, Q/E gira, R volta). No celular, arraste com um dedo e use dois para zoom. Clique numa construção para ver os detalhes dela.'
         },
         {
+            group: 'interface', mode: 'coach', character: JOSE, icon: '⏩',
+            title: 'Velocidade do jogo',
+            text: 'Este botão mostra a velocidade do tempo na cidade. Clique nele para escolher <b>1x</b>, <b>2x</b> ou <b>3x</b> (no computador, as teclas 1, 2 e 3 também mudam). Quando a cidade estiver tranquila, acelere; quando apertar, volte para 1x.',
+            targets: ['#btn-speed', '.mobile-top-toggle.control-toggle']
+        },
+        {
             group: 'interface', mode: 'coach', character: MARCIA, icon: '❓',
-            title: 'Seu perfil, pausa e ajuda',
-            text: 'Anote aí: clique no <b>seu nome</b> para pausar o jogo: lá você vê seus pontos e missões, salva o jogo e encontra a <b>❓ ajuda</b> com todos os comandos. No computador, a tecla <b>Espaço</b> também pausa (e o jogo salva sozinho de tempos em tempos).',
+            title: 'O seu menu',
+            text: 'Anote aí: clique no <b>seu nome</b> para abrir o seu menu. Em <b>Perfil e pausa</b> o jogo para e você vê seus pontos, as missões e a <b>❓ ajuda</b> com todos os comandos. Ali também ficam as <b>📚 Aulas e estudos</b>, as <b>🏅 Conquistas</b>, as <b>⚙️ Configurações</b>, as <b>📜 Notificações</b>, os dados da pesquisa e o <b>💾 Salvar jogo</b>. No computador, a tecla <b>Espaço</b> pausa direto (e o jogo salva sozinho de tempos em tempos).',
             targets: ['#player-chip']
         },
 
@@ -496,7 +497,7 @@ class TutorialSystem {
             background: 'assets/images/tutorial/bg-rio-boas-vindas.webp',
             title: 'Você está pronto, {nome}!',
             expression: 'happy',
-            text: 'Parabéns, {nome}! A Prefeitura está de pé e você já sabe como a cidade funciona. <img src="assets/images/lessons/cidade-sustentavel.webp" alt="Cidade sustentável ao nascer do sol, com rio limpo, painéis solares e turbinas eólicas" style="width:100%; border-radius:8px; margin:10px 0;"/> Lembre-se: a água conecta tudo — a cidade, as plantações, a floresta e os bichos. O José, a Márcia, o Paulo e eu estaremos por perto. Quer rever as aulas sobre a água? É só tocar em <b>📚</b>. <b>Boa sorte, {nome}!</b> 🌊',
+            text: 'Parabéns, {nome}! A Prefeitura está de pé e você já sabe como a cidade funciona. <img src="assets/images/lessons/cidade-sustentavel.webp" alt="Cidade sustentável ao nascer do sol, com rio limpo, painéis solares e turbinas eólicas" style="width:100%; border-radius:8px; margin:10px 0;"/> Lembre-se: a água conecta tudo — a cidade, as plantações, a floresta e os bichos. O José, a Márcia, o Paulo e eu estaremos por perto. Quer rever as aulas sobre a água? Clique no <b>seu nome</b> e escolha <b>📚 Aulas e estudos</b>. <b>Boa sorte, {nome}!</b> 🌊',
             icon: '🎓'
         }
     ];
@@ -934,8 +935,9 @@ class TutorialSystem {
     }
 
     onBuildingPlaced(building) {
-        const step = this.steps[this.currentStep];
-        if (!this.isActive || !this.stepWantsBuilding(step, building)) return;
+        // Fora de tutorial/guia steps pode estar vazio (construir rua ou prédio no jogo livre quebrava aqui)
+        const step = this.steps?.[this.currentStep];
+        if (!this.isActive || !step || !this.stepWantsBuilding(step, building)) return;
 
         const gm = this.gameManager;
         gm.uiManager?.dismissBuildModal?.(); // o menu aberto pelo passo não fica por cima dos próximos destaques

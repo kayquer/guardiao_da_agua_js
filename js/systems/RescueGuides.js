@@ -53,13 +53,19 @@ mixin(TutorialSystem, {
         if (!def || !picks.length) return null;
         const list = picks.map(p => `<li><a href="#" class="rescue-link" data-build="${p.id}" onclick="event.preventDefault(); window.gameManager.tutorialSystem.rescueBuild('${p.id}')">${p.icon} ${p.name}</a> <small>R$ ${p.cost.toLocaleString('pt-BR')}${p.locked ? ' · 📖 estude para liberar' : ''}</small><br>${p.why}</li>`).join('');
         return [
-            { title: def.title, expression: 'worried', text: `${this.rescueCause(id)} Já faz um minuto que só piora, {nome}.`, targets: def.targets },
+            { title: def.title, expression: 'worried', text: `${this.rescueCause(id)} ${this.rescueWhen()}, {nome}.`, targets: def.targets },
             {
                 title: 'O que construir agora', nextLabel: 'Entendi',
                 text: `Clique em uma destas para ir direto a ela:<ul class="rescue-list">${list}</ul>💡 ${def.tip}`,
                 targets: [`.category-btn[data-category="${def.category}"]`]
             }
         ];
+    },
+
+    /** Há quanto tempo piora, sem número (o tempo do jogo corre em outra escala, e "um minuto" soava exato demais). */
+    rescueWhen() {
+        const phrases = TutorialSystem.RESCUE_WHEN;
+        return phrases[Math.floor(Math.random() * phrases.length)];
     },
 
     /** Até 3 prédios da lista: visíveis e com a tecnologia já alcançada (estudo pendente pode). */
@@ -134,6 +140,14 @@ mixin(TutorialSystem, {
 });
 
 // O que conta como "o jogador já está resolvendo" (obra em andamento ou começada dentro da janela do vigia)
+/** Frases de "há quanto tempo" do guia de socorro (rescueWhen sorteia uma). */
+TutorialSystem.RESCUE_WHEN = [
+    'Já faz um tempo que só piora',
+    'Isso está acontecendo há um tempo',
+    'Faz um tempinho que só vai piorando',
+    'Já tem um tempo que isso vem acontecendo'
+];
+
 TutorialSystem.RESCUE_HELPS = {
     water: c => c.waterProduction > 0 || c.waterStorage > 0,
     energy: c => c.powerGeneration > 0,

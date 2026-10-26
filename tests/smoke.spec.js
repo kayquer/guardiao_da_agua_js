@@ -197,8 +197,11 @@ test('tutorial congela o jogo e guia a construção da prefeitura', async ({ pag
     await expect(book).toBeHidden();
     await page.waitForFunction(() => window.gameManager.isSimulationRunning());
 
-    // Botão 📚 abre a central de aulas: escolher o tema abre o livro, e a última página conclui a aula
-    await page.evaluate(() => document.getElementById('btn-lessons').click());
+    // Menu do jogador → 📚 Aulas e estudos abre a central de aulas: escolher o tema abre o livro, e a última página conclui a aula
+    await page.evaluate(() => {
+        document.getElementById('player-chip').click();
+        document.querySelector('#player-menu [data-player-action="lessons"]').click();
+    });
     const hub = page.locator('#lessons-hub');
     await expect(hub.locator('.lesson-card')).toHaveCount(6);
     await hub.locator('.lesson-card[data-chapter="1"]').click();

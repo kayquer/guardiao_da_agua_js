@@ -91,6 +91,10 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         ui.pickIdleHint();
         ui.isPlayerWaiting();
 
+        // ui/PlayerMenu (fluxo completo em tests/ui-fixes.spec.js)
+        ui.openPlayerMenu();
+        ui.closePlayerMenu();
+
         // ui/MissionCardUI + CityChallenges
         ui.queueWelcomeBack();
         ui.flushMissionCards();
