@@ -1,6 +1,6 @@
 <!--
   Guardião da Água — jogo educativo gratuito de simulação de cidade sobre recursos hídricos (água, rios, aquíferos,
-  saneamento, mata ciliar, enchentes, energia e poluição) para o Ensino Fundamental anos finais (6º ao 9º ano, 11 a 14 anos).
+  saneamento, mata ciliar, enchentes, energia e poluição) para o 6º ano do Ensino Fundamental (Anos Finais), cerca de 11 anos de idade.
   Pesquisa de mestrado profissional em Geografia (Recursos Hídricos e Meio Ambiente) — Unesp, FCT, Presidente Prudente/SP, 2026.
   Palavras-chave: jogo educativo, educação ambiental, recursos hídricos, gestão da água, jogo de cidade, city builder,
   serious game, gamificação, ensino de geografia, ciências, BNCC, escola pública, navegador, Babylon.js, WebGL, código aberto.
@@ -13,7 +13,7 @@
 <h1 align="center">💧 Guardião da Água</h1>
 
 <p align="center">
-  <b>Jogo educativo gratuito, de navegador, em que estudantes de 11 a 14 anos governam uma cidade e aprendem<br>
+  <b>Jogo educativo gratuito, de navegador, em que estudantes do 6º ano (cerca de 11 anos) governam uma cidade e aprendem<br>
   de onde vem a água, por que ela falta ou fica poluída e como cada escolha afeta rios, nascentes e pessoas.</b>
 </p>
 
@@ -24,7 +24,7 @@
 <p align="center">
   <a href="https://github.com/kayquer/guardiao_da_agua_js/actions/workflows/test.yml"><img src="https://github.com/kayquer/guardiao_da_agua_js/actions/workflows/test.yml/badge.svg" alt="Testes"></a>
   <img src="https://img.shields.io/badge/idioma-portugu%C3%AAs%20(BR)-009c3b" alt="Idioma: português do Brasil">
-  <img src="https://img.shields.io/badge/p%C3%BAblico-6%C2%BA%20ao%209%C2%BA%20ano-ffb703" alt="Público: 6º ao 9º ano">
+  <img src="https://img.shields.io/badge/p%C3%BAblico-6%C2%BA%20ano-ffb703" alt="Público: 6º ano">
   <img src="https://img.shields.io/badge/Babylon.js-9.31-bb464b" alt="Babylon.js 9.31">
   <img src="https://img.shields.io/badge/instala%C3%A7%C3%A3o-nenhuma-2a9d8f" alt="Sem instalação">
   <a href="LICENSE"><img src="https://img.shields.io/badge/licen%C3%A7a-MIT-blue" alt="Licença MIT"></a>
@@ -116,8 +116,8 @@ Este jogo é o produto educacional da pesquisa de mestrado:
 
 | | |
 |---|---|
-| **Público-alvo** | Ensino Fundamental, anos finais (6º ao 9º ano) |
-| **Idade de foco** | 11 a 14 anos |
+| **Público-alvo** | 6º ano do Ensino Fundamental (Anos Finais) |
+| **Idade de foco** | Cerca de 11 anos |
 | **Uso indicado** | Em sala de aula ou laboratório de informática, com mediação de um professor ou adulto responsável |
 | **Plataforma** | Navegador de computador, com teclado e mouse (versão para celular em estudo) |
 | **Desenvolvimento do jogo** | Kayque Rotondo |
@@ -242,7 +242,7 @@ Se usar o jogo numa aula, trabalho ou pesquisa, cite assim (o GitHub também mos
 Um jogo educativo gratuito de construção de cidade, em português, sobre o uso da água: captação, tratamento, esgoto, aquíferos, rios, enchentes, energia e poluição.
 
 **Para qual idade ele foi feito?**
-Para estudantes do 6º ao 9º ano do Ensino Fundamental (11 a 14 anos), com mediação de um professor.
+Para estudantes do 6º ano do Ensino Fundamental (Anos Finais), com cerca de 11 anos de idade e mediação de um professor.
 
 **Precisa instalar ou pagar?**
 Não. Abre no navegador em [kayquer.github.io/guardiao_da_agua_js](https://kayquer.github.io/guardiao_da_agua_js/) e é de código aberto.
