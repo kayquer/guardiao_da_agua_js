@@ -604,8 +604,8 @@ function showAbout() {
                 escolhas de uma cidade afetam rios, nascentes e pessoas. O objetivo é apoiar a Educação Ambiental com foco
                 nos recursos hídricos.</p>
                 <dl class="about-facts">
-                    <div><dt>Público-alvo</dt><dd>Ensino Fundamental, anos finais (6º ao 9º ano)</dd></div>
-                    <div><dt>Idade de foco</dt><dd>11 a 14 anos</dd></div>
+                    <div><dt>Público-alvo</dt><dd>6º ano do Ensino Fundamental (Anos Finais)</dd></div>
+                    <div><dt>Idade de foco</dt><dd>Cerca de 11 anos</dd></div>
                     <div><dt>Supervisão</dt><dd>Professor ou adulto responsável</dd></div>
                 </dl>
                 <p class="about-note">O jogo funciona melhor com a mediação de um <strong>professor ou de um adulto

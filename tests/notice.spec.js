@@ -13,7 +13,7 @@ test('aviso aparece primeiro, segura menu e abertura até "Aceitar" e volta a ca
     await expect(notice.locator('.start-notice__logo')).toBeVisible();
     expect(await notice.locator('.start-notice__logo').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
     await expect(notice).toContainText('Cláudia Dias Roxinol');
-    await expect(notice).toContainText('11 a 14 anos');
+    await expect(notice).toContainText('Cerca de 11 anos');
     await expect(notice).toContainText('professor ou de um adulto responsável');
 
     // Carregou tudo por trás, mas nada de menu nem abertura enquanto o aviso está na tela

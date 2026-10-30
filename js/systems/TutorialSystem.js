@@ -1,6 +1,6 @@
 /**
  * GUARDIÃO DA ÁGUA - TUTORIAL SYSTEM
- * Sistema de tutorial educacional com interface RPG para crianças de 11-14 anos
+ * Sistema de tutorial educacional com interface RPG para o 6º ano (cerca de 11 anos)
  */
 
 class TutorialSystem {
