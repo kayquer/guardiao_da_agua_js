@@ -183,7 +183,6 @@
     position: absolute;
     left: 0;
     top: 90px;
-    bottom: 140px;
     width: 340px;
     background: linear-gradient(90deg, #2D3561 0%, #1A1F3A 100%);
     border-right: 6px solid var(--cartoon-purple);
@@ -588,7 +587,6 @@
     position: absolute;
     right: 0;
     top: 90px;
-    bottom: 140px;
     width: 340px;
     background: linear-gradient(270deg, #2D3561 0%, #1A1F3A 100%);
     border-left: 6px solid var(--cartoon-orange);

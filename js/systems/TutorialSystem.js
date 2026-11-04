@@ -1063,7 +1063,7 @@ TutorialSystem.REPLAY_PARTS = [
     { group: 'end', icon: '⚙️', title: 'Como o jogo funciona', summary: 'Causa e efeito, dicas da Pesquisadora Márcia, o Secretário Paulo e o recado final.' }
 ];
 
-TutorialSystem.GROUP_LABELS = { intro: 'Introdução', cityhall: 'Prefeitura', missions: 'Missões', interface: 'Interface', end: 'Final' };
+TutorialSystem.GROUP_LABELS = { hello: 'Boas-vindas', intro: 'Introdução', cityhall: 'Prefeitura', missions: 'Missões', interface: 'Interface', end: 'Final' };
 TutorialSystem.SKIP_LABELS = { intro: 'Pular aulas', missions: 'Pular esta parte', interface: 'Pular esta parte' };
 
 // ===== PERSONAGENS =====

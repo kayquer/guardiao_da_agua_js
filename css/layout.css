@@ -1,0 +1,100 @@
+/* ===== LAYOUT DO COMPUTADOR: A TELA CABE EM 100% =====
+   Carregado por último. O orientador precisou reduzir o navegador para 90% para ver o jogo inteiro: a coluna de
+   categorias tinha ~800 px de altura e cortava mesmo em 1920×940. Agora é um trilho estreito, cujos botões
+   dividem a altura disponível, e o topo baixa em telas curtas. O celular (até 768 px) não muda.
+   Nunca aplicar zoom em html/body nem redimensionar #game-canvas: o HUD é sobreposto ao canvas. */
+:root {
+    --hud-top-h: 90px;
+    --rail-w: 96px;
+}
+
+@media (min-width: 769px) and (max-height: 760px) {
+    :root { --hud-top-h: 68px; }
+    .hud-top { border-bottom-width: 4px; }
+}
+
+@media (min-width: 769px) {
+    .hud-top { height: var(--hud-top-h); }
+    .hud-right { top: var(--hud-top-h); }
+    .toast-stack { top: calc(var(--hud-top-h) + 14px); }
+
+    /* ----- Trilho de categorias ----- */
+    .hud-left {
+        top: var(--hud-top-h);
+        width: var(--rail-w);
+        border-right-width: 4px;
+        box-shadow: 4px 0 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .hud-left .building-panel {
+        padding: 6px;
+        gap: 4px;
+        overflow: hidden auto;
+        scrollbar-width: thin;
+    }
+
+    .hud-left .building-panel h3 { display: none; }
+
+    .hud-left .building-categories {
+        flex: 1 1 auto;
+        min-height: 0;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        gap: 4px;
+        margin: 0;
+    }
+
+    .hud-left .category-btn,
+    .hud-left .tech-tree-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        min-height: 38px;
+        max-height: 66px;
+        width: 100%;
+        margin: 0;
+        padding: 2px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1px;
+        border-width: 2px;
+        border-radius: 12px;
+        font-size: 0.72rem;
+        line-height: 1.1;
+        text-align: center;
+        box-shadow: 0 2px 0 #5B21B6;
+    }
+
+    .hud-left .tech-tree-btn { flex: 0 0 42px; }
+    .hud-left .category-btn::before { display: none; }
+
+    .hud-left .category-btn:hover,
+    .hud-left .tech-tree-btn:hover {
+        transform: none;
+        filter: brightness(1.15);
+        box-shadow: 0 2px 0 #5B21B6, 0 0 10px var(--cartoon-purple);
+    }
+
+    .hud-left .category-btn.active { box-shadow: 0 2px 0 #00AA55; animation: none; }
+
+    .hud-left .category-btn .ui-icon,
+    .hud-left .tech-tree-btn .ui-icon {
+        width: 22px;
+        height: 22px;
+        flex: none;
+    }
+
+    /* O menu de construção abre ao lado do trilho, que continua à mão para trocar de categoria */
+    .build-modal { left: var(--rail-w); }
+}
+
+/* ----- Telas de altura curta ----- */
+@media (min-width: 769px) and (max-height: 760px) {
+    #main-menu h1.game-logo { width: min(290px, 100%); margin-top: -10px; }
+    #main-menu .menu-layout { padding-top: 12px; padding-bottom: 12px; }
+    .book-content { min-height: min(400px, 38vh); padding: 1.2rem; }
+}
+
+/* Com o conteúdo maior que a tela (texto "Maior"), centralizar escondia o topo do formulário */
+#profile-screen.screen.active { align-items: safe center; }
