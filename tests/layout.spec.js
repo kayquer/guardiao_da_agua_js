@@ -59,6 +59,7 @@ for (const [width, height] of [[1366, 650], [1536, 730], [1920, 940]]) {
 
             // Alerta e decisão do Paulo no mesmo lugar; o resto do mapa continua sem véu
             await page.evaluate(() => window.gameManager.uiManager.showCentralAlert('Teste', 'mensagem'));
+            await page.waitForTimeout(500); // termina a animação de entrada
             const alert = await page.locator('.central-alert-card').boundingBox();
             expect(alert.x).toBeLessThan(card.x + 20);
             expect(alert.x + alert.width).toBeLessThanOrEqual(width / 2);
