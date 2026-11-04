@@ -121,6 +121,6 @@ test('sinais além da cor: rótulo em texto no lugar da obra e selo nos números
     await page.evaluate(() => { window.gameManager.resourceManager.resources.water.current = 1; });
     const water = page.locator('.resource-item:has(.resource-value.critical)').first();
     await expect(water).toBeVisible();
-    expect(await water.evaluate(el => getComputedStyle(el, '::after').content)).toBe('"✕"');
+    await expect.poll(() => water.evaluate(el => getComputedStyle(el, '::after').content)).toBe('"✕"');
     expect(errors).toEqual([]);
 });

@@ -99,6 +99,10 @@
 /* Com o conteúdo maior que a tela (texto "Maior"), centralizar escondia o topo do formulário */
 #profile-screen.screen.active { align-items: safe center; }
 
+/* Tela de carregamento coberta pelo aviso: as animações dela paravam de aparecer, mas continuavam gastando */
+body:has(#start-notice) #loading-screen,
+body:has(#start-notice) #loading-screen * { animation-play-state: paused; }
+
 /* ===== PAINEL ÚNICO À ESQUERDA =====
    Tutorial, aulas, alertas, cartões e decisões do Paulo aparecem no mesmo lugar, um por vez, com o mapa à vista
    (fila: UIManager.isMessageSlotBusy). No celular continuam a folha de largura total de sempre.
@@ -278,9 +282,8 @@
     /* O botão do cartão fica sempre à vista, mesmo com o texto rolando em tela curta */
     #mission-card-ok { position: sticky; bottom: 0; z-index: 1; }
 
-    /* Eventos em andamento e selo de pausa: no centro do que sobra de mapa */
-    .event-tracker { top: calc(var(--hud-top-h) + 50px); left: calc(50% + 60px); }
-    #soft-pause-badge { top: calc(var(--hud-top-h) + 10px); left: calc(50% + 60px); }
+    /* Eventos em andamento: no centro do que sobra de mapa, logo abaixo do topo */
+    .event-tracker { top: calc(var(--hud-top-h) + 10px); left: calc(50% + 60px); }
 }
 
 /* ===== SEQUÊNCIA DO RELEVO NO PAINEL DE TERRENO ===== */
@@ -309,4 +312,138 @@
     background: rgba(255, 213, 79, 0.2);
     font-weight: 700;
     opacity: 1;
+}
+
+/* ===== SELO "JOGO PAUSADO" ===== Item da barra do topo, em duas linhas: ocupa o próprio espaço e não cobre nada */
+@media (min-width: 769px) {
+    #soft-pause-badge {
+        position: static;
+        transform: none;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        width: 122px;
+        margin: 0 auto 0 0.5rem;
+        padding: 0.15rem 0.5rem;
+        border-width: 2px;
+        border-radius: 12px;
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+        font-size: 0.68rem;
+        line-height: 1.1;
+    }
+
+    #soft-pause-badge span { min-width: 0; }
+}
+
+/* Notebook: o selo cabe sem empurrar os botões da direita para fora da tela */
+@media (min-width: 769px) and (max-width: 1365px) {
+    .hud-top { padding: 0 0.5rem; }
+    .resource-panel { gap: 0.3rem; }
+    #soft-pause-badge { width: 96px; margin-left: 0.25rem; font-size: 0.62rem; }
+}
+
+@media (min-width: 769px) and (max-width: 1365px) {
+    #soft-pause-badge { width: auto; }
+    #soft-pause-badge span { display: none; }
+}
+
+/* ===== PAINEL DA DIREITA: LARGURA ÚNICA =====
+   .hud-right é flex (showHudRight), e um item flex não encolhe abaixo do conteúdo sem min-width: 0:
+   uma linha comprida esticava o painel inteiro e levava a barra de rolagem e o ✕ para fora da tela.
+   Agora o painel tem a largura do .hud-right e todo conteúdo quebra linha dentro dela. */
+@media (min-width: 769px) {
+    .details-panel {
+        width: 100%;
+        min-width: 0;
+        padding: 1rem;
+    }
+
+    .details-content {
+        min-width: 0;
+        overflow-x: hidden;
+        overflow-wrap: break-word; /* só quebra palavra maior que a linha ("anywhere" partia "Tendência" ao meio) */
+    }
+
+    .details-content > * { max-width: 100%; }
+
+    .details-content .resource-details-panel { padding: 12px; }
+
+    /* Rótulo e valor dividem a linha; se não couberem, o valor desce para a linha de baixo */
+    .details-content .resource-stat { flex-wrap: wrap; column-gap: 0.5rem; }
+    .details-content .resource-stat .stat-value { margin-left: auto; text-align: right; }
+    .details-content .resource-sources li { flex-wrap: wrap; column-gap: 0.5rem; }
+
+    /* Prédio de nome longo: o botão Desselecionar desce para a linha de baixo em vez de ser cortado */
+    .details-content .selection-header { flex-wrap: wrap; gap: 0.5rem; }
+    .details-content .selection-header h3 { flex: 1 1 150px; min-width: 0; }
+    .details-content .selection-header .deselect-btn { margin-left: auto; }
+    .details-content .detail-row { flex-wrap: wrap; column-gap: 0.5rem; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .hud-right { width: 300px; }
+}
+
+/* Com o painel estreito, os avisos ficam entre o trilho e o painel, sem sumir */
+@media (min-width: 769px) and (max-width: 1024px) {
+    body:has(.hud-right[style*="flex"]) .toast-stack {
+        right: 312px;
+        width: min(320px, calc(100vw - 312px - var(--rail-w) - 16px));
+    }
+}
+
+/* ===== BARRA DO TOPO EM TELAS ESTREITAS =====
+   A largura ocupada era de 1.172 a 1.306 px: abaixo disso, a barra cortava os botões da direita. */
+@media (min-width: 769px) and (max-width: 1279px) {
+    .hud-top { padding: 0 0.35rem; gap: 0.35rem; }
+    .resource-panel { gap: 0.2rem; min-width: 0; }
+
+    .resource-item {
+        height: 40px;
+        min-width: 0;
+        gap: 0.1rem;
+        padding: 0 0.2rem;
+        border-width: 3px;
+    }
+
+    .resource-icon { width: 24px; height: 24px; }
+    .resource-value { font-size: 0.74rem; letter-spacing: 0; white-space: nowrap; }
+    .res-trend { width: 16px; height: 16px; margin-right: 1px; border-width: 1.5px; }
+    .res-trend svg { width: 10px; height: 10px; }
+
+    .resource-item.clock-weather { gap: 0.2rem; padding: 0 0.4rem 0 0.1rem; }
+    .clock-weather .weather-card { height: 26px; padding: 0 0.3rem 0 0; }
+    .clock-weather .weather-temp { font-size: 0.9rem; }
+    .clock-time { font-size: 0.9rem; }
+    .clock-date { font-size: 0.62rem; }
+
+    .player-chip { max-width: 120px; padding: 0.25rem 0.5rem; font-size: 0.85rem; }
+    .control-buttons { gap: 0.35rem; }
+    .control-btn { width: 42px; height: 42px; border-width: 3px; font-size: 1.1rem; }
+}
+
+/* Abaixo de 1000 px os recursos quebram em duas linhas; a barra fica mais alta em qualquer altura de tela */
+@media (min-width: 769px) and (max-width: 999px) {
+    :root { --hud-top-h: 96px; }
+    .hud-top { border-bottom-width: 4px; }
+
+    .resource-panel {
+        flex: 1 1 0;
+        flex-wrap: wrap;
+        align-content: center;
+        row-gap: 4px;
+    }
+
+    .player-chip { padding: 0.25rem 0.45rem; }
+    #player-name { display: none; }
+}
+
+/* Notebook e monitor médio: com valores grandes (R$ 2.500.000, 20.000 L), a barra também estourava */
+@media (min-width: 1280px) and (max-width: 1699px) {
+    .hud-top { padding: 0 0.5rem; gap: 0.3rem; }
+    .resource-panel { gap: 0.3rem; }
+    .resource-item:not(.clock-weather) { padding: 0 0.25rem; }
+    .resource-value { letter-spacing: 0; white-space: nowrap; }
+    .player-chip { max-width: 120px; }
 }

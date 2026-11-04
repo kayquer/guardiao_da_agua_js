@@ -676,8 +676,9 @@ class UIManager {
         if (paused && !badge) {
             badge = document.createElement('div');
             badge.id = 'soft-pause-badge';
-            badge.innerHTML = `${uiIcon('ui-pause')} Jogo pausado enquanto você lê`;
-            document.getElementById('game-screen')?.appendChild(badge);
+            badge.innerHTML = `${uiIcon('ui-pause')}<span>Jogo pausado enquanto você lê</span>`;
+            // Na barra do topo, ao lado dos recursos: um lugar só dele, sem cobrir nada
+            document.querySelector('.resource-panel')?.after(badge);
         } else if (!paused && badge) {
             badge.remove();
         }
@@ -2148,6 +2149,11 @@ class UIManager {
         const bs = this.gameManager?.buildingSystem;
         const building = bs?.buildings.get(buildingId);
         if (!building || !bs.canRecycleBuilding(building)) return;
+        // Rua é barata e sai numa fileira: confirmar bloco por bloco só atrapalharia
+        if (building.config.roadType) {
+            bs.recycleBuilding(buildingId);
+            return;
+        }
         const { percent, sources } = bs.getRecycleRate();
         const value = bs.getRecycleValue(building);
         const why = sources.length

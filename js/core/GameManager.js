@@ -4,6 +4,10 @@
  */
 
 class GameManager {
+    static FPS_PLAYING = 60;
+    static FPS_READING = 30;
+    static FPS_COVERED = 5;
+
     constructor() {
         log('🎮 Inicializando GameManager...');
 
@@ -313,6 +317,9 @@ class GameManager {
         }
 
         // FXAA (um passe barato) quando não há MSAA: na média, ou na alta escolhida depois de abrir o jogo sem MSAA
+        // O mapa de sombra é de metade dos quadros: nada anda rápido o bastante para notar, e é o passe mais caro
+        if (sg) sg.getShadowMap().refreshRate = 2;
+
         const wantFxaa = (p.fxaa || p.antialias) && !this.engineAntialias && !!this.camera;
         if (wantFxaa && !this.fxaaPostProcess) {
             this.fxaaPostProcess = new BABYLON.FxaaPostProcess('fxaa', 1.0, this.camera);
@@ -661,8 +668,11 @@ class GameManager {
     }
 
     startRenderLoop() {
+        this.framePacer = new FramePacer();
         this.engine.runRenderLoop(() => {
             const currentTime = performance.now();
+            // Quadro pulado: nada é desenhado nem simulado; o próximo recebe o tempo acumulado (lastUpdateTime)
+            if (!this.framePacer.ready(currentTime, this.getFrameRateTarget())) return;
 
             if (this.renderState.circuitBreakerActive) {
                 console.error('🚨 Circuit breaker ativo - render parado');
@@ -702,11 +712,7 @@ class GameManager {
             try {
                 this.updateCameraControls(cappedDeltaTime);
                 this.update(cappedDeltaTime);
-                // Embaixo da tela de pausa nada se mexe: desenha ~10 vezes por segundo em vez de 60 (GPU e bateria)
-                if (this.gameState !== 'paused' || currentTime - (this.lastPausedRender || 0) >= 100) {
-                    this.lastPausedRender = currentTime;
-                    this.scene.render();
-                }
+                this.scene.render();
             } catch (error) {
                 console.error('❌ Erro durante render:', error);
                 this.renderState.corruptionCount++;
@@ -721,6 +727,29 @@ class GameManager {
                 this.lastFPSUpdate = currentTime;
             }
         });
+    }
+
+    /**
+     * Quadros por segundo que valem a pena agora. Câmera andando: sem limite (monitor de 144 Hz continua liso).
+     * Parada: 60, o suficiente para o trânsito e a água. Lendo (tutorial, popup): 30, só a água e as árvores se mexem.
+     * Embaixo da tela de pausa ou de fim de jogo: 5, quase nada aparece e nada se mexe.
+     */
+    getFrameRateTarget() {
+        if (this.gameState === 'paused' || this.gameState === 'gameover') return GameManager.FPS_COVERED;
+        if (this.isCameraMoving() || this.buildMode || this.buildingSystem?.previewMode) return Infinity;
+        if (this.gameState === 'tutorial' || this.pauseReasons?.size > 0) return GameManager.FPS_READING;
+        return GameManager.FPS_PLAYING;
+    }
+
+    isCameraMoving() {
+        const camera = this.camera;
+        if (!camera?.target) return false;
+        const { alpha, beta, radius, target: { x, z } } = camera;
+        const last = this.lastCameraSample;
+        this.lastCameraSample = { alpha, beta, radius, x, z };
+        if (!last) return true;
+        return Math.abs(alpha - last.alpha) + Math.abs(beta - last.beta) + Math.abs(radius - last.radius) +
+            Math.abs(x - last.x) + Math.abs(z - last.z) > 0.0005;
     }
 
     update(deltaTime) {

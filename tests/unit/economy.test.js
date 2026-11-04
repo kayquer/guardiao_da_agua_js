@@ -122,3 +122,13 @@ test('save antigo (sem buildingIncome/buildingSatisfaction) recompõe pelos pré
     bs.rebuildLegacyResourceTotals(fresh);
     assert.strictEqual(rm.resources.budget.buildingIncome, 123);
 });
+
+test('jogo novo tem capacidade de água definida desde o primeiro instante', () => {
+    const rm = new ResourceManager({ gameTime: 0 });
+    rm.reset();
+    const water = rm.resources.water;
+    assert.strictEqual(water.storage, water.max);
+    assert.ok(Number.isFinite(water.storage) && water.storage > 0, String(water.storage));
+    rm.addWaterStorage(500);
+    assert.strictEqual(water.storage, water.max + 500);
+});

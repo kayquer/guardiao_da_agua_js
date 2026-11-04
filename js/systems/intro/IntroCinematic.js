@@ -32,6 +32,7 @@ class IntroCinematic {
         this.time = 0;          // ms acumulados (pausa junto com a aba)
         this.director = null;   // { shots, index, elapsed, onShot, onFinish }
         this.orbit = null;      // { center, radius, baseAngle, height, start }
+        this.targetFps = Infinity;
         this.onResize = () => this.engine?.resize();
     }
 
@@ -80,12 +81,28 @@ class IntroCinematic {
         // Compila os shaders antes do primeiro quadro visível (sem engasgo no começo do voo)
         await scene.whenReadyAsync().catch(() => {});
         if (this.disposed) return false;
-        this.engine.runRenderLoop(() => {
-            if (!this.disposed && this.scene) this.scene.render();
-        });
         window.addEventListener('resize', this.onResize);
         onProgress(1);
         return true;
+    }
+
+    /**
+     * Começa a desenhar. Só quando a abertura vai aparecer: a cidade fica pronta durante o carregamento, e desenhar
+     * atrás da tela de aviso gastava a placa de vídeo à toa. targetFps muda depois com setCalm.
+     */
+    startRendering() {
+        if (this.rendering || this.disposed) return;
+        this.rendering = true;
+        const pacer = new FramePacer();
+        this.engine.runRenderLoop(() => {
+            if (this.disposed || !this.scene || !pacer.ready(performance.now(), this.targetFps)) return;
+            this.scene.render();
+        });
+    }
+
+    /** Depois do voo da câmera, atrás do menu, a cidade só gira devagar: 30 quadros bastam. */
+    setCalm(calm) {
+        this.targetFps = calm ? 30 : Infinity;
     }
 
     cellToWorld(x, y, z) {

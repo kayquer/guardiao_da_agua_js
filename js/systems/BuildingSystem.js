@@ -702,7 +702,7 @@ class BuildingSystem {
             // Remover conexão de terreno associada
             const connectionMesh = this.connectionMeshes.get(meshName);
             if (connectionMesh && !connectionMesh.isDisposed()) {
-                connectionMesh.dispose();
+                connectionMesh.dispose(true, true); // o material é só deste prédio (createConnectionMesh)
                 this.connectionMeshes.delete(meshName);
             }
 
@@ -1412,11 +1412,11 @@ class BuildingSystem {
                 const elapsed = Date.now() - startTime;
                 const pulse = Math.sin(elapsed * 0.005) * 0.15 + 1; // Pulsar entre 0.85 e 1.15
             
-                powerIcon.mesh.scaling = new BABYLON.Vector3(pulse, pulse, pulse);
+                powerIcon.mesh.scaling.setAll(pulse);
             
                 // Pulsar emissão
                 const emissivePulse = Math.sin(elapsed * 0.005) * 0.3 + 0.7;
-                powerIcon.material.emissiveColor = new BABYLON.Color3(emissivePulse, 0.2 * emissivePulse, 0.2 * emissivePulse);
+                powerIcon.material.emissiveColor.set(emissivePulse, 0.2 * emissivePulse, 0.2 * emissivePulse);
 
                 requestAnimationFrame(animatePowerIcon);
             };

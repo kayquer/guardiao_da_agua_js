@@ -94,7 +94,7 @@ test('reciclar prédio: de 20% a 80% do custo, cada tipo de prédio de conhecime
     add('c', 'city_hall');
     add('r', 'paved_road');
     assert.strictEqual(fake.canRecycleBuilding(fake.buildings.get('c')), false);
-    assert.strictEqual(fake.canRecycleBuilding(fake.buildings.get('r')), false);
+    assert.strictEqual(fake.canRecycleBuilding(fake.buildings.get('r')), true, 'rua pode ser reciclada');
     assert.strictEqual(fake.canRecycleBuilding(fake.buildings.get('p')), true);
     fake.gameManager.tutorialSystem.isActive = true;
     assert.strictEqual(fake.canRecycleBuilding(fake.buildings.get('p')), false);

@@ -253,3 +253,55 @@ test('Asfalto: guia das ruas abre na primeira vez e fica na aba Guias', async ({
     await expect(card).toContainText('Ruas');
     expect(problems).toEqual([]);
 });
+
+test('qualquer tipo de rua pode ser reciclado: devolve parte do custo e os vizinhos se ajustam', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'mesma lógica do desktop');
+    await startGame(page);
+    const results = await page.evaluate(() => {
+        const gm = window.gameManager, bs = gm.buildingSystem, s = gm.gridManager.startArea;
+        gm.tutorialSystem.complete();
+        gm.resourceManager.resources.budget.current = 1e5;
+        return ['paved_road', 'dirt_road', 'gravel_road'].map((type, i) => {
+            const z = s.z - 3 + i * 2;
+            const cells = RoadNetwork.linePath(s.x - 2, z, s.x, z);
+            bs.placeRoadLine(cells, type);
+            const road = bs.getBuildingAt(s.x - 1, z);
+            const before = gm.resourceManager.resources.budget.current;
+            const value = bs.getRecycleValue(road);
+            const can = bs.canRecycleBuilding(road);
+            const back = bs.recycleBuilding(road.id);
+            return {
+                type: road.type, can, value, back,
+                gained: gm.resourceManager.resources.budget.current - before,
+                gone: !bs.getBuildingAt(s.x - 1, z),
+                free: bs.canPlaceRoadAt(s.x - 1, z, type).ok,
+                neighbours: !!bs.getBuildingAt(s.x - 2, z) && !!bs.getBuildingAt(s.x, z)
+            };
+        });
+    });
+    expect(results.map(r => r.type)).toEqual(['paved_road', 'dirt_road', 'gravel_road']);
+    for (const r of results) {
+        expect(r).toMatchObject({ can: true, gone: true, free: true, neighbours: true });
+        expect(r.value).toBeGreaterThan(0);
+        expect(r.gained).toBe(r.value);
+    }
+});
+
+test('o painel da rua mostra Reciclar e recicla sem confirmação', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'mesma lógica do desktop');
+    await startGame(page);
+    const id = await page.evaluate(() => {
+        const gm = window.gameManager, bs = gm.buildingSystem, s = gm.gridManager.startArea;
+        gm.tutorialSystem.complete();
+        gm.resourceManager.resources.budget.current = 1e5;
+        bs.placeRoadLine(RoadNetwork.linePath(s.x, s.z, s.x, s.z), 'paved_road');
+        const road = bs.getBuildingAt(s.x, s.z);
+        gm.selectBuilding(road);
+        return road.id;
+    });
+    const button = page.locator('.recycle-btn');
+    await expect(button).toBeVisible();
+    await button.click();
+    await page.waitForFunction(roadId => !window.gameManager.buildingSystem.buildings.has(roadId), id);
+    await expect(page.locator('.swal2-container')).toHaveCount(0);
+});

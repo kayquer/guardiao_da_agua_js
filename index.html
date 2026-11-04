@@ -65,7 +65,7 @@
     <link rel="stylesheet" href="css/player-menu.css?v=90353729">
     <link rel="stylesheet" href="css/speed-menu.css?v=b403791f">
     <link rel="stylesheet" href="css/build-menu.css?v=6a2bed6d">
-    <link rel="stylesheet" href="css/layout.css?v=d0075cb2">
+    <link rel="stylesheet" href="css/layout.css?v=c43a43fd">
 
     <!-- Babylon.js CDN -->
     <script src="https://cdn.babylonjs.com/v9.31.2/babylon.js"></script>
@@ -684,6 +684,7 @@
 
     <!-- Clean Code Refactoring: Game Constants (loaded first) -->
     <script src="js/config/GameConstants.js?v=5d4e2f21"></script>
+    <script src="js/data/preloadImages.js?v=e87e539d"></script>
     <script src="js/data/riverMap.js?v=1dbe219c"></script>
     <script src="js/data/terrainInfo.js?v=d9b1d2a2"></script>
     <script src="js/data/buildings.js?v=e7dccf17"></script>
@@ -779,10 +780,10 @@
     </div>
 
     <!-- Utilitários primeiro -->
-    <script src="js/utils/GameUtils.js?v=ca581bc5"></script>
+    <script src="js/utils/GameUtils.js?v=bed3fe79"></script>
     <script src="js/utils/Icons.js?v=79a999a7"></script>
     <script src="js/utils/GameLogo.js?v=760d4841"></script>
-    <script src="js/utils/AssetLoader.js?v=96c124c5"></script>
+    <script src="js/utils/AssetLoader.js?v=a1f12c46"></script>
     <script src="js/utils/AudioManager.js?v=300d9b46"></script>
     <script src="js/utils/audio/SoundDirector.js?v=1bbf78e0"></script>
     <script src="js/ui/AnimatedPortrait.js?v=7a5cbd3d"></script>
@@ -791,24 +792,24 @@
     <script src="js/systems/TextSize.js?v=ce837765"></script>
     <script src="js/systems/GraphicsQuality.js?v=680ce155"></script>
     <script src="js/core/GridManager.js?v=f5251e15"></script>
-    <script src="js/core/ResourceManager.js?v=acdbd1cf"></script>
+    <script src="js/core/ResourceManager.js?v=0a461127"></script>
 
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=f9674bb9"></script>
 
-    <script src="js/core/GameManager.js?v=37704e0b"></script>
+    <script src="js/core/GameManager.js?v=09ec2266"></script>
     <script src="js/core/game/Diagnostics.js?v=8ec9d8c0"></script>
     <script src="js/core/game/SelectionVisuals.js?v=034e13b1"></script>
     <script src="js/core/game/CameraGuard.js?v=2024c210"></script>
 
     <!-- Game systems -->
-    <script src="js/systems/BuildingSystem.js?v=44979e13"></script>
+    <script src="js/systems/BuildingSystem.js?v=3b46e019"></script>
     <script src="js/systems/building/BuildingMeshes.js?v=8b1c4df0"></script>
-    <script src="js/systems/building/BuildingFeedback.js?v=719f7b7e"></script>
+    <script src="js/systems/building/BuildingFeedback.js?v=09351d35"></script>
     <script src="js/systems/building/BuildingModels.js?v=f04f80df"></script>
     <script src="js/systems/building/ZoneGrowth.js?v=45d13e72"></script>
     <script src="js/systems/building/TreeGrowth.js?v=e026299e"></script>
-    <script src="js/systems/building/BuildingRecycle.js?v=556bf5c8"></script>
+    <script src="js/systems/building/BuildingRecycle.js?v=c079106f"></script>
     <script src="js/systems/building/WaterIntake.js?v=f609d1a9"></script>
     <script src="js/systems/building/BuildingEfficiency.js?v=f2c5f72c"></script>
     <script src="js/systems/roads/RoadNetwork.js?v=9cef4abd"></script>
@@ -819,7 +820,7 @@
     <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
     <script src="js/systems/ResourceTrends.js?v=16c746be"></script>
     <script src="js/systems/DeclineWatch.js?v=e0e70d98"></script>
-    <script src="js/systems/UIManager.js?v=5604b520"></script>
+    <script src="js/systems/UIManager.js?v=78c5d37e"></script>
     <script src="js/systems/ui/MobileTouch.js?v=91fdcc8a"></script>
     <script src="js/systems/ui/StudyBookUI.js?v=1d82ff75"></script>
     <script src="js/systems/ui/LoanUI.js?v=58e6338c"></script>
@@ -842,7 +843,7 @@
     <script src="js/systems/ui/SettingsUI.js?v=ea95d176"></script>
     <script src="js/systems/ui/LessonBookUI.js?v=3122a13a"></script>
     <script src="js/systems/ui/TreeInfoUI.js?v=e348aba5"></script>
-    <script src="js/systems/LoanManager.js?v=e6d4f91a"></script>
+    <script src="js/systems/LoanManager.js?v=6a416acb"></script>
     <script src="js/systems/QuestSystem.js?v=c1355892"></script>
     <script src="js/systems/ui/MissionUI.js?v=6dc307c0"></script>
     <script src="js/systems/CityChallenges.js?v=33f98f4d"></script>
@@ -854,7 +855,7 @@
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
     <script src="js/systems/TutorialSystem.js?v=3b3f52dc"></script>
     <script src="js/systems/RescueGuides.js?v=c4db5930"></script>
-    <script src="js/systems/GameOverSystem.js?v=f2965ad2"></script>
+    <script src="js/systems/GameOverSystem.js?v=403ffaf1"></script>
     <script src="js/systems/PlayerProfile.js?v=08ed2695"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
@@ -866,10 +867,10 @@
 
     <!-- Abertura cinematográfica do menu (cena Babylon própria; usa o carregador de modelos do BuildingSystem) -->
     <script src="js/systems/intro/IntroLayout.js?v=176a4c5c"></script>
-    <script src="js/systems/intro/IntroCinematic.js?v=289b45ff"></script>
-    <script src="js/systems/intro/MenuIntro.js?v=796bc27e"></script>
+    <script src="js/systems/intro/IntroCinematic.js?v=2d01a85b"></script>
+    <script src="js/systems/intro/MenuIntro.js?v=06818672"></script>
 
     <!-- Main initialization -->
-    <script src="js/main.js?v=f05ab0a9"></script>
+    <script src="js/main.js?v=1935d1a9"></script>
 </body>
 </html>

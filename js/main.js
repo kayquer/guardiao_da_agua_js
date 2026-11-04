@@ -109,7 +109,11 @@ function initializeLoadingScreen() {
     
     // Rotacionar dicas
     let tipIndex = 0;
-    setInterval(() => {
+    const tipTimer = setInterval(() => {
+        if (!document.getElementById('loading-screen')?.classList.contains('active')) {
+            clearInterval(tipTimer); // ficava trocando a dica para sempre, com a tela já escondida
+            return;
+        }
         tipIndex = (tipIndex + 1) % LOADING_TIPS.length;
         loadingTip.textContent = LOADING_TIPS[tipIndex];
         loadingTip.style.animation = 'none';
@@ -460,6 +464,8 @@ async function startLoading() {
         // Carregar assets
         log('📦 Carregando assets...');
         await AssetLoader.loadAssets(updateLoadingProgress);
+        // Imagens, ícones e fontes que aparecem durante o jogo: sem isso elas "pulam" na tela na primeira vez
+        await AssetLoader.preloadCritical(p => updateLoadingProgress(10 + Math.round(p * 30)));
         updateLoadingProgress(40);
 
         // Inicializar áudio
@@ -475,6 +481,9 @@ async function startLoading() {
         // Finalizar
         log('✅ Carregamento concluído');
         updateLoadingProgress(100);
+
+        // O resto (estudos, modelos 3D) vem sem pressa, enquanto o jogador lê o aviso e o menu
+        AssetLoader.preloadBackground();
 
         // Aviso inicial (js/ui/StartNotice.js): menu e abertura só depois de "Aceitar"
         await StartNotice.accepted;

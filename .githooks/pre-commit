@@ -1,0 +1,4 @@
+#!/bin/sh
+# ?v= de todo js/css do index.html sempre em dia: nenhum commit sai com versão velha (scripts/cache-bust.js)
+node scripts/cache-bust.js || exit 1
+git add index.html

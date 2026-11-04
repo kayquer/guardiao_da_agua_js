@@ -361,8 +361,9 @@ mixin(BuildingSystem, {
             const { progressBar, progressBg, textPlate } = buildingData.constructionIndicators;
 
             // Remover barras de progresso
-            if (progressBar && !progressBar.isDisposed()) progressBar.dispose();
-            if (progressBg && !progressBg.isDisposed()) progressBg.dispose();
+            // true, true: os dois materiais são desta obra (ficavam na cena para sempre, dois por construção)
+            if (progressBar && !progressBar.isDisposed()) progressBar.dispose(true, true);
+            if (progressBg && !progressBg.isDisposed()) progressBg.dispose(true, true);
         
             // ===== USAR O MÉTODO DISPOSE DA PLAQUINHA =====
             if (textPlate) {

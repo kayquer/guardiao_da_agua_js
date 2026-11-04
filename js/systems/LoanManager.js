@@ -255,6 +255,11 @@ class LoanManager {
     }
     
     handleLatePayment(loan) {
+        // Uma vez por "mês" de atraso. A cobrança tenta de novo a cada LATE_RETRY_MS, e cada tentativa tirava crédito e
+        // mostrava um aviso: a cada 20 s, sem parar
+        if (this.simNow() - (loan.lastLateNoticeAt ?? -Infinity) < LoanManager.MONTH_MS) return;
+        loan.lastLateNoticeAt = this.simNow();
+
         // Reduzir score de crédito
         this.cityFinancialHealth.creditScore = Math.max(
             this.config.minCreditScore,

@@ -4,6 +4,8 @@
  */
 
 class AssetLoader {
+    static CRITICAL_TIMEOUT_MS = 8000;
+
     constructor() {
         this.loadedAssets = new Map();
         this.loadingPromises = new Map();
@@ -48,6 +50,79 @@ class AssetLoader {
         }
     }
     
+    // ===== PRELOAD DO QUE APARECE DURANTE O JOGO =====
+    // Em testes (navigator.webdriver) fica desligado, a não ser com ?preload na URL, como a abertura e o aviso.
+    static preloadEnabled() {
+        return /[?&]preload\b/.test(location.search) || !navigator.webdriver;
+    }
+
+    /** Ícones (cada tamanho que existe), retratos e figuras: lista só com arquivos que o jogo usa de verdade. */
+    static criticalImages() {
+        const icons = Object.keys(UI_ICON_FILES).flatMap(id => [uiIconSrc(id, 'sm'), uiIconSrc(id, 'lg')]);
+        const portraits = Object.entries(PORTRAIT_MANIFEST).flatMap(([id, entry]) =>
+            ['portrait', ...Object.keys(entry.layers)].map(name => `assets/characters/${id}/${name}.webp`));
+        return [...new Set([...PRELOAD_IMAGES.critical, ...portraits, ...icons])];
+    }
+
+    static backgroundImages() {
+        return [...PRELOAD_IMAGES.background, ...(window.innerWidth <= 768 ? PRELOAD_IMAGES.mobile : [])];
+    }
+
+    /** Todos os .glb de prédios e peças de zona: só para o cache do navegador; quem monta é BuildingModels. */
+    static modelFiles() {
+        const files = Object.values(BUILDING_MODELS).map(model => model.file);
+        for (const zone of Object.values(ZONE_LOTS)) {
+            for (const stage of zone.stages) files.push(...stage.map(piece => piece.file).filter(file => !file.startsWith('prop:')));
+        }
+        return [...new Set(files)].map(file => `models/buildings/${file}`);
+    }
+
+    /** Baixa e decodifica. Guarda a referência: sem ela o navegador pode descartar a imagem. Erro não trava o jogo. */
+    static preloadImage(src) {
+        const image = new Image();
+        image.decoding = 'async';
+        image.src = src;
+        (AssetLoader.preloaded ||= []).push(image);
+        return image.decode().catch(() => logWarn('Preload: imagem indisponível', src));
+    }
+
+    /** Roda worker(item) com poucos ao mesmo tempo. */
+    static async runPool(items, worker, concurrency, onEach = () => {}) {
+        let index = 0, done = 0;
+        const next = async () => {
+            while (index < items.length) {
+                await worker(items[index++]);
+                onEach(++done / items.length);
+            }
+        };
+        await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, next));
+    }
+
+    /** Durante o carregamento. Tem teto de tempo: em conexão lenta o jogo abre e o resto continua chegando. */
+    static async preloadCritical(onProgress = () => {}) {
+        if (!AssetLoader.preloadEnabled()) return;
+        const fonts = ['1em "Lilita One"', '1em "Fredoka"', '1em "M PLUS Rounded 1c"'].map(font =>
+            (document.fonts?.load(font) || Promise.resolve()).catch(() => {}));
+        const images = AssetLoader.runPool(AssetLoader.criticalImages(), AssetLoader.preloadImage, 12, onProgress);
+        await Promise.race([
+            Promise.all([images, ...fonts]),
+            new Promise(resolve => setTimeout(resolve, AssetLoader.CRITICAL_TIMEOUT_MS))
+        ]);
+    }
+
+    /** Depois do carregamento, sem pressa e sem atrapalhar: respeita quem pediu para economizar dados. */
+    static preloadBackground() {
+        if (!AssetLoader.preloadEnabled() || navigator.connection?.saveData) return;
+        const fetchIt = url => fetch(url, { priority: 'low' }).then(response => response.blob()).catch(() => {});
+        const start = async () => {
+            await fetchIt('data/building-studies.json');
+            await AssetLoader.runPool(AssetLoader.backgroundImages(), AssetLoader.preloadImage, 3);
+            await AssetLoader.runPool(AssetLoader.modelFiles(), fetchIt, 3);
+        };
+        if (window.requestIdleCallback) requestIdleCallback(start, { timeout: 2000 });
+        else setTimeout(start, 500);
+    }
+
     // ===== CARREGAMENTO INDIVIDUAL =====
     async loadAsset(assetInfo) {
         const { type, key, path, optional = false } = assetInfo;

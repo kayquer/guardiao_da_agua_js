@@ -11,9 +11,17 @@ class GameOverSystem {
     static EMERGENCY_LIVES = 3;
     static EMERGENCY_WATER_RATIO = 0.5;   // carros-pipa enchem a caixa até a metade
     static EMERGENCY_POLLUTION = 55;      // força-tarefa baixa a poluição até aqui
-    static EMERGENCY_FUNDS = 20000;       // vem como empréstimo emergencial
-    static EMERGENCY_LOAN_MONTHS = 6;
-    static EMERGENCY_RATE_FACTOR = 1.5;   // juros 50% acima do normal
+    // Empréstimo emergencial proporcional à cidade (getEmergencyLoan). Era R$ 20.000 em 6 parcelas para qualquer cidade:
+    // a parcela (R$ 1.696/min) passava da receita inteira de uma cidade pequena, que nunca saía do atraso.
+    static EMERGENCY_FUNDS_MINUTES = 12;  // o dinheiro = 12 min de receita, entre o mínimo e o máximo abaixo
+    static EMERGENCY_FUNDS_MIN = 12000;   // o bastante para reconstruir o básico
+    static EMERGENCY_FUNDS_MAX = 40000;
+    static EMERGENCY_INCOME_SHARE = 0.25; // todas as parcelas juntas: até 25% da receita, se o prazo permitir
+    static EMERGENCY_MIN_SHARE = 0.1;     // com outras dívidas, esta parcela ainda usa até 10% da receita
+    static EMERGENCY_REPEAT_SCALE = [1, 0.75, 0.5]; // cada nova declaração traz menos dinheiro: a conta não vira uma bola de neve
+    static EMERGENCY_MONTHS_MIN = 6;
+    static EMERGENCY_MONTHS_MAX = 36;     // 36 "meses" = 72 min de jogo
+    static EMERGENCY_RATE_FACTOR = 1.5;   // juros 50% acima do que a cidade pagaria num empréstimo normal
     static EMERGENCY_CALM_MS = 180000;    // Defesa Civil: 3 min de jogo sem eventos novos
     static EMERGENCY_REPUTATION = { government: -10, citizens: -6, business: -6 };
 
@@ -240,15 +248,34 @@ class GameOverSystem {
             button.innerHTML = `🚨 Declarar situação de emergência <small>(${left} de ${this.getEmergencyLimit()})</small>`;
         }
         if (!text) return;
-        const fmt = n => `R$ ${n.toLocaleString('pt-BR')}`;
+        const fmt = n => `R$ ${Math.round(n).toLocaleString('pt-BR')}`;
+        const loan = left > 0 ? this.getEmergencyLoan() : null;
         text.insertAdjacentHTML('beforeend', left > 0 ? `
             <div class="emergency-offer">
                 <p><strong>🚨 Ainda dá para pedir ajuda ao Estado</strong> (restam ${left} de ${this.getEmergencyLimit()} declarações).</p>
                 <p>✅ <b>Ajuda:</b> carros-pipa enchem a caixa até a metade, uma força-tarefa limpa o rio (poluição até ${GameOverSystem.EMERGENCY_POLLUTION}%),
-                ${fmt(GameOverSystem.EMERGENCY_FUNDS)} chegam na hora e a Defesa Civil segura novos problemas por um tempo.</p>
-                <p>⚠️ <b>Preço:</b> o dinheiro é um empréstimo com juros maiores, o governo, os moradores e o comércio confiam menos
+                ${fmt(loan.funds)} chegam na hora e a Defesa Civil segura novos problemas por um tempo.</p>
+                <p>⚠️ <b>Preço:</b> o dinheiro é um empréstimo com juros maiores (${loan.months} parcelas de ${fmt(loan.payment)}), o governo, os moradores e o comércio confiam menos
                 na prefeitura e o Estado intervém por alguns minutos (moradores menos satisfeitos).</p>
             </div>` : `<p class="emergency-offer used"><strong>🚨 As ${this.getEmergencyLimit()} declarações de emergência já foram usadas.</strong> Desta vez não há mais ajuda do Estado.</p>`);
+    }
+
+    /** Valor, prazo, juros e parcela do empréstimo que viria agora, conforme a receita e as dívidas da cidade. */
+    getEmergencyLoan() {
+        const lm = this.gameManager.loanManager;
+        const perMinute = this.gameManager.resourceManager?.getBudget?.().income || ResourceManager.BASE_INCOME;
+        const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+        const repeat = GameOverSystem.EMERGENCY_REPEAT_SCALE;
+        const scale = repeat[Math.min(this.emergenciesUsed || 0, repeat.length - 1)];
+        const base = clamp(perMinute * GameOverSystem.EMERGENCY_FUNDS_MINUTES, GameOverSystem.EMERGENCY_FUNDS_MIN, GameOverSystem.EMERGENCY_FUNDS_MAX);
+        const funds = Math.round(base * scale / 500) * 500;
+        const rate = lm.calculateInterestRate() * GameOverSystem.EMERGENCY_RATE_FACTOR;
+        const monthlyIncome = lm.getMonthlyIncome();
+        const room = Math.max(monthlyIncome * GameOverSystem.EMERGENCY_INCOME_SHARE - lm.getMonthlyPayments(),
+            monthlyIncome * GameOverSystem.EMERGENCY_MIN_SHARE);
+        let months = GameOverSystem.EMERGENCY_MONTHS_MIN;
+        while (months < GameOverSystem.EMERGENCY_MONTHS_MAX && lm.calculateMonthlyPayment(funds, months, rate) > room) months++;
+        return { funds, months, rate, payment: lm.calculateMonthlyPayment(funds, months, rate) };
     }
 
     /**
@@ -260,6 +287,7 @@ class GameOverSystem {
         const gm = this.gameManager;
         const rm = gm.resourceManager;
         const res = rm.resources;
+        const terms = this.getEmergencyLoan(); // antes de contar esta declaração: o mesmo valor que a oferta mostrou
         this.emergenciesUsed++;
         if (typeof ResearchLog !== 'undefined') ResearchLog.record('emergency', { target: this.gameOverReason, value: this.getEmergenciesLeft() });
 
@@ -267,16 +295,13 @@ class GameOverSystem {
         res.water.current = Math.max(res.water.current, (res.water.max || 0) * GameOverSystem.EMERGENCY_WATER_RATIO); // max = capacidade
         res.pollution.current = Math.min(res.pollution.current, GameOverSystem.EMERGENCY_POLLUTION);
         const lm = gm.loanManager;
-        if (lm) {
-            const rate = (lm.config?.baseInterestRate || 0.1) * GameOverSystem.EMERGENCY_RATE_FACTOR;
-            const loan = lm.createLoan(GameOverSystem.EMERGENCY_FUNDS, GameOverSystem.EMERGENCY_LOAN_MONTHS, rate);
-            loan.emergency = true;
-            if (lm.cityFinancialHealth) {
-                lm.cityFinancialHealth.totalDebt += GameOverSystem.EMERGENCY_FUNDS;
-                lm.cityFinancialHealth.monthlyPayments += loan.monthlyPayment;
-            }
-        }
-        rm.adjustResource('budget', GameOverSystem.EMERGENCY_FUNDS);
+        const loan = lm.createLoan(terms.funds, terms.months, terms.rate);
+        loan.emergency = true;
+        // Carência: a primeira parcela só vem quando a Defesa Civil sai, com a cidade já se reerguendo
+        loan.nextPaymentAt = lm.simNow() + GameOverSystem.EMERGENCY_CALM_MS;
+        lm.cityFinancialHealth.totalDebt += terms.funds;
+        lm.cityFinancialHealth.monthlyPayments += loan.monthlyPayment;
+        rm.adjustResource('budget', terms.funds);
         const es = gm.eventSystem;
         if (es) {
             // A Defesa Civil assume as ameaças em andamento e nada novo chega por um tempo
@@ -298,7 +323,7 @@ class GameOverSystem {
         this.gameOverReason = null;
         gm.gameState = 'playing';
         const left = this.getEmergenciesLeft();
-        gm.uiManager?.showNotification(`🚨 Secretário Paulo: situação de emergência declarada! O Estado mandou carros-pipa, uma força-tarefa e R$ ${GameOverSystem.EMERGENCY_FUNDS.toLocaleString('pt-BR')} (empréstimo). ${left > 0 ? `Restam ${left}.` : 'Foi a última!'} Agora é cuidar para não precisar de novo.`, 'warning', 10000);
+        gm.uiManager?.showNotification(`🚨 Secretário Paulo: situação de emergência declarada! O Estado mandou carros-pipa, uma força-tarefa e R$ ${terms.funds.toLocaleString('pt-BR')} (empréstimo). ${left > 0 ? `Restam ${left}.` : 'Foi a última!'} Agora é cuidar para não precisar de novo.`, 'warning', 10000);
         if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_alert_warning');
         gm.autoSave?.();
         return true;
