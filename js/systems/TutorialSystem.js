@@ -79,6 +79,7 @@ class TutorialSystem {
         // Abertura curta: o jogador constrói antes de ler (a pergunta das aulas vem depois da Prefeitura)
         {
             group: 'hello',
+            intro: true, // apresentação: busto em vez do rosto pequeno; só aqui a Cláudia diz quem é
             character: 'Claudia',
             background: 'assets/images/tutorial/bg-rio-boas-vindas.webp',
             title: 'Olá, {nome}!',
@@ -136,7 +137,7 @@ class TutorialSystem {
             character: 'Claudia',
             background: 'assets/images/tutorial/bg-rio-boas-vindas.webp',
             title: 'Boas-vindas, {nome}!',
-            text: 'Olá! Eu sou a Pesquisadora Cláudia. Nossa cidade está com um problema sério: a água que a gente bebe, usa no banho e leva para as plantações está em perigo! <img src="assets/images/lessons/guardiao-da-agua.webp" alt="Dois jovens pegando água limpa de um riacho com as mãos" style="width:100%; border-radius:8px; margin:10px 0;"/> Por isso você foi escolhido como o novo <b>Guardião da Água</b>. Sua missão é proteger esse tesouro, e eu vou estar do seu lado, te ensinando cada passo. Topa cuidar da água com a gente?',
+            text: 'Nossa cidade está com um problema sério: a água que a gente bebe, usa no banho e leva para as plantações está em perigo! <img src="assets/images/lessons/guardiao-da-agua.webp" alt="Dois jovens pegando água limpa de um riacho com as mãos" style="width:100%; border-radius:8px; margin:10px 0;"/> Por isso você foi escolhido como o novo <b>Guardião da Água</b>. Sua missão é proteger esse tesouro, e eu vou estar do seu lado, te ensinando cada passo. Topa cuidar da água com a gente?',
             icon: '👋'
         },
 
@@ -235,6 +236,7 @@ class TutorialSystem {
             chapter: 4,
             character: JOSE,
             background: 'assets/images/tutorial/bg-rio-pescador.webp',
+            intro: true,
             title: 'Prazer, eu sou o José!',
             text: 'Oi, {nome}! Eu sou o José, pescador deste rio. Aprendi a pescar com meu pai, que aprendeu com meu avô, e conheço cada curva dessa água desde menino. E vou te contar o segredo de um rio cheio de peixe: a <b>Mata Ciliar</b>! <img src="assets/images/lessons/mata-ciliar.webp" alt="Mata ciliar fazendo sombra no rio, com peixes e um martim-pescador" style="width:100%; border-radius:8px; margin:10px 0;"/> Sabe por que ela tem esse nome? Porque protege o rio igual os cílios protegem os seus olhos! As árvores da margem fazem sombra e deixam a água fresquinha, do jeito que o peixe gosta. As raízes seguram a terra para ela não cair no rio, e as frutas e os insetos que caem das galhadas viram comida para os peixes. Por isso essas margens são <b>Áreas de Preservação Permanente</b>: a lei não deixa desmatar nem construir ali, a não ser em casos especiais. É na sombra dessas árvores que muitos peixes se escondem, comem e se reproduzem.',
             icon: '🎣',
@@ -260,6 +262,7 @@ class TutorialSystem {
             background: 'assets/images/tutorial/bg-coleta-rio.webp',
             title: 'Márcia e o Perigo Invisível! ☣️',
             expression: 'worried',
+            intro: true,
             text: 'Olá, {nome}! Eu sou a Márcia, pesquisadora de <b>qualidade da água e saneamento</b>. Passo boa parte do tempo na beira do rio, de bota e binóculo, coletando amostras de água para analisar. E os resultados trazem um alerta: cuidado com o <b>esgoto</b>! <img src="assets/images/lessons/esgoto-oxigenio.webp" alt="Cano de esgoto sujando o rio e peixes sem ar na superfície" style="width:100%; border-radius:8px; margin:10px 0;"/> Quando o esgoto cai no rio sem tratamento, as bactérias que comem essa sujeira gastam o <b>oxigênio dissolvido</b> na água, o mesmo oxigênio que os peixes respiram. Quando eu meço e esse número despenca, já sei: os peixes vão sufocar. É por isso que a rede do José volta vazia! E tem mais: nas amostras aparecem bactérias que vêm do cocô, como os <b>coliformes fecais</b>, sinal de que a água pode causar doenças como a diarreia. Por isso precisamos de <b>rede de coleta de esgoto</b>, que leva a sujeira pelos canos, e de <b>estações de tratamento de esgoto</b>, que limpam essa água antes de devolvê-la ao rio.',
             icon: '🧪',
             educationalTopic: 'esgoto_contaminacao'
@@ -485,6 +488,7 @@ class TutorialSystem {
             group: 'end',
             character: PAULO,
             background: 'assets/images/tutorial/bg-causa-efeito.webp',
+            intro: true,
             title: 'Prazer, {nome}! Eu sou o Paulo',
             text: 'Sou o <b>Secretário Municipal de Meio Ambiente</b>. Meu trabalho é ficar de olho no tempo, no rio e no ar da cidade. Quando vier uma <b>seca</b>, uma <b>chuva forte</b>, um <b>vazamento</b> ou uma <b>oportunidade</b> (como um dinheiro do governo), eu chamo você e trago <b>quatro escolhas</b>: 🛡️ a melhor resolve quase tudo, mas custa mais e às vezes pede um prédio pronto; as outras ajudam menos; e <b>não fazer nada</b> deixa o problema inteiro (ou faz a gente perder a chance). Acertar várias seguidas rende prêmio! Também sou eu quem avisa quando a poluição sobe ou o aquífero baixa. Conto com você, {nome}!',
             icon: '🧢'
@@ -557,8 +561,11 @@ class TutorialSystem {
         const gm = this.gameManager;
         if (window.gameManager && window.gameManager !== gm) return clearInterval(this.guideTimer); // jogo antigo
         if (this.isActive || gm.gameState !== 'playing' || gm.buildMode || gm.pauseReasons?.size) return;
-        if (gm.uiManager?.isInfoPopupOpen() || Date.now() - (this.lastGuideEnd || 0) < 3000) return;
+        const ui = gm.uiManager;
+        if (ui?.isInfoPopupOpen() || ui?.hasMessageWaiting?.() || Date.now() - (this.lastGuideEnd || 0) < 3000) return;
         const guide = TutorialSystem.nextGuide(gm);
+        // Guias sem gatilho próprio não abrem em cadeia: um de cada vez, com tempo de jogar entre eles
+        if (guide?.paced && Date.now() - (this.lastGuideEnd || 0) < TutorialSystem.GUIDE_PACE_MS) return;
         if (guide) this.startGuide(guide.id);
         else this.checkRescue?.(); // recurso caindo sem parar: guia de socorro (RescueGuides.js)
     }
@@ -626,7 +633,7 @@ class TutorialSystem {
         const open = () => { // depois da comemoração da missão: a aula ligada à missão (LessonProgress.forMission)
             // o cartão de comemoração (ui/MissionCardUI.js) ainda na tela ou na fila: espera ele fechar
             const ui = this.gameManager.uiManager;
-            if (ui?.isMissionCardOpen?.() || ui?.missionCardQueue?.length) return setTimeout(open, 1000);
+            if (ui?.hasMessageWaiting?.()) return setTimeout(open, 1000);
             const next = LessonProgress.forMission(missionId);
             if (next == null) {
                 this.lessonsDeferred = false;
@@ -636,9 +643,18 @@ class TutorialSystem {
             if (Number(MISSIONS[missionId]?.lesson) === next) {
                 ui.showNotification(`📖 Aula ${next}: ${LESSON_CHAPTERS[next].title}. Tem tudo a ver com a missão que você acabou de concluir!`, 'info', 6000);
             }
-            ui.openLessonBook(next);
+            this.startLesson(next);
         };
         setTimeout(open, 4000);
+    }
+
+    /** Aula depois de uma missão: no mesmo painel do tutorial, com o mapa à vista (o livro fica em "Aulas e estudos"). */
+    startLesson(chapter) {
+        const pages = this.tutorialSteps.filter(step => step.chapter === chapter);
+        if (!pages.length || this.isActive) return false;
+        this.begin(pages.map(page => ({ ...page, mode: 'story' })), 'lesson');
+        this.gameManager.gameState = 'tutorial';
+        return true;
     }
 
     /** run: 'tutorial' (início do jogo) ou 'topic' (aula rápida de um painel de recurso) */
@@ -660,10 +676,12 @@ class TutorialSystem {
 
     showTutorialUI() {
         document.getElementById('tutorial-container').style.display = 'flex';
+        document.body.classList.add('tutorial-open'); // o menu de construção abre depois do painel
     }
 
     hideTutorialUI() {
         document.getElementById('tutorial-container').style.display = 'none';
+        document.body.classList.remove('tutorial-open');
         document.getElementById('tutorial-spotlight').hidden = true;
     }
 
@@ -732,8 +750,8 @@ class TutorialSystem {
 
         this.showPortrait(step);
 
-        // Fundo de tela cheia só existe no modo story
-        if (step.background) {
+        // No computador tudo acontece no painel à esquerda, com o mapa à vista; só o celular tem fundo de tela cheia
+        if (step.background && window.innerWidth <= 768) {
             const background = document.getElementById('tutorial-background');
             const img = new Image();
             img.onload = () => { background.style.backgroundImage = `url('${step.background}')`; };
@@ -780,8 +798,8 @@ class TutorialSystem {
 
     /**
      * Retrato animado do personagem do passo (AnimatedPortrait, um por personagem, reaproveitado entre passos).
-     * História no computador: busto no quadro; coach e celular: só o rosto, em círculo. Personagem novo em
-     * cena entra com o balão de saudação; os demais passos só mexem a boca enquanto a página aparece.
+     * O busto aparece só no passo em que o personagem se apresenta (step.intro, no computador); nos demais,
+     * só o rosto em círculo: repetir o retrato grande a cada tela era cansativo e tomava espaço.
      */
     showPortrait(step) {
         const slot = document.getElementById('tutorial-portrait');
@@ -791,7 +809,8 @@ class TutorialSystem {
             this.portraitShown = null;
             return;
         }
-        const small = this.mode === 'coach' || window.innerWidth <= 768;
+        const small = !step.intro || window.innerWidth <= 768;
+        document.querySelector('#tutorial-container .tut-card')?.classList.toggle('tut-card--intro', !small);
         portrait.setCrop(small ? 'face' : 'bust');
         portrait.setLabel(TutorialSystem.displayName(step.character));
         portrait.setExpression(TutorialSystem.expressionFor(step, this.gameManager));
@@ -800,8 +819,7 @@ class TutorialSystem {
         AudioManager.onSpeaker(TutorialSystem.CHARACTERS[step.character]?.id, portrait.expression);
         if (this.portraitShown !== step.character) {
             this.portraitShown = step.character;
-            const hello = TutorialSystem.CHARACTERS[step.character]?.hello;
-            portrait.enter(!small && hello ? PlayerProfile.personalize(hello) : '');
+            portrait.enter(''); // o texto já cumprimenta: sem balão repetindo a saudação
         }
         portrait.talk(1400);
     }
@@ -844,6 +862,7 @@ class TutorialSystem {
         const spotlight = document.getElementById('tutorial-spotlight');
         if (!this.isActive || !step || this.mode !== 'coach') {
             spotlight.hidden = true;
+            document.getElementById('tutorial-hint').hidden = true; // dica do passo coach anterior não fica presa
             return;
         }
 
@@ -859,6 +878,7 @@ class TutorialSystem {
         }
 
         const container = document.getElementById('tutorial-container');
+        const docked = window.innerWidth > 768; // computador: sempre o painel à esquerda (css/layout.css)
         let dockX = 'center';
         let dockY = 'bottom';
         if (target) {
@@ -881,8 +901,13 @@ class TutorialSystem {
                 dockY = 'top';
             }
         }
-        container.dataset.dockX = dockX;
-        container.dataset.dockY = dockY;
+        if (docked) {
+            delete container.dataset.dockX;
+            delete container.dataset.dockY;
+        } else {
+            container.dataset.dockX = dockX;
+            container.dataset.dockY = dockY;
+        }
 
         // o "Próximo" destrava assim que o passo é cumprido
         document.getElementById('tutorial-next-btn').disabled = !this.isStepDone(step);
@@ -981,8 +1006,8 @@ class TutorialSystem {
         const step = this.steps[this.currentStep];
         if (!this.isStepDone(step)) return;
         // "Aprender agora" no início: terminar a última página de um capítulo conclui aquela aula
-        if (this.run === 'tutorial' && typeof step.chapter === 'number' && this.steps[this.currentStep + 1]?.chapter !== step.chapter) {
-            if (LessonProgress.markDone(step.chapter)) ResearchLog.record('lesson_done', { source: 'tutorial', target: step.chapter, value: 'first' });
+        if ((this.run === 'tutorial' || this.run === 'lesson') && typeof step.chapter === 'number' && this.steps[this.currentStep + 1]?.chapter !== step.chapter) {
+            if (LessonProgress.markDone(step.chapter)) ResearchLog.record('lesson_done', { source: this.run, target: step.chapter, value: 'first' });
         }
         if (this.run === 'tutorial' && step.offer && this.groupOf(step) === 'intro') ResearchLog.record('tutorial_choice', { value: 'now' });
         if (this.currentStep < this.steps.length - 1) {
@@ -1063,29 +1088,30 @@ TutorialSystem.REPLAY_PARTS = [
     { group: 'end', icon: '⚙️', title: 'Como o jogo funciona', summary: 'Causa e efeito, dicas da Pesquisadora Márcia, o Secretário Paulo e o recado final.' }
 ];
 
+TutorialSystem.GUIDE_PACE_MS = 90000;
 TutorialSystem.GROUP_LABELS = { hello: 'Boas-vindas', intro: 'Introdução', cityhall: 'Prefeitura', missions: 'Missões', interface: 'Interface', end: 'Final' };
 TutorialSystem.SKIP_LABELS = { intro: 'Pular aulas', missions: 'Pular esta parte', interface: 'Pular esta parte' };
 
 // ===== PERSONAGENS =====
 // Chave = `character` dos passos. `name` aparece no retrato e no livro; `id` = pasta assets/characters/<id>/ e
 // entrada de PORTRAIT_MANIFEST (js/data/portraits.js): retrato animado de IA em camadas (js/ui/AnimatedPortrait.js),
-// usado no tutorial, no livro de aulas e no fim de jogo. `hello`: balão quando o personagem entra em cena.
+// usado no tutorial, no livro de aulas e no fim de jogo.
 // Personagem novo: gere base + variações (olhos fechados, bocas a/o, worried, happy) pelo padrão de
 // assets/images/_prompts.json, recorte as camadas e acrescente-o ao manifesto.
 TutorialSystem.CHARACTERS = {
     Claudia: {
-        name: 'Pesquisadora Cláudia', id: 'claudia', hello: 'Oi, {nome}!', emoji: '👩‍🔬', colors: ['#19c3c9', '#0b6e8a']
+        name: 'Pesquisadora Cláudia', id: 'claudia', emoji: '👩‍🔬', colors: ['#19c3c9', '#0b6e8a']
     },
     'Pescador José': {
-        name: 'Pescador José', id: 'jose', hello: 'Ô, {nome}! Chega mais!', emoji: '🎣', colors: ['#0b6e8a', '#5cc6d0']
+        name: 'Pescador José', id: 'jose', emoji: '🎣', colors: ['#0b6e8a', '#5cc6d0']
     },
     'Pesquisadora Márcia': {
-        name: 'Pesquisadora Márcia', id: 'marcia', hello: 'Olá, {nome}!', emoji: '🧪', colors: ['#2e7d32', '#9ccc65']
+        name: 'Pesquisadora Márcia', id: 'marcia', emoji: '🧪', colors: ['#2e7d32', '#9ccc65']
     },
     // Secretário Municipal de Meio Ambiente: fala de todo problema e solução ambiental da cidade (eventos com
     // decisão em ui/EventDecisionUI.js, alertas de poluição e de aquífero)
     'Secretário Paulo': {
-        name: 'Secretário Paulo', id: 'paulo', hello: 'E aí, {nome}! Prazer!', emoji: '🧢', colors: ['#2e7d32', '#00a86b']
+        name: 'Secretário Paulo', id: 'paulo', emoji: '🧢', colors: ['#2e7d32', '#00a86b']
     }
 };
 
@@ -1280,6 +1306,7 @@ TutorialSystem.GUIDES = [
     },
     {
         id: 'zoning', after: 'storage', title: 'Zoneamento', icon: '🏘️',
+        paced: true,
         when: () => true, // logo depois do armazenamento
         steps: [
             { title: 'Onde as pessoas vão morar?', text: 'Uma cidade cresce por <b>zonas</b>: <b>residencial</b> (casas), <b>comercial</b> (lojas) e <b>industrial</b> (fábricas). Cada uma pode ser <b>leve</b>, <b>equilibrada</b> ou <b>pesada</b>: quanto mais pesada, mais gente e mais gasto de água e energia. As casas ficam em <b>🏘️ Residencial</b>; lojas e fábricas, em Comercial e Industrial.', targets: ['.category-btn[data-category="residential"]'] },
@@ -1304,6 +1331,7 @@ TutorialSystem.GUIDES = [
     },
     {
         id: 'tourism', after: 'public', title: 'Turismo', icon: '🎡',
+        paced: true,
         when: () => true,
         steps: [
             { title: 'Visitantes trazem dinheiro', text: 'Em <b>🏬 Comercial</b>, nas partes <b>Cultura</b> e <b>Hospedagem e lazer</b>, ficam museus, hotéis e monumentos. Eles atraem visitantes e aumentam a <b>receita</b> da cidade, mas custam caro: junte dinheiro antes!', targets: ['.category-btn[data-category="commercial"]', '.resource-item:has(#budget-amount)'] },
@@ -1312,6 +1340,7 @@ TutorialSystem.GUIDES = [
     },
     {
         id: 'industrial', after: 'tourism', title: 'Indústria', icon: '🏭',
+        paced: true,
         when: () => true,
         steps: [
             { title: 'Fábricas geram empregos', text: 'Em <b>🏭 Industrial</b> ficam as zonas industriais, fábricas, centro tecnológico e porto. Eles rendem muito dinheiro e empregos.', targets: ['.category-btn[data-category="industrial"]'] },
@@ -1320,6 +1349,7 @@ TutorialSystem.GUIDES = [
     },
     {
         id: 'commercial', after: 'industrial', title: 'Comércio', icon: '🏬',
+        paced: true,
         when: () => true,
         steps: [
             { title: 'Lojas e serviços', text: 'Em <b>🏬 Comercial</b> ficam as zonas comerciais, restaurantes, bancos, escritórios, shopping e o turismo. Eles movimentam a economia e pagam <b>impostos</b> para a cidade.', targets: ['.category-btn[data-category="commercial"]'] },

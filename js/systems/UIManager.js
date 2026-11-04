@@ -613,15 +613,30 @@ class UIManager {
             .some(selector => (document.querySelector(selector)?.getClientRects().length || 0) > 0);
     }
 
-    // Mostra os alertas que esperaram (showCentralAlert) assim que nada de leitura estiver na tela
+    /**
+     * Fila única: alerta, decisão do Paulo, cartão, aula e guia usam o mesmo espaço à esquerda, um por vez.
+     * Ordem de prioridade = ordem dos flush no update (alerta > decisão > cartão); aula e guia esperam todos.
+     */
+    isMessageSlotBusy() {
+        return this.isReadingOverlayOpen() ||
+            !!document.querySelector('.central-alert-overlay, #event-decision.open, .swal2-container');
+    }
+
+    /** Há mensagem na tela ou esperando a vez? (aula pós-missão e guias só abrem depois delas) */
+    hasMessageWaiting() {
+        return this.isMessageSlotBusy() || !!this.deferredAlerts?.size || !!this.eventDecisionQueue?.length ||
+            !!this.missionCardQueue?.length;
+    }
+
+    // Mostra os alertas que esperaram (showCentralAlert), um por vez, assim que o espaço estiver livre
     flushDeferredAlerts() {
-        if (!this.deferredAlerts?.size || this.isReadingOverlayOpen()) return;
-        const pending = [...this.deferredAlerts.values()];
-        this.deferredAlerts.clear();
-        for (const args of pending) {
+        if (!this.deferredAlerts?.size || this.isMessageSlotBusy()) return;
+        for (const [title, args] of this.deferredAlerts) {
+            this.deferredAlerts.delete(title);
             const options = args[4] || {};
             if (options.stillRelevant && !options.stillRelevant()) continue;
             this.showCentralAlert(...args);
+            return;
         }
     }
 
@@ -1443,13 +1458,12 @@ class UIManager {
     // ===== Painéis de detalhe de recursos: js/systems/ui/ResourcePanels.js (6 métodos) =====
 
     // ===== ALERTA CENTRAL (MODAL) =====
-    // Alerta automático (energia, água baixa, sem dinheiro). Com livro de aulas, central de aulas, tutorial
-    // (story/coach) ou livro de estudo na tela, um modal por cima bloquearia os cliques neles: o alerta espera
-    // na fila (um por título, o mais recente) e aparece quando eles fecham (flushDeferredAlerts, pelo update).
+    // Alerta automático (energia, água baixa, sem dinheiro). Com outra mensagem ou leitura na tela (isMessageSlotBusy),
+    // o alerta espera na fila (um por título, o mais recente) e aparece quando ela fecha (flushDeferredAlerts).
     // options.whenBusy = 'toast' troca a espera por uma notificação não bloqueante (resposta a um clique do
     // jogador); options.stillRelevant() é conferido antes de mostrar o que esperou (ex.: a energia já voltou).
     showCentralAlert(title, message, type = 'warning', details = '', options = {}) {
-        if (this.isReadingOverlayOpen()) {
+        if (this.isMessageSlotBusy()) {
             if (options.whenBusy === 'toast') {
                 if (options.sound && typeof AudioManager !== 'undefined') AudioManager.playSound(options.sound);
                 this.showNotification(message, type, 6000);
@@ -1466,10 +1480,6 @@ class UIManager {
             return;
         }
         this.setCooldown(cooldownKey, 30000);
-
-        // Remover alerta anterior se existir
-        const existing = document.querySelector('.central-alert-overlay');
-        if (existing) existing.remove();
 
         const icons = {
             warning: '\u26A0\uFE0F',

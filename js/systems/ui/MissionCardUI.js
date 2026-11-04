@@ -31,9 +31,8 @@ mixin(UIManager, {
     flushMissionCards() {
         if (!this.missionCardQueue?.length || this.isMissionCardOpen()) return;
         const gm = this.gameManager;
-        const busy = gm?.gameState !== 'playing' || gm.tutorialSystem?.isActive || this.isReadingOverlayOpen() ||
-            document.querySelector('.swal2-container, .central-alert-overlay, #event-decision:not([hidden]), #pause-overlay:not(.hidden)') ||
-            this.isTechTreeOpen?.();
+        const busy = gm?.gameState !== 'playing' || gm.tutorialSystem?.isActive || this.isMessageSlotBusy() ||
+            document.querySelector('#pause-overlay:not(.hidden)') || this.isTechTreeOpen?.();
         if (busy) return;
         const card = this.missionCardQueue.shift();
         if (card.kind === 'mission') this.showMissionCelebration(card.quest, card.result);
