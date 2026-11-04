@@ -4,7 +4,7 @@ const assert = require('node:assert');
 const { load } = require('./load');
 
 const grid = () => {
-    const g = load('js/utils/GameUtils.js', 'js/core/GridManager.js');
+    const g = load('js/utils/GameUtils.js', 'js/data/riverMap.js', 'js/core/GridManager.js');
     const GridManager = g('GridManager');
     const gm = Object.create(GridManager.prototype); // sem cena: só as grades
     Object.assign(gm, { gridSize: 40, occupationGrid: [], elevationGrid: [], terrainGrid: [] });
@@ -33,7 +33,7 @@ test('terreno: a área inicial tem pelo menos 80% de terreno construível', () =
     let buildable = 0;
     for (let i = x - 4; i < x + 4; i++) {
         for (let j = z - 4; j < z + 4; j++) {
-            if (['grassland', 'lowland'].includes(gm.terrainGrid[i][j])) buildable++;
+            if (gm.terrainGrid[i][j] === 'grassland' && !gm.isRiverZone(i, j)) buildable++;
         }
     }
     assert.ok(buildable / 64 >= 0.8);
@@ -167,4 +167,106 @@ test('água fica abaixo de toda a terra em volta, e cada lago/rio é plano', () 
         }
     }
     assert.ok(edges > 0, 'o mapa tem margens');
+});
+
+// ===== Relevo: rio → planície → APP → planalto (orientação do Prof. Paulo Rocha) =====
+const ORTHO = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+const each = (gm, fn) => { for (let x = 0; x < 40; x++) for (let z = 0; z < 40; z++) fn(x, z); };
+const near = (gm, x, z, zones) => ORTHO.some(([dx, dz]) => zones.includes(gm.getRiverZone(x + dx, z + dz)));
+
+test('relevo: um só rio cruza o mapa, sem poças soltas, e pontes conseguem atravessá-lo', () => {
+    const gm = grid();
+    const sizes = new Set();
+    let edges = 0;
+    each(gm, (x, z) => {
+        if (gm.terrainGrid[x][z] !== 'water') return;
+        sizes.add(gm.constructor.measureWaterBodies(gm.terrainGrid, 40)[x][z]);
+        if (x === 0 || x === 39) edges++;
+    });
+    assert.strictEqual(sizes.size, 1, 'mais de um corpo d\'água');
+    assert.ok(edges >= 2, 'o rio entra e sai pela borda do mapa');
+});
+
+test('relevo: toda planície está ligada ao rio, sem faixa solta', () => {
+    const gm = grid();
+    const seen = new Set();
+    const queue = [];
+    each(gm, (x, z) => { if (gm.terrainGrid[x][z] === 'water') { queue.push([x, z]); seen.add(`${x},${z}`); } });
+    while (queue.length) {
+        const [x, z] = queue.pop();
+        for (const [dx, dz] of ORTHO) {
+            const k = `${x + dx},${z + dz}`;
+            if (gm.terrainGrid[x + dx]?.[z + dz] === 'floodplain' && !seen.has(k)) { seen.add(k); queue.push([x + dx, z + dz]); }
+        }
+    }
+    let plains = 0;
+    each(gm, (x, z) => {
+        if (gm.terrainGrid[x][z] !== 'floodplain') return;
+        plains++;
+        assert.ok(seen.has(`${x},${z}`), `planície solta em ${x},${z}`);
+    });
+    assert.ok(plains > 30, `só ${plains} células de planície`);
+    assert.strictEqual(gm.terrainGrid.flat().filter(t => t === 'lowland').length, 0);
+});
+
+test('relevo: a planície tem largura quase uniforme no trecho com planície', () => {
+    const gm = grid();
+    // Em cada coluna do trecho com planície, de cada lado do rio
+    const widths = [];
+    for (let x = 18; x < 40; x++) {
+        const column = gm.terrainGrid[x];
+        const water = column.flatMap((t, z) => (t === 'water' ? [z] : []));
+        if (!water.length) continue;
+        let south = 0, north = 0;
+        for (let z = Math.min(...water) - 1; column[z] === 'floodplain'; z--) south++;
+        for (let z = Math.max(...water) + 1; column[z] === 'floodplain'; z++) north++;
+        widths.push(south, north);
+    }
+    assert.ok(widths.length > 10);
+    const sorted = [...widths].sort((a, b) => a - b);
+    assert.ok(sorted[0] >= 1, `largura mínima ${sorted[0]}`);
+    assert.ok(sorted[Math.floor(sorted.length * 0.9)] - sorted[Math.floor(sorted.length * 0.1)] <= 3, `larguras ${sorted}`);
+});
+
+test('relevo: existe rio encaixado, com a APP colada na água e sem planície', () => {
+    const gm = grid();
+    let entrenched = 0, appAtWater = 0;
+    each(gm, (x, z) => {
+        if (!gm.hasFloodplainReach(x, z) && gm.terrainGrid[x][z] === 'water') entrenched++;
+        if (gm.getRiverZone(x, z) === 'app' && !gm.hasFloodplainReach(x, z) && near(gm, x, z, ['water'])) appAtWater++;
+    });
+    assert.ok(entrenched > 10, 'sem trecho encaixado');
+    assert.ok(appAtWater > 10, 'APP não encosta na água no trecho encaixado');
+});
+
+test('relevo: a APP separa o planalto do rio e da planície, e fica mais alta que a planície', () => {
+    const gm = grid();
+    each(gm, (x, z) => {
+        const type = gm.terrainGrid[x][z], zone = gm.getRiverZone(x, z);
+        if ((type === 'grassland' || type === 'hill') && zone !== 'app') {
+            assert.ok(!near(gm, x, z, ['water', 'floodplain']), `planalto encostado no rio ou na planície em ${x},${z}`);
+        }
+        if (type === 'floodplain') {
+            for (const [dx, dz] of ORTHO) {
+                if (gm.getRiverZone(x + dx, z + dz) !== 'app') continue;
+                assert.ok(gm.getTerrainBlockHeight(x + dx, z + dz) > gm.getTerrainBlockHeight(x, z), `APP mais baixa que a planície em ${x},${z}`);
+            }
+        }
+        if (zone === 'app') assert.strictEqual(type, 'grassland', 'APP é faixa do planalto');
+    });
+});
+
+test('relevo: o rio é estreito o bastante para pontes em todo o percurso', () => {
+    const gm = grid();
+    const span = 4; // RoadNetwork.BRIDGE_SPAN
+    for (let x = 0; x < 40; x++) {
+        const water = gm.terrainGrid[x].flatMap((t, z) => (t === 'water' ? [z] : []));
+        if (!water.length) continue;
+        // Em cada coluna, atravessando no sentido z ou x, alguma célula de água dá ponte
+        const bridged = water.some(z => {
+            const run = (dx, dz) => { let n = 0; while (gm.terrainGrid[x + dx * (n + 1)]?.[z + dz * (n + 1)] === 'water') n++; return n; };
+            return run(0, 1) + run(0, -1) + 1 <= span || run(1, 0) + run(-1, 0) + 1 <= span;
+        });
+        assert.ok(bridged, `sem ponte possível na coluna ${x}`);
+    }
 });

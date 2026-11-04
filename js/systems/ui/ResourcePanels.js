@@ -586,7 +586,7 @@ mixin(UIManager, {
                             <span class="building-name">${trees.count} árvores em pé (${trees.riparianCount} na margem do rio)</span>
                             <span class="building-production">-${this.formatNumber(trees.pollutionReduction, 1)}/min</span>
                         </li>${this.plantedTreesLine()}
-                        <li>🏞️ Mata ciliar: árvores a até ${TREES.RIPARIAN_DISTANCE} quadrados da água limpam ${TREES.RIPARIAN_FACTOR}× mais. Plante mudas na margem!</li>
+                        <li>🏞️ Mata ciliar: árvores na planície, na APP ou a até ${TREES.RIPARIAN_DISTANCE} quadrados da água limpam ${TREES.RIPARIAN_FACTOR}× mais. Plante mudas nessas faixas!</li>
                         <li>🪓 Construir em cima de árvores derruba as árvores: a poluição sobe e a cidade fica menos verde.</li>
                     </ul>`;
         }

@@ -871,6 +871,10 @@ class GameManager {
         this.weatherEffects?.applyToLighting(ambientLight);
         // Poluição acima de 70%: céu e ar com fumaça, sol mais fraco (PollutionVisuals)
         this.pollutionVisuals?.applyToLighting(ambientLight);
+        // Enchente ou chuva forte: a planície enche devagar e seca devagar (roda a cada segundo)
+        const wet = ['flood', 'heavy_rain'].some(type => this.eventSystem?.hasActiveEventOfType?.(type)) ? 1 : 0;
+        this.floodplainWet = (this.floodplainWet || 0) + Math.max(-0.1, Math.min(0.1, wet - (this.floodplainWet || 0)));
+        this.gridManager?.setFloodplainWet(this.floodplainWet);
     }
 
     // Clima real da cidade do jogador no mundo 3D (WeatherEffects). current = WeatherService.parse(...).current

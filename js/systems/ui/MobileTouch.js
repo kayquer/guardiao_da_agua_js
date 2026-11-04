@@ -359,15 +359,8 @@ mixin(UIManager, {
             const elevation = this.gameManager.gridManager.getElevation(gridPos.x, gridPos.z);
             const isOccupied = this.gameManager.gridManager.isCellOccupied(gridPos.x, gridPos.z);
 
-            const terrainNames = {
-                'water': '💧 Água',
-                'grassland': '🌿 Campo',
-                'lowland': '🏞️ Planície',
-                'hill': '⛰️ Colina',
-                'mountain': '🏔️ Montanha'
-            };
-
-            infoTitle = terrainNames[terrainType] || terrainType;
+            const info = TERRAIN_INFO[this.gameManager.gridManager.getTerrainZone(gridPos.x, gridPos.z)];
+            infoTitle = info ? `${info.icon} ${info.name}` : terrainType;
             infoText = `Elevação: ${(elevation * 100).toFixed(0)}%\n`;
             infoText += `Posição: (${gridPos.x}, ${gridPos.z})\n`;
             infoText += isOccupied ? '❌ Ocupado' : '✅ Disponível';

@@ -69,7 +69,8 @@ const WEATHER = {
 // Bosques sorteados no mapa. Cada árvore em pé limpa o ar (redução de poluição/min) e soma satisfação
 // (área verde, até GREEN_BONUS_MAX); construir em cima derruba: perde esse bônus e a poluição sobe na hora.
 const TREES = {
-    FOREST_CHANCE: 0.45,          // chance de árvore numa célula de bosque (ruído alto)
+    FOREST_CHANCE: 0.2,           // chance de árvore numa célula de bosque (ruído alto)
+    RIVER_ZONE_CHANCE: 0.32,      // chance de árvore na planície e na APP: a mata ciliar, que limpa mais por árvore
     SCATTER_CHANCE: 0.04,         // chance de árvore solta fora dos bosques
     START_AREA_CLEAR: 5,          // raio (células) sem árvores em volta da área inicial do tutorial
     POLLUTION_REDUCTION: 0.04,    // poluição/min que cada árvore tira (~140 árvores ≈ 5/min, uma bomba d'água)

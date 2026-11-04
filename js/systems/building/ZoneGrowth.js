@@ -419,7 +419,7 @@ mixin(BuildingSystem, {
                     const inside = x >= building.gridX && x < building.gridX + from && z >= building.gridZ && z < building.gridZ + from;
                     if (inside) continue;
                     const terrain = grid.getTerrainType?.(x, z);
-                    if (grid.isCellOccupied(x, z) || terrain === 'water' || (allowed && terrain && !allowed.includes(terrain))) free = false;
+                    if (grid.isCellOccupied(x, z) || terrain === 'water' || grid.isRiverZone?.(x, z) || (allowed && terrain && !allowed.includes(terrain))) free = false;
                 }
             }
             if (free) return { x: ax, z: az };

@@ -72,7 +72,7 @@ test('toda chave de som citada no código existe no manifesto', () => {
 
 test('cada personagem do tutorial tem a voz de entrada', () => {
     const src = fs.readFileSync(path.join(ROOT, 'js/systems/TutorialSystem.js'), 'utf8');
-    const ids = [...src.matchAll(/id: '([a-z]+)', hello:/g)].map(m => m[1]);
+    const ids = [...src.matchAll(/id: '([a-z]+)', emoji:/g)].map(m => m[1]);
     assert.ok(ids.length >= 3, 'personagens não encontrados');
     for (const id of ids) assert.ok(MANIFEST[`voc_${id}_hello`], `voc_${id}_hello não existe`);
 });

@@ -31,9 +31,8 @@ mixin(UIManager, {
     /** Jogo rodando e nada de leitura, tutorial ou diálogo na frente. */
     canShowEventDecision() {
         const gm = this.gameManager;
-        return gm?.gameState === 'playing' && !gm.tutorialSystem?.isActive && !this.isReadingOverlayOpen()
-            && !document.querySelector('.swal2-container, .central-alert-overlay, #pause-overlay:not(.hidden)')
-            && !this.isTechTreeOpen?.() && !this.isMissionCardOpen?.();
+        return gm?.gameState === 'playing' && !gm.tutorialSystem?.isActive && !this.isMessageSlotBusy()
+            && !document.querySelector('#pause-overlay:not(.hidden)') && !this.isTechTreeOpen?.();
     },
 
     getEventDecisionModal() {

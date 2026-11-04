@@ -268,6 +268,7 @@ test('guias em sequência: água + energia → reservatório → zoneamento → 
         gm.tutorialSystem.complete();
         gm.studySystem.isBuildingUnlocked = () => true;
         gm.resourceManager.resources.budget.current = 1e6;
+        TutorialSystem.GUIDE_PACE_MS = 0; // sem o intervalo entre guias, que tem teste próprio abaixo
     });
 
     // Água sem energia ainda não abre nada
@@ -426,4 +427,20 @@ test('central de aulas: abas Como jogar / Conteúdo / Guias, refazer partes e fo
     await expect(page.locator('[data-replay="guide"]')).toHaveCount(await page.evaluate(() => TutorialSystem.GUIDES.length));
     await expect(page.locator('[data-replay="topic"]')).toHaveCount(6);
     expect(problems).toEqual([]);
+});
+
+test('guias sem gatilho próprio não abrem em cadeia', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'mesma lógica do desktop');
+    await startGame(page, { guides: ['energy', 'roads', 'rivers', 'storage'] });
+    const opened = await page.evaluate(() => {
+        const ts = window.gameManager.tutorialSystem;
+        ts.complete();
+        ts.lastGuideEnd = Date.now() - 10000; // passou da espera de 3 s, não do intervalo de 90 s
+        ts.checkGuides();
+        const early = ts.isActive;
+        ts.lastGuideEnd = Date.now() - TutorialSystem.GUIDE_PACE_MS - 1;
+        ts.checkGuides();
+        return { early, late: ts.isActive && ts.guideId };
+    });
+    expect(opened).toEqual({ early: false, late: 'zoning' });
 });

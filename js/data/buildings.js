@@ -20,7 +20,7 @@ const BUILDING_TYPES = {
         icon: '💧',
         color: '#2196F3',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -39,13 +39,13 @@ const BUILDING_TYPES = {
         icon: '🕳️',
         color: '#1976D2',
         requirements: {
-            terrain: ['grassland', 'lowland', 'hill'],
+            terrain: ['grassland', 'hill'],
             nearWater: false
         }
     },
 
     // ETA: capta água de superfície (rio, lago, represa) e já vem com as bombas. Até requirements.maxWaterDistance
-    // blocos da água; encostada na água não precisa de cano, mais longe ganha bomba na margem e adutora
+    // blocos da água; como não se constrói na planície nem na APP, ganha bomba na margem e adutora
     // automáticas (building/WaterIntake.js). Tira do nível dos rios (ResourceManager.updateRiver), não do aquífero.
     water_treatment_plant: {
         tier: 2, group: 'Captação', techRequires: [{ id: 'water_pump', count: 1 }],
@@ -62,7 +62,7 @@ const BUILDING_TYPES = {
         icon: '🏞️',
         color: '#26C6DA',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false,
             maxWaterDistance: 10
         }
@@ -85,7 +85,7 @@ const BUILDING_TYPES = {
         icon: '🏭',
         color: '#4CAF50',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -104,7 +104,7 @@ const BUILDING_TYPES = {
         icon: '🔧',
         color: '#388E3C',
         requirements: {
-            terrain: ['grassland', 'lowland', 'hill'],
+            terrain: ['grassland', 'hill'],
             nearWater: false
         }
     },
@@ -124,7 +124,7 @@ const BUILDING_TYPES = {
         icon: '🔁',
         color: '#26A69A',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -145,7 +145,7 @@ const BUILDING_TYPES = {
         maintenanceCost: 40,
         icon: '♻️',
         color: '#43A047',
-        requirements: { terrain: ['grassland', 'lowland'], nearWater: false }
+        requirements: { terrain: ['grassland'], nearWater: false }
     },
 
     recycling_coop: {
@@ -165,7 +165,7 @@ const BUILDING_TYPES = {
         recycleBonus: 0.05, // +5% no valor de reciclar prédios (BuildingRecycle.js)
         icon: '♻️',
         color: '#2E7D32',
-        requirements: { terrain: ['grassland', 'lowland'], nearWater: false }
+        requirements: { terrain: ['grassland'], nearWater: false }
     },
 
     landfill: {
@@ -182,7 +182,7 @@ const BUILDING_TYPES = {
         maintenanceCost: 200,
         icon: '🚛',
         color: '#795548',
-        requirements: { terrain: ['grassland', 'lowland', 'hill'], nearWater: false }
+        requirements: { terrain: ['grassland', 'hill'], nearWater: false }
     },
 
     composting_yard: {
@@ -200,7 +200,7 @@ const BUILDING_TYPES = {
         maintenanceCost: 90,
         icon: '🍂',
         color: '#8D6E63',
-        requirements: { terrain: ['grassland', 'lowland'], nearWater: false }
+        requirements: { terrain: ['grassland'], nearWater: false }
     },
 
     biodigester: {
@@ -218,7 +218,7 @@ const BUILDING_TYPES = {
         maintenanceCost: 180,
         icon: '🫧',
         color: '#558B2F',
-        requirements: { terrain: ['grassland', 'lowland'], nearWater: false }
+        requirements: { terrain: ['grassland'], nearWater: false }
     },
 
     ecopark: {
@@ -240,7 +240,7 @@ const BUILDING_TYPES = {
         recycleBonus: 0.1, // +10% no valor de reciclar prédios (BuildingRecycle.js)
         icon: '⚙️', // central de tratamento avançada (o ícone SVG ecopark mostra engrenagens, gota e folha)
         color: '#00897B',
-        requirements: { terrain: ['grassland', 'lowland'], nearWater: false }
+        requirements: { terrain: ['grassland'], nearWater: false }
     },
 
     // Muda de árvore: cresce sozinha em 4 etapas pelo tempo de jogo (js/systems/building/TreeGrowth.js).
@@ -264,8 +264,9 @@ const BUILDING_TYPES = {
         ],
         icon: '🌱',
         color: '#7CB342',
+        allowedInRiverZone: true, // pode ficar na planície e na APP
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland', 'floodplain'],
             nearWater: false
         }
     },
@@ -283,7 +284,7 @@ const BUILDING_TYPES = {
         icon: '🛢️',
         color: '#FF9800',
         requirements: {
-            terrain: ['grassland', 'lowland', 'hill'],
+            terrain: ['grassland', 'hill'],
             nearWater: false
         }
     },
@@ -320,7 +321,7 @@ const BUILDING_TYPES = {
         icon: '📶',
         color: '#0288D1',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -341,7 +342,7 @@ const BUILDING_TYPES = {
         icon: '🧱',
         color: '#8D6E63',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: true
         }
     },
@@ -361,7 +362,7 @@ const BUILDING_TYPES = {
         icon: '🧂',
         color: '#4FC3F7',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: true
         }
     },
@@ -370,7 +371,7 @@ const BUILDING_TYPES = {
     paved_road: {
         tier: 1, group: 'Ruas', techRequires: [],
         name: 'Rua Asfaltada',
-        description: 'Arraste para traçar; liga sozinha nas curvas e cruzamentos, sobe colinas e vira ponte sobre a água. O asfalto não deixa a chuva entrar no chão',
+        description: 'Arraste para traçar; liga sozinha nas curvas e cruzamentos, sobe encostas e vira ponte sobre a água. O asfalto não deixa a chuva entrar no chão',
         category: 'roads',
         cost: 40,
         size: 1,
@@ -380,7 +381,7 @@ const BUILDING_TYPES = {
         icon: '🛣️',
         color: '#424242',
         requirements: {
-            terrain: ['grassland', 'lowland', 'hill'], // sobe colina como as outras ruas (rampa: RoadNetwork.profile)
+            terrain: ['grassland', 'floodplain', 'hill'], // sobe colina como as outras ruas (rampa: RoadNetwork.profile)
             nearWater: false
         }
     },
@@ -397,7 +398,7 @@ const BUILDING_TYPES = {
         icon: '🛤️',
         color: '#8D6E63',
         requirements: {
-            terrain: ['grassland', 'lowland', 'hill'],
+            terrain: ['grassland', 'floodplain', 'hill'],
             nearWater: false
         }
     },
@@ -414,7 +415,7 @@ const BUILDING_TYPES = {
         icon: '🪨',
         color: '#9E9A92',
         requirements: {
-            terrain: ['grassland', 'lowland', 'hill'],
+            terrain: ['grassland', 'floodplain', 'hill'],
             nearWater: false
         }
     },
@@ -431,7 +432,7 @@ const BUILDING_TYPES = {
         icon: '🚶',
         color: '#9E9E9E',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -448,7 +449,7 @@ const BUILDING_TYPES = {
         icon: '🌳',
         color: '#4CAF50',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -467,7 +468,7 @@ const BUILDING_TYPES = {
         icon: '🏠',
         color: '#795548',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -485,7 +486,7 @@ const BUILDING_TYPES = {
         icon: '🏢',
         color: '#5D4037',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -509,7 +510,7 @@ const BUILDING_TYPES = {
         icon: '🏘️',
         color: '#81C784',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -531,7 +532,7 @@ const BUILDING_TYPES = {
         icon: '🏘️',
         color: '#66BB6A',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -553,7 +554,7 @@ const BUILDING_TYPES = {
         icon: '🏢',
         color: '#4CAF50',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -577,7 +578,7 @@ const BUILDING_TYPES = {
         icon: '🏭',
         color: '#FFB74D',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -600,7 +601,7 @@ const BUILDING_TYPES = {
         icon: '🏭',
         color: '#FF9800',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -623,7 +624,7 @@ const BUILDING_TYPES = {
         icon: '🏭',
         color: '#FF5722',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -649,7 +650,7 @@ const BUILDING_TYPES = {
         icon: '🏪',
         color: '#64B5F6',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -674,7 +675,7 @@ const BUILDING_TYPES = {
         icon: '🏬',
         color: '#2196F3',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -699,7 +700,7 @@ const BUILDING_TYPES = {
         icon: '🏢',
         color: '#1976D2',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -757,7 +758,7 @@ const BUILDING_TYPES = {
         icon: '⚡',
         color: '#FFC107',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -775,7 +776,7 @@ const BUILDING_TYPES = {
         icon: '🏭',
         color: '#FF5722',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -795,7 +796,7 @@ const BUILDING_TYPES = {
         icon: '☢️',
         color: '#9C27B0',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: true
         }
     },
@@ -813,7 +814,7 @@ const BUILDING_TYPES = {
         icon: '🏭',
         color: '#424242',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -833,7 +834,7 @@ const BUILDING_TYPES = {
         icon: '☀️',
         color: '#FFEB3B',
         requirements: {
-            terrain: ['grassland', 'lowland', 'desert'],
+            terrain: ['grassland', 'desert'],
             nearWater: false
         }
     },
@@ -853,7 +854,7 @@ const BUILDING_TYPES = {
         icon: '💨',
         color: '#4CAF50',
         requirements: {
-            terrain: ['grassland', 'lowland', 'hill'],
+            terrain: ['grassland', 'hill'],
             nearWater: false
         }
     },
@@ -872,7 +873,7 @@ const BUILDING_TYPES = {
         maintenanceCost: 200,
         icon: '🎋', // bagaço de cana (o ícone SVG biomass-plant mostra a pilha de bagaço e a caldeira)
         color: '#6D4C41',
-        requirements: { terrain: ['grassland', 'lowland'], nearWater: false }
+        requirements: { terrain: ['grassland'], nearWater: false }
     },
 
     sugarcane_mill: {
@@ -891,7 +892,7 @@ const BUILDING_TYPES = {
         maintenanceCost: 400,
         icon: '🌾',
         color: '#9E9D24',
-        requirements: { terrain: ['grassland', 'lowland'], nearWater: false }
+        requirements: { terrain: ['grassland'], nearWater: false }
     },
 
     // CATEGORIA: PÚBLICO/ADMINISTRATIVO
@@ -912,7 +913,7 @@ const BUILDING_TYPES = {
         icon: '🏛️',
         color: '#FFD700',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -934,7 +935,7 @@ const BUILDING_TYPES = {
         icon: '🏫',
         color: '#4CAF50',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -955,7 +956,7 @@ const BUILDING_TYPES = {
         icon: '🛠️',
         color: '#5C6BC0',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -976,7 +977,7 @@ const BUILDING_TYPES = {
         icon: '🏥',
         color: '#F44336',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -996,7 +997,7 @@ const BUILDING_TYPES = {
         icon: '🚒',
         color: '#FF5722',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -1016,7 +1017,7 @@ const BUILDING_TYPES = {
         icon: '🚔',
         color: '#3F51B5',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -1042,7 +1043,7 @@ const BUILDING_TYPES = {
         icon: '🔬',
         color: '#9C27B0',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false,
             populationRequirement: 200
         }
@@ -1069,7 +1070,7 @@ const BUILDING_TYPES = {
         icon: '🎓',
         color: '#673AB7',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false,
             populationRequirement: 500
         }
@@ -1095,7 +1096,7 @@ const BUILDING_TYPES = {
         icon: '🏬',
         color: '#4CAF50',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -1119,7 +1120,7 @@ const BUILDING_TYPES = {
         icon: '🏢',
         color: '#2196F3',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -1143,7 +1144,7 @@ const BUILDING_TYPES = {
         icon: '🏦',
         color: '#FF9800',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -1166,7 +1167,7 @@ const BUILDING_TYPES = {
         icon: '🍽️',
         color: '#E91E63',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -1190,7 +1191,7 @@ const BUILDING_TYPES = {
         icon: '🏛️',
         color: '#9C27B0',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -1216,7 +1217,7 @@ const BUILDING_TYPES = {
         icon: '🎡',
         color: '#4CAF50',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -1239,7 +1240,7 @@ const BUILDING_TYPES = {
         icon: '🗿',
         color: '#795548',
         requirements: {
-            terrain: ['grassland', 'lowland', 'hill'],
+            terrain: ['grassland', 'hill'],
             nearWater: false
         }
     },
@@ -1262,7 +1263,7 @@ const BUILDING_TYPES = {
         icon: '🏨',
         color: '#FF5722',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -1285,7 +1286,7 @@ const BUILDING_TYPES = {
         icon: '🏭',
         color: '#607D8B',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -1308,7 +1309,7 @@ const BUILDING_TYPES = {
         icon: '🔬',
         color: '#3F51B5',
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             nearWater: false
         }
     },
@@ -1348,7 +1349,7 @@ const BUILDING_TYPES = {
         buildTime: 45,
         size: 3,
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland'],
             population: 1000,
             budget: 100000
         },
@@ -1385,8 +1386,9 @@ const BUILDING_TYPES = {
         cost: 25000,
         buildTime: 20,
         size: 3,
+        allowedInRiverZone: true, // pode ficar na planície e na APP
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland', 'floodplain'],
             nearWater: true
         },
         satisfactionBonus: 25,
@@ -1417,7 +1419,7 @@ const BUILDING_TYPES = {
         buildTime: 10,
         size: 2,
         requirements: {
-            terrain: ['grassland', 'lowland']
+            terrain: ['grassland']
         },
         waterStorage: 50, // guarda a água da chuva
         pollutionReduction: 10,
@@ -1448,7 +1450,7 @@ const BUILDING_TYPES = {
         buildTime: 15,
         size: 2,
         requirements: {
-            terrain: ['grassland', 'lowland']
+            terrain: ['grassland']
         },
         waterStorage: 30,
         pollutionReduction: 8,
@@ -1478,7 +1480,7 @@ const BUILDING_TYPES = {
         buildTime: 12,
         size: 1,
         requirements: {
-            terrain: ['grassland', 'lowland']
+            terrain: ['grassland']
         },
         pollutionReduction: 12,
         satisfactionBonus: 15,
@@ -1537,8 +1539,9 @@ const BUILDING_TYPES = {
         cost: 20000,
         buildTime: 15,
         size: 1,
+        allowedInRiverZone: true, // pode ficar na planície e na APP
         requirements: {
-            terrain: ['grassland', 'lowland'],
+            terrain: ['grassland', 'floodplain'],
             nearWater: true
         },
         pollutionReduction: 6, // acha cedo quem polui: o problema é corrigido antes de crescer
@@ -1563,8 +1566,9 @@ const BUILDING_TYPES = {
         cost: 12000,
         buildTime: 10,
         size: 1,
+        allowedInRiverZone: true, // pode ficar na planície e na APP
         requirements: {
-            terrain: ['grassland', 'lowland', 'water']
+            terrain: ['grassland', 'floodplain', 'water']
         },
         pollutionReduction: 5,
         satisfactionBonus: 8, // moradores confiam na água da torneira

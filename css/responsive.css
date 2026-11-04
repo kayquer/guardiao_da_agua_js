@@ -610,10 +610,6 @@
 /* ===== TABLET ===== */
 @media screen and (min-width: 769px) and (max-width: 1024px) {
     
-    .hud-left {
-        width: 250px;
-    }
-    
     .hud-right {
         width: 250px;
     }
@@ -649,10 +645,6 @@
 /* ===== DESKTOP LARGE ===== */
 @media screen and (min-width: 1440px) {
     
-    .hud-left {
-        width: 350px;
-    }
-    
     .hud-right {
         width: 350px;
     }
@@ -677,10 +669,6 @@
         font-size: 2.2rem;
         width: 55px;
         height: 55px;
-    }
-    
-    .hud-bottom {
-        height: 140px;
     }
     
     .info-panel {

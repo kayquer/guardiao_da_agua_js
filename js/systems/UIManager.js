@@ -613,15 +613,30 @@ class UIManager {
             .some(selector => (document.querySelector(selector)?.getClientRects().length || 0) > 0);
     }
 
-    // Mostra os alertas que esperaram (showCentralAlert) assim que nada de leitura estiver na tela
+    /**
+     * Fila única: alerta, decisão do Paulo, cartão, aula e guia usam o mesmo espaço à esquerda, um por vez.
+     * Ordem de prioridade = ordem dos flush no update (alerta > decisão > cartão); aula e guia esperam todos.
+     */
+    isMessageSlotBusy() {
+        return this.isReadingOverlayOpen() ||
+            !!document.querySelector('.central-alert-overlay, #event-decision.open, .swal2-container');
+    }
+
+    /** Há mensagem na tela ou esperando a vez? (aula pós-missão e guias só abrem depois delas) */
+    hasMessageWaiting() {
+        return this.isMessageSlotBusy() || !!this.deferredAlerts?.size || !!this.eventDecisionQueue?.length ||
+            !!this.missionCardQueue?.length;
+    }
+
+    // Mostra os alertas que esperaram (showCentralAlert), um por vez, assim que o espaço estiver livre
     flushDeferredAlerts() {
-        if (!this.deferredAlerts?.size || this.isReadingOverlayOpen()) return;
-        const pending = [...this.deferredAlerts.values()];
-        this.deferredAlerts.clear();
-        for (const args of pending) {
+        if (!this.deferredAlerts?.size || this.isMessageSlotBusy()) return;
+        for (const [title, args] of this.deferredAlerts) {
+            this.deferredAlerts.delete(title);
             const options = args[4] || {};
             if (options.stillRelevant && !options.stillRelevant()) continue;
             this.showCentralAlert(...args);
+            return;
         }
     }
 
@@ -1355,19 +1370,8 @@ class UIManager {
 
         this.selectedBuildingType = buildingType;
 
-        const terrainIcons = {
-            'grassland': '🌱',
-            'lowland': '🏞️',
-            'hill': '🏔️',
-            'water': '💧'
-        };
-
-        const terrainNames = {
-            'grassland': 'Campo',
-            'lowland': 'Planície',
-            'hill': 'Colina',
-            'water': 'Água'
-        };
+        const terrainIcons = Object.fromEntries(Object.entries(TERRAIN_INFO).map(([key, info]) => [key, info.icon]));
+        const terrainNames = Object.fromEntries(Object.entries(TERRAIN_INFO).map(([key, info]) => [key, info.name]));
 
         let requirementsHTML = `
             <div class="building-requirements">
@@ -1391,7 +1395,7 @@ class UIManager {
             requirementsHTML += '</ul></div>';
 
             // Terrenos incompatíveis
-            const allTerrains = ['grassland', 'lowland', 'hill', 'water'];
+            const allTerrains = ['grassland', 'floodplain', 'hill', 'water'];
             const incompatibleTerrains = allTerrains.filter(t => !buildingType.requirements.terrain.includes(t));
 
             if (incompatibleTerrains.length > 0) {
@@ -1443,13 +1447,12 @@ class UIManager {
     // ===== Painéis de detalhe de recursos: js/systems/ui/ResourcePanels.js (6 métodos) =====
 
     // ===== ALERTA CENTRAL (MODAL) =====
-    // Alerta automático (energia, água baixa, sem dinheiro). Com livro de aulas, central de aulas, tutorial
-    // (story/coach) ou livro de estudo na tela, um modal por cima bloquearia os cliques neles: o alerta espera
-    // na fila (um por título, o mais recente) e aparece quando eles fecham (flushDeferredAlerts, pelo update).
+    // Alerta automático (energia, água baixa, sem dinheiro). Com outra mensagem ou leitura na tela (isMessageSlotBusy),
+    // o alerta espera na fila (um por título, o mais recente) e aparece quando ela fecha (flushDeferredAlerts).
     // options.whenBusy = 'toast' troca a espera por uma notificação não bloqueante (resposta a um clique do
     // jogador); options.stillRelevant() é conferido antes de mostrar o que esperou (ex.: a energia já voltou).
     showCentralAlert(title, message, type = 'warning', details = '', options = {}) {
-        if (this.isReadingOverlayOpen()) {
+        if (this.isMessageSlotBusy()) {
             if (options.whenBusy === 'toast') {
                 if (options.sound && typeof AudioManager !== 'undefined') AudioManager.playSound(options.sound);
                 this.showNotification(message, type, 6000);
@@ -1466,10 +1469,6 @@ class UIManager {
             return;
         }
         this.setCooldown(cooldownKey, 30000);
-
-        // Remover alerta anterior se existir
-        const existing = document.querySelector('.central-alert-overlay');
-        if (existing) existing.remove();
 
         const icons = {
             warning: '\u26A0\uFE0F',
@@ -2449,46 +2448,14 @@ class UIManager {
             // Clear any existing panels
             this.closeCurrentPanel();
 
-            // Create terrain info content
-            const terrainDescriptions = {
-                'grassland': {
-                    name: 'Pastagem',
-                    description: 'Terra fértil ideal para construção de edifícios residenciais e comerciais',
-                    buildable: true,
-                    icon: '🌿'
-                },
-                'lowland': {
-                    name: 'Planície',
-                    description: 'Terreno baixo adequado para edifícios e infraestrutura',
-                    buildable: true,
-                    icon: '🏞️'
-                },
-                'water': {
-                    name: 'Corpo d\'água',
-                    description: 'Fonte natural de água. Não é possível construir aqui',
-                    buildable: false,
-                    icon: '💧'
-                },
-                'highland': {
-                    name: 'Terreno Elevado',
-                    description: 'Terreno elevado com boa vista, ideal para edifícios especiais',
-                    buildable: true,
-                    icon: '⛰️'
-                },
-                'mountain': {
-                    name: 'Montanha',
-                    description: 'Terreno montanhoso. Não é possível construir aqui',
-                    buildable: false,
-                    icon: '🏔️'
-                }
-            };
-
-            const terrain = terrainDescriptions[terrainType] || {
-                name: 'Terreno Desconhecido',
-                description: 'Tipo de terreno não identificado',
-                buildable: false,
-                icon: '❓'
-            };
+            // Fonte única: js/data/terrainInfo.js. No trecho encaixado e no trecho com planície a explicação muda.
+            const grid = this.gameManager.gridManager;
+            const zone = grid?.getTerrainZone?.(gridX, gridZ) || terrainType;
+            const hasPlain = !!grid?.hasFloodplainReach?.(gridX, gridZ);
+            const terrain = TERRAIN_INFO[zone] || { name: 'Terreno', description: '', icon: '❓', build: '' };
+            const description = (hasPlain ? terrain.descriptionPlain : terrain.descriptionEntrenched) || terrain.description;
+            const sequence = TERRAIN_SEQUENCE[hasPlain || zone === 'grassland' || zone === 'hill' ? 'plain' : 'entrenched'];
+            const canBuild = zone === 'grassland';
 
             let detailsHTML = `
                 <div class="terrain-info-panel">
@@ -2498,12 +2465,15 @@ class UIManager {
                             <h5>${terrain.name}</h5>
                             <span class="terrain-coords">Posição: (${gridX}, ${gridZ})</span>
                         </div>
-                        <p class="terrain-description">${terrain.description}</p>
+                        <p class="terrain-description">${description}</p>
+                        <ol class="terrain-sequence" aria-label="Do rio ao planalto">
+                            ${sequence.map(key => `<li class="${key === zone ? 'here' : ''}">${TERRAIN_INFO[key].name}</li>`).join('')}
+                        </ol>
                         <div class="terrain-properties">
                             <div class="property">
-                                <span class="property-label">Construível:</span>
-                                <span class="property-value ${terrain.buildable ? 'positive' : 'negative'}">
-                                    ${terrain.buildable ? uiIcon('status-done') + ' Sim' : uiIcon('status-error') + ' Não'}
+                                <span class="property-label">Construir:</span>
+                                <span class="property-value ${canBuild ? 'positive' : 'negative'}">
+                                    ${uiIcon(canBuild ? 'status-done' : 'status-error')} ${terrain.build}
                                 </span>
                             </div>
                         </div>

@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const { load, ROOT } = require('./load');
 
-const g = load('js/utils/GameUtils.js', 'js/core/GridManager.js', 'js/data/buildings.js', 'js/data/buildingModels.js');
+const g = load('js/utils/GameUtils.js', 'js/core/GridManager.js', 'js/data/buildings.js', 'js/data/buildingModels.js', 'js/data/terrainInfo.js');
 const GridManager = g('GridManager');
 const BUILDINGS = g('BUILDING_TYPES');
 const MODELS = g('BUILDING_MODELS');
@@ -98,4 +98,71 @@ test('reciclar prédio: de 20% a 80% do custo, cada tipo de prédio de conhecime
     assert.strictEqual(fake.canRecycleBuilding(fake.buildings.get('p')), true);
     fake.gameManager.tutorialSystem.isActive = true;
     assert.strictEqual(fake.canRecycleBuilding(fake.buildings.get('p')), false);
+});
+
+// ===== Planície e APP (BuildingSystem.canPlaceBuilding) =====
+const riverGrid = () => {
+    const grid = {
+        terrain: {}, zones: {},
+        getTerrainType(x, z) { return this.terrain[`${x},${z}`] || 'grassland'; },
+        getRiverZone(x, z) { return this.zones[`${x},${z}`] || null; },
+        isRiverZone(x, z) { return !!this.zones[`${x},${z}`]; },
+        canPlaceBuilding: () => true,
+        isCellOccupied: () => false,
+        gridSize: 40
+    };
+    grid.terrain['5,5'] = 'water';
+    grid.terrain['6,5'] = 'floodplain';
+    grid.zones['6,5'] = 'floodplain';
+    grid.zones['7,5'] = 'app';
+    return grid;
+};
+const placer = () => {
+    const BuildingSystem = load('js/utils/GameUtils.js', 'js/data/terrainInfo.js', 'js/systems/BuildingSystem.js')('BuildingSystem');
+    const system = Object.create(BuildingSystem.prototype);
+    system.gridManager = riverGrid();
+    system.buildingTypes = new Map(Object.entries(structuredClone(BUILDINGS)));
+    return system;
+};
+
+test('planície e APP: a casa não entra, nem um prédio grande invade pela célula de origem', () => {
+    const system = placer();
+    assert.match(system.canPlaceBuilding(6, 5, 'house', { quiet: true }).reason, /^Planície/);
+    assert.match(system.canPlaceBuilding(7, 5, 'house', { quiet: true }).reason, /^APP/);
+    assert.strictEqual(system.canPlaceBuilding(8, 5, 'house', { quiet: true }).canPlace, true);
+    // ETA 2×2 com origem no planalto, mas a área cobre a APP
+    const eta = system.buildingTypes.get('water_treatment_plant');
+    eta.requirements = { terrain: ['grassland'] };
+    assert.match(system.canPlaceBuilding(6, 4, 'water_treatment_plant', { quiet: true }).reason, /^Planície/);
+});
+
+test('planície e APP: mudas, parque linear e monitoramento podem entrar', () => {
+    const system = placer();
+    for (const id of ['monitoring_station', 'water_quality_monitor']) {
+        assert.strictEqual(system.canPlaceBuilding(7, 5, id, { quiet: true }).canPlace, true, `${id} na APP`);
+        assert.strictEqual(system.canPlaceBuilding(6, 5, id, { quiet: true }).canPlace, true, `${id} na planície`);
+    }
+    for (const id of ['tree_sapling', 'linear_park', 'monitoring_station', 'water_quality_monitor']) {
+        assert.strictEqual(BUILDINGS[id].allowedInRiverZone, true, id);
+        assert.ok(BUILDINGS[id].requirements.terrain.includes('floodplain'), id);
+    }
+});
+
+test('perto da água: encostar na faixa protegida conta, já que não se constrói dentro dela', () => {
+    const system = placer();
+    assert.strictEqual(system.isNearWater(8, 5, 1), true);
+    assert.strictEqual(system.isNearWater(20, 20, 1), false);
+});
+
+test('terreno: nenhum prédio usa o tipo antigo, e todo tipo pedido tem nome em TERRAIN_INFO', () => {
+    const INFO = g('TERRAIN_INFO');
+    for (const [id, b] of Object.entries(BUILDINGS)) {
+        for (const t of b.requirements?.terrain || []) {
+            assert.notStrictEqual(t, 'lowland', id);
+            // highland e desert são listas antigas: esses terrenos nunca são gerados
+            if (!['highland', 'desert'].includes(t)) assert.ok(INFO[t], `${id}: ${t}`);
+        }
+    }
+    for (const key of ['water', 'floodplain', 'app', 'grassland', 'hill']) assert.ok(INFO[key]?.name, key);
+    assert.ok(INFO.floodplain.blocked && INFO.app.blocked);
 });

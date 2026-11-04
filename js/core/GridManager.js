@@ -14,6 +14,7 @@ class GridManager {
     // A terra toda fica este tanto acima do fundo; a água de cada lago/rio fica WATER_MARGIN abaixo da margem mais
     // baixa dele (nunca acima da terra em volta — antes a água rasa ficava mais alta que a margem). Mínimo WATER_MIN.
     static TERRAIN_BASE = 0.3;
+    static FLOODPLAIN_HEIGHT = 0.08; // topo da planície acima da base: baixa, mas ainda acima do nível do rio
     static WATER_MARGIN = 0.12;
     static WATER_MIN = 0.12;
 
@@ -57,6 +58,11 @@ class GridManager {
             console.error('❌ GridSize inválido:', this.gridSize);
             this.gridSize = 20; // Fallback
         }
+
+        // O rio vem primeiro: planície e APP dependem dele (js/data/riverMap.js)
+        const river = GridManager.classifyRiverCells(this.gridSize, RIVER_MAP);
+        this.riverZones = river.zones;
+        this.riverHasPlain = river.hasPlain;
 
         // Inicializar grids
         for (let x = 0; x < this.gridSize; x++) {
@@ -116,15 +122,65 @@ class GridManager {
         }
     }
     
-    determineTerrainType(x, z) {
-        const elevation = this.elevationGrid[x][z];
-
-        // Área da cidade inicial (5-16, 5-16) deve ser adequada para construção
-        if (x >= 5 && x <= 16 && z >= 5 && z <= 16) {
-            // Garantir que a área da cidade inicial seja adequada para construção
-            if (elevation < 0.3) return 'grassland';   // Pastagem (ideal para construção)
-            return 'lowland'; // Planície baixa (também adequada)
+    /**
+     * Faixas do rio por célula, sem Babylon: distância até o eixo suavizado do rio → água, planície (quando o trecho
+     * tem planície) e APP. Largura medida pela distância, por isso a planície acompanha as curvas com largura quase
+     * uniforme e fica sempre colada ao rio. zones[x][z] = 'water' | 'floodplain' | 'app' | null.
+     */
+    static classifyRiverCells(size, map) {
+        const samples = GridManager.sampleRiverPath(map);
+        const zones = Array.from({ length: size }, () => new Array(size).fill(null));
+        const hasPlain = Array.from({ length: size }, () => new Array(size).fill(false));
+        for (let x = 0; x < size; x++) {
+            for (let z = 0; z < size; z++) {
+                let best = Infinity, plain = 0;
+                for (let i = 0; i < samples.length - 1; i++) {
+                    const a = samples[i], b = samples[i + 1];
+                    const dx = b[0] - a[0], dz = b[1] - a[1];
+                    const t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz || 1)));
+                    const d = Math.hypot(a[0] + dx * t - x, a[1] + dz * t - z);
+                    if (d < best) { best = d; plain = a[2] + (b[2] - a[2]) * t; }
+                }
+                const withPlain = plain >= map.minPlain;
+                const width = withPlain ? plain : 0;
+                hasPlain[x][z] = withPlain;
+                if (best <= map.halfWidth) zones[x][z] = 'water';
+                else if (best <= map.halfWidth + width) zones[x][z] = 'floodplain';
+                else if (best <= map.halfWidth + width + (withPlain ? map.appAfterPlain : map.appEntrenched)) zones[x][z] = 'app';
+            }
         }
+        // Onde a largura da planície muda (início do trecho, dentro das curvas) a distância pode pular a APP:
+        // ela sempre separa o planalto do rio e da planície
+        const wet = (x, z) => zones[x]?.[z] === 'water' || zones[x]?.[z] === 'floodplain';
+        for (let x = 0; x < size; x++) {
+            for (let z = 0; z < size; z++) {
+                if (!zones[x][z] && (wet(x + 1, z) || wet(x - 1, z) || wet(x, z + 1) || wet(x, z - 1))) zones[x][z] = 'app';
+            }
+        }
+        return { zones, hasPlain };
+    }
+
+    /** Eixo do rio suavizado (Catmull-Rom): [x, z, largura da planície] por amostra. */
+    static sampleRiverPath(map) {
+        const pts = map.path, out = [];
+        for (let i = 0; i < pts.length - 1; i++) {
+            const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+            for (let k = 0; k < map.samplesPerSegment; k++) {
+                const t = k / map.samplesPerSegment, t2 = t * t, t3 = t2 * t;
+                const at = n => 0.5 * (2 * p1[n] + (p2[n] - p0[n]) * t + (2 * p0[n] - 5 * p1[n] + 4 * p2[n] - p3[n]) * t2 + (3 * p1[n] - p0[n] - 3 * p2[n] + p3[n]) * t3);
+                out.push([at(0), at(1), p1[2] + (p2[2] - p1[2]) * t]);
+            }
+        }
+        out.push(pts[pts.length - 1].slice());
+        return out;
+    }
+
+    determineTerrainType(x, z) {
+        const zone = this.riverZones?.[x]?.[z];
+        if (zone === 'water' || zone === 'floodplain') return zone;
+        if (zone === 'app') return 'grassland'; // a APP é uma faixa sobre o planalto, nunca encosta
+
+        const elevation = this.elevationGrid[x][z];
 
         // Usar seed baseado na posição para gerar terreno procedural consistente
         const seed = this.getTerrainSeed(x, z);
@@ -134,28 +190,39 @@ class GridManager {
         const noise2 = this.simpleNoise(x * 0.05, z * 0.05, seed + 1000);
         const combinedNoise = (noise1 + noise2 * 0.5) / 1.5;
 
-        // Gerar ruído adicional para criar lagos maiores
-        const lakeNoise = this.simpleNoise(x * 0.03, z * 0.03, seed + 2000);
-
         // Determinar tipo baseado em elevação e ruído
         const terrainValue = elevation + combinedNoise * 0.3;
 
         // Gerar ruído específico para colinas (menos frequente)
         const hillNoise = this.simpleNoise(x * 0.02, z * 0.02, seed + 3000);
 
-        // Criar lagos maiores com ruído de baixa frequência
-        if (lakeNoise > 0.7 && terrainValue < 0.4) return 'water'; // Lagos grandes
-        if (terrainValue < 0.2) return 'water';      // Corpos d'água menores
-        if (terrainValue < 0.4) return 'grassland';  // Pastagem (ideal para construção)
-        if (terrainValue < 0.6) return 'lowland';    // Planície baixa
-
-        // Colinas raras (~4% do mapa): antes eram 15% e tomavam o centro, onde o jogo começa
+        // Encostas raras (~4% do mapa): antes eram 15% e tomavam o centro, onde o jogo começa
         if (hillNoise > 0.8 && terrainValue > 0.65) return 'hill'; // Colinas elevadas (mais raras)
-        if (terrainValue < 0.8) return 'grassland';  // Mais pastagem
 
-        // Colinas muito altas apenas em terreno muito elevado
+        // Encostas muito altas apenas em terreno muito elevado
         if (terrainValue > 0.95 && hillNoise > 0.6) return 'hill';
-        return 'grassland';                           // Padrão para pastagem
+        return 'grassland';                           // Planalto
+    }
+
+    /** Faixa do rio da célula: 'water', 'floodplain', 'app' ou null. */
+    getRiverZone(x, z) {
+        return this.riverZones?.[x]?.[z] ?? null;
+    }
+
+    /** Planície ou APP: faixas protegidas, onde a maioria das construções não entra. */
+    isRiverZone(x, z) {
+        const zone = this.getRiverZone(x, z);
+        return zone === 'floodplain' || zone === 'app';
+    }
+
+    /** Chave de TERRAIN_INFO da célula: o tipo de terreno, ou 'app' na faixa protegida do planalto. */
+    getTerrainZone(x, z) {
+        return this.getRiverZone(x, z) === 'app' ? 'app' : this.getTerrainType(x, z);
+    }
+
+    /** O trecho do rio mais perto desta célula tem planície? (false = rio encaixado) */
+    hasFloodplainReach(x, z) {
+        return !!this.riverHasPlain?.[x]?.[z];
     }
 
     /** Colina solta (sem outra colina ao lado) vira pastagem: só picota a área de construção. */
@@ -172,7 +239,7 @@ class GridManager {
 
     /**
      * Área onde o jogo começa (câmera e Prefeitura do tutorial): o quadrado size×size com pelo menos
-     * `minBuildable` de terreno construível (campo/planície), o mais perto do centro do mapa.
+     * `minBuildable` de terreno construível (planalto fora da APP), o mais perto do centro do mapa.
      * Retorna o centro em células { x, z } e a fração construível.
      */
     findStartArea(size = 8, minBuildable = 0.8) {
@@ -184,7 +251,7 @@ class GridManager {
                 for (let x = x0; x < x0 + size; x++) {
                     for (let z = z0; z < z0 + size; z++) {
                         const type = this.terrainGrid[x][z];
-                        if ((type === 'grassland' || type === 'lowland') && !this.occupationGrid[x][z]) buildable++;
+                        if (type === 'grassland' && !this.isRiverZone(x, z) && !this.occupationGrid[x][z]) buildable++;
                     }
                 }
                 const ratio = buildable / (size * size);
@@ -387,7 +454,7 @@ class GridManager {
                 if (type === 'water' || type === 'unknown') continue;
                 const h = this.getTerrainBlockHeight(x, z, type);
                 const drop = Math.min(0.04, h * 0.4);
-                const base = this.getMinecraftTerrainColor(type);
+                const base = this.getMinecraftTerrainColor(this.getTerrainZone(x, z));
                 const v = this.cellShade(x, z);
                 // × TERRAIN_BRIGHTNESS: a cor de vértice entra depois do clamp da luz do StandardMaterial; sem ela o
                 // topo ficava mais escuro que o antigo (cor no diffuseColor, com luz > 1 saturando)
@@ -669,11 +736,11 @@ class GridManager {
             // Colinas são significativamente mais altas
             return base + Math.max(0.8, elevation * 1.5 + 0.5);
         }
-        if (terrainType === 'lowland') {
-            // Planícies baixas são mais baixas
-            return base + Math.max(0.05, elevation * 0.3 + 0.05);
+        if (terrainType === 'floodplain') {
+            // Baixa e plana, quase no nível do rio: é por isso que alaga
+            return base + GridManager.FLOODPLAIN_HEIGHT;
         }
-        // Pastagem e outros terrenos têm altura padrão
+        // Planalto e outros terrenos têm altura padrão
         return base + Math.max(0.1, elevation * 0.5 + 0.1);
     }
 
@@ -924,7 +991,7 @@ class GridManager {
     getTerrainColor(terrainType) {
         const colors = {
             'water': new BABYLON.Color3(0.25, 0.56, 1.0),      // #4169E1 - Azul real
-            'lowland': new BABYLON.Color3(0.63, 0.32, 0.18),   // #A0522D - Marrom terra
+            'floodplain': new BABYLON.Color3(0.20, 0.42, 0.27),
             'grassland': new BABYLON.Color3(0.13, 0.55, 0.13), // #228B22 - Verde floresta
             'hill': new BABYLON.Color3(0.41, 0.41, 0.41),      // #696969 - Cinza escuro
             'mountain': new BABYLON.Color3(0.50, 0.50, 0.50),  // #808080 - Cinza
@@ -942,7 +1009,8 @@ class GridManager {
             'dirt': { r: 134, g: 96, b: 67 },       // Marrom terra Minecraft
             'rock': { r: 128, g: 128, b: 128 },     // Cinza pedra Minecraft
             'grassland': { r: 91, g: 153, b: 76 },  // Verde grama Minecraft
-            'lowland': { r: 134, g: 96, b: 67 },    // Terra
+            'floodplain': { r: 62, g: 112, b: 74 }, // Verde-escuro: a faixa escura ao lado do rio, como nas fotos de satélite
+            'app': { r: 74, g: 132, b: 66 },        // Mata protegida: mais escura que o planalto
             'hill': { r: 128, g: 128, b: 128 },     // Pedra
             'mountain': { r: 96, g: 96, b: 96 }     // Pedra escura
         };
@@ -950,8 +1018,43 @@ class GridManager {
         return colors[terrainType] || colors['dirt'];
     }
 
+    /** Enchente ou chuva forte: a planície fica coberta de água (level 0-1). Malha única, criada na primeira cheia. */
+    setFloodplainWet(level) {
+        if (!this.floodMesh) {
+            if (level <= 0 || !this.scene) return;
+            const positions = [], indices = [], normals = [];
+            const cs = this.cellSize, half = (this.gridSize * cs) / 2;
+            for (let x = 0; x < this.gridSize; x++) {
+                for (let z = 0; z < this.gridSize; z++) {
+                    if (this.getTerrainType(x, z) !== 'floodplain') continue;
+                    const h = this.getTerrainBlockHeight(x, z) + 0.05, ax = x * cs - half, az = z * cs - half, n = positions.length / 3;
+                    positions.push(ax, h, az, ax + cs, h, az, ax + cs, h, az + cs, ax, h, az + cs);
+                    normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0);
+                    indices.push(n, n + 2, n + 1, n, n + 3, n + 2);
+                }
+            }
+            if (!indices.length) return;
+            const mesh = new BABYLON.Mesh('floodplainWater', this.scene);
+            const data = new BABYLON.VertexData();
+            Object.assign(data, { positions, indices, normals });
+            data.applyToMesh(mesh);
+            const material = new BABYLON.StandardMaterial('floodplainWaterMat', this.scene);
+            material.diffuseColor = new BABYLON.Color3(0.27, 0.55, 0.78);
+            material.specularColor = BABYLON.Color3.Black();
+            material.backFaceCulling = false;
+            mesh.material = material;
+            mesh.isPickable = false;
+            this.floodMesh = mesh;
+        }
+        this.floodMesh.setEnabled(level > 0.01);
+        this.floodMesh.material.alpha = 0.72 * level;
+    }
+
     // ===== LIMPEZA GERAL =====
     dispose() {
+        this.floodMesh?.material?.dispose();
+        this.floodMesh?.dispose();
+        this.floodMesh = null;
         [...(this.waterMeshes || []), ...(this.terrainBlocks || [])].forEach(mesh => {
             if (mesh && !mesh.isDisposed()) mesh.dispose();
         });

@@ -184,17 +184,16 @@ test('tutorial congela o jogo e guia a construção da prefeitura', async ({ pag
     expect(await page.evaluate(() => window.gameManager.gameState)).toBe('playing');
     await page.waitForFunction(() => window.gameManager.gameTime > 0);
 
-    // Missão concluída → a próxima aula (a 1, só vista pela metade) abre sozinha no livro, com o jogo pausado
+    // Missão concluída → a próxima aula (a 1, só vista pela metade) abre sozinha no painel, com o jogo pausado
     await page.evaluate(() => window.gameManager.questSystem.completeQuest('tutorial_01'));
     // Primeiro a comemoração (cartão com estrelas); a aula espera ele fechar
     await expect(page.locator('#mission-card')).toBeVisible();
     await page.locator('#mission-card-ok').click();
-    const book = page.locator('#lesson-book');
-    await expect(book).toBeVisible({ timeout: 10000 });
-    await expect(book.locator('.book-chapter')).toContainText('Aula 1');
+    await expect(tutorial).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('#tutorial-progress')).toContainText('Aula 1');
     await page.waitForFunction(() => !window.gameManager.isSimulationRunning());
-    await book.locator('.book-close').click();
-    await expect(book).toBeHidden();
+    await page.click('#tutorial-skip-btn');
+    await expect(tutorial).toBeHidden();
     await page.waitForFunction(() => window.gameManager.isSimulationRunning());
 
     // Menu do jogador → 📚 Aulas e estudos abre a central de aulas: escolher o tema abre o livro, e a última página conclui a aula
@@ -206,6 +205,7 @@ test('tutorial congela o jogo e guia a construção da prefeitura', async ({ pag
     await expect(hub.locator('.lesson-card')).toHaveCount(6);
     await hub.locator('.lesson-card[data-chapter="1"]').click();
     // Vira página por página esperando a animação acabar (clique no meio da virada é ignorado)
+    const book = page.locator('#lesson-book');
     const pages = await book.locator('.book-dot').count();
     for (let i = 1; i < pages; i++) {
         await book.locator('.book-next').click();
