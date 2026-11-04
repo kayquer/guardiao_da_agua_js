@@ -100,6 +100,7 @@ const MenuIntro = {
         // Música da abertura começa junto com a 1ª tomada (movimento reduzido: direto o tema do menu)
         if (typeof AudioManager !== 'undefined') AudioManager.onIntroStart(mode);
 
+        this.cinematic.startRendering();
         this.cinematic.play(mode, {
             orbit: !this.reducedMotion(),
             onShot: (i, shot) => this.showCaption(shot.caption || ''),
@@ -111,6 +112,7 @@ const MenuIntro = {
     reveal() {
         if (this.state !== 'playing') return;
         this.state = 'menu';
+        this.cinematic?.setCalm(true);
         this.unbindSkip();
         this.showCaption('');
         document.body.classList.remove('intro-playing', 'intro-letterbox');

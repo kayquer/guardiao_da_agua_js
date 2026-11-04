@@ -1,4 +1,23 @@
 /**
+ * Ritmo de desenho: ready(agora, fps) diz se este quadro deve ser desenhado. Sem efeito em monitor de 60 Hz com 60 fps;
+ * em 144 Hz desenha 60 por segundo. A meta muda na hora (voltar da pausa não espera o intervalo antigo).
+ */
+class FramePacer {
+    ready(now, fps) {
+        if (fps !== this.fps) {
+            this.fps = fps;
+            this.next = 0;
+        }
+        if (!Number.isFinite(fps)) return true;
+        if (now < (this.next || 0) - 1) return false;
+        const interval = 1000 / fps;
+        // Soma ao horário previsto (não ao atual) para manter a média; depois de um engasgo, recomeça de agora
+        this.next = now - (this.next || 0) > interval ? now + interval : this.next + interval;
+        return true;
+    }
+}
+
+/**
  * ===== GUARDIÃO DA ÁGUA - GAME UTILITIES =====
  * 
  * Clean Code Refactoring: Utility functions to eliminate code duplication

@@ -4,10 +4,11 @@
   "description": "Guardião da Água - Educational Water Management Game",
   "main": "index.html",
   "scripts": {
-    "start": "python3 -m http.server 3000 || python -m http.server 3000",
+    "start": "node scripts/serve.js",
     "prestart": "npm run cache-bust",
     "pretest": "npm run cache-bust",
     "cache-bust": "node scripts/cache-bust.js",
+    "prepare": "git config core.hooksPath .githooks || exit 0",
     "test": "npm run lint && npm run test:unit && playwright test",
     "lint": "eslint .",
     "test:unit": "node --test tests/unit/*.test.js",

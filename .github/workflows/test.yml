@@ -14,9 +14,6 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: node scripts/cache-bust.js --check  # index.html precisa vir com as versões em dia

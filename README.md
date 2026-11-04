@@ -165,7 +165,7 @@ estudos trazem as fontes (ANA, USGS, Embrapa, SGB, legislação brasileira, entr
 
 ## 💻 Rodar no seu computador
 
-Pré-requisitos: [Node.js](https://nodejs.org/) 18 ou mais novo e [Python 3](https://www.python.org/).
+Pré-requisitos: [Node.js](https://nodejs.org/) 18 ou mais novo.
 
 ```bash
 git clone https://github.com/kayquer/guardiao_da_agua_js.git

@@ -21,9 +21,9 @@ mixin(BuildingSystem, {
         return { percent, sources };
     },
 
-    /** Pode reciclar? A Prefeitura não (sede da cidade, de graça no tutorial), nem rua, nem durante um tutorial. */
+    /** Pode reciclar? A Prefeitura não (sede da cidade, de graça no tutorial), nem durante um tutorial. Ruas de qualquer tipo, sim. */
     canRecycleBuilding(building) {
-        if (!building?.config || building.config.roadType) return false;
+        if (!building?.config) return false;
         if (building.type === 'city_hall') return false;
         return !this.gameManager?.tutorialSystem?.isActive;
     },

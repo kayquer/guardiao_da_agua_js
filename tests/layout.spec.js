@@ -76,6 +76,36 @@ for (const [width, height] of [[1366, 650], [1536, 730], [1920, 940]]) {
     });
 }
 
+for (const width of [1366, 1280]) test(`o selo de pausa fica na barra do topo, sem cobrir nada (${width} px)`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 650 });
+    await startGame(page);
+    await page.evaluate(() => {
+        const gm = window.gameManager;
+        gm.tutorialSystem.complete();
+        gm.uiManager.showCentralAlert('Teste', 'mensagem');
+    });
+    const badge = page.locator('#soft-pause-badge');
+    await expect(badge).toBeVisible();
+    const overlaps = await badge.evaluate(el => {
+        const a = el.getBoundingClientRect();
+        const others = [...document.querySelectorAll('.resource-item, #player-chip, .control-btn, #toast-stack > *, .event-card, .central-alert-card, .hud-left')];
+        return others.filter(other => {
+            const b = other.getBoundingClientRect();
+            return b.width && !other.contains(el) && a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+        }).map(other => other.id || other.className);
+    });
+    expect(overlaps).toEqual([]);
+    const top = await page.locator('.hud-top').boundingBox();
+    const box = await badge.boundingBox();
+    expect(box.y).toBeGreaterThanOrEqual(top.y);
+    expect(box.y + box.height).toBeLessThanOrEqual(top.y + top.height);
+    // Com o selo, os botões da direita continuam na tela
+    expect(await page.evaluate(() => {
+        const bar = document.querySelector('.hud-top');
+        return bar.scrollWidth - bar.clientWidth;
+    })).toBeLessThanOrEqual(0);
+});
+
 test('rever cartão de missão: o botão fica à vista mesmo em tela curta', async ({ page }) => {
     await page.setViewportSize({ width: 1366, height: 650 });
     await startGame(page);
@@ -87,3 +117,99 @@ test('rever cartão de missão: o botão fica à vista mesmo em tela curta', asy
     await expect(page.locator('#mission-card')).toBeVisible();
     expect(await inView(page, '#mission-card-ok')).toBe(true);
 });
+
+// Topo: sem nada cortado de 769 px em diante, mesmo com os maiores valores do jogo e o selo de pausa aceso.
+for (const width of [769, 800, 900, 999, 1000, 1100, 1200, 1280, 1366, 1440, 1600]) {
+    test(`a barra do topo cabe inteira em ${width} px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 650 });
+        await startGame(page);
+        const result = await page.evaluate(() => {
+            const gm = window.gameManager;
+            gm.tutorialSystem.complete();
+            gm.holdPause('teste');
+            gm.uiManager.setText = () => {};
+            const values = { 'budget-amount': 'R$ 2.500.000', 'water-amount': '20.000L', 'population-count': '12.000', 'electricity-amount': '6000 MW', 'pollution-level': '100%', 'satisfaction-level': '100%', 'player-name': 'Guardião Maximiliano' };
+            for (const [id, text] of Object.entries(values)) document.getElementById(id).textContent = text;
+            const bar = document.querySelector('.hud-top');
+            const b = bar.getBoundingClientRect();
+            const cut = [...bar.querySelectorAll('.resource-item, #player-chip, .control-btn')]
+                .filter(el => el.offsetParent)
+                .filter(el => {
+                    const r = el.getBoundingClientRect();
+                    return r.left < 0 || r.right > innerWidth || r.top < b.top || r.bottom > b.bottom;
+                }).map(el => el.id || el.className);
+            return { overflow: bar.scrollWidth - bar.clientWidth, cut };
+        });
+        expect(result).toEqual({ overflow: 0, cut: [] });
+    });
+}
+
+// Painel da direita: a largura não depende do conteúdo; a barra de rolagem e o ✕ ficam sempre na tela.
+for (const width of [800, 1024, 1366]) {
+    test(`o painel da direita mantém a largura em ${width} px, em todo painel de recurso`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 650 });
+        await startGame(page);
+        await page.evaluate(() => window.gameManager.tutorialSystem.complete());
+        const LONG = 'Estação de Tratamento com um nome bem comprido, sem fim, para esticar a linha <span style="white-space: nowrap">produzindo +1.234.567,8 L/min sem quebrar de jeito nenhum aqui dentro</span>';
+        for (const type of ['water', 'budget', 'energy', 'satisfaction', 'population', 'pollution']) {
+            const result = await page.evaluate(async ({ type, LONG }) => {
+                const ui = window.gameManager.uiManager;
+                ui.closeRightPanel();
+                ui.uiState.isTransitioning = false;
+                ui.showResourcePanel(type);
+                await new Promise(done => setTimeout(done, 350));
+                const content = document.getElementById('details-content');
+                for (let i = 0; i < 40 && !content.querySelector('.resource-stat'); i++) await new Promise(done => setTimeout(done, 50));
+                const list = content.querySelector('.resource-details-panel') || content;
+                list.insertAdjacentHTML('beforeend', `<div class="resource-stat"><span class="stat-label">${LONG}</span><span class="stat-value">${LONG}</span></div>`);
+                const hud = document.querySelector('.hud-right').getBoundingClientRect();
+                const panel = document.getElementById('details-panel').getBoundingClientRect();
+                const close = document.getElementById('hud-right-close').getBoundingClientRect();
+                // Palavra sozinha não quebra ao meio ("Tendên-cia")
+                const broken = [...content.querySelectorAll('.stat-label')].filter(el => {
+                    if (el.textContent.trim().includes(' ')) return false;
+                    const range = document.createRange();
+                    range.selectNodeContents(el);
+                    return range.getClientRects().length > 1;
+                }).map(el => el.textContent);
+                const noNumber = /NaN|undefined/.test(content.textContent);
+                return {
+                    broken,
+                    noNumber,
+                    panelInside: panel.right <= hud.right + 0.5,
+                    closeOnScreen: close.right <= innerWidth,
+                    panelOnScreen: hud.right <= innerWidth + 0.5,
+                };
+            }, { type, LONG });
+            expect(result, type).toEqual({ broken: [], noNumber: false, panelInside: true, closeOnScreen: true, panelOnScreen: true });
+        }
+    });
+}
+
+// Prédio de nome longo: nada do painel fica cortado (o botão Desselecionar passava até 48 px da largura).
+for (const width of [800, 1366]) {
+    test(`o painel do prédio não corta nada em ${width} px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 650 });
+        await startGame(page);
+        const cut = await page.evaluate(() => {
+            const gm = window.gameManager, bs = gm.buildingSystem;
+            gm.tutorialSystem.complete();
+            gm.studySystem.isBuildingUnlocked = () => true;
+            bs.maxSimultaneousConstructions = Infinity;
+            const content = document.getElementById('details-content');
+            const cut = [];
+            for (const id of ['composting_yard', 'sugarcane_mill', 'monitoring_station', 'water_tank', 'zone_residential_light']) {
+                gm.resourceManager.resources.budget.current = 1e9;
+                bs.buildingCooldown.active = false;
+                let spot = null;
+                for (let x = 0; x < 40 && !spot; x++) for (let z = 0; z < 40 && !spot; z++) {
+                    if (bs.canPlaceBuilding(x, z, id, { quiet: true }).canPlace) spot = [x, z];
+                }
+                gm.uiManager.showBuildingSelectionInfo(bs.placeBuilding(spot[0], spot[1], id));
+                if (content.scrollWidth > content.clientWidth) cut.push(id);
+            }
+            return cut;
+        });
+        expect(cut).toEqual([]);
+    });
+}

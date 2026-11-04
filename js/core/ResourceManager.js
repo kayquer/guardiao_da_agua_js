@@ -1082,7 +1082,8 @@ class ResourceManager {
         this.resources = {
             water: {
                 current: GAME_CONFIG.resources.initialWater,
-                max: GAME_CONFIG.resources.initialWater * 2,
+                max: GAME_CONFIG.resources.initialWater,
+                storage: GAME_CONFIG.resources.initialWater, // sem ela, o painel de água mostrava "NaNL" até o primeiro segundo de jogo
                 production: 0,
                 consumption: 0,
                 waste: 0
