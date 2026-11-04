@@ -285,6 +285,15 @@ class BuildingSystem {
                 : { canPlace: false, reason: road.reason, userFriendly: true };
         }
 
+        // Planície e APP não aceitam prédios: vale para cada célula, um prédio grande não pode invadir a faixa. Vem antes do
+        // "área ocupada": perto do rio, o motivo que o aluno precisa ler é este.
+        // Prédios sobre a água (usina, porto, jardim flutuante) ficam no rio e podem encostar nas margens.
+        const onWater = buildingType.requirements?.terrain?.includes('water') && this.gridManager.getTerrainType(gridX, gridZ) === 'water';
+        if (!buildingType.allowedInRiverZone && !onWater) {
+            const blocked = this.findRiverZoneInArea(gridX, gridZ, buildingType.size || 1);
+            if (blocked) return { canPlace: false, reason: TERRAIN_INFO[blocked].blocked, userFriendly: true };
+        }
+
         // Verificar se há espaço no grid
         // Para edifícios que requerem água, usar validação especial
         if (buildingType.requirements && buildingType.requirements.terrain &&
@@ -304,18 +313,14 @@ class BuildingSystem {
 
         // Verificar requisitos de terreno
         if (buildingType.requirements) {
-            const terrainType = this.gridManager.getTerrainType(gridX, gridZ);
+            // Prédios em terra: toda a área precisa aceitar o terreno (antes só a célula de origem era conferida)
+            const terrainType = onWater ? 'water' : this.findTerrainConflict(gridX, gridZ, buildingType);
 
             if (buildingType.requirements.terrain &&
                 !buildingType.requirements.terrain.includes(terrainType)) {
-                const terrainNames = {
-                    'water': 'água',
-                    'grassland': 'campo',
-                    'lowland': 'planície',
-                    'hill': 'colina'
-                };
-                const currentTerrainName = terrainNames[terrainType] || terrainType;
-                const requiredTerrainNames = buildingType.requirements.terrain.map(t => terrainNames[t] || t).join(', ');
+                const nameOf = t => (typeof TERRAIN_INFO !== 'undefined' && TERRAIN_INFO[t]?.short) || t;
+                const currentTerrainName = nameOf(terrainType);
+                const requiredTerrainNames = buildingType.requirements.terrain.map(nameOf).join(', ');
 
                 return {
                     canPlace: false,
@@ -986,11 +991,38 @@ class BuildingSystem {
         return true;
     }
 
+    /** Primeira faixa protegida ('floodplain' | 'app') na área do prédio, ou null. */
+    findRiverZoneInArea(gridX, gridZ, size) {
+        const grid = this.gridManager;
+        if (!grid.isRiverZone) return null;
+        for (let x = gridX; x < gridX + size; x++) {
+            for (let z = gridZ; z < gridZ + size; z++) {
+                if (grid.isRiverZone(x, z)) return grid.getRiverZone(x, z);
+            }
+        }
+        return null;
+    }
+
+    /** Terreno da área que o prédio não aceita; sem conflito, o da célula de origem. */
+    findTerrainConflict(gridX, gridZ, buildingType) {
+        const allowed = buildingType.requirements?.terrain;
+        const size = buildingType.size || 1;
+        if (allowed) {
+            for (let x = gridX; x < gridX + size; x++) {
+                for (let z = gridZ; z < gridZ + size; z++) {
+                    const type = this.gridManager.getTerrainType(x, z);
+                    if (!allowed.includes(type)) return type;
+                }
+            }
+        }
+        return this.gridManager.getTerrainType(gridX, gridZ);
+    }
+
+    /** Perto da água = encostado no rio ou na faixa protegida dele (não se constrói dentro dela). */
     isNearWater(gridX, gridZ, size) {
-        // Verificar células adjacentes
         for (let x = gridX - 1; x <= gridX + size; x++) {
             for (let z = gridZ - 1; z <= gridZ + size; z++) {
-                if (this.gridManager.getTerrainType(x, z) === 'water') {
+                if (this.gridManager.getTerrainType(x, z) === 'water' || this.gridManager.isRiverZone?.(x, z)) {
                     return true;
                 }
             }

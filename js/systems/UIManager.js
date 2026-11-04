@@ -1370,19 +1370,8 @@ class UIManager {
 
         this.selectedBuildingType = buildingType;
 
-        const terrainIcons = {
-            'grassland': '🌱',
-            'lowland': '🏞️',
-            'hill': '🏔️',
-            'water': '💧'
-        };
-
-        const terrainNames = {
-            'grassland': 'Campo',
-            'lowland': 'Planície',
-            'hill': 'Colina',
-            'water': 'Água'
-        };
+        const terrainIcons = Object.fromEntries(Object.entries(TERRAIN_INFO).map(([key, info]) => [key, info.icon]));
+        const terrainNames = Object.fromEntries(Object.entries(TERRAIN_INFO).map(([key, info]) => [key, info.name]));
 
         let requirementsHTML = `
             <div class="building-requirements">
@@ -1406,7 +1395,7 @@ class UIManager {
             requirementsHTML += '</ul></div>';
 
             // Terrenos incompatíveis
-            const allTerrains = ['grassland', 'lowland', 'hill', 'water'];
+            const allTerrains = ['grassland', 'floodplain', 'hill', 'water'];
             const incompatibleTerrains = allTerrains.filter(t => !buildingType.requirements.terrain.includes(t));
 
             if (incompatibleTerrains.length > 0) {
@@ -2459,46 +2448,14 @@ class UIManager {
             // Clear any existing panels
             this.closeCurrentPanel();
 
-            // Create terrain info content
-            const terrainDescriptions = {
-                'grassland': {
-                    name: 'Pastagem',
-                    description: 'Terra fértil ideal para construção de edifícios residenciais e comerciais',
-                    buildable: true,
-                    icon: '🌿'
-                },
-                'lowland': {
-                    name: 'Planície',
-                    description: 'Terreno baixo adequado para edifícios e infraestrutura',
-                    buildable: true,
-                    icon: '🏞️'
-                },
-                'water': {
-                    name: 'Corpo d\'água',
-                    description: 'Fonte natural de água. Não é possível construir aqui',
-                    buildable: false,
-                    icon: '💧'
-                },
-                'highland': {
-                    name: 'Terreno Elevado',
-                    description: 'Terreno elevado com boa vista, ideal para edifícios especiais',
-                    buildable: true,
-                    icon: '⛰️'
-                },
-                'mountain': {
-                    name: 'Montanha',
-                    description: 'Terreno montanhoso. Não é possível construir aqui',
-                    buildable: false,
-                    icon: '🏔️'
-                }
-            };
-
-            const terrain = terrainDescriptions[terrainType] || {
-                name: 'Terreno Desconhecido',
-                description: 'Tipo de terreno não identificado',
-                buildable: false,
-                icon: '❓'
-            };
+            // Fonte única: js/data/terrainInfo.js. No trecho encaixado e no trecho com planície a explicação muda.
+            const grid = this.gameManager.gridManager;
+            const zone = grid?.getTerrainZone?.(gridX, gridZ) || terrainType;
+            const hasPlain = !!grid?.hasFloodplainReach?.(gridX, gridZ);
+            const terrain = TERRAIN_INFO[zone] || { name: 'Terreno', description: '', icon: '❓', build: '' };
+            const description = (hasPlain ? terrain.descriptionPlain : terrain.descriptionEntrenched) || terrain.description;
+            const sequence = TERRAIN_SEQUENCE[hasPlain || zone === 'grassland' || zone === 'hill' ? 'plain' : 'entrenched'];
+            const canBuild = zone === 'grassland';
 
             let detailsHTML = `
                 <div class="terrain-info-panel">
@@ -2508,12 +2465,15 @@ class UIManager {
                             <h5>${terrain.name}</h5>
                             <span class="terrain-coords">Posição: (${gridX}, ${gridZ})</span>
                         </div>
-                        <p class="terrain-description">${terrain.description}</p>
+                        <p class="terrain-description">${description}</p>
+                        <ol class="terrain-sequence" aria-label="Do rio ao planalto">
+                            ${sequence.map(key => `<li class="${key === zone ? 'here' : ''}">${TERRAIN_INFO[key].name}</li>`).join('')}
+                        </ol>
                         <div class="terrain-properties">
                             <div class="property">
-                                <span class="property-label">Construível:</span>
-                                <span class="property-value ${terrain.buildable ? 'positive' : 'negative'}">
-                                    ${terrain.buildable ? uiIcon('status-done') + ' Sim' : uiIcon('status-error') + ' Não'}
+                                <span class="property-label">Construir:</span>
+                                <span class="property-value ${canBuild ? 'positive' : 'negative'}">
+                                    ${uiIcon(canBuild ? 'status-done' : 'status-error')} ${terrain.build}
                                 </span>
                             </div>
                         </div>

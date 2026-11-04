@@ -85,7 +85,7 @@ class EventSystem {
         
         this.addEventType('flood', {
             name: 'Enchente',
-            description: 'Chuvas intensas causaram enchentes: prédios atingidos rendem menos até você consertá-los.',
+            description: 'O rio encheu e cobriu a planície; a enxurrada também atingiu a cidade: prédios atingidos rendem menos até você consertá-los.',
             category: 'climate',
             severity: 'medium',
             duration: 60000, // 1 minuto

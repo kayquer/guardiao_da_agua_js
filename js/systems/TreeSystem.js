@@ -84,11 +84,12 @@ class TreeSystem {
         for (let x = 0; x < gm.gridSize; x++) {
             for (let z = 0; z < gm.gridSize; z++) {
                 const type = gm.getTerrainType(x, z);
-                if (type !== 'grassland' && type !== 'lowland') continue;
+                if (type !== 'grassland' && type !== 'floodplain') continue;
                 if (gm.occupationGrid[x][z]) continue;
                 if (start && Math.abs(x - start.x) <= TREES.START_AREA_CLEAR && Math.abs(z - start.z) <= TREES.START_AREA_CLEAR) continue;
                 const forest = gm.simpleNoise(x * 0.18, z * 0.18, seed) > 0.68;
-                if (Math.random() < (forest ? TREES.FOREST_CHANCE : TREES.SCATTER_CHANCE)) this.addTree(x, z);
+                const chance = gm.isRiverZone(x, z) ? TREES.RIVER_ZONE_CHANCE : forest ? TREES.FOREST_CHANCE : TREES.SCATTER_CHANCE;
+                if (Math.random() < chance) this.addTree(x, z);
             }
         }
         this.initialCount = this.trees.size;
@@ -118,11 +119,12 @@ class TreeSystem {
     }
 
     /**
-     * Mata ciliar: célula a até TREES.RIPARIAN_DISTANCE de uma célula de água. Árvore ali segura a terra da margem
+     * Mata ciliar: célula na planície, na APP ou a até TREES.RIPARIAN_DISTANCE de uma célula de água. Árvore ali segura a terra da margem
      * e filtra o que escorre para o rio: limpa TREES.RIPARIAN_FACTOR vezes mais (vale também para as mudas plantadas).
      */
     static isRiparianCell(gridManager, x, z) {
         if (!gridManager?.getTerrainType) return false;
+        if (gridManager.isRiverZone?.(x, z)) return true;
         const d = TREES.RIPARIAN_DISTANCE;
         for (let dx = -d; dx <= d; dx++) {
             for (let dz = -d; dz <= d; dz++) {

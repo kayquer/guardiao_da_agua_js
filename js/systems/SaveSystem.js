@@ -11,7 +11,7 @@
  * - summary: o que a tela de perfis mostra sem abrir o jogo inteiro (data, nº de construções...).
  */
 class SaveSystem {
-    static VERSION = 2;
+    static VERSION = 3; // 3: mapa novo, com rio, planície e APP (o terreno não é salvo)
     static FORMAT = 'guardiao_agua_save';
     // Partida sem volta (isLostGame): água abaixo de 5% da capacidade ou poluição a partir de 90
     static LOST_WATER_RATIO = 0.05;

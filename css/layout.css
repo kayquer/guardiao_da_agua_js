@@ -282,3 +282,31 @@
     .event-tracker { top: calc(var(--hud-top-h) + 50px); left: calc(50% + 60px); }
     #soft-pause-badge { top: calc(var(--hud-top-h) + 10px); left: calc(50% + 60px); }
 }
+
+/* ===== SEQUÊNCIA DO RELEVO NO PAINEL DE TERRENO ===== */
+.terrain-sequence {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin: 0.6rem 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.8rem;
+}
+
+.terrain-sequence li {
+    padding: 0.15rem 0.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    color: #fff;
+    opacity: 0.8;
+}
+
+.terrain-sequence li:not(:last-child)::after { content: ' →'; }
+
+.terrain-sequence li.here {
+    border-color: #ffd54f;
+    background: rgba(255, 213, 79, 0.2);
+    font-weight: 700;
+    opacity: 1;
+}
