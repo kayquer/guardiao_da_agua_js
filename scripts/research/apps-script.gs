@@ -26,7 +26,7 @@
 
 const FORMAT = 'guardiao-da-agua-pesquisa';
 const MAX_EVENTS = 1000;   // por requisição (o jogo manda até 500)
-const MAX_TEXT = 500;      // corta textos compridos
+const MAX_TEXT = 5000;     // corta só textos absurdos (o detalhe de um quiz cabe com folga)
 const EVENT_HEAD = ['recebido_em', 'perfil', 'idade', 'cidade', 'registro', 'data_hora', 'sessao', 'tempo_jogo_s',
     'tipo', 'origem', 'alvo', 'titulo', 'valor', 'acerto', 'detalhe'];
 const PROFILE_HEAD = ['perfil', 'idade', 'cidade', 'ultimo_registro', 'ultimo_envio', 'total_registros'];
@@ -72,7 +72,7 @@ function doPost(e) {
                 const extra = {};
                 Object.keys(ev).forEach(k => { if (known.indexOf(k) < 0) extra[k] = ev[k]; });
                 return [now, id, age, city, Number(ev.n), text(ev.t), num(ev.s), num(ev.gt), text(ev.type),
-                    text(ev.source), text(ev.target), text(ev.title), text(ev.value),
+                    text(ev.source), text(ev.target), text(ev.title), typeof ev.value === 'number' ? ev.value : text(ev.value),
                     ev.ok === undefined || ev.ok === null ? '' : (ev.ok ? 1 : 0),
                     Object.keys(extra).length ? text(JSON.stringify(extra)) : ''];
             });
