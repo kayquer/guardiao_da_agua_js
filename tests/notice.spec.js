@@ -43,6 +43,27 @@ test('no celular o aviso recomenda computador com teclado e mouse; no computador
     }
 });
 
+test('caixa do envio anônimo: marcada por padrão, a escolha vale ao aceitar e é lembrada', async ({ page }) => {
+    await mockExternalApis(page);
+    await page.goto('/index.html?aviso&nointro');
+    const box = page.locator('#notice-research-consent');
+    await expect(box).toBeChecked();
+    await expect(page.locator('.start-notice__consent')).toContainText('nunca o apelido');
+
+    await box.uncheck();
+    await page.click('#btn-notice-accept');
+    await expect(page.locator('#start-notice')).toHaveCount(0);
+    expect(await page.evaluate(() => ({ saved: localStorage.getItem(ResearchSync.CONSENT_KEY), consent: ResearchSync.hasConsent() })))
+        .toEqual({ saved: 'no', consent: false });
+
+    await page.goto('/index.html?aviso&nointro');
+    await expect(page.locator('#notice-research-consent')).not.toBeChecked();
+    await page.locator('#notice-research-consent').check();
+    await page.click('#btn-notice-accept');
+    await expect(page.locator('#start-notice')).toHaveCount(0);
+    expect(await page.evaluate(() => ResearchSync.hasConsent())).toBe(true);
+});
+
 test('"Recusar" leva à página inicial do Google', async ({ page }) => {
     await mockExternalApis(page);
     await page.route('https://www.google.com.br/**', route => route.fulfill({ contentType: 'text/html', body: '<title>Google</title>' }));

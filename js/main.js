@@ -488,6 +488,9 @@ async function startLoading() {
         // Aviso inicial (js/ui/StartNotice.js): menu e abertura só depois de "Aceitar"
         await StartNotice.accepted;
 
+        // Envio anônimo dos dados de pesquisa a cada 5 min, se a caixa do aviso ficou marcada (ResearchSync)
+        ResearchSync.start();
+
         setTimeout(() => {
             showScreen('main-menu');
         }, MenuIntro.cinematic ? 300 : 1000);
@@ -631,7 +634,10 @@ function showAbout() {
                     </div>
                 </div>
                 <p class="about-small">O apelido, a idade e a cidade do jogador ficam salvos só neste navegador; a cidade
-                é usada para mostrar o clima real. O jogo também guarda, só aqui, um registro das respostas dos quizzes, das páginas lidas e das decisões, para a pesquisa; o professor pode exportá-lo na tela de pausa, e o arquivo não leva o apelido.</p>
+                é usada para mostrar o clima real. O jogo também guarda um registro das respostas dos quizzes, das
+                páginas lidas e das decisões, para a pesquisa; o professor pode exportá-lo na tela de pausa. Se a caixa
+                do aviso inicial ficar marcada, esse registro é enviado de forma anônima à pesquisadora a cada 5 minutos,
+                só com um código do jogador, a idade e a cidade (nunca o apelido).</p>
                 <p class="about-small">Versão 1.0.0 · Feito com Babylon.js</p>
             </div>
         `,

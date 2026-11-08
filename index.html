@@ -51,8 +51,8 @@
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
     <link rel="stylesheet" href="css/player.css?v=483a6c80">
     <link rel="stylesheet" href="css/menu.css?v=ad09dab4">
-    <link rel="stylesheet" href="css/notice.css?v=96b7d99f">
-    <link rel="stylesheet" href="css/research.css?v=ee08fec9">
+    <link rel="stylesheet" href="css/notice.css?v=b62a03ab">
+    <link rel="stylesheet" href="css/research.css?v=0f6fc4df">
     <link rel="stylesheet" href="css/settings.css?v=4caa15a0">
     <link rel="stylesheet" href="css/accessibility.css?v=11a95adf">
     <link rel="stylesheet" href="css/toasts.css?v=ed4e539e">
@@ -145,8 +145,18 @@
                 </div>
                 <p class="start-notice__privacy">
                     O apelido, a idade e a cidade do jogador ficam salvos só neste navegador; a cidade é usada para mostrar
-                    o clima real. O jogo também guarda, só aqui, um registro das respostas dos quizzes, das páginas lidas e das decisões, para a pesquisa; o professor pode exportá-lo na tela de pausa, e o arquivo não leva o apelido.
+                    o clima real. O jogo também guarda um registro das respostas dos quizzes, das páginas lidas e das
+                    decisões, para a pesquisa; o professor pode exportá-lo na tela de pausa. Nada disso leva o apelido.
                 </p>
+                <!-- Consentimento do envio (ResearchSync.CONSENT_KEY): ligado por padrão só durante o estudo -->
+                <label class="start-notice__consent">
+                    <input type="checkbox" id="notice-research-consent" checked>
+                    <span>
+                        <strong>Enviar os dados da pesquisa de forma anônima.</strong> A cada 5 minutos, o registro acima
+                        vai para a pesquisadora só com um código do jogador, a idade e a cidade (nunca o apelido).
+                        Desmarque se não quiser participar.
+                    </span>
+                </label>
             </div>
         </div>
 
@@ -159,7 +169,7 @@
             <p class="start-notice__hint">Ao recusar, você será levado à página inicial do Google.</p>
         </footer>
     </div>
-    <script src="js/ui/StartNotice.js?v=bbb5afd6"></script>
+    <script src="js/ui/StartNotice.js?v=ee126a92"></script>
 
     <!-- Tela de Loading -->
     <div id="loading-screen" class="screen active">
@@ -585,10 +595,12 @@
                     <h2 id="rs-title">📊 Dados da pesquisa</h2>
                     <span class="nh-count" id="rs-count"></span>
                 </div>
-                <p class="nh-hint">Para o professor e a pesquisa: o que este jogador leu, respondeu e decidiu. Fica só neste navegador; o arquivo sai sem o apelido (perfil, idade e cidade).</p>
+                <p class="nh-hint">Para o professor e a pesquisa: o que este jogador leu, respondeu e decidiu. Os arquivos e o envio saem sem o apelido (código do jogador, idade e cidade).</p>
                 <div id="rs-summary" class="rs-summary"></div>
                 <div id="rs-strategy" class="rs-strategy"></div>
+                <p id="rs-sync" class="rs-sync" role="status" aria-live="polite"></p>
                 <div class="overlay-buttons nh-buttons rs-buttons">
+                    <button id="btn-research-send" class="overlay-btn secondary">☁️ Enviar para a pesquisa</button>
                     <button id="btn-research-csv" class="overlay-btn secondary">⬇ Baixar planilha (CSV)</button>
                     <button id="btn-research-json" class="overlay-btn secondary">⬇ Baixar dados completos (JSON)</button>
                     <button id="btn-research-back" class="overlay-btn primary">⬅ Voltar</button>
@@ -683,7 +695,7 @@
     <!-- Scripts do Jogo - Ordem correta de dependências -->
 
     <!-- Clean Code Refactoring: Game Constants (loaded first) -->
-    <script src="js/config/GameConstants.js?v=5d4e2f21"></script>
+    <script src="js/config/GameConstants.js?v=efc08d12"></script>
     <script src="js/data/preloadImages.js?v=e87e539d"></script>
     <script src="js/data/riverMap.js?v=1dbe219c"></script>
     <script src="js/data/terrainInfo.js?v=d9b1d2a2"></script>
@@ -839,7 +851,7 @@
     <script src="js/systems/ui/MobilePanels.js?v=a6989c98"></script>
     <script src="js/systems/ui/WeatherUI.js?v=7819b344"></script>
     <script src="js/systems/ui/CompassUI.js?v=9e3e44fa"></script>
-    <script src="js/systems/ui/ResearchUI.js?v=36dc9e9d"></script>
+    <script src="js/systems/ui/ResearchUI.js?v=8c9a823e"></script>
     <script src="js/systems/ui/SettingsUI.js?v=ea95d176"></script>
     <script src="js/systems/ui/LessonBookUI.js?v=3122a13a"></script>
     <script src="js/systems/ui/TreeInfoUI.js?v=e348aba5"></script>
@@ -862,7 +874,8 @@
     <script src="js/systems/TreeSystem.js?v=0bb86b6c"></script>
     <script src="js/systems/WeatherService.js?v=ece5b194"></script>
     <script src="js/systems/SimulatedWeather.js?v=46e8a1c7"></script>
-    <script src="js/systems/ResearchLog.js?v=5dc82846"></script>
+    <script src="js/systems/ResearchLog.js?v=36fe7e4d"></script>
+    <script src="js/systems/ResearchSync.js?v=087a0747"></script>
     <script src="js/systems/LessonProgress.js?v=9769f14b"></script>
 
     <!-- Abertura cinematográfica do menu (cena Babylon própria; usa o carregador de modelos do BuildingSystem) -->
@@ -871,6 +884,6 @@
     <script src="js/systems/intro/MenuIntro.js?v=06818672"></script>
 
     <!-- Main initialization -->
-    <script src="js/main.js?v=1935d1a9"></script>
+    <script src="js/main.js?v=981011b0"></script>
 </body>
 </html>

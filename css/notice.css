@@ -187,6 +187,36 @@
     color: #7a7a7a;
 }
 
+/* Consentimento do envio anônimo dos dados da pesquisa (StartNotice / ResearchSync) */
+.start-notice__consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    border: 2px solid #d2d2d2;
+    border-radius: 14px;
+    background: #f7f7f7;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #5a5a5a;
+    cursor: pointer;
+}
+
+.start-notice__consent input {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    margin: 1px 0 0;
+    accent-color: var(--wii-blue-dark);
+    cursor: pointer;
+}
+
+.start-notice__consent:focus-within {
+    border-color: var(--wii-blue);
+    box-shadow: 0 0 0 3px rgba(52, 190, 237, 0.25);
+}
+
 /* Barra cinza de baixo, com a borda de cima em arco (menu do Wii) */
 .start-notice__dock {
     position: relative;

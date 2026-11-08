@@ -34,6 +34,16 @@
     font-weight: 700;
 }
 
+.rs-sync {
+    margin: 0.6rem 0 0;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.rs-sync:empty {
+    display: none;
+}
+
 .rs-buttons {
     display: grid;
     gap: 0.5rem;
