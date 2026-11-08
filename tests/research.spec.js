@@ -71,6 +71,45 @@ test('o registro de pesquisa guarda páginas, obras e decisões e é exportado e
     expect(errors).toEqual([]);
 });
 
+test('"☁️ Enviar para a pesquisa" manda o registro anônimo para a planilha (servidor simulado)', async ({ page }) => {
+    const errors = watchErrors(page);
+    const posts = [];
+    await page.route('https://script.google.com/**', route => {
+        posts.push(JSON.parse(route.request().postData()));
+        route.fulfill({ json: { ok: true, received: 1 } });
+    });
+    await startGame(page);
+    await page.evaluate(() => {
+        window.gameManager.tutorialSystem.complete();
+        ResearchLog.record('build', { target: 'water_pump' });
+        window.gameManager.pauseGame();
+    });
+
+    // Sem endpoint: o botão fica desligado e o painel explica
+    await page.evaluate(() => { RESEARCH_SYNC.ENDPOINT = ''; });
+    await page.click('#btn-research');
+    await expect(page.locator('#btn-research-send')).toBeDisabled();
+    await expect(page.locator('#rs-sync')).toContainText('não foi configurado');
+    await page.click('#btn-research-back');
+
+    await page.evaluate(() => { RESEARCH_SYNC.ENDPOINT = 'https://script.google.com/macros/s/teste/exec'; });
+    await page.click('#btn-research');
+    await expect(page.locator('#rs-sync')).toContainText('registros esperando');
+    await page.click('#btn-research-send');
+    await expect(page.locator('#rs-sync')).toContainText('tudo enviado');
+    expect(posts.length).toBeGreaterThan(0);
+    expect(posts[0].profile).toEqual({ id: 'p_teste', age: 12, city: 'Campinas' });
+    expect(posts[0].events.some(e => e.type === 'build' && e.target === 'water_pump')).toBe(true);
+    expect(JSON.stringify(posts)).not.toContain('Teste');
+
+    // De novo: nada novo, nada enviado
+    const before = posts.length;
+    await page.click('#btn-research-send');
+    await expect(page.locator('#rs-sync')).toContainText('tudo enviado');
+    expect(posts.length).toBe(before);
+    expect(errors).toEqual([]);
+});
+
 test('tamanho do texto: escolhido na pausa, salvo e aplicado nos textos de leitura', async ({ page }) => {
     const errors = watchErrors(page);
     await startGame(page);

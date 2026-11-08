@@ -65,6 +65,17 @@ const WEATHER = {
     FETCH_TIMEOUT_MS: 5000 // limite de cada chamada externa (geocodificação, IBGE, previsão)
 };
 
+// ===== ENVIO DOS DADOS DE PESQUISA (ResearchSync → Google Apps Script + Planilha) =====
+// ENDPOINT = URL do app da Web publicado a partir de scripts/research/apps-script.gs (termina em /exec).
+// Vazio = envio desligado (o botão no painel avisa que o servidor não foi configurado).
+const RESEARCH_SYNC = {
+    ENDPOINT: 'https://script.google.com/macros/s/AKfycby9ToINRZnQhhMGoA10SP2jt-s1c_WvgjDvNpJvXbLtEUlJTjpr6909K_WL9KtdNTfPuQ/exec',
+    INTERVAL_MS: 5 * 60 * 1000, // envio automático a cada 5 min (só com o consentimento do aviso inicial)
+    FIRST_DELAY_MS: 30 * 1000,  // primeiro envio logo depois de abrir (o que ficou da última aula)
+    BATCH: 500,                 // registros por requisição
+    TIMEOUT_MS: 20000
+};
+
 // ===== ÁRVORES (TreeSystem) =====
 // Bosques sorteados no mapa. Cada árvore em pé limpa o ar (redução de poluição/min) e soma satisfação
 // (área verde, até GREEN_BONUS_MAX); construir em cima derruba: perde esse bônus e a poluição sobe na hora.

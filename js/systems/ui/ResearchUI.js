@@ -9,6 +9,7 @@ mixin(UIManager, {
         document.getElementById('btn-research-back')?.addEventListener('click', () => this.closeResearchPanel());
         document.getElementById('btn-research-json')?.addEventListener('click', () => this.downloadResearch('json'));
         document.getElementById('btn-research-csv')?.addEventListener('click', () => this.downloadResearch('csv'));
+        document.getElementById('btn-research-send')?.addEventListener('click', () => this.sendResearch());
         document.addEventListener('keydown', event => {
             if (event.key === 'Escape' && this.isResearchPanelOpen()) {
                 event.preventDefault();
@@ -58,6 +59,44 @@ mixin(UIManager, {
         const count = document.getElementById('rs-count');
         if (count) count.textContent = `${s.events} registros`;
         this.renderStrategyReport();
+        this.renderResearchSync();
+    },
+
+    /** Situação do envio à planilha da pesquisa (ResearchSync): automático ligado?, pendentes, último envio. */
+    renderResearchSync(message) {
+        const box = document.getElementById('rs-sync');
+        const button = document.getElementById('btn-research-send');
+        if (!box) return;
+        const configured = ResearchSync.isConfigured();
+        if (button) button.disabled = !configured || !!ResearchSync.running;
+        if (!configured) {
+            box.textContent = '☁️ O servidor da pesquisa ainda não foi configurado: por enquanto, use os botões de baixar.';
+            return;
+        }
+        const pending = ResearchSync.pendingCount();
+        const last = ResearchSync.lastSentAt();
+        const time = last ? new Date(last).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : null;
+        const parts = [
+            ResearchSync.hasConsent() ? '☁️ Envio automático ligado (a cada 5 min)' : '☁️ Envio automático desligado no aviso inicial',
+            pending ? `${pending} ${pending === 1 ? 'registro esperando' : 'registros esperando'} (todos os jogadores deste computador)` : 'tudo enviado',
+            time ? `último envio: ${time}` : 'nada enviado ainda'
+        ];
+        box.textContent = message || parts.join(' · ');
+    },
+
+    /** "☁️ Enviar para a pesquisa": envia na hora o que falta de todos os perfis deste computador. */
+    async sendResearch() {
+        if (!ResearchSync.isConfigured() || ResearchSync.running) return;
+        const button = document.getElementById('btn-research-send');
+        if (button) button.disabled = true;
+        this.renderResearchSync('☁️ Enviando…');
+        const result = await ResearchSync.syncAll();
+        this.renderResearchSync();
+        if (result.ok) {
+            this.showNotification(result.sent ? `☁️ ${result.sent} registros enviados para a pesquisa.` : '☁️ Nada novo para enviar: está tudo na pesquisa.', 'success', 3500);
+        } else {
+            this.showNotification('☁️ Não deu para enviar agora (sem internet?). O jogo tenta de novo sozinho; os dados continuam aqui.', 'warning', 5000);
+        }
     },
 
     /** Escolhas repetidas entre os perfis deste computador: ajuda a achar uma "receita" que domina o jogo. */

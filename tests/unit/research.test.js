@@ -100,6 +100,100 @@ test('pesquisa: guarda no máximo MAX_EVENTS (os mais antigos saem)', () => {
     assert.strictEqual(events[0].target, 'b3');
 });
 
+// Envio à planilha da pesquisa (ResearchSync): numeração dos registros, só o que falta, anônimo, consentimento
+const setupSync = () => {
+    const g = load('js/data/brazil.js', 'js/systems/PlayerProfile.js', 'js/systems/ResearchLog.js', 'js/systems/ResearchSync.js');
+    const posts = [];
+    let fail = false;
+    g('ResearchSync').fetchImpl = async (url, opts) => {
+        if (fail) throw new Error('offline');
+        posts.push({ url, opts, body: JSON.parse(opts.body) });
+        return { ok: true, json: async () => ({ ok: true }) };
+    };
+    return { g, posts, setFail: v => { fail = v; } };
+};
+
+test('pesquisa: cada registro ganha um número que nunca repete, mesmo quando os antigos saem', () => {
+    const g = setup();
+    const ResearchLog = g('ResearchLog');
+    g('PlayerProfile').create(ANA);
+    g('ResearchLog.MAX_EVENTS = 3');
+    for (let i = 0; i < 5; i++) ResearchLog.record('build', { target: `b${i}` });
+    assert.strictEqual(JSON.stringify(ResearchLog.entry().events.map(e => e.n)), "[3,4,5]");
+
+    // Registro antigo (sem n): numerado na ordem e o próximo continua dali
+    const key = ResearchLog.profileKey();
+    g('localStorage').setItem(ResearchLog.STORAGE_KEY, JSON.stringify({ [key]: { sessions: 1, events: [{ type: 'a' }, { type: 'b' }] } }));
+    assert.strictEqual(JSON.stringify(ResearchLog.entry().events.map(e => e.n)), "[1,2]");
+    assert.strictEqual(ResearchLog.record('c').n, 3);
+    assert.ok(ResearchLog.toCSV().split('\r\n')[0].endsWith(';registro'));
+});
+
+test('envio: anônimo (só id, idade e cidade), todos os perfis, só o que falta e em lotes', async () => {
+    const { g, posts } = setupSync();
+    const PlayerProfile = g('PlayerProfile'), ResearchLog = g('ResearchLog'), ResearchSync = g('ResearchSync');
+    g('RESEARCH_SYNC.ENDPOINT = "https://script.google.com/macros/s/x/exec"; RESEARCH_SYNC.BATCH = 2');
+
+    const ana = PlayerProfile.create(ANA);
+    ResearchLog.startSession('new');
+    ResearchLog.record('page', { title: 'Oi, Ana!', value: 2000, extra: { who: 'Ana' } });
+    ResearchLog.record('quiz', { target: 'water_well', ok: true });
+    const bia = PlayerProfile.create({ ...ANA, name: 'Bia', age: 11, city: 'Santos' });
+    ResearchLog.record('build', { target: 'water_pump' });
+    assert.strictEqual(ResearchSync.pendingCount(), 4);
+
+    const result = await ResearchSync.syncAll();
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(result)), { ok: true, sent: 4 });
+    assert.strictEqual(posts.length, 3, 'Ana em 2 lotes de 2, Bia em 1');
+    assert.strictEqual(posts[0].opts.method, 'POST');
+    assert.strictEqual(posts[0].opts.headers['Content-Type'], 'text/plain;charset=utf-8', 'sem preflight CORS');
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(posts[0].body.profile)), { id: ana.id, age: 12, city: 'Campinas' });
+    assert.deepStrictEqual(JSON.parse(JSON.stringify(posts[2].body.profile)), { id: bia.id, age: 11, city: 'Santos' });
+    const all = JSON.stringify(posts.map(p => p.body));
+    assert.ok(!all.includes('Ana') && !all.includes('Bia'), 'o apelido nunca sai');
+    assert.ok(!all.includes('"uf"') && !all.includes('SP'), 'nem a UF');
+    assert.ok(all.includes('Oi, {nome}!'));
+    assert.strictEqual(ResearchSync.pendingCount(), 0);
+
+    // Só o que é novo vai no próximo envio
+    PlayerProfile.activate(ana.id);
+    ResearchLog.record('mission_done', { target: 'm1' });
+    await ResearchSync.syncAll();
+    assert.strictEqual(posts.length, 4);
+    assert.strictEqual(JSON.stringify(posts[3].body.events.map(e => e.type)), "[\"mission_done\"]");
+    assert.ok(ResearchSync.lastSentAt());
+});
+
+test('envio: sem internet nada se perde; sem endpoint não envia; consentimento ligado por padrão', async () => {
+    const { g, posts, setFail } = setupSync();
+    const ResearchLog = g('ResearchLog'), ResearchSync = g('ResearchSync');
+    g('PlayerProfile').create(ANA);
+    ResearchLog.record('build', { target: 'water_pump' });
+
+    g('RESEARCH_SYNC.ENDPOINT = ""');
+    assert.strictEqual(ResearchSync.isConfigured(), false);
+    assert.strictEqual((await ResearchSync.syncAll()).error, 'not_configured');
+    assert.strictEqual(ResearchSync.start(), false, 'sem endpoint, nada de envio automático');
+
+    g('RESEARCH_SYNC.ENDPOINT = "https://script.google.com/macros/s/x/exec"');
+    setFail(true);
+    const failed = await ResearchSync.syncAll();
+    assert.strictEqual(failed.ok, false);
+    assert.strictEqual(ResearchSync.pendingCount(), 1, 'continua esperando');
+    setFail(false);
+    assert.strictEqual((await ResearchSync.syncAll()).sent, 1);
+    assert.strictEqual(posts.length, 1);
+
+    assert.strictEqual(ResearchSync.hasConsent(), true, 'ligado por padrão nesta fase do estudo');
+    assert.strictEqual(ResearchSync.autoEnabled(), true);
+    ResearchSync.setConsent(false);
+    assert.strictEqual(ResearchSync.autoEnabled(), false);
+    assert.strictEqual(ResearchSync.start(), false);
+    ResearchSync.setConsent(true);
+    assert.strictEqual(ResearchSync.start(), true);
+    ResearchSync.stop();
+});
+
 test('aulas: a missão concluída abre a aula ligada a ela; feita, vem a próxima que falta', () => {
     const g = setup();
     const LessonProgress = g('LessonProgress'), MISSIONS = g('MISSIONS'), LESSON_CHAPTERS = g('LESSON_CHAPTERS');

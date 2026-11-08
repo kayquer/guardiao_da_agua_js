@@ -1,7 +1,8 @@
 /**
  * ResearchLog — registro de pesquisa por perfil (dissertação): respostas dos quizzes, páginas lidas e o tempo em cada
- * uma, escolhas nos eventos, missões, fim de jogo e emergências. Fica só neste navegador (localStorage) e é exportado
- * à mão na tela de pausa (JSON ou CSV), sem o apelido do aluno: o perfil sai como id + idade + cidade.
+ * uma, escolhas nos eventos, missões, fim de jogo e emergências. Fica neste navegador (localStorage), é exportado
+ * à mão na tela de pausa (JSON ou CSV) e, com o consentimento do aviso inicial, enviado à planilha da pesquisa
+ * (ResearchSync), sempre sem o apelido do aluno.
  * Sem DOM (testável em tests/unit): a tela de exportação fica em js/systems/ui/ResearchUI.js.
  *
  * Cada registro: { t (ISO, hora real), s (sessão), gt (s de jogo), type, target?, value?, ok?, ...extra }.
@@ -38,9 +39,20 @@ class ResearchLog {
         }
     }
 
+    /**
+     * Registro do perfil. Cada evento tem `n` (1, 2, 3… por perfil, nunca repete): é por ele que o ResearchSync sabe
+     * o que já foi enviado, mesmo depois que os mais antigos saem (MAX_EVENTS). Registros antigos sem `n` são
+     * numerados na ordem (sempre os mesmos números, porque vêm antes de qualquer um numerado).
+     */
     static entry(profileId = ResearchLog.profileKey()) {
         const entry = ResearchLog.readAll()[profileId];
-        return { sessions: Number(entry?.sessions) || 0, events: Array.isArray(entry?.events) ? entry.events : [] };
+        const events = Array.isArray(entry?.events) ? entry.events : [];
+        let seq = Number(entry?.seq) || 0;
+        for (const e of events) {
+            if (Number.isInteger(e.n)) seq = Math.max(seq, e.n);
+            else e.n = ++seq;
+        }
+        return { sessions: Number(entry?.sessions) || 0, seq, events };
     }
 
     static gameSeconds() {
@@ -66,7 +78,7 @@ class ResearchLog {
         const all = ResearchLog.readAll();
         const key = ResearchLog.profileKey();
         const entry = ResearchLog.entry(key);
-        const event = { t: new Date().toISOString(), s: ResearchLog.session ?? entry.sessions, gt: ResearchLog.gameSeconds(), type, ...data };
+        const event = { n: ++entry.seq, t: new Date().toISOString(), s: ResearchLog.session ?? entry.sessions, gt: ResearchLog.gameSeconds(), type, ...data };
         entry.events.push(event);
         if (entry.events.length > ResearchLog.MAX_EVENTS) entry.events.splice(0, entry.events.length - ResearchLog.MAX_EVENTS);
         all[key] = entry;
@@ -155,16 +167,16 @@ class ResearchLog {
     /** Uma linha por registro; o que não cabe nas colunas fixas vai em "detalhe" (JSON). Separador ";" (Excel pt-BR). */
     static toCSV(profileId = ResearchLog.profileKey()) {
         const profile = ResearchLog.profileInfo(profileId);
-        const head = ['perfil', 'idade', 'uf', 'cidade', 'data_hora', 'sessao', 'tempo_jogo_s', 'tipo', 'origem', 'alvo', 'titulo', 'valor', 'acerto', 'detalhe'];
+        const head = ['perfil', 'idade', 'uf', 'cidade', 'data_hora', 'sessao', 'tempo_jogo_s', 'tipo', 'origem', 'alvo', 'titulo', 'valor', 'acerto', 'detalhe', 'registro'];
         const cell = v => {
             if (v === undefined || v === null) return '';
             const s = typeof v === 'object' ? JSON.stringify(v) : String(v);
             return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
         };
         const rows = ResearchLog.entry(profileId).events.map(e => {
-            const { t, s, gt, type, source, target, title, value, ok, ...extra } = e;
+            const { n, t, s, gt, type, source, target, title, value, ok, ...extra } = e;
             return [profile.id, profile.age, profile.uf, profile.city, t, s, gt, type, source, target, title, value,
-                ok === undefined ? '' : (ok ? 1 : 0), Object.keys(extra).length ? extra : ''].map(cell).join(';');
+                ok === undefined ? '' : (ok ? 1 : 0), Object.keys(extra).length ? extra : '', n].map(cell).join(';');
         });
         return [head.join(';'), ...rows].join('\r\n');
     }
