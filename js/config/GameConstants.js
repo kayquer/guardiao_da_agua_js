@@ -11,7 +11,7 @@
 // evolucao-pesquisa na subpasta) dividem o mesmo localStorage (ele é por domínio, não por pasta): cada versão
 // usa o seu prefixo para não misturar perfis, saves e registros de pesquisa no mesmo computador.
 // StartNotice.CONSENT_KEY repete o prefixo (o aviso roda antes deste arquivo); tests/unit/research.test.js confere.
-const STORAGE_PREFIX = 'guardiao_agua_';
+const STORAGE_PREFIX = 'guardiao_agua_evo_'; // evolucao-pesquisa: prefixo próprio (main = 'guardiao_agua_');
 
 // ===== LOG DE DESENVOLVIMENTO =====
 // Por padrão o console só mostra o que é crítico (console.error). Os outros níveis ligam pela URL:
@@ -77,8 +77,8 @@ const WEATHER = {
 // Vazio = envio desligado (o botão no painel avisa que o servidor não foi configurado) e a caixa de
 // consentimento sai do aviso inicial. FORM_URL = formulário da pesquisa no menu do jogador (vazio = sem o item).
 const RESEARCH_SYNC = {
-    ENDPOINT: 'https://script.google.com/macros/s/AKfycby9ToINRZnQhhMGoA10SP2jt-s1c_WvgjDvNpJvXbLtEUlJTjpr6909K_WL9KtdNTfPuQ/exec',
-    FORM_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSdHbqhMI3J_DzQxUfN8SGYxtjkSxyIX9cvGnrIPucqL-eznRQ/viewform',
+    ENDPOINT: '', // evolucao-pesquisa: coleta desligada por enquanto (main tem a URL da planilha)
+    FORM_URL: '', // evolucao-pesquisa: sem formulário por enquanto
     INTERVAL_MS: 5 * 60 * 1000, // envio automático a cada 5 min (só com o consentimento do aviso inicial)
     FIRST_DELAY_MS: 30 * 1000,  // primeiro envio logo depois de abrir (o que ficou da última aula)
     BATCH: 500,                 // registros por requisição

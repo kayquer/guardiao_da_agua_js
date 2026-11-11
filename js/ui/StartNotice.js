@@ -10,7 +10,7 @@
  */
 const StartNotice = {
     DECLINE_URL: 'https://www.google.com.br/',
-    CONSENT_KEY: 'guardiao_agua_research_consent', // = STORAGE_PREFIX + 'research_consent' (ResearchSync.CONSENT_KEY)
+    CONSENT_KEY: 'guardiao_agua_evo_research_consent', // = STORAGE_PREFIX + 'research_consent' (ResearchSync.CONSENT_KEY)
     FADE_MS: 450,
     el: document.getElementById('start-notice'),
     accepted: null,
