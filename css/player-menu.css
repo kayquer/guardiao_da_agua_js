@@ -31,8 +31,10 @@
     display: none;
 }
 
-.player-menu button {
+.player-menu button,
+.player-menu .player-menu-link {
     position: relative;
+    text-decoration: none;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -50,7 +52,9 @@
 }
 
 .player-menu button:hover,
-.player-menu button:focus-visible {
+.player-menu button:focus-visible,
+.player-menu .player-menu-link:hover,
+.player-menu .player-menu-link:focus-visible {
     background: #F1E9FF;
     outline: none;
 }

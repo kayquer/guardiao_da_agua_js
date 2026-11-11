@@ -23,6 +23,8 @@ mixin(UIManager, {
             if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggle(event); }
         });
         menu.addEventListener('click', event => {
+            // Link externo (formulário da pesquisa): abre em nova aba pelo próprio <a>, só fecha o menu
+            if (event.target.closest('.player-menu-link')) { this.closePlayerMenu(); return; }
             const item = event.target.closest('[data-player-action]');
             if (!item) return;
             event.stopPropagation();
