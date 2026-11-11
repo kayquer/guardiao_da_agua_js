@@ -3,3 +3,5 @@ playwright-report/
 test-results/
 .DS_Store
 screenshots/
+__pycache__/
+*.pyc
