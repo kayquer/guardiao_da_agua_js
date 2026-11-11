@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { startGame } = require('./helpers');
+const { startGame, storageKey } = require('./helpers');
 
 // Efeitos visuais (BuildingFeedback.js + RoadMeshes.js): poeira/fumacinha/marteladas/luzinhas no canteiro e o
 // efeito de conclusão, fumaça das zonas industriais só na qualidade Alta, e o acesso (rebaixo de calçada)
@@ -16,7 +16,7 @@ function watchErrors(page) {
 
 /** Jogo rodando, sem popups segurando a pausa leve, com dinheiro e tudo desbloqueado. */
 async function start(page, quality) {
-    if (quality) await page.addInitScript(q => localStorage.setItem('guardiao_agua_graphics', q), quality);
+    if (quality) await page.addInitScript(({ k, q }) => localStorage.setItem(k, q), { k: storageKey('graphics'), q: quality });
     await startGame(page, { url: '/index.html?log=warn' }); // avisos só aparecem com ?log=warn
     await page.evaluate(() => {
         const gm = window.gameManager;

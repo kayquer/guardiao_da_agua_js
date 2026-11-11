@@ -1208,7 +1208,7 @@ TutorialSystem.TOPICS = {
 // ===== GUIAS PROGRESSIVOS (checkGuides) =====
 // Abrem sozinhos quando a cidade chega ao ponto certo, um depois do outro (after). Passo com waitFor/
 // waitForCategory espera a obra (paga: só a prefeitura do tutorial é grátis). Feitos ficam em GUIDES_KEY.
-TutorialSystem.GUIDES_KEY = 'guardiao_agua_guides';
+TutorialSystem.GUIDES_KEY = STORAGE_PREFIX + 'guides';
 
 // Alvos do passo "construa": acompanham o aluno abrindo menu (mobile) → categoria → prédio
 TutorialSystem.buildTargets = (typeId, category, label) => [

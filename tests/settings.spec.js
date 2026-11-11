@@ -68,7 +68,7 @@ test('clima simulado: escolhido nas Configurações, o jogo inventa o tempo e o 
     await expect(page.locator('#pause-climate [data-climate="simulated"]')).toHaveAttribute('aria-checked', 'true');
     await expect.poll(() => page.evaluate(() => window.gameManager.uiManager.weather?.simulated)).toBe(true);
     const state = await page.evaluate(() => ({
-        saved: localStorage.getItem('guardiao_agua_climate'),
+        saved: localStorage.getItem(STORAGE_PREFIX + 'climate'),
         days: window.gameManager.uiManager.weather.data.daily.length,
         profile: !!window.gameManager.weatherEffects?.profile
     }));

@@ -7,7 +7,7 @@
  * A resposta fica em cache no localStorage por WEATHER.CACHE_MS.
  */
 class WeatherService {
-    static CACHE_KEY = 'guardiao_agua_weather';
+    static CACHE_KEY = STORAGE_PREFIX + 'weather';
 
     // Códigos WMO (https://open-meteo.com/en/docs) → texto, ícone e animação do card
     static CODES = [

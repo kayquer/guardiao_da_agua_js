@@ -459,6 +459,8 @@ function initializeGameSystems() {
 // ===== CARREGAMENTO =====
 async function startLoading() {
     try {
+        // Sem servidor da pesquisa (RESEARCH_SYNC.ENDPOINT vazio): a caixa de consentimento sai do aviso
+        if (!ResearchSync.isConfigured()) document.querySelector('.start-notice__consent')?.remove();
         updateLoadingProgress(10);
 
         // Carregar assets

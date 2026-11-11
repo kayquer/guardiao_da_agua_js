@@ -9,7 +9,7 @@
  * O modo (real | simulated) fica salvo neste navegador em STORAGE_KEY; o padrão é o clima real da cidade.
  */
 class SimulatedWeather {
-    static STORAGE_KEY = 'guardiao_agua_climate';
+    static STORAGE_KEY = STORAGE_PREFIX + 'climate';
     static MODES = ['real', 'simulated'];
     static listeners = [];
 

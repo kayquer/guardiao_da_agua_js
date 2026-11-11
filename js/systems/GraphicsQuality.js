@@ -8,7 +8,7 @@
  * Antialias (MSAA) só muda ao recriar o engine: vale ao reabrir o jogo (needsRestart).
  */
 const GraphicsQuality = {
-    STORAGE_KEY: 'guardiao_agua_graphics',
+    STORAGE_KEY: STORAGE_PREFIX + 'graphics',
     LEVELS: ['low', 'medium', 'high'],
     LABELS: { low: 'Baixa', medium: 'Média', high: 'Alta' },
     HINTS: {

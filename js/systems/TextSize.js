@@ -5,7 +5,7 @@
  * Seletores [data-text-picker] no menu e na pausa (main.js initializeTextPickers).
  */
 class TextSize {
-    static STORAGE_KEY = 'guardiao_agua_text';
+    static STORAGE_KEY = STORAGE_PREFIX + 'text';
     static LEVELS = { normal: 1, large: 1.15, xlarge: 1.3 };
     static listeners = [];
 

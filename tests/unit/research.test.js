@@ -210,3 +210,28 @@ test('aulas: a missão concluída abre a aula ligada a ela; feita, vem a próxim
     Object.keys(LESSON_CHAPTERS).forEach(n => LessonProgress.markDone(n));
     assert.strictEqual(LessonProgress.forMission('challenge_01'), null, 'todas feitas');
 });
+
+test('armazenamento: toda chave do jogo usa STORAGE_PREFIX (versões no mesmo Pages não se misturam)', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const g = load('js/systems/PlayerProfile.js', 'js/systems/LessonProgress.js', 'js/systems/ResearchLog.js',
+        'js/systems/ResearchSync.js', 'js/systems/SaveSystem.js', 'js/systems/TextSize.js', 'js/systems/GraphicsQuality.js',
+        'js/systems/WeatherService.js', 'js/systems/SimulatedWeather.js');
+    const prefix = g('STORAGE_PREFIX');
+    assert.match(prefix, /^[a-z_]+_$/);
+    const keys = g(`[PlayerProfile.STORAGE_KEY, LessonProgress.STORAGE_KEY, ResearchLog.STORAGE_KEY, ResearchSync.CONSENT_KEY,
+        ResearchSync.STATE_KEY, SaveSystem.KEY_PREFIX, TextSize.STORAGE_KEY, GraphicsQuality.STORAGE_KEY,
+        WeatherService.CACHE_KEY, SimulatedWeather.STORAGE_KEY]`);
+    keys.forEach(k => assert.ok(k.startsWith(prefix), k));
+    // O aviso inicial roda antes de GameConstants: repete a chave do consentimento à mão
+    const notice = fs.readFileSync(path.join(__dirname, '..', '..', 'js', 'ui', 'StartNotice.js'), 'utf8');
+    assert.strictEqual(/CONSENT_KEY: '([^']+)'/.exec(notice)[1], g('ResearchSync.CONSENT_KEY'));
+    // Nenhum outro arquivo do jogo grava chave fixa (fora o formato do save e as chaves antigas que ele apaga)
+    const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).flatMap(e =>
+        e.isDirectory() ? walk(path.join(dir, e.name)) : e.name.endsWith('.js') ? [path.join(dir, e.name)] : []);
+    const fixed = walk(path.join(__dirname, '..', '..', 'js'))
+        .filter(f => !/StartNotice\.js$/.test(f))
+        .flatMap(f => (fs.readFileSync(f, 'utf8').match(/'guardiao_agua_[a-z_]+'/g) || []).map(m => `${path.basename(f)}: ${m}`))
+        .filter(m => !/'guardiao_agua_save'|guardiao_agua_autosave|guardiao_agua_save_manual_save|guardiao_agua_save_list|'guardiao_agua_'/.test(m));
+    assert.deepStrictEqual(fixed, []);
+});

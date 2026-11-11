@@ -253,7 +253,7 @@ test('guia de energia: a primeira falta de energia abre a Cláudia no lugar do a
 
     await page.click('#tutorial-skip-btn'); // "Fazer depois" conta como visto
     await expect(page.locator('#tutorial-container')).toBeHidden();
-    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('guardiao_agua_guides')).p_teste)).toContain('energy');
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'guides')).p_teste)).toContain('energy');
 
     // Da segunda vez em diante é o alerta de sempre
     await page.evaluate(() => {

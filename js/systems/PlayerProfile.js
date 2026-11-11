@@ -6,7 +6,7 @@
  * lat/lon vêm da geocodificação da cidade (Open-Meteo) e alimentam o clima; podem faltar (sem rede).
  */
 class PlayerProfile {
-    static STORAGE_KEY = 'guardiao_agua_profiles';
+    static STORAGE_KEY = STORAGE_PREFIX + 'profiles';
     static MAX_NAME = 20;
     static MIN_AGE = 5;
     static MAX_AGE = 99;

@@ -169,7 +169,7 @@
             <p class="start-notice__hint">Ao recusar, você será levado à página inicial do Google.</p>
         </footer>
     </div>
-    <script src="js/ui/StartNotice.js?v=ee126a92"></script>
+    <script src="js/ui/StartNotice.js?v=d6de6bf3"></script>
 
     <!-- Tela de Loading -->
     <div id="loading-screen" class="screen active">
@@ -392,7 +392,7 @@
                         <button type="button" role="menuitem" data-player-action="settings"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-settings.svg" alt="" aria-hidden="true" draggable="false"> Configurações</button>
                         <button type="button" role="menuitem" data-player-action="notifications"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-history.svg" alt="" aria-hidden="true" draggable="false"> Notificações</button>
                         <button type="button" role="menuitem" data-player-action="research"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-stats.svg" alt="" aria-hidden="true" draggable="false"> Dados da pesquisa</button>
-                        <a role="menuitem" class="player-menu-link" href="https://docs.google.com/forms/d/e/1FAIpQLSdHbqhMI3J_DzQxUfN8SGYxtjkSxyIX9cvGnrIPucqL-eznRQ/viewform" target="_blank" rel="noopener noreferrer"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-clipboard.svg" alt="" aria-hidden="true" draggable="false"> Formulário</a>
+                        <a role="menuitem" class="player-menu-link" id="player-menu-form" hidden target="_blank" rel="noopener noreferrer"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-clipboard.svg" alt="" aria-hidden="true" draggable="false"> Formulário</a>
                         <button type="button" role="menuitem" data-player-action="save"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-save.svg" alt="" aria-hidden="true" draggable="false"> Salvar jogo</button>
                     </div>
                 </div>
@@ -696,7 +696,7 @@
     <!-- Scripts do Jogo - Ordem correta de dependências -->
 
     <!-- Clean Code Refactoring: Game Constants (loaded first) -->
-    <script src="js/config/GameConstants.js?v=efc08d12"></script>
+    <script src="js/config/GameConstants.js?v=de577c7c"></script>
     <script src="js/data/preloadImages.js?v=e87e539d"></script>
     <script src="js/data/riverMap.js?v=1dbe219c"></script>
     <script src="js/data/terrainInfo.js?v=d9b1d2a2"></script>
@@ -797,13 +797,13 @@
     <script src="js/utils/Icons.js?v=79a999a7"></script>
     <script src="js/utils/GameLogo.js?v=760d4841"></script>
     <script src="js/utils/AssetLoader.js?v=a1f12c46"></script>
-    <script src="js/utils/AudioManager.js?v=300d9b46"></script>
+    <script src="js/utils/AudioManager.js?v=11be55b6"></script>
     <script src="js/utils/audio/SoundDirector.js?v=1bbf78e0"></script>
     <script src="js/ui/AnimatedPortrait.js?v=7a5cbd3d"></script>
 
     <!-- Core systems - ordem de dependência -->
-    <script src="js/systems/TextSize.js?v=ce837765"></script>
-    <script src="js/systems/GraphicsQuality.js?v=680ce155"></script>
+    <script src="js/systems/TextSize.js?v=e91ba427"></script>
+    <script src="js/systems/GraphicsQuality.js?v=32cafd55"></script>
     <script src="js/core/GridManager.js?v=f5251e15"></script>
     <script src="js/core/ResourceManager.js?v=0a461127"></script>
 
@@ -840,7 +840,7 @@
     <script src="js/systems/ui/ResourceHud.js?v=c698f1d9"></script>
     <script src="js/systems/ui/IdleHints.js?v=c75e6450"></script>
     <script src="js/systems/ui/AchievementsUI.js?v=1799e7e6"></script>
-    <script src="js/systems/ui/PlayerMenu.js?v=65fda21e"></script>
+    <script src="js/systems/ui/PlayerMenu.js?v=44d0da74"></script>
     <script src="js/systems/ui/MissionCardUI.js?v=42a7d0ea"></script>
     <script src="js/systems/ui/ResourcePanels.js?v=a33efe29"></script>
     <script src="js/systems/ui/EventUI.js?v=72f71fc0"></script>
@@ -863,21 +863,21 @@
     <script src="js/systems/AchievementTracks.js?v=b89412d8"></script>
     <script src="js/systems/MissionReminders.js?v=203dd893"></script>
     <script src="js/systems/EventSystem.js?v=5ef959da"></script>
-    <script src="js/systems/SaveSystem.js?v=f5d46c63"></script>
+    <script src="js/systems/SaveSystem.js?v=0e4354cb"></script>
     <script src="js/systems/StudySystem.js?v=ad22fb8a"></script>
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
-    <script src="js/systems/TutorialSystem.js?v=3b3f52dc"></script>
+    <script src="js/systems/TutorialSystem.js?v=c856bce4"></script>
     <script src="js/systems/RescueGuides.js?v=c4db5930"></script>
     <script src="js/systems/GameOverSystem.js?v=403ffaf1"></script>
-    <script src="js/systems/PlayerProfile.js?v=08ed2695"></script>
+    <script src="js/systems/PlayerProfile.js?v=6d376b71"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
     <script src="js/systems/TreeSystem.js?v=0bb86b6c"></script>
-    <script src="js/systems/WeatherService.js?v=ece5b194"></script>
-    <script src="js/systems/SimulatedWeather.js?v=46e8a1c7"></script>
-    <script src="js/systems/ResearchLog.js?v=36fe7e4d"></script>
-    <script src="js/systems/ResearchSync.js?v=087a0747"></script>
-    <script src="js/systems/LessonProgress.js?v=9769f14b"></script>
+    <script src="js/systems/WeatherService.js?v=52df4562"></script>
+    <script src="js/systems/SimulatedWeather.js?v=989f5de9"></script>
+    <script src="js/systems/ResearchLog.js?v=50ef6e1b"></script>
+    <script src="js/systems/ResearchSync.js?v=b281f9da"></script>
+    <script src="js/systems/LessonProgress.js?v=e5a2ef53"></script>
 
     <!-- Abertura cinematográfica do menu (cena Babylon própria; usa o carregador de modelos do BuildingSystem) -->
     <script src="js/systems/intro/IntroLayout.js?v=176a4c5c"></script>
@@ -885,6 +885,6 @@
     <script src="js/systems/intro/MenuIntro.js?v=06818672"></script>
 
     <!-- Main initialization -->
-    <script src="js/main.js?v=981011b0"></script>
+    <script src="js/main.js?v=9bc91e76"></script>
 </body>
 </html>

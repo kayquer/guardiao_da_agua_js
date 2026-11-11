@@ -317,7 +317,7 @@ test('guias em sequência: água + energia → reservatório → zoneamento → 
     await expect(title).toHaveText('Serviços para a população', { timeout: 8000 });
     await page.click('#tutorial-skip-btn'); // "Fazer depois" também conta como visto
     await expect(title).toHaveText('Visitantes trazem dinheiro', { timeout: 8000 });
-    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('guardiao_agua_guides')).p_teste))
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'guides')).p_teste))
         .toEqual(['energy', 'storage', 'zoning', 'public']);
     expect(problems).toEqual([]);
 });

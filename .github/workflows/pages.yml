@@ -1,0 +1,62 @@
+# GitHub Pages com duas versões do jogo no mesmo site:
+#   /                       → main (versão da pesquisa atual)
+#   /evolucao-pesquisa/     → branch evolucao-pesquisa (versão paralela para a próxima pesquisa)
+# Um push em qualquer uma das duas publica as duas de novo. As versões dividem o localStorage
+# (é por domínio): cada uma usa o seu STORAGE_PREFIX (js/config/GameConstants.js).
+# Pages precisa estar em "Source: GitHub Actions" (Settings → Pages).
+name: pages
+
+on:
+  push:
+    branches: [main, evolucao-pesquisa]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main
+      - name: Branch evolucao-pesquisa existe?
+        id: evo
+        run: |
+          if git ls-remote --exit-code --heads "https://github.com/${{ github.repository }}" evolucao-pesquisa >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.evo.outputs.exists == 'true'
+        with:
+          ref: evolucao-pesquisa
+          path: evo
+      - name: Montar o site
+        run: |
+          copy() { rsync -a --exclude '.git' --exclude '.github' --exclude '.githooks' --exclude 'tests' \
+            --exclude 'node_modules' --exclude '__pycache__' "$1/" "$2/"; }
+          mkdir -p site
+          copy main site
+          if [ -d evo ]; then mkdir -p site/evolucao-pesquisa && copy evo site/evolucao-pesquisa; fi
+          du -sh site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
