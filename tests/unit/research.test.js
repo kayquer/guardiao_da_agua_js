@@ -230,7 +230,7 @@ test('armazenamento: toda chave do jogo usa STORAGE_PREFIX (versões no mesmo Pa
     const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).flatMap(e =>
         e.isDirectory() ? walk(path.join(dir, e.name)) : e.name.endsWith('.js') ? [path.join(dir, e.name)] : []);
     const fixed = walk(path.join(__dirname, '..', '..', 'js'))
-        .filter(f => !/StartNotice\.js$/.test(f))
+        .filter(f => !/(StartNotice|GameConstants)\.js$/.test(f)) // o aviso repete a chave; GameConstants define o prefixo
         .flatMap(f => (fs.readFileSync(f, 'utf8').match(/'guardiao_agua_[a-z_]+'/g) || []).map(m => `${path.basename(f)}: ${m}`))
         .filter(m => !/'guardiao_agua_save'|guardiao_agua_autosave|guardiao_agua_save_manual_save|guardiao_agua_save_list|'guardiao_agua_'/.test(m));
     assert.deepStrictEqual(fixed, []);
