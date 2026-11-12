@@ -115,6 +115,8 @@ class PropSystem {
             }
             this.buildChunk(key, items, signature);
         });
+        // Caderno de campo: só o que já está desenhado (modelo carregado) conta como "apareceu"
+        this.gameManager.uiManager?.onPropsPlanned?.(this.placements.filter(p => this.geometry.get(p.id)));
     }
 
     /** Baixa o .glb uma vez e guarda só a geometria (cores do material viram cor de vértice). */

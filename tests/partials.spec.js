@@ -79,6 +79,11 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         gm.uiManager.openSavesPanel();
         gm.uiManager.closeSavesPanel({ focus: false });
 
+        // ui/FieldNotebookUI (o fluxo completo está em tests/notebook.spec.js)
+        gm.uiManager.onPropsPlanned(gm.propSystem.placements);
+        gm.uiManager.openNotebookPanel();
+        gm.uiManager.closeNotebookPanel({ focus: false });
+
         // ui/MissionUI
         const qs = gm.questSystem;
         qs.openMissionInterface();

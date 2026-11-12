@@ -1,0 +1,33 @@
+/* Caderno de Campo da Márcia (ui/FieldNotebookUI.js, #notebook-panel) e toasts da fauna (.toast--notebook) */
+
+/* .overlay-content tem display próprio: sem isto o [hidden] não esconde (e a pausa leve acharia um popup aberto) */
+#notebook-panel[hidden] { display: none !important; }
+
+.notebook-panel .notebook-intro { margin: 0 0 0.6rem; font-size: 0.95rem; }
+
+.notebook-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; max-height: 56vh; overflow-y: auto; }
+
+.nb-entry {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    padding: 0.6rem 0.75rem;
+    border-radius: 12px;
+    border: 2px solid rgba(0, 0, 0, 0.12);
+    background: #fffdf5; /* papel do caderno */
+    text-align: left;
+}
+.nb-entry.nb-unknown { background: rgba(255, 255, 255, 0.6); border-style: dashed; }
+.nb-entry.nb-gone { background: #fff3e0; }
+.nb-entry.nb-focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.25); }
+
+.nb-icon { font-size: 1.8rem; line-height: 1; flex: none; width: 2.2rem; text-align: center; }
+.nb-text { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nb-text p { margin: 0; font-size: 0.88rem; line-height: 1.35; color: #263238; }
+.nb-text small { font-size: 0.78rem; color: #546e7a; }
+.nb-status { font-size: 0.75rem; font-weight: normal; padding: 1px 6px; border-radius: 999px; background: #e0e0e0; color: #37474f; }
+.nb-here .nb-status { background: #c8e6c9; color: #1b5e20; }
+.nb-gone .nb-status { background: #ffe0b2; color: #8d4a00; }
+.nb-clue { font-style: italic; }
+
+.toast.toast--notebook { border-left: 6px solid #2e7d32; }

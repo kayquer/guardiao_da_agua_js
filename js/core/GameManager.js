@@ -155,6 +155,7 @@ class GameManager {
             this.gameOverSystem = new GameOverSystem(this);
             this.pollutionVisuals = new PollutionVisuals(this);
             this.propSystem = new PropSystem(this); // props de cenário (js/data/props.js)
+            this.fieldNotebook = new FieldNotebook(); // caderno de campo: bichos que voltam/somem (js/data/fieldNotebook.js)
 
             // Aguardar carregamento do conteúdo educacional
             await this.studySystem.initialize();
@@ -614,6 +615,8 @@ class GameManager {
         // Árvore nativa na frente do terreno: seleciona a árvore (painel próprio, TreeSystem.selectAt)
         if (this.treeSystem?.selectAt(x, y)) return;
         const gridPos = this.pickTerrainCell(x, y);
+        // Bicho do caderno de campo ali: a nota da Márcia no lugar do painel do terreno (ui/FieldNotebookUI.js)
+        if (gridPos && this.uiManager?.showSpeciesAt?.(gridPos.x, gridPos.z)) return;
         if (gridPos) {
             // Get terrain type
             const terrainType = this.gridManager.getTerrainType(gridPos.x, gridPos.z);
@@ -973,6 +976,7 @@ class GameManager {
         this.tutorialDone = false; // TutorialSystem.complete() libera o save
         this.uiManager?.notificationLog?.clear(); // histórico de notificações é por partida
         this.clearSavePoints?.(); // pontos de volta são da partida (core/game/SavePoints.js)
+        this.fieldNotebook?.loadData(null); // caderno de campo é da partida
         this.techTree?.reset();
         if (this.gameOverSystem) { // as 3 declarações de emergência voltam; as ganhas em missão somem
             this.gameOverSystem.emergenciesUsed = 0;
@@ -1178,6 +1182,7 @@ class GameManager {
             this.gameOverSystem?.loadData(saveData.emergency); // declarações de emergência já usadas
             this.loanManager?.loadData(saveData.loans);
             this.uiManager?.notificationLog?.loadData(saveData.notifications); // save antigo: histórico vazio
+            this.fieldNotebook?.loadData(saveData.notebook); // save antigo: caderno vazio (a 1ª olhada registra o que há)
             if (this.tutorialSystem && saveData.tutorial) {
                 this.tutorialSystem.lessonsDeferred = !!saveData.tutorial.lessonsDeferred;
             }
@@ -1561,6 +1566,7 @@ class GameManager {
             loans: this.loanManager?.saveData() ?? null,
             tutorial: { lessonsDeferred: !!this.tutorialSystem?.lessonsDeferred },
             notifications: this.uiManager?.notificationLog?.getSaveData() ?? [],
+            notebook: this.fieldNotebook?.getSaveData() ?? null,
             camera: this.getCameraSaveData()
         };
     }
