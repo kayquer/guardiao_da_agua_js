@@ -6,42 +6,77 @@
  * Id salvo em quests.achievements: `track_<id>_<nível 1-5>`.
  */
 const ACHIEVEMENT_TRACKS = {
-    water_sources: {
-        icon: 'ach-water-sources', title: 'Caçador de Nascentes', metric: 'water_sources',
-        description: 'Tenha {n} fontes de água funcionando: bombas, poços e outras captações.',
+    // 11/2026: as trilhas premiam o que o jogo ensina. Saíram "fontes de água" (premiava bombear demais),
+    // "asfalto" e "terra batida" (enxurrada e erosão) e "caixa da cidade" (dinheiro parado em vez de investido).
+    healthy_river: {
+        icon: 'ach-river', title: 'Rio Cheio', metric: 'river_minutes', unit: 'min',
+        description: 'Mantenha o rio acima de 70% por {n} minutos de jogo (somando todas as vezes).',
         levels: [
-            { goal: 5, name: 'Farejador de Água' },
-            { goal: 12, name: 'Caçador de Nascentes' },
-            { goal: 25, name: 'Guardião dos Poços' },
-            { goal: 40, name: 'Mestre das Águas Profundas' },
-            { goal: 60, name: 'Lenda da Captação' }
+            { goal: 5, name: 'Água Correndo' },
+            { goal: 15, name: 'Rio Cheio' },
+            { goal: 30, name: 'Margens Vivas' },
+            { goal: 60, name: 'Rio que Canta' },
+            { goal: 120, name: 'Guardião do Rio' }
         ]
     },
-    paved_roads: {
-        icon: 'ach-paved-roads', title: 'Rei do Asfalto', metric: 'road_paved', unit: 'blocos',
-        description: 'Tenha {n} blocos de rua asfaltada.',
+    no_shortage: {
+        icon: 'ach-tap', title: 'Torneira Sempre Aberta', metric: 'no_shortage_minutes', unit: 'min',
+        description: 'Passe {n} minutos de jogo seguidos sem faltar água para ninguém.',
         levels: [
-            { goal: 25, name: 'Primeira Avenida' },
-            { goal: 100, name: 'Tapete Preto' },
-            { goal: 250, name: 'Malha Viária' },
-            { goal: 450, name: 'Cidade Conectada' },
-            { goal: 700, name: 'Rodovia Lendária' }
+            { goal: 5, name: 'Água na Torneira' },
+            { goal: 15, name: 'Sem Racionamento' },
+            { goal: 30, name: 'Cidade Abastecida' },
+            { goal: 60, name: 'Água para Todos' },
+            { goal: 120, name: 'Torneira Sempre Aberta' }
         ]
     },
-    dirt_roads: {
-        icon: 'ach-dirt-roads', title: 'Estrada Boiadeira', metric: 'road_dirt', unit: 'blocos',
-        description: 'Tenha {n} blocos de estrada de terra.',
+    sewage_treated: {
+        icon: 'ach-sewage', title: 'Esgoto em Dia', metric: 'sewage_minutes', unit: 'min',
+        description: 'Com moradores na cidade, passe {n} minutos de jogo com a limpeza dando conta de todo o esgoto.',
         levels: [
-            { goal: 10, name: 'Trilha Aberta' },
-            { goal: 40, name: 'Estrada Boiadeira' },
-            { goal: 100, name: 'Caminhos da Roça' },
-            { goal: 200, name: 'Sertão Ligado' },
-            { goal: 350, name: 'Mapa de Terra Batida' }
+            { goal: 5, name: 'Cano no Lugar' },
+            { goal: 15, name: 'Esgoto em Dia' },
+            { goal: 30, name: 'Rio sem Mau Cheiro' },
+            { goal: 60, name: 'Saneamento de Verdade' },
+            { goal: 120, name: 'Cidade Saneada' }
+        ]
+    },
+    riparian: {
+        icon: 'ach-riparian', title: 'Mata Ciliar', metric: 'riparian_planted',
+        description: 'Tenha {n} árvores plantadas na beira da água (lá elas limpam mais).',
+        levels: [
+            { goal: 3, name: 'Sombra na Margem' },
+            { goal: 8, name: 'Cílios do Rio' },
+            { goal: 15, name: 'Beira-Rio Verde' },
+            { goal: 30, name: 'Corredor Verde' },
+            { goal: 50, name: 'Floresta das Águas' }
+        ]
+    },
+    sponge_city: {
+        icon: 'ach-sponge', title: 'Cidade Esponja', metric: 'runoff_controls',
+        description: 'Tenha {n} construções que seguram a chuva funcionando (jardim de chuva, parque linear, telhado verde…).',
+        levels: [
+            { goal: 1, name: 'Primeira Gota Guardada' },
+            { goal: 3, name: 'Chão que Bebe Chuva' },
+            { goal: 6, name: 'Bairro Esponja' },
+            { goal: 10, name: 'Enxurrada Domada' },
+            { goal: 15, name: 'Cidade Esponja' }
+        ]
+    },
+    green_investment: {
+        icon: 'ach-green-invest', title: 'Investimento Verde', metric: 'green_invested', money: true,
+        description: 'Tenha R$ {n} investidos em construções verdes funcionando (natureza, energia limpa, recarga e tratamento).',
+        levels: [
+            { goal: 20000, name: 'Semente Plantada' },
+            { goal: 60000, name: 'Orçamento Verde' },
+            { goal: 150000, name: 'Cidade que Investe' },
+            { goal: 300000, name: 'Economia Verde' },
+            { goal: 600000, name: 'Tesouro da Natureza' }
         ]
     },
     gravel_roads: {
         icon: 'ach-gravel-roads', title: 'Pedrinha por Pedrinha', metric: 'road_gravel', unit: 'blocos',
-        description: 'Tenha {n} blocos de estrada de cascalho.',
+        description: 'Tenha {n} blocos de estrada de cascalho (a chuva passa entre as pedras).',
         levels: [
             { goal: 10, name: 'Pedrinha por Pedrinha' },
             { goal: 40, name: 'Chão que Respira' },
@@ -59,17 +94,6 @@ const ACHIEVEMENT_TRACKS = {
             { goal: 6, name: 'Polo Tecnológico' },
             { goal: 10, name: 'Laboratório a Céu Aberto' },
             { goal: 15, name: 'Cidade do Futuro' }
-        ]
-    },
-    budget: {
-        icon: 'ach-budget', title: 'Cofre da Cidade', metric: 'budget', money: true,
-        description: 'Junte R$ {n} no caixa da cidade.',
-        levels: [
-            { goal: 100000, name: 'Cofre Cheio' },
-            { goal: 250000, name: 'Caixa Forte' },
-            { goal: 500000, name: 'Meio Milhão!' },
-            { goal: 1000000, name: 'Cidade Milionária' },
-            { goal: 2500000, name: 'Tesouro Municipal' }
         ]
     },
     power: {

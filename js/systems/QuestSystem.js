@@ -19,6 +19,7 @@ class QuestSystem {
         this.questCounter = 0;
         this.totalScore = 0;
         this.achievements = new Set();
+        this.trackTimers = QuestSystem.emptyTrackTimers?.() || null; // trilhas de tempo (AchievementTracks.js), salvo
 
         // Stakeholder Reputation System
         this.stakeholderReputation = {
@@ -188,11 +189,13 @@ class QuestSystem {
         // Mostrar na UI
         this.updateQuestUI();
         
-        // Notificar
+        // Notificar. Antes do jogo rodar (boot, tutorial de abertura congelado) vai só para o histórico:
+        // o toast disputava a atenção com a Cláudia no primeiro minuto. A barra de missão mostra a missão depois.
         if (this.gameManager.uiManager) {
+            const quiet = this.gameManager.gameState !== 'playing';
             this.gameManager.uiManager.showNotification(
                 `Nova missão: ${PlayerProfile.personalize(quest.title)}`,
-                'info'
+                'info', undefined, { quiet }
             );
         }
         // Som só com o jogo rodando (no boot as missões se ativam sozinhas, atrás da tela de carregamento)
@@ -1072,6 +1075,7 @@ class QuestSystem {
             totalScore: this.totalScore,
             questCounter: this.questCounter,
             achievements: Array.from(this.achievements),
+            trackTimers: this.trackTimers ? { ...this.trackTimers } : undefined,
             stakeholderReputation: { ...this.stakeholderReputation },
             cityChallenges: this.getCityChallengeSaveData?.(),
             perks: structuredClone(this.getPerks()),
@@ -1103,7 +1107,11 @@ class QuestSystem {
         this.currentMainQuest = known(data.currentMainQuest) ? data.currentMainQuest : null;
         this.totalScore = data.totalScore || 0;
         this.questCounter = data.questCounter || 0;
-        this.achievements = new Set(data.achievements || []);
+        // trilhas que saíram de js/data/achievementTracks.js (11/2026: fontes, asfalto, terra, caixa) não voltam
+        const knownTrack = id => { const m = /^track_(.+)_[1-5]$/.exec(String(id)); return !m || typeof ACHIEVEMENT_TRACKS === 'undefined' || !!ACHIEVEMENT_TRACKS[m[1]]; };
+        this.achievements = new Set((data.achievements || []).filter(knownTrack));
+        this.trackTimers = { ...(QuestSystem.emptyTrackTimers?.() || {}), ...(data.trackTimers || {}) };
+        this.lastTrackSimAt = null;
         this.tracksPrimed = false; // 1ª conferência das conquistas de nível depois do load: em silêncio (save antigo)
         this.achievementToastQueue = [];
         if (data.stakeholderReputation) Object.assign(this.stakeholderReputation, data.stakeholderReputation);

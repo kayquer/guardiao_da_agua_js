@@ -20,22 +20,23 @@ test.describe('conquistas, lembretes e socorro', () => {
         await page.evaluate(() => {
             const qs = window.gameManager.questSystem;
             qs.tracksPrimed = true;
-            window.gameManager.resourceManager.resources.budget.current = 120000;
+            qs.trackTimers.riverS = 6 * 60; // 6 min de jogo com o rio cheio
             qs.lastTrackCheckAt = 0;
             qs.updateAchievementTracks();
         });
         const toast = page.locator('.toast--achievement');
         await expect(toast).toBeVisible();
-        await expect(toast).toContainText('Cofre Cheio');
+        await expect(toast).toContainText('Água Correndo');
         await expect(toast).toContainText('Nível 1 de 5');
-        await expect(toast.locator('.toast-icon img')).toHaveAttribute('src', /ach-budget\.svg/);
+        await expect(toast.locator('.toast-icon img')).toHaveAttribute('src', /ach-river\.svg/);
 
         await toast.locator('.toast-action').click();
         await expect(page.locator('#achievements-panel')).toBeVisible();
         expect(await page.evaluate(() => window.gameManager.gameState)).toBe('paused');
-        await expect(page.locator('.ach-track')).toHaveCount(13);
-        await expect(page.locator('.ach-track.lvl-1')).toContainText('Cofre Cheio');
-        await expect(page.locator('.ach-track.lvl-1')).toContainText('Caixa Forte'); // próximo nível
+        const tracks = await page.evaluate(() => Object.keys(ACHIEVEMENT_TRACKS).length);
+        await expect(page.locator('.ach-track')).toHaveCount(tracks);
+        await expect(page.locator('.ach-track.lvl-1')).toContainText('Água Correndo');
+        await expect(page.locator('.ach-track.lvl-1')).toContainText('Rio Cheio'); // próximo nível
         await expect(page.locator('.ach-badge')).toHaveCount(4); // as conquistas antigas continuam
     });
 

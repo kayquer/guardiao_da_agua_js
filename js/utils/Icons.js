@@ -56,8 +56,8 @@ const UI_ICON_FILES = {
     'lesson-water-cycle': 'b', 'lesson-sharing': 'b', 'lesson-river-life': 'b', 'lesson-hidden-water': 'b',
     'lesson-green-solutions': 'b', 'mission-new-manager': 'b',
     // selos das conquistas por níveis (js/data/achievementTracks.js)
-    'ach-water-sources': 'l', 'ach-paved-roads': 'l', 'ach-dirt-roads': 'l', 'ach-gravel-roads': 'l', 'ach-high-tech': 'l',
-    'ach-budget': 'l', 'ach-power': 'l', 'ach-storage': 'l', 'ach-trees': 'l', 'ach-recycling': 'l', 'ach-residential': 'l',
+    'ach-river': 'l', 'ach-tap': 'l', 'ach-sewage': 'l', 'ach-riparian': 'l', 'ach-sponge': 'l', 'ach-green-invest': 'l',
+    'ach-gravel-roads': 'l', 'ach-high-tech': 'l', 'ach-power': 'l', 'ach-storage': 'l', 'ach-trees': 'l', 'ach-recycling': 'l', 'ach-residential': 'l',
     'ach-commercial': 'l', 'ach-industrial': 'l'
 };
 const UI_ICON_BY_EMOJI = {

@@ -599,6 +599,7 @@ class UIManager {
             this.popupCheckTimer = 0;
             this.syncPopupPause();
             this.flushDeferredAlerts();
+            this.syncMessageFocus();
             this.updateEventTracker(); // barra do tempo de cada evento/aviso (ui/EventUI.js)
             this.flushEventDecisions(); // anúncio de evento esperando o modal do Paulo (ui/EventDecisionUI.js)
             this.flushMissionCards(); // comemoração da missão / bem-vindo de volta (ui/MissionCardUI.js)
@@ -620,6 +621,16 @@ class UIManager {
     isMessageSlotBusy() {
         return this.isReadingOverlayOpen() ||
             !!document.querySelector('.central-alert-overlay, #event-decision.open, .swal2-container');
+    }
+
+    /**
+     * Uma mensagem por vez também para o que não é fila: com alerta central ou o modal do Paulo aberto,
+     * `body.message-open` esconde o cartão de eventos e a dica dos recursos (o tooltip cobria o título do alerta).
+     */
+    syncMessageFocus() {
+        const open = !!document.querySelector('.central-alert-overlay, #event-decision.open, #mission-card');
+        if (document.body.classList.contains('message-open') !== open) document.body.classList.toggle('message-open', open);
+        if (open) this.hideResourceTooltip?.();
     }
 
     /** Há mensagem na tela ou esperando a vez? (aula pós-missão e guias só abrem depois delas) */

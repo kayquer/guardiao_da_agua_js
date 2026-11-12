@@ -18,15 +18,30 @@ const medal = (c, inner) =>
 const T = (id, title, c, inner) => ({ id, area: 'ach', emoji: [], title, used: [AT, AU], lg: () => medal(c, inner()) });
 
 module.exports = [
-    T('ach-water-sources', 'Conquista: fontes de água', 'water', () =>
-        box(46, 62, 36, 18, 'concrete') + line('M44 62H84') + line('M50 62V44M78 62V44', { w: 3 }) + rect(46, 40, 36, 6, P.brown[0], { rx: 2 }) +
-        g(drop(64, 58, 9), { a: A('drip', 2, 0) })),
-    T('ach-paved-roads', 'Conquista: ruas asfaltadas', 'dark', () =>
-        rect(30, 40, 68, 28, P.dark[0], { rx: 4 }) + line('M30 44H98M30 64H98', { s: '#fff', w: 2 }) +
-        line('M30 54H98', { s: P.yellow[0], w: 4, da: '8 7', a: A('march', 1.2, 0, 'center', 'linear') })),
-    T('ach-dirt-roads', 'Conquista: estradas de terra', 'brown', () =>
-        path('M28 70Q64 58 100 70V48Q64 36 28 48Z', P.sand[1]) + line('M34 56Q64 46 94 56', { s: P.soil[0], w: 3, da: '5 6' }) +
-        line('M34 64Q64 54 94 64', { s: P.soil[0], w: 3, da: '5 6' }) + g(circ(40, 36, 3, P.sand[0]) + circ(48, 30, 2, P.sand[0]), { a: A('drift', 2.6) })),
+    // 11/2026: trilhas que premiam o que o jogo ensina (rio, torneira, esgoto, mata ciliar, chuva, investimento verde)
+    T('ach-river', 'Conquista: rio cheio', 'water', () =>
+        path('M28 46Q46 40 64 46T100 46V76H28Z', P.water[0]) +
+        g(line(waveD(30, 98, 52, 3, 12), { s: '#fff', w: 2.5 }), { a: A('flow', 2.6, 0, 'center', 'linear') }) +
+        line(waveD(30, 98, 64, 2.5, 10), { s: P.water[1], w: 2 }) +
+        rect(28, 72, 72, 6, P.grass[1], { rx: 3 }) + g(circ(46, 58, 2.5, '#fff', { s: 'none' }), { a: A('bob', 2.2) })),
+    T('ach-tap', 'Conquista: sem faltar água', 'blue', () =>
+        rect(36, 36, 34, 12, P.concrete[0], { rx: 4 }) + rect(62, 36, 12, 24, P.concrete[0], { rx: 3 }) +
+        rect(46, 28, 14, 8, P.red[0], { rx: 3 }) + g(drop(68, 72, 7), { a: A('drip', 1.8) })),
+    T('ach-sewage', 'Conquista: esgoto tratado', 'green', () =>
+        ball(64, 58, 22, 'concrete') + circ(64, 58, 15, P.water[0]) +
+        g(line('M64 44V72M50 58H78', { s: P.water[1], w: 3 }), { a: A('spin', 6, 0, 'center', 'linear') }) +
+        circ(64, 58, 4, P.dark[0]) + g(drop(92, 36, 6), { a: A('bob', 2.4) })),
+    T('ach-riparian', 'Conquista: mata ciliar', 'leaf', () =>
+        path('M28 64Q64 56 100 64V80H28Z', P.water[0]) + line(waveD(32, 96, 70, 2, 10), { s: '#fff', w: 2 }) +
+        tree(44, 62, 0.9, { a: A('sway', 3.4, 0, '50% 100%') }) + tree(64, 60, 1.05, { a: A('sway', 3.4, 1.1, '50% 100%') }) +
+        tree(84, 62, 0.85, { c: 'lime', a: A('sway', 3.4, 2.2, '50% 100%') })),
+    T('ach-sponge', 'Conquista: cidade esponja', 'grass', () =>
+        rect(34, 62, 60, 16, P.soil[0], { rx: 3 }) + rect(34, 58, 60, 6, P.grass[0], { rx: 2 }) +
+        g(drop(48, 40, 5) + drop(64, 34, 6) + drop(80, 40, 5), { a: A('fall', 2.2) }) +
+        line('M46 68V74M58 66V76M70 68V74M82 66V76', { s: P.water[0], w: 2.5 })),
+    T('ach-green-invest', 'Conquista: investimento verde', 'yellow', () =>
+        rect(40, 66, 30, 8, P.yellow[1], { rx: 3 }) + rect(42, 58, 30, 8, P.yellow[0], { rx: 3 }) +
+        g(ball(78, 46, 15, 'leaf') + path('M78 56V38M78 46q-6-6-8-8M78 46q6-4 8-8', 'none', { s: '#fff', w: 2.5 }), { a: A('grow', 2.6, 0, '50% 100%') })),
     T('ach-gravel-roads', 'Conquista: estradas de cascalho', 'gray', () =>
         rect(30, 40, 68, 28, P.smoke[0], { rx: 6 }) +
         [[38, 48], [50, 56], [62, 46], [74, 58], [86, 50], [44, 62], [80, 44], [92, 62], [56, 64]]
@@ -36,9 +51,6 @@ module.exports = [
         [0, 1, 2].map(i => line(`M${52 + i * 12} 30V38M${52 + i * 12} 70V78M40 ${42 + i * 12}H48M80 ${42 + i * 12}H88`, { w: 3 })).join('') +
         box(46, 36, 36, 36, 'purple', { rx: 5 }) + rect(54, 44, 20, 20, P.glass[0], { rx: 3 }) +
         g(path(boltD(64, 54, 0.6), P.yellow[0], { w: 1.5 }), { a: A('zap', 1.8) })),
-    T('ach-budget', 'Conquista: caixa da cidade', 'yellow', () =>
-        rect(40, 66, 30, 8, P.yellow[1], { rx: 3 }) + rect(42, 58, 30, 8, P.yellow[0], { rx: 3 }) +
-        g(ball(76, 46, 15, 'yellow') + path(starD(76, 46, 7), P.orange[0], { w: 1.5 }), { a: A('coin', 2.4) })),
     T('ach-power', 'Conquista: energia gerada', 'yellow', () =>
         g(path(boltD(64, 54, 2), P.yellow[0], { w: 3 }), { a: A('pulse', 1.6) }) +
         g(line('M36 40l-6-4M92 40l6-4M36 68l-6 4M92 68l6 4', { s: P.orange[0], w: 3 }), { a: A('blink', 1.6) })),

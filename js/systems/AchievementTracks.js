@@ -1,7 +1,8 @@
 /**
- * QuestSystem — conquistas por níveis (js/data/achievementTracks.js): 13 trilhas × 5 níveis, conferidas a cada
- * ACHIEVEMENT_CHECK_MS com o jogo rodando. Contam o que está na cidade AGORA (prédios prontos, caixa, geração,
- * capacidade), não o que já foi construído um dia: construir e reciclar não sobe nível.
+ * QuestSystem — conquistas por níveis (js/data/achievementTracks.js): trilhas × 5 níveis, conferidas a cada
+ * ACHIEVEMENT_CHECK_MS com o jogo rodando. A maioria conta o que está na cidade AGORA (prédios prontos, geração,
+ * capacidade), não o que já foi construído um dia: construir e reciclar não sobe nível. As de tempo (rio cheio,
+ * sem faltar água, esgoto em dia) somam minutos de jogo em this.trackTimers (salvo), só com a simulação rodando.
  * Ganhos vão para this.achievements (mesmo Set salvo das conquistas de missão) com id `track_<trilha>_<nível>`.
  * Para não virar enxurrada: de uma trilha só o maior nível novo vira aviso, um aviso a cada ACHIEVEMENT_TOAST_GAP_MS,
  * e a primeira conferência depois de carregar um jogo guarda em silêncio (save antigo) com um aviso só de resumo.
@@ -20,8 +21,9 @@ mixin(QuestSystem, {
         this.flushAchievementToasts(now);
         if (now - (this.lastTrackCheckAt || 0) < this.ACHIEVEMENT_CHECK_MS) return;
         this.lastTrackCheckAt = now;
+        this.tickTrackTimers();
 
-        const metrics = QuestSystem.measureAchievementMetrics(gm.buildingSystem?.getAllBuildings?.() || [], gm.resourceManager?.resources);
+        const metrics = this.currentAchievementMetrics();
         const gained = this.collectTrackAchievements(metrics);
         const silent = !this.tracksPrimed;
         this.tracksPrimed = true;
@@ -44,6 +46,40 @@ mixin(QuestSystem, {
         const queued = new Set([...best.values()].map(info => info.id));
         gained.forEach(key => this.recordAchievement(key, { quiet: !queued.has(key) }));
         this.flushAchievementToasts(now);
+    },
+
+    /**
+     * Soma o tempo de jogo (simNow) desde a última conferência nos contadores das trilhas de tempo.
+     * Pausa não conta (simNow para); um salto grande (load) não vira minutos de graça: no máximo 10 s por vez.
+     */
+    tickTrackTimers() {
+        const t = this.trackTimers || (this.trackTimers = QuestSystem.emptyTrackTimers());
+        const now = this.simNow();
+        const last = this.lastTrackSimAt;
+        this.lastTrackSimAt = now;
+        if (last == null || now <= last) return;
+        const dt = Math.min(10, (now - last) / 1000);
+        const rm = this.gameManager.resourceManager;
+        const r = rm?.resources;
+        if (!r) return;
+        if ((r.water?.river ?? 100) >= QuestSystem.TRACK_RIVER_OK) t.riverS += dt;
+        if (rm.hasWaterShortage?.()) t.noShortageS = 0;
+        else {
+            t.noShortageS += dt;
+            t.noShortageBestS = Math.max(t.noShortageBestS, t.noShortageS);
+        }
+        const balance = rm.getPollutionBalance?.();
+        if (balance && (r.population?.current || 0) >= QuestSystem.TRACK_SEWAGE_MIN_POP && balance.reduction >= balance.sewage) t.sewageS += dt;
+    },
+
+    /** Métricas da cidade agora (vitrine e conferência usam o mesmo número). */
+    currentAchievementMetrics() {
+        const gm = this.gameManager;
+        const bs = gm.buildingSystem;
+        return QuestSystem.measureAchievementMetrics(bs?.getAllBuildings?.() || [], gm.resourceManager?.resources, {
+            timers: this.trackTimers,
+            isRiparian: b => !!bs?.isRiparianTree?.(b)
+        });
     },
 
     /** Marca os níveis alcançados que ainda não estavam no Set e devolve os ids novos. */
@@ -91,12 +127,29 @@ mixin(QuestSystem, {
     }
 });
 
-/** Números de cada métrica das trilhas. Prédios só contam prontos; ruas, por tipo (`road_<roadType>`). */
-QuestSystem.measureAchievementMetrics = (buildings, r) => {
+QuestSystem.TRACK_RIVER_OK = 70;        // rio "cheio" (%)
+QuestSystem.TRACK_SEWAGE_MIN_POP = 50;  // esgoto em dia só conta com moradores de verdade
+
+QuestSystem.emptyTrackTimers = () => ({ riverS: 0, noShortageS: 0, noShortageBestS: 0, sewageS: 0 });
+
+/** Construção verde: natureza, energia limpa, recarga do aquífero/rio, segura a chuva ou limpa a poluição. */
+QuestSystem.isGreenBuilding = (type, c) => !!c && !c.roadType && !c.zoneType && (
+    type === 'tree_sapling' || c.category === 'nature' || c.renewable === true || (c.runoffAbsorption || 0) > 0 ||
+    (c.aquiferRecharge || 0) > 0 || (c.riverRecharge || 0) > 0 || (c.pollutionReduction || 0) > 0);
+
+/**
+ * Números de cada métrica das trilhas. Prédios só contam prontos; ruas, por tipo (`road_<roadType>`).
+ * `extra.timers` = contadores de tempo (segundos de jogo); `extra.isRiparian(b)` = muda na beira da água.
+ */
+QuestSystem.measureAchievementMetrics = (buildings, r, extra = {}) => {
+    const t = extra.timers || QuestSystem.emptyTrackTimers();
     const m = {
-        water_sources: 0, road_paved: 0, road_dirt: 0, road_gravel: 0, high_tech: 0, trees: 0, recycling: 0,
+        road_paved: 0, road_dirt: 0, road_gravel: 0, high_tech: 0, trees: 0, recycling: 0,
         zone_residential: 0, zone_commercial: 0, zone_industrial: 0,
-        budget: r?.budget?.current || 0, power: r?.electricity?.generation || 0, storage: r?.water?.storage || 0
+        riparian_planted: 0, runoff_controls: 0, green_invested: 0,
+        river_minutes: Math.floor(t.riverS / 60), no_shortage_minutes: Math.floor(t.noShortageBestS / 60),
+        sewage_minutes: Math.floor(t.sewageS / 60),
+        power: r?.electricity?.generation || 0, storage: r?.water?.storage || 0
     };
     for (const b of buildings || []) {
         const c = b?.config;
@@ -106,9 +159,13 @@ QuestSystem.measureAchievementMetrics = (buildings, r) => {
             m[key] = (m[key] || 0) + 1;
             continue;
         }
-        if (c.waterProduction > 0) m.water_sources++;
         if ((c.tier || 0) >= 4) m.high_tech++;
-        if (b.type === 'tree_sapling') m.trees++;
+        if (b.type === 'tree_sapling') {
+            m.trees++;
+            if (extra.isRiparian?.(b)) m.riparian_planted++;
+        }
+        if ((c.runoffAbsorption || 0) > 0) m.runoff_controls++;
+        if (QuestSystem.isGreenBuilding(b.type, c)) m.green_invested += c.cost || 0;
         if (c.waste) m.recycling++;
         const zone = String(c.zoneType || '').split('_')[0];
         if (zone && `zone_${zone}` in m) m[`zone_${zone}`]++;

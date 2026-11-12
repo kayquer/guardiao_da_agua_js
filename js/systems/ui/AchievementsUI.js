@@ -73,7 +73,7 @@ mixin(UIManager, {
     renderAchievementTracks(earned) {
         if (typeof ACHIEVEMENT_TRACKS === 'undefined') return '';
         const gm = this.gameManager;
-        const metrics = QuestSystem.measureAchievementMetrics(gm.buildingSystem?.getAllBuildings?.() || [], gm.resourceManager?.resources);
+        const metrics = gm.questSystem?.currentAchievementMetrics?.() || QuestSystem.measureAchievementMetrics([], gm.resourceManager?.resources);
         const fmt = n => Math.floor(n).toLocaleString('pt-BR');
         return Object.entries(ACHIEVEMENT_TRACKS).map(([id, track]) => {
             const level = track.levels.filter((_, i) => earned.has(`track_${id}_${i + 1}`)).length;

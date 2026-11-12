@@ -479,7 +479,7 @@ class TutorialSystem {
             character: MARCIA,
             background: 'assets/images/tutorial/bg-caderno-campo.webp',
             title: 'Dicas Estratégicas da Márcia!',
-            text: 'Anote estas <b>dicas de ouro</b>, do jeito que eu anoto tudo no meu caderno de campo:<br>🔍 <b>Priorize a Pesquisa</b>: Construa Centros de Pesquisa cedo para identificar problemas<br>🌳 <b>Proteja Primeiro</b>: Mata Ciliar previne problemas futuros<br>💧 <b>Trate o Esgoto</b>: Sempre antes de expandir a população<br>⚖️ <b>Equilibre Economia e Ecologia</b>: Não sacrifique a natureza pelo lucro rápido<br>📊 <b>Monitore Constantemente</b>: Fique de olho nos indicadores<br><img src="assets/images/lessons/caderno-de-campo.webp" alt="Caderno de campo com desenhos de árvore, gota e peixe, binóculo e amostra de água" style="width:100%; border-radius:8px; margin:10px 0;"/> Lembre-se: prevenção é mais barato que correção! Um problema pequeno hoje vira crise amanhã.',
+            text: 'Anote estas <b>dicas de ouro</b>, do jeito que eu anoto tudo no meu caderno de campo:<br>🔍 <b>Observe os Sinais</b>: Os números do topo e os bichos do rio avisam cedo quando algo vai mal<br>🌳 <b>Proteja Primeiro</b>: Mata Ciliar previne problemas futuros<br>💧 <b>Trate o Esgoto</b>: Sempre antes de expandir a população<br>⚖️ <b>Equilibre Economia e Ecologia</b>: Não sacrifique a natureza pelo lucro rápido<br>📊 <b>Monitore Constantemente</b>: Fique de olho nos indicadores<br><img src="assets/images/lessons/caderno-de-campo.webp" alt="Caderno de campo com desenhos de árvore, gota e peixe, binóculo e amostra de água" style="width:100%; border-radius:8px; margin:10px 0;"/> Lembre-se: prevenção é mais barato que correção! Um problema pequeno hoje vira crise amanhã.',
             icon: '💡'
         },
 
@@ -679,9 +679,21 @@ class TutorialSystem {
         document.body.classList.add('tutorial-open'); // o menu de construção abre depois do painel
     }
 
+    /**
+     * Primeiro minuto limpo (tutorial de abertura): `tutorial-calm` tira os selos "!"/"✕" do HUD
+     * (css/accessibility.css; as faixas e setas são do ResourceHud) e, até a prefeitura ficar pronta,
+     * `tutorial-no-mission` esconde a barra de missão, que pedia a bomba enquanto a Cláudia pedia a prefeitura.
+     */
+    syncFirstMinuteCalm(step) {
+        const opening = this.run === 'tutorial';
+        const group = step ? this.groupOf(step) : null;
+        document.body.classList.toggle('tutorial-calm', opening && !!step);
+        document.body.classList.toggle('tutorial-no-mission', opening && (group === 'hello' || group === 'cityhall'));
+    }
+
     hideTutorialUI() {
         document.getElementById('tutorial-container').style.display = 'none';
-        document.body.classList.remove('tutorial-open');
+        document.body.classList.remove('tutorial-open', 'tutorial-calm', 'tutorial-no-mission');
         document.getElementById('tutorial-spotlight').hidden = true;
     }
 
@@ -738,6 +750,7 @@ class TutorialSystem {
         stopSpeaking();
         step.enter?.(this.gameManager);
         this.syncActionStepClock(step);
+        this.syncFirstMinuteCalm(step);
         ResearchLog.startPage(this.run, step.chapter ?? this.groupOf(step), step.title);
 
         const container = document.getElementById('tutorial-container');
@@ -1183,7 +1196,7 @@ TutorialSystem.TOPICS = {
         steps: [
             { title: 'A felicidade da cidade', text: 'Este número mostra se as pessoas estão felizes. Gente feliz fica na cidade e ajuda ela a crescer.', targets: ['.resource-item:has(#satisfaction-level)'] },
             { title: 'O que deixa triste', text: 'Falta de água, falta de energia e poluição deixam todo mundo chateado. Resolver esses problemas é o primeiro passo.' },
-            { title: 'O que deixa feliz', text: '{nome}, os prédios da categoria <b>🏛️ Públicos</b>, como parques, deixam a cidade melhor de viver.', targets: ['.category-btn[data-category="public"]'] }
+            { title: 'O que deixa feliz', text: '{nome}, os prédios da categoria <b>🏛️ Públicos</b>, como a escola, o hospital e os bombeiros, deixam a cidade melhor de viver. As árvores também ajudam.', targets: ['.category-btn[data-category="public"]'] }
         ]
     },
     budget: {

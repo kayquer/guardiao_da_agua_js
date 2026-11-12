@@ -3100,8 +3100,8 @@
       "sm": "svg/mission-new-manager-sm.svg"
     }
   },
-  "ach-water-sources": {
-    "title": "Conquista: fontes de água",
+  "ach-river": {
+    "title": "Conquista: rio cheio",
     "area": "ach",
     "emoji": [],
     "usedIn": [
@@ -3110,11 +3110,11 @@
     ],
     "size": "lg",
     "files": {
-      "lg": "svg/ach-water-sources.svg"
+      "lg": "svg/ach-river.svg"
     }
   },
-  "ach-paved-roads": {
-    "title": "Conquista: ruas asfaltadas",
+  "ach-tap": {
+    "title": "Conquista: sem faltar água",
     "area": "ach",
     "emoji": [],
     "usedIn": [
@@ -3123,11 +3123,11 @@
     ],
     "size": "lg",
     "files": {
-      "lg": "svg/ach-paved-roads.svg"
+      "lg": "svg/ach-tap.svg"
     }
   },
-  "ach-dirt-roads": {
-    "title": "Conquista: estradas de terra",
+  "ach-sewage": {
+    "title": "Conquista: esgoto tratado",
     "area": "ach",
     "emoji": [],
     "usedIn": [
@@ -3136,7 +3136,46 @@
     ],
     "size": "lg",
     "files": {
-      "lg": "svg/ach-dirt-roads.svg"
+      "lg": "svg/ach-sewage.svg"
+    }
+  },
+  "ach-riparian": {
+    "title": "Conquista: mata ciliar",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-riparian.svg"
+    }
+  },
+  "ach-sponge": {
+    "title": "Conquista: cidade esponja",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-sponge.svg"
+    }
+  },
+  "ach-green-invest": {
+    "title": "Conquista: investimento verde",
+    "area": "ach",
+    "emoji": [],
+    "usedIn": [
+      "js/data/achievementTracks.js",
+      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
+    ],
+    "size": "lg",
+    "files": {
+      "lg": "svg/ach-green-invest.svg"
     }
   },
   "ach-gravel-roads": {
@@ -3163,19 +3202,6 @@
     "size": "lg",
     "files": {
       "lg": "svg/ach-high-tech.svg"
-    }
-  },
-  "ach-budget": {
-    "title": "Conquista: caixa da cidade",
-    "area": "ach",
-    "emoji": [],
-    "usedIn": [
-      "js/data/achievementTracks.js",
-      "js/systems/ui/AchievementsUI.js (vitrine e toast)"
-    ],
-    "size": "lg",
-    "files": {
-      "lg": "svg/ach-budget.svg"
     }
   },
   "ach-power": {

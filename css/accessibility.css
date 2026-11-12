@@ -73,6 +73,19 @@ html .toast {
     color: #fff;
 }
 
+/* Primeiro minuto limpo (TutorialSystem.syncFirstMinuteCalm): no tutorial de abertura, congelado, nada de selo
+   de alarme; até a prefeitura ficar pronta a barra de missão sai (ela pedia a bomba enquanto a Cláudia pedia a prefeitura). */
+body.tutorial-calm .resource-item::after { content: none !important; }
+body.tutorial-calm .resource-value.warning,
+body.tutorial-calm .resource-value.critical { color: inherit; animation: none; }
+body.tutorial-no-mission .hud-bottom,
+body.tutorial-no-mission #mission-peek-btn { visibility: hidden; }
+
+/* Uma mensagem por vez (UIManager.syncMessageFocus): com alerta central, decisão do Paulo ou cartão de missão,
+   o cartão de eventos e a dica dos recursos saem de cima. */
+body.message-open #event-tracker,
+body.message-open #resource-tooltip { visibility: hidden; }
+
 /* ===== Rótulo de lugar da obra (BuildingFeedback.updatePlacementLabel): texto + borda com padrão ===== */
 #placement-label {
     position: fixed;

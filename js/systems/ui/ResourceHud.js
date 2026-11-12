@@ -66,11 +66,15 @@ mixin(UIManager, {
         const growth = hud.trends.populationGrowth();
         // Alerta só com o jogo correndo de verdade (tutorial congelado, pausa e popups não tocam)
         const canAlert = gm?.gameState === 'playing' && (gm.isSimulationRunning?.() ?? true);
+        // Tutorial de abertura (congelado): nada de selo vermelho nem seta antes da primeira ação (o primeiro minuto
+        // tinha 3 sinais concorrentes). Ao sair, o estado real aparece sem tocar alarme.
+        const calm = !!gm?.tutorialSystem?.isActive && gm.tutorialSystem.run === 'tutorial';
 
         for (const [id, item] of Object.entries(hud.items)) {
-            const tier = ResourceTrends.tierOf(id, resources, growth);
-            const { dir, good } = hud.trends.trend(id);
+            const tier = calm ? 'ok' : ResourceTrends.tierOf(id, resources, growth);
+            const { dir, good } = calm ? { dir: 'flat', good: null } : hud.trends.trend(id);
             const previous = item.tier;
+            if (calm) item.calmed = true;
             if (tier !== previous) {
                 item.tier = tier;
                 for (const el of item.targets) {
@@ -79,7 +83,8 @@ mixin(UIManager, {
                     const src = this.resourceIconFor(id, tier);
                     if (img && img.getAttribute('src') !== src) img.setAttribute('src', src);
                 }
-                if (previous !== null && canAlert) this.alertResourceTier(id, item, previous, tier, now);
+                if (previous !== null && canAlert && !item.calmed) this.alertResourceTier(id, item, previous, tier, now);
+                if (!calm) item.calmed = false;
             }
             if (dir !== item.dir || good !== item.good) {
                 item.dir = dir;

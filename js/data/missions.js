@@ -34,7 +34,7 @@ const MISSIONS = {
         educationalContent: {
             concepts: ['recursos hídricos', 'água subterrânea', 'aquíferos'],
             facts: [
-                'Uma bomba de água pode extrair até 50 litros por segundo de fontes subterrâneas.',
+                'A bomba puxa a água guardada nos espaços entre a areia e as rochas, debaixo da terra.',
                 'É importante monitorar o nível dos aquíferos para evitar esgotamento.',
                 'Aquíferos são formações geológicas que armazenam água subterrânea.'
             ],
@@ -82,7 +82,7 @@ const MISSIONS = {
         educationalContent: {
             facts: [
                 'Estações de tratamento removem contaminantes químicos e biológicos da água.',
-                'O tratamento adequado pode reduzir doenças transmitidas pela água em 90%.'
+                'Tratar a água e o esgoto é uma das formas mais eficazes de evitar doenças como diarreia, hepatite A e cólera (OMS).'
             ],
             tips: [
                 'Trate a água na fonte sempre que possível.',
@@ -127,7 +127,7 @@ const MISSIONS = {
         educationalContent: {
             facts: [
                 'Reservatórios permitem armazenar água para períodos de escassez.',
-                'Uma reserva estratégica deve cobrir pelo menos 3 dias de consumo.'
+                'A reserva dá tempo para a cidade reagir quando a produção cai, como numa seca ou num conserto.'
             ],
             tips: [
                 'Posicione reservatórios em pontos altos para melhor distribuição.',
@@ -240,9 +240,10 @@ const MISSIONS = {
 
     // ===== MISSÕES APRIMORADAS (cadeias, escolhas, consequências) =====
     // ===== STORY MISSION CHAIN: "A NOVA GESTORA" =====
+    // Meta de tier 1 (zona leve + mudas): era a Estação de Monitoramento, tier 3, ≈ R$ 52 mil em cadeia e 4 estudos
     story_chain_01_01: {
-        title: 'A Nova Gestora: Primeiro Dia',
-        description: 'Você foi nomeada a nova gestora de recursos hídricos da cidade. Conheça a situação atual e tome suas primeiras decisões.',
+        title: 'A Nova Gestão: Primeiro Dia',
+        description: 'Você assumiu a gestão da água da cidade. Traga os primeiros moradores e comece a cuidar da beira do rio.',
         type: 'story',
         category: 'secondary',
         lesson: 3, // aula ao concluir: água para todos: dividir a água entre os grupos
@@ -258,12 +259,20 @@ const MISSIONS = {
         scalingRewards: true,
         objectives: [
             {
-                id: 'inspect_infrastructure',
-                description: 'Inspecionar a infraestrutura existente (construir 1 estação de monitoramento)',
+                id: 'first_neighbourhood',
+                description: 'Abrir o primeiro bairro (1 Zona Residencial Leve)',
                 type: 'build',
-                target: 'monitoring_station',
+                target: 'zone_residential_light',
                 current: 0,
                 required: 1
+            },
+            {
+                id: 'plant_riverbank',
+                description: 'Plantar 3 Mudas de Árvore (na beira do rio elas limpam mais)',
+                type: 'build',
+                target: 'tree_sapling',
+                current: 0,
+                required: 3
             },
             {
                 id: 'meet_citizens',
@@ -374,7 +383,7 @@ const MISSIONS = {
 /** Conquistas (QuestSystem.unlockAchievement): nome e ícone mostrados no toast e no painel de missões. */
 const ACHIEVEMENTS = {
     sustainable_city: { icon: '🌱', name: 'Cidade Sustentável', description: 'Cresceu com a população feliz e o rio limpo.' },
-    crisis_manager: { icon: '☀️', name: 'Gestora de Crise', description: 'Atravessou uma seca sem deixar faltar água.' },
+    crisis_manager: { icon: '☀️', name: 'Gestão de Crise', description: 'Atravessou uma seca sem deixar faltar água.' },
     guardian_city: { icon: '🏆', name: 'Cidade Guardiã', description: 'Terminou a campanha cuidando da água de todos.' },
     climate_guardian: { icon: '🌦️', name: 'Guardião do Clima', description: 'Respondeu bem a cinco eventos com o Secretário Paulo.' }
 };
