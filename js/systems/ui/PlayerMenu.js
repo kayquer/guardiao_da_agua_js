@@ -13,6 +13,13 @@ mixin(UIManager, {
         const menu = document.getElementById('player-menu');
         if (!chip || !menu || chip.dataset.menuWired) return;
         chip.dataset.menuWired = '1';
+        // Formulário da pesquisa: endereço em RESEARCH_SYNC.FORM_URL (vazio = sem o item)
+        const form = document.getElementById('player-menu-form');
+        if (form) {
+            const url = String(RESEARCH_SYNC.FORM_URL || '').trim();
+            form.hidden = !url;
+            if (url) form.href = url;
+        }
         const toggle = event => {
             event.stopPropagation();
             if (menu.hidden) this.openPlayerMenu();

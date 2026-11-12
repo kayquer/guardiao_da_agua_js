@@ -9,7 +9,7 @@
  * target = o quê (aula, prédio, evento, missão), value = quanto/qual (ms, nota, opção), ok = acertou/deu certo.
  */
 class ResearchLog {
-    static STORAGE_KEY = 'guardiao_agua_research';
+    static STORAGE_KEY = STORAGE_PREFIX + 'research';
     static MAX_EVENTS = 3000;   // por perfil; os mais antigos saem primeiro
     static MIN_PAGE_MS = 300;   // página que passou direto não conta como leitura
     static MAX_PAGE_MS = 30 * 60 * 1000; // aba esquecida aberta não vira meia hora de leitura

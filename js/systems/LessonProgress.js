@@ -4,7 +4,7 @@
  * Sem DOM (testável em tests/unit): a central de aulas fica em js/systems/ui/LessonBookUI.js.
  */
 class LessonProgress {
-    static STORAGE_KEY = 'guardiao_agua_lessons';
+    static STORAGE_KEY = STORAGE_PREFIX + 'lessons';
 
     static profileKey() {
         return PlayerProfile.getActive()?.id || 'guest';

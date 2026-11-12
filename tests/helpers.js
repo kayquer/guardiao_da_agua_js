@@ -2,6 +2,12 @@
 // O jogo agora começa por um perfil de jogador e chama APIs externas (clima Open-Meteo, municípios IBGE):
 // aqui elas são simuladas, para o teste não depender da rede (e o smoke reprova qualquer request falho).
 
+// Prefixo das chaves do localStorage (STORAGE_PREFIX em js/config/GameConstants.js): cada versão publicada tem o seu.
+// No navegador (page.evaluate) use a global STORAGE_PREFIX; em addInitScript, que roda antes do jogo, passe storageKey().
+const STORAGE_PREFIX = /const STORAGE_PREFIX = '([^']+)'/.exec(
+    require('fs').readFileSync(require('path').join(__dirname, '..', 'js', 'config', 'GameConstants.js'), 'utf8'))[1];
+const storageKey = name => STORAGE_PREFIX + name;
+
 const TEST_PROFILE = {
     id: 'p_teste', name: 'Teste', age: 12, uf: 'SP', city: 'Campinas',
     lat: -22.9, lon: -47.06, createdAt: 1, lastPlayedAt: 1
@@ -42,12 +48,12 @@ const ALL_GUIDES = ['energy', 'roads', 'rivers', 'storage', 'zoning', 'public', 
 
 async function startGame(page, { profile = TEST_PROFILE, forecast, url = '/index.html', guides = ALL_GUIDES } = {}) {
     await mockExternalApis(page, { forecast });
-    await page.addInitScript(({ p, guides }) => {
-        if (!localStorage.getItem('guardiao_agua_profiles')) {
-            localStorage.setItem('guardiao_agua_profiles', JSON.stringify({ profiles: [p], activeId: p.id }));
-            localStorage.setItem('guardiao_agua_guides', JSON.stringify({ [p.id]: guides }));
+    await page.addInitScript(({ p, guides, keys }) => {
+        if (!localStorage.getItem(keys.profiles)) {
+            localStorage.setItem(keys.profiles, JSON.stringify({ profiles: [p], activeId: p.id }));
+            localStorage.setItem(keys.guides, JSON.stringify({ [p.id]: guides }));
         }
-    }, { p: profile, guides });
+    }, { p: profile, guides, keys: { profiles: storageKey('profiles'), guides: storageKey('guides') } });
     await page.goto(url);
     await page.click(`.profile-card[data-profile-id="${profile.id}"]`);
     await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
@@ -71,4 +77,4 @@ async function closeCards(page, wait = 5000) {
     }
 }
 
-module.exports = { TEST_PROFILE, FORECAST, CLEAR_SKY, mockExternalApis, startGame, closeCards };
+module.exports = { TEST_PROFILE, FORECAST, CLEAR_SKY, STORAGE_PREFIX, storageKey, mockExternalApis, startGame, closeCards };

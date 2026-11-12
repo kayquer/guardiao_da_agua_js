@@ -283,7 +283,7 @@ test('menu do jogador: o nome abre o menu; cada item abre o seu painel; aulas sa
     await open();
     await pick('save');
     await expect(page.locator('#toast-stack')).toContainText('Jogo salvo');
-    expect(await page.evaluate(() => !!localStorage.getItem(`guardiao_agua_save_${PlayerProfile.getActive().id}`))).toBe(true);
+    expect(await page.evaluate(() => !!localStorage.getItem(SaveSystem.keyFor(PlayerProfile.getActive().id)))).toBe(true);
 
     if (testInfo.project.name !== 'mobile') {
         await open();

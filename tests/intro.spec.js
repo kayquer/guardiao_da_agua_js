@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { TEST_PROFILE, mockExternalApis } = require('./helpers');
+const { TEST_PROFILE, mockExternalApis, storageKey } = require('./helpers');
 
 // Abertura cinematográfica do menu (js/systems/intro/). Nos outros testes ela não roda (navigator.webdriver);
 // aqui ?intro força a abertura de verdade: cidade 3D com os .glb, tomadas, pular, menu e descarte da cena.
@@ -88,12 +88,12 @@ test('movimento reduzido: sem voo, menu direto na pose final', async ({ page }) 
 test('iniciar o jogo descarta a cena da abertura e o jogo roda normal', async ({ page }) => {
     const problems = watchProblems(page);
     await mockExternalApis(page);
-    await page.addInitScript(p => {
-        if (!localStorage.getItem('guardiao_agua_profiles')) {
-            localStorage.setItem('guardiao_agua_profiles', JSON.stringify({ profiles: [p], activeId: p.id }));
-            localStorage.setItem('guardiao_agua_guides', JSON.stringify({ [p.id]: ['energy', 'storage', 'zoning', 'public', 'tourism', 'industrial', 'commercial'] }));
+    await page.addInitScript(({ p, keys }) => {
+        if (!localStorage.getItem(keys.profiles)) {
+            localStorage.setItem(keys.profiles, JSON.stringify({ profiles: [p], activeId: p.id }));
+            localStorage.setItem(keys.guides, JSON.stringify({ [p.id]: ['energy', 'storage', 'zoning', 'public', 'tourism', 'industrial', 'commercial'] }));
         }
-    }, TEST_PROFILE);
+    }, { p: TEST_PROFILE, keys: { profiles: storageKey('profiles'), guides: storageKey('guides') } });
     await page.goto('/index.html?intro');
     await playing(page);
     await page.keyboard.press('Escape');

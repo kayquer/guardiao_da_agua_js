@@ -10,7 +10,7 @@
  */
 const StartNotice = {
     DECLINE_URL: 'https://www.google.com.br/',
-    CONSENT_KEY: 'guardiao_agua_research_consent', // = ResearchSync.CONSENT_KEY
+    CONSENT_KEY: 'guardiao_agua_research_consent', // = STORAGE_PREFIX + 'research_consent' (ResearchSync.CONSENT_KEY)
     FADE_MS: 450,
     el: document.getElementById('start-notice'),
     accepted: null,
@@ -51,7 +51,7 @@ const StartNotice = {
         StartNotice.accepted = new Promise(resolve => {
             const accept = () => {
                 try {
-                    if (consent) localStorage.setItem(StartNotice.CONSENT_KEY, consent.checked ? 'yes' : 'no');
+                    if (consent?.isConnected) localStorage.setItem(StartNotice.CONSENT_KEY, consent.checked ? 'yes' : 'no');
                 } catch { /* modo privado */ }
                 const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
                 StartNotice.el.classList.add('is-leaving');

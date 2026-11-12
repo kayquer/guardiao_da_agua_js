@@ -121,7 +121,7 @@ test('tamanho do texto: escolhido na pausa, salvo e aplicado nos textos de leitu
     await expect(page.locator('#pause-text [data-text-size="xlarge"]')).toHaveAttribute('aria-checked', 'true');
     expect(await page.evaluate(() => ({
         attr: document.documentElement.dataset.textSize,
-        saved: localStorage.getItem('guardiao_agua_text'),
+        saved: localStorage.getItem(STORAGE_PREFIX + 'text'),
         scale: getComputedStyle(document.documentElement).getPropertyValue('--text-scale').trim()
     }))).toEqual({ attr: 'xlarge', saved: 'xlarge', scale: '1.3' });
 

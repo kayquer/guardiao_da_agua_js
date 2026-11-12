@@ -11,8 +11,8 @@
  * - Desligado nos testes E2E (navigator.webdriver), a não ser com ?sync na URL. Sem DOM (tests/unit/research.test.js).
  */
 class ResearchSync {
-    static CONSENT_KEY = 'guardiao_agua_research_consent'; // 'yes' | 'no' (StartNotice grava a mesma chave)
-    static STATE_KEY = 'guardiao_agua_research_sync';      // { [profileId]: { sent: n, at: ISO } }
+    static CONSENT_KEY = STORAGE_PREFIX + 'research_consent'; // 'yes' | 'no' (StartNotice grava a mesma chave)
+    static STATE_KEY = STORAGE_PREFIX + 'research_sync';      // { [profileId]: { sent: n, at: ISO } }
     static FORMAT = 'guardiao-da-agua-pesquisa';
 
     static timer = null;

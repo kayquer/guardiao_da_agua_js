@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawn, execSync, execFileSync } = require('child_process');
 const { chromium } = require('@playwright/test');
-const { startGame, mockExternalApis, CLEAR_SKY } = require('../tests/helpers');
+const { startGame, mockExternalApis, CLEAR_SKY, storageKey } = require('../tests/helpers');
 
 const ROOT = path.join(__dirname, '..');
 const URL = 'http://localhost:3000';
@@ -49,7 +49,7 @@ async function newContext(browser, video) {
         ...(video ? { recordVideo: { dir: TMP, size: VIEW } } : {})
     });
     // Qualidade alta (no headless o jogo detectaria placa de software e cairia na baixa)
-    await context.addInitScript(() => localStorage.setItem('guardiao_agua_graphics', 'high'));
+    await context.addInitScript(k => localStorage.setItem(k, 'high'), storageKey('graphics'));
     return context;
 }
 

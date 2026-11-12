@@ -592,7 +592,7 @@ class AudioManager {
             ambientVolume: this.ambientVolume
         };
         try {
-            localStorage.setItem('guardiao_agua_audio', JSON.stringify(settings));
+            localStorage.setItem(STORAGE_PREFIX + 'audio', JSON.stringify(settings));
         } catch (error) {
             logWarn('⚠️ Não deu para salvar o volume:', error);
         }
@@ -600,7 +600,7 @@ class AudioManager {
 
     loadSettings() {
         try {
-            const saved = localStorage.getItem('guardiao_agua_audio');
+            const saved = localStorage.getItem(STORAGE_PREFIX + 'audio');
             if (!saved) return;
             const s = JSON.parse(saved);
             const num = (v, d) => (Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : d);

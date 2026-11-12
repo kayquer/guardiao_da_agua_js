@@ -1,7 +1,7 @@
 // Qualidade gráfica (GraphicsQuality): seletor Baixa/Média/Alta no menu principal e na pausa, salvo no navegador
 // e aplicado ao vivo (escala de render, sombras, FXAA, água, partículas). Unit: tests/unit/graphics.test.js.
 const { test, expect } = require('@playwright/test');
-const { mockExternalApis, startGame } = require('./helpers');
+const { mockExternalApis, startGame, storageKey } = require('./helpers');
 
 function watchErrors(page) {
     const problems = [];
@@ -10,7 +10,7 @@ function watchErrors(page) {
     return problems;
 }
 
-const KEY = 'guardiao_agua_graphics';
+const KEY = storageKey('graphics');
 
 test('menu principal: escolhe a qualidade e ela fica salva', async ({ page }) => {
     const problems = watchErrors(page);
@@ -83,7 +83,7 @@ test('na pausa: trocar a qualidade aplica na hora (baixa sem sombras, alta com) 
     await picker.getByRole('radio', { name: 'Média' }).click();
     // Alguns quadros renderizando com a troca, sem erro
     await page.evaluate(() => new Promise(r => setTimeout(r, 500)));
-    expect(await page.evaluate(k => localStorage.getItem(k), 'guardiao_agua_graphics')).toBe('medium');
+    expect(await page.evaluate(k => localStorage.getItem(k), KEY)).toBe('medium');
 
     // Depois de recarregar, o jogo nasce na média (sem MSAA, com FXAA)
     page.on('dialog', d => d.accept());

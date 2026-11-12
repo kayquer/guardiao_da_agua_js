@@ -16,7 +16,7 @@ class SaveSystem {
     // Partida sem volta (isLostGame): água abaixo de 5% da capacidade ou poluição a partir de 90
     static LOST_WATER_RATIO = 0.05;
     static LOST_POLLUTION = 90;
-    static KEY_PREFIX = 'guardiao_agua_save_';
+    static KEY_PREFIX = STORAGE_PREFIX + 'save_';
     // Chaves do formato antigo (um save só para todo mundo, sem prédios): nunca carregavam direito
     static LEGACY_KEYS = ['guardiao_agua_autosave', 'guardiao_agua_save_manual_save', 'guardiao_agua_save_list'];
 

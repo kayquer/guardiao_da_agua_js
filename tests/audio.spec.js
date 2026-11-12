@@ -85,7 +85,7 @@ test('música e ambiente seguem o contexto do jogo; pausa e volumes', async ({ p
     await sound.locator('#pp-music-volume').fill('20');
     await sound.locator('#pp-mute').click();
     await expect(sound.locator('#pp-mute')).toHaveAttribute('aria-pressed', 'true');
-    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('guardiao_agua_audio')));
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'audio')));
     expect(saved.musicVolume).toBeCloseTo(0.2);
     expect(saved.muted).toBe(true);
     await sound.locator('#pp-mute').click();

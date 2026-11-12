@@ -43,8 +43,34 @@ test('no celular o aviso recomenda computador com teclado e mouse; no computador
     }
 });
 
+/**
+ * Troca RESEARCH_SYNC.ENDPOINT/FORM_URL na resposta do GameConstants.js: o teste vale para qualquer versão
+ * (main tem a planilha; evolucao-pesquisa começa com a coleta desligada).
+ */
+async function withResearchConfig(page, { endpoint, form }) {
+    await page.route('**/js/config/GameConstants.js*', async route => {
+        const body = (await (await route.fetch()).text())
+            .replace(/ENDPOINT: '[^']*'/, `ENDPOINT: '${endpoint}'`)
+            .replace(/FORM_URL: '[^']*'/, `FORM_URL: '${form}'`);
+        await route.fulfill({ contentType: 'application/javascript', body });
+    });
+}
+
+test('sem servidor da pesquisa: o aviso não tem a caixa de envio', async ({ page }) => {
+    await mockExternalApis(page);
+    await withResearchConfig(page, { endpoint: '', form: '' });
+    await page.goto('/index.html?aviso&nointro');
+    await expect(page.locator('#start-notice')).toBeVisible();
+    await expect(page.locator('.start-notice__consent')).toHaveCount(0);
+    await page.click('#btn-notice-accept');
+    await expect(page.locator('#start-notice')).toHaveCount(0);
+    expect(await page.evaluate(() => ({ configured: ResearchSync.isConfigured(), saved: localStorage.getItem(ResearchSync.CONSENT_KEY) })))
+        .toEqual({ configured: false, saved: null });
+});
+
 test('caixa do envio anônimo: marcada por padrão, a escolha vale ao aceitar e é lembrada', async ({ page }) => {
     await mockExternalApis(page);
+    await withResearchConfig(page, { endpoint: 'https://script.google.com/macros/s/teste/exec', form: 'https://docs.google.com/forms/teste' });
     await page.goto('/index.html?aviso&nointro');
     const box = page.locator('#notice-research-consent');
     await expect(box).toBeChecked();

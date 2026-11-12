@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawn, execSync } = require('child_process');
 const { chromium } = require('@playwright/test');
-const { startGame, CLEAR_SKY } = require('../tests/helpers');
+const { startGame, CLEAR_SKY, storageKey } = require('../tests/helpers');
 
 const ROOT = path.join(__dirname, '..');
 const URL = 'http://localhost:3000';
@@ -46,7 +46,7 @@ async function main() {
         page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
 
         // Qualidade gráfica alta (no headless o jogo detectaria a placa de software e cairia na baixa: sem sombra)
-        await page.addInitScript(() => localStorage.setItem('guardiao_agua_graphics', 'high'));
+        await page.addInitScript(k => localStorage.setItem(k, 'high'), storageKey('graphics'));
         // Perfil de teste + clima simulado (tests/helpers.js); sem nuvem/chuva na frente do prédio
         await startGame(page, { url: `${URL}/index.html`, forecast: CLEAR_SKY });
         await page.evaluate(() => {

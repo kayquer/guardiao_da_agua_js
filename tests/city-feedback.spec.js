@@ -156,7 +156,7 @@ test('Esc não fecha o tutorial interativo (aula rápida e guia)', async ({ page
     if (testInfo.project.name === 'mobile') return expect(problems).toEqual([]);
     await page.evaluate(() => window.gameManager.tutorialSystem.complete());
     await page.evaluate(() => {
-        localStorage.setItem('guardiao_agua_guides', JSON.stringify({ p_teste: [] }));
+        localStorage.setItem(STORAGE_PREFIX + 'guides', JSON.stringify({ p_teste: [] }));
         window.gameManager.tutorialSystem.startGuide('energy');
     });
     await page.waitForFunction(() => window.gameManager.tutorialSystem.steps?.length > 0);
