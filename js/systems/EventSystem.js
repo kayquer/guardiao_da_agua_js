@@ -831,6 +831,8 @@ class EventSystem {
         if (eventType.id === 'government_grant') {
             weight *= this.gameManager.questSystem?.getReputationModifiers?.().grantChance ?? 1;
         }
+        // Bacia da partida: litoral alaga mais, sertão seca e queima mais (js/data/basinMaps.js eventWeights)
+        if (typeof Basin !== 'undefined') weight *= Basin.eventWeight(eventType.id);
         return weight;
     }
 

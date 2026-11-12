@@ -79,6 +79,11 @@ mixin(GameManager, {
             }
             data = result.data;
         }
+        // O terreno nasce com o GameManager: um espaço de outra bacia só abre pelo menu (que recria o mundo)
+        if (typeof Basin !== 'undefined' && (data.basin || Basin.defaultId()) !== Basin.id()) {
+            this.uiManager?.showNotification(`🗺️ Esse jogo é de outra bacia (${BASIN_MAPS[data.basin]?.name || data.basin}). Abra pelo menu: escolha o jogador e "Outros jogos salvos".`, 'warning', 8000);
+            return false;
+        }
         this.gameOverSystem?.dismissForRestore?.();
         if (typeof ResearchLog !== 'undefined') ResearchLog.record('restore', { target: slot });
         const ok = this.loadGame(data, { welcome: false });

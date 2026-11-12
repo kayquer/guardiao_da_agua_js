@@ -46,7 +46,10 @@ async function mockExternalApis(page, { forecast = FORECAST } = {}) {
 // água + energia e congelam o jogo. O teste dos guias passa guides: [].
 const ALL_GUIDES = ['energy', 'roads', 'rivers', 'storage', 'zoning', 'public', 'tourism', 'industrial', 'commercial'];
 
-async function startGame(page, { profile = TEST_PROFILE, forecast, url = '/index.html', guides = ALL_GUIDES } = {}) {
+/**
+ * `basin` = no modo loja (?modo=loja) o jogo novo pergunta a bacia (main.js chooseBasin): clica nela.
+ */
+async function startGame(page, { profile = TEST_PROFILE, forecast, url = '/index.html', guides = ALL_GUIDES, basin = null } = {}) {
     await mockExternalApis(page, { forecast });
     await page.addInitScript(({ p, guides, keys }) => {
         if (!localStorage.getItem(keys.profiles)) {
@@ -56,6 +59,7 @@ async function startGame(page, { profile = TEST_PROFILE, forecast, url = '/index
     }, { p: profile, guides, keys: { profiles: storageKey('profiles'), guides: storageKey('guides') } });
     await page.goto(url);
     await page.click(`.profile-card[data-profile-id="${profile.id}"]`);
+    if (basin) await page.click(`.basin-pick[data-pick="${basin}"]`);
     await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
 }
 

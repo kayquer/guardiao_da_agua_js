@@ -376,9 +376,9 @@ test('construir muda a reputação uma vez (na conclusão), não a cada recálcu
 });
 
 // ===== Campanha =====
-test('missão final: depois de main_01 e Crise Hídrica, com vitória e conquista com nome', () => {
+test('missão final: depois da Seca Longa e da Cidade Esponja, com vitória e conquista com nome', () => {
     const final = MISSIONS.final_01;
-    assert.deepStrictEqual([...final.prerequisites], ['main_01', 'challenge_01']);
+    assert.deepStrictEqual([...final.prerequisites], ['challenge_05', 'story_chain_01_04']);
     assert.strictEqual(final.victory, true);
     for (const m of Object.values(MISSIONS)) {
         if (m.rewards?.achievement) assert.ok(ACHIEVEMENTS[m.rewards.achievement]?.name, `${m.rewards.achievement} sem nome`);
@@ -393,6 +393,27 @@ test('missão final: depois de main_01 e Crise Hídrica, com vitória e conquist
     qs.completeQuest('final_01');
     assert.strictEqual(shown, 1);
     assert.ok(qs.achievements.has('guardian_city'));
+});
+
+test('campanha: 15+ missões, todas alcançáveis desde a primeira, crises variadas e a vitória por último', () => {
+    const ids = Object.keys(MISSIONS);
+    assert.ok(ids.length >= 15, `só ${ids.length} missões`);
+    const ancestors = id => {
+        const out = new Set();
+        const walk = m => (MISSIONS[m].prerequisites || []).forEach(p => { if (!out.has(p)) { out.add(p); walk(p); } });
+        walk(id);
+        return out;
+    };
+    for (const id of ids) {
+        if (id === 'tutorial_01') continue;
+        assert.ok(ancestors(id).has('tutorial_01'), `${id} não sai da primeira missão`);
+        assert.ok(MISSIONS[id].stars, `${id} sem meta de estrelas`);
+    }
+    // toda missão leva à vitória (nada fica solto depois do fim)
+    const toFinal = ancestors('final_01');
+    for (const id of ids) if (id !== 'final_01') assert.ok(toFinal.has(id), `${id} não leva à Cidade Guardiã`);
+    const crises = Object.values(MISSIONS).filter(m => m.startEvent).map(m => m.startEvent.type);
+    assert.ok(crises.length >= 4 && new Set(crises).size >= 4, `crises: ${crises}`);
 });
 
 test('objetivo de aquífero mede o nível', () => {

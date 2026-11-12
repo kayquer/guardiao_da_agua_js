@@ -53,8 +53,10 @@ test('toda trilha tem 5 níveis crescentes, nome, ícone SVG e métrica medida',
     }
 });
 
-test('as conquistas antigas continuam iguais', () => {
-    assert.strictEqual(Object.keys(g('ACHIEVEMENTS')).sort().join(), 'climate_guardian,crisis_manager,guardian_city,sustainable_city');
+test('as conquistas antigas continuam (ids salvos nos saves) e as novas da campanha têm nome', () => {
+    const ach = g('ACHIEVEMENTS');
+    for (const id of ['climate_guardian', 'crisis_manager', 'guardian_city', 'sustainable_city']) assert.ok(ach[id], id);
+    for (const [id, a] of Object.entries(ach)) assert.ok(a.name && a.icon && a.description, id);
 });
 
 test('métricas contam só o que está pronto, por tipo de rua e de zona', () => {

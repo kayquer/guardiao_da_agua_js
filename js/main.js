@@ -676,8 +676,26 @@ function showScreen(screenId) {
 
 // ===== AÇÕES DO MENU =====
 // saveData (de SaveSystem.load): continua o jogo salvo em vez de começar um novo (sem tutorial)
+/**
+ * Modo loja (GameMode.mapChoice): escolher a bacia antes de criar a cidade. Na pesquisa todo mundo joga no mesmo
+ * mapa (vale). Devolve o id ou null (Voltar).
+ */
+async function chooseBasin() {
+    if (!GameMode.current().mapChoice) return DEFAULT_BASIN;
+    const cards = Object.entries(BASIN_MAPS).map(([id, b]) => `<button type="button" class="overlay-btn secondary save-pick basin-pick" data-pick="${id}">
+        <b>${b.icon} ${b.name}</b><small>${b.description}</small></button>`).join('');
+    return gamePick('Onde fica a sua cidade?', `<p>Cada bacia tem um rio, um terreno e um clima diferentes.</p><div class="save-picks">${cards}</div>`, { icon: 'question' });
+}
+
 async function startNewGame({ saveData = null } = {}) {
     log(saveData ? '📁 Continuando jogo salvo...' : '🎮 Iniciando novo jogo...');
+    // A bacia vem antes do GameManager: o terreno nasce no construtor do GridManager
+    if (saveData) Basin.select(saveData.basin || DEFAULT_BASIN);
+    else {
+        const basin = await chooseBasin();
+        if (!basin) return showScreen('main-menu');
+        Basin.select(basin);
+    }
 
     try {
         // A cidade da abertura sai antes do jogo montar a dele (libera a GPU e o loop de render)

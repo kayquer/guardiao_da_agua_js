@@ -92,8 +92,9 @@ test('missões liberam em sequência pelos pré-requisitos dos dados (não todas
 
     qs.completeQuest('tutorial_02');
     qs.completeQuest('tutorial_03');
-    assert.ok(qs.activeQuests.has('main_01'));
     assert.ok(qs.activeQuests.has('challenge_01'));
+    assert.ok(qs.activeQuests.has('city_02'));
+    assert.ok(!qs.activeQuests.has('main_01'), 'Cidade Sustentável vem depois do comércio (campanha ampliada)');
 });
 
 test("'sustained' conta segundos de jogo, não chamadas (quadros)", () => {

@@ -59,8 +59,11 @@ class GridManager {
             this.gridSize = 20; // Fallback
         }
 
-        // O rio vem primeiro: planície e APP dependem dele (js/data/riverMap.js)
-        const river = GridManager.classifyRiverCells(this.gridSize, RIVER_MAP);
+        // O rio vem primeiro: planície e APP dependem dele (js/data/riverMap.js; no modo loja, a bacia escolhida,
+        // js/data/basinMaps.js — sem Basin, como nos testes, o mapa da pesquisa)
+        const basin = typeof Basin !== 'undefined' ? Basin.current() : null;
+        this.hillThresholds = basin ? Basin.hillThresholds(basin.hills) : [0.8, 0.6];
+        const river = GridManager.classifyRiverCells(this.gridSize, basin?.river || RIVER_MAP);
         this.riverZones = river.zones;
         this.riverHasPlain = river.hasPlain;
 
@@ -196,11 +199,13 @@ class GridManager {
         // Gerar ruído específico para colinas (menos frequente)
         const hillNoise = this.simpleNoise(x * 0.02, z * 0.02, seed + 3000);
 
-        // Encostas raras (~4% do mapa): antes eram 15% e tomavam o centro, onde o jogo começa
-        if (hillNoise > 0.8 && terrainValue > 0.65) return 'hill'; // Colinas elevadas (mais raras)
+        // Encostas raras (~4% do mapa): antes eram 15% e tomavam o centro, onde o jogo começa.
+        // Limites do ruído pela bacia (Basin.hillThresholds: serra tem mais encostas, litoral menos)
+        const [hillHigh, hillVeryHigh] = this.hillThresholds || [0.8, 0.6];
+        if (hillNoise > hillHigh && terrainValue > 0.65) return 'hill'; // Colinas elevadas (mais raras)
 
         // Encostas muito altas apenas em terreno muito elevado
-        if (terrainValue > 0.95 && hillNoise > 0.6) return 'hill';
+        if (terrainValue > 0.95 && hillNoise > hillVeryHigh) return 'hill';
         return 'grassland';                           // Planalto
     }
 

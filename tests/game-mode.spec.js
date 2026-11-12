@@ -14,7 +14,7 @@ function watchErrors(page) {
 test('loja: bomba liberada sem estudo, sem dados da pesquisa, clima simulado', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'mesma lógica no mobile');
     const errors = watchErrors(page);
-    await startGame(page, { url: '/index.html?modo=loja' });
+    await startGame(page, { url: '/index.html?modo=loja', basin: 'vale' });
     await page.evaluate(() => window.gameManager.tutorialSystem.complete());
     const state = await page.evaluate(() => {
         const gm = window.gameManager;
@@ -61,9 +61,39 @@ test('loja: cadastro só com o apelido começa o jogo; "Fora do Brasil" existe',
     await expect(page.locator('.profile-optional')).toHaveCount(3);
     await page.fill('#profile-name', 'Lu');
     await page.click('#btn-profile-start');
+    await page.click('.basin-pick[data-pick="litoral"]'); // modo loja: escolhe a bacia antes da cidade
     await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
     const profile = await page.evaluate(() => PlayerProfile.getActive());
     expect(profile).toMatchObject({ name: 'Lu', age: null, uf: null, city: '' });
+    expect(errors).toEqual([]);
+});
+
+test('loja: a bacia escolhida vira o terreno e vai no save; espaço de outra bacia só abre pelo menu', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'mesma lógica no mobile');
+    const errors = watchErrors(page);
+    await startGame(page, { url: '/index.html?modo=loja', basin: 'sertao' });
+    await page.evaluate(() => window.gameManager.tutorialSystem.complete());
+    const state = await page.evaluate(() => {
+        const gm = window.gameManager;
+        const data = gm.getSaveData();
+        // um espaço manual de outra bacia (vale): carregar no meio da partida não pode misturar terrenos
+        const other = { ...data, basin: 'vale' };
+        new SaveSystem().save(other, PlayerProfile.getActive().id, { kind: 'manual', slot: 'slot_2' });
+        return {
+            basin: Basin.id(), saved: data.basin, aquifer: gm.resourceManager.resources.water.aquifer,
+            loaded: gm.restoreSavePoint('slot_2'), still: Basin.id()
+        };
+    });
+    expect(state).toEqual({ basin: 'sertao', saved: 'sertao', aquifer: 60, loaded: false, still: 'sertao' });
+    await expect(page.locator('#toast-stack .toast', { hasText: 'outra bacia' })).toBeVisible();
+    expect(errors).toEqual([]);
+});
+
+test('pesquisa: sem escolha de bacia, todo mundo no mesmo mapa', async ({ page }) => {
+    const errors = watchErrors(page);
+    await startGame(page);
+    expect(await page.evaluate(() => Basin.id())).toBe('vale');
+    await expect(page.locator('.basin-pick')).toHaveCount(0);
     expect(errors).toEqual([]);
 });
 

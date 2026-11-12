@@ -1122,6 +1122,10 @@ class ResourceManager {
         });
         
         this.initializeResources();
+        // Bacia da partida (js/data/basinMaps.js): o sertão começa com o aquífero e o rio mais baixos
+        const start = typeof Basin !== 'undefined' ? Basin.current().start || {} : {};
+        if (Number.isFinite(start.aquifer)) this.resources.water.aquifer = start.aquifer;
+        if (Number.isFinite(start.river)) this.resources.water.river = start.river;
         log('🔄 Recursos resetados');
     }
 

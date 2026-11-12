@@ -1567,6 +1567,7 @@ class GameManager {
             tutorial: { lessonsDeferred: !!this.tutorialSystem?.lessonsDeferred },
             notifications: this.uiManager?.notificationLog?.getSaveData() ?? [],
             notebook: this.fieldNotebook?.getSaveData() ?? null,
+            basin: typeof Basin !== 'undefined' ? Basin.id() : 'vale', // bacia do terreno (js/data/basinMaps.js; antigo = vale)
             camera: this.getCameraSaveData()
         };
     }
