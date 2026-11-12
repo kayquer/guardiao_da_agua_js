@@ -1,7 +1,7 @@
 /**
  * ===== AVISO INICIAL (#start-notice em index.html, estilo da tela de aviso do Nintendo Wii) =====
  *
- * Objetivo do jogo, público, idade de foco, supervisão de um adulto e a pesquisa de mestrado (Unesp).
+ * Objetivo do jogo, faixa etária (10 a 99+ anos), supervisão recomendada para menores de 18 e a pesquisa de mestrado (Unesp).
  * É a primeira coisa na tela: este script roda logo depois do HTML do aviso, antes do Babylon e do resto.
  * O carregamento segue por trás; main.js espera `StartNotice.accepted` para mostrar o menu (e a abertura).
  * Aceitar: botão (já focado, Enter aceita), com fade. "Recusar" leva ao Google.

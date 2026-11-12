@@ -9,7 +9,7 @@ class PlayerProfile {
     static STORAGE_KEY = STORAGE_PREFIX + 'profiles';
     static MAX_NAME = 20;
     static MIN_AGE = 5;
-    static MAX_AGE = 99;
+    static MAX_AGE = 120; // faixa "10 a 99+": ninguém fica de fora por ter mais de 99
 
     static readStore() {
         try {

@@ -618,13 +618,13 @@ function showAbout() {
                 escolhas de uma cidade afetam rios, nascentes e pessoas. O objetivo é apoiar a Educação Ambiental com foco
                 nos recursos hídricos.</p>
                 <dl class="about-facts">
-                    <div><dt>Público-alvo</dt><dd>6º ano do Ensino Fundamental (Anos Finais)</dd></div>
-                    <div><dt>Idade de foco</dt><dd>Cerca de 11 anos</dd></div>
-                    <div><dt>Supervisão</dt><dd>Professor ou adulto responsável</dd></div>
+                    <div><dt>Faixa etária</dt><dd>10 a 99+ anos</dd></div>
+                    <div><dt>Para quem</dt><dd>Estudantes, famílias e quem gosta de cuidar de uma cidade</dd></div>
+                    <div><dt>Supervisão</dt><dd>Recomendada para menores de 18 anos</dd></div>
                 </dl>
-                <p class="about-note">O jogo funciona melhor com a mediação de um <strong>professor ou de um adulto
-                responsável</strong>, que pode conversar sobre o que acontece na cidade, tirar dúvidas e relacionar o jogo
-                com a realidade do lugar onde a criança vive.</p>
+                <p class="about-note">Para quem tem <strong>menos de 18 anos</strong>, recomendamos jogar com um
+                <strong>adulto responsável ou professor</strong> por perto, que pode conversar sobre o que acontece na
+                cidade, tirar dúvidas e relacionar o jogo com a realidade do lugar onde a pessoa vive.</p>
                 <div class="about-inst">
                     <img src="assets/images/institucional/unesp-logo.png" alt="Unesp — Universidade Estadual Paulista" width="72" height="78">
                     <div>

@@ -380,3 +380,11 @@
         text-align: center;
     }
 }
+
+/* Faixa etária em destaque, como o selo de idade das caixas de brinquedo ("10 a 99+") */
+.start-notice__tile dd.start-notice__age {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--wii-blue-dark);
+    letter-spacing: 0.02em;
+}

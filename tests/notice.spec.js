@@ -13,8 +13,9 @@ test('aviso aparece primeiro, segura menu e abertura até "Aceitar" e volta a ca
     await expect(notice.locator('.start-notice__logo')).toBeVisible();
     expect(await notice.locator('.start-notice__logo').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
     await expect(notice).toContainText('Cláudia Dias Roxinol');
-    await expect(notice).toContainText('Cerca de 11 anos');
-    await expect(notice).toContainText('professor ou de um adulto responsável');
+    await expect(notice).toContainText('10 a 99+ anos');
+    await expect(notice).toContainText('Recomendada para menores de 18 anos');
+    await expect(notice).not.toContainText('11 anos');
 
     // Carregou tudo por trás, mas nada de menu nem abertura enquanto o aviso está na tela
     await page.waitForFunction(() => MenuIntro.state === 'ready', null, { timeout: 60000 });

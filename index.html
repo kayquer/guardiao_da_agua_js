@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guardião da Água - Jogo educativo sobre água e cidades</title>
-    <meta name="description" content="Jogo educativo gratuito de navegador: governe uma cidade e aprenda sobre água, rios, aquíferos, saneamento e enchentes. Para o 6º ano do Ensino Fundamental (cerca de 11 anos). Pesquisa de mestrado da Unesp.">
-    <meta name="keywords" content="jogo educativo, educação ambiental, recursos hídricos, água, rios, aquífero, saneamento, enchentes, jogo de cidade, city builder, ensino fundamental, geografia, ciências, Unesp">
+    <meta name="description" content="Jogo educativo gratuito de navegador: governe uma cidade e aprenda sobre água, rios, aquíferos, saneamento e enchentes. Para jogadores de 10 a 99+ anos. Pesquisa de mestrado da Unesp.">
+    <meta name="keywords" content="jogo educativo, educação ambiental, recursos hídricos, água, rios, aquífero, saneamento, enchentes, jogo de cidade, city builder, simulação, jogo para toda a família, geografia, ciências, Unesp">
     <meta name="author" content="Cláudia Dias Roxinol; Kayque Rotondo">
     <meta name="theme-color" content="#0b3d6b">
     <link rel="canonical" href="https://kayquer.github.io/guardiao_da_agua_js/">
@@ -25,14 +25,14 @@
         "@type": "VideoGame",
         "name": "Guardião da Água",
         "url": "https://kayquer.github.io/guardiao_da_agua_js/",
-        "description": "Jogo educativo gratuito de construção de cidade sobre recursos hídricos para o 6º ano do Ensino Fundamental (Anos Finais).",
+        "description": "Jogo educativo de construção de cidade sobre recursos hídricos, para jogadores de 10 a 99+ anos.",
         "inLanguage": "pt-BR",
         "genre": ["Educativo", "Simulação", "Construção de cidade"],
         "gamePlatform": "Navegador web",
         "applicationCategory": "EducationalApplication",
         "isAccessibleForFree": true,
         "educationalUse": "Educação Ambiental",
-        "audience": { "@type": "EducationalAudience", "educationalRole": "student", "audienceType": "6º ano do Ensino Fundamental, Anos Finais (cerca de 11 anos)" },
+        "audience": { "@type": "PeopleAudience", "suggestedMinAge": 10, "audienceType": "10 a 99+ anos; supervisão de um adulto recomendada para menores de 18" },
         "author": [{ "@type": "Person", "name": "Cláudia Dias Roxinol" }, { "@type": "Person", "name": "Kayque Rotondo" }],
         "publisher": { "@type": "CollegeOrUniversity", "name": "Universidade Estadual Paulista (Unesp)" },
         "codeRepository": "https://github.com/kayquer/guardiao_da_agua_js",
@@ -51,7 +51,7 @@
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
     <link rel="stylesheet" href="css/player.css?v=483a6c80">
     <link rel="stylesheet" href="css/menu.css?v=ad09dab4">
-    <link rel="stylesheet" href="css/notice.css?v=a8bb0f76">
+    <link rel="stylesheet" href="css/notice.css?v=9ac8efa6">
     <link rel="stylesheet" href="css/research.css?v=0f6fc4df">
     <link rel="stylesheet" href="css/settings.css?v=4caa15a0">
     <link rel="stylesheet" href="css/accessibility.css?v=11a95adf">
@@ -108,23 +108,23 @@
 
                 <dl class="start-notice__facts">
                     <div class="start-notice__tile">
-                        <dt>Público-alvo</dt>
-                        <dd>6º ano do Ensino Fundamental<br>(Anos Finais)</dd>
+                        <dt>Faixa etária</dt>
+                        <dd class="start-notice__age">10 a 99+ anos</dd>
                     </div>
                     <div class="start-notice__tile">
-                        <dt>Idade de foco</dt>
-                        <dd>Cerca de 11 anos</dd>
+                        <dt>Para quem</dt>
+                        <dd>Estudantes, famílias e quem gosta de cuidar de uma cidade</dd>
                     </div>
                     <div class="start-notice__tile">
                         <dt>Supervisão</dt>
-                        <dd>Professor ou adulto responsável</dd>
+                        <dd>Recomendada para menores de 18 anos</dd>
                     </div>
                 </dl>
 
                 <p class="start-notice__note">
-                    O jogo funciona melhor com a mediação de um <strong>professor ou de um adulto responsável</strong>, que
-                    pode conversar sobre o que acontece na cidade, tirar dúvidas e relacionar o jogo com a realidade do
-                    lugar onde a criança vive.
+                    Para quem tem <strong>menos de 18 anos</strong>, recomendamos jogar com um <strong>adulto responsável ou
+                    professor</strong> por perto, que pode conversar sobre o que acontece na cidade, tirar dúvidas e
+                    relacionar o jogo com a realidade do lugar onde a pessoa vive.
                 </p>
 
                 <hr class="start-notice__rule">
@@ -171,7 +171,7 @@
             <p id="start-notice-version" class="start-notice__version" hidden></p>
         </footer>
     </div>
-    <script src="js/ui/StartNotice.js?v=342aef02"></script>
+    <script src="js/ui/StartNotice.js?v=1931342e"></script>
 
     <!-- Tela de Loading -->
     <div id="loading-screen" class="screen active">
@@ -284,7 +284,7 @@
                 </label>
                 <label class="profile-field profile-field--small">
                     <span>Sua idade</span>
-                    <input id="profile-age" name="age" type="number" min="5" max="99" inputmode="numeric" placeholder="Ex.: 12" required>
+                    <input id="profile-age" name="age" type="number" min="5" max="120" inputmode="numeric" placeholder="Ex.: 12" required>
                 </label>
                 <label class="profile-field">
                     <span>Seu estado</span>
@@ -869,10 +869,10 @@
     <script src="js/systems/SaveSystem.js?v=0e4354cb"></script>
     <script src="js/systems/StudySystem.js?v=419d9bd1"></script>
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
-    <script src="js/systems/TutorialSystem.js?v=c856bce4"></script>
+    <script src="js/systems/TutorialSystem.js?v=b87e00e5"></script>
     <script src="js/systems/RescueGuides.js?v=c4db5930"></script>
     <script src="js/systems/GameOverSystem.js?v=403ffaf1"></script>
-    <script src="js/systems/PlayerProfile.js?v=6d376b71"></script>
+    <script src="js/systems/PlayerProfile.js?v=67ceb86e"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
     <script src="js/systems/TreeSystem.js?v=0bb86b6c"></script>
@@ -890,6 +890,6 @@
     <script src="js/systems/intro/MenuIntro.js?v=06818672"></script>
 
     <!-- Main initialization -->
-    <script src="js/main.js?v=9bc91e76"></script>
+    <script src="js/main.js?v=96f3198c"></script>
 </body>
 </html>
