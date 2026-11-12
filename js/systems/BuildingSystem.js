@@ -475,6 +475,7 @@ class BuildingSystem {
         if (buildingType.surfaceWater) buildingData.intake = this.resolveWaterIntake(buildingData);
 
         this.buildings.set(buildingId, buildingData);
+        this.gameManager?.propSystem?.markDirty(); // prop de cenário na área sai (PropSystem)
 
         // Iniciar processo de construção (rua: pronta na hora, efeitos pela via normal, sem animação)
         if (isRoad) this.completeConstruction(buildingData, { quiet: true });
@@ -576,6 +577,7 @@ class BuildingSystem {
         // Remover do sistema imediatamente
         this.buildings.delete(buildingId);
         this.gameManager?.techTree?.invalidate();
+        this.gameManager?.propSystem?.markDirty();
 
         // Remover conexões de infraestrutura
         if (this.isInfrastructureBuilding(building.config)) {
@@ -1222,6 +1224,7 @@ class BuildingSystem {
         // Eficiência já com rua/energia (BuildingEfficiency.js); ruas/prédios vizinhos recalculam no próximo update
         buildingData.efficiency = this.getEfficiencyOnCompletion(buildingData);
         this.markEfficiencyDirty();
+        this.gameManager?.propSystem?.markDirty(); // tecnologia e dia a dia que o prédio traz (js/data/props.js)
 
         // Aplicar efeitos nos recursos (agora que está ativo)
         this.applyBuildingEffects(buildingData, true);
@@ -1593,6 +1596,7 @@ class BuildingSystem {
 
         this.buildings.set(saved.id, buildingData);
         this.gridManager.occupyArea(gridX, gridZ, size);
+        this.gameManager?.propSystem?.markDirty();
         if (buildingType.surfaceWater) this.createWaterIntake(buildingData);
         if (this.isInfrastructureBuilding(buildingType)) this.updateInfrastructureConnections(buildingData);
 

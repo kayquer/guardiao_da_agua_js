@@ -154,6 +154,7 @@ class GameManager {
             this.tutorialSystem = new TutorialSystem(this);
             this.gameOverSystem = new GameOverSystem(this);
             this.pollutionVisuals = new PollutionVisuals(this);
+            this.propSystem = new PropSystem(this); // props de cenário (js/data/props.js)
 
             // Aguardar carregamento do conteúdo educacional
             await this.studySystem.initialize();
@@ -329,6 +330,7 @@ class GameManager {
         }
 
         this.gridManager?.setWaterAnimated(p.waterShader);
+        this.propSystem?.markDirty(); // quantos props entram depende da qualidade (PROP_SETTINGS.QUALITY)
         this.weatherEffects?.setQuality(p);
         log(`🎨 Qualidade gráfica: ${GraphicsQuality.LABELS[level]}`);
     }
@@ -760,6 +762,7 @@ class GameManager {
             // A espera entre obras corre em tempo real: congelada, ela travava o "Construir" durante guias e popups
             // (a obra colocada fica em 0% até o jogo voltar a rodar)
             this.buildingSystem?.updateBuildingCooldown(deltaTime);
+            this.propSystem?.update(deltaTime); // a prefeitura do tutorial tira os props da área
             return;
         }
         if (this.gameState !== 'playing') return;
@@ -773,6 +776,8 @@ class GameManager {
 
         // Água, ruas e ar sujos com a poluição alta
         this.pollutionVisuals?.update(deltaTime);
+        // Props de cenário: natureza, dia a dia, tecnologia e sinais de poluição conforme a cidade
+        this.propSystem?.update(deltaTime);
         
         if (this.buildingSystem) {
             this.buildingSystem.update(deltaTime * this.timeScale);
