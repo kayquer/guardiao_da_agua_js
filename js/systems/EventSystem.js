@@ -3,10 +3,14 @@
  * Sistema de eventos dinâmicos e aleatórios
  *
  * Eventos com `response` não começam sozinhos: viram um anúncio (pendingEvents, awaiting) e o Secretário de Meio
- * Ambiente Paulo pergunta o que fazer (modal, ui/EventDecisionUI.js). Quatro opções, sempre com troca real:
- *   threat (seca, enchente...): max/mid/low cortam o impacto (impact 0,2–0,8) e a duração; "não fazer nada" = tudo;
- *   opportunity (chuva, subsídio...): max/mid/low aproveitam 100% / 50% / 20% (gain); "não fazer nada" perde tudo.
- * A melhor opção custa mais e costuma pedir um prédio (requires): planejar a cidade abre respostas melhores.
+ * Ambiente Paulo pergunta o que fazer (modal, ui/EventDecisionUI.js). Quatro opções, e cada uma paga um preço
+ * diferente (11/2026: antes era uma escada "quem paga mais leva"):
+ *   threat (seca, enchente...): impact/duration cortam o estrago; opportunity (chuva, subsídio...): gain = quanto aproveita;
+ *   o preço vem em dinheiro (cost), satisfação/aquífero durante o evento (effects), água/dinheiro na hora (instant)
+ *   ou confiança dos grupos (reputation). `tier` (max/mid/low/none) é só a ordem e o registro de pesquisa.
+ * A opção com prédio (requires) costuma ser a mais limpa: planejar a cidade abre respostas melhores.
+ * Boa decisão (judgeResponse) é pela situação: fez o bastante e não piorou o que já estava fraco (badIf: aquífero
+ * baixo, moradores insatisfeitos, caixa vazia, cidade que já segura a chuva...). O cartão avisa o risco antes.
  * Boas decisões em sequência dão prêmio (STREAK_BONUS) e a conquista "Guardião do Clima"; no fim do evento o
  * Paulo diz quanto do estrago foi evitado (ou do benefício foi aproveitado). Desenho: trocas com custo de
  * oportunidade, aviso antes (dá para se preparar), metas de médio prazo e retorno claro de cada escolha.
@@ -61,14 +65,19 @@ class EventSystem {
                 kind: 'threat',
                 intro: '{nome}, a previsão é de semanas sem chuva. Os rios vão baixar e as bombas vão render a metade. Como a cidade enfrenta a seca?',
                 options: [
-                    { id: 'plan', tier: 'max', label: 'Plano de seca completo', cost: 6000, impact: 0.25, duration: 0.5,
-                        detail: 'Rodízio combinado com os bairros, caminhões-pipa e água guardada nos reservatórios.',
+                    { id: 'plan', tier: 'max', label: 'Usar a água guardada', cost: 2500, impact: 0.3, duration: 0.6,
+                        detail: 'Os reservatórios seguram a cidade e os bairros combinam horários sem cortar ninguém.',
                         requires: [{ ids: ['water_tank', 'water_tower'], count: 1, label: 'Reservatório ou Caixa d\'Água' }],
-                        reputation: { environment: 3, citizens: 1 } },
-                    { id: 'campaign', tier: 'mid', label: 'Campanha de economia', cost: 2500, impact: 0.5, duration: 0.75,
-                        detail: 'Escolas, rádio e redes ensinam a fechar a torneira e reaproveitar água.', reputation: { environment: 2 } },
-                    { id: 'notice', tier: 'low', label: 'Aviso nas redes', cost: 500, impact: 0.8, duration: 0.9,
-                        detail: 'Um recado pedindo economia. Barato, mas pouca gente muda o hábito.' },
+                        reputation: { environment: 2, citizens: 1 },
+                        badIf: { budgetLeftBelow: 1500, why: 'o caixa ficou quase vazio para o resto da seca' } },
+                    { id: 'rationing', tier: 'mid', label: 'Rodízio entre bairros', cost: 300, impact: 0.35, duration: 0.8,
+                        detail: 'Cada bairro fica algumas horas sem água por dia. Barato e funciona, mas ninguém gosta.',
+                        effects: { satisfactionBonus: -8 }, reputation: { citizens: -2 },
+                        badIf: { satisfactionBelow: 45, why: 'os moradores já estavam insatisfeitos e o rodízio virou reclamação geral' } },
+                    { id: 'wells', tier: 'low', label: 'Bombear mais fundo dos poços', cost: 1200, impact: 0.4, duration: 1,
+                        detail: 'As bombas trabalham mais e a torneira não seca, mas a água tirada agora faz falta no aquífero depois.',
+                        effects: { aquiferRecharge: -4 },
+                        badIf: { aquiferBelow: 50, why: 'o aquífero já estava baixo, e tirar mais agora deixa a cidade sem reserva para a próxima seca' } },
                     { id: 'none', tier: 'none', label: 'Não fazer nada', impact: 1, duration: 1,
                         detail: 'A seca chega com força total.', reputation: { citizens: -2 } }
                 ]
@@ -101,14 +110,18 @@ class EventSystem {
                 kind: 'threat',
                 intro: '{nome}, vem aí uma chuva muito forte. Onde tem muito asfalto, a água não entra no chão e vira enxurrada. O que fazemos antes que ela chegue?',
                 options: [
-                    { id: 'drain', tier: 'max', label: 'Abrir piscinões e áreas verdes', cost: 7000, impact: 0.2, duration: 0.5,
-                        detail: 'Jardins de chuva e parques seguram a água; a Defesa Civil tira as famílias das áreas de risco.',
+                    { id: 'drain', tier: 'max', label: 'Abrir piscinões e áreas verdes', cost: 2500, impact: 0.2, duration: 0.5,
+                        detail: 'Jardins de chuva e parques seguram a água; a Defesa Civil avisa as famílias das áreas de risco.',
                         requires: [{ ids: ['rain_garden', 'linear_park', 'green_roof'], count: 1, label: 'Jardim de Chuva, Parque Linear ou Teto Verde' }],
                         reputation: { citizens: 3, environment: 2 } },
                     { id: 'barriers', tier: 'mid', label: 'Barreiras e sacos de areia', cost: 4000, impact: 0.5, duration: 0.75,
-                        detail: 'Protege as ruas mais baixas e os prédios importantes.', reputation: { citizens: 2 } },
-                    { id: 'drains', tier: 'low', label: 'Limpar os bueiros', cost: 1000, impact: 0.8, duration: 0.9,
-                        detail: 'Bueiro limpo escoa melhor, mas não segura uma chuva grande.' },
+                        detail: 'Protege as ruas baixas e os prédios importantes. Caro, e só compensa onde a enxurrada é grande.',
+                        reputation: { citizens: 2 },
+                        badIf: { floodRiskBelow: 0.6, why: 'a cidade já segura bem a chuva, e as barreiras caras quase não foram usadas' } },
+                    { id: 'evacuate', tier: 'low', label: 'Tirar as famílias das áreas baixas', cost: 600, impact: 0.7, duration: 1,
+                        detail: 'Ninguém se machuca, mas os prédios ficam sem proteção e as famílias passam a noite fora de casa.',
+                        effects: { satisfactionBonus: -4 }, reputation: { citizens: 1 },
+                        badIf: { floodRiskAbove: 1.3, why: 'com tanto asfalto a enxurrada foi grande, e sem proteção os prédios estragaram' } },
                     { id: 'none', tier: 'none', label: 'Não fazer nada', impact: 1, duration: 1,
                         detail: 'A enxurrada estraga prédios e suja o rio.', reputation: { citizens: -3 } }
                 ]
@@ -141,14 +154,16 @@ class EventSystem {
                 kind: 'opportunity',
                 intro: '{nome}, vai chover bastante, e chuva é água de graça! Quanto dela a cidade vai conseguir guardar?',
                 options: [
-                    { id: 'harvest', tier: 'max', label: 'Captar tudo', cost: 3000, gain: 1,
+                    { id: 'harvest', tier: 'max', label: 'Captar tudo', cost: 1500, gain: 1,
                         detail: 'Cisternas, jardins de chuva e reservatórios abertos: a chuva enche a caixa e o aquífero.',
                         requires: [{ ids: ['rain_garden', 'water_tank', 'water_tower'], count: 1, label: 'Jardim de Chuva ou Reservatório' }],
                         instant: { water: 200 }, reputation: { environment: 3 } },
                     { id: 'reservoirs', tier: 'mid', label: 'Encher os reservatórios', cost: 1200, gain: 0.5,
                         detail: 'Uma parte da chuva vai para a rede da cidade.', reputation: { environment: 1 } },
-                    { id: 'buckets', tier: 'low', label: 'Pedir que guardem água da chuva', cost: 200, gain: 0.2,
-                        detail: 'Baldes e caixas nas casas aproveitam um pouquinho.' },
+                    { id: 'infiltrate', tier: 'low', label: 'Deixar a chuva entrar no chão', cost: 300, gain: 0.4,
+                        detail: 'Abre as áreas verdes e as valas: a caixa enche pouco, mas o aquífero recebe muito mais.',
+                        effects: { aquiferRecharge: 4 }, reputation: { environment: 2 },
+                        badIf: { waterBelow: 0.2, why: 'a caixa estava quase vazia e precisava daquela água agora' } },
                     { id: 'none', tier: 'none', label: 'Não fazer nada', gain: 0,
                         detail: 'A água escorre pelo asfalto e vai embora.' }
                 ]
@@ -186,8 +201,10 @@ class EventSystem {
                         reputation: { citizens: 2 } },
                     { id: 'patch', tier: 'mid', label: 'Remendo rápido', cost: 1200, impact: 0.5, duration: 0.5,
                         detail: 'A equipe tampa o furo, mas o cano velho ainda pinga.' },
-                    { id: 'valve', tier: 'low', label: 'Fechar o registro à noite', cost: 300, impact: 0.8, duration: 0.9,
-                        detail: 'Perde menos água de madrugada, só isso.' },
+                    { id: 'valve', tier: 'low', label: 'Fechar o registro à noite', impact: 0.6, duration: 1,
+                        detail: 'De graça e perde menos água, mas os bairros ficam sem torneira de madrugada.',
+                        effects: { satisfactionBonus: -4 },
+                        badIf: { satisfactionBelow: 45, why: 'com os moradores já chateados, ficar sem água à noite pesou' } },
                     { id: 'none', tier: 'none', label: 'Não fazer nada', impact: 1, duration: 1,
                         detail: 'A água tratada continua indo embora.' }
                 ]
@@ -218,13 +235,15 @@ class EventSystem {
                 kind: 'threat',
                 intro: '{nome}, um dos nossos prédios quebrou e parou. Quanto antes ele voltar, melhor. Como fazemos o conserto?',
                 options: [
-                    { id: 'crew', tier: 'max', label: 'Equipe extra com peça nova', cost: 4000, impact: 0.2, duration: 0.25,
+                    { id: 'crew', tier: 'max', label: 'Equipe extra com peça nova', cost: 2500, impact: 0.2, duration: 0.25,
                         detail: 'Técnicos da universidade ajudam: o prédio volta rápido e o conserto final sai barato.',
                         requires: [{ ids: ['research_center', 'university'], count: 1, label: 'Centro de Pesquisa ou Universidade' }] },
-                    { id: 'overtime', tier: 'mid', label: 'Hora extra da equipe', cost: 1500, impact: 0.5, duration: 0.5,
+                    { id: 'overtime', tier: 'mid', label: 'Hora extra da equipe', cost: 2000, impact: 0.5, duration: 0.5,
                         detail: 'A equipe da prefeitura trabalha até tarde.' },
-                    { id: 'queue', tier: 'low', label: 'Entrar na fila de consertos', cost: 300, impact: 0.8, duration: 0.85,
-                        detail: 'Sai um pouco mais rápido que o normal.' },
+                    { id: 'borrow', tier: 'low', label: 'Pedir a peça emprestada ao Estado', impact: 0.5, duration: 0.6,
+                        detail: 'Sai de graça e rápido, mas a prefeitura fica devendo um favor e o governo confia menos.',
+                        reputation: { government: -3 },
+                        badIf: { governmentBelow: 40, why: 'o governo já confiava pouco na prefeitura, e o favor saiu caro' } },
                     { id: 'none', tier: 'none', label: 'Não fazer nada', impact: 1, duration: 1,
                         detail: 'Três minutos parado e conserto caro no fim.' }
                 ]
@@ -263,8 +282,10 @@ class EventSystem {
                         effects: { waterConsumptionReduction: 0.1 }, reputation: { citizens: 3, business: 2 } },
                     { id: 'register', tier: 'mid', label: 'Cadastro e moradia simples', cost: 1500, gain: 0.5,
                         detail: 'Metade das famílias encontra lugar para morar.', reputation: { citizens: 1, business: 1 } },
-                    { id: 'sign', tier: 'low', label: 'Uma placa de boas-vindas', cost: 200, gain: 0.2,
-                        detail: 'Poucos ficam: sem apoio, a maioria segue viagem.' },
+                    { id: 'open_doors', tier: 'low', label: 'Receber todo mundo de qualquer jeito', gain: 1,
+                        detail: 'Todos ficam e pagam impostos, mas sem casa e escola preparadas a cidade fica apertada e reclamona.',
+                        effects: { satisfactionBonus: -6 }, reputation: { business: 2 },
+                        badIf: { waterBelow: 0.4, why: 'sem água sobrando, gente nova virou falta d\'água' } },
                     { id: 'none', tier: 'none', label: 'Não fazer nada', gain: 0,
                         detail: 'Ninguém fica, mas a visita gasta água mesmo assim.', reputation: { business: -1 } }
                 ]
@@ -297,13 +318,16 @@ class EventSystem {
                 kind: 'threat',
                 intro: '{nome}, tem fogo no mato perto da cidade! A fumaça já chegou nas casas. Como a gente combate?',
                 options: [
-                    { id: 'brigade', tier: 'max', label: 'Bombeiros e brigada de incêndio', cost: 3000, impact: 0.25, duration: 0.4,
+                    { id: 'brigade', tier: 'max', label: 'Bombeiros e brigada de incêndio', cost: 2000, impact: 0.25, duration: 0.4,
                         detail: 'Os bombeiros cercam o fogo e a brigada faz aceiros para ele não passar.',
                         requires: [{ id: 'fire_station', count: 1, label: 'Corpo de Bombeiros' }], reputation: { citizens: 3, environment: 3 } },
                     { id: 'firebreak', tier: 'mid', label: 'Abrir aceiros com tratores', cost: 1500, impact: 0.5, duration: 0.6,
-                        detail: 'Faixas de terra sem mato seguram o fogo, mas ele ainda queima um bom pedaço.', reputation: { environment: 1 } },
-                    { id: 'warn', tier: 'low', label: 'Pedir para ninguém botar fogo', cost: 300, impact: 0.8, duration: 0.9,
-                        detail: 'Carro de som e redes sociais: ajuda a não começar outro, mas este continua.', reputation: { citizens: 1 } },
+                        detail: 'Tratores abrem faixas sem mato. Segura o fogo, mas também derruba um pedaço da mata.',
+                        reputation: { environment: -1 } },
+                    { id: 'water_trucks', tier: 'low', label: 'Apagar com a água da cidade', cost: 500, impact: 0.5, duration: 0.7,
+                        detail: 'Caminhões levam água da caixa da cidade até o fogo. Funciona, mas a caixa esvazia.',
+                        instant: { water: -300 }, reputation: { citizens: 1 },
+                        badIf: { waterBelow: 0.4, why: 'a caixa já estava baixa, e a água que foi para o fogo fez falta nas casas' } },
                     { id: 'none', tier: 'none', label: 'Não fazer nada', impact: 1, duration: 1,
                         detail: 'O fogo queima até acabar o mato.', reputation: { environment: -4, citizens: -2 } }
                 ]
@@ -340,8 +364,10 @@ class EventSystem {
                         instant: { budget: 5000 }, reputation: { environment: 5, business: -4 } },
                     { id: 'inspect', tier: 'mid', label: 'Fiscalizar e notificar', cost: 1000, impact: 0.5, duration: 0.7,
                         detail: 'Fiscais vão até a fábrica e ela fecha o cano sujo.', reputation: { environment: 2, business: -1 } },
-                    { id: 'ask', tier: 'low', label: 'Pedir com jeitinho', impact: 0.8, duration: 0.9,
-                        detail: 'A fábrica promete melhorar... devagar.', reputation: { environment: 1 } },
+                    { id: 'talk', tier: 'low', label: 'Conversar com a fábrica', impact: 0.7, duration: 0.9,
+                        detail: 'A fábrica promete melhorar e o comércio gosta da conversa, mas o rio continua sujo por mais tempo.',
+                        reputation: { business: 2, environment: -1 },
+                        badIf: { pollutionAbove: 50, why: 'o rio já estava sujo, e só conversar deixou a poluição subir mais' } },
                     { id: 'none', tier: 'none', label: 'Não fazer nada', impact: 1, duration: 1,
                         detail: 'O comércio agradece, o rio não.', reputation: { environment: -5, business: 2 } }
                 ]
@@ -378,8 +404,10 @@ class EventSystem {
                         reputation: { government: 4 } },
                     { id: 'simple', tier: 'mid', label: 'Projeto simples', cost: 500, gain: 0.5,
                         detail: 'Recebe metade.', reputation: { government: 1 } },
-                    { id: 'form', tier: 'low', label: 'Só preencher o formulário', gain: 0.2,
-                        detail: 'Recebe um pouco.' },
+                    { id: 'rush', tier: 'low', label: 'Pedir o dinheiro às pressas', gain: 0.6,
+                        detail: 'Sem projeto, o governo libera uma parte e passa a desconfiar das contas da prefeitura.',
+                        reputation: { government: -3 },
+                        badIf: { governmentBelow: 40, why: 'o governo já desconfiava da prefeitura' } },
                     { id: 'none', tier: 'none', label: 'Não fazer nada', gain: 0,
                         detail: 'O dinheiro vai para outra cidade.', reputation: { government: -2 } }
                 ]
@@ -587,6 +615,7 @@ class EventSystem {
             event.responseId = response.id;
             event.choiceId = response.id; // cartão do evento mostra a escolha
             event.effectScale = eventType.response.kind === 'opportunity' ? (response.gain ?? 1) : (response.impact ?? 1);
+            if (options.verdict) event.verdict = options.verdict;
         }
         if (eventTypeId === 'flood') event.effectScale = (event.effectScale ?? 1) * this.getFloodRisk().risk;
         // Ameaças crescem com a cidade (getCityPressure); a seca de missão mantém a força escrita no texto dela
@@ -874,7 +903,7 @@ class EventSystem {
             this.gameManager.uiManager?.showNotification(`🌿 Secretário Paulo: ${config.icon} oportunidade perdida — ${option.detail || config.name}`, 'warning', 6000);
             return null;
         }
-        return this.triggerEvent(pending.type, false, { responseId: pending.choiceId, duration: pending.duration });
+        return this.triggerEvent(pending.type, false, { responseId: pending.choiceId, duration: pending.duration, verdict: pending.verdict });
     }
 
     // ===== RESPOSTA (modal do Paulo) =====
@@ -897,6 +926,49 @@ class EventSystem {
         return { ok: missing.length === 0 && short === 0, missing, short };
     }
 
+    // ===== AVALIAÇÃO DA ESCOLHA (pela situação da cidade, não pelo preço) =====
+    static GOOD_THREAT_IMPACT = 0.7;      // ameaça: precisa cortar pelo menos 30% do estrago
+    static GOOD_OPPORTUNITY_GAIN = 0.4;   // oportunidade: aproveitar pelo menos 40%
+
+    /**
+     * A situação de agora torna a opção arriscada? `option.badIf` = { <condição>: limite, why }. Devolve
+     * { key, value, why } da primeira que vale, ou null. budgetLeftBelow olha o caixa depois de pagar.
+     */
+    getOptionRisk(option) {
+        const bad = option?.badIf;
+        if (!bad) return null;
+        const r = this.gameManager.resourceManager?.resources || {};
+        const water = r.water || {};
+        const capacity = water.max || water.storage || 0;
+        const checks = {
+            aquiferBelow: v => (water.aquifer ?? 100) < v,
+            riverBelow: v => (water.river ?? 100) < v,
+            satisfactionBelow: v => (r.population?.satisfaction ?? 100) < v,
+            waterBelow: v => capacity > 0 && water.current / capacity < v,
+            pollutionAbove: v => (r.pollution?.current ?? 0) > v,
+            floodRiskBelow: v => this.getFloodRisk().risk < v,
+            floodRiskAbove: v => this.getFloodRisk().risk > v,
+            governmentBelow: v => (this.gameManager.questSystem?.getReputation?.('government') ?? 50) < v,
+            budgetLeftBelow: v => (r.budget?.current ?? 0) - (option.cost || 0) < v
+        };
+        for (const [key, value] of Object.entries(bad)) {
+            if (checks[key]?.(value)) return { key, value, why: bad.why };
+        }
+        return null;
+    }
+
+    /** Boa decisão? Fez o bastante (GOOD_*) e a situação não a tornou ruim (getOptionRisk). { good, why }. */
+    judgeResponse(config, option, auto = false, risk = this.getOptionRisk(option)) {
+        if (auto) return { good: false, why: 'ninguém respondeu a tempo' };
+        if (!option || option.tier === 'none') return { good: false, why: null };
+        const enough = config?.response?.kind === 'opportunity'
+            ? (option.gain ?? 0) >= EventSystem.GOOD_OPPORTUNITY_GAIN
+            : (option.impact ?? 1) <= EventSystem.GOOD_THREAT_IMPACT;
+        if (!enough) return { good: false, why: 'ajudou pouco' };
+        if (risk) return { good: false, why: risk.why };
+        return { good: true, why: null };
+    }
+
     /** Decide o anúncio (id de pendingEvents) com a opção. auto = ninguém respondeu (fica "não fazer nada"). */
     chooseResponse(pendingId, optionId, { auto = false } = {}) {
         const pending = this.pendingEvents.find(p => p.id === pendingId);
@@ -914,17 +986,25 @@ class EventSystem {
                 return false;
             }
         }
+        // a situação é a de antes de pagar e de mexer nos recursos
+        const verdict = this.judgeResponse(config, option, auto);
         if (option.cost && !auto && !rm?.spendBudget(option.cost)) return false;
         pending.choiceId = option.id;
+        pending.verdict = verdict;
         pending.choiceAuto = auto;
         pending.awaiting = false;
         const instant = option.instant || {};
         if (instant.budget && rm) rm.adjustResource('budget', instant.budget);
         if (instant.pollution && rm) rm.adjustResource('pollution', instant.pollution);
         if (instant.water && rm) rm.adjustResource('water', instant.water);
+        if (rm?.resources?.water) {
+            const clamp = v => Math.max(0, Math.min(100, v));
+            if (instant.aquifer) rm.resources.water.aquifer = clamp((rm.resources.water.aquifer ?? 100) + instant.aquifer);
+            if (instant.river) rm.resources.water.river = clamp((rm.resources.water.river ?? 100) + instant.river);
+        }
         if (option.reputation) this.gameManager.questSystem?.changeReputation?.(option.reputation, config.name);
-        this.eventHistory.push({ type: pending.type, choice: option.id, tier: option.tier, auto, startTime: Date.now() });
-        this.recordResponse(config, option, auto);
+        this.eventHistory.push({ type: pending.type, choice: option.id, tier: option.tier, auto, good: verdict.good, startTime: Date.now() });
+        this.recordResponse(config, option, auto, verdict);
         if (pending.total <= 0) {
             this.pendingEvents = this.pendingEvents.filter(x => x !== pending);
             this.startDecidedEvent(pending);
@@ -946,19 +1026,19 @@ class EventSystem {
     }
 
     // ===== RECOMPENSAS =====
-    // Boa decisão = a melhor ou a do meio. STREAK_BONUS boas seguidas = prêmio do governo; GUARDIAN_GOAL boas no
-    // total = conquista "Guardião do Clima". "Não fazer nada" zera a sequência.
+    // Boa decisão = judgeResponse (pela situação). STREAK_BONUS boas seguidas = prêmio do governo; GUARDIAN_GOAL boas
+    // no total = conquista "Guardião do Clima". Escolha fraca ou arriscada zera a sequência.
     static STREAK_BONUS = 3;
     static STREAK_REWARD = 3000;
     static GUARDIAN_GOAL = 5;
 
-    recordResponse(config, option, auto) {
-        if (typeof ResearchLog !== 'undefined') ResearchLog.record('event_decision', { target: config.id, value: option.id, tier: option.tier, auto, ok: !auto && (option.tier === 'max' || option.tier === 'mid') });
+    recordResponse(config, option, auto, verdict = this.judgeResponse(config, option, auto)) {
+        const good = !!verdict.good;
+        if (typeof ResearchLog !== 'undefined') ResearchLog.record('event_decision', { target: config.id, value: option.id, tier: option.tier, auto, ok: good, why: verdict.why || undefined });
         const st = this.responseStats;
         st.total++;
         if (option.tier === 'max') st.best++;
         if (option.tier === 'none') st.missed++;
-        const good = !auto && (option.tier === 'max' || option.tier === 'mid');
         st.streak = good ? st.streak + 1 : 0;
         if (good) st.good++;
         const ui = this.gameManager.uiManager;
@@ -985,6 +1065,9 @@ class EventSystem {
         } else {
             text = `${name} acabou. Com "${option.label}", evitamos ${Math.round((1 - (option.impact ?? 1)) * 100)}% do estrago.`;
         }
+        // O preço da escolha também entra no balanço: foi boa pela situação da cidade, ou não
+        const why = event.verdict?.why;
+        if (why && option.tier !== 'none') text += ` Mas ${why}.`;
         ui.showNotification(`🌿 Secretário Paulo: ${text}`, option.tier === 'none' ? 'warning' : 'success', 7000);
     }
 

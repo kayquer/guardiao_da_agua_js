@@ -88,7 +88,7 @@ mixin(UIManager, {
         const seconds = pending.total > 0 ? Math.round(pending.total / 1000 / (this.gameManager.timeScale || 1)) : 0;
         const when = threat
             ? (seconds ? `Chega em ~${seconds} s depois da sua decisão: dá tempo de se preparar.` : 'Começa assim que você decidir.')
-            : 'Quanto melhor a resposta, mais a cidade ganha.';
+            : 'Cada escolha ganha de um jeito e custa de outro.';
 
         modal.innerHTML = `
             <div class="decision-box ${threat ? 'threat' : 'opportunity'}">
@@ -123,7 +123,13 @@ mixin(UIManager, {
             }
             const option = es.getResponseOption(config, button.dataset.option);
             AudioManager.playSound(option.tier === 'none' ? 'sfx_ui_click' : 'sfx_ui_success', 0.7);
-            if (option.tier !== 'none') this.showNotification(`🌿 ${PAULO}: combinado, "${option.label}"!`, 'success', 4000);
+            // O Paulo diz na hora se a escolha combina com a situação da cidade (judgeResponse)
+            const why = pending.verdict?.why;
+            if (option.tier !== 'none') {
+                this.showNotification(why && why !== 'ajudou pouco'
+                    ? `🌿 ${PAULO}: combinado, "${option.label}". Só fico preocupado: ${why}.`
+                    : `🌿 ${PAULO}: combinado, "${option.label}"!`, why ? 'warning' : 'success', why ? 6000 : 4000);
+            }
             this.closeEventDecision();
         }));
 
@@ -133,36 +139,46 @@ mixin(UIManager, {
         modal.querySelector('.decision-option:not([disabled])')?.focus({ preventScroll: true });
     },
 
-    /** Uma carta: nível, ação, custo, o que muda (estrago/duração ou aproveitamento), reputação e o que falta. */
+    /**
+     * Uma carta: ação, o que ela resolve (estrago/duração ou aproveitamento), o preço de cada lado (dinheiro,
+     * satisfação, aquífero, água, confiança dos grupos), o risco na situação de agora e o que falta para escolher.
+     * Sem "melhor resposta" nem cor por nível (11/2026): a escolha depende da cidade, não de uma escada de preço.
+     */
     renderDecisionOption(option, index, threat) {
         const es = this.gameManager.eventSystem;
         const { ok, missing, short } = es.getOptionAvailability(option);
-        const tiers = { max: ['★★★', 'Melhor resposta'], mid: ['★★', 'Boa resposta'], low: ['★', 'Resposta fraca'], none: ['✖', 'Sem ação'] };
-        const [stars, tierName] = tiers[option.tier] || ['', ''];
         const pct = n => `${Math.round(n * 100)}%`;
+        const chip = (good, text) => `<span class="chip ${good ? 'good' : 'bad'}">${text}</span>`;
         const chips = [];
         if (threat) {
             if (option.tier !== 'none') {
-                chips.push(`<span class="chip good">Estrago −${pct(1 - (option.impact ?? 1))}</span>`);
-                chips.push(`<span class="chip good">Dura −${pct(1 - (option.duration ?? 1))}</span>`);
-            } else chips.push('<span class="chip bad">Estrago e duração inteiros</span>');
+                chips.push(chip(true, `Estrago −${pct(1 - (option.impact ?? 1))}`));
+                if ((option.duration ?? 1) < 1) chips.push(chip(true, `Dura −${pct(1 - option.duration)}`));
+            } else chips.push(chip(false, 'Estrago e duração inteiros'));
         } else {
-            chips.push(option.gain > 0 ? `<span class="chip good">Aproveita ${pct(option.gain)}</span>` : '<span class="chip bad">Perde a oportunidade</span>');
+            chips.push(option.gain > 0 ? chip(true, `Aproveita ${pct(option.gain)}`) : chip(false, 'Perde a oportunidade'));
         }
-        if (option.instant?.budget) chips.push(`<span class="chip good">+R$ ${option.instant.budget.toLocaleString('pt-BR')}</span>`);
-        if (option.instant?.water) chips.push(`<span class="chip good">+${option.instant.water} L de água</span>`);
+        const fx = option.effects || {};
+        if (fx.satisfactionBonus) chips.push(chip(fx.satisfactionBonus > 0, `😊 ${fx.satisfactionBonus > 0 ? '+' : ''}${fx.satisfactionBonus} enquanto durar`));
+        if (fx.aquiferRecharge) chips.push(chip(fx.aquiferRecharge > 0, `Aquífero ${fx.aquiferRecharge > 0 ? 'enche' : 'baixa'}`));
+        if (fx.waterConsumptionReduction) chips.push(chip(true, `Consumo −${pct(fx.waterConsumptionReduction)}`));
+        const inst = option.instant || {};
+        if (inst.budget) chips.push(chip(inst.budget > 0, `${inst.budget > 0 ? '+' : '−'}R$ ${Math.abs(inst.budget).toLocaleString('pt-BR')}`));
+        if (inst.water) chips.push(chip(inst.water > 0, `${inst.water > 0 ? '+' : '−'}${Math.abs(inst.water)} L da caixa`));
         const stake = QuestSystem.STAKEHOLDERS || {};
         Object.entries(option.reputation || {}).forEach(([key, value]) => {
-            chips.push(`<span class="chip ${value > 0 ? 'good' : 'bad'}">${stake[key]?.icon || ''} ${value > 0 ? '+' : ''}${value}</span>`);
+            chips.push(chip(value > 0, `${stake[key]?.icon || ''} ${value > 0 ? '+' : ''}${value}`));
         });
+        // Risco agora (badIf): o Paulo avisa antes, sem dizer qual é "a certa"
+        const risk = option.tier !== 'none' ? es.getOptionRisk(option) : null;
         const lock = missing.length ? `🔒 Precisa de: ${missing.join(', ')}` : short > 0 ? `💰 Falta R$ ${Math.ceil(short).toLocaleString('pt-BR')}` : '';
-        return `<button class="decision-option tier-${option.tier}" type="button" data-option="${option.id}" ${ok ? '' : 'disabled'}>
+        return `<button class="decision-option ${option.tier === 'none' ? 'tier-none' : 'act'}" type="button" data-option="${option.id}" ${ok ? '' : 'disabled'}>
             <span class="decision-key" aria-hidden="true">${index + 1}</span>
-            <span class="decision-tier"><b>${stars}</b> ${tierName}</span>
             <span class="decision-label">${option.label}</span>
             <span class="decision-detail">${option.detail || ''}</span>
             <span class="decision-chips">${chips.join('')}</span>
             <span class="decision-cost">${option.cost ? `R$ ${option.cost.toLocaleString('pt-BR')}` : 'Sem custo'}</span>
+            ${risk ? `<span class="decision-risk">⚠️ Cuidado: ${risk.why}.</span>` : ''}
             ${lock ? `<span class="decision-lock">${lock}</span>` : ''}
         </button>`;
     },

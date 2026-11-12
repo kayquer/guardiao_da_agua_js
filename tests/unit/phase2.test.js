@@ -173,23 +173,76 @@ test('avisos sobrevivem a salvar/carregar', () => {
 });
 
 // ===== Resposta aos eventos (modal do Secretário Paulo) =====
-test('todo evento com resposta tem 3 opções em níveis + não fazer nada, com troca real', () => {
+test('todo evento com resposta tem 4 opções; cada uma paga um preço diferente (não é escada de dinheiro)', () => {
     const { es } = city();
+    const priceKinds = o => {
+        const kinds = new Set();
+        if (o.cost) kinds.add('dinheiro');
+        if (o.requires) kinds.add('prédio');
+        Object.entries(o.effects || {}).forEach(([k, v]) => { if ((k === 'satisfactionBonus' || k === 'aquiferRecharge') && v < 0) kinds.add(k); });
+        Object.entries(o.instant || {}).forEach(([k, v]) => { if (v < 0) kinds.add(`instant.${k}`); });
+        Object.values(o.reputation || {}).forEach(v => { if (v < 0) kinds.add('reputação'); });
+        return kinds;
+    };
     for (const [id, config] of es.eventTypes) {
         if (!config.response) continue;
-        const tiers = config.response.options.map(o => o.tier);
-        assert.deepStrictEqual([...tiers], ['max', 'mid', 'low', 'none'], id);
-        const [max, mid, low, none] = config.response.options;
-        assert.ok(config.response.intro, `${id}: fala do Paulo`);
-        if (config.response.kind === 'opportunity') {
-            assert.deepStrictEqual([max.gain, mid.gain, low.gain, none.gain], [1, 0.5, 0.2, 0], `${id}: aproveita 100/50/20/0%`);
-        } else {
-            assert.ok(max.impact < mid.impact && mid.impact < low.impact && low.impact < none.impact, `${id}: impacto em ordem`);
-            assert.ok(max.duration <= mid.duration && mid.duration <= low.duration && none.duration === 1, `${id}: duração em ordem`);
-        }
-        assert.ok(max.cost >= (mid.cost || 0) || max.requires || max.reputation, `${id}: a melhor tem um preço`);
+        const options = config.response.options;
+        assert.strictEqual(options.length, 4, `${id}: 4 cartas`);
+        assert.strictEqual(new Set(options.map(o => o.id)).size, 4, `${id}: ids únicos`);
+        const none = options[options.length - 1];
+        assert.strictEqual(none.tier, 'none', `${id}: a última é não fazer nada`);
         assert.ok(!none.cost, `${id}: não fazer nada é de graça`);
+        assert.ok(config.response.intro, `${id}: fala do Paulo`);
+        const acts = options.slice(0, 3);
+        const kinds = new Set(acts.flatMap(o => [...priceKinds(o)]));
+        assert.ok(kinds.size >= 2, `${id}: as opções pagam de jeitos diferentes (${[...kinds]})`);
+        acts.forEach(o => {
+            if (o.badIf) assert.ok(o.badIf.why && Object.keys(o.badIf).length >= 2, `${id}/${o.id}: risco sem explicação`);
+            assert.ok(!/jeitinho/i.test(o.label), `${id}/${o.id}: rótulo que entrega a resposta`);
+        });
     }
+});
+
+test('boa decisão é pela situação: poço com aquífero baixo, rodízio com moradores insatisfeitos, barreira sem enxurrada', () => {
+    const { es, res } = city();
+    const drought = es.eventTypes.get('drought');
+    const opt = id => es.getResponseOption(drought, id);
+    res.water.aquifer = 80;
+    assert.strictEqual(es.judgeResponse(drought, opt('wells')).good, true, 'aquífero cheio: bombear mais funciona');
+    res.water.aquifer = 30;
+    const wells = es.judgeResponse(drought, opt('wells'));
+    assert.strictEqual(wells.good, false);
+    assert.match(wells.why, /aquífero/);
+    res.population.satisfaction = 70;
+    assert.strictEqual(es.judgeResponse(drought, opt('rationing')).good, true);
+    res.population.satisfaction = 30;
+    assert.strictEqual(es.judgeResponse(drought, opt('rationing')).good, false, 'rodízio com a cidade já chateada');
+    assert.strictEqual(es.judgeResponse(drought, opt('none')).good, false);
+    assert.strictEqual(es.judgeResponse(drought, opt('rationing'), true).good, false, 'sem resposta não conta');
+
+    // barreiras caras numa cidade que já segura a chuva (risco baixo) não são boa decisão
+    const flood = es.eventTypes.get('flood');
+    assert.ok(es.getFloodRisk().risk < 0.6);
+    assert.strictEqual(es.judgeResponse(flood, es.getResponseOption(flood, 'barriers')).good, false);
+    // fez pouco: compartilhar nas redes (20%) não conta como boa
+    const campaign = es.eventTypes.get('water_conservation_campaign');
+    assert.strictEqual(es.judgeResponse(campaign, es.getResponseOption(campaign, 'post')).good, false);
+});
+
+test('escolha arriscada zera a sequência e o Paulo explica no fim do evento', () => {
+    const { es, res, notes } = city();
+    res.budget.current = 1e5;
+    res.water.aquifer = 30;
+    es.responseStats.streak = 2;
+    const asked = es.announceEvent('drought');
+    assert.ok(es.chooseResponse(asked.id, 'wells'));
+    assert.strictEqual(es.responseStats.streak, 0);
+    assert.strictEqual(asked.verdict.good, false);
+    es.updatePendingEvents(asked.total + 1);
+    const ev = [...es.activeEvents.values()][0];
+    assert.strictEqual(ev.verdict.good, false, 'o veredito vai junto com o evento (e com o save)');
+    es.endEvent(ev.id);
+    assert.ok(notes.some(n => n.includes('Secretário Paulo') && n.includes('aquífero já estava baixo')));
 });
 
 test('ameaça: a resposta corta o impacto e a duração; o fim desfaz exatamente', () => {
@@ -198,13 +251,16 @@ test('ameaça: a resposta corta o impacto e a duração; o fim desfaz exatamente
     const productionBefore = res.water.productionMultiplier ?? 1;
     const asked = es.announceEvent('drought');
     assert.strictEqual(es.activeEvents.size, 0, 'nada começa antes da decisão');
-    assert.ok(es.chooseResponse(asked.id, 'campaign'));
+    const satisfaction = res.population.eventSatisfaction || 0;
+    assert.ok(es.chooseResponse(asked.id, 'rationing'));
     es.updatePendingEvents(asked.total + 1);
     const ev = [...es.activeEvents.values()][0];
-    assert.ok(Math.abs(res.water.productionMultiplier - productionBefore * 0.75) < 1e-9, 'seca a 50% de impacto: produção × 0,75');
-    assert.strictEqual(ev.duration, Math.round(120000 * 0.75));
+    assert.ok(Math.abs(res.water.productionMultiplier - productionBefore * 0.825) < 1e-9, 'seca a 35% de impacto: produção × 0,825');
+    assert.strictEqual(ev.duration, Math.round(120000 * 0.8));
+    assert.strictEqual(res.population.eventSatisfaction - satisfaction, -8, 'o rodízio custa satisfação enquanto dura');
     es.endEvent(ev.id);
     assert.ok(Math.abs(res.water.productionMultiplier - productionBefore) < 1e-9);
+    assert.strictEqual(res.population.eventSatisfaction || 0, satisfaction, 'o fim devolve a satisfação');
     assert.strictEqual(rm.resources.pollution.sources, 0);
 });
 
@@ -237,7 +293,7 @@ test('a melhor opção pede um prédio e o dinheiro; sem eles fica bloqueada', (
     res.water.current = 100;
     const water = res.water.current;
     assert.ok(es.chooseResponse(asked.id, 'harvest'));
-    assert.strictEqual(res.budget.current, 50000 - 3000);
+    assert.strictEqual(res.budget.current, 50000 - 1500);
     assert.ok(res.water.current > water, 'captar tudo enche a caixa na hora');
 });
 
@@ -245,8 +301,8 @@ test('subsídio instantâneo: o valor recebido segue o aproveitamento', () => {
     const { es, res } = city();
     const budget = res.budget.current;
     const asked = es.announceEvent('government_grant');
-    assert.ok(es.chooseResponse(asked.id, 'form'));
-    assert.strictEqual(res.budget.current - budget, 15000 * 0.2);
+    assert.ok(es.chooseResponse(asked.id, 'rush'));
+    assert.strictEqual(res.budget.current - budget, 15000 * 0.6);
 });
 
 test('3 boas decisões seguidas dão prêmio; 5 dão a conquista Guardião do Clima', () => {

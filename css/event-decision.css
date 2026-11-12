@@ -141,10 +141,17 @@
 @media (hover: hover) and (pointer: fine) {
     .decision-option:hover:not(:disabled) { transform: translateY(-3px); filter: brightness(1.1); }
 }
-.decision-option.tier-max { background: linear-gradient(170deg, #2e9d55, #1d7a40); border-color: #a5d6a7; }
-.decision-option.tier-mid { background: linear-gradient(170deg, #1e88e5, #1565c0); }
-.decision-option.tier-low { background: linear-gradient(170deg, #8e7cc3, #6a5aa8); }
+/* Todas as ações com a mesma cor (11/2026): a cor não pode entregar a "resposta certa" */
+.decision-option.act { background: linear-gradient(170deg, #1e88e5, #1565c0); }
 .decision-option.tier-none { background: linear-gradient(170deg, #616a80, #474e60); }
+.decision-risk {
+    font-size: 0.74rem;
+    line-height: 1.25;
+    background: rgba(255, 213, 79, 0.95);
+    color: #3e2c00;
+    border-radius: 6px;
+    padding: 0.2rem 0.35rem;
+}
 .decision-option:disabled { cursor: not-allowed; filter: grayscale(0.6); opacity: 0.75; }
 
 .decision-key {
@@ -162,8 +169,6 @@
     justify-content: center;
 }
 
-.decision-tier { font-size: 0.75rem; opacity: 0.95; }
-.decision-tier b { color: #ffd54f; letter-spacing: 1px; }
 .decision-label { font-family: 'Lilita One', cursive; font-size: 1.05rem; line-height: 1.15; }
 .decision-detail { font-size: 0.78rem; line-height: 1.25; opacity: 0.92; }
 .decision-chips { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.1rem; }
