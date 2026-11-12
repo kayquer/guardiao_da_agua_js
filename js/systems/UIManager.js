@@ -220,6 +220,7 @@ class UIManager {
         this.setupNotificationHistory();
         this.setupResearchPanel();
         this.setupAchievementsPanel();
+        this.setupSavesPanel(); // ui/SavesUI.js
         this.setupIdleHints();
         this.setupSettingsPanel();
 
@@ -672,7 +673,7 @@ class UIManager {
         const popups = [
             '.swal2-container', '.central-alert-overlay', '#study-book-overlay', '#controls-modal',
             '#weather-modal', '#lessons-hub', '#lesson-book', '.mission-interface', '.choice-dialog', '.loan-interface',
-            '.resource-details-panel', '#notification-history', '#research-panel', '#achievements-panel', '#settings-panel', '#tech-modal', '#event-decision', '#mission-card'
+            '.resource-details-panel', '#notification-history', '#research-panel', '#achievements-panel', '#saves-panel', '#settings-panel', '#tech-modal', '#event-decision', '#mission-card'
         ];
         return popups.some(selector => shown(document.querySelector(selector)));
     }
@@ -1309,6 +1310,7 @@ class UIManager {
             this.closeNotificationHistory({ focus: false });
             this.closeResearchPanel({ focus: false });
             this.closeAchievementsPanel({ focus: false });
+            this.closeSavesPanel({ focus: false });
             this.closeSettingsPanel({ focus: false });
             this.elements.pauseOverlay.classList.remove('hidden');
         }

@@ -74,7 +74,7 @@ test('save: um jogo por perfil; apagar um não mexe no outro; chaves antigas som
 
     // Danificado no armazenamento: a tela de perfis vê o problema sem quebrar
     g(`localStorage.setItem(SaveSystem.keyFor('p_bia'), '{quebrado')`);
-    same(saves.getSaveInfo('p_bia'), { ok: false, reason: 'corrupt' });
+    same(saves.getSaveInfo('p_bia'), { ok: false, slot: 'main', reason: 'corrupt' });
     assert.strictEqual(saves.load('p_bia').ok, false);
 });
 
@@ -322,4 +322,42 @@ test('save: partida sem volta (água < 5% ou poluição ≥ 90) não é continu�
     assert.strictEqual(SaveSystem.isLostGame(game(800, 1000, 89)), false);
     assert.strictEqual(SaveSystem.isLostGame(game(800, 1000, 90)), true, 'poluição quase no máximo');
     assert.strictEqual(SaveSystem.isLostGame(GAME), false, 'save sem água/poluição no resumo não é tratado como perdido');
+});
+
+test('save: espaços por perfil (ponto seguro, alguns minutos antes, 3 manuais); jogo novo apaga só a cidade', () => {
+    const g = load('js/systems/SaveSystem.js');
+    const SaveSystem = g('SaveSystem');
+    const saves = new SaveSystem();
+    assert.strictEqual(SaveSystem.keyFor('p_ana'), SaveSystem.keyFor('p_ana', 'main'), 'o principal é a chave de sempre');
+    assert.notStrictEqual(SaveSystem.keyFor('p_ana', 'safe'), SaveSystem.keyFor('p_ana'));
+    for (const [slot, t] of [['main', 10], ['safe', 5], ['rewind', 7], ['slot_2', 3]]) {
+        assert.ok(saves.save({ ...GAME, gameTime: t }, 'p_ana', { slot }));
+    }
+    assert.strictEqual(saves.load('p_ana', 'safe').data.gameTime, 5);
+    assert.strictEqual(saves.load('p_ana').data.gameTime, 10);
+    same(saves.listSaves('p_ana').map(s => s.slot), ['main', 'safe', 'rewind', 'slot_2']);
+    assert.strictEqual(saves.getSaveInfo('p_bia', 'safe'), null, 'outro perfil não vê');
+
+    // fim de jogo: o principal fica, marcado
+    assert.ok(saves.markLost('p_ana'));
+    assert.strictEqual(saves.getSaveInfo('p_ana').lost, true);
+    assert.strictEqual(saves.load('p_ana').ok, true, 'marcado continua abrindo (o menu decide o que oferecer)');
+
+    saves.deleteCity('p_ana');
+    same(saves.listSaves('p_ana').map(s => s.slot), ['slot_2'], 'jogo novo mantém os espaços manuais');
+    saves.deleteAll('p_ana');
+    same(saves.listSaves('p_ana'), [], 'perfil apagado leva tudo');
+});
+
+test('save: ponto seguro só com a cidade bem (água, poluição longe do alarme, moradores razoáveis)', () => {
+    const SaveSystem = load('js/systems/SaveSystem.js')('SaveSystem');
+    const game = (water, pollution, satisfaction) => ({ resources: { resources: {
+        water: { current: water, max: 1000 }, pollution: { current: pollution }, population: { satisfaction }
+    } } });
+    assert.strictEqual(SaveSystem.isSafePoint(game(600, 20, 70)), true);
+    assert.strictEqual(SaveSystem.isSafePoint(game(200, 20, 70)), false, 'caixa abaixo de 25%');
+    assert.strictEqual(SaveSystem.isSafePoint(game(600, 65, 70)), false, 'poluição alta');
+    assert.strictEqual(SaveSystem.isSafePoint(game(600, 20, 30)), false, 'moradores revoltados');
+    assert.strictEqual(SaveSystem.isSafePoint(game(30, 20, 70)), false, 'derrota nunca é ponto seguro');
+    assert.strictEqual(SaveSystem.isSafePoint(null), false);
 });

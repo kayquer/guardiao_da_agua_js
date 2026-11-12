@@ -79,12 +79,43 @@ async function gameConfirm(title, text, { confirmText = 'Sim', cancelText = 'Can
 }
 
 /**
- * Pergunta com duas escolhas e "voltar". Resolve 'confirm', 'deny' ou null (cancelou, Esc ou clicou fora).
+ * Botões dentro do html com `data-pick="<valor>"` fecham o diálogo e viram a resposta (gameChoice/gamePick).
+ * Mantém o som de abrir do gameDialog.
+ */
+function wireDialogPicks(state) {
+    return () => {
+        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_modal_open');
+        Swal.getHtmlContainer()?.querySelectorAll('[data-pick]').forEach(button => {
+            button.addEventListener('click', () => { state.pick = button.dataset.pick; Swal.close(); });
+        });
+    };
+}
+
+/**
+ * Lista de escolhas: cada `[data-pick]` do html é uma opção. Resolve o valor escolhido ou null (Voltar, Esc, fora).
  * html vai para innerHTML: escape o que vier do jogador.
  */
+async function gamePick(title, html, { cancelText = 'Voltar', icon = 'question' } = {}) {
+    const state = {};
+    await gameDialog({
+        title, html, icon,
+        showConfirmButton: false,
+        showCancelButton: true,
+        cancelButtonText: cancelText,
+        didOpen: wireDialogPicks(state)
+    });
+    return state.pick ?? null;
+}
+
+/**
+ * Pergunta com duas escolhas e "voltar". Resolve 'confirm', 'deny' ou null (cancelou, Esc ou clicou fora);
+ * um `[data-pick]` no html resolve o valor dele. html vai para innerHTML: escape o que vier do jogador.
+ */
 async function gameChoice(title, html, { confirmText, denyText, cancelText = 'Voltar', icon = 'question' } = {}) {
+    const state = {};
     const result = await gameDialog({
         title, html, icon,
+        didOpen: wireDialogPicks(state),
         showDenyButton: true,
         showCancelButton: true,
         confirmButtonText: confirmText,
@@ -97,6 +128,7 @@ async function gameChoice(title, html, { confirmText, denyText, cancelText = 'Vo
             cancelButton: 'overlay-btn secondary'
         }
     });
+    if (state.pick) return state.pick;
     if (result.isConfirmed) return 'confirm';
     if (result.isDenied) return 'deny';
     return null;

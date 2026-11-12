@@ -78,6 +78,8 @@ test('partida sem volta (água quase no fim) não oferece "Continuar"', async ({
         const envelope = JSON.parse(localStorage.getItem(key));
         envelope.game.resources.resources.water.current = envelope.game.resources.resources.water.max * 0.02;
         localStorage.setItem(key, JSON.stringify(envelope));
+        // sem pontos de volta (ponto seguro do autosave acima): é o caso "não tem mais volta" (save-points.spec cobre o outro)
+        ['safe', 'rewind'].forEach(slot => localStorage.removeItem(SaveSystem.keyFor(id, slot)));
     }, TEST_PROFILE.id);
     // A água quase no fim também não sobrescreve o save
     expect(await page.evaluate(() => {

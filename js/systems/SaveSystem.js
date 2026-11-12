@@ -9,6 +9,11 @@
  * - version: SaveSystem.VERSION. Save de outra versão (ou o formato antigo, sem prédios) é recusado
  *   como 'incompatible'; JSON quebrado ou sem os campos essenciais, como 'corrupt'.
  * - summary: o que a tela de perfis mostra sem abrir o jogo inteiro (data, nº de construções...).
+ * - lost: true depois de um fim de jogo (markLost): o menu oferece voltar a um ponto anterior em vez de continuar.
+ *
+ * Espaços (slots) por perfil, 11/2026 (derrota não apaga mais a cidade):
+ *   main (o de sempre: autosave e "Salvar jogo"), safe (ponto seguro: último autosave com a cidade bem),
+ *   rewind ("alguns minutos antes", GameManager.recordSavePoints) e slot_1…slot_3 (manuais, painel "Jogos salvos").
  */
 class SaveSystem {
     static VERSION = 3; // 3: mapa novo, com rio, planície e APP (o terreno não é salvo)
@@ -17,6 +22,12 @@ class SaveSystem {
     static LOST_WATER_RATIO = 0.05;
     static LOST_POLLUTION = 90;
     static KEY_PREFIX = STORAGE_PREFIX + 'save_';
+    static SLOTS = ['main', 'safe', 'rewind', 'slot_1', 'slot_2', 'slot_3'];
+    static MANUAL_SLOTS = ['slot_1', 'slot_2', 'slot_3'];
+    // Ponto seguro (isSafePoint): caixa com água, poluição longe do alarme e moradores ao menos razoáveis
+    static SAFE_WATER_RATIO = 0.25;
+    static SAFE_POLLUTION = 60;
+    static SAFE_SATISFACTION = 40;
     // Chaves do formato antigo (um save só para todo mundo, sem prédios): nunca carregavam direito
     static LEGACY_KEYS = ['guardiao_agua_autosave', 'guardiao_agua_save_manual_save', 'guardiao_agua_save_list'];
 
@@ -42,8 +53,33 @@ class SaveSystem {
         SaveSystem.LEGACY_KEYS.forEach(key => localStorage.removeItem(key));
     }
 
-    static keyFor(profileId) {
-        return `${SaveSystem.KEY_PREFIX}${profileId || 'sem_perfil'}`;
+    /** Chave do espaço: `main` é a chave antiga (saves de antes continuam abrindo); os outros ganham `__<slot>`. */
+    static keyFor(profileId, slot = 'main') {
+        const base = `${SaveSystem.KEY_PREFIX}${profileId || 'sem_perfil'}`;
+        return !slot || slot === 'main' ? base : `${base}__${slot}`;
+    }
+
+    /** Nome do espaço para a tela. */
+    static slotLabel(slot) {
+        return {
+            main: 'Jogo atual', safe: 'Ponto seguro', rewind: 'Alguns minutos antes',
+            slot_1: 'Espaço 1', slot_2: 'Espaço 2', slot_3: 'Espaço 3'
+        }[slot] || slot;
+    }
+
+    /**
+     * Ponto seguro: a cidade está bem o bastante para recomeçar dali (não é derrota, tem água, a poluição está
+     * longe do alarme e os moradores não estão revoltados). Puro: recebe o `game` de getSaveData.
+     */
+    static isSafePoint(game) {
+        if (!game || SaveSystem.isLostGame(game)) return false;
+        const r = game.resources?.resources;
+        if (!r) return false;
+        const water = r.water || {};
+        const capacity = water.max || water.storage || 0;
+        if (!(capacity > 0) || !(water.current / capacity >= SaveSystem.SAFE_WATER_RATIO)) return false;
+        if (!((r.pollution?.current ?? 100) < SaveSystem.SAFE_POLLUTION)) return false;
+        return (r.population?.satisfaction ?? 0) >= SaveSystem.SAFE_SATISFACTION;
     }
 
     // ===== Formato (puro: sem localStorage) =====
@@ -125,12 +161,12 @@ class SaveSystem {
     // ===== localStorage =====
 
     /** Grava o jogo do perfil. Retorna true se deu certo (cheio/bloqueado = false, com aviso). */
-    save(game, profileId, { kind = 'auto' } = {}) {
+    save(game, profileId, { kind = 'auto', slot = 'main' } = {}) {
         if (!this.storageAvailable) return false;
         try {
             const envelope = SaveSystem.buildEnvelope(game, profileId, { kind });
-            localStorage.setItem(SaveSystem.keyFor(profileId), JSON.stringify(envelope));
-            log(`💾 Jogo salvo (${kind}) para o perfil ${profileId}`);
+            localStorage.setItem(SaveSystem.keyFor(profileId, slot), JSON.stringify(envelope));
+            log(`💾 Jogo salvo (${kind}, ${slot}) para o perfil ${profileId}`);
             return true;
         } catch (error) {
             logWarn('⚠️ Não foi possível salvar o jogo:', error);
@@ -139,36 +175,70 @@ class SaveSystem {
     }
 
     /** { ok: true, data } com o conteúdo do jogo, ou { ok: false, reason } (ver parseEnvelope). */
-    load(profileId) {
+    load(profileId, slot = 'main') {
         if (!this.storageAvailable) return { ok: false, reason: 'missing' };
-        const result = SaveSystem.parseEnvelope(localStorage.getItem(SaveSystem.keyFor(profileId)), profileId);
+        const result = SaveSystem.parseEnvelope(localStorage.getItem(SaveSystem.keyFor(profileId, slot)), profileId);
         if (!result.ok) {
-            if (result.reason !== 'missing') logWarn(`⚠️ Save do perfil ${profileId} recusado: ${result.reason}`);
+            if (result.reason !== 'missing') logWarn(`⚠️ Save do perfil ${profileId} (${slot}) recusado: ${result.reason}`);
             return result;
         }
-        log(`📁 Jogo carregado do perfil ${profileId}`);
+        log(`📁 Jogo carregado do perfil ${profileId} (${slot})`);
         return { ok: true, data: result.envelope.game };
     }
 
-    hasSave(profileId) {
-        return this.storageAvailable && localStorage.getItem(SaveSystem.keyFor(profileId)) !== null;
+    hasSave(profileId, slot = 'main') {
+        return this.storageAvailable && localStorage.getItem(SaveSystem.keyFor(profileId, slot)) !== null;
     }
 
     /**
      * Resumo para a tela de perfis, sem carregar o jogo: null se não houver save;
-     * { ok: false, reason } se estiver danificado/antigo; senão { ok: true, savedAt, summary }.
+     * { ok: false, slot, reason } se estiver danificado/antigo; senão { ok: true, slot, savedAt, kind, lost, summary }.
      */
-    getSaveInfo(profileId) {
-        if (!this.hasSave(profileId)) return null;
-        const result = SaveSystem.parseEnvelope(localStorage.getItem(SaveSystem.keyFor(profileId)), profileId);
-        if (!result.ok) return { ok: false, reason: result.reason };
-        return { ok: true, savedAt: result.envelope.savedAt, kind: result.envelope.kind, summary: result.envelope.summary };
+    getSaveInfo(profileId, slot = 'main') {
+        if (!this.hasSave(profileId, slot)) return null;
+        const result = SaveSystem.parseEnvelope(localStorage.getItem(SaveSystem.keyFor(profileId, slot)), profileId);
+        if (!result.ok) return { ok: false, slot, reason: result.reason };
+        const e = result.envelope;
+        return { ok: true, slot, savedAt: e.savedAt, kind: e.kind, lost: !!e.lost, summary: e.summary };
     }
 
-    deleteSave(profileId) {
+    /** Todos os espaços com save do perfil (na ordem de SLOTS), com o resumo de cada. */
+    listSaves(profileId) {
+        return SaveSystem.SLOTS.map(slot => this.getSaveInfo(profileId, slot)).filter(Boolean);
+    }
+
+    /**
+     * Fim de jogo: o save principal fica, marcado como derrota. "Continuar" acabaria de novo na hora, então o menu
+     * oferece voltar ao ponto seguro/alguns minutos antes, outro espaço ou um jogo novo (nada é apagado sem confirmar).
+     */
+    markLost(profileId) {
+        if (!this.storageAvailable) return false;
+        const key = SaveSystem.keyFor(profileId);
+        const result = SaveSystem.parseEnvelope(localStorage.getItem(key), profileId);
+        if (!result.ok) return false;
+        try {
+            localStorage.setItem(key, JSON.stringify({ ...result.envelope, lost: true }));
+            return true;
+        } catch (error) {
+            logWarn('⚠️ Não foi possível marcar o fim de jogo no save:', error);
+            return false;
+        }
+    }
+
+    deleteSave(profileId, slot = 'main') {
         if (!this.storageAvailable) return;
-        localStorage.removeItem(SaveSystem.keyFor(profileId));
-        log(`🗑️ Jogo salvo do perfil ${profileId} apagado`);
+        localStorage.removeItem(SaveSystem.keyFor(profileId, slot));
+        log(`🗑️ Jogo salvo do perfil ${profileId} (${slot}) apagado`);
+    }
+
+    /** Jogo novo: somem o principal e os pontos automáticos daquela cidade; os espaços manuais ficam. */
+    deleteCity(profileId) {
+        ['main', 'safe', 'rewind'].forEach(slot => this.deleteSave(profileId, slot));
+    }
+
+    /** Perfil apagado: todos os espaços. */
+    deleteAll(profileId) {
+        SaveSystem.SLOTS.forEach(slot => this.deleteSave(profileId, slot));
     }
 }
 

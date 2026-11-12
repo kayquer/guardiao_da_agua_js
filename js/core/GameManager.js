@@ -972,6 +972,7 @@ class GameManager {
         this.timeScale = 1;
         this.tutorialDone = false; // TutorialSystem.complete() libera o save
         this.uiManager?.notificationLog?.clear(); // histórico de notificações é por partida
+        this.clearSavePoints?.(); // pontos de volta são da partida (core/game/SavePoints.js)
         this.techTree?.reset();
         if (this.gameOverSystem) { // as 3 declarações de emergência voltam; as ganhas em missão somem
             this.gameOverSystem.emergenciesUsed = 0;
@@ -1130,7 +1131,8 @@ class GameManager {
      * e os recursos salvos já contêm o efeito de prédios, árvores e eventos: nada é reaplicado).
      * O tutorial inicial não roda de novo. Se algo der errado, avisa e começa um jogo novo.
      */
-    loadGame(saveData) {
+    /** `welcome: false` = sem o cartão "que bom ter você de volta" (voltar a um ponto depois da derrota). */
+    loadGame(saveData, { welcome = true } = {}) {
         log('📁 Carregando jogo...');
 
         if (!this.initialized) {
@@ -1189,7 +1191,7 @@ class GameManager {
 
             this.autoSaveTimer = 0;
             this.gameState = 'playing';
-            this.uiManager?.queueWelcomeBack?.(); // "você estava em…" (ui/MissionCardUI.js)
+            if (welcome) this.uiManager?.queueWelcomeBack?.(); // "você estava em…" (ui/MissionCardUI.js)
             log('✅ Jogo carregado');
             return true;
 
@@ -1521,7 +1523,9 @@ class GameManager {
         // Partida sem volta (água quase no fim/poluição quase no máximo) não sobrescreve o save: ele não seria jogável
         const data = this.getSaveData();
         if (SaveSystem.isLostGame(data)) return false;
-        return this.saveSystem.save(data, PlayerProfile.getActive().id, { kind: 'auto' });
+        const ok = this.saveSystem.save(data, PlayerProfile.getActive().id, { kind: 'auto' });
+        if (ok) this.recordSavePoints?.(data); // ponto seguro e "alguns minutos antes" (core/game/SavePoints.js)
+        return ok;
     }
 
     /** Botão "💾 Salvar jogo" da tela de pausa. */

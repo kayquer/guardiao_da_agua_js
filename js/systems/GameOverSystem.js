@@ -159,9 +159,10 @@ class GameOverSystem {
         this.gameManager.gameState = 'gameover';
         if (typeof AudioManager !== 'undefined') AudioManager.onGameOver(); // música para, toca o fim triste
 
-        // O último autosave é de segundos antes da derrota: "Continuar" acabaria de novo na hora
+        // O último autosave é de segundos antes da derrota: "Continuar" acabaria de novo na hora. Antes ele era
+        // apagado (perdia a cidade inteira); agora fica marcado e o menu oferece voltar a um ponto anterior.
         const profile = typeof PlayerProfile !== 'undefined' ? PlayerProfile.getActive() : null;
-        if (profile) this.gameManager.saveSystem?.deleteSave(profile.id);
+        if (profile) this.gameManager.saveSystem?.markLost(profile.id);
 
         // Show game over dialog
         this.showGameOverDialog();
@@ -227,6 +228,39 @@ class GameOverSystem {
         const character = document.getElementById('gameover-character-name');
         if (character) character.textContent = TutorialSystem.displayName(message.character);
         this.renderEmergencyOffer();
+        this.renderRecoveryOptions();
+    }
+
+    /**
+     * Botões "⏪ Voltar N minutos" e "🛟 Voltar ao ponto seguro" (core/game/SavePoints.js): a derrota não precisa
+     * custar a cidade inteira. Sem ponto nenhum (derrota logo no começo), não aparecem.
+     */
+    renderRecoveryOptions() {
+        const box = document.getElementById('gameover-recovery');
+        if (!box) return;
+        const options = this.gameManager.getRecoveryOptions?.() || [];
+        box.replaceChildren(...options.map(o => {
+            const button = document.createElement('button');
+            button.className = 'tutorial-btn recovery-btn';
+            button.dataset.slot = o.slot;
+            button.textContent = o.slot === 'rewind'
+                ? `⏪ Voltar ${o.minutesBack} ${o.minutesBack === 1 ? 'minuto' : 'minutos'}`
+                : `🛟 Voltar ao ponto seguro (${o.minutesBack} min antes)`;
+            button.addEventListener('click', () => this.gameManager.restoreSavePoint(o.slot));
+            return button;
+        }));
+        box.hidden = !options.length;
+    }
+
+    /** Fecha a tela de derrota para carregar um ponto anterior (SavePoints.restoreSavePoint). */
+    dismissForRestore() {
+        const container = document.getElementById('gameover-container');
+        if (container) container.style.display = 'none';
+        const button = document.getElementById('gameover-emergency-btn');
+        if (button) button.style.display = 'none';
+        this.disposePortrait();
+        this.isGameOver = false;
+        this.gameOverReason = null;
     }
 
     getEmergenciesLeft() {

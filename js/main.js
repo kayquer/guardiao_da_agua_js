@@ -314,7 +314,7 @@ async function onProfileListClick(event) {
         const ok = await gameConfirm('Apagar perfil?', `O perfil de ${profile?.name || 'jogador'}${savedNote} será apagado deste computador.`, { confirmText: 'Apagar', icon: 'warning' });
         if (ok) {
             PlayerProfile.remove(deleteBtn.dataset.deleteId);
-            menuSaves().deleteSave(deleteBtn.dataset.deleteId);
+            menuSaves().deleteAll(deleteBtn.dataset.deleteId); // todos os espaços (principal, pontos de volta, manuais)
             renderProfileList();
         }
         return;
@@ -344,42 +344,117 @@ async function onStartClick() {
     }
 }
 
+/** Ícone de cada espaço de save na lista do menu. */
+const SAVE_SLOT_ICONS = { main: '▶', safe: '🛟', rewind: '⏪', slot_1: '💾', slot_2: '💾', slot_3: '💾' };
+
+/** Botão de um save na lista (gamePick): nome do espaço, quando foi salvo e o tamanho da cidade. */
+function saveOptionHtml(info) {
+    const s = info.summary || {};
+    const label = info.slot === 'main' ? 'Continuar o jogo atual' : SaveSystem.slotLabel(info.slot);
+    return `<button type="button" class="overlay-btn secondary save-pick" data-pick="${info.slot}">
+        <b>${SAVE_SLOT_ICONS[info.slot] || '💾'} ${label}</b>
+        <small>${formatSavedAt(info.savedAt)} · ${s.buildingCount || 0} ${s.buildingCount === 1 ? 'construção' : 'construções'} · ${s.population || 0} habitantes</small>
+    </button>`;
+}
+
+/** Saves do perfil que dá para abrir (sem o principal marcado como derrota). */
+function playableSaves(saves, profileId) {
+    return saves.listSaves(profileId).filter(s => s.ok && !(s.slot === 'main' && s.lost));
+}
+
+/** Carrega um espaço e entra no jogo; save com problema avisa e volta ao menu. */
+async function loadSavedSlot(profile, slot) {
+    const result = menuSaves().load(profile.id, slot);
+    if (!result.ok) {
+        await gameAlert('Jogo salvo com problema', SaveSystem.reasonText(result.reason), 'warning');
+        return;
+    }
+    return startNewGame({ saveData: result.data });
+}
+
+/** "Novo jogo" confirmado: some a cidade atual (principal e pontos de volta); os espaços manuais ficam. */
+async function confirmNewGame(profile) {
+    const keeps = SaveSystem.MANUAL_SLOTS.some(slot => menuSaves().hasSave(profile.id, slot));
+    const sure = await gameConfirm('Começar um jogo novo?',
+        `O jogo atual de ${profile.name} será apagado e não dá para desfazer.${keeps ? ' Os espaços salvos à mão continuam.' : ''}`,
+        { confirmText: 'Apagar e começar do zero', cancelText: 'Voltar', icon: 'warning' });
+    if (!sure) return;
+    menuSaves().deleteCity(profile.id);
+    return startNewGame();
+}
+
+/** Lista de todos os jogos salvos do perfil + jogo novo. */
+async function pickSavedGame(profile) {
+    const list = playableSaves(menuSaves(), profile.id);
+    if (!list.length) return startNewGame();
+    const pick = await gamePick(`Jogos salvos de ${escapeHtml(profile.name)}`,
+        `<div class="save-picks">${list.map(saveOptionHtml).join('')}
+        <button type="button" class="overlay-btn secondary save-pick save-pick--new" data-pick="new"><b>🆕 Começar um jogo novo</b></button></div>`,
+        { icon: 'question' });
+    if (!pick) return;
+    if (pick === 'new') return confirmNewGame(profile);
+    return loadSavedSlot(profile, pick);
+}
+
 /**
- * Perfil sem jogo salvo: começa um jogo novo. Com jogo salvo: "Continuar" carrega e "Novo jogo" apaga o save
- * (depois de confirmar). Save danificado ou de versão antiga: avisa, apaga e começa um novo.
+ * Cidade que terminou (fim de jogo ou água/poluição sem volta): em vez de apagar, oferece os pontos de volta
+ * (alguns minutos antes, ponto seguro) e os espaços manuais. Sem nenhum, começa um jogo novo como antes.
+ */
+async function recoverLostCity(profile) {
+    const saves = menuSaves();
+    const name = escapeHtml(profile.name);
+    const list = playableSaves(saves, profile.id).filter(s => s.slot !== 'main');
+    if (!list.length) {
+        await gameAlert('Essa cidade não tem mais volta',
+            `A última partida de ${name} parou com a água quase acabando ou a poluição quase no máximo. ` +
+            'Se continuasse, o jogo terminaria logo em seguida. Vamos começar um jogo novo, e desta vez você já sabe o que evitar!',
+            'warning');
+        saves.deleteCity(profile.id);
+        return startNewGame();
+    }
+    const pick = await gamePick('A cidade parou, mas não acabou',
+        `<p>A última partida de ${name} terminou com a cidade sem água ou poluída demais. Dá para voltar a um momento anterior:</p>
+        <div class="save-picks">${list.map(saveOptionHtml).join('')}
+        <button type="button" class="overlay-btn secondary save-pick save-pick--new" data-pick="new"><b>🆕 Começar um jogo novo</b></button></div>`,
+        { icon: 'warning' });
+    if (!pick) return;
+    if (pick === 'new') return confirmNewGame(profile);
+    return loadSavedSlot(profile, pick);
+}
+
+/**
+ * Perfil sem jogo salvo: começa um jogo novo (ou abre a lista, se houver espaços manuais). Com jogo salvo:
+ * "Continuar" carrega, "Novo jogo" apaga a cidade (depois de confirmar) e "Outros jogos salvos" abre a lista.
+ * Save danificado ou de versão antiga: avisa e apaga. Cidade que terminou: oferece voltar a um ponto anterior.
  */
 async function chooseGameForProfile(profileId) {
     const profile = PlayerProfile.activate(profileId);
     if (!profile) return;
     const saves = menuSaves();
     const info = saves.getSaveInfo(profileId);
-    if (!info) return startNewGame();
+    if (!info) return playableSaves(saves, profileId).length ? pickSavedGame(profile) : startNewGame();
 
     const name = escapeHtml(profile.name);
     if (!info.ok) {
         await gameAlert('Jogo salvo com problema', `${SaveSystem.reasonText(info.reason)} Vamos começar um jogo novo para ${profile.name}.`, 'warning');
         saves.deleteSave(profileId);
-        return startNewGame();
+        return playableSaves(saves, profileId).length ? pickSavedGame(profile) : startNewGame();
     }
 
-    // Água quase no fim ou poluição quase no máximo: continuar acabaria o jogo em segundos
+    // Fim de jogo, ou água quase no fim/poluição quase no máximo: continuar acabaria o jogo em segundos
     const saved = saves.load(profileId);
-    if (saved.ok && SaveSystem.isLostGame(saved.data)) {
-        await gameAlert('Essa cidade não tem mais volta',
-            `A última partida de ${name} parou com a água quase acabando ou a poluição quase no máximo. ` +
-            'Se continuasse, o jogo terminaria logo em seguida. Vamos começar um jogo novo, e desta vez você já sabe o que evitar!',
-            'warning');
-        saves.deleteSave(profileId);
-        return startNewGame();
-    }
+    if (info.lost || (saved.ok && SaveSystem.isLostGame(saved.data))) return recoverLostCity(profile);
+    const others = playableSaves(saves, profileId).filter(s => s.slot !== 'main');
 
     const summary = info.summary;
     const day = summary.gameClockTime ? new Date(summary.gameClockTime).toLocaleDateString('pt-BR') : '';
     const choice = await gameChoice(`Olá de novo, ${name}!`, // o título do SweetAlert também é HTML
         `<p>Você tem um jogo salvo em <b>${formatSavedAt(info.savedAt)}</b>.</p>
         <p class="save-summary">${uiIcon('ui-build')} ${summary.buildingCount} ${summary.buildingCount === 1 ? 'construção' : 'construções'} · ${uiIcon('res-population')} ${summary.population} habitantes · ${uiIcon('ui-target')} ${summary.completedQuests} ${summary.completedQuests === 1 ? 'missão concluída' : 'missões concluídas'}${day ? ` · 📅 ${day}` : ''}</p>
-        <p>Quer continuar de onde parou, ${name}?</p>`,
+        <p>Quer continuar de onde parou, ${name}?</p>
+        ${others.length ? `<button type="button" class="overlay-btn secondary save-others" data-pick="others">📂 Outros jogos salvos (${others.length})</button>` : ''}`,
         { confirmText: '▶ Continuar', denyText: '🆕 Novo jogo', icon: 'question' });
+    if (choice === 'others') return pickSavedGame(profile);
     if (choice === 'confirm') {
         const result = saves.load(profileId);
         if (!result.ok) {
@@ -389,14 +464,7 @@ async function chooseGameForProfile(profileId) {
         }
         return startNewGame({ saveData: result.data });
     }
-    if (choice === 'deny') {
-        const sure = await gameConfirm('Começar um jogo novo?',
-            `O jogo salvo de ${profile.name} será apagado e não dá para desfazer.`,
-            { confirmText: 'Apagar e começar do zero', cancelText: 'Voltar', icon: 'warning' });
-        if (!sure) return;
-        saves.deleteSave(profileId);
-        return startNewGame();
-    }
+    if (choice === 'deny') return confirmNewGame(profile);
 }
 
 function initializeProfileScreen() {

@@ -46,7 +46,7 @@
     <link rel="stylesheet" href="css/styles.css?v=479ea2e3">
     <link rel="stylesheet" href="css/ui.css?v=0d16bd32">
     <link rel="stylesheet" href="css/responsive.css?v=23c12369">
-    <link rel="stylesheet" href="css/tutorial.css?v=ac763a0b">
+    <link rel="stylesheet" href="css/tutorial.css?v=e47f4e97">
     <link rel="stylesheet" href="css/lessons.css?v=e68e4db9">
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
     <link rel="stylesheet" href="css/player.css?v=ecaea69e">
@@ -62,6 +62,7 @@
     <link rel="stylesheet" href="css/events.css?v=f06ffb3d">
     <link rel="stylesheet" href="css/event-decision.css?v=a2b7ac78">
     <link rel="stylesheet" href="css/mission-bar.css?v=b538d06b">
+    <link rel="stylesheet" href="css/saves.css?v=c3285096">
     <link rel="stylesheet" href="css/player-menu.css?v=543aadee">
     <link rel="stylesheet" href="css/speed-menu.css?v=b403791f">
     <link rel="stylesheet" href="css/build-menu.css?v=6a2bed6d">
@@ -547,6 +548,7 @@
                     <button id="btn-achievements" class="overlay-btn secondary" aria-haspopup="dialog">🏅 Conquistas</button>
                     <button id="btn-research" class="overlay-btn secondary" aria-haspopup="dialog">📊 Dados da pesquisa</button>
                     <button id="btn-save-game" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-save.svg" alt="" aria-hidden="true" draggable="false"> Salvar jogo</button>
+                    <button id="btn-saves" class="overlay-btn secondary" aria-haspopup="dialog">📂 Jogos salvos</button>
                     <button id="btn-main-menu" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-home.svg" alt="" aria-hidden="true" draggable="false"> Menu principal</button>
                 </div>
             </div>
@@ -590,6 +592,17 @@
                 </div>
                 <div class="overlay-buttons nh-buttons">
                     <button id="btn-settings-back" class="overlay-btn primary">⬅ Voltar</button>
+                </div>
+            </div>
+            <!-- Jogos salvos: atual, ponto seguro, alguns minutos antes e 3 espaços manuais (ui/SavesUI.js) -->
+            <div id="saves-panel" class="overlay-content notif-history saves-panel" role="dialog" aria-modal="true" aria-labelledby="saves-heading" hidden>
+                <div class="nh-head">
+                    <h2 id="saves-heading">📂 Jogos salvos</h2>
+                </div>
+                <p class="saves-intro">Se a cidade der errado, dá para voltar a um destes momentos. Os espaços 1, 2 e 3 são seus: salve neles antes de arriscar.</p>
+                <ul id="saves-list" class="saves-list"></ul>
+                <div class="overlay-buttons nh-buttons">
+                    <button id="btn-saves-back" class="overlay-btn primary">⬅ Voltar</button>
                 </div>
             </div>
             <!-- Vitrine: conquistas e estrelas das missões (ui/AchievementsUI.js) -->
@@ -796,6 +809,8 @@
                             <button id="gameover-emergency-btn" class="tutorial-btn emergency-btn" style="display: none;" onclick="window.gameManager?.gameOverSystem?.declareEmergency()">
                                 🚨 Declarar situação de emergência
                             </button>
+                            <!-- Pontos de volta (GameOverSystem.renderRecoveryOptions): voltar alguns minutos / ponto seguro -->
+                            <span id="gameover-recovery" class="gameover-recovery" hidden></span>
                             <button id="gameover-menu-btn" class="tutorial-btn" onclick="window.gameManager?.gameOverSystem?.returnToMainMenu()">
                                 <img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-home.svg" alt="" aria-hidden="true" draggable="false"> Voltar ao Menu Principal
                             </button>
@@ -807,7 +822,7 @@
     </div>
 
     <!-- Utilitários primeiro -->
-    <script src="js/utils/GameUtils.js?v=bed3fe79"></script>
+    <script src="js/utils/GameUtils.js?v=a634beeb"></script>
     <script src="js/utils/Icons.js?v=162e9d7c"></script>
     <script src="js/utils/GameLogo.js?v=760d4841"></script>
     <script src="js/utils/AssetLoader.js?v=a1f12c46"></script>
@@ -824,10 +839,11 @@
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=f9674bb9"></script>
 
-    <script src="js/core/GameManager.js?v=368f6464"></script>
+    <script src="js/core/GameManager.js?v=9d67870f"></script>
     <script src="js/core/game/Diagnostics.js?v=8ec9d8c0"></script>
     <script src="js/core/game/SelectionVisuals.js?v=034e13b1"></script>
     <script src="js/core/game/CameraGuard.js?v=2024c210"></script>
+    <script src="js/core/game/SavePoints.js?v=2c53e657"></script>
 
     <!-- Game systems -->
     <script src="js/systems/BuildingSystem.js?v=d8f17198"></script>
@@ -847,13 +863,14 @@
     <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
     <script src="js/systems/ResourceTrends.js?v=16c746be"></script>
     <script src="js/systems/DeclineWatch.js?v=e0e70d98"></script>
-    <script src="js/systems/UIManager.js?v=4488e93f"></script>
+    <script src="js/systems/UIManager.js?v=25b0c13d"></script>
     <script src="js/systems/ui/MobileTouch.js?v=91fdcc8a"></script>
     <script src="js/systems/ui/StudyBookUI.js?v=e2076f6d"></script>
     <script src="js/systems/ui/LoanUI.js?v=58e6338c"></script>
     <script src="js/systems/ui/ResourceHud.js?v=f31ddbce"></script>
     <script src="js/systems/ui/IdleHints.js?v=c75e6450"></script>
     <script src="js/systems/ui/AchievementsUI.js?v=ac1a3b8d"></script>
+    <script src="js/systems/ui/SavesUI.js?v=1e957956"></script>
     <script src="js/systems/ui/PlayerMenu.js?v=44d0da74"></script>
     <script src="js/systems/ui/MissionCardUI.js?v=42a7d0ea"></script>
     <script src="js/systems/ui/ResourcePanels.js?v=a33efe29"></script>
@@ -877,12 +894,12 @@
     <script src="js/systems/AchievementTracks.js?v=7da8c8a5"></script>
     <script src="js/systems/MissionReminders.js?v=203dd893"></script>
     <script src="js/systems/EventSystem.js?v=5ef959da"></script>
-    <script src="js/systems/SaveSystem.js?v=0e4354cb"></script>
+    <script src="js/systems/SaveSystem.js?v=f87b5ff7"></script>
     <script src="js/systems/StudySystem.js?v=419d9bd1"></script>
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
     <script src="js/systems/TutorialSystem.js?v=510dded9"></script>
     <script src="js/systems/RescueGuides.js?v=c4db5930"></script>
-    <script src="js/systems/GameOverSystem.js?v=403ffaf1"></script>
+    <script src="js/systems/GameOverSystem.js?v=f9097b91"></script>
     <script src="js/systems/PlayerProfile.js?v=a952c548"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
@@ -901,6 +918,6 @@
     <script src="js/systems/intro/MenuIntro.js?v=06818672"></script>
 
     <!-- Main initialization -->
-    <script src="js/main.js?v=ce27aa25"></script>
+    <script src="js/main.js?v=2520095c"></script>
 </body>
 </html>

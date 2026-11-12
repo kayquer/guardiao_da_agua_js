@@ -816,6 +816,14 @@
 
 #gameover-container .emergency-btn small { opacity: 0.9; }
 
+/* Pontos de volta (GameOverSystem.renderRecoveryOptions): a derrota não apaga a cidade */
+#gameover-container .gameover-recovery { display: contents; }
+#gameover-container .recovery-btn {
+    background: linear-gradient(180deg, #4fc3f7, #0288d1);
+    border-color: #fff;
+    color: #fff;
+}
+
 #gameover-container .emergency-offer {
     margin-top: 0.8rem;
     padding: 0.6rem 0.8rem;

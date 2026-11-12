@@ -73,6 +73,12 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         // core/game/Diagnostics (o monitoramento roda no loop; aqui a leitura direta)
         gm.getMemoryInfo();
 
+        // core/game/SavePoints + ui/SavesUI (o fluxo completo está em tests/save-points.spec.js)
+        gm.recordSavePoints(gm.getSaveData());
+        gm.getRecoveryOptions();
+        gm.uiManager.openSavesPanel();
+        gm.uiManager.closeSavesPanel({ focus: false });
+
         // ui/MissionUI
         const qs = gm.questSystem;
         qs.openMissionInterface();
