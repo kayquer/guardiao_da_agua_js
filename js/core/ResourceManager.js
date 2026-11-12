@@ -437,6 +437,37 @@ class ResourceManager {
         return this.gameManager?.questSystem?.getReputationModifiers?.() || { satisfaction: 0, income: 1, pollution: 0 };
     }
 
+    // ===== BALANÇO DA BACIA (cartão de missão, 11/2026) =====
+    /**
+     * Semáforo por conceito, para o jogador ver O QUE vai bem e o que não vai (não só as estrelas):
+     * [{ id, label, level: 'good'|'ok'|'bad', value, text, tip }] para aquífero, rio, esgoto e energia.
+     * Mesmas faixas do jogo: aquífero abaixo de AQUIFER_LOW rende menos; rio abaixo de RIVER_LOW também.
+     */
+    getBasinReport() {
+        const r = this.resources;
+        const level = (v, good, ok) => (v >= good ? 'good' : v >= ok ? 'ok' : 'bad');
+        const aquifer = this.getAquiferLevel();
+        const river = this.getRiverLevel();
+        const balance = this.getPollutionBalance();
+        const people = r.population?.current || 0;
+        const sewageRatio = balance.sewage > 0 ? balance.reduction / balance.sewage : Infinity;
+        const usesPower = (r.electricity?.consumption || 0) > 0;
+        const power = usesPower ? (r.electricity?.efficiency ?? 1) : 1;
+        const items = [
+            { id: 'aquifer', label: 'Aquífero', value: Math.round(aquifer), level: level(aquifer, 60, ResourceManager.AQUIFER_LOW),
+                text: `${Math.round(aquifer)}%`, tip: 'Bombas e poços tiram mais do que a chuva devolve: plante árvores e segure a chuva no chão.' },
+            { id: 'river', label: 'Rio', value: Math.round(river), level: level(river, 70, ResourceManager.RIVER_LOW ?? 40),
+                text: `${Math.round(river)}%`, tip: 'A captação está baixando o rio: ETE, filtros e mata ciliar ajudam a devolver água.' },
+            { id: 'sewage', label: 'Esgoto', value: Number.isFinite(sewageRatio) ? Math.round(sewageRatio * 100) : 100,
+                level: people < 50 ? 'good' : level(sewageRatio, 1, 0.6),
+                text: people < 50 ? 'pouco ainda' : sewageRatio >= 1 ? 'tratado' : `${Math.round(Math.min(1, sewageRatio) * 100)}% tratado`,
+                tip: 'Tem mais morador do que a limpeza aguenta: construa uma ETE antes de abrir bairros novos.' },
+            { id: 'energy', label: 'Energia', value: Math.round(power * 100), level: level(power, 1, 0.5),
+                text: usesPower ? `${Math.round(power * 100)}%` : 'sem uso', tip: 'Falta energia: os prédios rendem menos. Uma usina limpa resolve sem sujar o ar.' }
+        ];
+        return items;
+    }
+
     // ===== AQUÍFERO (água subterrânea) =====
     // Bombas e poços (config.groundwater) tiram água do aquífero; chuva e áreas verdes (aquiferRecharge) devolvem.
     // Abaixo de AQUIFER_LOW, bombas e poços rendem menos: bombear demais seca a fonte.

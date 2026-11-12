@@ -115,8 +115,9 @@ class PropSystem {
             }
             this.buildChunk(key, items, signature);
         });
-        // Caderno de campo: só o que já está desenhado (modelo carregado) conta como "apareceu"
-        this.gameManager.uiManager?.onPropsPlanned?.(this.placements.filter(p => this.geometry.get(p.id)));
+        // Caderno de campo: o plano inteiro (não só o que já tem modelo): um bicho cujo .glb termina de baixar depois
+        // não pode virar "descoberta" falsa; se o modelo ainda não chegou, ele aparece em instantes
+        this.gameManager.uiManager?.onPropsPlanned?.(this.placements);
     }
 
     /** Baixa o .glb uma vez e guarda só a geometria (cores do material viram cor de vértice). */

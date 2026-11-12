@@ -145,18 +145,37 @@ mixin(UIManager, {
             ? `<p class="mission-card-tip">${uiIcon('status-tip')} Na próxima missão, para 3 estrelas: ${missed[0].charAt(0).toLowerCase() + missed[0].slice(1)}.</p>`
             : `<p class="mission-card-tip perfect">${uiIcon('status-star')} Três estrelas! A cidade terminou a missão em ótima forma.</p>`;
         const praise = ['Missão cumprida!', 'Muito bem!', 'Excelente!'][stars - 1];
+        const basin = this.renderBasinReport();
         this.openMissionCard({
             kicker: `${praise} ${PlayerProfile.displayName()}, você concluiu:`,
             title: PlayerProfile.personalize(quest.title),
             body: `<div class="mission-card-stars stars-${stars}" aria-label="${stars} de 3 estrelas">${starRow}</div>
                 <ul class="mission-card-goals">${goalRows}</ul>
                 ${rewards.length ? `<div class="mission-card-rewards">${rewards.map(r => `<span class="reward-chip">${r}</span>`).join('')}</div>` : ''}
+                ${basin}
                 ${tip}`,
             button: 'Continuar',
             className: `stars-${stars}`
         });
         this.notificationLog?.add?.(`Missão completa: ${PlayerProfile.personalize(quest.title)} (${stars} de 3 estrelas)`, 'success',
             { game: this.gameManager.gameTime || 0 });
+    },
+
+    /**
+     * "Como está a bacia" (ResourceManager.getBasinReport): aquífero, rio, esgoto e energia com símbolo além da cor
+     * (✓ bem, ! atenção, ✕ mal) e a dica do primeiro que vai mal. É o retorno por conceito, não só pelas estrelas.
+     */
+    renderBasinReport() {
+        const report = this.gameManager.resourceManager?.getBasinReport?.();
+        if (!report?.length) return '';
+        const mark = { good: '✓', ok: '!', bad: '✕' };
+        const chips = report.map(i => `<li class="basin-chip basin-${i.level}"><span class="basin-mark" aria-hidden="true">${mark[i.level]}</span><b>${i.label}</b> ${i.text}</li>`).join('');
+        const worst = report.find(i => i.level === 'bad'); // dica só para o que vai mal (o cartão não cresce à toa)
+        return `<div class="mission-card-basin">
+            <p class="mission-card-text"><b>Como está a bacia</b></p>
+            <ul class="basin-chips" aria-label="Como está a bacia">${chips}</ul>
+            ${worst ? `<p class="basin-tip">${uiIcon('status-tip')} ${worst.label}: ${worst.tip}</p>` : ''}
+        </div>`;
     },
 
     showWelcomeBack() {

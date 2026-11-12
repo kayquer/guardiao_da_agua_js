@@ -37,7 +37,7 @@ test.describe('conquistas, lembretes e socorro', () => {
         await expect(page.locator('.ach-track')).toHaveCount(tracks);
         await expect(page.locator('.ach-track.lvl-1')).toContainText('Água Correndo');
         await expect(page.locator('.ach-track.lvl-1')).toContainText('Rio Cheio'); // próximo nível
-        await expect(page.locator('.ach-badge')).toHaveCount(4); // as conquistas antigas continuam
+        await expect(page.locator('.ach-badge')).toHaveCount(await page.evaluate(() => Object.keys(ACHIEVEMENTS).length)); // conquistas de missão e do Paulo
     });
 
     test('missão parada lembra o que falta e o atalho abre o prédio', async ({ page }) => {

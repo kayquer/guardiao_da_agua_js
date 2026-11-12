@@ -200,9 +200,9 @@ class AudioManager {
         return this.manifest[this.resolve(key)] || null;
     }
 
-    /** Sorteia uma variação sem repetir a última. */
-    pickFile(key, files) {
-        if (files.length === 1) return files[0];
+    /** Sorteia uma variação sem repetir a última; `fixed` (alerta crítico) = sempre a primeira. */
+    pickFile(key, files, fixed = false) {
+        if (files.length === 1 || fixed) return files[0];
         const last = this.lastVariant.get(key);
         let i = Math.floor(Math.random() * files.length);
         if (i === last) i = (i + 1 + Math.floor(Math.random() * (files.length - 1))) % files.length;
@@ -326,7 +326,7 @@ class AudioManager {
         if (opts.ifQuiet && now - this.lastSfxAt < opts.ifQuiet) return false;
         this.lastPlayAt.set(k, now);
         this.lastSfxAt = now;
-        const file = this.pickFile(k, entry.files);
+        const file = this.pickFile(k, entry.files, entry.fixed);
         const gain = (volume ?? 1) * (entry.volume ?? 1) * this.categoryVolume(entry.kind);
         if (gain <= 0) return false;
         return this.playFile(file, gain, opts);

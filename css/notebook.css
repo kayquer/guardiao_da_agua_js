@@ -31,3 +31,6 @@
 .nb-clue { font-style: italic; }
 
 .toast.toast--notebook { border-left: 6px solid #2e7d32; }
+
+/* o painel (.notif-history) pinta títulos de branco com contorno: no papel claro eles sumiam */
+.nb-text b { color: #1a2a3a; text-shadow: none; -webkit-text-stroke: 0; font-size: 1rem; }

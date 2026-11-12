@@ -44,6 +44,13 @@ test('sem áudio órfão em Sounds/ e todo áudio tem prompt em Sounds/_prompts.
     assert.deepStrictEqual(missing, [], `sem registro em _prompts.json: ${missing.join(', ')}`);
 });
 
+test('alertas críticos tocam sempre o mesmo som (fixed): o jogador reconhece o sinal na hora', () => {
+    const critical = Object.keys(MANIFEST).filter(k => /^sfx_alert_(critical|warning|water|energy|pollution|money|population|satisfaction)$/.test(k));
+    assert.strictEqual(critical.length, 8);
+    for (const k of critical) assert.strictEqual(MANIFEST[k].fixed, true, k);
+    assert.ok(!MANIFEST.sfx_alert_recover.fixed, 'o alívio pode variar');
+});
+
 test('apelidos antigos apontam para chaves que existem', () => {
     for (const [alias, key] of Object.entries(ALIASES)) assert.ok(MANIFEST[key], `${alias} → ${key} não existe`);
     // Chaves que o código antigo usava continuam tocando

@@ -4,6 +4,8 @@
  *   kind: music (streaming, HTMLAudio) · jingle (curto, buffer, abaixa a música) · ambient (loop longo em streaming)
  *         · sfx (curto, buffer pré-carregado) · loop (efeito curto em loop, buffer) · voice (vozes dos personagens)
  *   volume: 0-1 relativo (a categoria e o geral multiplicam) · gap: ms mínimos entre dois toques da mesma chave.
+ *   fixed: true = toca sempre a primeira variação (alertas críticos: o jogador reconhece o sinal na hora; as outras
+ *   ficam no manifesto para o caso de trocar o som escolhido).
  * Origem e prompts: Sounds/_prompts.json (músicas Google Lyria 3 via OpenRouter, efeitos ElevenLabs Sound Effects v2).
  * tests/unit/audio.test.js: todo arquivo existe, toda chave usada no código existe aqui e não sobra áudio órfão em Sounds/.
  */
@@ -23,8 +25,8 @@ const SOUND_MANIFEST = {
 
     // ===== Interface, ações, recursos, missões e vozes (Player) =====
     sfx_achievement: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_achievement.mp3', 'Sounds/SFX/Player/sfx_achievement_2.mp3', 'Sounds/SFX/Player/sfx_achievement_3.mp3'], volume: 0.75, gap: 1000 },
-    sfx_alert_critical: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_alert_critical.mp3', 'Sounds/SFX/Player/sfx_alert_critical_2.mp3', 'Sounds/SFX/Player/sfx_alert_critical_3.mp3'], volume: 0.75, gap: 1500 },
-    sfx_alert_warning: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_alert_warning.mp3', 'Sounds/SFX/Player/sfx_alert_warning_2.mp3', 'Sounds/SFX/Player/sfx_alert_warning_3.mp3'], volume: 0.7, gap: 1500 },
+    sfx_alert_critical: { kind: 'sfx', fixed: true, files: ['Sounds/SFX/Player/sfx_alert_critical.mp3', 'Sounds/SFX/Player/sfx_alert_critical_2.mp3', 'Sounds/SFX/Player/sfx_alert_critical_3.mp3'], volume: 0.75, gap: 1500 },
+    sfx_alert_warning: { kind: 'sfx', fixed: true, files: ['Sounds/SFX/Player/sfx_alert_warning.mp3', 'Sounds/SFX/Player/sfx_alert_warning_2.mp3', 'Sounds/SFX/Player/sfx_alert_warning_3.mp3'], volume: 0.7, gap: 1500 },
     sfx_axe: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_axe.mp3', 'Sounds/SFX/Player/sfx_axe_2.mp3', 'Sounds/SFX/Player/sfx_axe_3.mp3'], volume: 0.6, gap: 500 },
     sfx_book_close: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_book_close.mp3', 'Sounds/SFX/Player/sfx_book_close_2.mp3', 'Sounds/SFX/Player/sfx_book_close_3.mp3'], volume: 0.6, gap: 300 },
     sfx_book_open: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_book_open.mp3', 'Sounds/SFX/Player/sfx_book_open_2.mp3', 'Sounds/SFX/Player/sfx_book_open_3.mp3'], volume: 0.7, gap: 300 },
@@ -137,12 +139,12 @@ const SOUND_MANIFEST = {
     sfx_car_horn: { kind: 'sfx', files: ['Sounds/SFX/Environment/sfx_car_horn.mp3', 'Sounds/SFX/Environment/sfx_car_horn_2.mp3', 'Sounds/SFX/Environment/sfx_car_horn_3.mp3'], volume: 0.35, gap: 4000 },
     sfx_lightning_flash: { kind: 'sfx', files: ['Sounds/SFX/Environment/sfx_lightning_flash.mp3', 'Sounds/SFX/Environment/sfx_lightning_flash_2.mp3', 'Sounds/SFX/Environment/sfx_lightning_flash_3.mp3'], volume: 0.55, gap: 300 },
     sfx_storm_extra: { kind: 'sfx', files: ['Sounds/SFX/Environment/sfx_storm_extra_1.mp3', 'Sounds/SFX/Environment/sfx_storm_extra_2.mp3', 'Sounds/SFX/Environment/sfx_storm_extra_3.mp3', 'Sounds/SFX/Environment/sfx_storm_extra_4.mp3', 'Sounds/SFX/Environment/sfx_storm_extra_5.mp3'], volume: 0.55, gap: 6000 },
-    sfx_alert_water: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_alert_water_1.mp3', 'Sounds/SFX/Player/sfx_alert_water_2.mp3', 'Sounds/SFX/Player/sfx_alert_water_3.mp3'], volume: 0.6, gap: 4000 },
-    sfx_alert_energy: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_alert_energy_1.mp3', 'Sounds/SFX/Player/sfx_alert_energy_2.mp3', 'Sounds/SFX/Player/sfx_alert_energy_3.mp3'], volume: 0.6, gap: 4000 },
-    sfx_alert_pollution: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_alert_pollution_1.mp3', 'Sounds/SFX/Player/sfx_alert_pollution_2.mp3', 'Sounds/SFX/Player/sfx_alert_pollution_3.mp3'], volume: 0.6, gap: 4000 },
-    sfx_alert_money: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_alert_money_1.mp3', 'Sounds/SFX/Player/sfx_alert_money_2.mp3', 'Sounds/SFX/Player/sfx_alert_money_3.mp3'], volume: 0.6, gap: 4000 },
-    sfx_alert_population: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_alert_population_1.mp3', 'Sounds/SFX/Player/sfx_alert_population_2.mp3', 'Sounds/SFX/Player/sfx_alert_population_3.mp3'], volume: 0.6, gap: 4000 },
-    sfx_alert_satisfaction: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_alert_satisfaction_1.mp3', 'Sounds/SFX/Player/sfx_alert_satisfaction_2.mp3', 'Sounds/SFX/Player/sfx_alert_satisfaction_3.mp3'], volume: 0.6, gap: 4000 },
+    sfx_alert_water: { kind: 'sfx', fixed: true, files: ['Sounds/SFX/Player/sfx_alert_water_1.mp3', 'Sounds/SFX/Player/sfx_alert_water_2.mp3', 'Sounds/SFX/Player/sfx_alert_water_3.mp3'], volume: 0.6, gap: 4000 },
+    sfx_alert_energy: { kind: 'sfx', fixed: true, files: ['Sounds/SFX/Player/sfx_alert_energy_1.mp3', 'Sounds/SFX/Player/sfx_alert_energy_2.mp3', 'Sounds/SFX/Player/sfx_alert_energy_3.mp3'], volume: 0.6, gap: 4000 },
+    sfx_alert_pollution: { kind: 'sfx', fixed: true, files: ['Sounds/SFX/Player/sfx_alert_pollution_1.mp3', 'Sounds/SFX/Player/sfx_alert_pollution_2.mp3', 'Sounds/SFX/Player/sfx_alert_pollution_3.mp3'], volume: 0.6, gap: 4000 },
+    sfx_alert_money: { kind: 'sfx', fixed: true, files: ['Sounds/SFX/Player/sfx_alert_money_1.mp3', 'Sounds/SFX/Player/sfx_alert_money_2.mp3', 'Sounds/SFX/Player/sfx_alert_money_3.mp3'], volume: 0.6, gap: 4000 },
+    sfx_alert_population: { kind: 'sfx', fixed: true, files: ['Sounds/SFX/Player/sfx_alert_population_1.mp3', 'Sounds/SFX/Player/sfx_alert_population_2.mp3', 'Sounds/SFX/Player/sfx_alert_population_3.mp3'], volume: 0.6, gap: 4000 },
+    sfx_alert_satisfaction: { kind: 'sfx', fixed: true, files: ['Sounds/SFX/Player/sfx_alert_satisfaction_1.mp3', 'Sounds/SFX/Player/sfx_alert_satisfaction_2.mp3', 'Sounds/SFX/Player/sfx_alert_satisfaction_3.mp3'], volume: 0.6, gap: 4000 },
     sfx_alert_recover: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_alert_recover_1.mp3', 'Sounds/SFX/Player/sfx_alert_recover_2.mp3', 'Sounds/SFX/Player/sfx_alert_recover_3.mp3'], volume: 0.6, gap: 4000 },
     sfx_thunder_far: { kind: 'sfx', files: ['Sounds/SFX/Environment/sfx_thunder_far_1.mp3', 'Sounds/SFX/Environment/sfx_thunder_far_2.mp3', 'Sounds/SFX/Environment/sfx_thunder_far_3.mp3'], volume: 0.6, gap: 1200 },
     sfx_thunder_near: { kind: 'sfx', files: ['Sounds/SFX/Environment/sfx_thunder_near_1.mp3', 'Sounds/SFX/Environment/sfx_thunder_near_2.mp3', 'Sounds/SFX/Environment/sfx_thunder_near_3.mp3'], volume: 0.7, gap: 1200 },

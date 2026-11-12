@@ -35,6 +35,9 @@ test('missão concluída: cartão com estrelas pausa o jogo e fecha com Enter', 
     await expect(card.locator('.mission-card-star.earned')).toHaveCount(3);
     await expect(card.locator('.mission-card-goals li.done')).toHaveCount(3);
     await expect(card.locator('.reward-chip').first()).toContainText('+50% pelas estrelas');
+    // balanço por conceito: aquífero, rio, esgoto e energia, com símbolo além da cor
+    await expect(card.locator('.basin-chip')).toHaveCount(4);
+    await expect(card.locator('.basin-chip.basin-good .basin-mark').first()).toHaveText('✓');
     // pausa leve enquanto o cartão está na tela
     await expect.poll(() => page.evaluate(() => window.gameManager.isSimulationRunning())).toBe(false);
     await page.keyboard.press('Enter');

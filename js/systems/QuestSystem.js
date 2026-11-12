@@ -192,7 +192,7 @@ class QuestSystem {
         // Notificar. Antes do jogo rodar (boot, tutorial de abertura congelado) vai só para o histórico:
         // o toast disputava a atenção com a Cláudia no primeiro minuto. A barra de missão mostra a missão depois.
         if (this.gameManager.uiManager) {
-            const quiet = this.gameManager.gameState !== 'playing';
+            const quiet = this.gameManager.gameState !== 'playing' || this.gameManager.tutorialDone === false;
             this.gameManager.uiManager.showNotification(
                 `Nova missão: ${PlayerProfile.personalize(quest.title)}`,
                 'info', undefined, { quiet }

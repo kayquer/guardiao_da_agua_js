@@ -43,3 +43,6 @@
     .save-row { flex-direction: column; align-items: stretch; }
     .save-row-actions { justify-content: flex-start; }
 }
+
+/* o painel (.notif-history) pinta títulos de branco com contorno: no papel claro eles sumiam */
+.save-row-text b { color: #1a2a3a; text-shadow: none; -webkit-text-stroke: 0; font-size: 1rem; }

@@ -12,7 +12,7 @@
 const BASIN_MAPS = {
     vale: {
         name: 'Vale do Ribeirão', icon: '🏞️',
-        description: 'Um rio com meandros largos e planície que alaga. O mapa da pesquisa: equilibrado para aprender.',
+        description: 'Um rio com meandros largos e planície que alaga. O mapa clássico: equilibrado para aprender.',
         river: 'RIVER_MAP',
         hills: 'some'
     },

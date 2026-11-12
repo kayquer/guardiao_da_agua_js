@@ -416,6 +416,22 @@ test('campanha: 15+ missões, todas alcançáveis desde a primeira, crises varia
     assert.ok(crises.length >= 4 && new Set(crises).size >= 4, `crises: ${crises}`);
 });
 
+test('balanço da bacia: semáforo por conceito (aquífero, rio, esgoto, energia) com dica para o que vai mal', () => {
+    const { rm, res } = city();
+    res.water.aquifer = 80; res.water.river = 90; res.population.current = 20;
+    let report = rm.getBasinReport();
+    assert.strictEqual(report.map(i => i.id).join(), 'aquifer,river,sewage,energy');
+    assert.ok(report.every(i => i.level === 'good'), JSON.stringify(report.map(i => i.level)));
+    res.water.aquifer = 20; res.water.river = 50; res.population.current = 500; res.pollution.reduction = 0;
+    res.electricity.consumption = 100; res.electricity.efficiency = 0.4;
+    report = Object.fromEntries(rm.getBasinReport().map(i => [i.id, i]));
+    assert.strictEqual(report.aquifer.level, 'bad');
+    assert.strictEqual(report.river.level, 'ok');
+    assert.strictEqual(report.sewage.level, 'bad');
+    assert.match(report.sewage.tip, /ETE/);
+    assert.strictEqual(report.energy.level, 'bad');
+});
+
 test('objetivo de aquífero mede o nível', () => {
     const { qs, res } = city();
     res.water.aquifer = 40;
