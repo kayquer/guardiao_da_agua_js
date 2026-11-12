@@ -43,14 +43,28 @@ class PlayerProfile {
     }
 
     /** Valida os campos do formulário. Retorna a lista de erros (vazia = ok). */
-    static validate({ name, age, uf, city }) {
+    // Estado "fora do Brasil" (modo loja): cidade em texto livre, geocodificada no mundo todo
+    static ABROAD = 'XX';
+
+    /** Cadastro do modo de jogo (GameMode.profile): 'completo' (pesquisa) ou 'apelido' (loja: só o apelido é obrigatório). */
+    static fieldsMode() {
+        return typeof GameMode !== 'undefined' ? GameMode.current().profile : 'completo';
+    }
+
+    static validate({ name, age, uf, city }, mode = PlayerProfile.fieldsMode()) {
         const errors = [];
+        const optional = mode === 'apelido';
         const cleanName = String(name || '').trim();
         if (!cleanName) errors.push('Digite seu nome ou apelido.');
         else if (cleanName.length > PlayerProfile.MAX_NAME) errors.push(`O nome pode ter até ${PlayerProfile.MAX_NAME} letras.`);
+        const hasAge = String(age ?? '').trim() !== '';
         const numericAge = Number(age);
-        if (!Number.isInteger(numericAge) || numericAge < PlayerProfile.MIN_AGE || numericAge > PlayerProfile.MAX_AGE) {
+        if ((!optional || hasAge) && (!Number.isInteger(numericAge) || numericAge < PlayerProfile.MIN_AGE || numericAge > PlayerProfile.MAX_AGE)) {
             errors.push(`Digite uma idade entre ${PlayerProfile.MIN_AGE} e ${PlayerProfile.MAX_AGE}.`);
+        }
+        if (optional) {
+            if (uf && uf !== PlayerProfile.ABROAD && !BRAZIL_STATES[uf]) errors.push('Escolha o seu estado.');
+            return errors;
         }
         if (!BRAZIL_STATES[uf]) errors.push('Escolha o seu estado.');
         if (!String(city || '').trim()) errors.push('Escolha a sua cidade.');
@@ -64,9 +78,9 @@ class PlayerProfile {
         const profile = {
             id: `p_${now.toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
             name: String(name).trim().slice(0, PlayerProfile.MAX_NAME),
-            age: Number(age),
-            uf,
-            city: String(city).trim(),
+            age: String(age ?? '').trim() === '' ? null : Number(age), // modo loja: idade opcional
+            uf: uf || null,
+            city: String(city ?? '').trim(),
             difficulty: PlayerProfile.difficultyById(difficulty).id,
             lat,
             lon,
@@ -119,6 +133,18 @@ class PlayerProfile {
     }
 
     /** Nome para os textos do jogo ("Guardião" se não houver perfil). */
+    /** "12 anos · Campinas/SP" sem os campos que faltam (modo loja: idade, estado e cidade são opcionais). */
+    static describe(profile) {
+        if (!profile) return '';
+        const parts = [];
+        if (Number.isFinite(profile.age)) parts.push(`${profile.age} anos`);
+        const uf = profile.uf && profile.uf !== PlayerProfile.ABROAD ? profile.uf : '';
+        const place = [profile.city, uf].filter(Boolean).join('/');
+        if (place) parts.push(place);
+        else if (profile.uf === PlayerProfile.ABROAD) parts.push('fora do Brasil');
+        return parts.join(' · ');
+    }
+
     static displayName() {
         return PlayerProfile.getActive()?.name || 'Guardião';
     }
@@ -153,12 +179,14 @@ class PlayerProfile {
 
     /** Latitude/longitude da cidade (Open-Meteo), conferindo o estado. null se não achar. */
     static async geocode(city, uf) {
-        const url = `${WEATHER.GEOCODING_URL}?name=${encodeURIComponent(city)}&count=10&language=pt&countryCode=BR`;
+        if (!String(city || '').trim()) return null; // modo loja sem cidade: clima simulado
+        const abroad = !uf || uf === PlayerProfile.ABROAD;
+        const url = `${WEATHER.GEOCODING_URL}?name=${encodeURIComponent(city)}&count=10&language=pt${abroad ? '' : '&countryCode=BR'}`;
         const response = await fetch(url, { signal: PlayerProfile.timeoutSignal() });
         if (!response.ok) throw new Error(`Geocodificação respondeu ${response.status}`);
         const { results = [] } = await response.json();
-        const stateName = BRAZIL_STATES[uf];
-        const match = results.find(r => r.admin1 === stateName) || null;
+        // fora do Brasil (ou sem estado): o primeiro lugar com esse nome; no Brasil, o do estado escolhido
+        const match = abroad ? results[0] || null : results.find(r => r.admin1 === BRAZIL_STATES[uf]) || null;
         return match ? { lat: match.latitude, lon: match.longitude } : null;
     }
 }

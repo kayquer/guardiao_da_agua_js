@@ -27,7 +27,10 @@ class SimulatedWeather {
     static mode() {
         try {
             const saved = localStorage.getItem(SimulatedWeather.STORAGE_KEY);
-            return SimulatedWeather.MODES.includes(saved) ? saved : 'real';
+            if (SimulatedWeather.MODES.includes(saved)) return saved;
+            // sem escolha salva: o padrão do modo de jogo (pesquisa = clima real da cidade; loja = simulado)
+            const fallback = typeof GameMode !== 'undefined' ? GameMode.current().climate : 'real';
+            return SimulatedWeather.MODES.includes(fallback) ? fallback : 'real';
         } catch {
             return 'real';
         }

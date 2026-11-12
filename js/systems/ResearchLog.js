@@ -62,6 +62,7 @@ class ResearchLog {
 
     /** Começa uma sessão (novo jogo ou jogo carregado). */
     static startSession(mode) {
+        if (!ResearchLog.enabled()) return;
         const all = ResearchLog.readAll();
         const key = ResearchLog.profileKey();
         const entry = ResearchLog.entry(key);
@@ -80,7 +81,13 @@ class ResearchLog {
         return ResearchLog.record('session_start', { value: mode, ...extra });
     }
 
+    /** Modo loja (GameMode.research false): o jogo não registra nada para pesquisa. */
+    static enabled() {
+        return typeof GameMode === 'undefined' || GameMode.current().research;
+    }
+
     static record(type, data = {}) {
+        if (!ResearchLog.enabled()) return null;
         const all = ResearchLog.readAll();
         const key = ResearchLog.profileKey();
         const entry = ResearchLog.entry(key);

@@ -25,7 +25,7 @@ function load(...files) {
     };
     ctx.window = ctx;
     vm.createContext(ctx);
-    for (const f of ['js/config/GameConstants.js', ...files]) {
+    for (const f of ['js/config/GameMode.js', 'js/config/GameConstants.js', ...files]) {
         vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx, { filename: f });
     }
     // const/class de topo são lexicais: só acessíveis avaliando o nome no contexto

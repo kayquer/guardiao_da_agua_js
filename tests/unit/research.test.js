@@ -226,6 +226,7 @@ test('armazenamento: toda chave do jogo usa STORAGE_PREFIX (versões no mesmo Pa
     // O aviso inicial roda antes de GameConstants: repete a chave do consentimento à mão
     const notice = fs.readFileSync(path.join(__dirname, '..', '..', 'js', 'ui', 'StartNotice.js'), 'utf8');
     assert.strictEqual(/CONSENT_KEY: '([^']+)'/.exec(notice)[1], g('ResearchSync.CONSENT_KEY'));
+    assert.strictEqual(/NOTICE_KEY: '([^']+)'/.exec(notice)[1], `${prefix}notice_seen`);
     // Nenhum outro arquivo do jogo grava chave fixa (fora o formato do save e as chaves antigas que ele apaga)
     const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).flatMap(e =>
         e.isDirectory() ? walk(path.join(dir, e.name)) : e.name.endsWith('.js') ? [path.join(dir, e.name)] : []);

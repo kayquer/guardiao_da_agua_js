@@ -1326,7 +1326,7 @@ class UIManager {
         document.getElementById('pp-avatar').textContent = name.charAt(0).toUpperCase();
         document.getElementById('pp-name').textContent = name;
         document.getElementById('pp-meta').textContent = profile
-            ? `${profile.age} anos · ${profile.city}/${profile.uf}`
+            ? PlayerProfile.describe(profile) || 'Jogador'
             : 'Sem perfil';
 
         const qs = gm.questSystem;

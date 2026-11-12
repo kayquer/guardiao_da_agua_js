@@ -21,6 +21,8 @@ class ResearchSync {
     static fetchImpl = (...args) => fetch(...args);
 
     static endpoint() {
+        // Modo loja (GameMode.research false): nunca envia, mesmo com a URL configurada
+        if (typeof GameMode !== 'undefined' && !GameMode.current().research) return '';
         return String(RESEARCH_SYNC.ENDPOINT || '').trim();
     }
 

@@ -296,7 +296,7 @@ function renderProfileList() {
             <span class="profile-avatar">${escapeHtml(p.name.charAt(0).toUpperCase())}</span>
             <span class="profile-info">
                 <span class="profile-name">${escapeHtml(p.name)}</span>
-                <span class="profile-meta">${p.age} anos · ${escapeHtml(p.city)}/${p.uf}</span>
+                <span class="profile-meta">${escapeHtml(PlayerProfile.describe(p))}</span>
                 ${saveBadge}
             </span>
             <span class="profile-play">▶</span>
@@ -479,12 +479,32 @@ function initializeProfileScreen() {
         .sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'))
         .map(([uf, nome]) => `<option value="${uf}">${nome}</option>`).join('');
     ufSelect.addEventListener('change', () => loadCitiesFor(ufSelect.value));
+    applyProfileFieldsMode();
 
     document.getElementById('profile-form').addEventListener('submit', submitProfileForm);
     document.getElementById('btn-profile-back').addEventListener('click', () => showScreen('main-menu'));
 }
 
 let profileCities = null; // municípios do estado escolhido (null = API indisponível → texto livre)
+
+/**
+ * Modo loja (GameMode.profile 'apelido'): só o apelido é obrigatório. Idade, estado e cidade ficam opcionais
+ * ("(opcional)" no rótulo), o estado ganha "Fora do Brasil" e a cidade aceita texto livre. Sem cidade, o clima é simulado.
+ */
+function applyProfileFieldsMode() {
+    if (PlayerProfile.fieldsMode() !== 'apelido') return;
+    const form = document.getElementById('profile-form');
+    form.classList.add('profile-form--nickname');
+    ['profile-age', 'profile-uf', 'profile-city'].forEach(id => {
+        const field = document.getElementById(id);
+        field.required = false;
+        const label = field.closest('.profile-field')?.querySelector('span');
+        if (label && !label.querySelector('.profile-optional')) label.insertAdjacentHTML('beforeend', ' <small class="profile-optional">(opcional)</small>');
+    });
+    const ufSelect = document.getElementById('profile-uf');
+    ufSelect.querySelector('option[value=""]').textContent = 'Prefiro não dizer';
+    ufSelect.querySelector('option[value=""]').insertAdjacentHTML('afterend', `<option value="${PlayerProfile.ABROAD}">🌍 Fora do Brasil</option>`);
+}
 
 async function loadCitiesFor(uf) {
     const input = document.getElementById('profile-city');
@@ -493,6 +513,13 @@ async function loadCitiesFor(uf) {
     input.value = '';
     options.innerHTML = '';
     profileCities = null;
+    const nickname = PlayerProfile.fieldsMode() === 'apelido';
+    if (nickname && (!uf || uf === PlayerProfile.ABROAD)) { // modo loja: cidade em texto livre (ou nenhuma)
+        input.disabled = false;
+        input.placeholder = uf ? 'Digite a sua cidade' : 'Se quiser, digite a sua cidade';
+        hint.textContent = 'Com a cidade, o jogo usa o clima de verdade de lá; sem ela, um clima simulado.';
+        return;
+    }
     if (!uf) {
         input.disabled = true;
         input.placeholder = 'Escolha o estado primeiro';
@@ -574,6 +601,11 @@ async function startLoading() {
     try {
         // Sem servidor da pesquisa (RESEARCH_SYNC.ENDPOINT vazio): a caixa de consentimento sai do aviso
         if (!ResearchSync.isConfigured()) document.querySelector('.start-notice__consent')?.remove();
+        // Modo loja (GameMode.research false): sem painel nem item "Dados da pesquisa"
+        if (!GameMode.current().research) {
+            document.getElementById('btn-research')?.remove();
+            document.querySelector('[data-player-action="research"]')?.remove();
+        }
         updateLoadingProgress(10);
 
         // Carregar assets

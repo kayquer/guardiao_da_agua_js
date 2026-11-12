@@ -10,7 +10,7 @@ mixin(UIManager, {
         if (nameEl) nameEl.textContent = PlayerProfile.displayName();
         const chip = document.getElementById('player-chip');
         if (chip && profile) {
-            chip.title = `${profile.name} · ${profile.age} anos · ${profile.city}/${profile.uf}`;
+            chip.title = [profile.name, PlayerProfile.describe(profile)].filter(Boolean).join(' · ');
         }
 
         // O clima mora dentro do item do relógio: o item inteiro abre a previsão

@@ -95,7 +95,8 @@ mixin(BuildingSystem, {
         for (const other of this.findNearbyResearchBuildings(building.gridX, building.gridZ)) {
             if (other !== building && other.active && other.config.nearbyEfficiencyBonus) bonus += other.config.nearbyEfficiencyBonus;
         }
-        return Math.min(bonus, EFFICIENCY_RULES.researchBonusCap);
+        // + estudo lido até o fim no modo loja (StudySystem.getReadingBonus), fora do limite dos centros de pesquisa
+        return Math.min(bonus, EFFICIENCY_RULES.researchBonusCap) + (this.gameManager?.studySystem?.getReadingBonus?.(building.type) || 0);
     },
 
     /**

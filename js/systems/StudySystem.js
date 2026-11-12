@@ -27,6 +27,8 @@ class StudySystem {
         // Flag para indicar se o conteúdo foi carregado
         this.contentLoaded = false;
 
+        this.readStudies = new Set(); // estudos lidos até o fim (sem pular): bônus de leitura no modo loja
+
         // Edifícios desbloqueados por padrão (tutorial/básicos)
         this.defaultUnlockedBuildings = [
             'city_hall',      // Prefeitura (sempre disponível)
@@ -119,7 +121,7 @@ class StudySystem {
         const rules = StudySystem.rules();
         if (!id || rules[kind] === 'obrigatorio') return false;
         if (typeof ResearchLog !== 'undefined') ResearchLog.record(kind === 'quiz' ? 'quiz_skip' : 'study_skip', { target: id, value: this.currentPage + 1 });
-        return this.completeStudy(id);
+        return this.completeStudy(id, { skipped: true });
     }
 
     // ===== VERIFICAÇÃO DE DESBLOQUEIO =====
@@ -235,9 +237,14 @@ class StudySystem {
         return true;
     }
     
-    completeStudy(buildingId) {
+    /** `skipped` = pulou o estudo/prova: libera, mas não conta como lido (sem o bônus de leitura). */
+    completeStudy(buildingId, { skipped = false } = {}) {
         if (this.currentStudy === buildingId) {
             this.unlockBuilding(buildingId);
+            if (!skipped) {
+                this.readStudies.add(buildingId);
+                if (this.getReadingBonus(buildingId) > 0) this.gameManager?.buildingSystem?.markEfficiencyDirty?.();
+            }
             this.currentStudy = null;
             this.currentPage = 0;
             
@@ -297,9 +304,19 @@ class StudySystem {
     }
 
     // ===== SAVE/LOAD =====
+    /**
+     * Bônus de leitura (modo loja, GameMode.readingBonus): estudo opcional lido até o fim deixa aquele prédio um
+     * pouco mais eficiente ("você sabe operá-lo melhor"). Na pesquisa (estudo obrigatório) não existe.
+     */
+    getReadingBonus(buildingId) {
+        if (StudySystem.rules().study !== 'opcional' || !this.readStudies.has(buildingId)) return 0;
+        return (typeof GameMode !== 'undefined' && GameMode.current().readingBonus) || 0;
+    }
+
     getSaveData() {
         return {
-            unlockedBuildings: Array.from(this.unlockedBuildings)
+            unlockedBuildings: Array.from(this.unlockedBuildings),
+            readStudies: Array.from(this.readStudies)
         };
     }
 
@@ -307,6 +324,7 @@ class StudySystem {
         if (data && Array.isArray(data.unlockedBuildings)) {
             // Soma aos padrões (e aos sem estudo, já liberados no initialize): nada que era livre volta a travar
             data.unlockedBuildings.forEach(id => this.unlockedBuildings.add(id));
+            (data.readStudies || []).forEach(id => this.readStudies.add(id));
             log(`📁 ${this.unlockedBuildings.size} edifícios desbloqueados carregados`);
         }
     }

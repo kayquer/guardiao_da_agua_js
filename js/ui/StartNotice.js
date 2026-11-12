@@ -5,18 +5,26 @@
  * É a primeira coisa na tela: este script roda logo depois do HTML do aviso, antes do Babylon e do resto.
  * O carregamento segue por trás; main.js espera `StartNotice.accepted` para mostrar o menu (e a abertura).
  * Aceitar: botão (já focado, Enter aceita), com fade. "Recusar" leva ao Google.
- * Aparece sempre que o jogo abre (também ao voltar ao menu, que recarrega a página).
+ * Modo pesquisa (GameMode, js/config/GameMode.js): aparece sempre que o jogo abre (também ao voltar ao menu, que
+ * recarrega a página). Modo loja (noticeEveryStart: false): só até ser aceito uma vez neste computador (NOTICE_KEY).
  * Testes E2E (navigator.webdriver): desligado, a não ser com ?aviso na URL (tests/notice.spec.js).
  */
 const StartNotice = {
     DECLINE_URL: 'https://www.google.com.br/',
     CONSENT_KEY: 'guardiao_agua_evo_research_consent', // = STORAGE_PREFIX + 'research_consent' (ResearchSync.CONSENT_KEY)
+    NOTICE_KEY: 'guardiao_agua_evo_notice_seen',       // = STORAGE_PREFIX + 'notice_seen' (aviso já aceito, modo loja)
     FADE_MS: 450,
     el: document.getElementById('start-notice'),
     accepted: null,
 
     enabled() {
         return /[?&]aviso\b/.test(location.search) || !navigator.webdriver;
+    },
+
+    /** Modo loja: o aviso já foi aceito uma vez neste computador (no modo pesquisa ele volta sempre). */
+    alreadySeen() {
+        if (typeof GameMode === 'undefined' || GameMode.current().noticeEveryStart) return false;
+        try { return localStorage.getItem(StartNotice.NOTICE_KEY) === 'yes'; } catch { return false; }
     },
 
     /**
@@ -67,7 +75,7 @@ const StartNotice = {
         StartNotice.showVersion();
         const mobileNote = document.getElementById('start-notice-mobile');
         if (mobileNote) mobileNote.hidden = !StartNotice.isMobileDevice();
-        if (!StartNotice.enabled()) {
+        if (!StartNotice.enabled() || StartNotice.alreadySeen()) {
             StartNotice.el.remove();
             StartNotice.accepted = Promise.resolve();
             return;
@@ -83,6 +91,7 @@ const StartNotice = {
             const accept = () => {
                 try {
                     if (consent?.isConnected) localStorage.setItem(StartNotice.CONSENT_KEY, consent.checked ? 'yes' : 'no');
+                    localStorage.setItem(StartNotice.NOTICE_KEY, 'yes');
                 } catch { /* modo privado */ }
                 const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
                 StartNotice.el.classList.add('is-leaving');

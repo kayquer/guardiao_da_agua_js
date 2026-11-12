@@ -98,11 +98,9 @@ const RESEARCH_SYNC = {
 //         'pulavel'     → a prova aparece, com "Pular a prova"; reprovou = já pode continuar
 //         'opcional'    → "Concluir" libera mesmo sem responder; respondeu, recebe a nota e a revisão
 // Tudo vai para o registro da pesquisa (session_start leva as regras; study_skip/quiz_skip quando pula).
-const STUDY_RULES = {
-    STUDY: 'obrigatorio',
-    QUIZ: 'obrigatorio',
-    UNLOCK_AFTER_FAILURES: 2
-};
+// Vem do modo de jogo (js/config/GameMode.js: pesquisa = obrigatório; loja = opcional). Objeto próprio: os testes
+// mudam os campos na página (tests/study-rules.spec.js).
+const STUDY_RULES = { ...GameMode.current().study };
 
 // ===== ÁRVORES (TreeSystem) =====
 // Bosques sorteados no mapa. Cada árvore em pé limpa o ar (redução de poluição/min) e soma satisfação

@@ -218,7 +218,11 @@ mixin(UIManager, {
         const study = this.gameManager.studySystem;
         if (StudySystem.rules().study !== 'opcional' || !study?.hasStudyContent?.(type.id)) return '';
         const done = study.unlockedBuildings?.has(type.id);
-        return `<p><button class="build-info-link" data-action="study" type="button">📖 ${done ? 'Ler de novo o estudo' : 'Ler o estudo (opcional)'}</button></p>`;
+        const bonus = Math.round(((typeof GameMode !== 'undefined' && GameMode.current().readingBonus) || 0) * 100);
+        const read = study.readStudies?.has(type.id);
+        const label = read ? `Ler de novo o estudo${bonus ? ` (já vale +${bonus}% de eficiência)` : ''}`
+            : done ? 'Ler de novo o estudo' : `Ler o estudo (opcional${bonus ? `: lido até o fim, +${bonus}% de eficiência` : ''})`;
+        return `<p><button class="build-info-link" data-action="study" type="button">📖 ${label}</button></p>`;
     },
 
     renderBuildInfo(type) {
