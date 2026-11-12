@@ -25,7 +25,39 @@ function resolve(url) {
     return file === ROOT || file.startsWith(ROOT + path.sep) ? file : null; // nada fora da pasta do jogo
 }
 
+/**
+ * build-info.json (versão no rodapé do aviso inicial, js/ui/StartNotice.js): no GitHub Pages o workflow
+ * (.github/workflows/pages.yml) grava o arquivo; aqui ele sai do git na hora, com os mesmos campos.
+ */
+function buildInfo() {
+    const { execFileSync } = require('child_process');
+    const git = (...args) => {
+        try {
+            return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+        } catch {
+            return '';
+        }
+    };
+    let release = '';
+    try {
+        release = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version || '';
+    } catch { /* sem package.json */ }
+    return {
+        release,
+        branch: git('rev-parse', '--abbrev-ref', 'HEAD') || 'local',
+        build: Number(git('rev-list', '--count', 'HEAD')) || 0,
+        commit: git('rev-parse', '--short', 'HEAD'),
+        date: git('log', '-1', '--format=%cI'),
+        local: true
+    };
+}
+
 const server = http.createServer((req, res) => {
+    if (/\/build-info\.json$/.test(req.url.split('?')[0])) {
+        res.writeHead(200, { 'Content-Type': TYPES['.json'], 'Cache-Control': 'no-store' });
+        res.end(JSON.stringify(buildInfo()));
+        return;
+    }
     const file = resolve(req.url);
     fs.stat(file || '', (error, stat) => {
         if (error || !stat.isFile()) {

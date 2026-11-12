@@ -107,7 +107,7 @@ mixin(UIManager, {
         document.querySelector(`#building-items .building-item[data-building-type="${type.id}"]`)?.classList.add('selected');
         if (content) content.innerHTML = this.renderBuildInfo(type);
         document.getElementById('build-info-scroll')?.scrollTo?.(0, 0);
-        content?.querySelector('[data-action="tech-tree"]')?.addEventListener('click', () => this.openTechTree(type.id));
+        this.wireBuildInfoActions(content, type);
         this.updateBuildInfoButton();
         this.showBuildPreview(type);
         AudioManager.playSound('sfx_ui_click', 0.4);
@@ -204,6 +204,23 @@ mixin(UIManager, {
         return lines;
     },
 
+    /** Links dentro das informações do prédio: árvore tecnológica e (estudo opcional) ler o estudo. */
+    wireBuildInfoActions(content, type) {
+        content?.querySelector('[data-action="tech-tree"]')?.addEventListener('click', () => this.openTechTree(type.id));
+        content?.querySelector('[data-action="study"]')?.addEventListener('click', () => {
+            this.closeBuildModal();
+            this.openStudyBook(type.id);
+        });
+    },
+
+    /** Estudo opcional (STUDY_RULES.STUDY): o prédio já está livre, então o estudo vira um link de leitura. */
+    renderOptionalStudyLink(type) {
+        const study = this.gameManager.studySystem;
+        if (StudySystem.rules().study !== 'opcional' || !study?.hasStudyContent?.(type.id)) return '';
+        const done = study.unlockedBuildings?.has(type.id);
+        return `<p><button class="build-info-link" data-action="study" type="button">📖 ${done ? 'Ler de novo o estudo' : 'Ler o estudo (opcional)'}</button></p>`;
+    },
+
     renderBuildInfo(type) {
         const tech = this.gameManager.techTree;
         const tier = type.tier || 1;
@@ -237,6 +254,7 @@ mixin(UIManager, {
             <ul class="build-info-stats">${stats}</ul>
             ${req}
             ${unlocks.length ? `<div class="build-info-unlocks"><h5>⬆️ Abre caminho para</h5>${unlocks.map(t => t.name).join(', ')}</div>` : ''}
+            ${this.renderOptionalStudyLink(type)}
             <p><button class="build-info-link" data-action="tech-tree" type="button">🔬 Ver na árvore tecnológica</button></p>
         `);
     },
@@ -336,7 +354,7 @@ mixin(UIManager, {
             const type = this.gameManager.buildingSystem.buildingTypes.get(this.buildModalSelected);
             if (content && type) {
                 content.innerHTML = this.renderBuildInfo(type);
-                content.querySelector('[data-action="tech-tree"]')?.addEventListener('click', () => this.openTechTree(type.id));
+                this.wireBuildInfoActions(content, type);
             }
             this.updateBuildInfoButton();
         }

@@ -33,7 +33,38 @@ const StartNotice = {
         return !!coarse && shortSide <= 900;
     },
 
+    /**
+     * Texto da versão: "v1.0.0 · build 412 · evolucao-pesquisa · 6217d27" (campos que faltarem saem).
+     * @param {{release?: string, build?: number, branch?: string, commit?: string, local?: boolean}} info
+     */
+    formatVersion(info) {
+        if (!info || typeof info !== 'object') return '';
+        const parts = [];
+        if (info.release) parts.push(`v${info.release}`);
+        if (info.build) parts.push(`build ${info.build}`);
+        if (info.branch) parts.push(info.local ? `${info.branch} (local)` : info.branch);
+        if (info.commit) parts.push(info.commit);
+        return parts.join(' · ');
+    },
+
+    /** Lê build-info.json (gravado pelo workflow do Pages; o npm start gera na hora) e mostra no rodapé. */
+    async showVersion() {
+        const el = document.getElementById('start-notice-version');
+        if (!el) return;
+        try {
+            const response = await fetch('build-info.json', { cache: 'no-store' });
+            if (!response.ok) return;
+            const info = await response.json();
+            const text = StartNotice.formatVersion(info);
+            if (!text || !el.isConnected) return;
+            el.textContent = text;
+            if (info.date) el.title = `Publicado em ${new Date(info.date).toLocaleString('pt-BR')}`;
+            el.hidden = false;
+        } catch { /* sem o arquivo (outro servidor): fica sem a versão */ }
+    },
+
     init() {
+        StartNotice.showVersion();
         const mobileNote = document.getElementById('start-notice-mobile');
         if (mobileNote) mobileNote.hidden = !StartNotice.isMobileDevice();
         if (!StartNotice.enabled()) {

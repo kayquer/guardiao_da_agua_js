@@ -28,6 +28,7 @@ jobs:
         with:
           ref: main
           path: main
+          fetch-depth: 0 # histórico inteiro: o número do build é a contagem de commits
       - name: Branch evolucao-pesquisa existe?
         id: evo
         run: |
@@ -39,8 +40,18 @@ jobs:
         with:
           ref: evolucao-pesquisa
           path: evo
+          fetch-depth: 0
       - name: Montar o site
         run: |
+          # build-info.json = versão no rodapé do aviso inicial (release do package.json, branch, build, commit)
+          info() {
+            jq -n --arg release "$(jq -r '.version // ""' "$1/package.json")" --arg branch "$2" \
+              --argjson build "$(git -C "$1" rev-list --count HEAD)" \
+              --arg commit "$(git -C "$1" rev-parse --short HEAD)" --arg date "$(git -C "$1" log -1 --format=%cI)" \
+              '{release: $release, branch: $branch, build: $build, commit: $commit, date: $date}' > "$1/build-info.json"
+          }
+          info main main
+          if [ -d evo ]; then info evo evolucao-pesquisa; fi
           copy() { rsync -a --exclude '.git' --exclude '.github' --exclude '.githooks' --exclude 'tests' \
             --exclude 'node_modules' --exclude '__pycache__' "$1/" "$2/"; }
           mkdir -p site

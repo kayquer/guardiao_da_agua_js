@@ -71,7 +71,9 @@ class ResearchLog {
         ResearchLog.session = entry.sessions;
         ResearchLog.sessionStart = Date.now();
         ResearchLog.page = null;
-        return ResearchLog.record('session_start', { value: mode });
+        // Regras de estudo/prova da versão (STUDY_RULES): a análise sabe em que condição a sessão foi jogada
+        const rules = typeof StudySystem !== 'undefined' ? StudySystem.rules() : null;
+        return ResearchLog.record('session_start', rules ? { value: mode, study: rules.study, quiz: rules.quiz } : { value: mode });
     }
 
     static record(type, data = {}) {

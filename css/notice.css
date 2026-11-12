@@ -358,3 +358,25 @@
         text-align: center;
     }
 }
+
+/* Versão publicada (build-info.json): bem pequena, no canto de baixo à esquerda da barra (o texto do
+   "Recusar" fica à direita). No celular ela entra no fim da coluna, centralizada. */
+.start-notice__version {
+    position: absolute;
+    left: 12px;
+    bottom: 8px;
+    margin: 0;
+    font-size: 11px;
+    line-height: 1.3;
+    color: #8a8a8a;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+    user-select: text;
+}
+
+@media (max-width: 700px) {
+    .start-notice__version {
+        position: static;
+        text-align: center;
+    }
+}

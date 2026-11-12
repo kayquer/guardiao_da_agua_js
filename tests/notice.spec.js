@@ -90,6 +90,27 @@ test('caixa do envio anônimo: marcada por padrão, a escolha vale ao aceitar e 
     expect(await page.evaluate(() => ResearchSync.hasConsent())).toBe(true);
 });
 
+test('rodapé do aviso mostra release, build, branch e commit (build-info.json)', async ({ page }) => {
+    await mockExternalApis(page);
+    await page.route('**/build-info.json*', route => route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ release: '1.2.0', branch: 'evolucao-pesquisa', build: 412, commit: 'abc1234', date: '2026-11-11T12:00:00Z' })
+    }));
+    await page.goto('/index.html?aviso&nointro');
+    const version = page.locator('#start-notice-version');
+    await expect(version).toHaveText('v1.2.0 · build 412 · evolucao-pesquisa · abc1234');
+    await expect(version).toHaveAttribute('title', /Publicado em/);
+});
+
+test('sem build-info.json o rodapé fica sem versão, sem erro', async ({ page }) => {
+    await mockExternalApis(page);
+    await page.route('**/build-info.json*', route => route.abort());
+    await page.goto('/index.html?aviso&nointro');
+    await expect(page.locator('#start-notice')).toBeVisible();
+    await page.waitForTimeout(500);
+    await expect(page.locator('#start-notice-version')).toBeHidden();
+});
+
 test('"Recusar" leva à página inicial do Google', async ({ page }) => {
     await mockExternalApis(page);
     await page.route('https://www.google.com.br/**', route => route.fulfill({ contentType: 'text/html', body: '<title>Google</title>' }));

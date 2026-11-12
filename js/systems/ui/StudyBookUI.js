@@ -110,6 +110,7 @@ mixin(UIManager, {
                             ◀ Anterior
                         </button>
 
+                        ${this.renderStudySkipButton(isLastPage, isQuizPage)}
                         ${isLastPage ?
                             `<button class="nav-btn complete-btn" onclick="window.gameManager.uiManager.completeStudy()">
                                 ✓ Concluir Estudo
@@ -139,6 +140,57 @@ mixin(UIManager, {
             this.setupQuizEventListeners(quiz);
         }
         // A pausa vem de syncPopupPause (UIManager), que vê o #study-book-overlay aberto
+    },
+
+    /**
+     * Botão de pular, conforme STUDY_RULES (StudySystem.rules()):
+     * - estudo pulável, antes da última página: "Pular para a prova" (prova obrigatória) ou "Pular o estudo" (libera)
+     * - prova pulável, na página da prova: "Pular a prova" (libera)
+     * Estudo opcional não tem botão (o prédio já está livre: é só fechar o livro).
+     */
+    renderStudySkipButton(isLastPage, isQuizPage) {
+        const rules = StudySystem.rules();
+        let label = '', action = '';
+        if (!isLastPage && rules.study === 'pulavel') {
+            const toQuiz = this.gameManager.studySystem.hasQuiz() && rules.quiz === 'obrigatorio';
+            label = toQuiz ? 'Pular para a prova ⏭' : 'Pular o estudo ⏭';
+            action = toQuiz ? 'skipToQuiz' : 'skipStudy';
+        } else if (isQuizPage && rules.quiz === 'pulavel' && rules.study !== 'opcional') {
+            label = 'Pular a prova ⏭';
+            action = 'skipQuiz';
+        }
+        if (!label) return '';
+        return `<button class="nav-btn skip-btn" onclick="window.gameManager.uiManager.${action}()">${label}</button>`;
+    },
+
+    /** Estudo pulável com prova obrigatória: a leitura pode ser pulada, a prova não. */
+    skipToQuiz() {
+        const study = this.gameManager.studySystem;
+        const content = study.getStudyContent(study.currentStudy);
+        if (!content?.pages?.length) return;
+        ResearchLog.record('study_skip', { target: study.currentStudy, value: study.currentPage + 1, toQuiz: true });
+        study.currentPage = content.pages.length - 1;
+        this.showStudyBookInterface(content, 'next');
+        AudioManager.playSound('sfx_book_page');
+    },
+
+    skipStudy() {
+        this.finishSkipped('study');
+    },
+
+    skipQuiz() {
+        this.finishSkipped('quiz');
+    },
+
+    /** Pulou (StudySystem.skipCurrent): libera o prédio, fecha o livro e abre o prédio para construir. */
+    finishSkipped(kind) {
+        const study = this.gameManager.studySystem;
+        const buildingId = study.currentStudy;
+        if (!buildingId || !study.skipCurrent(kind)) return;
+        AudioManager.onStudyUnlock();
+        this.closeStudyBook();
+        this.loadBuildingItemsWithStateManagement();
+        this.openStudiedBuilding(buildingId);
     },
 
     renderQuizQuestions(quiz) {
@@ -183,6 +235,7 @@ mixin(UIManager, {
 
         questionsHTML += `
             <div class="quiz-info">
+                ${StudySystem.rules().quiz === 'opcional' ? `<p class="quiz-optional">${uiIcon('status-tip')} <strong>Prova opcional:</strong> responda se quiser ver a sua nota. "Concluir" funciona mesmo sem responder.</p>` : ''}
                 <p>${uiIcon('ui-stats')} <strong>Nota mínima para aprovação:</strong> ${quiz.passingScore}%</p>
                 <p>${uiIcon('ui-help')} <strong>Total de questões:</strong> ${quiz.questions.length}</p>
             </div>
@@ -247,6 +300,13 @@ mixin(UIManager, {
         if (studySystem.hasQuiz()) {
             const quiz = studySystem.getQuiz();
 
+            // Prova opcional sem resposta nenhuma: conclui como estudo sem prova (fica anotado na pesquisa)
+            const optionalQuiz = StudySystem.rules().quiz === 'opcional';
+            if (optionalQuiz && Object.keys(studySystem.currentQuizAnswers).length === 0) {
+                this.finishSkipped('quiz');
+                return;
+            }
+
             // Validate all questions are answered
             if (!studySystem.areAllQuestionsAnswered()) {
                 this.showNotification(
@@ -292,6 +352,17 @@ mixin(UIManager, {
             const passed = studySystem.isQuizPassed();
             ResearchLog.record('quiz', { target: buildingId, value: score, ok: passed,
                 answers: quiz.questions.map((q, i) => ({ q: q.id ?? i, chosen: studySystem.currentQuizAnswers[q.id ?? i] ?? null, right: studySystem.currentQuizAnswers[q.id ?? i] === q.correctAnswer })) });
+
+            if (!passed && optionalQuiz) {
+                // Prova opcional: reprovar não segura o prédio; mostra a nota e onde errou, e libera
+                this.showQuizResults(false, score, quiz.passingScore, { unlocked: true });
+                studySystem.completeStudy(buildingId);
+                AudioManager.playSound('sfx_quiz_wrong');
+                setTimeout(() => AudioManager.onStudyUnlock(), 700);
+                this.loadBuildingItemsWithStateManagement();
+                this.showStudyFinishButton(buildingId);
+                return;
+            }
 
             if (!passed) {
                 // Quiz failed - show results and allow retry
@@ -346,7 +417,8 @@ mixin(UIManager, {
         this.openStudiedBuilding(buildingId);
     },
 
-    showQuizResults(passed, score, passingScore) {
+    /** @param {{unlocked?: boolean}} [opts] unlocked = prova opcional: reprovou, mas o prédio já foi liberado */
+    showQuizResults(passed, score, passingScore, opts = {}) {
         const resultsContainer = document.querySelector('.quiz-container');
         if (!resultsContainer) return;
 
@@ -360,9 +432,12 @@ mixin(UIManager, {
         const resultClass = passed ? 'quiz-passed' : 'quiz-failed';
         const resultIcon = passed ? '🎉' : '❌';
         const resultTitle = passed ? 'Parabéns! Você foi aprovado!' : 'Não foi dessa vez...';
+        const freeAnyway = StudySystem.rules().study === 'opcional';
         const resultMessage = passed
-            ? `Você acertou ${score}% das questões e desbloqueou este edifício!`
-            : `Você acertou ${score}% das questões. É necessário ${passingScore}% para aprovação. Revise o conteúdo e tente novamente.`;
+            ? (freeAnyway ? `Você acertou ${score}% das questões!` : `Você acertou ${score}% das questões e desbloqueou este edifício!`)
+            : opts.unlocked
+                ? `Você acertou ${score}% das questões. Veja abaixo onde errou: o prédio já está liberado.`
+                : `Você acertou ${score}% das questões. É necessário ${passingScore}% para aprovação. Revise o conteúdo e tente novamente.`;
 
         const resultsHTML = `
             <div class="quiz-results ${resultClass}">
@@ -374,7 +449,7 @@ mixin(UIManager, {
                     </div>
                 </div>
                 <p class="results-message">${resultMessage}</p>
-                ${!passed ? this.renderQuizReview() : ''}
+                ${!passed ? this.renderQuizReview(opts) : ''}
             </div>
         `;
 
@@ -396,11 +471,13 @@ mixin(UIManager, {
     },
 
     /** Reprovou: mostra rapidinho onde errou (resposta dada × certa + explicação) e deixa escolher o que fazer. */
-    renderQuizReview() {
+    renderQuizReview(opts = {}) {
         const study = this.gameManager.studySystem;
         const wrong = study.getWrongAnswers();
-        // Desbloquear sem acertar só depois de uma segunda tentativa: a recompensa vem de ler, não de pular
-        const canContinue = (study.quizFailures?.[study.currentStudy] || 0) >= 2;
+        // Desbloquear sem acertar: com a prova obrigatória, só da UNLOCK_AFTER_FAILURES-ésima reprovação em diante
+        // (a recompensa vem de ler, não de pular); pulável = já na primeira (StudySystem.continueAfterFailures)
+        const after = StudySystem.continueAfterFailures();
+        const canContinue = after !== null && (study.quizFailures?.[study.currentStudy] || 0) >= after;
         const items = wrong.map(w => `
             <li class="quiz-review-item">
                 <p class="quiz-review-question">${w.question}</p>
@@ -413,14 +490,14 @@ mixin(UIManager, {
                 <h4>📝 Onde você errou</h4>
                 <ul>${items}</ul>
             </div>
-            ${canContinue
+            ${opts.unlocked ? '' : `${canContinue
                 ? `<p class="quiz-review-ask">E agora, ${PlayerProfile.displayName()}? Quer tentar de novo ou seguir em frente?</p>`
                 : `<p class="quiz-review-ask">Leia as explicações acima, ${PlayerProfile.displayName()}: com elas você acerta! Releia o estudo ou tente de novo.</p>`}
             <div class="quiz-review-actions">
                 ${canContinue ? '' : `<button class="reread-btn" onclick="window.gameManager.uiManager.rereadStudy()">${uiIcon('ui-book')} Reler o estudo</button>`}
                 <button class="retry-btn" onclick="window.gameManager.uiManager.retryQuiz()">🔄 Tentar de novo</button>
                 ${canContinue ? `<button class="continue-btn" onclick="window.gameManager.uiManager.continueAfterQuiz()">${uiIcon('status-done')} Continuar e desbloquear</button>` : ''}
-            </div>`;
+            </div>`}`;
     },
 
     /** Volta para a primeira página do estudo (respostas zeradas); o quiz está no fim, como da primeira vez. */

@@ -3131,6 +3131,26 @@
     box-shadow: 0 6px 0 #009944;
 }
 
+/* Pular o estudo / a prova (STUDY_RULES pulável): discreto, para a leitura continuar sendo o caminho principal */
+.book-navigation .skip-btn {
+    flex: 0 1 auto;
+    background: transparent;
+    color: #5f6b76;
+    border: 2px dashed #adb5bd;
+    box-shadow: none;
+    font-size: 0.95rem;
+}
+
+.book-navigation .skip-btn:hover {
+    background: #f1f3f5;
+    color: #343a40;
+    transform: none;
+}
+
+.quiz-info .quiz-optional {
+    color: #1f6f3f;
+}
+
 .nav-btn:active:not(:disabled) {
     transform: translateY(2px);
     box-shadow: 0 2px 0 currentColor;

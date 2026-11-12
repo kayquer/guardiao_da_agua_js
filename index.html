@@ -44,14 +44,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
     <!-- CSS -->
     <link rel="stylesheet" href="css/styles.css?v=479ea2e3">
-    <link rel="stylesheet" href="css/ui.css?v=a2ff7246">
+    <link rel="stylesheet" href="css/ui.css?v=0d16bd32">
     <link rel="stylesheet" href="css/responsive.css?v=23c12369">
     <link rel="stylesheet" href="css/tutorial.css?v=ac763a0b">
     <link rel="stylesheet" href="css/lessons.css?v=e68e4db9">
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
     <link rel="stylesheet" href="css/player.css?v=483a6c80">
     <link rel="stylesheet" href="css/menu.css?v=ad09dab4">
-    <link rel="stylesheet" href="css/notice.css?v=b62a03ab">
+    <link rel="stylesheet" href="css/notice.css?v=a8bb0f76">
     <link rel="stylesheet" href="css/research.css?v=0f6fc4df">
     <link rel="stylesheet" href="css/settings.css?v=4caa15a0">
     <link rel="stylesheet" href="css/accessibility.css?v=11a95adf">
@@ -167,9 +167,11 @@
                 <button id="btn-notice-accept" class="start-notice__btn start-notice__btn--accept" type="button">Aceitar e continuar</button>
             </div>
             <p class="start-notice__hint">Ao recusar, você será levado à página inicial do Google.</p>
+            <!-- Versão publicada (build-info.json, StartNotice.showVersion): release, build, branch e commit -->
+            <p id="start-notice-version" class="start-notice__version" hidden></p>
         </footer>
     </div>
-    <script src="js/ui/StartNotice.js?v=37508898"></script>
+    <script src="js/ui/StartNotice.js?v=342aef02"></script>
 
     <!-- Tela de Loading -->
     <div id="loading-screen" class="screen active">
@@ -696,7 +698,7 @@
     <!-- Scripts do Jogo - Ordem correta de dependências -->
 
     <!-- Clean Code Refactoring: Game Constants (loaded first) -->
-    <script src="js/config/GameConstants.js?v=390b4685"></script>
+    <script src="js/config/GameConstants.js?v=d67a2d20"></script>
     <script src="js/data/preloadImages.js?v=e87e539d"></script>
     <script src="js/data/riverMap.js?v=1dbe219c"></script>
     <script src="js/data/terrainInfo.js?v=d9b1d2a2"></script>
@@ -835,7 +837,7 @@
     <script src="js/systems/DeclineWatch.js?v=e0e70d98"></script>
     <script src="js/systems/UIManager.js?v=78c5d37e"></script>
     <script src="js/systems/ui/MobileTouch.js?v=91fdcc8a"></script>
-    <script src="js/systems/ui/StudyBookUI.js?v=1d82ff75"></script>
+    <script src="js/systems/ui/StudyBookUI.js?v=e2076f6d"></script>
     <script src="js/systems/ui/LoanUI.js?v=58e6338c"></script>
     <script src="js/systems/ui/ResourceHud.js?v=c698f1d9"></script>
     <script src="js/systems/ui/IdleHints.js?v=c75e6450"></script>
@@ -846,7 +848,7 @@
     <script src="js/systems/ui/EventUI.js?v=72f71fc0"></script>
     <script src="js/systems/ui/EventDecisionUI.js?v=4865b505"></script>
     <script src="js/systems/ui/BuildPreview.js?v=f1c6658f"></script>
-    <script src="js/systems/ui/BuildMenuUI.js?v=b771024c"></script>
+    <script src="js/systems/ui/BuildMenuUI.js?v=bf204587"></script>
     <script src="js/systems/ui/MissionBar.js?v=8e720656"></script>
     <script src="js/systems/ui/TechTreeUI.js?v=2ee956b7"></script>
     <script src="js/systems/ui/MobilePanels.js?v=a6989c98"></script>
@@ -864,7 +866,7 @@
     <script src="js/systems/MissionReminders.js?v=203dd893"></script>
     <script src="js/systems/EventSystem.js?v=5ef959da"></script>
     <script src="js/systems/SaveSystem.js?v=0e4354cb"></script>
-    <script src="js/systems/StudySystem.js?v=ad22fb8a"></script>
+    <script src="js/systems/StudySystem.js?v=419d9bd1"></script>
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
     <script src="js/systems/TutorialSystem.js?v=c856bce4"></script>
     <script src="js/systems/RescueGuides.js?v=c4db5930"></script>
@@ -875,7 +877,7 @@
     <script src="js/systems/TreeSystem.js?v=0bb86b6c"></script>
     <script src="js/systems/WeatherService.js?v=52df4562"></script>
     <script src="js/systems/SimulatedWeather.js?v=989f5de9"></script>
-    <script src="js/systems/ResearchLog.js?v=50ef6e1b"></script>
+    <script src="js/systems/ResearchLog.js?v=68447d81"></script>
     <script src="js/systems/ResearchSync.js?v=b281f9da"></script>
     <script src="js/systems/LessonProgress.js?v=e5a2ef53"></script>
 

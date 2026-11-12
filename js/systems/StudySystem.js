@@ -89,6 +89,39 @@ class StudySystem {
         }
     }
     
+    // ===== REGRAS (STUDY_RULES em GameConstants.js) =====
+    static MODES = ['obrigatorio', 'pulavel', 'opcional'];
+
+    /**
+     * Regras de estudo e prova desta versão: { study, quiz, unlockAfterFailures }.
+     * Valor desconhecido (ou sem STUDY_RULES) = 'obrigatorio', o comportamento de sempre.
+     */
+    static rules() {
+        const r = (typeof STUDY_RULES !== 'undefined' && STUDY_RULES) || {};
+        const mode = v => (StudySystem.MODES.includes(v) ? v : 'obrigatorio');
+        const n = Number(r.UNLOCK_AFTER_FAILURES);
+        return { study: mode(r.STUDY), quiz: mode(r.QUIZ), unlockAfterFailures: Number.isFinite(n) && n >= 0 ? Math.floor(n) : 2 };
+    }
+
+    /** Depois de quantas reprovações o livro oferece "Continuar e desbloquear" (null = nunca, só passando). */
+    static continueAfterFailures() {
+        const { quiz, unlockAfterFailures } = StudySystem.rules();
+        if (quiz !== 'obrigatorio') return 1;
+        return unlockAfterFailures > 0 ? unlockAfterFailures : null;
+    }
+
+    /**
+     * Pulou o estudo ('study') ou a prova ('quiz') do estudo aberto: libera o prédio e anota na pesquisa.
+     * Só vale quando a regra deixa (pulável/opcional); devolve true se liberou.
+     */
+    skipCurrent(kind) {
+        const id = this.currentStudy;
+        const rules = StudySystem.rules();
+        if (!id || rules[kind] === 'obrigatorio') return false;
+        if (typeof ResearchLog !== 'undefined') ResearchLog.record(kind === 'quiz' ? 'quiz_skip' : 'study_skip', { target: id, value: this.currentPage + 1 });
+        return this.completeStudy(id);
+    }
+
     // ===== VERIFICAÇÃO DE DESBLOQUEIO =====
     /** Liberado para construir: tecnologia atingida (TechTree) E estudo feito (ou prédio sem estudo). */
     isBuildingUnlocked(buildingId) {
@@ -104,6 +137,9 @@ class StudySystem {
 
     /** Só a parte do estudo (o cartão diz "estude" e não "construa antes"). */
     isStudyUnlocked(buildingId) {
+        // Estudo opcional: nada fica bloqueado por estudo (o livro continua aberto à leitura)
+        if (StudySystem.rules().study === 'opcional') return true;
+
         // If building is already unlocked, return true
         if (this.unlockedBuildings.has(buildingId)) {
             return true;
@@ -159,7 +195,9 @@ class StudySystem {
                 const buildingType = this.gameManager.buildingSystem.buildingTypes.get(buildingId);
                 if (buildingType) {
                     this.gameManager.uiManager.showNotification(
-                        `🎓 ${buildingType.name} desbloqueado!`,
+                        StudySystem.rules().study === 'opcional'
+                            ? `🎓 Estudo concluído: ${buildingType.name}!`
+                            : `🎓 ${buildingType.name} desbloqueado!`,
                         'success'
                     );
                 }

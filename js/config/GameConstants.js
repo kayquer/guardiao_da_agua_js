@@ -85,6 +85,23 @@ const RESEARCH_SYNC = {
     TIMEOUT_MS: 20000
 };
 
+// ===== ESTUDOS E PROVAS (StudySystem.rules(), livro em js/systems/ui/StudyBookUI.js) =====
+// Cada prédio com estudo (data/building-studies.json) pode exigir a leitura e a prova no fim dela.
+// Valores de STUDY e QUIZ: 'obrigatorio' | 'pulavel' | 'opcional'.
+//   STUDY 'obrigatorio' → o prédio fica bloqueado até concluir o estudo
+//         'pulavel'     → bloqueado, mas o livro tem "Pular o estudo", que libera na hora
+//         'opcional'    → não bloqueia (só a árvore tecnológica); o estudo fica como leitura no menu de construção
+//   QUIZ  'obrigatorio' → precisa da nota mínima; da UNLOCK_AFTER_FAILURES-ésima reprovação em diante
+//                         aparece "Continuar e desbloquear" (0 = só passando)
+//         'pulavel'     → a prova aparece, com "Pular a prova"; reprovou = já pode continuar
+//         'opcional'    → "Concluir" libera mesmo sem responder; respondeu, recebe a nota e a revisão
+// Tudo vai para o registro da pesquisa (session_start leva as regras; study_skip/quiz_skip quando pula).
+const STUDY_RULES = {
+    STUDY: 'obrigatorio',
+    QUIZ: 'obrigatorio',
+    UNLOCK_AFTER_FAILURES: 2
+};
+
 // ===== ÁRVORES (TreeSystem) =====
 // Bosques sorteados no mapa. Cada árvore em pé limpa o ar (redução de poluição/min) e soma satisfação
 // (área verde, até GREEN_BONUS_MAX); construir em cima derruba: perde esse bônus e a poluição sobe na hora.
