@@ -1564,3 +1564,67 @@
     border-radius: 5px;
     font: inherit;
 }
+
+/* Dificuldade no cadastro (DIFFICULTY_LEVELS): três cartões, Normal marcado */
+.difficulty-field {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+}
+
+.difficulty-field legend {
+    padding: 0;
+    margin-bottom: 0.3rem;
+}
+
+.difficulty-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.difficulty-option {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.55rem 0.7rem;
+    border: 3px solid #000;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+}
+
+.difficulty-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.difficulty-option:has(input:checked) {
+    background: var(--cartoon-blue);
+    color: #fff;
+    box-shadow: 0 4px 0 #000;
+}
+
+.difficulty-option:has(input:focus-visible) {
+    outline: 3px solid var(--cartoon-yellow);
+}
+
+.difficulty-name {
+    font-size: 1.05rem;
+}
+
+.difficulty-desc {
+    font-weight: 400;
+    font-size: 0.78rem;
+    line-height: 1.25;
+    opacity: 0.9;
+}
+
+@media (max-width: 560px) {
+    .difficulty-options {
+        grid-template-columns: 1fr;
+    }
+}

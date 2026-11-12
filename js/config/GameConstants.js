@@ -53,14 +53,16 @@ const GAME_CONFIG = {
     }
 };
 
-// ===== DIFICULDADE PELA IDADE DO JOGADOR (perfil) =====
-// maxAge: até que idade vale. events = multiplicador da chance de evento (EventSystem.setDifficulty);
-// budget = multiplicador do orçamento inicial. Aplicado em GameManager.applyPlayerProfile().
-const DIFFICULTY_BY_AGE = [
-    { maxAge: 10, id: 'easy', label: 'Fácil', events: 0.6, budget: 1.3 },
-    { maxAge: 14, id: 'normal', label: 'Normal', events: 1.0, budget: 1.0 },
-    { maxAge: Infinity, id: 'hard', label: 'Difícil', events: 1.4, budget: 0.8 }
+// ===== DIFICULDADE (o jogador escolhe no cadastro e pode trocar nas Configurações) =====
+// events = multiplicador da chance de evento (EventSystem.setDifficulty, vale na hora);
+// budget = multiplicador do orçamento inicial (vale no próximo jogo novo). Aplicado em GameManager.applyPlayerProfile().
+// Perfil sem dificuldade (criado antes da escolha) = DEFAULT_DIFFICULTY.
+const DIFFICULTY_LEVELS = [
+    { id: 'easy', label: 'Fácil', icon: '🌱', description: 'Mais dinheiro no começo e menos imprevistos do clima.', events: 0.6, budget: 1.3 },
+    { id: 'normal', label: 'Normal', icon: '💧', description: 'O equilíbrio pensado para o jogo.', events: 1.0, budget: 1.0 },
+    { id: 'hard', label: 'Difícil', icon: '⛈️', description: 'Menos dinheiro e mais eventos: para quem gosta de desafio.', events: 1.4, budget: 0.8 }
 ];
+const DEFAULT_DIFFICULTY = 'normal';
 
 // ===== CLIMA (WeatherService, Open-Meteo: sem chave, CORS liberado) =====
 const WEATHER = {

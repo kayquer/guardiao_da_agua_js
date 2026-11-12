@@ -73,7 +73,11 @@ class ResearchLog {
         ResearchLog.page = null;
         // Regras de estudo/prova da versão (STUDY_RULES): a análise sabe em que condição a sessão foi jogada
         const rules = typeof StudySystem !== 'undefined' ? StudySystem.rules() : null;
-        return ResearchLog.record('session_start', rules ? { value: mode, study: rules.study, quiz: rules.quiz } : { value: mode });
+        const extra = rules ? { study: rules.study, quiz: rules.quiz } : {};
+        // Dificuldade escolhida pelo jogador (DIFFICULTY_LEVELS)
+        const gm = typeof window !== 'undefined' ? window.gameManager : null;
+        if (gm?.difficulty?.id) extra.difficulty = gm.difficulty.id;
+        return ResearchLog.record('session_start', { value: mode, ...extra });
     }
 
     static record(type, data = {}) {

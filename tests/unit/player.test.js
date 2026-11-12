@@ -32,14 +32,18 @@ test('perfil: criar ativa; ativar outro troca; apagar o ativo deixa sem ativo', 
     assert.strictEqual(JSON.stringify(PlayerProfile.list().map(p => p.id)), JSON.stringify([bia.id]));
 });
 
-test('perfil: dificuldade pela idade (até 10 fácil, até 14 normal, depois difícil)', () => {
-    const PlayerProfile = setup()('PlayerProfile');
-    assert.strictEqual(PlayerProfile.difficultyForAge(8).id, 'easy');
-    assert.strictEqual(PlayerProfile.difficultyForAge(10).id, 'easy');
-    assert.strictEqual(PlayerProfile.difficultyForAge(11).id, 'normal');
-    assert.strictEqual(PlayerProfile.difficultyForAge(14).id, 'normal');
-    assert.strictEqual(PlayerProfile.difficultyForAge(15).id, 'hard');
-    assert.strictEqual(PlayerProfile.difficultyForAge(40).id, 'hard');
+test('perfil: dificuldade é escolha do jogador (3 níveis), não depende da idade; sem escolha = Normal', () => {
+    const g = setup();
+    const PlayerProfile = g('PlayerProfile');
+    assert.strictEqual(JSON.stringify(g('DIFFICULTY_LEVELS').map(l => l.id)), JSON.stringify(['easy', 'normal', 'hard']));
+    const base = { age: 40, uf: 'SP', city: 'Campinas' };
+    assert.strictEqual(PlayerProfile.create({ ...base, name: 'Adulto' }).difficulty, 'normal', 'adulto não cai no difícil sozinho');
+    assert.strictEqual(PlayerProfile.create({ ...base, name: 'Novo', age: 8, difficulty: 'hard' }).difficulty, 'hard');
+    assert.strictEqual(PlayerProfile.create({ ...base, name: 'X', difficulty: 'impossivel' }).difficulty, 'normal');
+    assert.strictEqual(PlayerProfile.difficultyOf({ name: 'antigo' }).id, 'normal', 'perfil antigo sem o campo');
+    assert.strictEqual(PlayerProfile.difficultyOf(null).id, 'normal');
+    const easy = PlayerProfile.difficultyById('easy'), hard = PlayerProfile.difficultyById('hard');
+    assert.ok(easy.budget > 1 && easy.events < 1 && hard.budget < 1 && hard.events > 1);
 });
 
 test('perfil: {nome} vira o nome do jogador, escapado (os textos vão para innerHTML)', () => {

@@ -58,6 +58,40 @@ test('Configurações: gráficos, texto, clima e som num painel próprio; Esc vo
     expect(errors).toEqual([]);
 });
 
+test('dificuldade nas Configurações: eventos mudam na hora, o caixa não, fica no perfil e vale depois de carregar o save', async ({ page }) => {
+    const errors = watchErrors(page);
+    await start(page);
+    const before = await page.evaluate(() => ({
+        id: window.gameManager.difficulty.id,
+        budget: window.gameManager.resourceManager.resources.budget.current
+    }));
+    expect(before.id).toBe('normal'); // perfil de teste sem escolha = Normal
+    await page.evaluate(() => window.gameManager.pauseGame());
+    await page.click('#btn-settings');
+    await expect(page.locator('#pause-difficulty [data-difficulty="normal"]')).toHaveAttribute('aria-checked', 'true');
+    await page.click('#pause-difficulty [data-difficulty="hard"]');
+    await expect(page.locator('#pause-difficulty [data-difficulty="hard"]')).toHaveAttribute('aria-checked', 'true');
+    await expect(page.locator('#pause-difficulty .difficulty-hint')).toContainText('próximo jogo novo');
+    const after = await page.evaluate(() => ({
+        id: window.gameManager.difficulty.id,
+        events: window.gameManager.eventSystem.difficultyMultiplier,
+        budget: window.gameManager.resourceManager.resources.budget.current,
+        profile: PlayerProfile.getActive().difficulty,
+        logged: ResearchLog.entry().events.some(e => e.type === 'difficulty' && e.value === 'hard')
+    }));
+    expect(after).toEqual({ id: 'hard', events: 1.4, budget: before.budget, profile: 'hard', logged: true });
+
+    // Save gravado ANTES da troca (multiplicador 1.0): ao carregar, quem manda é o perfil
+    await page.evaluate(() => {
+        const gm = window.gameManager;
+        const data = gm.getSaveData();
+        data.events.difficultyMultiplier = 1.0;
+        gm.loadGame(data);
+    });
+    await expect.poll(() => page.evaluate(() => window.gameManager.eventSystem.difficultyMultiplier)).toBe(1.4);
+    expect(errors).toEqual([]);
+});
+
 test('clima simulado: escolhido nas Configurações, o jogo inventa o tempo e o popup avisa', async ({ page }) => {
     const errors = watchErrors(page);
     await start(page);

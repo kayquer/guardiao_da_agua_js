@@ -2,7 +2,8 @@
  * PlayerProfile — perfis de jogador (nome/apelido, idade, cidade) salvos no localStorage.
  * Sem DOM nem Babylon (testável em tests/unit): a tela de perfis fica em js/main.js.
  *
- * Perfil: { id, name, age, uf, city, lat, lon, createdAt, lastPlayedAt }
+ * Perfil: { id, name, age, uf, city, difficulty, lat, lon, createdAt, lastPlayedAt }
+ * difficulty = id de DIFFICULTY_LEVELS escolhido pelo jogador (a idade não muda mais a dificuldade).
  * lat/lon vêm da geocodificação da cidade (Open-Meteo) e alimentam o clima; podem faltar (sem rede).
  */
 class PlayerProfile {
@@ -57,7 +58,7 @@ class PlayerProfile {
     }
 
     /** Cria o perfil (já validado), salva e o torna ativo. */
-    static create({ name, age, uf, city, lat = null, lon = null }) {
+    static create({ name, age, uf, city, difficulty = DEFAULT_DIFFICULTY, lat = null, lon = null }) {
         const store = PlayerProfile.readStore();
         const now = Date.now();
         const profile = {
@@ -66,6 +67,7 @@ class PlayerProfile {
             age: Number(age),
             uf,
             city: String(city).trim(),
+            difficulty: PlayerProfile.difficultyById(difficulty).id,
             lat,
             lon,
             createdAt: now,
@@ -105,9 +107,15 @@ class PlayerProfile {
         if (typeof ResearchLog !== 'undefined') ResearchLog.clear(id);
     }
 
-    /** Dificuldade pela idade (DIFFICULTY_BY_AGE em GameConstants). */
-    static difficultyForAge(age) {
-        return DIFFICULTY_BY_AGE.find(level => Number(age) <= level.maxAge) || DIFFICULTY_BY_AGE[DIFFICULTY_BY_AGE.length - 1];
+    /** Nível de DIFFICULTY_LEVELS pelo id (desconhecido ou vazio = DEFAULT_DIFFICULTY). */
+    static difficultyById(id) {
+        return DIFFICULTY_LEVELS.find(level => level.id === id)
+            || DIFFICULTY_LEVELS.find(level => level.id === DEFAULT_DIFFICULTY);
+    }
+
+    /** Dificuldade escolhida no perfil (perfis antigos, sem o campo, ficam no padrão). */
+    static difficultyOf(profile) {
+        return PlayerProfile.difficultyById(profile?.difficulty);
     }
 
     /** Nome para os textos do jogo ("Guardião" se não houver perfil). */

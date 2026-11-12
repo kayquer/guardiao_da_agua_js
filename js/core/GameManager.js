@@ -1168,6 +1168,9 @@ class GameManager {
             this.buildingSystem.rebuildLegacyResourceTotals(saveData.resources);
             this.questSystem.loadData(saveData.quests);
             this.eventSystem?.loadData(saveData.events);
+            // A dificuldade vem do perfil (escolha do jogador), não do save: o save guarda o multiplicador de quando
+            // foi gravado, que pode ser antigo (trocou nas Configurações) ou da regra velha pela idade
+            this.eventSystem?.setDifficulty(this.difficulty.events);
             this.studySystem?.loadSaveData(saveData.studies);
             this.techTree?.loadData(saveData.techTree); // depois de prédios e estudos: save antigo libera o que já tinha
             this.gameOverSystem?.loadData(saveData.emergency); // declarações de emergência já usadas
@@ -1242,11 +1245,11 @@ class GameManager {
         }
     }
 
-    // Perfil do jogador (PlayerProfile): a idade define a dificuldade (DIFFICULTY_BY_AGE) e a cidade, o clima do HUD
+    // Perfil do jogador (PlayerProfile): a dificuldade escolhida (DIFFICULTY_LEVELS) e a cidade, o clima do HUD
     // resetBudget: false ao continuar um jogo salvo (o orçamento vem do save)
     applyPlayerProfile({ resetBudget = true } = {}) {
         const profile = PlayerProfile.getActive();
-        this.difficulty = PlayerProfile.difficultyForAge(profile ? profile.age : 12);
+        this.difficulty = PlayerProfile.difficultyOf(profile);
         this.eventSystem?.setDifficulty(this.difficulty.events);
         if (resetBudget) {
             const budget = this.resourceManager.resources.budget;
@@ -1254,6 +1257,21 @@ class GameManager {
         }
         log(`👤 Jogador: ${PlayerProfile.displayName()} · dificuldade ${this.difficulty.label}`);
         this.uiManager?.initPlayerHud();
+    }
+
+    /**
+     * Troca a dificuldade no meio do jogo (Configurações): fica no perfil, os eventos mudam na hora e o
+     * orçamento inicial só vale no próximo jogo novo (o dinheiro em caixa não muda).
+     */
+    changeDifficulty(id) {
+        const level = PlayerProfile.difficultyById(id);
+        const profile = PlayerProfile.getActive();
+        if (profile) PlayerProfile.update(profile.id, { difficulty: level.id });
+        this.difficulty = level;
+        this.eventSystem?.setDifficulty(level.events);
+        if (typeof ResearchLog !== 'undefined') ResearchLog.record('difficulty', { value: level.id });
+        log(`🎚️ Dificuldade: ${level.label}`);
+        return level;
     }
 
     // Pausa leve: popups informativos chamam holdPause ao abrir e releasePause ao fechar.

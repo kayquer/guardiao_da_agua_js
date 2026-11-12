@@ -27,6 +27,9 @@ test('cadastro do jogador: valida, salva o perfil e usa nome, idade e cidade', a
 
     await page.fill('#profile-name', 'Ana');
     await page.fill('#profile-age', '9');
+    // Dificuldade é escolha: Normal vem marcado; aqui a jogadora escolhe Fácil
+    await expect(page.locator('#profile-difficulty input[value="normal"]')).toBeChecked();
+    await page.locator('#profile-difficulty .difficulty-option', { hasText: 'Fácil' }).click();
     await page.selectOption('#profile-uf', 'SP');
     await expect(page.locator('#profile-city')).toBeEnabled();
     await page.fill('#profile-city', 'Cidade Inventada');
@@ -42,8 +45,8 @@ test('cadastro do jogador: valida, salva o perfil e usa nome, idade e cidade', a
         budget: window.gameManager.resourceManager.resources.budget.current,
         initialBudget: GAME_CONFIG.resources.initialBudget
     }));
-    expect(state.profile).toMatchObject({ name: 'Ana', age: 9, uf: 'SP', city: 'Campinas', lat: -22.9, lon: -47.06 });
-    expect(state.difficulty).toBe('easy'); // até 10 anos
+    expect(state.profile).toMatchObject({ name: 'Ana', age: 9, uf: 'SP', city: 'Campinas', difficulty: 'easy', lat: -22.9, lon: -47.06 });
+    expect(state.difficulty).toBe('easy'); // a escolha do cadastro
     expect(state.budget).toBe(Math.round(state.initialBudget * 1.3));
     await expect(page.locator('#player-name')).toHaveText('Ana');
     await expect(page.locator('#tutorial-title')).toContainText('Ana'); // {nome} nos textos do tutorial

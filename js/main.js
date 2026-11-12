@@ -138,6 +138,7 @@ function initializeMenuSystem() {
     initializeGraphicsPickers();
     initializeTextPickers();
     initializeClimatePickers();
+    initializeDifficultyChoice();
 }
 
 // ===== QUALIDADE GRÁFICA (GraphicsQuality) =====
@@ -223,6 +224,49 @@ function initializeClimatePickers() {
         render();
         if (gameManager?.initialized) gameManager.uiManager?.refreshWeather({ force: true });
     });
+    render();
+}
+
+/**
+ * Dificuldade (DIFFICULTY_LEVELS): cartões no cadastro (#profile-difficulty, Normal marcado) e o seletor nas
+ * Configurações da pausa ([data-difficulty-picker]), que troca no meio do jogo (GameManager.changeDifficulty).
+ */
+function initializeDifficultyChoice() {
+    const box = document.getElementById('profile-difficulty');
+    if (box) {
+        box.innerHTML = DIFFICULTY_LEVELS.map(level => `
+            <label class="difficulty-option">
+                <input type="radio" name="difficulty" value="${level.id}"${level.id === DEFAULT_DIFFICULTY ? ' checked' : ''}>
+                <span class="difficulty-name">${level.icon} ${level.label}</span>
+                <small class="difficulty-desc">${level.description}</small>
+            </label>`).join('');
+    }
+    const pickers = document.querySelectorAll('[data-difficulty-picker]');
+    pickers.forEach(picker => {
+        const seg = picker.querySelector('.gfx-seg');
+        if (seg) seg.innerHTML = DIFFICULTY_LEVELS.map(level =>
+            `<button type="button" role="radio" data-difficulty="${level.id}">${level.label}</button>`).join('');
+    });
+    const render = () => {
+        const current = (gameManager?.difficulty || PlayerProfile.difficultyOf(PlayerProfile.getActive())).id;
+        pickers.forEach(picker => {
+            picker.querySelectorAll('[data-difficulty]').forEach(button => {
+                const on = button.dataset.difficulty === current;
+                button.classList.toggle('active', on);
+                button.setAttribute('aria-checked', String(on));
+            });
+            const hint = picker.querySelector('.difficulty-hint');
+            if (hint) hint.textContent = `${PlayerProfile.difficultyById(current).description} Os eventos mudam na hora; o dinheiro do começo vale no próximo jogo novo.`;
+        });
+    };
+    pickers.forEach(picker => picker.addEventListener('click', event => {
+        const button = event.target.closest('[data-difficulty]');
+        if (!button || !gameManager?.initialized) return;
+        gameManager.changeDifficulty(button.dataset.difficulty);
+        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_click', 0.6);
+        render();
+    }));
+    window.renderDifficultyPickers = render; // a tela de Configurações chama ao abrir (o perfil pode ter mudado)
     render();
 }
 
@@ -421,7 +465,8 @@ async function submitProfileForm(event) {
         name: form.elements.name.value,
         age: form.elements.age.value,
         uf: form.elements.uf.value,
-        city: form.elements.city.value.trim()
+        city: form.elements.city.value.trim(),
+        difficulty: form.elements.difficulty?.value || DEFAULT_DIFFICULTY
     };
     const errors = PlayerProfile.validate(data);
     // Com a lista do IBGE, a cidade precisa ser uma dela (garante que o clima ache o lugar certo)

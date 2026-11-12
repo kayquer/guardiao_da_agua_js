@@ -49,7 +49,7 @@
     <link rel="stylesheet" href="css/tutorial.css?v=ac763a0b">
     <link rel="stylesheet" href="css/lessons.css?v=e68e4db9">
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
-    <link rel="stylesheet" href="css/player.css?v=483a6c80">
+    <link rel="stylesheet" href="css/player.css?v=ecaea69e">
     <link rel="stylesheet" href="css/menu.css?v=ad09dab4">
     <link rel="stylesheet" href="css/notice.css?v=9ac8efa6">
     <link rel="stylesheet" href="css/research.css?v=0f6fc4df">
@@ -286,6 +286,11 @@
                     <span>Sua idade</span>
                     <input id="profile-age" name="age" type="number" min="5" max="120" inputmode="numeric" placeholder="Ex.: 12" required>
                 </label>
+                <!-- Dificuldade (DIFFICULTY_LEVELS): opções montadas por main.js (initializeDifficultyChoice) -->
+                <fieldset class="profile-field difficulty-field">
+                    <legend>Dificuldade</legend>
+                    <div id="profile-difficulty" class="difficulty-options" role="radiogroup"></div>
+                </fieldset>
                 <label class="profile-field">
                     <span>Seu estado</span>
                     <select id="profile-uf" name="uf" required>
@@ -576,6 +581,12 @@
                         </div>
                         <p class="gfx-hint climate-hint" aria-live="polite"></p>
                     </div>
+                    <!-- Dificuldade (GameManager.changeDifficulty): eventos na hora, dinheiro inicial no próximo jogo novo -->
+                    <div id="pause-difficulty" class="gfx-picker gfx-picker--panel difficulty-picker" data-difficulty-picker>
+                        <span class="gfx-title" id="pause-difficulty-title">🎚️ Dificuldade</span>
+                        <div class="gfx-seg" role="radiogroup" aria-labelledby="pause-difficulty-title"></div>
+                        <p class="gfx-hint difficulty-hint" aria-live="polite"></p>
+                    </div>
                 </div>
                 <div class="overlay-buttons nh-buttons">
                     <button id="btn-settings-back" class="overlay-btn primary">⬅ Voltar</button>
@@ -698,7 +709,7 @@
     <!-- Scripts do Jogo - Ordem correta de dependências -->
 
     <!-- Clean Code Refactoring: Game Constants (loaded first) -->
-    <script src="js/config/GameConstants.js?v=d67a2d20"></script>
+    <script src="js/config/GameConstants.js?v=84c57b68"></script>
     <script src="js/data/preloadImages.js?v=e87e539d"></script>
     <script src="js/data/riverMap.js?v=1dbe219c"></script>
     <script src="js/data/terrainInfo.js?v=d9b1d2a2"></script>
@@ -813,7 +824,7 @@
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=f9674bb9"></script>
 
-    <script src="js/core/GameManager.js?v=1bdf1f46"></script>
+    <script src="js/core/GameManager.js?v=368f6464"></script>
     <script src="js/core/game/Diagnostics.js?v=8ec9d8c0"></script>
     <script src="js/core/game/SelectionVisuals.js?v=034e13b1"></script>
     <script src="js/core/game/CameraGuard.js?v=2024c210"></script>
@@ -856,7 +867,7 @@
     <script src="js/systems/ui/WeatherUI.js?v=7819b344"></script>
     <script src="js/systems/ui/CompassUI.js?v=9e3e44fa"></script>
     <script src="js/systems/ui/ResearchUI.js?v=8c9a823e"></script>
-    <script src="js/systems/ui/SettingsUI.js?v=ea95d176"></script>
+    <script src="js/systems/ui/SettingsUI.js?v=cb4cdfd8"></script>
     <script src="js/systems/ui/LessonBookUI.js?v=3122a13a"></script>
     <script src="js/systems/ui/TreeInfoUI.js?v=e348aba5"></script>
     <script src="js/systems/LoanManager.js?v=6a416acb"></script>
@@ -872,7 +883,7 @@
     <script src="js/systems/TutorialSystem.js?v=b87e00e5"></script>
     <script src="js/systems/RescueGuides.js?v=c4db5930"></script>
     <script src="js/systems/GameOverSystem.js?v=403ffaf1"></script>
-    <script src="js/systems/PlayerProfile.js?v=67ceb86e"></script>
+    <script src="js/systems/PlayerProfile.js?v=a952c548"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
     <script src="js/systems/TreeSystem.js?v=0bb86b6c"></script>
@@ -880,7 +891,7 @@
     <script src="js/systems/PropSystem.js?v=0a1b501a"></script>
     <script src="js/systems/WeatherService.js?v=52df4562"></script>
     <script src="js/systems/SimulatedWeather.js?v=989f5de9"></script>
-    <script src="js/systems/ResearchLog.js?v=68447d81"></script>
+    <script src="js/systems/ResearchLog.js?v=21ef665b"></script>
     <script src="js/systems/ResearchSync.js?v=b281f9da"></script>
     <script src="js/systems/LessonProgress.js?v=e5a2ef53"></script>
 
@@ -890,6 +901,6 @@
     <script src="js/systems/intro/MenuIntro.js?v=06818672"></script>
 
     <!-- Main initialization -->
-    <script src="js/main.js?v=96f3198c"></script>
+    <script src="js/main.js?v=ce27aa25"></script>
 </body>
 </html>
