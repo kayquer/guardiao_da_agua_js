@@ -35,6 +35,11 @@
  *   cleanBelow: [some, cheio] — bioindicador: todo abaixo de `cheio`, some de vez em `some` (fauna do rio)
  *   sewage: true — só com esgoto sem tratamento (cidade com moradores e sem ETE pronta)
  *   deforestation: [de, até] — parte da mata do começo derrubada para obras (0-1, TreeSystem): tocos e toras
+ *   basins: ['vale', 'serra', 'litoral', 'sertao'] — só nessas bacias (js/data/basinMaps.js); sem = em todas.
+ *          A fauna e a flora combinam com o bioma: mandacaru só no sertão, guaiamum só no litoral…
+ *   ecology: 0-1 — bicho ameaçado só chega quando a recuperação da bacia passa disso (PropSystem.buildState:
+ *          tempo de jogo com o rio cheio + mudas plantadas na beira do rio). Assim o caderno tem progressão:
+ *          no começo só os comuns; os raros chegam com rio limpo e mata ciliar mantidos por um tempo
  *   face:  'water' | 'road' — a frente (-Z do modelo) vira para a água/rua vizinha; sem isso o giro é sorteado
  * }
  */
@@ -138,7 +143,7 @@ const PROP_TYPES = {
     pilha_lenha: { file: 'pilha_lenha.glb', group: 'rural', place: 'rural', size: 0.4, max: 4, level: 1 },
     latao_leite: { file: 'latao_leite.glb', group: 'rural', place: 'rural', size: 0.25, max: 3, level: 2 },
     cocho_gado: { file: 'cocho_gado.glb', group: 'rural', place: 'rural', size: 0.5, max: 4, level: 2 },
-    tamandua: { file: 'tamandua.glb', group: 'fauna', place: 'rural', size: 0.55, max: 2, level: 1, cleanBelow: [70, 50], motion: 'graze' },
+    tamandua: { file: 'tamandua.glb', group: 'fauna', place: 'rural', size: 0.55, max: 2, level: 1, cleanBelow: [70, 50], motion: 'graze', ecology: 0.2 },
     cerca_mourao: { file: 'cerca_mourao.glb', group: 'rural', place: 'rural', size: 0.9, max: 10, level: 1 },
     fardo_feno: { file: 'fardo_feno.glb', group: 'rural', place: 'rural', size: 0.3, max: 8, level: 1, clump: 2 },
     porteira: { file: 'porteira.glb', group: 'rural', place: 'rural', size: 0.8, max: 3, level: 2 },
@@ -152,39 +157,43 @@ const PROP_TYPES = {
     garca: { file: 'garca.glb', group: 'fauna', place: 'bank', size: 0.45, max: 6, cleanBelow: [55, 35], motion: 'perch' },
     capivara: { file: 'capivara.glb', group: 'fauna', place: 'bank', size: 0.45, max: 5, cleanBelow: [60, 40], motion: 'graze' },
     tartaruga: { file: 'tartaruga.glb', group: 'fauna', place: 'bank', size: 0.28, max: 4, cleanBelow: [45, 25], motion: 'graze' },
-    vitoria_regia: { file: 'vitoria_regia.glb', group: 'natureza', place: 'water', size: 0.7, max: 8, cleanBelow: [55, 35], motion: 'bob' },
+    vitoria_regia: { file: 'vitoria_regia.glb', group: 'natureza', place: 'water', size: 0.7, max: 8, cleanBelow: [55, 35], motion: 'bob', basins: ['litoral'] },
     sapo: { file: 'sapo.glb', group: 'fauna', place: 'bank', size: 0.2, max: 5, cleanBelow: [40, 20], motion: 'hop' }, // anfíbio: o primeiro a sumir
     lambaris: { file: 'lambaris.glb', group: 'fauna', place: 'water', size: 0.45, max: 6, cleanBelow: [50, 30], motion: 'swim' },
-    // Kit Fauna Ameaçada (Livro Vermelho, ICMBio 2018): os mais exigentes, um ou dois por mapa
-    ariranha: { file: 'ariranha.glb', kit: 'fauna/mamiferos/ariranha', group: 'fauna', place: 'bank', size: 0.55, max: 2, cleanBelow: [40, 20], motion: 'graze' },
-    boto_vermelho: { file: 'boto_vermelho.glb', kit: 'fauna/mamiferos/boto_vermelho', group: 'fauna', place: 'water', size: 0.7, max: 2, cleanBelow: [45, 25], motion: 'swim' },
-    pato_mergulhao: { file: 'pato_mergulhao.glb', kit: 'fauna/aves/pato_mergulhao', group: 'fauna', place: 'water', size: 0.32, max: 2, cleanBelow: [30, 12], motion: 'swim' },
-    soco_boi_escuro: { file: 'soco_boi_escuro.glb', kit: 'fauna/aves/soco_boi_escuro', group: 'fauna', place: 'bank', size: 0.4, max: 2, cleanBelow: [55, 35], motion: 'perch' },
-    cobra_dagua: { file: 'cobra_dagua.glb', kit: 'fauna/repteis/cobra_dagua_grande_do_tocantins', group: 'fauna', place: 'bank', size: 0.6, max: 2, cleanBelow: [50, 30], motion: 'graze' },
-    ra_das_pedras: { file: 'ra_das_pedras.glb', kit: 'fauna/anfibios/ra_das_pedras', group: 'fauna', place: 'bank', size: 0.22, max: 2, cleanBelow: [35, 15], motion: 'hop' },
-    piracanjuba: { file: 'piracanjuba.glb', kit: 'fauna/peixes/piracanjuba', group: 'fauna', place: 'water', size: 0.4, max: 2, cleanBelow: [45, 25], motion: 'swim' },
-    surubim: { file: 'surubim.glb', kit: 'fauna/peixes/surubim_do_iguacu', group: 'fauna', place: 'water', size: 0.45, max: 2, cleanBelow: [40, 20], motion: 'swim' },
-    libelula: { file: 'libelula.glb', kit: 'fauna/invertebrados/libelula_januaria', group: 'fauna', place: 'bank', size: 0.24, max: 2, cleanBelow: [45, 25], motion: 'fly' },
-    egla: { file: 'egla.glb', kit: 'fauna/invertebrados/egla_rossiana', group: 'fauna', place: 'bank', size: 0.2, max: 2, cleanBelow: [30, 12], motion: 'graze' },
+    // Kit Fauna Ameaçada (Livro Vermelho, ICMBio 2018): os mais exigentes, um ou dois por mapa, cada um no seu bioma
+    ariranha: { file: 'ariranha.glb', kit: 'fauna/mamiferos/ariranha', group: 'fauna', place: 'bank', size: 0.55, max: 2, cleanBelow: [40, 20], motion: 'graze', basins: ['litoral'], ecology: 0.75 },
+    boto_cinza: { file: 'boto_cinza.glb', kit: 'fauna/mamiferos/boto_cinza', group: 'fauna', place: 'water', size: 0.7, max: 2, cleanBelow: [45, 25], motion: 'swim', basins: ['litoral'], ecology: 0.5 },
+    guaiamum: { file: 'guaiamum.glb', kit: 'fauna/invertebrados/guaiamum', group: 'fauna', place: 'bank', size: 0.22, max: 2, cleanBelow: [45, 25], motion: 'graze', basins: ['litoral'], ecology: 0.3 },
+    pato_mergulhao: { file: 'pato_mergulhao.glb', kit: 'fauna/aves/pato_mergulhao', group: 'fauna', place: 'water', size: 0.32, max: 2, cleanBelow: [30, 12], motion: 'swim', basins: ['serra', 'vale'], ecology: 0.9 },
+    soco_boi_escuro: { file: 'soco_boi_escuro.glb', kit: 'fauna/aves/soco_boi_escuro', group: 'fauna', place: 'bank', size: 0.4, max: 2, cleanBelow: [55, 35], motion: 'perch', basins: ['serra', 'vale'], ecology: 0.35 },
+    ra_das_pedras: { file: 'ra_das_pedras.glb', kit: 'fauna/anfibios/ra_das_pedras', group: 'fauna', place: 'bank', size: 0.22, max: 2, cleanBelow: [35, 15], motion: 'hop', basins: ['serra'], ecology: 0.45 },
+    piracanjuba: { file: 'piracanjuba.glb', kit: 'fauna/peixes/piracanjuba', group: 'fauna', place: 'water', size: 0.4, max: 2, cleanBelow: [45, 25], motion: 'swim', basins: ['vale', 'litoral'], ecology: 0.4 },
+    surubim: { file: 'surubim.glb', kit: 'fauna/peixes/surubim_do_iguacu', group: 'fauna', place: 'water', size: 0.45, max: 2, cleanBelow: [40, 20], motion: 'swim', basins: ['vale', 'serra'], ecology: 0.6 },
+    libelula: { file: 'libelula.glb', kit: 'fauna/invertebrados/libelula_januaria', group: 'fauna', place: 'bank', size: 0.24, max: 2, cleanBelow: [45, 25], motion: 'fly', basins: ['vale', 'serra', 'litoral'], ecology: 0.2 },
+    egla: { file: 'egla.glb', kit: 'fauna/invertebrados/egla_rossiana', group: 'fauna', place: 'bank', size: 0.2, max: 2, cleanBelow: [30, 12], motion: 'graze', basins: ['vale', 'serra'], ecology: 0.7 },
 
     // ===== Bichos da mata e do campo: somem com o ar e a água sujos =====
-    tucano: { file: 'tucano.glb', group: 'fauna', place: 'land', size: 0.35, max: 4, cleanBelow: [70, 50], motion: 'perch' },
-    arara: { file: 'arara.glb', group: 'fauna', place: 'land', size: 0.4, max: 4, cleanBelow: [70, 50], motion: 'perch' },
+    tucano: { file: 'tucano.glb', group: 'fauna', place: 'land', size: 0.35, max: 4, cleanBelow: [70, 50], motion: 'perch', basins: ['vale', 'serra', 'sertao'] },
+    arara: { file: 'arara.glb', group: 'fauna', place: 'land', size: 0.4, max: 4, cleanBelow: [70, 50], motion: 'perch', basins: ['vale'] },
     quati: { file: 'quati.glb', group: 'fauna', place: 'land', size: 0.4, max: 4, cleanBelow: [70, 50], motion: 'graze' },
     tatu: { file: 'tatu.glb', group: 'fauna', place: 'land', size: 0.32, max: 4, cleanBelow: [75, 55], motion: 'graze' },
     ninho_joao_de_barro: { file: 'ninho_joao_de_barro.glb', group: 'fauna', place: 'land', size: 0.45, max: 4 },
-    anta: { file: 'anta.glb', kit: 'fauna/mamiferos/anta', group: 'fauna', place: 'rural', size: 0.62, max: 2, cleanBelow: [65, 45], motion: 'graze' },
-    onca_pintada: { file: 'onca_pintada.glb', kit: 'fauna/mamiferos/onca_pintada', group: 'fauna', place: 'rural', size: 0.62, max: 1, cleanBelow: [55, 35], motion: 'graze' },
-    lobo_guara: { file: 'lobo_guara.glb', kit: 'fauna/mamiferos/lobo_guara', group: 'fauna', place: 'rural', size: 0.52, max: 2, cleanBelow: [70, 50], motion: 'graze' },
-    cervo_pantanal: { file: 'cervo_pantanal.glb', kit: 'fauna/mamiferos/cervo_do_pantanal', group: 'fauna', place: 'land', size: 0.6, max: 2, cleanBelow: [60, 40], motion: 'graze' },
-    mico_leao_dourado: { file: 'mico_leao_dourado.glb', kit: 'fauna/mamiferos/mico_leao_dourado', group: 'fauna', place: 'land', size: 0.3, max: 2, cleanBelow: [70, 50], motion: 'hop' },
-    gaviao_real: { file: 'gaviao_real.glb', kit: 'fauna/aves/gaviao_real', group: 'fauna', place: 'land', size: 0.5, max: 1, cleanBelow: [60, 40], motion: 'perch' },
-    morfo: { file: 'morfo.glb', kit: 'fauna/invertebrados/morfo_menelaus', group: 'fauna', place: 'land', size: 0.22, max: 2, cleanBelow: [70, 50], motion: 'fly' },
+    anta: { file: 'anta.glb', kit: 'fauna/mamiferos/anta', group: 'fauna', place: 'rural', size: 0.62, max: 2, cleanBelow: [65, 45], motion: 'graze', basins: ['vale', 'serra', 'litoral'], ecology: 0.5 },
+    onca_pintada: { file: 'onca_pintada.glb', kit: 'fauna/mamiferos/onca_pintada', group: 'fauna', place: 'rural', size: 0.62, max: 1, cleanBelow: [55, 35], motion: 'graze', ecology: 0.85 },
+    lobo_guara: { file: 'lobo_guara.glb', kit: 'fauna/mamiferos/lobo_guara', group: 'fauna', place: 'rural', size: 0.52, max: 2, cleanBelow: [70, 50], motion: 'graze', basins: ['vale', 'serra'], ecology: 0.4 },
+    cervo_pantanal: { file: 'cervo_pantanal.glb', kit: 'fauna/mamiferos/cervo_do_pantanal', group: 'fauna', place: 'land', size: 0.6, max: 2, cleanBelow: [60, 40], motion: 'graze', basins: ['litoral', 'vale'], ecology: 0.6 },
+    mico_leao_dourado: { file: 'mico_leao_dourado.glb', kit: 'fauna/mamiferos/mico_leao_dourado', group: 'fauna', place: 'land', size: 0.3, max: 2, cleanBelow: [70, 50], motion: 'hop', basins: ['serra', 'litoral'], ecology: 0.55 },
+    muriqui_do_sul: { file: 'muriqui_do_sul.glb', kit: 'fauna/mamiferos/muriqui_do_sul', group: 'fauna', place: 'land', size: 0.42, max: 2, cleanBelow: [65, 45], motion: 'hop', basins: ['serra'], ecology: 0.75 },
+    gaviao_real: { file: 'gaviao_real.glb', kit: 'fauna/aves/gaviao_real', group: 'fauna', place: 'land', size: 0.5, max: 1, cleanBelow: [60, 40], motion: 'perch', basins: ['serra', 'litoral'], ecology: 0.9 },
+    morfo: { file: 'morfo.glb', kit: 'fauna/invertebrados/morfo_menelaus', group: 'fauna', place: 'land', size: 0.22, max: 2, cleanBelow: [70, 50], motion: 'fly', basins: ['vale', 'serra', 'litoral'], ecology: 0.3 },
+    arara_azul_de_lear: { file: 'arara_azul_de_lear.glb', kit: 'fauna/aves/arara_azul_de_lear', group: 'fauna', place: 'land', size: 0.4, max: 2, cleanBelow: [70, 50], motion: 'perch', basins: ['sertao'], ecology: 0.6 },
+    tatu_bola: { file: 'tatu_bola.glb', kit: 'fauna/mamiferos/tatu_bola', group: 'fauna', place: 'rural', size: 0.26, max: 2, cleanBelow: [70, 50], motion: 'graze', basins: ['sertao'], ecology: 0.4 },
+    jacucaca: { file: 'jacucaca.glb', kit: 'fauna/aves/jacucaca', group: 'fauna', place: 'land', size: 0.38, max: 2, cleanBelow: [65, 45], motion: 'graze', basins: ['sertao'], ecology: 0.25 },
 
     // ===== Natureza: desde o começo =====
     taboa: { file: 'taboa.glb', group: 'natureza', place: 'bank', size: 0.5, max: 14, motion: 'sway' },
     pedras: { file: 'pedras.glb', group: 'natureza', place: 'bank', size: 0.6, max: 12 },
-    mandacaru: { file: 'mandacaru.glb', group: 'natureza', place: 'hill', size: 0.8, max: 10 },
+    mandacaru: { file: 'mandacaru.glb', group: 'natureza', place: 'hill', size: 0.8, max: 10, basins: ['sertao'] }, // cacto da caatinga
     matacao: { file: 'matacao.glb', group: 'natureza', place: 'land', size: 0.7, max: 8 },
     cupinzeiro: { file: 'cupinzeiro.glb', group: 'natureza', place: 'land', size: 0.5, max: 8 },
     tronco_caido: { file: 'tronco_caido.glb', group: 'natureza', place: 'land', size: 0.7, max: 8 },

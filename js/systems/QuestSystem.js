@@ -284,14 +284,20 @@ class QuestSystem {
         return results.filter(Boolean).length;
     }
 
-    /** Nenhum recurso principal no vermelho (mesmas faixas dos botões do HUD, js/systems/ResourceTrends.js). */
+    /**
+     * Bacia saudável = nenhum item de "Como está a bacia" no vermelho (ResourceManager.getBasinReport: água, poluição,
+     * aquífero, rio, esgoto, energia). Um critério só (11/2026): antes a estrela usava outro, e o cartão podia mostrar
+     * tudo com ✓ e negar a estrela sem dizer por quê.
+     */
     isCityHealthy() {
-        const r = this.gameManager.resourceManager?.resources;
-        if (!r || typeof ResourceTrends === 'undefined') return false;
-        return ['water', 'pollution', 'satisfaction', 'energy'].every(id => {
-            const tier = ResourceTrends.tierOf(id, r);
-            return tier === 'great' || tier === 'ok';
-        });
+        return this.getUnhealthyItems() !== null && this.getUnhealthyItems().length === 0;
+    }
+
+    /** Itens da bacia no vermelho (null = sem dados). */
+    getUnhealthyItems() {
+        const report = this.gameManager.resourceManager?.getBasinReport?.();
+        if (!report) return null;
+        return report.filter(i => i.level === 'bad');
     }
 
     /** As metas de cada estrela em texto (painel da missão e cartão de comemoração). */
@@ -302,7 +308,7 @@ class QuestSystem {
             : Number.isFinite(spec.minWater)
                 ? `Não deixar a reserva de água baixar de ${Math.round(spec.minWater * 100)}%`
                 : null;
-        return ['Cumprir a missão', second, 'Terminar com água, poluição, satisfação e energia fora do vermelho'].filter(Boolean);
+        return ['Cumprir a missão', second, 'Terminar com a bacia saudável (nada no vermelho em "Como está a bacia")'].filter(Boolean);
     }
 
     /** Menor fração da caixa d'água durante as missões com stars.minWater (para a 2ª estrela). */
@@ -931,14 +937,39 @@ class QuestSystem {
         };
     }
 
-    // A ordem vem dos dados: prerequisites de cada missão (js/data/missions.js)
+    // A ordem vem dos dados: prerequisites de cada missão (js/data/missions.js), na ordem de MISSIONS.
+    // No máximo MAX_ACTIVE por categoria (11/2026: no ato 1 chegavam a 3 missões ao mesmo tempo); a liberada fica
+    // na fila e começa quando a vaga abrir. Desafios da cidade (city_challenge_*) não contam nem esperam.
+    static MAX_ACTIVE = { primary: 1, secondary: 1 };
+
+    activeCountByCategory() {
+        const count = { primary: 0, secondary: 0 };
+        this.activeQuests.forEach(id => {
+            if (String(id).startsWith('city_challenge_')) return;
+            const cat = this.quests.get(id)?.category === 'primary' ? 'primary' : 'secondary';
+            count[cat]++;
+        });
+        return count;
+    }
+
     checkUnlockConditions() {
+        const count = this.activeCountByCategory();
         this.quests.forEach((quest, id) => {
-            if (this.canStartMission(id)) this.startQuest(id);
+            if (!this.canStartMission(id)) return;
+            const challenge = String(id).startsWith('city_challenge_');
+            const cat = quest.category === 'primary' ? 'primary' : 'secondary';
+            if (!challenge && count[cat] >= (QuestSystem.MAX_ACTIVE[cat] ?? Infinity)) return;
+            this.startQuest(id);
+            if (!challenge && this.activeQuests.has(id)) count[cat]++;
         });
     }
 
-    /** Missão com startEvent (ex.: Crise Hídrica → seca): começa o evento, ou estica o que já está ativo. */
+    /**
+     * Missão com startEvent (ex.: Crise Hídrica → seca). Passa pelas mesmas regras dos eventos sorteados (11/2026):
+     * já ativo ou anunciado = só estica; um evento que não combina com ele (EventSystem.ANTAGONISTS: seca × chuva)
+     * termina antes; acima do limite (MAX_SIMULTANEOUS), o mais antigo termina; e a crise chega pelo Paulo
+     * (announceEvent: decisão + aviso), não de surpresa.
+     */
     startMissionEvent(quest) {
         const spec = quest.startEvent;
         const eventSystem = this.gameManager.eventSystem;
@@ -949,7 +980,19 @@ class QuestSystem {
             existing.duration = Math.max(existing.duration, spec.durationMs);
             return;
         }
-        eventSystem.triggerEvent(spec.type, false, { duration: spec.durationMs });
+        const pending = eventSystem.pendingEvents.find(p => p.type === spec.type);
+        if (pending) {
+            pending.duration = Math.max(pending.duration || 0, spec.durationMs);
+            return;
+        }
+        const enemies = eventSystem.eventsAgainst?.(spec.type) || [];
+        [...eventSystem.activeEvents.values()].filter(e => enemies.includes(e.type)).forEach(e => eventSystem.endEvent(e.id));
+        eventSystem.pendingEvents = eventSystem.pendingEvents.filter(p => !enemies.includes(p.type));
+        while (eventSystem.getOngoingEventTypes().length >= (eventSystem.maxSimultaneous ?? 3) && eventSystem.activeEvents.size) {
+            const oldest = [...eventSystem.activeEvents.values()].sort((a, b) => (a.startTime ?? 0) - (b.startTime ?? 0))[0];
+            eventSystem.endEvent(oldest.id);
+        }
+        eventSystem.announceEvent(spec.type, { duration: spec.durationMs, mission: quest.id });
     }
     
     // ===== FALHA DE MISSÃO =====

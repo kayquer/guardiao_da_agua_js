@@ -134,7 +134,8 @@ class ResearchLog {
         };
     }
 
-    static ENERGY_TYPES = ['wind_farm', 'solar_farm', 'hydroelectric_plant', 'biomass_plant', 'sugarcane_mill', 'thermal_plant', 'coal_plant'];
+    static ENERGY_TYPES = ['solar_rooftop', 'wind_small', 'small_hydro', 'wind_farm', 'solar_farm', 'solar_tracker', 'solar_floating', 'wind_offshore',
+        'hydroelectric_plant', 'tidal_plant', 'biomass_plant', 'sugarcane_mill', 'thermal_plant', 'gas_combined', 'coal_plant', 'nuclear_plant'];
 
     /**
      * Escolhas que se repetem entre os perfis deste computador (sinal de estratégia dominante, auditoria de design):

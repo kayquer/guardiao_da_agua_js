@@ -14,7 +14,7 @@ const BUILDING_TYPES = {
         cost: 2500,
         size: 1,
         waterProduction: 50,
-        powerConsumption: 20,
+        powerConsumption: 4, // bomba pequena: 20 MW era mais que um bairro inteiro
         pollutionGeneration: 2, // motor e óleo do bombeamento (bombear não suja a água; o impacto é baixar o aquífero)
         maintenanceCost: 100,
         icon: '💧',
@@ -707,18 +707,19 @@ const BUILDING_TYPES = {
 
     // CATEGORIA: ENERGIA
     hydroelectric_plant: {
-        tier: 3, group: 'Renováveis', techRequires: [{ id: 'solar_farm', count: 1 }],
+        tier: 3, group: 'Hídrica', techRequires: [{ id: 'small_hydro', count: 1 }],
         name: 'Hidrelétrica',
-        description: 'Gera muita energia com a força da água do rio. É renovável, mas a barragem alaga terras e muda a vida do rio; na seca gera menos',
+        description: 'Gera muita energia com a força da água do rio e dura décadas. É renovável, mas a barragem alaga terras e muda a vida do rio; na seca gera menos',
         category: 'power',
         powerSource: 'hydro', // na seca o rio baixa e a usina entrega menos
-        cost: 11250,
+        cost: 24000,
         size: 3,
-        powerGeneration: 500,
+        powerGeneration: 650,
         renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
         waterConsumption: 0,
         pollutionGeneration: 0,
-        maintenanceCost: 200,
+        maintenanceCost: 160,
+        reputationOnBuild: { environment: -1, business: 1 },
         icon: '🌊',
         color: '#2196F3',
         requirements: {
@@ -728,15 +729,15 @@ const BUILDING_TYPES = {
     },
 
     tidal_plant: {
-        tier: 4, group: 'Renováveis', techRequires: [{ id: 'hydroelectric_plant', count: 1 }, { id: 'research_center', count: 1 }],
+        tier: 4, group: 'Hídrica', techRequires: [{ id: 'hydroelectric_plant', count: 1 }, { id: 'research_center', count: 1 }],
         name: 'Usina Maremotriz',
-        description: 'Turbinas debaixo d\'água giram com a maré. Só cabe num corpo d\'água grande (8 blocos ou mais)',
+        description: 'Turbinas debaixo d\'água giram com a maré. Energia renovável e previsível, mas cara e só cabe num corpo d\'água grande (8 blocos ou mais)',
         category: 'power',
-        cost: 18000,
+        cost: 42000,
         size: 2,
-        powerGeneration: 300,
+        powerGeneration: 420,
         renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
-        maintenanceCost: 260,
+        maintenanceCost: 300,
         reputationOnBuild: { environment: 2 },
         icon: '🌗',
         color: '#00838F',
@@ -764,15 +765,16 @@ const BUILDING_TYPES = {
     },
 
     thermal_plant: {
-        tier: 2, group: 'Fósseis', techRequires: [{ id: 'coal_plant', count: 1 }],
-        name: 'Termelétrica',
-        description: 'Usina térmica a gás natural',
+        tier: 2, group: 'Fósseis', techRequires: [],
+        name: 'Termelétrica a Gás',
+        description: 'Queima gás natural: liga na hora, faça sol ou chuva, e custa pouco para construir. Mas o gás custa caro todo mês e a fumaça esquenta o planeta',
         category: 'power',
-        cost: 8000,
+        cost: 9000,
         size: 2,
-        powerGeneration: 300,
-        pollutionGeneration: 25,
-        maintenanceCost: 150,
+        powerGeneration: 320,
+        pollutionGeneration: 22,
+        maintenanceCost: 320, // o gás comprado todo mês
+        reputationOnBuild: { business: 1, environment: -2 },
         icon: '🏭',
         color: '#FF5722',
         requirements: {
@@ -784,14 +786,14 @@ const BUILDING_TYPES = {
     nuclear_plant: {
         tier: 5, group: 'Alta tecnologia', techRequires: [{ id: 'university', count: 1 }, { id: 'research_center', count: 1 }],
         name: 'Usina Nuclear',
-        description: 'Muita energia quase sem fumaça, mas gasta muita água para esfriar o reator e deixa lixo radioativo',
+        description: 'Muita energia o tempo todo e quase sem fumaça, mas é a usina mais cara de construir, gasta muita água para esfriar o reator e deixa lixo radioativo para guardar por séculos',
         category: 'power',
-        cost: 50000,
+        cost: 95000,
         size: 4,
-        powerGeneration: 1000,
-        pollutionGeneration: 5,
-        waterConsumption: 60, // resfriamento do reator
-        maintenanceCost: 500,
+        powerGeneration: 1400,
+        pollutionGeneration: 3,
+        waterConsumption: 80, // resfriamento do reator
+        maintenanceCost: 1100,
         reputationOnBuild: { business: 2, citizens: -2 },
         icon: '☢️',
         color: '#9C27B0',
@@ -804,13 +806,14 @@ const BUILDING_TYPES = {
     coal_plant: {
         tier: 1, group: 'Fósseis', techRequires: [],
         name: 'Usina a Carvão',
-        description: 'Usina térmica a carvão de baixo custo',
+        description: 'Barata de construir, mas o carvão comprado todo mês pesa no caixa, a fumaça suja o ar e a água e esquenta o planeta. É a fonte mais poluente',
         category: 'power',
-        cost: 6000,
+        cost: 7000,
         size: 2,
-        powerGeneration: 250,
-        pollutionGeneration: 50,
-        maintenanceCost: 100,
+        powerGeneration: 260,
+        pollutionGeneration: 55,
+        maintenanceCost: 260, // o carvão comprado todo mês
+        reputationOnBuild: { business: 1, environment: -3, citizens: -1 },
         icon: '🏭',
         color: '#424242',
         requirements: {
@@ -820,17 +823,17 @@ const BUILDING_TYPES = {
     },
 
     solar_farm: {
-        tier: 2, group: 'Renováveis', techRequires: [{ id: 'wind_farm', count: 1 }],
+        tier: 2, group: 'Solar', techRequires: [{ id: 'solar_rooftop', count: 2 }],
         name: 'Usina Solar',
-        description: 'Painéis transformam a luz do sol em eletricidade, sem fumaça. Com nuvens e à noite gera menos',
+        description: 'Um campo de painéis transforma a luz do sol em eletricidade, sem fumaça e com pouca manutenção. Com nuvens e à noite gera menos',
         category: 'power',
         powerSource: 'solar', // entrega pelo sol: menos com nuvem, chuva e de noite
         cost: 9000,
         size: 3,
-        powerGeneration: 200,
+        powerGeneration: 240,
         renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
         pollutionGeneration: 0,
-        maintenanceCost: 80,
+        maintenanceCost: 45,
         icon: '☀️',
         color: '#FFEB3B',
         requirements: {
@@ -840,17 +843,17 @@ const BUILDING_TYPES = {
     },
 
     wind_farm: {
-        tier: 1, group: 'Renováveis', techRequires: [],
+        tier: 2, group: 'Eólica', techRequires: [{ id: 'wind_small', count: 1 }],
         name: 'Campo Eólico',
-        description: 'Turbinas giram com o vento e geram eletricidade sem fumaça. Com pouco vento gera menos',
+        description: 'Turbinas grandes giram com o vento e geram eletricidade sem fumaça. No Brasil venta bem, mas com pouco vento gera menos',
         category: 'power',
         powerSource: 'wind', // entrega pelo vento real (BuildingEfficiency.getWeatherPowerFactor)
-        cost: 10000,
+        cost: 11000,
         size: 2,
-        powerGeneration: 180,
+        powerGeneration: 260,
         renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
         pollutionGeneration: 0,
-        maintenanceCost: 60,
+        maintenanceCost: 70,
         icon: '💨',
         color: '#4CAF50',
         requirements: {
@@ -863,14 +866,14 @@ const BUILDING_TYPES = {
         tier: 3, group: 'Biomassa', techRequires: [{ id: 'composting_yard', count: 1 }],
         reputationOnBuild: { business: 1 },
         name: 'Usina de Biomassa',
-        description: 'Queima restos de madeira e da roça para gerar eletricidade. Renovável, mas solta fumaça e precisa de filtros',
+        description: 'Queima restos de madeira e da roça para gerar eletricidade a qualquer hora. Renovável, mas solta fumaça e precisa de filtros',
         category: 'power',
         cost: 16000,
         size: 2,
-        powerGeneration: 140,
+        powerGeneration: 180,
         renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
         pollutionGeneration: 8,
-        maintenanceCost: 200,
+        maintenanceCost: 190,
         icon: '🎋', // bagaço de cana (o ícone SVG biomass-plant mostra a pilha de bagaço e a caldeira)
         color: '#6D4C41',
         requirements: { terrain: ['grassland'], nearWater: false }
@@ -893,6 +896,135 @@ const BUILDING_TYPES = {
         icon: '🌾',
         color: '#9E9D24',
         requirements: { terrain: ['grassland'], nearWater: false }
+    },
+
+    // Novas usinas (11/2026): começar pelo sol é o mais barato hoje (geração distribuída), e cada fonte tem níveis
+    solar_rooftop: {
+        tier: 1, group: 'Solar', techRequires: [],
+        name: 'Telhados Solares',
+        description: 'Painéis nos telhados das casas: o jeito mais barato de começar a gerar energia limpa. Pouca energia por bloco, e de noite ou com nuvem gera menos',
+        category: 'power',
+        powerSource: 'solar',
+        cost: 2400,
+        size: 1,
+        powerGeneration: 45,
+        renewable: true,
+        maintenanceCost: 8,
+        icon: '🏠',
+        color: '#FFD54F',
+        requirements: { terrain: ['grassland', 'desert'], nearWater: false }
+    },
+
+    wind_small: {
+        tier: 1, group: 'Eólica', techRequires: [{ id: 'solar_rooftop', count: 1 }],
+        name: 'Aerogerador Pequeno',
+        description: 'Uma turbina pequena para o bairro. Gera de dia e de noite quando venta; em encosta venta mais',
+        category: 'power',
+        powerSource: 'wind',
+        cost: 4200,
+        size: 1,
+        powerGeneration: 60,
+        renewable: true,
+        maintenanceCost: 18,
+        icon: '🌬️',
+        color: '#81C784',
+        requirements: { terrain: ['grassland', 'hill'], nearWater: false }
+    },
+
+    small_hydro: {
+        tier: 2, group: 'Hídrica', techRequires: [{ id: 'solar_rooftop', count: 2 }],
+        name: 'PCH (Pequena Central Hidrelétrica)',
+        description: 'Uma barragem baixa no rio gira uma turbina pequena. Gera dia e noite e alaga pouca terra, mas na seca o rio baixa e ela gera menos',
+        category: 'power',
+        powerSource: 'hydro',
+        cost: 8000,
+        size: 2,
+        powerGeneration: 160,
+        renewable: true,
+        maintenanceCost: 45,
+        icon: '💧',
+        color: '#4FC3F7',
+        requirements: { terrain: ['water'], nearWater: true }
+    },
+
+    solar_tracker: {
+        tier: 3, group: 'Solar', techRequires: [{ id: 'solar_farm', count: 2 }],
+        name: 'Usina Solar com Rastreadores',
+        description: 'Os painéis giram e seguem o sol do nascer ao pôr, gerando bem mais que painéis parados no mesmo espaço',
+        category: 'power',
+        powerSource: 'solar',
+        cost: 21000,
+        size: 3,
+        powerGeneration: 520,
+        renewable: true,
+        maintenanceCost: 110,
+        icon: '🔆',
+        color: '#FFCA28',
+        requirements: { terrain: ['grassland', 'desert'], nearWater: false }
+    },
+
+    grid_battery: {
+        tier: 3, group: 'Armazenamento', techRequires: [{ id: 'solar_farm', count: 1 }],
+        name: 'Bateria da Rede',
+        description: 'Guarda a energia do sol que sobra de dia e devolve à noite e com nuvem: cada bateria pronta faz as usinas solares entregarem mais nessas horas',
+        category: 'power',
+        cost: 12000,
+        size: 1,
+        solarStorage: 0.25, // cada bateria pronta recupera 25% do que o solar perde à noite/nublado (BuildingEfficiency)
+        maintenanceCost: 60,
+        icon: '🔋',
+        color: '#26A69A',
+        requirements: { terrain: ['grassland', 'desert'], nearWater: false }
+    },
+
+    wind_offshore: {
+        tier: 4, group: 'Eólica', techRequires: [{ id: 'wind_farm', count: 2 }, { id: 'research_center', count: 1 }],
+        name: 'Eólica Offshore',
+        description: 'Turbinas enormes dentro d\'água, onde o vento é mais forte e constante. Gera muito, mas custa caro e só cabe num corpo d\'água grande (8 blocos ou mais)',
+        category: 'power',
+        powerSource: 'wind',
+        cost: 38000,
+        size: 3,
+        powerGeneration: 750,
+        renewable: true,
+        maintenanceCost: 260,
+        icon: '🌀',
+        color: '#0277BD',
+        requirements: { terrain: ['water'], minWaterBody: 8 }
+    },
+
+    gas_combined: {
+        tier: 4, group: 'Fósseis', techRequires: [{ id: 'thermal_plant', count: 1 }, { id: 'research_center', count: 1 }],
+        name: 'Termelétrica de Ciclo Combinado',
+        description: 'Aproveita o calor que sairia pela chaminé para girar uma segunda turbina: gera mais com o mesmo gás e polui menos por energia, mas ainda queima combustível e gasta água para esfriar',
+        category: 'power',
+        cost: 30000,
+        size: 3,
+        powerGeneration: 800,
+        pollutionGeneration: 26,
+        waterConsumption: 30,
+        maintenanceCost: 720, // o gás comprado todo mês
+        reputationOnBuild: { business: 2, environment: -1 },
+        icon: '🔥',
+        color: '#E64A19',
+        requirements: { terrain: ['grassland'], nearWater: false }
+    },
+
+    solar_floating: {
+        tier: 4, group: 'Solar', techRequires: [{ id: 'solar_tracker', count: 1 }],
+        name: 'Usina Solar Flutuante',
+        description: 'Painéis boiando num lago ou represa: não ocupam terra, a água esfria os painéis e a sombra diminui a evaporação, devolvendo um pouco de água ao rio',
+        category: 'power',
+        powerSource: 'solar',
+        cost: 26000,
+        size: 3,
+        powerGeneration: 480,
+        riverRecharge: 0.3, // menos evaporação
+        renewable: true,
+        maintenanceCost: 120,
+        icon: '🛟',
+        color: '#29B6F6',
+        requirements: { terrain: ['water'], minWaterBody: 8 }
     },
 
     // CATEGORIA: PÚBLICO/ADMINISTRATIVO

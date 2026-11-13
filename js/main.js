@@ -677,14 +677,12 @@ function showScreen(screenId) {
 // ===== AÇÕES DO MENU =====
 // saveData (de SaveSystem.load): continua o jogo salvo em vez de começar um novo (sem tutorial)
 /**
- * Modo loja (GameMode.mapChoice): escolher a bacia antes de criar a cidade. Na pesquisa todo mundo joga no mesmo
- * mapa (vale). Devolve o id ou null (Voltar).
+ * Modo loja (GameMode.mapChoice): escolher a bacia antes de criar a cidade, no carrossel com a maquete 3D de cada
+ * uma (js/ui/BasinPicker.js). Na pesquisa todo mundo joga no mesmo mapa (vale). Devolve o id ou null (Voltar).
  */
 async function chooseBasin() {
     if (!GameMode.current().mapChoice) return DEFAULT_BASIN;
-    const cards = Object.entries(BASIN_MAPS).map(([id, b]) => `<button type="button" class="overlay-btn secondary save-pick basin-pick" data-pick="${id}">
-        <b>${b.icon} ${b.name}</b><small>${b.description}</small></button>`).join('');
-    return gamePick('Onde fica a sua cidade?', `<p>Cada bacia tem um rio, um terreno e um clima diferentes.</p><div class="save-picks">${cards}</div>`, { icon: 'question' });
+    return BasinPicker.open();
 }
 
 async function startNewGame({ saveData = null } = {}) {
@@ -768,8 +766,31 @@ async function startNewGame({ saveData = null } = {}) {
 
 // Tutorial and Settings functions removed - tutorial now auto-starts on first game
 
+/**
+ * Pesquisa e privacidade no "Sobre": no modo pesquisa, o registro para a pesquisadora; no modo loja
+ * (GameMode.current().research false), que nada é registrado nem enviado (o mesmo texto do aviso inicial).
+ */
+function aboutResearchHtml() {
+    const research = GameMode.current().research !== false;
+    const thesis = `<cite>Desenvolvimento de aplicativo para Educação Ambiental (EA) no Ensino Fundamental: recursos
+        hídricos em foco</cite>, de <strong>Cláudia Dias Roxinol</strong>.`;
+    return {
+        origin: research ? `Parte da pesquisa de mestrado ${thesis}` : `O jogo nasceu da pesquisa de mestrado ${thesis}`,
+        privacy: research
+            ? `O apelido, a idade e a cidade do jogador ficam salvos só neste navegador; a cidade é usada para mostrar
+                o clima real. O jogo também guarda um registro das respostas dos quizzes, das páginas lidas e das
+                decisões, para a pesquisa; o professor pode exportá-lo na tela de pausa. Se a caixa do aviso inicial
+                ficar marcada, esse registro é enviado de forma anônima à pesquisadora a cada 5 minutos, só com um
+                código do jogador, a idade e a cidade (nunca o apelido).`
+            : `O apelido, as configurações e os jogos salvos ficam só neste navegador, neste aparelho: o jogo não tem
+                conta, não registra o que você faz e não envia nada para nós. Só se você informar a sua cidade, o nome
+                dela é consultado num serviço público de previsão do tempo (Open-Meteo), para mostrar o clima de lá.`
+    };
+}
+
 function showAbout() {
     log('ℹ️ Mostrando sobre...');
+    const text = aboutResearchHtml();
     // Mesmas informações do aviso inicial (#start-notice): objetivo, público, supervisão, pesquisa e privacidade
     gameDialog({
         title: '💧 Guardião da Água',
@@ -791,22 +812,22 @@ function showAbout() {
                 <div class="about-inst">
                     <img src="assets/images/institucional/unesp-logo.png" alt="Unesp — Universidade Estadual Paulista" width="72" height="78">
                     <div>
-                        <p>Parte da pesquisa de mestrado <cite>Desenvolvimento de aplicativo para Educação Ambiental (EA)
-                        no Ensino Fundamental: recursos hídricos em foco</cite>, de <strong>Cláudia Dias Roxinol</strong>.</p>
+                        <p>${text.origin}</p>
                         <p class="about-small">Universidade Estadual Paulista · Faculdade de Ciências e Tecnologia ·
                         Campus de Presidente Prudente/SP · Programa de Pós-Graduação em Geografia — Mestrado Profissional —
                         Recursos Hídricos e Meio Ambiente · 2026</p>
                     </div>
                 </div>
-                <p class="about-small">O apelido, a idade e a cidade do jogador ficam salvos só neste navegador; a cidade
-                é usada para mostrar o clima real. O jogo também guarda um registro das respostas dos quizzes, das
-                páginas lidas e das decisões, para a pesquisa; o professor pode exportá-lo na tela de pausa. Se a caixa
-                do aviso inicial ficar marcada, esse registro é enviado de forma anônima à pesquisadora a cada 5 minutos,
-                só com um código do jogador, a idade e a cidade (nunca o apelido).</p>
-                <p class="about-small">Versão 1.0.0 · Feito com Babylon.js</p>
+                <p class="about-small about-privacy">${text.privacy}</p>
+                <p class="about-small about-version" hidden></p>
             </div>
         `,
-        confirmButtonText: 'Fechar'
+        confirmButtonText: 'Fechar',
+        didOpen: popup => {
+            if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_modal_open');
+            // Versão de build-info.json (a mesma do rodapé do aviso); sem o arquivo, a linha não aparece
+            StartNotice.fillVersion(popup.querySelector('.about-version'), ' · Feito com Babylon.js');
+        }
     });
 }
 

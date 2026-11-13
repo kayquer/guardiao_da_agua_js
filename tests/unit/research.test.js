@@ -223,10 +223,12 @@ test('armazenamento: toda chave do jogo usa STORAGE_PREFIX (versões no mesmo Pa
         ResearchSync.STATE_KEY, SaveSystem.KEY_PREFIX, TextSize.STORAGE_KEY, GraphicsQuality.STORAGE_KEY,
         WeatherService.CACHE_KEY, SimulatedWeather.STORAGE_KEY]`);
     keys.forEach(k => assert.ok(k.startsWith(prefix), k));
-    // O aviso inicial roda antes de GameConstants: repete a chave do consentimento à mão
+    // O aviso inicial roda antes de GameConstants: repete só o prefixo, e as chaves dele saem do prefixo
     const notice = fs.readFileSync(path.join(__dirname, '..', '..', 'js', 'ui', 'StartNotice.js'), 'utf8');
-    assert.strictEqual(/CONSENT_KEY: '([^']+)'/.exec(notice)[1], g('ResearchSync.CONSENT_KEY'));
-    assert.strictEqual(/NOTICE_KEY: '([^']+)'/.exec(notice)[1], `${prefix}notice_seen`);
+    assert.strictEqual(/PREFIX: '([^']+)'/.exec(notice)[1], prefix);
+    assert.match(notice, /CONSENT_KEY\(\) \{ return StartNotice\.PREFIX \+ 'research_consent'; \}/);
+    assert.strictEqual(`${prefix}research_consent`, g('ResearchSync.CONSENT_KEY'));
+    assert.match(notice, /NOTICE_KEY\(\) \{ return StartNotice\.PREFIX \+ 'notice_seen'; \}/);
     // Nenhum outro arquivo do jogo grava chave fixa (fora o formato do save e as chaves antigas que ele apaga)
     const walk = dir => fs.readdirSync(dir, { withFileTypes: true }).flatMap(e =>
         e.isDirectory() ? walk(path.join(dir, e.name)) : e.name.endsWith('.js') ? [path.join(dir, e.name)] : []);

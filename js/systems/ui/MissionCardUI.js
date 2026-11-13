@@ -141,8 +141,11 @@ mixin(UIManager, {
             if (types?.has(id) && !this.gameManager.studySystem?.isBuildingUnlocked?.(id)) rewards.push(`${uiIcon('ui-book')} Novo estudo: ${types.get(id).name}`);
         });
         const missed = goals.filter((_, i) => !results[i]);
+        // A estrela da bacia diz qual item derrubou (mesmo critério do quadro "Como está a bacia" logo abaixo)
+        const sick = !results[results.length - 1] ? (this.gameManager.questSystem?.getUnhealthyItems?.() || []) : [];
+        const why = sick.length ? ` (${sick.map(i => `${i.label.toLowerCase()} em ${i.text}`).join(', ')})` : '';
         const tip = missed.length
-            ? `<p class="mission-card-tip">${uiIcon('status-tip')} Na próxima missão, para 3 estrelas: ${missed[0].charAt(0).toLowerCase() + missed[0].slice(1)}.</p>`
+            ? `<p class="mission-card-tip">${uiIcon('status-tip')} Na próxima missão, para 3 estrelas: ${missed[0].charAt(0).toLowerCase() + missed[0].slice(1)}${missed[0] === goals[goals.length - 1] ? why : ''}.</p>`
             : `<p class="mission-card-tip perfect">${uiIcon('status-star')} Três estrelas! A cidade terminou a missão em ótima forma.</p>`;
         const praise = ['Missão cumprida!', 'Muito bem!', 'Excelente!'][stars - 1];
         const basin = this.renderBasinReport();

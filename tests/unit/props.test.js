@@ -99,6 +99,8 @@ test('célula dividida em 4 quartos: peça grande sozinha, até 4 pequenas; nunc
         if (t.place === 'bank') assert.ok(Math.abs(p.x - 10) === 1, `${p.id} longe da margem`);
         if (t.place === 'hill') assert.ok(p.x >= 2 && p.x <= 3 && p.z >= 2 && p.z <= 3, `${p.id} fora da encosta`);
         assert.ok(Math.abs(p.ox) < 1 && Math.abs(p.oz) < 1, `${p.id} sai da célula (${p.ox}, ${p.oz})`);
+        // a peça inteira cabe na célula (meia medida + deslocamento ≤ 1), menos o lado virado para a água/rua
+        if (!t.face) assert.ok(Math.abs(p.ox) + p.scale / 2 <= 1 && Math.abs(p.oz) + p.scale / 2 <= 1, `${p.id} invade a célula vizinha`);
     }
     let shared = 0;
     cells.forEach((items, key) => {

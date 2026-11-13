@@ -85,16 +85,22 @@ test('missões liberam em sequência pelos pré-requisitos dos dados (não todas
     qs.checkUnlockConditions();
     assert.deepStrictEqual([...qs.activeQuests], ['tutorial_01'], 'no começo só a primeira');
 
+    // depois da bomba: energia (a bomba precisa dela), depois o primeiro bairro, depois o esgoto
     qs.completeQuest('tutorial_01');
+    assert.deepStrictEqual([...qs.activeQuests], ['energy_01']);
+    qs.completeQuest('energy_01');
+    assert.deepStrictEqual([...qs.activeQuests], ['story_chain_01_01']);
+    qs.completeQuest('story_chain_01_01');
     assert.ok(qs.activeQuests.has('tutorial_02'));
-    assert.ok(qs.activeQuests.has('story_chain_01_01'));
+    assert.ok(!qs.activeQuests.has('story_chain_01_02'), 'só uma secundária por vez: a outra espera na fila');
     assert.ok(!qs.activeQuests.has('main_01'));
 
     qs.completeQuest('tutorial_02');
-    qs.completeQuest('tutorial_03');
-    assert.ok(qs.activeQuests.has('challenge_01'));
-    assert.ok(qs.activeQuests.has('city_02'));
+    assert.strictEqual(qs.activeQuests.size, 1, 'a próxima da fila começa quando a vaga abre');
+    for (let i = 0; i < 3 && qs.activeQuests.size; i++) qs.completeQuest([...qs.activeQuests][0]);
     assert.ok(!qs.activeQuests.has('main_01'), 'Cidade Sustentável vem depois do comércio (campanha ampliada)');
+    const count = qs.activeCountByCategory();
+    assert.ok(count.primary <= 1 && count.secondary <= 1, JSON.stringify(count));
 });
 
 test("'sustained' conta segundos de jogo, não chamadas (quadros)", () => {
@@ -124,16 +130,27 @@ test("'build' só conta prédio pronto", () => {
 
 test('Crise Hídrica começa uma seca da duração da missão (ou estica a que já existe)', () => {
     const { qs } = setup();
-    const calls = [];
-    const active = new Map();
-    qs.gameManager.eventSystem = { activeEvents: active, triggerEvent: (type, forced, opts) => calls.push([type, opts.duration]) };
+    const calls = [], ended = [];
+    // chuva intensa ativa: não combina com a seca (EventSystem.ANTAGONISTS) e termina antes; a seca chega pelo Paulo
+    const active = new Map([['r', { id: 'r', type: 'heavy_rain', startTime: 0 }]]);
+    const es = {
+        activeEvents: active, pendingEvents: [],
+        endEvent: id => { ended.push(id); active.delete(id); },
+        getOngoingEventTypes: () => [...active.values()].map(e => e.type),
+        eventsAgainst: type => (type === 'drought' ? ['heavy_rain', 'flood'] : []),
+        maxSimultaneous: 3,
+        announceEvent: (type, opts) => calls.push([type, opts.duration]),
+        triggerEvent: () => assert.fail('a crise passa pelo announceEvent (decisão do Paulo + aviso)')
+    };
+    qs.gameManager.eventSystem = es;
     qs.quests.get('challenge_01').status = 'available';
     qs.startQuest('challenge_01');
     assert.deepStrictEqual(JSON.stringify(calls), JSON.stringify([['drought', 240000]]));
+    assert.deepStrictEqual(ended, ['r'], 'seca e chuva intensa nunca juntas');
 
     const { qs: qs2 } = setup();
     const drought = { type: 'drought', duration: 120000, remainingTime: 30000 };
-    qs2.gameManager.eventSystem = { activeEvents: new Map([['e', drought]]), triggerEvent: () => assert.fail('não cria outra') };
+    qs2.gameManager.eventSystem = { activeEvents: new Map([['e', drought]]), pendingEvents: [], announceEvent: () => assert.fail('não cria outra'), triggerEvent: () => assert.fail('não cria outra') };
     qs2.quests.get('challenge_01').status = 'available';
     qs2.startQuest('challenge_01');
     assert.strictEqual(drought.remainingTime, 240000);

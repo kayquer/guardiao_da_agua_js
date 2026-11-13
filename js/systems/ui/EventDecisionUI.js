@@ -103,6 +103,7 @@ mixin(UIManager, {
                     </div>
                     <button class="read-aloud-btn decision-read" type="button" aria-label="Ouvir">🔊</button>
                 </div>
+                ${this.renderDecisionCityState(config)}
                 <div class="decision-options">${config.response.options.map((o, i) => this.renderDecisionOption(o, i, threat)).join('')}</div>
                 <p class="decision-foot">${this.describeDecisionStreak()}</p>
             </div>`;
@@ -154,7 +155,10 @@ mixin(UIManager, {
             if (option.tier !== 'none') {
                 chips.push(chip(true, `Estrago −${pct(1 - (option.impact ?? 1))}`));
                 if ((option.duration ?? 1) < 1) chips.push(chip(true, `Dura −${pct(1 - option.duration)}`));
-            } else chips.push(chip(false, 'Estrago e duração inteiros'));
+            } else {
+                chips.push(chip(false, 'Estrago e duração inteiros'));
+                chips.push(chip(true, `Caixa livre (empresas +${EventSystem.NONE_BONUS.business})`));
+            }
         } else {
             chips.push(option.gain > 0 ? chip(true, `Aproveita ${pct(option.gain)}`) : chip(false, 'Perde a oportunidade'));
         }
@@ -169,8 +173,8 @@ mixin(UIManager, {
         Object.entries(option.reputation || {}).forEach(([key, value]) => {
             chips.push(chip(value > 0, `${stake[key]?.icon || ''} ${value > 0 ? '+' : ''}${value}`));
         });
-        // Risco agora (badIf): o Paulo avisa antes, sem dizer qual é "a certa"
-        const risk = option.tier !== 'none' ? es.getOptionRisk(option) : null;
+        // Sem "⚠️ Cuidado" por opção (11/2026: entregava a resposta — "a mais barata sem aviso" sempre ganhava). O quadro
+        // "Como está a cidade" acima das cartas mostra os números, e o Paulo comenta depois da escolha (judgeResponse)
         const lock = missing.length ? `🔒 Precisa de: ${missing.join(', ')}` : short > 0 ? `💰 Falta R$ ${Math.ceil(short).toLocaleString('pt-BR')}` : '';
         return `<button class="decision-option ${option.tier === 'none' ? 'tier-none' : 'act'}" type="button" data-option="${option.id}" ${ok ? '' : 'disabled'}>
             <span class="decision-key" aria-hidden="true">${index + 1}</span>
@@ -178,9 +182,35 @@ mixin(UIManager, {
             <span class="decision-detail">${option.detail || ''}</span>
             <span class="decision-chips">${chips.join('')}</span>
             <span class="decision-cost">${option.cost ? `R$ ${option.cost.toLocaleString('pt-BR')}` : 'Sem custo'}</span>
-            ${risk ? `<span class="decision-risk">⚠️ Cuidado: ${risk.why}.</span>` : ''}
             ${lock ? `<span class="decision-lock">${lock}</span>` : ''}
         </button>`;
+    },
+
+    /**
+     * "Como está a cidade agora": os números que decidem se cada opção é boa (as chaves de badIf das cartas deste
+     * evento). O jogador lê a situação e decide; ninguém marca a resposta certa antes.
+     */
+    renderDecisionCityState(config) {
+        const es = this.gameManager.eventSystem;
+        const r = this.gameManager.resourceManager?.resources || {};
+        const water = r.water || {};
+        const keys = new Set((config.response.options || []).flatMap(o => Object.keys(o.badIf || {}).filter(k => k !== 'why')));
+        const cap = water.max || water.storage || 0;
+        const rows = [];
+        const add = (label, value) => rows.push(`<li><span>${label}</span><b>${value}</b></li>`);
+        if (keys.has('waterBelow')) add('Caixa d\'água', cap ? `${Math.round((water.current / cap) * 100)}%` : '—');
+        if (keys.has('aquiferBelow')) add('Aquífero', `${Math.round(water.aquifer ?? 100)}%`);
+        if (keys.has('riverBelow')) add('Rio', `${Math.round(water.river ?? 100)}%`);
+        if (keys.has('satisfactionBelow')) add('Satisfação', `${Math.round(r.population?.satisfaction ?? 0)}%`);
+        if (keys.has('pollutionAbove')) add('Poluição', `${Math.round(r.pollution?.current ?? 0)}%`);
+        if (keys.has('floodRiskBelow') || keys.has('floodRiskAbove')) {
+            const risk = es.getFloodRisk().risk;
+            add('Risco de enchente', risk < 0.7 ? 'baixo' : risk <= 1.2 ? 'médio' : 'alto');
+        }
+        if (keys.has('governmentBelow')) add('Confiança do governo', `${Math.round(this.gameManager.questSystem?.getReputation?.('government') ?? 50)}`);
+        if (keys.has('budgetLeftBelow')) add('Caixa', `R$ ${Math.round(r.budget?.current ?? 0).toLocaleString('pt-BR')}`);
+        if (!rows.length) return '';
+        return `<div class="decision-state"><p>Como está a cidade agora: veja antes de escolher.</p><ul>${rows.join('')}</ul></div>`;
     },
 
     /** Rodapé: a sequência de boas decisões até o próximo prêmio (meta curta e visível). */

@@ -111,6 +111,7 @@ class EventSystem {
                 intro: '{nome}, vem aí uma chuva muito forte. Onde tem muito asfalto, a água não entra no chão e vira enxurrada. O que fazemos antes que ela chegue?',
                 options: [
                     { id: 'drain', tier: 'max', label: 'Abrir piscinões e áreas verdes', cost: 2500, impact: 0.2, duration: 0.5,
+                        badIf: { floodRiskAbove: 1.5, why: 'com asfalto demais, os piscinões encheram rápido e a água passou por cima' },
                         detail: 'Jardins de chuva e parques seguram a água; a Defesa Civil avisa as famílias das áreas de risco.',
                         requires: [{ ids: ['rain_garden', 'linear_park', 'green_roof'], count: 1, label: 'Jardim de Chuva, Parque Linear ou Teto Verde' }],
                         reputation: { citizens: 3, environment: 2 } },
@@ -155,10 +156,12 @@ class EventSystem {
                 intro: '{nome}, vai chover bastante, e chuva é água de graça! Quanto dela a cidade vai conseguir guardar?',
                 options: [
                     { id: 'harvest', tier: 'max', label: 'Captar tudo', cost: 1500, gain: 1,
+                        badIf: { aquiferBelow: 45, why: 'o aquífero estava baixo e precisava da chuva entrando no chão, não toda nos tanques' },
                         detail: 'Cisternas, jardins de chuva e reservatórios abertos: a chuva enche a caixa e o aquífero.',
                         requires: [{ ids: ['rain_garden', 'water_tank', 'water_tower'], count: 1, label: 'Jardim de Chuva ou Reservatório' }],
                         instant: { water: 200 }, reputation: { environment: 3 } },
                     { id: 'reservoirs', tier: 'mid', label: 'Encher os reservatórios', cost: 1200, gain: 0.5,
+                        badIf: { budgetLeftBelow: 1000, why: 'o caixa ficou apertado para o resto do mês' },
                         detail: 'Uma parte da chuva vai para a rede da cidade.', reputation: { environment: 1 } },
                     { id: 'infiltrate', tier: 'low', label: 'Deixar a chuva entrar no chão', cost: 300, gain: 0.4,
                         detail: 'Abre as áreas verdes e as valas: a caixa enche pouco, mas o aquífero recebe muito mais.',
@@ -196,10 +199,12 @@ class EventSystem {
                 intro: '{nome}, um cano estourou debaixo da rua: água tratada está indo para o esgoto. Qual conserto a gente faz?',
                 options: [
                     { id: 'replace', tier: 'max', label: 'Trocar o trecho de cano', cost: 3000, impact: 0.2, duration: 0.25,
+                        badIf: { budgetLeftBelow: 2000, why: 'a obra grande esvaziou o caixa num momento apertado' },
                         detail: 'Cano novo e sensor de pressão: o vazamento para quase na hora.',
                         requires: [{ ids: ['water_quality_monitor', 'monitoring_station'], count: 1, label: 'Monitor de Qualidade ou Estação de Monitoramento' }],
                         reputation: { citizens: 2 } },
                     { id: 'patch', tier: 'mid', label: 'Remendo rápido', cost: 1200, impact: 0.5, duration: 0.5,
+                        badIf: { waterBelow: 0.25, why: 'com a caixa baixa, o vazamento até o remendo ficar pronto fez falta' },
                         detail: 'A equipe tampa o furo, mas o cano velho ainda pinga.' },
                     { id: 'valve', tier: 'low', label: 'Fechar o registro à noite', impact: 0.6, duration: 1,
                         detail: 'De graça e perde menos água, mas os bairros ficam sem torneira de madrugada.',
@@ -236,9 +241,11 @@ class EventSystem {
                 intro: '{nome}, um dos nossos prédios quebrou e parou. Quanto antes ele voltar, melhor. Como fazemos o conserto?',
                 options: [
                     { id: 'crew', tier: 'max', label: 'Equipe extra com peça nova', cost: 2500, impact: 0.2, duration: 0.25,
+                        badIf: { budgetLeftBelow: 2000, why: 'a peça nova com equipe extra esvaziou o caixa' },
                         detail: 'Técnicos da universidade ajudam: o prédio volta rápido e o conserto final sai barato.',
                         requires: [{ ids: ['research_center', 'university'], count: 1, label: 'Centro de Pesquisa ou Universidade' }] },
                     { id: 'overtime', tier: 'mid', label: 'Hora extra da equipe', cost: 2000, impact: 0.5, duration: 0.5,
+                        badIf: { satisfactionBelow: 40, why: 'com a cidade já chateada, o conserto demorado pesou' },
                         detail: 'A equipe da prefeitura trabalha até tarde.' },
                     { id: 'borrow', tier: 'low', label: 'Pedir a peça emprestada ao Estado', impact: 0.5, duration: 0.6,
                         detail: 'Sai de graça e rápido, mas a prefeitura fica devendo um favor e o governo confia menos.',
@@ -277,10 +284,12 @@ class EventSystem {
                 intro: '{nome}, muita gente quer se mudar para a nossa cidade! Mais moradores pagam mais impostos. Como recebemos todo mundo?',
                 options: [
                     { id: 'welcome', tier: 'max', label: 'Receber com casa, escola e aula de água', cost: 4000, gain: 1,
+                        badIf: { waterBelow: 0.3, why: 'mesmo com casa e escola, faltou água para tanta gente nova' },
                         detail: 'Todos ficam, e aprendem a usar a água com cuidado.',
                         requires: [{ id: 'school', count: 1, label: 'Escola' }],
                         effects: { waterConsumptionReduction: 0.1 }, reputation: { citizens: 3, business: 2 } },
                     { id: 'register', tier: 'mid', label: 'Cadastro e moradia simples', cost: 1500, gain: 0.5,
+                        badIf: { satisfactionBelow: 40, why: 'moradia simples demais numa cidade já insatisfeita virou reclamação' },
                         detail: 'Metade das famílias encontra lugar para morar.', reputation: { citizens: 1, business: 1 } },
                     { id: 'open_doors', tier: 'low', label: 'Receber todo mundo de qualquer jeito', gain: 1,
                         detail: 'Todos ficam e pagam impostos, mas sem casa e escola preparadas a cidade fica apertada e reclamona.',
@@ -319,9 +328,11 @@ class EventSystem {
                 intro: '{nome}, tem fogo no mato perto da cidade! A fumaça já chegou nas casas. Como a gente combate?',
                 options: [
                     { id: 'brigade', tier: 'max', label: 'Bombeiros e brigada de incêndio', cost: 2000, impact: 0.25, duration: 0.4,
+                        badIf: { riverBelow: 35, why: 'o rio estava baixo e a água dos caminhões dos bombeiros fez falta' },
                         detail: 'Os bombeiros cercam o fogo e a brigada faz aceiros para ele não passar.',
                         requires: [{ id: 'fire_station', count: 1, label: 'Corpo de Bombeiros' }], reputation: { citizens: 3, environment: 3 } },
                     { id: 'firebreak', tier: 'mid', label: 'Abrir aceiros com tratores', cost: 1500, impact: 0.5, duration: 0.6,
+                        badIf: { pollutionAbove: 60, why: 'a poeira dos aceiros somou com a poluição que já estava alta' },
                         detail: 'Tratores abrem faixas sem mato. Segura o fogo, mas também derruba um pedaço da mata.',
                         reputation: { environment: -1 } },
                     { id: 'water_trucks', tier: 'low', label: 'Apagar com a água da cidade', cost: 500, impact: 0.5, duration: 0.7,
@@ -359,10 +370,12 @@ class EventSystem {
                 intro: '{nome}, uma fábrica soltou resíduo no rio! Os peixes e a nossa água estão em risco. Qual vai ser a resposta?',
                 options: [
                     { id: 'fine', tier: 'max', label: 'Multar e obrigar a limpar o rio', impact: 0.2, duration: 0.4,
+                        badIf: { governmentBelow: 35, why: 'sem apoio do governo, a multa foi contestada e o rio ficou sujo mais tempo' },
                         detail: 'Com as análises de laboratório como prova, a fábrica paga a multa e a limpeza.',
                         requires: [{ ids: ['water_quality_monitor', 'monitoring_station'], count: 1, label: 'Monitor de Qualidade ou Estação de Monitoramento' }],
                         instant: { budget: 5000 }, reputation: { environment: 5, business: -4 } },
                     { id: 'inspect', tier: 'mid', label: 'Fiscalizar e notificar', cost: 1000, impact: 0.5, duration: 0.7,
+                        badIf: { pollutionAbove: 70, why: 'com o rio tão sujo, só notificar demorou demais' },
                         detail: 'Fiscais vão até a fábrica e ela fecha o cano sujo.', reputation: { environment: 2, business: -1 } },
                     { id: 'talk', tier: 'low', label: 'Conversar com a fábrica', impact: 0.7, duration: 0.9,
                         detail: 'A fábrica promete melhorar e o comércio gosta da conversa, mas o rio continua sujo por mais tempo.',
@@ -399,6 +412,7 @@ class EventSystem {
                 intro: '{nome}, o governo abriu um edital de dinheiro para obras de água! Quanto mais caprichado o projeto, mais a cidade recebe.',
                 options: [
                     { id: 'project', tier: 'max', label: 'Projeto técnico completo', cost: 1500, gain: 1,
+                        badIf: { budgetLeftBelow: 800, why: 'o projeto completo consumiu o caixa antes do dinheiro chegar' },
                         detail: 'Com dados e estudos da cidade, o projeto ganha o valor inteiro.',
                         requires: [{ ids: ['research_center', 'university', 'water_research_center'], count: 1, label: 'Centro de Pesquisa ou Universidade' }],
                         reputation: { government: 4 } },
@@ -514,6 +528,15 @@ class EventSystem {
     /** Tipos dos eventos em andamento e dos anunciados (esperando decisão ou no aviso). */
     getOngoingEventTypes() {
         return [...new Set([...[...this.activeEvents.values()].map(e => e.type), ...this.pendingEvents.map(p => p.type)])];
+    }
+
+    /** Tipos que não podem acontecer junto com `type` (seca × chuva/enchente…). */
+    eventsAgainst(type) {
+        return EventSystem.ANTAGONISTS[type] || [];
+    }
+
+    get maxSimultaneous() {
+        return EventSystem.MAX_SIMULTANEOUS;
     }
 
     /** O evento pode começar agora? Não repete, não passa do limite e não briga com um que já está acontecendo. */
@@ -857,7 +880,7 @@ class EventSystem {
     announceEvent(eventTypeId, options = {}) {
         const eventType = this.eventTypes.get(eventTypeId);
         if (!eventType) return null;
-        if (!eventType.response) return eventType.warning ? this.warnEvent(eventTypeId) : this.triggerEvent(eventTypeId, false, options);
+        if (!eventType.response) return eventType.warning ? this.warnEvent(eventTypeId, options) : this.triggerEvent(eventTypeId, false, options);
         const total = eventType.warning ? this.getWarningTime() : 0;
         const pending = {
             id: `decide_${Date.now()}_${eventTypeId}`, type: eventTypeId, total, remainingTime: total,
@@ -870,11 +893,11 @@ class EventSystem {
     }
 
     /** Aviso sem decisão (eventos sem response). Devolve o aviso criado. */
-    warnEvent(eventTypeId) {
+    warnEvent(eventTypeId, options = {}) {
         const eventType = this.eventTypes.get(eventTypeId);
         if (!eventType) return null;
         const total = this.getWarningTime();
-        const pending = { id: `warn_${Date.now()}_${eventTypeId}`, type: eventTypeId, total, remainingTime: total, choiceId: null };
+        const pending = { id: `warn_${Date.now()}_${eventTypeId}`, type: eventTypeId, total, remainingTime: total, choiceId: null, duration: options.duration };
         this.pendingEvents.push(pending);
         const seconds = Math.round(total / 1000 / (this.gameManager.timeScale || 1));
         this.gameManager.uiManager?.showNotification(`⚠️ Previsão: ${eventType.icon} ${eventType.name} em ~${seconds} s.`, 'warning', 8000);
@@ -929,6 +952,7 @@ class EventSystem {
     }
 
     // ===== AVALIAÇÃO DA ESCOLHA (pela situação da cidade, não pelo preço) =====
+    static NONE_BONUS = { business: 2 }; // quem não gasta numa ameaça agrada quem paga imposto
     static GOOD_THREAT_IMPACT = 0.7;      // ameaça: precisa cortar pelo menos 30% do estrago
     static GOOD_OPPORTUNITY_GAIN = 0.4;   // oportunidade: aproveitar pelo menos 40%
 
@@ -1005,6 +1029,10 @@ class EventSystem {
             if (instant.river) rm.resources.water.river = clamp((rm.resources.water.river ?? 100) + instant.river);
         }
         if (option.reputation) this.gameManager.questSystem?.changeReputation?.(option.reputation, config.name);
+        // "Não fazer nada" também tem um lado bom: o caixa fica livre para obras, e as empresas gostam (NONE_BONUS)
+        if (option.tier === 'none' && config?.response?.kind === 'threat') {
+            this.gameManager.questSystem?.changeReputation?.(EventSystem.NONE_BONUS, config.name);
+        }
         this.eventHistory.push({ type: pending.type, choice: option.id, tier: option.tier, auto, good: verdict.good, startTime: Date.now() });
         this.recordResponse(config, option, auto, verdict);
         if (pending.total <= 0) {

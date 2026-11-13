@@ -41,8 +41,18 @@ class FieldNotebook {
         return typeof FIELD_NOTEBOOK !== 'undefined' ? FIELD_NOTEBOOK[id] || null : null;
     }
 
-    static ids() {
-        return typeof FIELD_NOTEBOOK !== 'undefined' ? Object.keys(FIELD_NOTEBOOK) : [];
+    /** Espécies do caderno nesta bacia (props.js `basins`; sem bacia = todas). */
+    static ids(basin = typeof Basin !== 'undefined' ? Basin.id() : null) {
+        if (typeof FIELD_NOTEBOOK === 'undefined') return [];
+        return Object.keys(FIELD_NOTEBOOK).filter(id => {
+            const basins = typeof PROP_TYPES !== 'undefined' ? PROP_TYPES[id]?.basins : null;
+            return !basin || !basins || basins.includes(basin);
+        });
+    }
+
+    /** Espécie ameaçada (Livro Vermelho)? Vem da situação, não de qual kit fez o modelo. */
+    static isThreatened(id) {
+        return ['VU', 'EN', 'CR'].includes(FieldNotebook.entry(id)?.status);
     }
 
     /** Faixa de poluição do prop (props.js cleanBelow = [some, todos]): o caderno mostra a mesma do mapa. */

@@ -453,7 +453,13 @@ class ResourceManager {
         const sewageRatio = balance.sewage > 0 ? balance.reduction / balance.sewage : Infinity;
         const usesPower = (r.electricity?.consumption || 0) > 0;
         const power = usesPower ? (r.electricity?.efficiency ?? 1) : 1;
+        const tank = (r.water?.current || 0) / Math.max(1, r.water?.storage || r.water?.max || 1);
+        const pollution = r.pollution?.current || 0;
         const items = [
+            { id: 'water', label: 'Água', value: Math.round(tank * 100), level: level(tank, 0.4, 0.15),
+                text: `${Math.round(tank * 100)}% da caixa`, tip: 'A reserva está quase no fim: mais bombas, poços ou ETA, e reservatórios para guardar.' },
+            { id: 'pollution', label: 'Poluição', value: Math.round(pollution), level: pollution <= 40 ? 'good' : pollution <= 70 ? 'ok' : 'bad',
+                text: `${Math.round(pollution)}%`, tip: 'A poluição está alta: estação de tratamento, filtros e árvores na beira do rio limpam.' },
             { id: 'aquifer', label: 'Aquífero', value: Math.round(aquifer), level: level(aquifer, 60, ResourceManager.AQUIFER_LOW),
                 text: `${Math.round(aquifer)}%`, tip: 'Bombas e poços tiram mais do que a chuva devolve: plante árvores e segure a chuva no chão.' },
             { id: 'river', label: 'Rio', value: Math.round(river), level: level(river, 70, ResourceManager.RIVER_LOW ?? 40),

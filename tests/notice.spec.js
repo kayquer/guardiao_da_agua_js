@@ -112,6 +112,52 @@ test('sem build-info.json o rodapé fica sem versão, sem erro', async ({ page }
     await expect(page.locator('#start-notice-version')).toBeHidden();
 });
 
+test('modo loja: aviso sem a pesquisa (nada é enviado), "Recusar" pede o aceite sem sair e "Sobre" lê a versão', async ({ page }) => {
+    await mockExternalApis(page);
+    await page.route('**/build-info.json*', route => route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ release: '1.2.0', branch: 'evolucao-pesquisa', build: 412, commit: 'abc1234' })
+    }));
+    await page.goto('/index.html?aviso&nointro&modo=loja');
+    const notice = page.locator('#start-notice');
+    await expect(notice).toBeVisible();
+    await expect(notice.locator('.start-notice__privacy')).toContainText('não envia nada');
+    await expect(notice).not.toContainText('exportá-lo');
+    await expect(notice).not.toContainText('metodologia da pesquisa');
+    await expect(page.locator('.start-notice__consent')).toHaveCount(0);
+    await expect(page.locator('[data-notice-mode="pesquisa"]')).toHaveCount(0);
+
+    const url = page.url();
+    await page.click('#btn-notice-decline');
+    await expect(page.locator('#start-notice-declined')).toBeVisible();
+    await expect(page.locator('#btn-notice-accept')).toBeHidden();
+    expect(page.url()).toBe(url);
+    await page.click('#btn-notice-reopen');
+    await expect(page.locator('#start-notice-declined')).toBeHidden();
+    await page.click('#btn-notice-accept');
+    await expect(notice).toHaveCount(0);
+
+    await expect(page.locator('#main-menu')).toHaveClass(/active/, { timeout: 45000 });
+    await page.click('#btn-about');
+    const about = page.locator('.about-dialog');
+    await expect(about).toContainText('não envia nada');
+    await expect(about).not.toContainText('exportá-lo');
+    await expect(about.locator('.about-version')).toHaveText('v1.2.0 · build 412 · evolucao-pesquisa · abc1234 · Feito com Babylon.js');
+});
+
+test('"Sobre" no modo pesquisa: registro da pesquisa; sem build-info.json, sem a linha da versão', async ({ page }) => {
+    await mockExternalApis(page);
+    await page.route('**/build-info.json*', route => route.abort());
+    await page.goto('/index.html?nointro');
+    await expect(page.locator('#main-menu')).toHaveClass(/active/, { timeout: 45000 });
+    await page.click('#btn-about');
+    const about = page.locator('.about-dialog');
+    await expect(about).toContainText('exportá-lo');
+    await page.waitForTimeout(300);
+    await expect(about.locator('.about-version')).toBeHidden();
+    await expect(about).not.toContainText('1.0.0');
+});
+
 test('"Recusar" leva à página inicial do Google', async ({ page }) => {
     await mockExternalApis(page);
     await page.route('https://www.google.com.br/**', route => route.fulfill({ contentType: 'text/html', body: '<title>Google</title>' }));

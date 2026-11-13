@@ -259,8 +259,8 @@ const ZONE_LOTS = {
                 { file: BR + 'industrial/silo_industria.glb', x: 2.3, z: 2.25, scale: 1.2 },
                 { file: BR + 'carga/tanque_grande.glb', x: 0.75, z: 0.75, scale: 1.05 },
                 { file: BR + 'carga/chamine_grande.glb', x: 1.65, z: 1.45, scale: 0.9 },
-                { file: BR + 'carga/conteiner_a.glb', x: 1.45, z: 0.4, rot: 1 },
-                { file: BR + 'carga/conteiner_c.glb', x: 1.45, z: 0.72, rot: 1 }
+                { file: BR + 'carga/conteiner_a.glb', x: 0.5, z: 1.52, rot: 1 }, // entre o tanque e a fábrica (antes entravam no armazém)
+                { file: BR + 'carga/conteiner_c.glb', x: 1.04, z: 1.52, rot: 1 }
             ]
         ]
     },

@@ -46,13 +46,41 @@ const MISSIONS = {
         }
     },
 
+    // Logo depois da bomba (11/2026): a bomba precisa de energia e a cidade não tinha nenhuma; o jogador ficava sem o
+    // que fazer. O sol é o começo mais barato (Telhados Solares)
+    energy_01: {
+        title: 'Energia para a Bomba',
+        description: 'A bomba precisa de energia para puxar a água. O jeito mais barato de começar é o sol: painéis nos telhados.',
+        type: 'tutorial',
+        category: 'secondary',
+        difficulty: 'beginner',
+        estimatedTime: '3 minutos',
+        prerequisites: ['tutorial_01'],
+        stars: { parMs: 180000 },
+        missionIcon: '⚡',
+        objectives: [
+            { id: 'first_solar', description: 'Construir 1 Telhado Solar', type: 'build', target: 'solar_rooftop', current: 0, required: 1 }
+        ],
+        rewards: {
+            score: 100,
+            budget: 1500,
+            freeBuilds: { tree_sapling: 3 }, // as mudas da próxima missão
+            experience: 40
+        },
+        educationalContent: {
+            concepts: ['energia elétrica', 'energia solar', 'geração distribuída'],
+            facts: ['Bombas, estações de tratamento e casas usam energia elétrica: sem ela, a água não chega às torneiras.'],
+            tips: ['Gere sempre um pouco mais de energia do que a cidade usa: cada obra nova aumenta o consumo.']
+        }
+    },
+
     tutorial_02: {
         title: 'Tratando a Poluição',
         description: 'A poluição está afetando a qualidade da água. Construa uma estação de tratamento.',
         type: 'tutorial',
         category: 'secondary',
         lesson: 4, // aula ao concluir: a vida no rio: o esgoto que a estação trata
-        prerequisites: ['tutorial_01'],
+        prerequisites: ['story_chain_01_01'], // depois do primeiro bairro (com moradores, o esgoto aparece)
         stars: { parMs: 420000 },
         objectives: [
             {
@@ -247,7 +275,7 @@ const MISSIONS = {
         type: 'story',
         category: 'secondary',
         lesson: 3, // aula ao concluir: água para todos: dividir a água entre os grupos
-        prerequisites: ['tutorial_01'],
+        prerequisites: ['energy_01'],
         stars: { parMs: 480000 },
         difficulty: 'beginner',
         estimatedTime: '8 minutos',
@@ -275,12 +303,13 @@ const MISSIONS = {
                 required: 3
             },
             {
-                id: 'meet_citizens',
-                description: 'Conhecer as necessidades dos cidadãos (manter satisfação acima de 60%)',
+                // era "satisfação > 60%", que já começa cumprida (a cidade abre com ~90%): meta vazia
+                id: 'first_residents',
+                description: 'Receber os primeiros moradores (chegar a 50 habitantes)',
                 type: 'resource',
-                target: 'satisfaction',
+                target: 'population',
                 current: 0,
-                required: 60,
+                required: 50,
                 comparison: 'greater'
             }
         ],
@@ -322,7 +351,7 @@ const MISSIONS = {
     // Ato 4 (provar): Indústria + Queimada → Seca Longa; Seca Longa + Nova Gestão 4 → Cidade Guardiã (vitória)
     story_chain_01_02: {
         title: 'A Nova Gestão: Luz que Não Suja',
-        description: 'A cidade precisa de energia, e o jeito de gerar faz diferença para o ar e para o rio. Comece pelo vento.',
+        description: 'A cidade precisa de mais energia, e o jeito de gerar faz diferença para o ar e para o rio. Some o vento ao sol.',
         type: 'story',
         category: 'secondary',
         prerequisites: ['story_chain_01_01'],
@@ -331,7 +360,7 @@ const MISSIONS = {
         chainPosition: 2,
         missionIcon: '⚡',
         objectives: [
-            { id: 'first_wind', description: 'Construir 1 Campo Eólico', type: 'build', target: 'wind_farm', current: 0, required: 1 },
+            { id: 'first_wind', description: 'Construir 1 Aerogerador Pequeno', type: 'build', target: 'wind_small', current: 0, required: 1 },
             { id: 'clean_air', description: 'Manter a poluição abaixo de 35%', type: 'resource', target: 'pollution', current: 0, required: 35, comparison: 'less' }
         ],
         rewards: {

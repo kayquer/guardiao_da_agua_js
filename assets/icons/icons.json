@@ -2230,6 +2230,142 @@
       "sm": "svg/wind-farm-sm.svg"
     }
   },
+  "solar-rooftop": {
+    "title": "Telhados Solares",
+    "area": "building",
+    "emoji": [
+      "🏠"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (solar_rooftop.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/solar-rooftop.svg",
+      "sm": "svg/solar-rooftop-sm.svg"
+    }
+  },
+  "wind-small": {
+    "title": "Aerogerador Pequeno",
+    "area": "building",
+    "emoji": [
+      "🌬️"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (wind_small.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/wind-small.svg",
+      "sm": "svg/wind-small-sm.svg"
+    }
+  },
+  "small-hydro": {
+    "title": "PCH (Pequena Central Hidrelétrica)",
+    "area": "building",
+    "emoji": [
+      "💧"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (small_hydro.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/small-hydro.svg",
+      "sm": "svg/small-hydro-sm.svg"
+    }
+  },
+  "solar-tracker": {
+    "title": "Usina Solar com Rastreadores",
+    "area": "building",
+    "emoji": [
+      "🔆"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (solar_tracker.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/solar-tracker.svg",
+      "sm": "svg/solar-tracker-sm.svg"
+    }
+  },
+  "grid-battery": {
+    "title": "Bateria da Rede",
+    "area": "building",
+    "emoji": [
+      "🔋"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (grid_battery.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/grid-battery.svg",
+      "sm": "svg/grid-battery-sm.svg"
+    }
+  },
+  "wind-offshore": {
+    "title": "Eólica Offshore",
+    "area": "building",
+    "emoji": [
+      "🌀"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (wind_offshore.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/wind-offshore.svg",
+      "sm": "svg/wind-offshore-sm.svg"
+    }
+  },
+  "gas-combined": {
+    "title": "Termelétrica de Ciclo Combinado",
+    "area": "building",
+    "emoji": [
+      "🔥"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (gas_combined.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/gas-combined.svg",
+      "sm": "svg/gas-combined-sm.svg"
+    }
+  },
+  "solar-floating": {
+    "title": "Usina Solar Flutuante",
+    "area": "building",
+    "emoji": [
+      "🛟"
+    ],
+    "usedIn": [
+      "js/data/buildings.js (solar_floating.icon)",
+      "js/systems/ui/ResourcePanels.js (.building-icon)",
+      "js/systems/UIManager.js (lista de construção)"
+    ],
+    "size": "both",
+    "files": {
+      "lg": "svg/solar-floating.svg",
+      "sm": "svg/solar-floating-sm.svg"
+    }
+  },
   "city-hall": {
     "title": "Prefeitura Municipal",
     "area": "building",

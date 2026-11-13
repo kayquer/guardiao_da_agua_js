@@ -51,7 +51,8 @@
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
     <link rel="stylesheet" href="css/player.css?v=ecaea69e">
     <link rel="stylesheet" href="css/menu.css?v=ad09dab4">
-    <link rel="stylesheet" href="css/notice.css?v=9ac8efa6">
+    <link rel="stylesheet" href="css/basin-picker.css?v=47123a10">
+    <link rel="stylesheet" href="css/notice.css?v=d7a53eab">
     <link rel="stylesheet" href="css/research.css?v=0f6fc4df">
     <link rel="stylesheet" href="css/settings.css?v=4caa15a0">
     <link rel="stylesheet" href="css/accessibility.css?v=158249db">
@@ -60,13 +61,14 @@
     <link rel="stylesheet" href="css/achievements.css?v=c3053f66">
     <link rel="stylesheet" href="css/mission-card.css?v=92936753">
     <link rel="stylesheet" href="css/events.css?v=f06ffb3d">
-    <link rel="stylesheet" href="css/event-decision.css?v=e18592ea">
+    <link rel="stylesheet" href="css/event-decision.css?v=12e5acb3">
     <link rel="stylesheet" href="css/mission-bar.css?v=b538d06b">
     <link rel="stylesheet" href="css/saves.css?v=57419e51">
-    <link rel="stylesheet" href="css/notebook.css?v=945e0257">
+    <link rel="stylesheet" href="css/notebook.css?v=8ad27e1f">
     <link rel="stylesheet" href="css/player-menu.css?v=543aadee">
     <link rel="stylesheet" href="css/speed-menu.css?v=b403791f">
     <link rel="stylesheet" href="css/build-menu.css?v=6a2bed6d">
+    <link rel="stylesheet" href="css/terrain-health.css?v=02aad804">
     <link rel="stylesheet" href="css/layout.css?v=c43a43fd">
 
     <!-- Babylon.js CDN -->
@@ -82,7 +84,9 @@
 </head>
 <body>
     <!-- Aviso inicial no estilo da tela de aviso do Nintendo Wii (js/ui/StartNotice.js, css/notice.css): a primeira
-         coisa na tela. O jogo carrega por trás e o menu/abertura só aparecem depois de "Aceitar"; "Recusar" leva ao Google. -->
+         coisa na tela. O jogo carrega por trás e o menu/abertura só aparecem depois de "Aceitar". Pesquisa: "Recusar" leva ao
+         Google. Loja: "Recusar" mostra #start-notice-declined, com um botão para ler de novo. Os blocos com data-notice-mode
+         só ficam no modo deles (StartNotice.applyMode; loja = GameMode.current().research false). -->
     <div id="start-notice" class="start-notice" role="dialog" aria-modal="true" aria-labelledby="start-notice-title">
         <div class="start-notice__scroll">
             <div class="start-notice__card" tabindex="-1">
@@ -101,10 +105,15 @@
                 <!-- Só em celular/tablet (StartNotice.isMobileDevice) -->
                 <div id="start-notice-mobile" class="start-notice__device" role="note" hidden>
                     <span class="start-notice__device-icon" aria-hidden="true">📱</span>
-                    <p>
+                    <p data-notice-mode="pesquisa">
                         <strong>Você está num celular ou tablet.</strong> Pela metodologia da pesquisa, o jogo foi feito
                         para computador, para ser usado nas escolas. Ele abre no celular, mas o uso não é recomendado nesta
                         fase. Recomendamos um <strong>computador com teclado e mouse</strong>.
+                    </p>
+                    <p data-notice-mode="loja">
+                        <strong>Você está num celular ou tablet.</strong> O jogo foi feito para telas grandes: ele abre
+                        aqui, mas os painéis e os controles ficam apertados. Para jogar melhor, use um
+                        <strong>computador com teclado e mouse</strong>.
                     </p>
                 </div>
 
@@ -133,8 +142,13 @@
                 <div class="start-notice__inst">
                     <img class="start-notice__logo" src="assets/images/institucional/unesp-logo.png" alt="Unesp — Universidade Estadual Paulista" width="850" height="918">
                     <div>
-                        <p class="start-notice__research">
+                        <p class="start-notice__research" data-notice-mode="pesquisa">
                             Este jogo é parte da pesquisa de mestrado <cite>Desenvolvimento de aplicativo para Educação
+                            Ambiental (EA) no Ensino Fundamental: recursos hídricos em foco</cite>, de
+                            <strong>Cláudia Dias Roxinol</strong>.
+                        </p>
+                        <p class="start-notice__research" data-notice-mode="loja">
+                            Este jogo nasceu da pesquisa de mestrado <cite>Desenvolvimento de aplicativo para Educação
                             Ambiental (EA) no Ensino Fundamental: recursos hídricos em foco</cite>, de
                             <strong>Cláudia Dias Roxinol</strong>.
                         </p>
@@ -145,10 +159,15 @@
                         </p>
                     </div>
                 </div>
-                <p class="start-notice__privacy">
+                <p class="start-notice__privacy" data-notice-mode="pesquisa">
                     O apelido, a idade e a cidade do jogador ficam salvos só neste navegador; a cidade é usada para mostrar
                     o clima real. O jogo também guarda um registro das respostas dos quizzes, das páginas lidas e das
                     decisões, para a pesquisa; o professor pode exportá-lo na tela de pausa. Nada disso leva o apelido.
+                </p>
+                <p class="start-notice__privacy" data-notice-mode="loja">
+                    O apelido, as configurações e os jogos salvos ficam só neste navegador, neste aparelho: o jogo não tem
+                    conta, não registra o que você faz e não envia nada para nós. Só se você informar a sua cidade, o nome
+                    dela é consultado num serviço público de previsão do tempo (Open-Meteo), para mostrar o clima de lá.
                 </p>
                 <!-- Consentimento do envio (ResearchSync.CONSENT_KEY): ligado por padrão só durante o estudo -->
                 <label class="start-notice__consent">
@@ -168,13 +187,24 @@
                 <button id="btn-notice-decline" class="start-notice__btn start-notice__btn--decline" type="button">Recusar</button>
                 <button id="btn-notice-accept" class="start-notice__btn start-notice__btn--accept" type="button">Aceitar e continuar</button>
             </div>
-            <p class="start-notice__hint">Ao recusar, você será levado à página inicial do Google.</p>
+            <p class="start-notice__hint" data-notice-mode="pesquisa">Ao recusar, você será levado à página inicial do Google.</p>
+            <p class="start-notice__hint" data-notice-mode="loja">Para jogar, é preciso aceitar o aviso.</p>
             <!-- Versão publicada (build-info.json, StartNotice.showVersion): release, build, branch e commit -->
             <p id="start-notice-version" class="start-notice__version" hidden></p>
         </footer>
+
+        <!-- Modo loja: "Recusar" fecha o aviso nesta tela (no modo pesquisa ela sai e recusar leva ao Google) -->
+        <div id="start-notice-declined" class="start-notice__declined" data-notice-mode="loja" role="alertdialog"
+             aria-labelledby="start-notice-declined-title" aria-describedby="start-notice-declined-text" hidden>
+            <h2 id="start-notice-declined-title" class="start-notice__title">O jogo precisa do seu "Aceitar"</h2>
+            <p id="start-notice-declined-text">
+                O Guardião da Água só abre depois que o aviso é lido e aceito. Se mudar de ideia, é só ler de novo.
+            </p>
+            <button id="btn-notice-reopen" class="start-notice__btn start-notice__btn--accept" type="button">Ler o aviso de novo</button>
+        </div>
     </div>
     <script src="js/config/GameMode.js?v=9e443410"></script>
-    <script src="js/ui/StartNotice.js?v=d5b8da90"></script>
+    <script src="js/ui/StartNotice.js?v=c3c254c3"></script>
 
     <!-- Tela de Loading -->
     <div id="loading-screen" class="screen active">
@@ -737,26 +767,28 @@
     <!-- Scripts do Jogo - Ordem correta de dependências -->
 
     <!-- Clean Code Refactoring: Game Constants (loaded first) -->
-    <script src="js/config/GameConstants.js?v=1528ad8e"></script>
+    <script src="js/config/GameConstants.js?v=199b778d"></script>
     <script src="js/data/preloadImages.js?v=e87e539d"></script>
     <script src="js/data/riverMap.js?v=1dbe219c"></script>
-    <script src="js/data/basinMaps.js?v=3854e0bf"></script>
-    <script src="js/systems/Basin.js?v=cd015765"></script>
+    <script src="js/data/basinMaps.js?v=51cfc484"></script>
+    <script src="js/systems/Basin.js?v=30e0784c"></script>
+    <script src="js/data/basinIcons.js?v=1b2658ec"></script>
     <script src="js/data/terrainInfo.js?v=d9b1d2a2"></script>
-    <script src="js/data/buildings.js?v=e7dccf17"></script>
-    <script src="js/data/buildingModels.js?v=e13d17ed"></script>
-    <script src="js/data/zoneLots.js?v=ae9557ce"></script>
-    <script src="js/data/props.js?v=d3660060"></script>
-    <script src="js/data/fieldNotebook.js?v=1ff46145"></script>
+    <script src="js/data/terrainHealth.js?v=57dae5b8"></script>
+    <script src="js/data/buildings.js?v=a55ffb96"></script>
+    <script src="js/data/buildingModels.js?v=809d5d16"></script>
+    <script src="js/data/zoneLots.js?v=984ebf74"></script>
+    <script src="js/data/props.js?v=b3d0b4e4"></script>
+    <script src="js/data/fieldNotebook.js?v=a51df4eb"></script>
     <script src="js/data/resourceStates.js?v=c0802704"></script>
-    <script src="js/data/missions.js?v=9eb9438f"></script>
+    <script src="js/data/missions.js?v=bb7b3b9f"></script>
     <script src="js/data/achievementTracks.js?v=eb7e178b"></script>
-    <script src="js/data/rescueGuides.js?v=a2809585"></script>
+    <script src="js/data/rescueGuides.js?v=c9c9c5c7"></script>
     <script src="js/data/brazil.js?v=c0fa1745"></script>
     <script src="js/data/lessons.js?v=97c30f82"></script>
     <script src="js/data/introCity.js?v=a2e6387e"></script>
     <script src="js/data/portraits.js?v=939f497c"></script>
-    <script src="js/data/audioManifest.js?v=b3e8ad5d"></script>
+    <script src="js/data/audioManifest.js?v=e61778ed"></script>
 
     <!-- ===== TUTORIAL SYSTEM ===== -->
     <!-- Tutorial: modo 'story' (tela cheia) ou 'coach' (card + spotlight sobre o HUD) — TutorialSystem.js -->
@@ -841,23 +873,23 @@
 
     <!-- Utilitários primeiro -->
     <script src="js/utils/GameUtils.js?v=a634beeb"></script>
-    <script src="js/utils/Icons.js?v=162e9d7c"></script>
+    <script src="js/utils/Icons.js?v=173e9656"></script>
     <script src="js/utils/GameLogo.js?v=760d4841"></script>
     <script src="js/utils/AssetLoader.js?v=a1f12c46"></script>
     <script src="js/utils/AudioManager.js?v=ac1792da"></script>
-    <script src="js/utils/audio/SoundDirector.js?v=1bbf78e0"></script>
+    <script src="js/utils/audio/SoundDirector.js?v=51b95577"></script>
     <script src="js/ui/AnimatedPortrait.js?v=7a5cbd3d"></script>
 
     <!-- Core systems - ordem de dependência -->
     <script src="js/systems/TextSize.js?v=e91ba427"></script>
     <script src="js/systems/GraphicsQuality.js?v=32cafd55"></script>
-    <script src="js/core/GridManager.js?v=ce8da31b"></script>
-    <script src="js/core/ResourceManager.js?v=e8413c28"></script>
+    <script src="js/core/GridManager.js?v=5651167a"></script>
+    <script src="js/core/ResourceManager.js?v=efd697dc"></script>
 
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=f9674bb9"></script>
 
-    <script src="js/core/GameManager.js?v=d09855ab"></script>
+    <script src="js/core/GameManager.js?v=b57ad6f9"></script>
     <script src="js/core/game/Diagnostics.js?v=8ec9d8c0"></script>
     <script src="js/core/game/SelectionVisuals.js?v=034e13b1"></script>
     <script src="js/core/game/CameraGuard.js?v=2024c210"></script>
@@ -872,7 +904,7 @@
     <script src="js/systems/building/TreeGrowth.js?v=e026299e"></script>
     <script src="js/systems/building/BuildingRecycle.js?v=c079106f"></script>
     <script src="js/systems/building/WaterIntake.js?v=f609d1a9"></script>
-    <script src="js/systems/building/BuildingEfficiency.js?v=a19d0057"></script>
+    <script src="js/systems/building/BuildingEfficiency.js?v=0ad98b35"></script>
     <script src="js/systems/roads/RoadNetwork.js?v=9cef4abd"></script>
     <script src="js/systems/roads/RoadMeshes.js?v=ccb485f2"></script>
     <script src="js/systems/roads/RoadPlacement.js?v=a98a7ccb"></script>
@@ -881,7 +913,7 @@
     <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
     <script src="js/systems/ResourceTrends.js?v=16c746be"></script>
     <script src="js/systems/DeclineWatch.js?v=e0e70d98"></script>
-    <script src="js/systems/UIManager.js?v=29d788c4"></script>
+    <script src="js/systems/UIManager.js?v=4bd91416"></script>
     <script src="js/systems/ui/MobileTouch.js?v=520621e6"></script>
     <script src="js/systems/ui/StudyBookUI.js?v=e2076f6d"></script>
     <script src="js/systems/ui/LoanUI.js?v=58e6338c"></script>
@@ -889,14 +921,15 @@
     <script src="js/systems/ui/IdleHints.js?v=c75e6450"></script>
     <script src="js/systems/ui/AchievementsUI.js?v=ac1a3b8d"></script>
     <script src="js/systems/ui/SavesUI.js?v=1e957956"></script>
-    <script src="js/systems/ui/FieldNotebookUI.js?v=36ddc5c2"></script>
+    <script src="js/systems/ui/FieldNotebookUI.js?v=2dcddb62"></script>
     <script src="js/systems/ui/PlayerMenu.js?v=44d0da74"></script>
-    <script src="js/systems/ui/MissionCardUI.js?v=0ca1f235"></script>
+    <script src="js/systems/ui/MissionCardUI.js?v=d1449e76"></script>
     <script src="js/systems/ui/ResourcePanels.js?v=a33efe29"></script>
     <script src="js/systems/ui/EventUI.js?v=72f71fc0"></script>
-    <script src="js/systems/ui/EventDecisionUI.js?v=eea55cbf"></script>
+    <script src="js/systems/ui/EventDecisionUI.js?v=e8c63b09"></script>
     <script src="js/systems/ui/BuildPreview.js?v=e014184b"></script>
-    <script src="js/systems/ui/BuildMenuUI.js?v=45d5e59b"></script>
+    <script src="js/systems/ui/BasinPreview.js?v=8785ecbe"></script>
+    <script src="js/systems/ui/BuildMenuUI.js?v=57ac228f"></script>
     <script src="js/systems/ui/MissionBar.js?v=8e720656"></script>
     <script src="js/systems/ui/TechTreeUI.js?v=2ee956b7"></script>
     <script src="js/systems/ui/MobilePanels.js?v=a6989c98"></script>
@@ -906,38 +939,42 @@
     <script src="js/systems/ui/SettingsUI.js?v=cb4cdfd8"></script>
     <script src="js/systems/ui/LessonBookUI.js?v=3122a13a"></script>
     <script src="js/systems/ui/TreeInfoUI.js?v=e348aba5"></script>
+    <script src="js/systems/ui/TerrainHealthUI.js?v=63a2ce87"></script>
     <script src="js/systems/LoanManager.js?v=6a416acb"></script>
-    <script src="js/systems/QuestSystem.js?v=ab1e7bac"></script>
+    <script src="js/systems/QuestSystem.js?v=38046c6a"></script>
     <script src="js/systems/ui/MissionUI.js?v=6dc307c0"></script>
     <script src="js/systems/CityChallenges.js?v=33f98f4d"></script>
     <script src="js/systems/AchievementTracks.js?v=7da8c8a5"></script>
     <script src="js/systems/MissionReminders.js?v=203dd893"></script>
-    <script src="js/systems/EventSystem.js?v=028e5ca4"></script>
+    <script src="js/systems/EventSystem.js?v=9f618071"></script>
     <script src="js/systems/SaveSystem.js?v=f87b5ff7"></script>
     <script src="js/systems/StudySystem.js?v=7ed0bbc6"></script>
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
-    <script src="js/systems/TutorialSystem.js?v=510dded9"></script>
+    <script src="js/systems/TutorialSystem.js?v=07b74389"></script>
     <script src="js/systems/RescueGuides.js?v=c4db5930"></script>
     <script src="js/systems/GameOverSystem.js?v=f9097b91"></script>
     <script src="js/systems/PlayerProfile.js?v=1efbe8d5"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
-    <script src="js/systems/TreeSystem.js?v=0bb86b6c"></script>
-    <script src="js/systems/props/PropPlanner.js?v=48b2b1bb"></script>
-    <script src="js/systems/PropSystem.js?v=b2a8787b"></script>
-    <script src="js/systems/FieldNotebook.js?v=fc9d5a20"></script>
+    <script src="js/systems/TreeSystem.js?v=4c85492c"></script>
+    <script src="js/systems/props/PropPlanner.js?v=d6aaf6fa"></script>
+    <script src="js/systems/PropSystem.js?v=5fdf9890"></script>
+    <script src="js/systems/FieldNotebook.js?v=3f2fd7c6"></script>
+    <script src="js/systems/TerrainHealth.js?v=f0e79e43"></script>
     <script src="js/systems/WeatherService.js?v=52df4562"></script>
     <script src="js/systems/SimulatedWeather.js?v=d656940f"></script>
-    <script src="js/systems/ResearchLog.js?v=705ef998"></script>
+    <script src="js/systems/ResearchLog.js?v=91dee18a"></script>
     <script src="js/systems/ResearchSync.js?v=3374482b"></script>
     <script src="js/systems/LessonProgress.js?v=e5a2ef53"></script>
 
     <!-- Abertura cinematográfica do menu (cena Babylon própria; usa o carregador de modelos do BuildingSystem) -->
     <script src="js/systems/intro/IntroLayout.js?v=176a4c5c"></script>
-    <script src="js/systems/intro/IntroCinematic.js?v=2d01a85b"></script>
-    <script src="js/systems/intro/MenuIntro.js?v=06818672"></script>
+    <script src="js/systems/intro/IntroCinematic.js?v=026d7996"></script>
+    <script src="js/systems/intro/MenuIntro.js?v=70e77f91"></script>
+    <!-- Escolha da bacia (modo loja): carrossel com a maquete 3D de cada uma -->
+    <script src="js/ui/BasinPicker.js?v=812b81f6"></script>
 
     <!-- Main initialization -->
-    <script src="js/main.js?v=e364cba2"></script>
+    <script src="js/main.js?v=c1fa7ef6"></script>
 </body>
 </html>

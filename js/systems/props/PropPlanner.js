@@ -17,7 +17,8 @@
  * world = { size, terrain(x, z) → tipo, occupied(x, z) → bool, tree(x, z) → bool,
  *           buildings: [{ type, x, z, size, finished, zone: 'residential'|'commercial'|'industrial'|null, road }] }
  * state = { level, pollution (0-100), sewage (bool), deforestation (0-1: parte da mata do começo que caiu),
- *           quality ('high'|'medium'|'low') }
+ *           quality ('high'|'medium'|'low'), basin? (id da bacia: filtra `basins`), ecology? (0-1: recuperação da
+ *           bacia, libera os bichos com `ecology`) }
  */
 const PropPlanner = {
     FULL: 15, // os 4 quartos da célula ocupados
@@ -111,6 +112,8 @@ const PropPlanner = {
             k *= Math.max(0, Math.min(1, ((state.deforestation || 0) - from) / Math.max(0.01, to - from)));
         }
         if (type.sewage && !state.sewage) k = 0;
+        if (type.basins && state.basin && !type.basins.includes(state.basin)) k = 0; // bicho/planta de outro bioma
+        if (type.ecology && (state.ecology || 0) < type.ecology) k = 0;             // raro: só com a bacia recuperada
         return { k, cap };
     },
 
@@ -276,6 +279,14 @@ const PropPlanner = {
             oz = dz ? dz * 0.62 : (q === null ? oz * 0.6 : cz + (r2 - 0.5) * 0.3);
         }
         const scale = (type.size || 0.5) * (0.85 + 0.3 * r4);
+        // A peça inteira fica dentro da própria célula (borda a 1 unidade do centro): sem isso um varal ou banco na
+        // célula vizinha de uma zona entrava na parede lateral da casa. Só o lado virado para a água/rua pode passar
+        // (trapiche e manilha avançam sobre a água de propósito)
+        const room = Math.max(0, 0.96 - scale / 2);
+        const faced = sides.length ? sides[0] : null;
+        const clamp = v => Math.max(-room, Math.min(room, v));
+        if (!(faced && faced[0])) ox = clamp(ox);
+        if (!(faced && faced[1])) oz = clamp(oz);
         const out = { id, x, z, ox, oz, rot, scale, phase: r1 * Math.PI * 2 };
         if (type.motion) out.motion = type.motion;
         return out;

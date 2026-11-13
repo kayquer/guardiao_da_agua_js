@@ -177,6 +177,7 @@ mixin(UIManager, {
         if (type.riverRecharge) add('🏞️ Devolve água limpa ao rio', `+${fmt(type.riverRecharge)}%/min no nível dos rios`, 'good');
         if (type.runoffAbsorption) add('🌧️ Segura a enxurrada', `${fmt(type.runoffAbsorption)} (menos enchente)`, 'good');
         if (type.earlyWarning) add('📡 Avisa antes', 'eventos chegam com o dobro de aviso', 'good');
+        if (type.solarStorage) add('🔋 Guarda energia do sol', `as usinas solares recuperam ${Math.round(type.solarStorage * 100)}% do que perdem à noite e com nuvem`, 'good');
         if (type.nearbyEfficiencyBonus) add('🔬 Melhora os vizinhos', `+${Math.round(type.nearbyEfficiencyBonus * 100)}% de eficiência`, 'good');
         if (type.runoffImpervious && type.zoneType) {
             // Zonas: quanto do lote é chão coberto (a leve tem quintais; a pesada é quase toda telhado e asfalto)

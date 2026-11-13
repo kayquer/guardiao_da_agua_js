@@ -236,10 +236,20 @@ test('tutorial das missões avança quando o aluno clica no que está destacado'
     await expect(title).toHaveText('Os detalhes');
     await expect(page.locator('.mission-details .back-btn')).toBeVisible();
     await page.click('#tutorial-next-btn');
-    // Meta "Construir X" é atalho: o clique leva ao prédio na aba de construções e avança
+    // Meta "Construir X" é atalho: o clique leva ao prédio na aba de construções e ele PODE ser construído ali
+    // (antes o tutorial mostrava a Bomba e dizia "ainda não é hora de construir isso")
     await expect(title).toHaveText('Atalho para construir');
     await page.locator('.mission-details .mission-goal.goal-link').first().click();
     await expect(page.locator('.building-item.goal-highlight')).toHaveCount(1);
+    await expect(title).toHaveText('Atalho para construir'); // o menu não fecha sozinho
+    await page.click('#build-info-construct');
+    await expect(page.locator('#toast-stack .toast', { hasText: 'não é hora' })).toHaveCount(0);
+    // modo pesquisa: a bomba pede o estudo antes (abre o livro); modo loja: entra no modo de construção
+    const opened = await page.evaluate(() => (document.querySelector('.book-close-btn') ? 'study' : window.gameManager.buildMode ? 'build' : null));
+    expect(opened).toBeTruthy();
+    if (opened === 'study') await page.click('.book-close-btn');
+    else await page.keyboard.press('Escape'); // desiste de posicionar (Esc só cancela o modo de construção no coach)
+    await page.click('#tutorial-next-btn');
     await expect(title).toHaveText('A missão da vez');
     await page.click('.hud-bottom .mission-info');
     await expect(title).toHaveText('Um tour pela tela?');

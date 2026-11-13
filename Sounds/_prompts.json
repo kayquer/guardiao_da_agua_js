@@ -510,6 +510,9 @@
     }
   },
   "sfx": {
+    "Sounds/SFX/Player/sfx_discovery.mp3": {"generator":"Síntese própria (scripts/sounds/discovery.js)","model":"senoides com envelope de sino + eco curto","prompt":"Descoberta no caderno de campo: arpejo ascendente de sino e harpa (graus 1-3-5-7-9-12, nota base MIDI 72) que termina num acorde aberto com brilho em tremolo, 2,4 s. Melodia própria, no espírito do \"achei algo especial\" dos jogos de aventura.","date":"2026-11-13","chosenVersion":"única","loop":false,"loudnessTarget":"-16 LUFS","channels":1},
+    "Sounds/SFX/Player/sfx_discovery_2.mp3": {"generator":"Síntese própria (scripts/sounds/discovery.js)","model":"senoides com envelope de sino + eco curto","prompt":"Descoberta no caderno de campo: arpejo ascendente de sino e harpa (graus 1-3-5-7-9-12, nota base MIDI 74) que termina num acorde aberto com brilho em tremolo, 2,4 s. Melodia própria, no espírito do \"achei algo especial\" dos jogos de aventura.","date":"2026-11-13","chosenVersion":"única","loop":false,"loudnessTarget":"-16 LUFS","channels":1},
+    "Sounds/SFX/Player/sfx_discovery_3.mp3": {"generator":"Síntese própria (scripts/sounds/discovery.js)","model":"senoides com envelope de sino + eco curto","prompt":"Descoberta no caderno de campo: arpejo ascendente de sino e harpa (graus 1-3-5-7-9-12, nota base MIDI 69) que termina num acorde aberto com brilho em tremolo, 2,4 s. Melodia própria, no espírito do \"achei algo especial\" dos jogos de aventura.","date":"2026-11-13","chosenVersion":"única","loop":false,"loudnessTarget":"-16 LUFS","channels":1},
     "Sounds/SFX/Environment/amb_city_day.mp3": {
       "generator": "ElevenLabs Sound Effects v2",
       "model": "eleven_text_to_sound_v2",

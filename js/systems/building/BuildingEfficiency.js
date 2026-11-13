@@ -139,8 +139,10 @@ mixin(BuildingSystem, {
             return EFFICIENCY_RULES.windSteps.find(([max]) => weather.wind < max)[1];
         }
         if (source === 'solar') {
-            if (weather.isDay === false) return EFFICIENCY_RULES.solarNight;
-            return EFFICIENCY_RULES.sunByKind[weather.kind] ?? 1;
+            const base = weather.isDay === false ? EFFICIENCY_RULES.solarNight : (EFFICIENCY_RULES.sunByKind[weather.kind] ?? 1);
+            // Baterias da rede (grid_battery, solarStorage) guardam o sol que sobra e devolvem parte do que se perde
+            const storage = Math.min(1, Math.max(0, weather.solarStorage || 0));
+            return base < 1 ? base + (1 - base) * storage : base;
         }
         if (source === 'hydro') return Number.isFinite(weather.waterFactor) ? Math.max(0.3, Math.min(1, weather.waterFactor)) : 1;
         return 1;
@@ -157,8 +159,16 @@ mixin(BuildingSystem, {
             isDay: day ? day !== 'night' : undefined, // GameManager.getDayNightState(): 'day' | 'night'
             // seca × nível dos rios (rio baixo: menos água passando pelas turbinas)
             waterFactor: (gm?.resourceManager?.resources?.water?.productionMultiplier ?? 1) *
-                (gm?.resourceManager?.getRiverFactor?.() ?? 1)
+                (gm?.resourceManager?.getRiverFactor?.() ?? 1),
+            solarStorage: this.getSolarStorage()
         };
+    },
+
+    /** Soma do `solarStorage` das baterias prontas (0-1): quanto do sol perdido à noite/nublado elas recuperam. */
+    getSolarStorage() {
+        let total = 0;
+        this.buildings?.forEach(b => { if (!b.underConstruction && b.config?.solarStorage) total += b.config.solarStorage; });
+        return Math.min(1, total);
     },
 
     /** Está chovendo (clima real/simulado) ou há chuva forte/enchente em andamento? */

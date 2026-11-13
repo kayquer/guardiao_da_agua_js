@@ -100,6 +100,13 @@ class IntroCinematic {
         });
     }
 
+    /** Para de desenhar (a escolha de bacia cobre a tela inteira); startRendering retoma. */
+    stopRendering() {
+        if (!this.rendering || this.disposed) return;
+        this.rendering = false;
+        this.engine.stopRenderLoop();
+    }
+
     /** Depois do voo da câmera, atrás do menu, a cidade só gira devagar: 30 quadros bastam. */
     setCalm(calm) {
         this.targetFps = calm ? 30 : Infinity;

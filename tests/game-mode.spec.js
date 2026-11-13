@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { startGame, mockExternalApis, storageKey } = require('./helpers');
+const { startGame, mockExternalApis, storageKey, pickBasin, TEST_PROFILE } = require('./helpers');
 
 // Modo loja (js/config/GameMode.js, ?modo=loja): estudo opcional, sem "Dados da pesquisa", cadastro só com apelido,
 // clima simulado e o aviso inicial só na primeira vez. O modo pesquisa (padrão desta versão) continua igual.
@@ -61,7 +61,7 @@ test('loja: cadastro só com o apelido começa o jogo; "Fora do Brasil" existe',
     await expect(page.locator('.profile-optional')).toHaveCount(3);
     await page.fill('#profile-name', 'Lu');
     await page.click('#btn-profile-start');
-    await page.click('.basin-pick[data-pick="litoral"]'); // modo loja: escolhe a bacia antes da cidade
+    await pickBasin(page, 'litoral'); // modo loja: escolhe a bacia antes da cidade
     await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
     const profile = await page.evaluate(() => PlayerProfile.getActive());
     expect(profile).toMatchObject({ name: 'Lu', age: null, uf: null, city: '' });
@@ -86,6 +86,80 @@ test('loja: a bacia escolhida vira o terreno e vai no save; espaço de outra bac
     });
     expect(state).toEqual({ basin: 'sertao', saved: 'sertao', aquifer: 60, loaded: false, still: 'sertao' });
     await expect(page.locator('#toast-stack .toast', { hasText: 'outra bacia' })).toBeVisible();
+    expect(errors).toEqual([]);
+});
+
+test('loja: carrossel de bacias — setas, teclado e arrasto trocam o cartão; Esc volta; a escolhida vira a cidade', async ({ page }, testInfo) => {
+    const errors = watchErrors(page);
+    await mockExternalApis(page);
+    await page.addInitScript(({ p, key }) => {
+        if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({ profiles: [p], activeId: p.id }));
+    }, { p: TEST_PROFILE, key: storageKey('profiles') });
+    await page.goto('/index.html?modo=loja');
+    const focused = page.locator('.bp-card.is-focus');
+
+    // Esc volta ao menu e descarta a maquete
+    await page.click(`.profile-card[data-profile-id="${TEST_PROFILE.id}"]`);
+    await expect(page.locator('#basin-picker')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#basin-picker')).toHaveCount(0);
+    await expect(page.locator('#main-menu')).toHaveClass(/active/);
+    expect(await page.evaluate(() => ({ preview: BasinPicker.preview, canvas: document.querySelectorAll('.bp-canvas').length })))
+        .toEqual({ preview: null, canvas: 0 });
+
+    await page.click(`.profile-card[data-profile-id="${TEST_PROFILE.id}"]`);
+    const picker = page.locator('#basin-picker');
+    await expect(picker).toBeVisible();
+    await expect(page.locator('.bp-card')).toHaveCount(4);
+    await expect(focused).toHaveAttribute('data-basin', 'vale'); // o mapa clássico vem primeiro
+    await expect(focused.locator('.bp-badge')).toContainText('Mapa clássico');
+    await expect(focused.locator('.bp-trait')).toHaveCount(4);
+    expect(/\p{Extended_Pictographic}/u.test(await picker.innerText()), 'sem emoji no carrossel').toBe(false);
+    // maquete 3D no cartão em foco (fotos nos outros)
+    await page.waitForSelector('#basin-picker.has-preview', { timeout: 30000 });
+    await expect(focused.locator('canvas.bp-canvas')).toHaveCount(1);
+    await expect(page.locator('.bp-card:not(.is-focus) .bp-shot:not([hidden])')).toHaveCount(3);
+
+    await page.click('.bp-arrow--next');
+    await expect(focused).toHaveAttribute('data-basin', 'serra');
+    await page.keyboard.press('ArrowRight');
+    await expect(focused).toHaveAttribute('data-basin', 'litoral');
+    await page.keyboard.press('ArrowLeft');
+    await expect(focused).toHaveAttribute('data-basin', 'serra');
+    await page.click('.bp-dot[data-basin="vale"]');
+    await page.click('.bp-arrow--prev'); // dá a volta: do primeiro para o último
+    await expect(focused).toHaveAttribute('data-basin', 'sertao');
+    await expect(focused.locator('canvas.bp-canvas')).toHaveCount(1); // a maquete foi junto
+
+    // arrastar para a esquerda = próxima
+    const box = await page.locator('.bp-stage').boundingBox();
+    const y = box.y + box.height / 2;
+    await page.mouse.move(box.x + box.width * 0.7, y);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.5, y, { steps: 6 });
+    await page.mouse.move(box.x + box.width * 0.3, y, { steps: 6 });
+    await page.mouse.up();
+    await expect(focused).toHaveAttribute('data-basin', 'vale');
+
+    // o "Jogar aqui" de um cartão do lado só traz ele para o meio (no celular o cartão do lado mal aparece)
+    if (testInfo.project.name !== 'mobile') {
+        await page.locator('.bp-card[data-basin="serra"] .basin-pick').click();
+        await expect(focused).toHaveAttribute('data-basin', 'serra');
+        await expect(page.locator('#basin-picker')).toBeVisible();
+    } else {
+        await page.keyboard.press('ArrowRight');
+    }
+
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ArrowLeft');
+    await expect(focused).toHaveAttribute('data-basin', 'sertao');
+    await focused.locator('.basin-pick').click();
+    await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
+    expect(await page.evaluate(() => ({
+        basin: Basin.id(),
+        picker: document.querySelectorAll('#basin-picker, .bp-canvas').length,
+        preview: BasinPicker.preview
+    }))).toEqual({ basin: 'sertao', picker: 0, preview: null });
     expect(errors).toEqual([]);
 });
 

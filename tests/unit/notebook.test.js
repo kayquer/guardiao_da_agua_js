@@ -92,3 +92,31 @@ test('caderno vai e volta do save; depois do load a primeira olhada é silencios
     old.loadData({ seen: { sapo: { first: 0, returns: 0 } } });
     assert.ok(old.isRegistered('sapo'), 'save de antes do toque: o que já tinha visto continua no caderno');
 });
+
+test('ficha: a fonte segue a situação (ameaçada = Livro Vermelho), e toda espécie tem figura', () => {
+    const fs = require('fs');
+    const path = require('path');
+    for (const [id, e] of Object.entries(NOTEBOOK)) {
+        assert.strictEqual(FieldNotebook.isThreatened(id), e.status !== 'LC', `${id}: ${e.status}`);
+        assert.ok(fs.existsSync(path.join(__dirname, '..', '..', 'assets', 'images', 'fauna', `${id}.webp`)), `${id}: sem figura`);
+    }
+    assert.strictEqual(FieldNotebook.isThreatened('tamandua'), true, 'tamanduá-bandeira é Vulnerável (não "fora da lista")');
+});
+
+test('cada bacia tem a sua fauna, e os ameaçados só chegam com a bacia recuperada', () => {
+    const vale = FieldNotebook.ids('vale');
+    const sertao = FieldNotebook.ids('sertao');
+    const litoral = FieldNotebook.ids('litoral');
+    assert.ok(sertao.includes('arara_azul_de_lear') && !vale.includes('arara_azul_de_lear'));
+    assert.ok(litoral.includes('guaiamum') && !sertao.includes('guaiamum'));
+    assert.ok(!vale.includes('vitoria_regia') && !vale.includes('ariranha'), 'nada de bicho amazônico no riacho do vale');
+    assert.ok(!PROPS.mandacaru.basins || !PROPS.mandacaru.basins.includes('vale'), 'mandacaru só na caatinga');
+    for (const id of Object.keys(NOTEBOOK)) {
+        if (NOTEBOOK[id].status !== 'LC') assert.ok(PROPS[id].ecology > 0, `${id}: ameaçado sem progressão (ecology)`);
+    }
+    const Planner = load('js/data/props.js', 'js/systems/props/PropPlanner.js')('PropPlanner');
+    const state = { level: 0, pollution: 5, quality: 'high', basin: 'litoral' };
+    assert.strictEqual(Planner.intensity(PROPS.guaiamum, { ...state, ecology: 0 }, {}).k, 0, 'sem recuperação: não chega');
+    assert.ok(Planner.intensity(PROPS.guaiamum, { ...state, ecology: 1 }, {}).k > 0, 'bacia recuperada: chega');
+    assert.strictEqual(Planner.intensity(PROPS.guaiamum, { ...state, basin: 'sertao', ecology: 1 }, {}).k, 0, 'outro bioma');
+});

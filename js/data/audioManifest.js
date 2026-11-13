@@ -24,6 +24,8 @@ const SOUND_MANIFEST = {
     jingle_game_over: { kind: 'jingle', files: ['Sounds/BGM/jingle-game-over.mp3'] },
 
     // ===== Interface, ações, recursos, missões e vozes (Player) =====
+    // Caderno de campo: espécie nova registrada ou que voltou (arpejo de sino sintetizado, scripts/sounds/discovery.js)
+    sfx_discovery: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_discovery.mp3', 'Sounds/SFX/Player/sfx_discovery_2.mp3', 'Sounds/SFX/Player/sfx_discovery_3.mp3'], volume: 0.8, gap: 1500 },
     sfx_achievement: { kind: 'sfx', files: ['Sounds/SFX/Player/sfx_achievement.mp3', 'Sounds/SFX/Player/sfx_achievement_2.mp3', 'Sounds/SFX/Player/sfx_achievement_3.mp3'], volume: 0.75, gap: 1000 },
     sfx_alert_critical: { kind: 'sfx', fixed: true, files: ['Sounds/SFX/Player/sfx_alert_critical.mp3', 'Sounds/SFX/Player/sfx_alert_critical_2.mp3', 'Sounds/SFX/Player/sfx_alert_critical_3.mp3'], volume: 0.75, gap: 1500 },
     sfx_alert_warning: { kind: 'sfx', fixed: true, files: ['Sounds/SFX/Player/sfx_alert_warning.mp3', 'Sounds/SFX/Player/sfx_alert_warning_2.mp3', 'Sounds/SFX/Player/sfx_alert_warning_3.mp3'], volume: 0.7, gap: 1500 },

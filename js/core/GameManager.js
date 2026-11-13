@@ -1017,10 +1017,9 @@ class GameManager {
         this.applyPlayerProfile();
         this.handleResize();
 
-        // Começa olhando para a área inicial (≥ 80% construível, GridManager.findStartArea): é ali que o
-        // tutorial pede a Prefeitura, e o centro do mapa pode cair em colina ou água
-        const start = this.gridManager.startArea;
-        if (start) this.centerCameraOnCityHall(start.x, start.z);
+        // Começa olhando para a área inicial (≥ 80% construível, GridManager.findStartArea, onde o tutorial pede a
+        // Prefeitura) junto com o rio mais perto dela: a cidade nasce ao lado da água que vai cuidar
+        this.frameStartView();
 
         // Tutorial obrigatório: o jogo fica congelado ('tutorial') até ele terminar,
         // e é nele que o jogador constrói a prefeitura.
@@ -1083,6 +1082,61 @@ class GameManager {
         } catch (error) {
             console.error('❌ Erro ao criar efeitos de iluminação:', error);
         }
+    }
+
+    /** Jogo novo: área inicial + trecho de rio mais perto no mesmo quadro (GridManager.getStartFraming). */
+    frameStartView() {
+        const start = this.gridManager?.startArea;
+        if (!start) return;
+        const frame = this.gridManager.getStartFraming?.(start);
+        if (!frame || !this.cameraControls?.centerCameraOn) {
+            this.centerCameraOnCityHall(start.x, start.z);
+            return;
+        }
+        const fit = this.fitStartFrame(frame) || { x: frame.x, z: frame.z, radius: frame.radius };
+        this.cameraControls.centerCameraOn(fit.x, fit.z, fit.radius);
+        log(`📷 Jogo novo: área inicial (${start.x}, ${start.z}) e água em ${frame.water ? `(${frame.water.x}, ${frame.water.z})` : '—'}`);
+    }
+
+    /**
+     * Menor zoom (25-50) e mira em que os pontos do quadro (frame.points: cantos da área inicial e a água) caem na
+     * parte livre da tela, pela projeção da câmera de verdade (ângulos, fov, proporção). No desktop o tutorial ocupa o
+     * painel da esquerda (css/layout.css), então a parte livre começa em ~30% da largura. null = não deu para medir.
+     */
+    fitStartFrame(frame) {
+        const cam = this.camera, engine = this.engine;
+        if (!cam || !engine || !frame?.points?.length || typeof BABYLON === 'undefined') return null;
+        const w = engine.getRenderWidth(), h = engine.getRenderHeight();
+        if (!w || !h) return null;
+        const alpha = this.cameraControls?.targetAlpha ?? cam.alpha;
+        const beta = this.isometricAngles?.beta ?? cam.beta;
+        const area = this.uiManager?.isMobile
+            ? { x0: 0.06, x1: 0.94, y0: 0.16, y1: 0.62 }  // celular: HUD em cima, tutorial embaixo
+            : { x0: 0.32, x1: 0.84, y0: 0.14, y1: 0.8 }; // desktop: painel do tutorial à esquerda, bússola à direita, barra embaixo
+        const proj = BABYLON.Matrix.PerspectiveFovLH(cam.fov, w / h, cam.minZ || 0.1, cam.maxZ || 1000);
+        const viewport = new BABYLON.Viewport(0, 0, w, h);
+        const pts = frame.points.map(([x, z]) => new BABYLON.Vector3(x, 0, z));
+        const fits = (tx, tz, radius) => {
+            const target = new BABYLON.Vector3(tx, 0, tz);
+            const eye = new BABYLON.Vector3(tx + radius * Math.cos(alpha) * Math.sin(beta), radius * Math.cos(beta), tz + radius * Math.sin(alpha) * Math.sin(beta));
+            const transform = BABYLON.Matrix.LookAtLH(eye, target, BABYLON.Vector3.Up()).multiply(proj);
+            return pts.every(p => {
+                const s = BABYLON.Vector3.Project(p, BABYLON.Matrix.Identity(), transform, viewport);
+                return s.z > 0 && s.z < 1 && s.x >= area.x0 * w && s.x <= area.x1 * w && s.y >= area.y0 * h && s.y <= area.y1 * h;
+            });
+        };
+        // Direita e "para a frente" na tela, no chão (a base do CompassUI/moveRelativeToView)
+        const right = [-Math.sin(alpha), Math.cos(alpha)], fwd = [-Math.cos(alpha), -Math.sin(alpha)];
+        const steps = [0, -0.05, 0.05, -0.1, 0.1, -0.15, 0.15, -0.2, 0.2, -0.25, 0.25, -0.3, 0.3];
+        for (let radius = 25; radius <= 50; radius += 1) {
+            for (const a of steps) {
+                for (const b of steps) {
+                    const tx = frame.x + (right[0] * a + fwd[0] * b) * radius, tz = frame.z + (right[1] * a + fwd[1] * b) * radius;
+                    if (fits(tx, tz, radius)) return { x: tx, z: tz, radius };
+                }
+            }
+        }
+        return null;
     }
 
     centerCameraOnCityHall(gridX, gridZ) {

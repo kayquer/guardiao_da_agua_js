@@ -63,6 +63,8 @@ class GridManager {
         // js/data/basinMaps.js — sem Basin, como nos testes, o mapa da pesquisa)
         const basin = typeof Basin !== 'undefined' ? Basin.current() : null;
         this.hillThresholds = basin ? Basin.hillThresholds(basin.hills) : [0.8, 0.6];
+        // Cores da bacia (Basin.palette: terreno, barranco, água); sem Basin = a tabela de getMinecraftTerrainColor (= vale)
+        this.palette = basin ? Basin.palette() : null;
         const river = GridManager.classifyRiverCells(this.gridSize, basin?.river || RIVER_MAP);
         this.riverZones = river.zones;
         this.riverHasPlain = river.hasPlain;
@@ -270,6 +272,36 @@ class GridManager {
         return best ? { x: best.x, z: best.z, ratio: best.ratio } : { x: Math.floor(center), z: Math.floor(center), ratio: 0 };
     }
 
+    /**
+     * Enquadramento do jogo novo (GameManager.frameStartView): a área inicial E o trecho de rio mais perto dela juntos.
+     * Mira no ponto entre o centro da área e a água mais próxima, com zoom que cabe os dois (mín. 25 = o de antes,
+     * máx. 46). Sem água no mapa = só a área. Retorna { x, z } em mundo, radius e water { x, z } em células (ou null).
+     */
+    getStartFraming(start = this.startArea) {
+        if (!start) return null;
+        let water = null, best = Infinity;
+        for (let x = 0; x < this.gridSize; x++) {
+            for (let z = 0; z < this.gridSize; z++) {
+                if (this.terrainGrid[x]?.[z] !== 'water') continue;
+                const d = Math.hypot(x - start.x, z - start.z);
+                if (d < best) { best = d; water = { x, z }; }
+            }
+        }
+        const cs = this.cellSize || 2, half = (this.gridSize * cs) / 2;
+        const world = c => (c + 0.5) * cs - half;
+        const sx = world(start.x - 0.5), sz = world(start.z - 0.5); // centro do quadrado 8×8 (células x-4 … x+3)
+        // Pontos que precisam aparecer (mundo, x/z): os 4 cantos da área inicial e a célula de água
+        const r = 4 * cs;
+        const points = [[sx - r, sz - r], [sx + r, sz - r], [sx + r, sz + r], [sx - r, sz + r]];
+        if (!water) return { x: sx, z: sz, radius: 25, water: null, points };
+        const wx = world(water.x), wz = world(water.z);
+        points.push([wx, wz]);
+        // Meia-distância + meia área inicial cabendo na vertical da tela (~0,62 do raio, com a inclinação). Estimativa:
+        // GameManager.frameStartView ajusta pela projeção da câmera de verdade.
+        const reach = Math.hypot(wx - sx, wz - sz) / 2 + r;
+        return { x: (sx + wx) / 2, z: (sz + wz) / 2, radius: Math.max(25, Math.min(46, reach / 0.62)), water, points };
+    }
+
     // Função para gerar seed baseado na posição
     getTerrainSeed(x, z) {
         return (x * 73856093) ^ (z * 19349663) ^ 83492791;
@@ -386,6 +418,14 @@ class GridManager {
     // A geometria é montada sem Babylon (buildTerrainGeometry/buildWaterGeometry, testadas em world.test.js).
 
     /** Topo do bloco de terra (null fora do mapa; água = 0, para a lateral da margem descer até o fundo). */
+    /** Terra com água ao lado (N/S/L/O): onde a bacia pinta o barranco (palette.bank). */
+    touchesWater(x, z) {
+        return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dz]) => {
+            const nx = x + dx, nz = z + dz;
+            return nx >= 0 && nz >= 0 && nx < this.gridSize && nz < this.gridSize && this.getTerrainType(nx, nz) === 'water';
+        });
+    }
+
     landTop(x, z) {
         if (x < 0 || z < 0 || x >= this.gridSize || z >= this.gridSize) return null;
         return this.getTerrainType(x, z) === 'water' ? 0 : this.getTerrainBlockHeight(x, z);
@@ -459,12 +499,18 @@ class GridManager {
                 if (type === 'water' || type === 'unknown') continue;
                 const h = this.getTerrainBlockHeight(x, z, type);
                 const drop = Math.min(0.04, h * 0.4);
-                const base = this.getMinecraftTerrainColor(this.getTerrainZone(x, z));
+                // Barranco (palette.bank, ex. areia no litoral): a terra encostada na água; encosta fica com a cor dela
+                const bank = type !== 'hill' && this.palette?.bank && this.touchesWater(x, z);
+                const base = this.getMinecraftTerrainColor(bank ? 'bank' : this.getTerrainZone(x, z));
                 const v = this.cellShade(x, z);
                 // × TERRAIN_BRIGHTNESS: a cor de vértice entra depois do clamp da luz do StandardMaterial; sem ela o
                 // topo ficava mais escuro que o antigo (cor no diffuseColor, com luz > 1 saturando)
-                const c = [base.r / 255 + v, base.g / 255 + v, base.b / 255 + v].map(n => Math.max(0, Math.min(1, n)) * GridManager.TERRAIN_BRIGHTNESS);
+                const lit = col => [col.r / 255 + v, col.g / 255 + v, col.b / 255 + v].map(n => Math.max(0, Math.min(1, n)) * GridManager.TERRAIN_BRIGHTNESS);
+                const c = lit(base);
                 const shade = k => [c[0] * k, c[1] * k, c[2] * k];
+                // Laterais da encosta: terra/rocha própria (hillSide), mais escura que o topo; as outras, a cor do topo
+                const sc = type === 'hill' ? lit(this.getMinecraftTerrainColor('hillSide')) : c;
+                const sideShade = k => [sc[0] * k, sc[1] * k, sc[2] * k];
                 const ax = x * cs - half, bx = ax + cs, az = z * cs - half, bz = az + cs;
                 const ix0 = ax + inset, ix1 = bx - inset, iz0 = az + inset, iz1 = bz - inset;
                 const e = h - drop;
@@ -494,7 +540,7 @@ class GridManager {
                     const nTop = this.landTop(nx, nz);
                     const bottom = nTop === null ? 0 : nTop;
                     if (bottom >= e - 1e-6) continue;
-                    const sideTop = shade(0.86 * light), sideBottom = shade(0.7 * light);
+                    const sideTop = sideShade(0.86 * light), sideBottom = sideShade(0.7 * light);
                     GridManager.pushQuad(out, [[px, e, pz], [qx, e, qz], [qx, bottom, qz], [px, bottom, pz]], normal,
                         [sideTop, sideTop, sideBottom, sideBottom]);
                 }
@@ -518,9 +564,10 @@ class GridManager {
                 if (this.getTerrainType(x, z) !== 'water') continue;
                 const depth = this.getWaterDepth(x, z);
                 const t = waterTop(x, z);
-                // Mesma cor/transparência do material antigo por bloco: mais funda = mais escura e opaca
+                // Mais funda = mais escura e opaca; cores da bacia (palette.water, vale = as do material antigo)
                 const k = Math.min(1, depth / 0.5);
-                const rgba = [0.15 + 0.1 * (1 - k), 0.45 + 0.11 * (1 - k), 0.8 + 0.2 * (1 - k), 0.6 + k * 0.2];
+                const { shallow, deep } = this.getWaterColors();
+                const rgba = [0, 1, 2].map(i => deep[i] + (shallow[i] - deep[i]) * (1 - k)).concat(0.6 + k * 0.2);
                 const ax = x * cs - half, bx = ax + cs, az = z * cs - half, bz = az + cs;
                 const start = out.positions.length / 3;
                 GridManager.pushQuad(out, [[ax, t, az], [bx, t, az], [bx, t, bz], [ax, t, bz]], [0, 1, 0], [rgba, rgba, rgba, rgba]);
@@ -678,17 +725,15 @@ class GridManager {
                 precision highp float;
                 uniform float time;
                 uniform float pollution; // 0 limpa, 1 suja (PollutionVisuals, poluição > 70%)
+                uniform vec3 shallowColor; // cores da bacia (palette.water)
+                uniform vec3 deepColor;
                 varying vec3 vNormal;
                 varying vec3 vCell;
 
                 void main() {
                     float depth = vCell.z;
                     float depthFactor = min(1.0, depth / 0.5);
-                    vec3 waterColor = vec3(
-                        0.15 + (0.25 - 0.15) * (1.0 - depthFactor),
-                        0.45 + (0.56 - 0.45) * (1.0 - depthFactor),
-                        0.8 + (1.0 - 0.8) * (1.0 - depthFactor)
-                    );
+                    vec3 waterColor = mix(shallowColor, deepColor, depthFactor);
                     float alphaVariation = sin(time * 2.0 + vCell.x + vCell.y) * 0.1;
                     float alpha = 0.6 + depth * 0.2 + alphaVariation;
                     // Poluída: turva, verde-marrom e quase opaca, com manchas que se mexem devagar
@@ -702,9 +747,12 @@ class GridManager {
             `
         }, {
             attributes: ['position', 'normal', 'waterCell'],
-            uniforms: ['worldViewProjection', 'world', 'time', 'pollution'],
+            uniforms: ['worldViewProjection', 'world', 'time', 'pollution', 'shallowColor', 'deepColor'],
             needAlphaBlending: true
         });
+        const { shallow, deep } = this.getWaterColors();
+        shaderMaterial.setColor3('shallowColor', new BABYLON.Color3(...shallow));
+        shaderMaterial.setColor3('deepColor', new BABYLON.Color3(...deep));
         // Um material para toda a água: o tempo anda aqui (antes cada bloco tinha um clone que nunca recebia
         // o tempo, e a água ficava parada). performance.now: Date.now() * 0,001 perde precisão no float da GPU.
         this.waterTimeObserver = this.scene.onBeforeRenderObservable.add(() => {
@@ -1007,8 +1055,20 @@ class GridManager {
         return colors[terrainType] || colors['dirt'];
     }
 
+    /** Água rasa/funda (0-1) da bacia (palette.water); sem bacia = as do vale. */
+    getWaterColors() {
+        const w = this.palette?.water;
+        return {
+            shallow: w?.shallow || [0.25, 0.56, 1.0],
+            deep: w?.deep || [0.15, 0.45, 0.8]
+        };
+    }
+
     getMinecraftTerrainColor(terrainType) {
-        // Cores estilo Minecraft (valores RGB 0-255)
+        // Cor da bacia (Basin.palette, js/data/basinMaps.js) quando houver
+        const own = this.palette?.[terrainType];
+        if (Array.isArray(own)) return { r: own[0], g: own[1], b: own[2] };
+        // Cores estilo Minecraft (valores RGB 0-255); grassland/floodplain/app/hill/hillSide = BASIN_PALETTE (vale)
         const colors = {
             'water': { r: 64, g: 164, b: 223 },     // Azul água Minecraft
             'dirt': { r: 134, g: 96, b: 67 },       // Marrom terra Minecraft
@@ -1016,7 +1076,8 @@ class GridManager {
             'grassland': { r: 91, g: 153, b: 76 },  // Verde grama Minecraft
             'floodplain': { r: 62, g: 112, b: 74 }, // Verde-escuro: a faixa escura ao lado do rio, como nas fotos de satélite
             'app': { r: 74, g: 132, b: 66 },        // Mata protegida: mais escura que o planalto
-            'hill': { r: 128, g: 128, b: 128 },     // Pedra
+            'hill': { r: 138, g: 116, b: 88 },      // Encosta: terra/rocha (era cinza 128, parecia concreto)
+            'hillSide': { r: 124, g: 100, b: 76 },  // Laterais da encosta, um pouco mais escuras
             'mountain': { r: 96, g: 96, b: 96 }     // Pedra escura
         };
 

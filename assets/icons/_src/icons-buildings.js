@@ -123,6 +123,11 @@ function zoneSm(kind, level) {
         g(rect(3, 3, 26, 26, 'none', { rx: 5, w: 1.7, da: '4 2' }), { a: A('march', 1.8, 0, 'center', 'linear') }) + glyph + pips;
 }
 
+/** Sol com raios girando (centro cx, cy; raio r). */
+const sunSpin = (cx, cy, r, w = 4) => g(pivot(cx, cy, r * 2) + [0, 45, 90, 135, 180, 225, 270, 315].map(a =>
+    line(`M${cx} ${f1(cy - r * 1.4)}v${f1(-r * 0.55)}`, { s: P.yellow[0], w, x: `transform="rotate(${a} ${cx} ${cy})"` })).join(''),
+{ a: A('spin', 10, 0, 'center', 'linear') }) + g(ball(cx, cy, r, 'yellow'), { a: A('breathe', 3) });
+
 // ---------- definições ----------
 const B = (id, key, title, emoji, lg, sm, extraUsed = []) => ({
     id, area: 'building', emoji: [emoji], title,
@@ -396,6 +401,134 @@ module.exports = [
             poly('94,104 98,62 102,62 106,104', '#fff') + blades(100, 62, 20, 3) +
             g(thick('M8 72h18', P.blue[0], 3), { a: A('drift', 3) }) + g(thick('M70 30h14', P.blue[0], 3), { a: A('drift', 3, 1.5) }),
         () => poly('13.5,29 15,13 17,13 18.5,29', '#fff', { w: 1.5 }) + blades(16, 13, 10, 4, 1.5), [ST + ' (wind_farm)']),
+    // Casinhas com placas no telhado: brilho varrendo as placas, sol girando e raio subindo para a rede.
+    B('solar-rooftop', 'solar_rooftop', 'Telhados Solares', '🏠',
+        () => {
+            const P1 = '22,66 31,49 63,49 72,66', P2 = '86,79 93,66 109,66 116,79';
+            return ground() + sunSpin(24, 22, 9) +
+                box(84, 78, 34, 28, 'sand') + poly('80,80 92,62 110,62 122,80', P.red[0]) +
+                poly(P2, P.blue[1]) + line('M101 66v13M89.5 72.5h23', { s: P.glass[0], w: 1.8 }) + win(95, 87, 12, 10) +
+                box(18, 68, 54, 38, 'white') + poly('12,70 28,44 66,44 80,70', P.red[0]) +
+                poly(P1, P.blue[1]) + line('M38 66l4-17M56 66l-4-17M26.5 57.5h41', { s: P.glass[0], w: 1.8 }) +
+                clip('rf', poly(P1, '#000') + poly(P2, '#000')) +
+                clipped('rf', g(rect(42, 40, 9, 50, '#fff', { s: 'none', op: 0.75 }) + rect(54, 40, 4, 50, '#fff', { s: 'none', op: 0.5 }), { a: A('sweep', 2.8) }) +
+                    g(rect(98, 56, 7, 30, '#fff', { s: 'none', op: 0.75 }), { a: A('sweep', 2.8, 1.4) })) +
+                poly(P1, 'none') + poly(P2, 'none') +
+                doorL(28, 84, 12, 22) + win(50, 80, 14, 12) +
+                g(path(boltD(104, 38, 0.55), P.yellow[0], { w: 2 }), { a: A('zap', 2.4, 0, 'center', 'linear') }) + spark(82, 30, 4.5, 3.4, 1.5);
+        },
+        () => g(pivot(26, 6, 5.5) + line('M26 1.2v-1M30.8 6h1M26 10.8v1M21.2 6h-1', { s: P.yellow[1], w: 1.4 }), { a: A('spin', 8, 0, 'center', 'linear') }) +
+            circ(26, 6, 3.2, P.yellow[0], { w: 1.2 }) +
+            rect(22, 22, 8, 7, P.sand[0], { w: 1.3 }) + poly('20.5,22.5 26,17 31.5,22.5', P.red[0], { w: 1.3 }) +
+            rect(4, 18, 16, 11, '#fff', { w: 1.5 }) + poly('2,19 7,10 17,10 22,19', P.red[0], { w: 1.5 }) +
+            poly('5,18 8.5,11.5 15.5,11.5 19,18', P.blue[1], { w: 1.2 }) + line('M12 11.5V18M6.8 14.8h10.4', { s: P.glass[0], w: 0.9 }) +
+            rect(7, 22, 4, 7, P.brown[0], { w: 1.2 })),
+    // Aerogerador pequeno numa torre de treliça: pás girando, vento passando, armário com faixa amarela.
+    B('wind-small', 'wind_small', 'Aerogerador Pequeno', '🌬️',
+        () => ground() + g(cloud(102, 24, 0.45), { a: A('drift', 7) }) +
+            line('M48 106L56 46M72 106L64 46M50 90h20M52 72h16M54 58h12M50 90l18-18M70 90L52 72M52 72l14-14M68 72L54 58', { w: 3 }) +
+            rect(52, 38, 18, 9, P.concrete[0], { rx: 3 }) + rect(64, 38, 6, 9, P.yellow[0], { rx: 2 }) +
+            blades(56, 42, 26, 3) +
+            box(84, 82, 30, 24, 'white', { rx: 2 }) + rect(84, 88, 30, 6, P.yellow[0], { w: 2.5 }) + rect(88, 96, 10, 10, P.gray[0], { w: 2 }) +
+            line('M99 82V70h16', { w: 2.5 }) +
+            g(path(boltD(110, 58, 0.45), P.yellow[0], { w: 2 }), { a: A('zap', 2.4, 0, 'center', 'linear') }) +
+            g(thick('M6 54h20', P.blue[0], 3), { a: A('drift', 3) }) + g(thick('M12 74h12', P.blue[0], 3), { a: A('drift', 3, 1.5) }),
+        () => line('M11 29L15 12M21 29L17 12M12 24h8M13.5 18h5M12 24l6.5-6', { w: 1.4 }) + blades(16, 11, 9, 3, 1.5) +
+            g(thick('M1 20h5', P.blue[0], 1.4, { ow: 1 }), { a: A('drift', 3) })),
+    // PCH: a água passa por cima da soleira baixa, desce pelo conduto e gira a turbina da casa de força.
+    B('small-hydro', 'small_hydro', 'PCH (Pequena Central Hidrelétrica)', '💧',
+        () => ground() +
+            rect(4, 56, 48, 34, P.water[0], { rx: 6 }) + g(line(waveD(8, 44, 64, 2.5, 10), { s: '#fff', w: 2.5 }), { a: A('drift', 2.6) }) +
+            rect(30, 88, 94, 18, P.water[0], { rx: 6 }) + g(line(waveD(70, 116, 97, 2, 10), { s: '#fff', w: 2.5 }), { a: A('drift', 2.6, 1.3) }) +
+            thick('M30 66L82 80', P.gray[0], 7, { ow: 5 }) +
+            poly('42,56 54,56 64,96 38,96', P.concrete[0]) + poly('48,56 54,56 64,96 52,96', P.concrete[1], { s: 'none' }) + poly('42,56 54,56 64,96 38,96', 'none') +
+            g(line('M44 58L58 94', { s: P.water[0], w: 6, da: '12 8' }), { a: A('flow', 0.9, 0, 'center', 'linear') }) +
+            g(line('M48 58l12 34', { s: '#fff', w: 2.5, da: '6 14' }), { a: A('flow', 0.9, 0.4, 'center', 'linear') }) +
+            g(circ(62, 98, 4, '#fff', { w: 2 }), { a: A('ripple', 1.6) }) +
+            box(78, 58, 38, 30, 'yellow', { rx: 3 }) + rect(74, 52, 46, 8, P.dark[0], { rx: 3 }) +
+            g(gear(97, 73, 8, 'gray'), { a: A('spin', 3, 0, 'center', 'linear') }) +
+            line('M104 52V38', { w: 3 }) + g(path(boltD(110, 28, 0.55), P.yellow[0], { w: 2 }), { a: A('zap', 2.4, 0, 'center', 'linear') }),
+        () => rect(1, 13, 12, 12, P.water[0], { w: 1.4 }) + rect(8, 24, 23, 6, P.water[0], { w: 1.4 }) +
+            poly('10,13 13.5,13 17,27 9,27', P.concrete[0], { w: 1.4 }) +
+            g(line('M11.5 14l4 12', { s: P.water[0], w: 2, da: '3 3' }), { a: A('march', 1, 0, 'center', 'linear') }) +
+            rect(19, 12, 11, 10, P.yellow[0], { w: 1.4 }) + line('M13 15l6 3', { s: P.gray[0], w: 2 }) +
+            path(boltD(25, 6, 0.32), P.yellow[0], { w: 1.1 })),
+    // Rastreadores: as mesas de painéis balançam juntas acompanhando o sol; energia correndo pelo cabo.
+    B('solar-tracker', 'solar_tracker', 'Usina Solar com Rastreadores', '🔆',
+        () => {
+            const mesa = x => rect(x - 2, 80, 4, 24, P.gray[0], { w: 2.5 }) +
+                g(g(rect(x - 20, 70, 40, 9, P.blue[1], { w: 2.5 }) + line(`M${x - 7} 70v9M${x + 7} 70v9`, { s: P.glass[0], w: 1.8 }) +
+                    rect(x - 15, 71.5, 6, 6, '#fff', { s: 'none', op: 0.6 }), { a: A('tilt', 4.5) }),
+                { x: `transform="rotate(-14 ${x} 75)"` }) + circ(x, 75, 2.6, P.dark[0], { w: 1.5 });
+            return ground() + sunSpin(102, 24, 11) +
+                thick('M22 102H108', P.dark[0], 3, { ow: 2 }) + g(line('M22 102H108', { s: P.yellow[0], w: 3, da: '4 8' }), { a: A('flow', 0.8, 0, 'center', 'linear') }) +
+                mesa(24) + mesa(62) + mesa(100) +
+                g(path(boltD(60, 34, 0.5), P.yellow[0], { w: 2 }), { a: A('zap', 2.4, 0, 'center', 'linear') });
+        },
+        () => g(pivot(25, 7, 6) + line('M25 1.5v-1M30.5 7h1M25 12.5v1M19.5 7h-1', { s: P.yellow[1], w: 1.4 }), { a: A('spin', 8, 0, 'center', 'linear') }) +
+            circ(25, 7, 3.5, P.yellow[0], { w: 1.2 }) + rect(14.5, 18, 3, 11, P.gray[0], { w: 1.3 }) +
+            g(g(rect(4, 14, 24, 5, P.blue[1], { w: 1.4 }) + line('M12 14v5M20 14v5', { s: P.glass[0], w: 1 }), { a: A('tilt', 4.5) }),
+                { x: 'transform="rotate(-14 16 16.5)"' })),
+    // Bateria da rede: armários com o medidor de carga enchendo, faixa amarela e raio entrando e saindo.
+    B('grid-battery', 'grid_battery', 'Bateria da Rede', '🔋',
+        () => {
+            const gauge = (x, d) => rect(x, 70, 20, 30, P.dark[0], { rx: 3 }) + rect(x + 6, 65, 8, 5, P.dark[0], { rx: 1.5 }) +
+                [0, 1, 2].map(i => g(rect(x + 3, 92 - i * 9, 14, 6, P.green[0], { w: 1.5, rx: 1 }), { a: A('fade', 2.4, d + i * 0.6) })).join('');
+            return ground() +
+                box(8, 50, 54, 56, 'white', { rx: 3 }) + rect(4, 44, 62, 8, P.dark[0], { rx: 3 }) + rect(8, 58, 54, 6, P.yellow[0], { w: 2.5 }) +
+                box(66, 50, 54, 56, 'white', { rx: 3 }) + rect(62, 44, 62, 8, P.dark[0], { rx: 3 }) + rect(66, 58, 54, 6, P.yellow[0], { w: 2.5 }) +
+                gauge(14, 0) + gauge(72, 1.2) + line('M42 76h14M42 84h14M42 92h14M100 76h14M100 84h14M100 92h14', { w: 3 }) +
+                g(path(boltD(64, 24, 0.75), P.yellow[0], { w: 2.5 }), { a: A('zap', 2.4, 0, 'center', 'linear') }) +
+                spark(32, 30, 5, 3.2) + spark(100, 26, 4.5, 3.2, 1.6);
+        },
+        () => rect(4, 8, 24, 21, '#fff', { w: 1.5, rx: 1.5 }) + rect(4, 11, 24, 3, P.yellow[0], { w: 1.2 }) +
+            rect(11, 16, 10, 12, P.dark[0], { w: 1.3, rx: 1.5 }) + rect(14, 14.5, 4, 1.8, P.dark[0], { s: 'none' }) +
+            [0, 1, 2].map(i => g(rect(12.8, 24.6 - i * 3.6, 6.4, 2.6, P.green[0], { s: 'none' }), { a: A('fade', 2.4, i * 0.6) })).join('')),
+    // Eólica offshore: turbinas sobre o mar com a peça de transição amarela, ondas passando.
+    B('wind-offshore', 'wind_offshore', 'Eólica Offshore', '🌀',
+        () => ell(64, 104, 62, 16, P.water[0]) + g(cloud(104, 20, 0.45), { a: A('drift', 7) }) +
+            poly('92,100 93.5,58 96.5,58 98,100', '#fff') + rect(89.5, 88, 11, 10, P.yellow[0], { w: 2.5 }) + rect(86, 86, 18, 3.5, P.dark[0], { rx: 1, w: 2 }) +
+            blades(95, 58, 18, 3) +
+            poly('40,100 43,38 47,38 50,100', '#fff') + rect(38, 84, 14, 14, P.yellow[0], { w: 2.5 }) + rect(33, 82, 24, 4, P.dark[0], { rx: 1.5, w: 2 }) +
+            rect(40, 33, 14, 8, P.concrete[0], { rx: 2 }) + blades(45, 37, 28, 4) +
+            g(line(waveD(14, 112, 106, 2.5, 12), { s: '#fff', w: 2.5 }), { a: A('drift', 2.6) }) +
+            g(ell(45, 99, 11, 3, 'none', { s: '#fff', w: 2 }), { a: A('ripple', 2.4) }),
+        () => ell(16, 27, 15, 4.5, P.water[0], { w: 1.4 }) + poly('14.5,27 15.3,12 16.7,12 17.5,27', '#fff', { w: 1.3 }) +
+            rect(13.5, 21, 5, 5, P.yellow[0], { w: 1.2 }) + blades(16, 12, 9, 3.5, 1.5)),
+    // Ciclo combinado: chama azul do gás na turbina, caldeira de recuperação, chaminé fina com fumacinha clara.
+    B('gas-combined', 'gas_combined', 'Termelétrica de Ciclo Combinado', '🔥',
+        () => ground() +
+            rect(98, 30, 12, 76, P.concrete[0]) + rect(98, 38, 12, 5, P.gray[0], { w: 2 }) + smokes(104, 26, 6, 'smoke', 4, 2) +
+            box(70, 44, 28, 62, 'gray') + line('M78 52v46M86 52v46', { s: P.dark[0], w: 2.5 }) + rect(66, 40, 36, 6, P.dark[0], { rx: 2 }) +
+            box(14, 64, 58, 42, 'white') + rect(10, 58, 66, 8, P.dark[0], { rx: 3 }) + rect(14, 70, 58, 6, P.yellow[0], { w: 2.5 }) +
+            rect(22, 80, 24, 20, P.dark[0], { rx: 3 }) + flame(32, 98, 0.62, 0.8, 'blue') +
+            g(gear(59, 89, 8, 'yellow'), { a: A('spin', 2.6, 0, 'center', 'linear') }) +
+            thick('M0 100h14', P.gray[0], 6, { ow: 4 }) + rect(3, 95, 7, 7, P.yellow[0], { w: 2 }) + line('M6.5 95v-5', { w: 2 }) +
+            g(ell(6.5, 88, 5, 2, P.yellow[0], { w: 2 }), { a: A('coin', 3) }) +
+            g(path(boltD(30, 34, 0.55), P.yellow[0], { w: 2 }), { a: A('zap', 2.4, 0, 'center', 'linear') }),
+        () => rect(24, 5, 4, 24, P.concrete[0], { w: 1.4 }) + smokeSm(26, 3, 2) + rect(17, 12, 8, 17, P.gray[0], { w: 1.4 }) +
+            rect(2, 16, 16, 13, '#fff', { w: 1.5 }) + rect(2, 18.5, 16, 2.5, P.yellow[0], { w: 1 }) +
+            rect(5, 22, 7, 7, P.dark[0], { w: 1.2 }) +
+            g(path('M8.5 28c-2 0-3-1.5-2-3.5 0 1 1 1 1 .5 0-1.5 1-3 2-3.5 0 1.5 1.5 2 1.5 4 0 1.5-1 2.5-2.5 2.5z', P.blue[0], { w: 1 }), { a: A('flicker', 0.8, 0, '50% 100%') })),
+    // Solar flutuante: balsas de painéis boiando no reservatório, brilho nas placas e boia de ancoragem.
+    B('solar-floating', 'solar_floating', 'Usina Solar Flutuante', '🛟',
+        () => {
+            const P1 = '18,88 24,74 58,74 52,88', P2 = '70,92 76,78 110,78 104,92';
+            // brilho recortado no painel dentro do grupo que boia (o recorte acompanha a balsa)
+            const raft = (id, pts, fx, fy, d) => g(rect(fx, fy, 44, 6, '#fff', { rx: 3, w: 2.5 }) + poly(pts, P.blue[1], { s: 'none' }) +
+                line(`M${fx + 15} ${fy}l6-14M${fx + 29} ${fy}l6-14M${fx + 6} ${fy - 7}h36`, { s: P.glass[0], w: 1.8 }) +
+                clip(id, poly(pts, '#000')) +
+                clipped(id, g(rect(fx + 24, fy - 18, 8, 22, '#fff', { s: 'none', op: 0.7 }), { a: A('sweep', 2.8, d) })) +
+                poly(pts, 'none'), { a: A('bobs', 3, d) });
+            return ell(64, 100, 62, 20, P.water[0]) + sunSpin(24, 24, 9) +
+                g(line(waveD(14, 112, 112, 2.5, 12), { s: '#fff', w: 2.5 }), { a: A('drift', 2.6) }) +
+                raft('f1', P1, 14, 88, 0) + raft('f2', P2, 66, 92, 1.5) +
+                g(ball(10, 96, 4.5, 'yellow') + path('M7 93l3-7 3 7z', P.orange[0], { w: 2 }), { a: A('bob', 2.6) }) +
+                g(path(boltD(98, 50, 0.5), P.yellow[0], { w: 2 }), { a: A('zap', 2.4, 0, 'center', 'linear') });
+        },
+        () => ell(16, 26, 15, 5, P.water[0], { w: 1.4 }) + circ(6, 6, 3.5, P.yellow[0], { w: 1.2 }) +
+            g(rect(4, 22, 24, 3.5, '#fff', { w: 1.2, rx: 1.5 }) + poly('6,22 9,14 27,14 24,22', P.blue[1], { w: 1.4 }) +
+                line('M15.5 14l-3 8M21.5 14l-3 8', { s: P.glass[0], w: 1 }), { a: A('bobs', 3) })),
 
     // ----- PÚBLICOS -----
     B('city-hall', 'city_hall', 'Prefeitura Municipal', '🏛️',

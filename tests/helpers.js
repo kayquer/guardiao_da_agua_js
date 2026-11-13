@@ -47,7 +47,16 @@ async function mockExternalApis(page, { forecast = FORECAST } = {}) {
 const ALL_GUIDES = ['energy', 'roads', 'rivers', 'storage', 'zoning', 'public', 'tourism', 'industrial', 'commercial'];
 
 /**
- * `basin` = no modo loja (?modo=loja) o jogo novo pergunta a bacia (main.js chooseBasin): clica nela.
+ * Escolhe a bacia no carrossel do modo loja (js/ui/BasinPicker.js): o ponto traz o cartão para o meio e o
+ * "Jogar aqui" dele (`.basin-pick[data-pick]`) começa a cidade (o dos cartões do lado só traz o cartão).
+ */
+async function pickBasin(page, basin) {
+    await page.locator(`.bp-dot[data-basin="${basin}"]`).click();
+    await page.locator(`.bp-card.is-focus .basin-pick[data-pick="${basin}"]`).click();
+}
+
+/**
+ * `basin` = no modo loja (?modo=loja) o jogo novo pergunta a bacia (main.js chooseBasin): escolhe no carrossel.
  */
 async function startGame(page, { profile = TEST_PROFILE, forecast, url = '/index.html', guides = ALL_GUIDES, basin = null } = {}) {
     await mockExternalApis(page, { forecast });
@@ -59,7 +68,7 @@ async function startGame(page, { profile = TEST_PROFILE, forecast, url = '/index
     }, { p: profile, guides, keys: { profiles: storageKey('profiles'), guides: storageKey('guides') } });
     await page.goto(url);
     await page.click(`.profile-card[data-profile-id="${profile.id}"]`);
-    if (basin) await page.click(`.basin-pick[data-pick="${basin}"]`);
+    if (basin) await pickBasin(page, basin);
     await page.waitForFunction(() => window.gameManager?.initialized, null, { timeout: 45000 });
 }
 
@@ -81,4 +90,4 @@ async function closeCards(page, wait = 5000) {
     }
 }
 
-module.exports = { TEST_PROFILE, FORECAST, CLEAR_SKY, STORAGE_PREFIX, storageKey, mockExternalApis, startGame, closeCards };
+module.exports = { TEST_PROFILE, FORECAST, CLEAR_SKY, STORAGE_PREFIX, storageKey, mockExternalApis, startGame, pickBasin, closeCards };

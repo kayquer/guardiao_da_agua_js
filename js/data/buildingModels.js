@@ -66,6 +66,14 @@ const BUILDING_MODELS = {
     nuclear_plant:         { file: 'blender/nuclear_plant.glb', tris: 1488 },
     biomass_plant:         { file: 'blender/biomass_plant.glb', tris: 1056 },
     sugarcane_mill:        { file: 'blender/sugarcane_mill.glb', tris: 1440 },
+    solar_rooftop:         { file: 'blender/solar_rooftop.glb', tris: 824 },
+    wind_small:            { file: 'blender/wind_small.glb', tris: 854 },
+    small_hydro:           { file: 'blender/small_hydro.glb', tris: 1060 },
+    solar_tracker:         { file: 'blender/solar_tracker.glb', tris: 1484 },
+    grid_battery:          { file: 'blender/grid_battery.glb', tris: 1280 },
+    wind_offshore:         { file: 'blender/wind_offshore.glb', tris: 1490 },
+    gas_combined:          { file: 'blender/gas_combined.glb', tris: 1408 },   // ventiladores "gira_N" giram
+    solar_floating:        { file: 'blender/solar_floating.glb', tris: 1384 },
     // escondidas em FEATURE_FLAGS.HIDDEN_BUILDINGS (prontas para quando voltarem)
     power_pole:            { file: 'blender/power_pole.glb', tris: 264 },
     thermal_plant:         { file: 'blender/thermal_plant.glb', tris: 844 },

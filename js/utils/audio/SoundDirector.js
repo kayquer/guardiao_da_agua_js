@@ -352,6 +352,34 @@ mixin(AudioManager, {
         this.playSound(this.manifest[key] ? key : 'sfx_click', 0.8);
     },
 
+    /**
+     * Clique no chão ou no rio (painel de terreno): o som de seleção conta como o lugar está (TerrainHealth).
+     * Bom = o som de sempre + uma camada natural (folhas/passarinho no chão, água cristalina no rio); atenção = só o
+     * som de sempre; ruim = mais grave e abafado (rate 0,8), com gorgolejo de água barrenta no rio e, se a poluição é
+     * o problema, um toque baixinho do alerta de poluição — tocado direto do arquivo, sem marcar o intervalo do alerta
+     * de verdade (o aviso do HUD não pode ficar mudo por causa de um clique).
+     */
+    onSelectTerrain(group, { level = 'ok', polluted = false } = {}) {
+        const key = this.manifest[`sfx_select_${group}`] ? `sfx_select_${group}` : 'sfx_click';
+        const river = group === 'river';
+        if (level === 'good') {
+            this.playSound(key, 0.8);
+            setTimeout(() => this.playSound(river ? 'sfx_water_clean' : 'sfx_select_nature', 0.4), 160);
+            return;
+        }
+        if (level !== 'bad') {
+            this.playSound(key, 0.8);
+            return;
+        }
+        this.playSound(key, 0.7, { rate: 0.8 });
+        if (river) setTimeout(() => this.playSound('sfx_water', 0.3, { rate: 0.6 }), 140);
+        const alert = this.manifest.sfx_alert_pollution;
+        if (polluted && alert && this.canPlayEffects()) {
+            const gain = 0.18 * (alert.volume ?? 1) * this.categoryVolume(alert.kind);
+            setTimeout(() => this.playFile(alert.files[0], gain, { rate: 0.9 }), 260);
+        }
+    },
+
     /** Tutorial fechou: o próximo personagem cumprimenta de novo. */
     resetSpeaker() {
         this.director.lastSpeaker = null;
@@ -494,6 +522,6 @@ AudioManager.selectGroupFor = config => {
 
 /** Atalhos estáticos para os ganchos (quem chama não precisa saber da instância). */
 ['onScreen', 'onIntroStart', 'onIntroDone', 'onLightning', 'onGameOver', 'onMissionComplete', 'onStudyUnlock',
-    'onEventStart', 'onEventEnd', 'onSpeaker', 'resetSpeaker', 'onSelect'].forEach(name => {
+    'onEventStart', 'onEventEnd', 'onSpeaker', 'resetSpeaker', 'onSelect', 'onSelectTerrain'].forEach(name => {
     AudioManager[name] = (...args) => AudioManager.getInstance()[name](...args);
 });

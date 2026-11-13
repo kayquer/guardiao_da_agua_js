@@ -10,7 +10,7 @@
 // Toda chave do jogo começa com este prefixo. As versões publicadas no mesmo GitHub Pages (main na raiz,
 // evolucao-pesquisa na subpasta) dividem o mesmo localStorage (ele é por domínio, não por pasta): cada versão
 // usa o seu prefixo para não misturar perfis, saves e registros de pesquisa no mesmo computador.
-// StartNotice.CONSENT_KEY repete o prefixo (o aviso roda antes deste arquivo); tests/unit/research.test.js confere.
+// StartNotice.PREFIX repete o prefixo (o aviso roda antes deste arquivo); tests/unit/research.test.js confere.
 const STORAGE_PREFIX = 'guardiao_agua_evo_'; // evolucao-pesquisa: prefixo próprio (main = 'guardiao_agua_');
 
 // ===== LOG DE DESENVOLVIMENTO =====
@@ -121,11 +121,7 @@ const TREES = {
 // ===== FEATURE FLAGS (o que aparece na versão de release) =====
 const FEATURE_FLAGS = {
     HIDDEN_BUILDINGS: [
-        'power_pole',
-        'thermal_plant',
-        'coal_plant',
-        'nuclear_plant', // ocultas por enquanto (pedido de 10/2026)
-        'tidal_plant',
+        'power_pole', // só transmissão, sem efeito no jogo
         'desalination_plant',
         'house',      // casa e prédio avulsos: a categoria Residencial mostra só as zonas (a cidade cresce por elas)
         'apartment'

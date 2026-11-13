@@ -25,7 +25,7 @@ test('todo prédio tem custo, categoria e tamanho válidos', () => {
 // guardavam tudo num `effects: {}` aninhado e não faziam nada (nem custavam manutenção).
 const EFFECT_FIELDS = ['waterProduction', 'pollutionReduction', 'pollutionGeneration', 'maintenanceCost', 'satisfactionBonus',
     'powerGeneration', 'powerConsumption', 'waterStorage', 'incomeGeneration', 'waterConsumption', 'populationCapacity',
-    'population', 'nearbyEfficiencyBonus', 'constructionCostReduction', 'treeStages'];
+    'population', 'nearbyEfficiencyBonus', 'constructionCostReduction', 'treeStages', 'solarStorage'];
 
 test('todo prédio tem efeito que a simulação lê (sem `effects` aninhado)', () => {
     for (const [id, b] of Object.entries(BUILDINGS)) {

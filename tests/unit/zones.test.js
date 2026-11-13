@@ -116,6 +116,30 @@ test('lotes: arquivos existem, peças válidas e dentro de size × size células
     }
 });
 
+// 11/2026: a casa de dois andares entrava na parede lateral do vizinho. Peças .glb da mesma fase não se cruzam
+// (tolerância pequena para beirais e quintais encostados); peças de obra (prop:) podem ficar por cima.
+test('lotes: casas e prédios da mesma fase não entram um no outro', () => {
+    const overlaps = [];
+    for (const [id, lot] of Object.entries(LOTS)) {
+        lot.stages.forEach((pieces, stage) => {
+            // o toldo é preso na fachada da padaria de propósito
+            const boxes = pieces.filter(p => !p.file.startsWith('prop:') && !p.file.includes('mobiliario/toldo')).map(p => {
+                const { w, d } = pieceFootprint(p);
+                return { p, x0: p.x - w / 2, x1: p.x + w / 2, z0: p.z - d / 2, z1: p.z + d / 2 };
+            });
+            for (let i = 0; i < boxes.length; i++) {
+                for (let j = i + 1; j < boxes.length; j++) {
+                    const a = boxes[i], b = boxes[j];
+                    const ox = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0);
+                    const oz = Math.min(a.z1, b.z1) - Math.max(a.z0, b.z0);
+                    if (ox > 0.03 && oz > 0.03) overlaps.push(`${id} fase ${stage}: ${a.p.file} (${a.p.x}, ${a.p.z}) × ${b.p.file} (${b.p.x}, ${b.p.z}) — ${ox.toFixed(2)} × ${oz.toFixed(2)}`);
+                }
+            }
+        });
+    }
+    assert.deepStrictEqual(overlaps, []);
+});
+
 test('crescimento: ZONE_GROWTH coerente (3 durações, 4 escalas crescentes até 1, 4 nomes)', () => {
     assert.strictEqual(GROWTH.stageMs.length, 3);
     GROWTH.stageMs.forEach(ms => assert.ok(ms >= 15000 && ms <= 60000, `fase de ${ms} ms fora de 15-60 s`));

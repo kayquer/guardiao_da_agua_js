@@ -10,7 +10,10 @@
  *   look     onde procurar no mapa (a dica da página apagada)
  *   note     o que a Márcia anota: por que esse bicho é um sinal
  *   help     o que a cidade pode fazer para ele ficar
- *   kit      true = modelo do Kit Fauna Ameaçada (ficha com a fonte do Livro Vermelho)
+ *   kit      true = modelo do Kit Fauna Ameaçada
+ * A fonte da ficha vem da situação (status): ameaçada = Livro Vermelho; LC = espécie comum. A figura é o render do
+ * próprio modelo (assets/images/fauna/<id>.webp, scripts/fauna-thumbs.js). A bacia em que cada um aparece fica no
+ * prop (props.js `basins`); o caderno só lista os bichos da bacia da partida.
  * As faixas de poluição vêm do próprio prop (cleanBelow), para o caderno nunca contradizer o mapa.
  */
 const FIELD_NOTEBOOK_STATUS = {
@@ -58,12 +61,6 @@ const FIELD_NOTEBOOK = {
         note: 'Peixe de couro, sem escamas, com bigodes compridos. Só existe num rio do mundo, e precisa de água corrente e com oxigênio.',
         help: 'Tratar o esgoto e evitar a terra que desce das ruas sem calçamento.'
     },
-    boto_vermelho: {
-        name: 'Boto-vermelho', sci: 'Inia geoffrensis', icon: '🐬', status: 'EN', size: 'até 2,5 m', kit: true,
-        habitat: 'Rios da Amazônia', look: 'nadando no rio',
-        note: 'É um golfinho de água doce, cor-de-rosa. Usa sons para achar peixes na água barrenta. Precisa de rio com muito peixe.',
-        help: 'Rio limpo e cheio de peixes: o boto come o que o rio oferece.'
-    },
     pato_mergulhao: {
         name: 'Pato-mergulhão', sci: 'Mergus octosetaceus', icon: '🦆', status: 'CR', size: 'cerca de 55 cm', kit: true,
         habitat: 'Rios de água limpa e corrente do Cerrado', look: 'mergulhando no rio',
@@ -71,8 +68,8 @@ const FIELD_NOTEBOOK = {
         help: 'Poluição bem baixa e muita árvore na margem.'
     },
     vitoria_regia: {
-        name: 'Vitória-régia', sci: 'Victoria amazonica', icon: '🪷', status: 'LC', size: 'folhas de até 2 m',
-        habitat: 'Lagos e águas calmas da Amazônia', look: 'boiando nas águas calmas',
+        name: 'Vitória-régia', sci: 'Victoria cruziana', icon: '🪷', status: 'LC', size: 'folhas de até 1,5 m',
+        habitat: 'Lagoas e águas calmas do Pantanal e da bacia do Paraná', look: 'boiando nas águas calmas',
         note: 'Planta aquática que gosta de água limpa e calma. Água turva demais não deixa a luz chegar, e ela não cresce.',
         help: 'Evitar a terra e o esgoto que deixam a água turva.'
     },
@@ -111,12 +108,6 @@ const FIELD_NOTEBOOK = {
         habitat: 'Rios do Pantanal e da Amazônia', look: 'na margem do rio',
         note: 'Vive em família e caça peixes juntos. Faz tocas no barranco da margem. Já sumiu de muitos rios do Brasil.',
         help: 'Rio cheio de peixe e barranco com mata, sem erosão.'
-    },
-    cobra_dagua: {
-        name: 'Cobra-d’água-grande', sci: 'Hydrodynastes melanogigas', icon: '🐍', status: 'EN', size: 'até 2,5 m', kit: true,
-        habitat: 'Brejos e rios do Tocantins', look: 'na beira do rio',
-        note: 'Nada bem e caça peixes e sapos na água rasa. Se o rio perde os peixes e os sapos, ela perde a comida.',
-        help: 'Água limpa para os peixes e sapos que ela come.'
     },
 
     // ===== Mata e campo =====
@@ -191,5 +182,42 @@ const FIELD_NOTEBOOK = {
         habitat: 'Várzeas e brejos alagados', look: 'na várzea perto do rio',
         note: 'O maior cervo da América do Sul. Vive onde o chão fica alagado parte do ano: precisa de várzea preservada.',
         help: 'Não construir na várzea (a planície que alaga).'
+    },
+    // ===== Bichos de cada bioma (11/2026) =====
+    boto_cinza: {
+        name: 'Boto-cinza', sci: 'Sotalia guianensis', icon: '🐬', status: 'VU', size: 'até 2 m', kit: true,
+        habitat: 'Estuários, baías e foz de rios do litoral brasileiro', look: 'nadando perto da foz do rio',
+        note: 'Golfinho pequeno que vive onde o rio encontra o mar. Come peixes que só existem em água limpa, então esgoto e lixo na foz o afastam.',
+        help: 'Tratar o esgoto antes que ele chegue ao mar e cuidar do mangue.'
+    },
+    guaiamum: {
+        name: 'Guaiamum', sci: 'Cardisoma guanhumi', icon: '🦀', status: 'CR', size: 'cerca de 30 cm com as patas', kit: true,
+        habitat: 'Mangues e restingas do litoral', look: 'nas tocas da margem',
+        note: 'Caranguejo azul que cava tocas na lama do mangue. Foi tão caçado e perdeu tanto mangue que está quase sumindo.',
+        help: 'Não aterrar a margem e deixar a vegetação da beira do rio e do mangue em pé.'
+    },
+    muriqui_do_sul: {
+        name: 'Muriqui-do-sul', sci: 'Brachyteles arachnoides', icon: '🐒', status: 'EN', size: 'até 1,6 m com a cauda', kit: true,
+        habitat: 'Mata Atlântica das serras de São Paulo e do Paraná', look: 'perto da mata na encosta',
+        note: 'O maior macaco das Américas, pacífico e brincalhão. Precisa de muita mata contínua, porque come folhas e frutos de muitas árvores.',
+        help: 'Não derrubar a mata da serra e plantar árvores ligando os pedaços.'
+    },
+    arara_azul_de_lear: {
+        name: 'Arara-azul-de-lear', sci: 'Anodorhynchus leari', icon: '🦜', status: 'EN', size: 'cerca de 72 cm', kit: true,
+        habitat: 'Caatinga do norte da Bahia', look: 'pousada perto dos paredões',
+        note: 'Come os cocos da palmeira licuri e dorme em paredões de pedra. Quase sumiu, e voltou a crescer com a proteção da caatinga.',
+        help: 'Guardar a caatinga e as palmeiras de licuri.'
+    },
+    tatu_bola: {
+        name: 'Tatu-bola', sci: 'Tolypeutes tricinctus', icon: '🦔', status: 'EN', size: 'cerca de 35 cm', kit: true,
+        habitat: 'Caatinga e Cerrado do Nordeste', look: 'no campo seco, longe da cidade',
+        note: 'Quando se assusta, fecha a carapaça e vira uma bola. Só existe no Brasil e sofre com a caça e a perda da caatinga.',
+        help: 'Deixar a caatinga em pé longe da cidade.'
+    },
+    jacucaca: {
+        name: 'Jacucaca', sci: 'Penelope jacucaca', icon: '🐦', status: 'VU', size: 'cerca de 70 cm', kit: true,
+        habitat: 'Caatinga', look: 'andando no chão da caatinga',
+        note: 'Parente do jacu, come frutos e sementes e ajuda a plantar a caatinga. Some onde a mata seca é derrubada.',
+        help: 'Manter a caatinga e o ar limpos.'
     }
 };

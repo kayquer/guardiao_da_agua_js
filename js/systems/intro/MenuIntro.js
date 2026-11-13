@@ -164,6 +164,22 @@ const MenuIntro = {
         el.classList.add('is-on');
     },
 
+    /**
+     * A escolha de bacia (js/ui/BasinPicker.js) cobre a tela com a maquete dela: a cidade de fundo para de desenhar
+     * enquanto isso (duas engines ao mesmo tempo gastavam a placa à toa) e volta se o jogador desistir.
+     */
+    pauseRendering() {
+        if (!this.cinematic?.rendering) return;
+        this.pausedForOverlay = true;
+        this.cinematic.stopRendering();
+    },
+
+    resumeRendering() {
+        if (!this.pausedForOverlay) return;
+        this.pausedForOverlay = false;
+        this.cinematic?.startRendering();
+    },
+
     /** Ao iniciar/continuar o jogo: some com tudo da abertura (a cena do jogo é outra engine). */
     dispose() {
         this.unbindSkip();

@@ -54,9 +54,10 @@ mixin(UIManager, {
     /** Bicho que o jogador ainda não registrou chegou: a Márcia dá a pista, sem contar quem é. */
     hintNewSpecies({ id, cell }) {
         const e = FieldNotebook.entry(id);
-        this.showNotification(`🔎 Márcia: tem um bicho diferente ${e.look}! Toque nele no mapa para anotar no caderno.`, 'info', 9000, {
+        this.showNotification(`Márcia: tem um bicho diferente ${e.look}! Toque nele no mapa para anotar no caderno.`, 'info', 9000, {
+            icon: 'status-info',
             className: 'toast--notebook',
-            actions: [{ label: '🔎 Ver onde', onClick: () => this.lookAtNotebookCell(cell) }]
+            actions: [{ label: 'Ver onde', onClick: () => this.lookAtNotebookCell(cell) }]
         });
         if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_notification', 0.5);
         if (typeof ResearchLog !== 'undefined') ResearchLog.record('notebook', { target: id, value: 'sighted' });
@@ -64,7 +65,12 @@ mixin(UIManager, {
 
     fieldText(id) {
         const e = FieldNotebook.entry(id);
-        return `${e.icon} Márcia: ${e.name} voltou, ${e.look}! É o rio dizendo que a água melhorou.`;
+        return `Márcia: ${e.name} voltou, ${e.look}! É o rio dizendo que a água melhorou.`;
+    },
+
+    /** Figura da espécie (render do próprio modelo, assets/images/fauna/<id>.webp) — sem emoji. */
+    speciesImage(id, cls = 'nb-img') {
+        return `<img class="${cls}" src="assets/images/fauna/${id}.webp" alt="" aria-hidden="true" draggable="false">`;
     },
 
     celebrateFieldReturn({ id, cell }) {
@@ -74,12 +80,12 @@ mixin(UIManager, {
         this.showNotification(this.fieldText(id), 'success', 9000, {
             className: 'toast--notebook',
             actions: [
-                { label: '🔎 Ver onde', onClick: () => this.lookAtNotebookCell(cell) },
-                { label: '📓 Ficha', onClick: () => this.openSpeciesCard(id) }
+                { label: 'Ver onde', onClick: () => this.lookAtNotebookCell(cell) },
+                { label: 'Ficha', onClick: () => this.openSpeciesCard(id) }
             ]
         });
         if (typeof AudioManager !== 'undefined') {
-            AudioManager.playSound('sfx_achievement', 0.6);
+            AudioManager.playSound('sfx_discovery', 0.8); // som de descoberta (arpejo de sino)
             setTimeout(() => AudioManager.onSpeaker?.('marcia', 'happy'), 600);
         }
         if (typeof ResearchLog !== 'undefined') ResearchLog.record('notebook', { target: id, value: 'returned' });
@@ -93,7 +99,7 @@ mixin(UIManager, {
     warnFieldLoss(id) {
         const e = FieldNotebook.entry(id);
         if (!e) return;
-        this.showNotification(`${e.icon} Secretário Paulo: ${e.name} sumiu ${e.look}. Bicho sumindo é sinal de que a água piorou.`, 'warning', 7000);
+        this.showNotification(`Secretário Paulo: ${e.name} sumiu ${e.look}. Bicho sumindo é sinal de que a água piorou.`, 'warning', 7000, { icon: 'status-warning' });
         if (typeof ResearchLog !== 'undefined') ResearchLog.record('notebook', { target: id, value: 'gone' });
     },
 
@@ -116,15 +122,25 @@ mixin(UIManager, {
         gm.deselectBuilding?.();
         gm.propSystem.selectSpecies(hit.key);
         const isNew = gm.fieldNotebook?.register(hit.id, gm.gameTime || 0) || false;
-        this.openSpeciesCard(hit.id, { isNew });
+        // com um alerta central aberto, a ficha espera ele fechar (antes abria por cima dele)
+        if (document.querySelector('.central-alert-overlay')?.getClientRects().length) this.pendingSpeciesCard = { id: hit.id, isNew };
+        else this.openSpeciesCard(hit.id, { isNew });
         if (typeof AudioManager !== 'undefined') {
             if (isNew) {
-                AudioManager.playSound('sfx_achievement', 0.6);
+                AudioManager.playSound('sfx_discovery', 0.8); // som de descoberta (arpejo de sino)
                 setTimeout(() => AudioManager.onSpeaker?.('marcia', 'happy'), 500);
             } else AudioManager.playSound('sfx_click', 0.5);
         }
         if (isNew && typeof ResearchLog !== 'undefined') ResearchLog.record('notebook', { target: hit.id, value: 'registered' });
         return true;
+    },
+
+    /** Chamado pelo UIManager.update: abre a ficha que esperava o alerta central fechar. */
+    flushSpeciesCard() {
+        if (!this.pendingSpeciesCard || document.querySelector('.central-alert-overlay')?.getClientRects().length) return;
+        const { id, isNew } = this.pendingSpeciesCard;
+        this.pendingSpeciesCard = null;
+        this.openSpeciesCard(id, { isNew });
     },
 
     // ===== Ficha da espécie (#species-card, popup que pausa) =====
@@ -139,7 +155,7 @@ mixin(UIManager, {
         card.setAttribute('aria-labelledby', 'species-card-name');
         card.hidden = true;
         card.innerHTML = `<div class="sc-box">
-            <div class="sc-new" id="species-card-new" hidden>✨ Nova espécie no caderno!</div>
+            <div class="sc-new" id="species-card-new" hidden>Nova espécie no caderno!</div>
             <div class="sc-head">
                 <span class="sc-icon" id="species-card-icon" aria-hidden="true"></span>
                 <div class="sc-title">
@@ -149,11 +165,11 @@ mixin(UIManager, {
                 <span class="sc-status" id="species-card-status"></span>
             </div>
             <dl class="sc-facts" id="species-card-facts"></dl>
-            <div class="sc-note"><b>📓 Márcia anotou:</b> <span id="species-card-note"></span></div>
-            <div class="sc-help"><b>🌱 Como ajudar:</b> <span id="species-card-help"></span></div>
+            <div class="sc-note"><b>Márcia anotou:</b> <span id="species-card-note"></span></div>
+            <div class="sc-help"><b>Como ajudar:</b> <span id="species-card-help"></span></div>
             <small class="sc-source" id="species-card-source"></small>
             <div class="sc-buttons">
-                <button type="button" class="overlay-btn" id="species-card-notebook">📓 Ver caderno</button>
+                <button type="button" class="overlay-btn" id="species-card-notebook">Ver caderno</button>
                 <button type="button" class="overlay-btn primary" id="species-card-close">Fechar</button>
             </div>
         </div>`;
@@ -178,23 +194,24 @@ mixin(UIManager, {
         const set = (sel, text) => { card.querySelector(sel).textContent = text; };
         this.speciesCardId = id;
         card.querySelector('#species-card-new').hidden = !isNew;
-        set('#species-card-icon', e.icon);
+        card.querySelector('#species-card-icon').innerHTML = this.speciesImage(id, 'sc-img');
         set('#species-card-name', e.name);
         set('#species-card-sci', e.sci);
         const pill = card.querySelector('#species-card-status');
         pill.textContent = status.label;
         pill.className = `sc-status sc-status--${e.status}`;
         const facts = [
-            ['📏 Tamanho', e.size],
-            ['🗺️ Onde vive', e.habitat],
-            ['🔎 No mapa', here ? `agora, ${e.look}` : `sumiu (${e.look})`],
-            range ? ['💧 Aparece com', `poluição abaixo de ${range.gone}; fica à vontade abaixo de ${range.full}`] : null
+            ['Tamanho', e.size],
+            ['Onde vive', e.habitat],
+            ['No mapa', here ? `agora, ${e.look}` : `sumiu (${e.look})`],
+            range ? ['Aparece com', `poluição abaixo de ${range.gone}; fica à vontade abaixo de ${range.full}`] : null
         ].filter(Boolean);
         card.querySelector('#species-card-facts').innerHTML = facts.map(([k, v]) => `<dt>${k}</dt><dd>${escapeHtml(v)}</dd>`).join('');
         set('#species-card-note', e.note);
         set('#species-card-help', e.help);
-        set('#species-card-source', e.kit
-            ? 'Situação: Livro Vermelho da Fauna Brasileira Ameaçada de Extinção (ICMBio, 2018). Modelo: Kit Fauna Ameaçada Low Poly (CC0).'
+        // a fonte segue a situação (antes seguia o kit do modelo, e o tamanduá "Vulnerável" aparecia como "fora da lista")
+        set('#species-card-source', FieldNotebook.isThreatened(id)
+            ? 'Situação: Livro Vermelho da Fauna Brasileira Ameaçada de Extinção (ICMBio, 2018).'
             : 'Espécie comum no Brasil, fora da lista de ameaçadas.');
         card.hidden = false;
         card.querySelector('#species-card-close').focus();
@@ -264,7 +281,7 @@ mixin(UIManager, {
                 ? (range ? `Aparece com a poluição abaixo de ${range.gone}.` : '')
                 : `Procure ${e.look}${nearby ? ' — tem um por perto agora!' : '.'}`;
             return `<li class="nb-entry nb-${status}${nearby ? ' nb-nearby' : ''}${id === focusId ? ' nb-focus' : ''}" data-species="${id}"${known ? ' tabindex="0" role="button"' : ''}>
-                <span class="nb-icon" aria-hidden="true">${known ? e.icon : `<span class="nb-shadow">${e.icon}</span><span class="nb-q">?</span>`}</span>
+                <span class="nb-icon" aria-hidden="true">${known ? this.speciesImage(id) : `${this.speciesImage(id, 'nb-img nb-shadow')}<span class="nb-q">?</span>`}</span>
                 <div class="nb-text">
                     <b>${known ? e.name : '???'}</b> <span class="nb-status">${labels[status]}</span>
                     ${known ? `<i class="nb-sci">${e.sci}</i><p>${e.note}</p>` : ''}

@@ -66,6 +66,11 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         gm.uiManager.generatePlantedTreeStats(building);
         gm.uiManager.plantedTreesLine();
 
+        // ui/TerrainHealthUI (o fluxo completo está em tests/terrain.spec.js): saúde do lugar no painel de terreno
+        ui.showTerrainInfo(s.x, s.z, 'grassland');
+        ui.updateTerrainHealthPanel();
+        ui.hideTerrainInfo();
+
         // core/game/CameraGuard
         gm.validateCameraStateWithBreaker();
         gm.getCameraState();

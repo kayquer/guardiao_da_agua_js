@@ -1,0 +1,564 @@
+/* =========================================================================
+   "Onde fica a sua cidade?" — carrossel de bacias (js/ui/BasinPicker.js, modo loja)
+   Tela cheia sobre o menu: cartão em foco grande no meio, vizinhos menores dos lados (--bp-off = distância
+   circular ao foco, --bp-drag = arrasto do dedo/mouse). Maquete 3D no cartão em foco (.bp-canvas,
+   js/systems/ui/BasinPreview.js), foto nos outros (.bp-shot). Ícones SVG animados = classes bpi-* (basinIcons.js).
+   Sem emoji. prefers-reduced-motion: sem transições nem ícones animados (a maquete também para de girar).
+   ========================================================================= */
+
+.basin-picker {
+    --bp-card-w: min(580px, 84vw);
+    --bp-step: calc(var(--bp-card-w) * 0.88);
+    --bp-view-h: clamp(130px, 30vh, 290px);
+    --bp-ink: #15324e;
+    --bp-muted: #49647d;
+
+    position: fixed;
+    inset: 0;
+    z-index: 9000; /* acima das telas, abaixo dos diálogos (SweetAlert 20000) e do aviso inicial */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    color: #f4fbff;
+    font-family: 'M PLUS Rounded 1c', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    isolation: isolate;
+}
+
+.basin-picker.is-open { opacity: 1; }
+.basin-picker.is-closing { opacity: 0; pointer-events: none; }
+
+.bp-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+        radial-gradient(ellipse 70% 55% at 50% 42%, rgba(33, 191, 239, 0.3), transparent 72%),
+        radial-gradient(ellipse 50% 40% at 15% 100%, rgba(72, 221, 250, 0.16), transparent 70%),
+        linear-gradient(180deg, rgba(6, 26, 62, 0.93), rgba(2, 10, 28, 0.97));
+    backdrop-filter: blur(10px);
+}
+
+/* ===== CABEÇALHO ===== */
+.bp-header {
+    text-align: center;
+    padding: clamp(14px, 3.2vh, 34px) 16px 0;
+}
+
+.bp-title {
+    margin: 0;
+    font-family: 'Lilita One', 'M PLUS Rounded 1c', sans-serif;
+    font-weight: 400;
+    font-size: clamp(26px, 3.6vw, 44px);
+    line-height: 1.1;
+    letter-spacing: 0.01em;
+    color: #ffffff;
+    text-shadow: 0 3px 0 rgba(0, 0, 0, 0.28), 0 0 24px rgba(72, 221, 250, 0.35);
+}
+
+.bp-subtitle {
+    margin: 6px auto 0;
+    max-width: 640px;
+    font-size: clamp(14px, 1.3vw, 17px);
+    line-height: 1.4;
+    color: rgba(226, 244, 255, 0.86);
+}
+
+/* ===== PALCO E CARTÕES ===== */
+.bp-stage {
+    position: relative;
+    grid-row: 2;
+    grid-column: 1;
+    min-height: 0;
+    overflow: hidden;
+    touch-action: pan-y;
+    user-select: none;
+}
+
+.bp-track {
+    position: absolute;
+    inset: 0;
+}
+
+.bp-card {
+    --bp-accent: #21bfef;
+    --bp-land: #5b994c;
+    --bp-scale: 1;
+
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--bp-card-w);
+    max-height: calc(100% - 20px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 26px;
+    background: linear-gradient(180deg, #ffffff 0%, #f2f9fc 100%);
+    color: var(--bp-ink);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.25);
+    transform: translate(-50%, -50%) translateX(calc(var(--bp-off, 0) * var(--bp-step) + var(--bp-drag, 0px))) scale(var(--bp-scale));
+    transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease, filter 0.4s ease, box-shadow 0.4s ease;
+    will-change: transform;
+}
+
+.bp-card.is-focus {
+    z-index: 3;
+    box-shadow:
+        0 28px 70px rgba(0, 0, 0, 0.5),
+        0 0 0 3px var(--bp-accent),
+        0 0 46px color-mix(in srgb, var(--bp-accent) 45%, transparent);
+}
+
+.bp-card.is-side {
+    --bp-scale: 0.8;
+    z-index: 2;
+    opacity: 0.55;
+    filter: saturate(0.75) brightness(0.92);
+    cursor: pointer;
+}
+
+.bp-card.is-side:hover { opacity: 0.75; }
+
+.bp-card.is-far {
+    --bp-scale: 0.62;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.bp-card.no-anim,
+.basin-picker.is-dragging .bp-card {
+    transition: none;
+}
+
+.basin-picker.is-dragging .bp-stage { cursor: grabbing; }
+
+/* Maquete 3D (canvas no cartão em foco) ou a foto dela; sem WebGL, o ícone grande da bacia */
+.bp-view {
+    position: relative;
+    flex: none;
+    height: var(--bp-view-h);
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse 60% 70% at 50% 110%, color-mix(in srgb, var(--bp-land) 35%, transparent), transparent 70%),
+        linear-gradient(180deg, color-mix(in srgb, var(--bp-accent) 42%, #a9dcff) 0%, #dff3ff 62%, #f6fbff 100%);
+}
+
+.bp-view__fallback {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    transition: opacity 0.5s ease;
+}
+
+.bp-view__fallback svg {
+    width: auto;
+    height: 62%;
+    filter: drop-shadow(0 6px 10px rgba(0, 40, 80, 0.2));
+}
+
+.bp-view.has-shot .bp-view__fallback,
+.bp-view:has(.bp-canvas) .bp-view__fallback { opacity: 0; }
+
+.bp-shot,
+.bp-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    outline: none;
+}
+
+.bp-shot { object-fit: cover; }
+.bp-shot[hidden] { display: none !important; }
+
+/* Foto embaixo do canvas: some só quando o canvas cobre (sem piscar na troca) */
+.bp-canvas { z-index: 1; }
+
+.bp-badge {
+    position: absolute;
+    z-index: 2;
+    top: 12px;
+    left: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px 5px 8px;
+    border-radius: 999px;
+    background: #ffd23f;
+    color: #4a3300;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    box-shadow: 0 3px 0 #d9a400, 0 6px 14px rgba(0, 0, 0, 0.2);
+}
+
+.bp-badge svg { width: 16px; height: 16px; color: #b57a00; }
+
+/* ===== TEXTO DO CARTÃO ===== */
+.bp-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+    padding: 14px 22px 20px;
+    overflow-y: auto;
+}
+
+.bp-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bp-head__icon {
+    flex: none;
+    width: 46px;
+    height: 46px;
+    margin-top: -34px; /* sobe por cima da borda da maquete, como um selo */
+    padding: 5px;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 40, 80, 0.22), 0 0 0 2px var(--bp-accent);
+    position: relative;
+    z-index: 2;
+}
+
+.bp-head__icon svg { width: 100%; height: 100%; display: block; border-radius: 10px; }
+
+.bp-name {
+    margin: 0;
+    font-family: 'Lilita One', 'M PLUS Rounded 1c', sans-serif;
+    font-weight: 400;
+    font-size: clamp(22px, 2.1vw, 28px);
+    line-height: 1.1;
+    color: var(--bp-ink);
+}
+
+.bp-desc {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--bp-muted);
+}
+
+.bp-traits {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 2px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.bp-trait {
+    --bp-trait: #1187d9;
+    --bp-trait-bg: #e2f2fd;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 8px 10px;
+    border-radius: 14px;
+    background: #f3f9fc;
+    border: 1px solid #dcebf3;
+}
+
+.bp-trait--relief { --bp-trait: #2f7a3f; --bp-trait-bg: #e1f2dc; }
+.bp-trait--climate { --bp-trait: #c06a0a; --bp-trait-bg: #ffefd6; }
+.bp-trait--water { --bp-trait: #0f74c0; --bp-trait-bg: #dff0fd; }
+.bp-trait--challenge { --bp-trait: #b23a7c; --bp-trait-bg: #fbe5f1; }
+
+.bp-trait__icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: var(--bp-trait-bg);
+    color: var(--bp-trait);
+}
+
+.bp-trait__icon svg { width: 24px; height: 24px; overflow: visible; }
+
+.bp-trait__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.bp-trait__text b {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bp-trait);
+}
+
+.bp-trait__text span {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--bp-ink);
+}
+
+.bp-play {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 52px;
+    margin-top: 4px;
+    padding: 8px 28px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #3fd0f5 0%, #1187d9 100%);
+    box-shadow: 0 4px 0 #0b5c9e, 0 10px 22px rgba(17, 135, 217, 0.35);
+    color: #ffffff;
+    font-family: 'Lilita One', 'M PLUS Rounded 1c', sans-serif;
+    font-size: 21px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.bp-play svg { width: 20px; height: 20px; }
+
+.bp-card.is-focus .bp-play:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 6px 0 #0b5c9e, 0 14px 26px rgba(17, 135, 217, 0.45); }
+.bp-play:active { transform: translateY(2px); box-shadow: 0 2px 0 #0b5c9e, 0 6px 14px rgba(17, 135, 217, 0.3); }
+.bp-card:not(.is-focus) .bp-play { filter: grayscale(0.4); opacity: 0.7; }
+
+.basin-picker.is-chosen .bp-card.is-focus .bp-play { filter: brightness(1.15); }
+
+/* ===== NAVEGAÇÃO: setas dos lados do palco (desktop), pontos embaixo ===== */
+.bp-nav {
+    display: contents;
+}
+
+.bp-arrow {
+    grid-row: 2;
+    grid-column: 1;
+    align-self: center;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border: 2px solid rgba(255, 255, 255, 0.55);
+    border-radius: 50%;
+    background: rgba(8, 63, 138, 0.72);
+    color: #ffffff;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.bp-arrow svg { width: 26px; height: 26px; }
+.bp-arrow:hover { background: rgba(17, 135, 217, 0.92); border-color: #ffffff; transform: scale(1.06); }
+.bp-arrow:active { transform: scale(0.96); }
+
+/* Na borda do cartão em foco, metade para fora */
+.bp-arrow--prev { justify-self: start; margin-left: max(12px, calc(50vw - var(--bp-card-w) / 2 - 28px)); }
+.bp-arrow--next { justify-self: end; margin-right: max(12px, calc(50vw - var(--bp-card-w) / 2 - 28px)); }
+
+.bp-dots {
+    grid-row: 3;
+    grid-column: 1;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 6px 0 2px;
+}
+
+.bp-dot {
+    width: 12px;
+    height: 12px;
+    padding: 0;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-radius: 999px;
+    background: transparent;
+    cursor: pointer;
+    transition: width 0.3s ease, background 0.3s ease;
+}
+
+.bp-dot.is-on {
+    width: 34px;
+    background: #48ddfa;
+    border-color: #48ddfa;
+}
+
+/* ===== RODAPÉ ===== */
+.bp-footer {
+    grid-row: 4;
+    grid-column: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: min(var(--bp-card-w), 100% - 32px);
+    margin: 0 auto;
+    padding: 8px 0 clamp(12px, 2.6vh, 26px);
+}
+
+.bp-back {
+    min-height: 44px;
+    padding: 6px 22px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.bp-back:hover { background: rgba(255, 255, 255, 0.18); border-color: #ffffff; }
+
+.bp-keys {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(226, 244, 255, 0.72);
+}
+
+.bp-keys kbd {
+    display: inline-block;
+    min-width: 24px;
+    padding: 1px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-bottom-width: 3px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12px;
+    text-align: center;
+    color: #ffffff;
+}
+
+.bp-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* Foco visível em tudo que é botão (teclado) */
+.basin-picker button:focus-visible {
+    outline: 3px solid #ffd23f;
+    outline-offset: 3px;
+}
+
+/* ===== ÍCONES ANIMADOS (basinIcons.js) — só no cartão em foco ===== */
+.basin-picker svg * { transform-box: fill-box; }
+.basin-picker .bpi-spin,
+.basin-picker .bpi-sway { transform-box: view-box; } /* origem em px do viewBox (style no SVG) */
+
+.bpi-flow { animation: bpi-flow 1.8s linear infinite; }
+.bpi-drift { animation: bpi-drift 4.5s ease-in-out infinite alternate; }
+.bpi-drip { animation: bpi-drip 1.8s ease-in infinite; }
+.bpi-wave { animation: bpi-wave 3.2s linear infinite; }
+.bpi-wave--2 { animation-duration: 4.4s; animation-direction: reverse; }
+.bpi-wave--3 { animation-duration: 5.6s; }
+.bpi-spin { animation: bpi-spin 14s linear infinite; }
+.bpi-sway { animation: bpi-sway 3.2s ease-in-out infinite alternate; }
+.bpi-pulse { animation: bpi-pulse 2.6s ease-in-out infinite; transform-origin: center; }
+.bpi-rain { animation: bpi-rain 1.1s linear infinite; }
+.bpi-rain--2 { animation-delay: -0.37s; }
+.bpi-rain--3 { animation-delay: -0.74s; }
+.bpi-rise { animation: bpi-rise 2.8s ease-in-out infinite alternate; }
+.bpi-flicker { animation: bpi-flicker 0.9s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+.bpi-slosh { animation: bpi-slosh 2.6s linear infinite; }
+.bpi-flag { animation: bpi-flag 1.5s ease-in-out infinite alternate; transform-origin: 0 50%; }
+
+.bp-card:not(.is-focus) [class*="bpi-"] { animation-play-state: paused; }
+
+@keyframes bpi-flow { to { stroke-dashoffset: -20; } }
+@keyframes bpi-drift { from { transform: translateX(-3px); } to { transform: translateX(4px); } }
+@keyframes bpi-drip {
+    0% { transform: translateY(0); opacity: 0; }
+    15% { opacity: 1; }
+    100% { transform: translateY(16px); opacity: 0; }
+}
+@keyframes bpi-wave { from { transform: translateX(0); } to { transform: translateX(16px); } }
+@keyframes bpi-spin { to { transform: rotate(360deg); } }
+@keyframes bpi-sway { from { transform: rotate(-2.5deg); } to { transform: rotate(2.5deg); } }
+@keyframes bpi-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes bpi-rain {
+    0% { transform: translateY(-2px); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translateY(4px); opacity: 0; }
+}
+@keyframes bpi-rise { from { transform: translateY(1.6px); } to { transform: translateY(-1.6px); } }
+@keyframes bpi-flicker {
+    from { transform: scale(1, 0.92) skewX(-2deg); }
+    to { transform: scale(0.96, 1.06) skewX(2deg); }
+}
+@keyframes bpi-slosh { from { transform: translateX(0); } to { transform: translateX(-12px); } }
+@keyframes bpi-flag { from { transform: skewY(-5deg); } to { transform: skewY(4deg); } }
+
+/* ===== TELAS MENORES ===== */
+@media (max-height: 700px) and (min-width: 769px) {
+    .basin-picker { --bp-view-h: clamp(110px, 24vh, 200px); }
+    .bp-subtitle { display: none; }
+    .bp-body { gap: 8px; padding: 12px 20px 16px; }
+    .bp-desc { font-size: 14px; }
+}
+
+@media (max-width: 768px) {
+    .basin-picker {
+        --bp-card-w: 86vw;
+        --bp-step: calc(var(--bp-card-w) * 0.92);
+        --bp-view-h: clamp(110px, 21vh, 180px);
+    }
+
+    .bp-header { padding-top: 14px; }
+    .bp-subtitle { font-size: 13px; }
+
+    .bp-card { border-radius: 22px; }
+    .bp-card.is-side { --bp-scale: 0.86; opacity: 0.45; }
+    .bp-body { gap: 8px; padding: 12px 14px 14px; }
+    .bp-head__icon { width: 40px; height: 40px; margin-top: -30px; }
+    .bp-desc { font-size: 13.5px; line-height: 1.4; }
+    .bp-traits { gap: 6px; }
+    .bp-trait { gap: 7px; padding: 6px 7px; }
+    .bp-trait__icon { width: 30px; height: 30px; border-radius: 10px; }
+    .bp-trait__icon svg { width: 20px; height: 20px; }
+    .bp-trait__text b { font-size: 10px; }
+    .bp-trait__text span { font-size: 12.5px; }
+    .bp-play { min-height: 46px; font-size: 19px; }
+
+    /* Setas viram uma linha com os pontos, embaixo do cartão */
+    .bp-nav {
+        grid-row: 3;
+        grid-column: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        padding: 4px 0 0;
+    }
+
+    .bp-arrow { width: 44px; height: 44px; margin: 0; }
+    .bp-arrow svg { width: 22px; height: 22px; }
+    .bp-dots { padding: 0; }
+    .bp-keys { display: none; }
+    .bp-footer { justify-content: center; padding-bottom: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .basin-picker,
+    .bp-card,
+    .bp-dot,
+    .bp-view__fallback,
+    .bp-play,
+    .bp-arrow { transition: none; }
+    .basin-picker [class*="bpi-"] { animation: none !important; }
+}

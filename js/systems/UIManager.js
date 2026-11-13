@@ -608,6 +608,13 @@ class UIManager {
             this.updateIdleHints(); // dica durante a espera (ui/IdleHints.js)
             this.tickSimulatedWeather(); // clima simulado muda a cada hora de jogo (ui/WeatherUI.js)
         }
+
+        // Saúde do lugar no painel de terreno aberto: ao vivo, 1×/s (ui/TerrainHealthUI.js)
+        this.terrainHealthTimer = (this.terrainHealthTimer || 0) + deltaTime;
+        if (this.terrainHealthTimer >= 1000) {
+            this.terrainHealthTimer = 0;
+            this.updateTerrainHealthPanel?.();
+        }
     }
 
     // Livro de aulas, central de aulas, tutorial (story ou coach) ou livro de estudo visível
@@ -659,6 +666,7 @@ class UIManager {
     syncPopupPause() {
         const gm = this.gameManager;
         if (!gm?.holdPause) return;
+        this.flushSpeciesCard?.(); // ficha de espécie que esperava o alerta central (ui/FieldNotebookUI.js)
         if (this.isInfoPopupOpen()) gm.holdPause('popup');
         else gm.releasePause('popup');
     }
@@ -2466,7 +2474,10 @@ class UIManager {
     // ===== TERRAIN INFORMATION DISPLAY =====
     showTerrainInfo(gridX, gridZ, terrainType) {
         try {
-            if (this.gameManager?.gameState === 'playing') AudioManager.onSelect(terrainType === 'water' ? 'river' : 'soil');
+            // Saúde do lugar (ui/TerrainHealthUI.js): o som de seleção também conta como ele está
+            const health = this.getTerrainHealth?.(gridX, gridZ);
+            const playing = this.gameManager?.gameState === 'playing';
+            if (playing) this.playTerrainSelectSound(terrainType, health);
             // Clear any existing panels
             this.closeCurrentPanel();
 
@@ -2487,6 +2498,7 @@ class UIManager {
                             <h5>${terrain.name}</h5>
                             <span class="terrain-coords">Posição: (${gridX}, ${gridZ})</span>
                         </div>
+                        ${this.renderTerrainHealth?.(gridX, gridZ, health) || ''}
                         <p class="terrain-description">${description}</p>
                         <ol class="terrain-sequence" aria-label="Do rio ao planalto">
                             ${sequence.map(key => `<li class="${key === zone ? 'here' : ''}">${TERRAIN_INFO[key].name}</li>`).join('')}
@@ -2509,8 +2521,8 @@ class UIManager {
             this.updatePanelState('terrain'); // FIX: Use updatePanelState
             this.showHudRight();
 
-            // Audio feedback
-            if (typeof AudioManager !== 'undefined') {
+            // Fora do jogo (tutorial congelado): só o clique, sem o som do lugar
+            if (!playing && typeof AudioManager !== 'undefined') {
                 AudioManager.playSound('sfx_click', 0.4);
             }
 

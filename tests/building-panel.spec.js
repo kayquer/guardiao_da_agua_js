@@ -245,11 +245,11 @@ test('guia de energia: a primeira falta de energia abre a Cláudia no lugar do a
     await page.click('#tutorial-next-btn');
     await expect(title).toHaveText('O que acontece agora');
     await page.click('#tutorial-next-btn');
-    await expect(title).toHaveText('O vento pode ajudar');
+    await expect(title).toHaveText('O sol pode ajudar'); // começar pelo sol: o jeito mais barato hoje
     await page.click('#tutorial-next-btn');
-    await expect(title).toHaveText('Construa um Campo Eólico');
+    await expect(title).toHaveText('Construa Telhados Solares');
     await expect(page.locator('#tutorial-next-btn')).toBeDisabled(); // espera a obra (ou "Fazer depois")
-    await expect(page.locator('.building-item[data-building-type="wind_farm"]')).toBeVisible();
+    await expect(page.locator('.building-item[data-building-type="solar_rooftop"]')).toBeVisible();
 
     await page.click('#tutorial-skip-btn'); // "Fazer depois" conta como visto
     await expect(page.locator('#tutorial-container')).toBeHidden();

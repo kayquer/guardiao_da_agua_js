@@ -28,16 +28,19 @@ class TreeSystem {
         const trunkMat = new BABYLON.StandardMaterial('treeTrunkMat', this.scene);
         trunkMat.diffuseColor = new BABYLON.Color3(0.42, 0.27, 0.14);
         trunkMat.specularColor = BABYLON.Color3.Black();
-        const leaf = (name, r, g, b) => {
+        // Copas pela bacia (Basin.palette().trees: caatinga cinza-esverdeada, serra mais escura…); sem Basin = vale
+        const crowns = (typeof Basin !== 'undefined' && Basin.palette().trees) || {};
+        const leaf = (name, rgb, fallback) => {
+            const [r, g, b] = Array.isArray(rgb) ? rgb : fallback;
             const mat = new BABYLON.StandardMaterial(name, this.scene);
             mat.diffuseColor = new BABYLON.Color3(r, g, b);
             mat.specularColor = BABYLON.Color3.Black();
             return mat;
         };
         return [
-            this.createTreeTemplate('treeRound', { crown: 1.3, trunk: 0.7, crownY: 1.15 }, trunkMat, leaf('treeLeafMat', 0.22, 0.58, 0.2)),
-            this.createTreeTemplate('treeDark', { crown: 1.0, trunk: 0.6, crownY: 0.95 }, trunkMat, leaf('treeLeafDarkMat', 0.13, 0.42, 0.16)),
-            this.createTreeTemplate('treePine', { crown: 1.0, trunk: 0.5, crownY: 1.1, pine: true }, trunkMat, leaf('treePineMat', 0.1, 0.36, 0.2))
+            this.createTreeTemplate('treeRound', { crown: 1.3, trunk: 0.7, crownY: 1.15 }, trunkMat, leaf('treeLeafMat', crowns.round, [0.22, 0.58, 0.2])),
+            this.createTreeTemplate('treeDark', { crown: 1.0, trunk: 0.6, crownY: 0.95 }, trunkMat, leaf('treeLeafDarkMat', crowns.dark, [0.13, 0.42, 0.16])),
+            this.createTreeTemplate('treePine', { crown: 1.0, trunk: 0.5, crownY: 1.1, pine: true }, trunkMat, leaf('treePineMat', crowns.pine, [0.1, 0.36, 0.2]))
         ];
     }
 

@@ -374,9 +374,11 @@ class TutorialSystem {
         {
             group: 'missions', mode: 'coach', character: 'Claudia', icon: '🏗️',
             title: 'Atalho para construir',
-            text: 'Viu o <b>🏗️ ›</b> numa meta? <b>Clique na meta</b> e eu te levo direto ao prédio na aba de construções!',
+            text: 'Viu o <b>🏗️ ›</b> numa meta? <b>Clique na meta</b> e eu te levo direto ao prédio na aba de construções! Pode construir ali mesmo (a obra começa assim que o tutorial terminar) e depois clique em <b>Próximo</b>.',
             targets: ['.mission-details .mission-goal.goal-link', '.mission-details .mission-goals', '.hud-right'],
-            advanceOnClick: true
+            // sem advanceOnClick: clicar na meta abria o menu na Bomba e o passo seguinte o fechava na mesma hora
+            // (o jogador via "construa a bomba" e não conseguia); agora ele constrói ou fecha e segue no Próximo
+            nextLabel: 'Próximo'
         },
         {
             group: 'missions', mode: 'coach', character: 'Claudia', icon: '💧',
@@ -711,7 +713,18 @@ class TutorialSystem {
         const step = this.isActive ? this.steps[this.currentStep] : null;
         if (!step) return true;
         if (step.waitForCategory) return this.gameManager.buildingSystem.buildingTypes.get(buildingTypeId)?.category === step.waitForCategory;
+        // Tour das missões: o atalho da meta leva ao prédio dela, então ele pode ser construído ali mesmo (antes o
+        // tutorial levava até a Bomba de Água e depois dizia "ainda não é hora de construir isso")
+        if (step.group === 'missions' && this.isMissionGoalBuilding(buildingTypeId)) return true;
         return buildingTypeId === step.waitFor;
+    }
+
+    /** Algum objetivo `build` ainda não cumprido das missões ativas pede este prédio? */
+    isMissionGoalBuilding(buildingTypeId) {
+        const qs = this.gameManager.questSystem;
+        if (!qs?.activeQuests) return false;
+        return [...qs.activeQuests].some(id => (qs.quests.get(id)?.objectives || [])
+            .some(o => o.type === 'build' && o.target === buildingTypeId && (o.current || 0) < o.required));
     }
 
     stepWantsBuilding(step, building) {
@@ -1249,13 +1262,13 @@ TutorialSystem.GUIDES = [
         steps: [
             { title: 'Faltou energia!', expression: 'worried', text: '{nome}, a cidade está gastando mais energia do que produz. <b>Geração</b> é o que as usinas produzem; <b>consumo</b> é o que bombas, estações de tratamento e zonas gastam.', targets: ['.resource-item:has(#electricity-amount)', '#compact-energy'] },
             { title: 'O que acontece agora', text: 'Com menos energia do que precisa, <b>todos os prédios trabalham mais devagar</b>: a eficiência cai, as bombas tiram menos água, o tratamento limpa menos e os moradores ficam insatisfeitos.' },
-            { title: 'O vento pode ajudar', text: 'Um <b>Campo Eólico</b> transforma vento em energia: o vento gira as pás, as pás giram um gerador e a energia vai pelos fios até a cidade. Não polui a água nem o ar!<img src="assets/images/studies/parque-eolico.webp" alt="Campo eólico: o vento gira as pás e o gerador manda energia para a cidade" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin:8px 0;"/>' },
+            { title: 'O sol pode ajudar', text: 'O jeito mais barato de começar é o sol: <b>Telhados Solares</b> põem painéis nos telhados das casas, e a luz vira eletricidade sem fumaça. De noite e com nuvem eles geram menos; depois você pode somar vento, rio e baterias.<img src="assets/images/studies/parque-eolico.webp" alt="Energia limpa: painéis e turbinas mandam energia para a cidade" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin:8px 0;"/>' },
             {
-                title: 'Construa um Campo Eólico', waitFor: 'wind_farm',
-                text: 'Abra <b>⚡ Energia</b> e construa um <b>Campo Eólico</b>. Está bloqueado? Clique nele para <b>estudar</b> e liberar. Sem dinheiro agora? Use <b>Fazer depois</b>.',
-                placingHint: '👆 Escolha um terreno livre: encostas também servem, lá venta mais!',
+                title: 'Construa Telhados Solares', waitFor: 'solar_rooftop',
+                text: 'Abra <b>⚡ Energia</b> e construa <b>Telhados Solares</b>. Sem dinheiro agora? Use <b>Fazer depois</b>.',
+                placingHint: '👆 Escolha um terreno livre perto da cidade.',
                 enter: gm => gm.uiManager.uiState.currentCategory !== 'power' && gm.uiManager.selectCategory('power'),
-                targets: TutorialSystem.buildTargets('wind_farm', 'power', 'o 💨 Campo Eólico')
+                targets: TutorialSystem.buildTargets('solar_rooftop', 'power', 'os Telhados Solares')
             },
             { title: 'Energia a caminho!', expression: 'happy', text: 'Quando a obra terminar, a geração sobe e a eficiência volta a <b>100%</b>. Dica: gere sempre um pouco <b>mais</b> do que a cidade usa, porque cada obra nova aumenta o consumo.', targets: ['.resource-item:has(#electricity-amount)', '#compact-energy'] }
         ]

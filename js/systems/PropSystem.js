@@ -92,8 +92,26 @@ class PropSystem {
             pollution: res?.pollution?.current || 0,
             sewage: population >= 40 && !hasETE,
             deforestation,
-            quality: gm.graphicsQuality || (typeof GraphicsQuality !== 'undefined' ? GraphicsQuality.current() : 'high')
+            quality: gm.graphicsQuality || (typeof GraphicsQuality !== 'undefined' ? GraphicsQuality.current() : 'high'),
+            basin: typeof Basin !== 'undefined' ? Basin.id() : undefined,
+            ecology: this.getEcology()
         };
+    }
+
+    /**
+     * Recuperação da bacia (0-1) para os bichos ameaçados chegarem: metade pelo tempo de jogo com o rio cheio
+     * (QuestSystem.trackTimers.riverS, ≥ 70% — 12 min = cheio) e metade pela mata ciliar plantada (mudas prontas e
+     * parques lineares na beira da água — 10 = cheio). Cresce com o cuidado mantido, não com um pico.
+     */
+    getEcology() {
+        const gm = this.gameManager;
+        const riverMin = (gm.questSystem?.trackTimers?.riverS || 0) / 60;
+        let riparian = 0;
+        gm.buildingSystem?.buildings?.forEach(b => {
+            if (b.underConstruction || !['tree_sapling', 'linear_park'].includes(b.type)) return;
+            if (gm.treeSystem?.isRiparianCell?.(b.gridX, b.gridZ)) riparian += b.type === 'linear_park' ? 2 : 1;
+        });
+        return Math.min(1, 0.5 * Math.min(1, riverMin / 12) + 0.5 * Math.min(1, riparian / 10));
     }
 
     static keyOf(p) {
@@ -304,7 +322,9 @@ class PropSystem {
             const species = typeof FieldNotebook !== 'undefined' && FieldNotebook.entry(p.id) ? p.id : null;
             inst.isPickable = !!species;
             inst.metadata = { props: true, species, propKey: key };
-            this.movers.set(key, { p, inst, base, height: (g.height || 1) * p.scale });
+            // quanto o bicho pode passear sem sair da célula (e entrar numa casa ou rua vizinha)
+            const wander = Math.max(0, Math.min(1, (0.96 - p.scale / 2 - Math.max(Math.abs(p.ox), Math.abs(p.oz))) / 0.28));
+            this.movers.set(key, { p, inst, base, wander, height: (g.height || 1) * p.scale });
         });
     }
 
@@ -322,7 +342,7 @@ class PropSystem {
         const wind = 1 + this.windFactor();
         const yawTo = (dx, dz) => Math.atan2(-dx, -dz); // frente do modelo (-Z) apontando para (dx, dz)
         this.movers.forEach(m => {
-            const { p, inst, base } = m;
+            const { p, inst, base, wander = 1 } = m;
             const ph = p.phase || 0;
             let x = base.x, y = base.y, z = base.z, yaw = p.rot, rx = 0, rz = 0;
             switch (p.motion) {
@@ -344,7 +364,7 @@ class PropSystem {
                 case 'graze': {
                     // passeia devagar perto do ponto (Lissajous) e para de vez em quando para comer
                     const s = t * 0.12;
-                    const ex = Math.sin(s + ph) * 0.28, ez = Math.sin(s * 1.37 + ph * 2) * 0.22;
+                    const ex = Math.sin(s + ph) * 0.28 * wander, ez = Math.sin(s * 1.37 + ph * 2) * 0.22 * wander;
                     const vx = Math.cos(s + ph), vz = 1.37 * Math.cos(s * 1.37 + ph * 2) * 0.8;
                     x += ex;
                     z += ez;
