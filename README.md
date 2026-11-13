@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <a href="https://kayquer.github.io/guardiao_da_agua_js/"><img src="https://img.shields.io/badge/%E2%96%B6%20JOGAR%20AGORA-no%20navegador-00b4d8?style=for-the-badge&labelColor=0b3d6b" alt="Jogar agora no navegador" height="44"></a>
+  <a href="https://kayquer.github.io/guardiao_da_agua_js/evolucao-pesquisa/"><img src="https://img.shields.io/badge/%E2%96%B6%20JOGAR%20AGORA-vers%C3%A3o%20evolu%C3%A7%C3%A3o-00b4d8?style=for-the-badge&labelColor=0b3d6b" alt="Jogar agora no navegador (versão evolução)" height="44"></a>
 </p>
 
 <p align="center">
@@ -48,7 +48,14 @@
 
 ## ▶ Jogar
 
-> ### 👉 **[kayquer.github.io/guardiao_da_agua_js](https://kayquer.github.io/guardiao_da_agua_js/)**
+> ### 👉 **[kayquer.github.io/guardiao_da_agua_js/evolucao-pesquisa](https://kayquer.github.io/guardiao_da_agua_js/evolucao-pesquisa/)**
+>
+> Esta é a **versão evolução** (branch `evolucao-pesquisa`), que abre no modo loja: estudo opcional, cadastro só com
+> apelido, escolha do mapa e sem coleta de dados. A mesma versão no **modo pesquisa** (estudo e prova obrigatórios,
+> mapa fixo e registro da pesquisa) abre em
+> [kayquer.github.io/guardiao_da_agua_js/evolucao-pesquisa/?modo=pesquisa](https://kayquer.github.io/guardiao_da_agua_js/evolucao-pesquisa/?modo=pesquisa).
+> A versão usada na pesquisa de mestrado (branch `main`) continua em
+> [kayquer.github.io/guardiao_da_agua_js](https://kayquer.github.io/guardiao_da_agua_js/).
 >
 > Abre direto no navegador, sem instalar nada e sem cadastro. Funciona melhor num **computador com teclado e mouse**
 > (Chrome, Edge ou Firefox atualizados). Abre no celular, mas nesta fase da pesquisa o uso no celular não é recomendado.
@@ -193,7 +200,7 @@ Ferramentas extras: `npm run screenshots` (foto de cada prédio) e `node scripts
 |---|---|
 | 3D | [Babylon.js](https://www.babylonjs.com/) 9.31 (WebGL) |
 | Interface | HTML, CSS e JavaScript sem framework e sem build |
-| Modelos 3D | Modelos próprios gerados por scripts Python no [Blender](https://www.blender.org/) + [Kenney City Kits](https://kenney.nl/) (CC0) |
+| Modelos 3D | Modelos próprios gerados por scripts Python no [Blender](https://www.blender.org/): [Kit Prédios Brasil](https://github.com/kayquer/kit-predios-brasil-lowpoly), [Kit Props Brasil](https://github.com/kayquer/kit-props-brasil-lowpoly) e [Kit Fauna Ameaçada](https://github.com/kayquer/kit-fauna-ameacada-lowpoly) (CC0) |
 | Clima | [Open-Meteo](https://open-meteo.com/) (previsão e geocodificação) |
 | Municípios | [API de localidades do IBGE](https://servicodados.ibge.gov.br/api/docs/localidades) |
 | Diálogos | [SweetAlert2](https://sweetalert2.github.io/) |
@@ -214,7 +221,7 @@ tests/              unitários (tests/unit) e E2E (Playwright)
 
 - **Pesquisa e conteúdo educativo**: Cláudia Dias Roxinol (Unesp).
 - **Desenvolvimento**: Kayque Rotondo.
-- **Modelos 3D**: [Kenney](https://kenney.nl/) (City Kits, licença CC0) e modelos próprios em Blender.
+- **Modelos 3D**: modelos próprios em Blender, publicados em domínio público (CC0): [Kit Prédios Brasil Low Poly](https://github.com/kayquer/kit-predios-brasil-lowpoly) (casas, comércio, galpões e prédios públicos), [Kit Props Brasil Low Poly](https://github.com/kayquer/kit-props-brasil-lowpoly) e [Kit Fauna Ameaçada Low Poly](https://github.com/kayquer/kit-fauna-ameacada-lowpoly).
 - **Música**: trilha original gerada com Google Lyria 3; **efeitos sonoros**: ElevenLabs Sound Effects (prompts em `Sounds/_prompts.json`).
 - **Ilustrações e retratos**: imagens próprias geradas por IA (prompts em `assets/images/_prompts.json`).
 - **Dados abertos**: Open-Meteo e IBGE.
@@ -245,7 +252,7 @@ Um jogo educativo gratuito de construção de cidade, em português, sobre o uso
 Para estudantes do 6º ano do Ensino Fundamental (Anos Finais), com cerca de 11 anos de idade e mediação de um professor.
 
 **Precisa instalar ou pagar?**
-Não. Abre no navegador em [kayquer.github.io/guardiao_da_agua_js](https://kayquer.github.io/guardiao_da_agua_js/) e é de código aberto.
+Não. Esta versão abre no navegador em [kayquer.github.io/guardiao_da_agua_js/evolucao-pesquisa](https://kayquer.github.io/guardiao_da_agua_js/evolucao-pesquisa/) (a da pesquisa de mestrado em [kayquer.github.io/guardiao_da_agua_js](https://kayquer.github.io/guardiao_da_agua_js/)) e é de código aberto.
 
 **Funciona no celular?**
 Abre, mas nesta fase o jogo foi feito para computador com teclado e mouse, que é o recomendado.
