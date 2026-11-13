@@ -301,11 +301,15 @@ mixin(BuildingSystem, {
         return Number.isFinite(building?.damageFactor) && building.damageFactor < 1;
     },
 
-    /** Metade do custo do prédio × fração perdida (dano 0,2 → 10% do custo), arredondado em R$ 100. */
+    /**
+     * Metade do custo do prédio × fração perdida (dano 0,2 → 10% do custo), arredondado em R$ 100. Com a reserva de
+     * conserto ("Não fazer nada" numa ameaça, EventSystem.isRepairReserveActive), metade disso.
+     */
     getRepairCost(building) {
         if (!this.isBuildingDamaged(building)) return 0;
         const lost = 1 - building.damageFactor;
-        return Math.max(100, Math.round((building.config?.cost || 0) * lost * 0.5 / 100) * 100);
+        const reserve = this.gameManager?.eventSystem?.isRepairReserveActive?.() ? 0.5 : 1;
+        return Math.max(100, Math.round((building.config?.cost || 0) * lost * 0.5 * reserve / 100) * 100);
     },
 
     /** Paga o conserto e devolve a eficiência total. false se não estiver danificado ou faltar dinheiro. */

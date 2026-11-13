@@ -91,16 +91,48 @@ test('missões liberam em sequência pelos pré-requisitos dos dados (não todas
     qs.completeQuest('energy_01');
     assert.deepStrictEqual([...qs.activeQuests], ['story_chain_01_01']);
     qs.completeQuest('story_chain_01_01');
-    assert.ok(qs.activeQuests.has('tutorial_02'));
-    assert.ok(!qs.activeQuests.has('story_chain_01_02'), 'só uma secundária por vez: a outra espera na fila');
+    // até duas secundárias ao mesmo tempo (3ª auditoria: com uma só, a campanha ramificada virava fila)
+    assert.ok(qs.activeQuests.has('tutorial_02') && qs.activeQuests.has('story_chain_01_02'), [...qs.activeQuests].join());
     assert.ok(!qs.activeQuests.has('main_01'));
 
     qs.completeQuest('tutorial_02');
-    assert.strictEqual(qs.activeQuests.size, 1, 'a próxima da fila começa quando a vaga abre');
-    for (let i = 0; i < 3 && qs.activeQuests.size; i++) qs.completeQuest([...qs.activeQuests][0]);
+    assert.strictEqual(qs.activeQuests.size, 2, 'a próxima da fila começa quando a vaga abre');
+    for (let i = 0; i < 4 && qs.activeQuests.size; i++) {
+        qs.completeQuest([...qs.activeQuests][0]);
+        const count = qs.activeCountByCategory();
+        assert.ok(count.primary <= 1 && count.secondary <= 2, JSON.stringify(count));
+        const crises = [...qs.activeQuests].filter(id => qs.quests.get(id)?.startEvent);
+        assert.ok(crises.length <= 1, `uma crise por vez: ${crises.join()}`);
+    }
     assert.ok(!qs.activeQuests.has('main_01'), 'Cidade Sustentável vem depois do comércio (campanha ampliada)');
-    const count = qs.activeCountByCategory();
-    assert.ok(count.primary <= 1 && count.secondary <= 1, JSON.stringify(count));
+});
+
+test("'survival' conta só com a crise da missão ativa, não o tempo de aviso", () => {
+    const { qs } = setup();
+    qs.gameManager.gameTime = 0;
+    const es = { activeEvents: new Map(), pendingEvents: [], eventTypes: new Map([['flood', { name: 'Enchente' }]]) };
+    qs.gameManager.eventSystem = es;
+    const quest = activate(qs, 'challenge_03');
+    const objective = quest.objectives.find(o => o.type === 'survival');
+    es.pendingEvents.push({ type: 'flood', remainingTime: 45000, awaiting: false });
+    qs.checkObjectiveProgress(objective, quest);
+    qs.gameManager.gameTime += 60000; // um minuto de aviso: a meta não anda
+    assert.strictEqual(qs.checkObjectiveProgress(objective, quest), 0);
+    assert.strictEqual(objective.waitingS, 45);
+    es.pendingEvents.length = 0;
+    es.activeEvents.set('e1', { type: 'flood' });
+    qs.checkObjectiveProgress(objective, quest);
+    qs.gameManager.gameTime += 30000;
+    assert.strictEqual(qs.checkObjectiveProgress(objective, quest), 30, 'só os 30 s com a enchente ativa');
+    es.activeEvents.clear(); // a enchente acabou antes: atravessou
+    assert.strictEqual(qs.checkObjectiveProgress(objective, quest), objective.required);
+});
+
+test('3ª estrela da missão 1 não depende da energia (missão seguinte)', () => {
+    const { qs } = setup();
+    qs.gameManager.resourceManager.getBasinReport = () => [{ id: 'water', level: 'good' }, { id: 'energy', level: 'bad' }];
+    assert.strictEqual(qs.isCityHealthy(qs.quests.get('tutorial_01')), true);
+    assert.strictEqual(qs.isCityHealthy(qs.quests.get('energy_01')), false);
 });
 
 test("'sustained' conta segundos de jogo, não chamadas (quadros)", () => {
@@ -165,4 +197,40 @@ test('Crise Hídrica falha quando a água está secando sem produção (antes de
     qs.gameManager.resourceManager.updateConsumption();
     qs.updateQuestProgress('challenge_01', 16);
     assert.strictEqual(qs.quests.get('challenge_01').status, 'failed');
+});
+
+test('tipos novos de objetivo: boas decisões, chão coberto e rio durante a crise', () => {
+    const { qs, resources } = setup();
+    // 'decisions': conta só as boas decisões depois que a missão começou
+    const es = { responseStats: { good: 4 }, activeEvents: new Map(), pendingEvents: [] };
+    qs.gameManager.eventSystem = es;
+    const q1 = activate(qs, 'story_chain_01_02');
+    const decisions = q1.objectives.find(o => o.type === 'decisions');
+    assert.strictEqual(qs.checkObjectiveProgress(decisions, q1), 0, 'as 4 de antes não contam');
+    es.responseStats.good = 5;
+    assert.strictEqual(qs.checkObjectiveProgress(decisions, q1), 1);
+
+    // 'impervious': asfalto conta inteiro, zona leve pela fração coberta, muda não cobre nada
+    const city = [
+        { config: { roadType: 'paved', runoffImpervious: 1 } },
+        { config: { size: 2, runoffImpervious: 0.1 } },
+        { config: { size: 1, plantedTree: true } }
+    ];
+    qs.gameManager.buildingSystem.getAllBuildings = () => city;
+    assert.strictEqual(Math.round(qs.getImperviousShare()), Math.round((1 + 0.4) / 6 * 100));
+    const q2 = activate(qs, 'story_chain_01_04');
+    const sponge = q2.objectives.find(o => o.type === 'impervious');
+    assert.strictEqual(qs.checkObjectiveProgress(sponge, q2), sponge.required, 'abaixo do limite = cumprida');
+    city.push(...Array.from({ length: 10 }, () => ({ config: { roadType: 'paved', runoffImpervious: 1 } })));
+    assert.ok(qs.checkObjectiveProgress(sponge, q2) < sponge.required, 'asfalto demais');
+
+    // 'hold': só vale com a seca da missão ativa
+    const q3 = activate(qs, 'challenge_01');
+    const hold = q3.objectives.find(o => o.type === 'hold');
+    resources.water.river = 10;
+    qs.checkObjectiveProgress(hold, q3);
+    assert.ok(!hold.violated, 'sem a seca ativa, rio baixo não conta');
+    es.activeEvents.set('d', { type: 'drought' });
+    qs.checkObjectiveProgress(hold, q3);
+    assert.ok(hold.violated, 'com a seca ativa e o rio abaixo de 30%');
 });

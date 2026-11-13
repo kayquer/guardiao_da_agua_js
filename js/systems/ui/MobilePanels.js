@@ -275,13 +275,13 @@ mixin(UIManager, {
                     ${buildingType.powerGeneration ? `
                         <div class="stat-item">
                             <span class="stat-label">⚡ Geração de Energia:</span>
-                            <span class="stat-value">${buildingType.powerGeneration} MW</span>
+                            <span class="stat-value">${buildingType.powerGeneration} kW</span>
                         </div>
                     ` : ''}
                     ${buildingType.powerConsumption ? `
                         <div class="stat-item">
                             <span class="stat-label">🔌 Consumo de Energia:</span>
-                            <span class="stat-value">${buildingType.powerConsumption} MW</span>
+                            <span class="stat-value">${buildingType.powerConsumption} kW</span>
                         </div>
                     ` : ''}
                 </div>

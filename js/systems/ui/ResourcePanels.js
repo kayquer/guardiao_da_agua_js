@@ -356,16 +356,16 @@ mixin(UIManager, {
                 <div class="resource-summary">
                     <div class="resource-stat">
                         <span class="stat-label">Geração:</span>
-                        <span class="stat-value positive">+${this.formatNumber(electricity.generation, 1)} MW</span>
+                        <span class="stat-value positive">+${this.formatNumber(electricity.generation, 1)} kW</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Consumo:</span>
-                        <span class="stat-value negative">-${this.formatNumber(electricity.consumption, 1)} MW</span>
+                        <span class="stat-value negative">-${this.formatNumber(electricity.consumption, 1)} kW</span>
                     </div>
                     <div class="resource-stat">
                         <span class="stat-label">Saldo:</span>
                         <span class="stat-value ${electricity.generation - electricity.consumption >= 0 ? 'positive' : 'negative'}">
-                            ${electricity.generation - electricity.consumption >= 0 ? '+' : ''}${this.formatNumber(electricity.generation - electricity.consumption, 1)} MW
+                            ${electricity.generation - electricity.consumption >= 0 ? '+' : ''}${this.formatNumber(electricity.generation - electricity.consumption, 1)} kW
                         </span>
                     </div>
                     <div class="resource-stat">
@@ -383,7 +383,7 @@ mixin(UIManager, {
             // marcava até o campo eólico como não renovável
             detailsHTML += this.renderBuildingGroups(powerGenerators,
                 b => b.isRented ? 0 : b.config.powerGeneration * (b.efficiency ?? 1),
-                (total, count) => `${count > 1 ? 'gerando ' : ''}+${this.formatNumber(total, 1)} MW`, 'building-production',
+                (total, count) => `${count > 1 ? 'gerando ' : ''}+${this.formatNumber(total, 1)} kW`, 'building-production',
                 b => `<span class="renewable-indicator ${b.config.renewable ? 'is-renewable' : 'is-fossil'}">${b.config.renewable ? '🌱 Renovável' : '🏭 Não renovável'}</span>`);
         } else {
             detailsHTML += '<p class="no-sources">Nenhuma fonte de energia ativa</p>';
@@ -392,7 +392,7 @@ mixin(UIManager, {
         if (powerConsumers.length > 0) {
             detailsHTML += '<h5>🔌 Consumidores de Energia</h5>' + this.renderBuildingGroups(powerConsumers,
                 powerOf,
-                (total, count) => `${count > 1 ? 'usando ' : ''}-${this.formatNumber(total, 1)} MW`, 'building-consumption');
+                (total, count) => `${count > 1 ? 'usando ' : ''}-${this.formatNumber(total, 1)} kW`, 'building-consumption');
         }
 
         detailsHTML += '</div></div>';

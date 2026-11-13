@@ -30,7 +30,7 @@ class ResourceManager {
             },
             population: {
                 current: GAME_CONFIG.resources.initialPopulation,
-                max: 1000,
+                max: ResourceManager.BASE_POPULATION_CAPACITY, // era 1000: o HUD do tutorial mostrava "30/1000 ✕"
                 growth: 0,
                 satisfaction: GAME_CONFIG.resources.initialSatisfaction,
                 buildingSatisfaction: 0 // soma bruta dos satisfactionBonus dos prédios prontos
@@ -313,10 +313,16 @@ class ResourceManager {
             population.growth = -0.02; // Declínio padrão
         }
 
-        // Aplicar crescimento limitado pela capacidade
-        const newPopulation = population.current * (1 + population.growth / 100);
+        // Aplicar crescimento limitado pela capacidade. Quem chega: % da cidade ou, numa cidade pequena, pelo menos
+        // MOVE_IN_PER_S famílias (senão 30 moradores levavam 20 min para encher uma zona). O piso é a população inicial:
+        // era Math.max(100, …) com 30 de início — a cidade pulava para 100 em 3 s e a meta "50 moradores" nascia cumprida.
         const oldPopulation = population.current;
-        population.current = Math.max(100, Math.min(population.max, newPopulation));
+        let newPopulation = population.current * (1 + population.growth / 100);
+        if (population.growth > 0 && population.current < population.max) {
+            newPopulation = population.current + Math.max(population.current * population.growth / 100,
+                ResourceManager.MOVE_IN_PER_S * (population.growth / 0.1));
+        }
+        population.current = Math.max(ResourceManager.MIN_POPULATION, Math.min(population.max, newPopulation));
         
         if (oldPopulation !== population.current) {
             this.invalidateConsumptionCache();
@@ -350,8 +356,11 @@ class ResourceManager {
         log(`👥 Capacidade populacional atualizada: ${totalCapacity}`);
     }
 
-    // 100 (era 500): sem casas a cidade quase não tem onde morar; quem traz moradores são as zonas residenciais
-    static BASE_POPULATION_CAPACITY = 100;
+    // 40 (era 500, depois 100): as casas que a cidade já tem — 30 moradores e lugar para mais 10. Quem traz moradores
+    // são as zonas residenciais (a meta "50 moradores" da missão 2 só se cumpre com a zona pronta)
+    static BASE_POPULATION_CAPACITY = 40;
+    static MOVE_IN_PER_S = 0.1; // famílias que chegam por segundo com a cidade atraente (6 por minuto)
+    static get MIN_POPULATION() { return GAME_CONFIG.resources.initialPopulation; } // a cidade nunca esvazia abaixo de quem já morava
 
     /**
      * Os fatores que decidem se gente nova chega (os mesmos de calculatePopulationAttraction e updatePopulation),
@@ -1133,7 +1142,7 @@ class ResourceManager {
             },
             population: {
                 current: GAME_CONFIG.resources.initialPopulation,
-                max: 1000,
+                max: ResourceManager.BASE_POPULATION_CAPACITY, // era 1000: o HUD do tutorial mostrava "30/1000 ✕"
                 growth: 0,
                 satisfaction: GAME_CONFIG.resources.initialSatisfaction,
                 buildingSatisfaction: 0
@@ -1169,25 +1178,25 @@ class ResourceManager {
     // ===== ENERGIA =====
     addElectricityGeneration(amount) {
         this.resources.electricity.generation += amount;
-        log(`⚡ Geração de energia +${amount} MW`);
+        log(`⚡ Geração de energia +${amount} kW`);
         this.updateElectricity(); // eficiência em dia já para quem lê logo depois (ex.: alerta pós-construção)
     }
 
     removeElectricityGeneration(amount) {
         this.resources.electricity.generation = Math.max(0, this.resources.electricity.generation - amount);
-        log(`⚡ Geração de energia -${amount} MW`);
+        log(`⚡ Geração de energia -${amount} kW`);
         this.updateElectricity(); // eficiência em dia já para quem lê logo depois (ex.: alerta pós-construção)
     }
 
     addElectricityConsumption(amount) {
         this.resources.electricity.consumption += amount;
-        log(`⚡ Consumo de energia +${amount} MW`);
+        log(`⚡ Consumo de energia +${amount} kW`);
         this.updateElectricity(); // eficiência em dia já para quem lê logo depois (ex.: alerta pós-construção)
     }
 
     removeElectricityConsumption(amount) {
         this.resources.electricity.consumption = Math.max(0, this.resources.electricity.consumption - amount);
-        log(`⚡ Consumo de energia -${amount} MW`);
+        log(`⚡ Consumo de energia -${amount} kW`);
         this.updateElectricity(); // eficiência em dia já para quem lê logo depois (ex.: alerta pós-construção)
     }
 

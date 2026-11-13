@@ -105,7 +105,7 @@ const FIELD_NOTEBOOK = {
     },
     ariranha: {
         name: 'Ariranha', sci: 'Pteronura brasiliensis', icon: '🦦', status: 'VU', size: 'até 1,7 m', kit: true,
-        habitat: 'Rios do Pantanal e da Amazônia', look: 'na margem do rio',
+        habitat: 'Rios do Pantanal e da Amazônia (já viveu também nos rios da bacia do Paraná)', look: 'na margem do rio',
         note: 'Vive em família e caça peixes juntos. Faz tocas no barranco da margem. Já sumiu de muitos rios do Brasil.',
         help: 'Rio cheio de peixe e barranco com mata, sem erosão.'
     },

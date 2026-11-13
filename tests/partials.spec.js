@@ -89,6 +89,12 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         gm.uiManager.openNotebookPanel();
         gm.uiManager.closeNotebookPanel({ focus: false });
 
+        // ui/CityDiaryUI (o fluxo completo está em tests/city-story.spec.js)
+        gm.cityDiary.check(gm);
+        gm.uiManager.openDiaryPanel();
+        gm.uiManager.renderDiarySummary();
+        gm.uiManager.closeDiaryPanel({ focus: false });
+
         // ui/MissionUI
         const qs = gm.questSystem;
         qs.openMissionInterface();

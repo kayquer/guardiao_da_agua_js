@@ -416,11 +416,14 @@ mixin(AudioManager, {
             if (item) this.playSound('sfx_ui_hover', 0.7);
         }, { passive: true });
 
-        // Q/E giram a câmera
+        // Teclas de girar a câmera (Q/E ou as que o jogador escolheu: InputBindings)
         document.addEventListener('keydown', event => {
             if (event.repeat || this.director.screen !== 'game-screen') return;
             if (event.target?.closest?.('input, textarea, select, [contenteditable]')) return;
-            if (event.code === 'KeyQ' || event.code === 'KeyE') this.playSound('sfx_camera_rotate');
+            if (window.gameManager?.uiManager?.keyCapture) return;
+            const action = typeof InputBindings !== 'undefined' ? InputBindings.actionFor(event.code)
+                : (event.code === 'KeyQ' ? 'rotateLeft' : event.code === 'KeyE' ? 'rotateRight' : null);
+            if (action === 'rotateLeft' || action === 'rotateRight') this.playSound('sfx_camera_rotate');
         });
     },
 

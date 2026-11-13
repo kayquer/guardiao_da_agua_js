@@ -128,7 +128,7 @@ for (const width of [769, 800, 900, 999, 1000, 1100, 1200, 1280, 1366, 1440, 160
             gm.tutorialSystem.complete();
             gm.holdPause('teste');
             gm.uiManager.setText = () => {};
-            const values = { 'budget-amount': 'R$ 2.500.000', 'water-amount': '20.000L', 'population-count': '12.000', 'electricity-amount': '6000 MW', 'pollution-level': '100%', 'satisfaction-level': '100%', 'player-name': 'Guardião Maximiliano' };
+            const values = { 'budget-amount': 'R$ 2.500.000', 'water-amount': '20.000L', 'population-count': '12.000', 'electricity-amount': '6000 kW', 'pollution-level': '100%', 'satisfaction-level': '100%', 'player-name': 'Guardião Maximiliano' };
             for (const [id, text] of Object.entries(values)) document.getElementById(id).textContent = text;
             const bar = document.querySelector('.hud-top');
             const b = bar.getBoundingClientRect();

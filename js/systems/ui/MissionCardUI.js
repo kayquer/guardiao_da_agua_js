@@ -54,7 +54,7 @@ mixin(UIManager, {
         diff('jobCapacity', '💼 Empregos', '', true);
         diff('incomeGeneration', '💵 Renda', ' R$/min', true);
         diff('satisfactionBonus', '😊 Satisfação', '', true);
-        diff('powerConsumption', '⚡ Energia gasta', ' MW', false);
+        diff('powerConsumption', '⚡ Energia gasta', ' kW', false);
         diff('waterConsumption', '🚰 Água gasta', ' L/min', false);
         diff('pollutionGeneration', '🏭 Poluição', '/min', false);
         const runoff = n(to, 'runoffImpervious') - n(from, 'runoffImpervious');
@@ -142,13 +142,13 @@ mixin(UIManager, {
         });
         const missed = goals.filter((_, i) => !results[i]);
         // A estrela da bacia diz qual item derrubou (mesmo critério do quadro "Como está a bacia" logo abaixo)
-        const sick = !results[results.length - 1] ? (this.gameManager.questSystem?.getUnhealthyItems?.() || []) : [];
+        const sick = !results[results.length - 1] ? (this.gameManager.questSystem?.getUnhealthyItems?.(quest) || []) : [];
         const why = sick.length ? ` (${sick.map(i => `${i.label.toLowerCase()} em ${i.text}`).join(', ')})` : '';
         const tip = missed.length
             ? `<p class="mission-card-tip">${uiIcon('status-tip')} Na próxima missão, para 3 estrelas: ${missed[0].charAt(0).toLowerCase() + missed[0].slice(1)}${missed[0] === goals[goals.length - 1] ? why : ''}.</p>`
             : `<p class="mission-card-tip perfect">${uiIcon('status-star')} Três estrelas! A cidade terminou a missão em ótima forma.</p>`;
         const praise = ['Missão cumprida!', 'Muito bem!', 'Excelente!'][stars - 1];
-        const basin = this.renderBasinReport();
+        const basin = this.renderBasinReport(quest);
         this.openMissionCard({
             kicker: `${praise} ${PlayerProfile.displayName()}, você concluiu:`,
             title: PlayerProfile.personalize(quest.title),
@@ -168,8 +168,11 @@ mixin(UIManager, {
      * "Como está a bacia" (ResourceManager.getBasinReport): aquífero, rio, esgoto e energia com símbolo além da cor
      * (✓ bem, ! atenção, ✕ mal) e a dica do primeiro que vai mal. É o retorno por conceito, não só pelas estrelas.
      */
-    renderBasinReport() {
-        const report = this.gameManager.resourceManager?.getBasinReport?.();
+    renderBasinReport(quest = null) {
+        const ignore = new Set(quest?.stars?.ignore || []);
+        // item que a missão ainda não ensinou (stars.ignore) aparece neutro: "vem na próxima missão"
+        const report = (this.gameManager.resourceManager?.getBasinReport?.() || [])
+            .map(i => (ignore.has(i.id) && i.level === 'bad' ? { ...i, level: 'ok', text: `${i.text} (vem na próxima missão)` } : i));
         if (!report?.length) return '';
         const mark = { good: '✓', ok: '!', bad: '✕' };
         const chips = report.map(i => `<li class="basin-chip basin-${i.level}"><span class="basin-mark" aria-hidden="true">${mark[i.level]}</span><b>${i.label}</b> ${i.text}</li>`).join('');

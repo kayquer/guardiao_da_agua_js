@@ -99,9 +99,10 @@ class PropSystem {
     }
 
     /**
-     * Recuperação da bacia (0-1) para os bichos ameaçados chegarem: metade pelo tempo de jogo com o rio cheio
-     * (QuestSystem.trackTimers.riverS, ≥ 70% — 12 min = cheio) e metade pela mata ciliar plantada (mudas prontas e
-     * parques lineares na beira da água — 10 = cheio). Cresce com o cuidado mantido, não com um pico.
+     * Recuperação da bacia (0-1) para os bichos ameaçados chegarem: um terço pelo tempo de jogo com o rio cheio
+     * (QuestSystem.trackTimers.riverS, ≥ 70% — 12 min = cheio) e dois terços pela mata ciliar plantada (mudas prontas
+     * e parques lineares na beira da água — 10 = cheio). Cresce com o cuidado mantido, não com um pico. Era metade e
+     * metade, e só esperando o relógio chegavam 7 dos 12 ameaçados do vale (3ª auditoria).
      */
     getEcology() {
         const gm = this.gameManager;
@@ -109,9 +110,11 @@ class PropSystem {
         let riparian = 0;
         gm.buildingSystem?.buildings?.forEach(b => {
             if (b.underConstruction || !['tree_sapling', 'linear_park'].includes(b.type)) return;
-            if (gm.treeSystem?.isRiparianCell?.(b.gridX, b.gridZ)) riparian += b.type === 'linear_park' ? 2 : 1;
+            // TreeSystem.isRiparianCell é estático (antes chamava gm.treeSystem.isRiparianCell, que não existe: a metade
+            // da mata ciliar nunca contava e só o relógio trazia os ameaçados)
+            if (typeof TreeSystem !== 'undefined' && TreeSystem.isRiparianCell(gm.gridManager, b.gridX, b.gridZ)) riparian += b.type === 'linear_park' ? 2 : 1;
         });
-        return Math.min(1, 0.5 * Math.min(1, riverMin / 12) + 0.5 * Math.min(1, riparian / 10));
+        return Math.min(1, (1 / 3) * Math.min(1, riverMin / 12) + (2 / 3) * Math.min(1, riparian / 10));
     }
 
     static keyOf(p) {

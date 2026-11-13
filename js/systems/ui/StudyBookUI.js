@@ -46,6 +46,19 @@ mixin(UIManager, {
     },
 
     /**
+     * Leitura em duas camadas: `content` é a camada curta (para criança, sem números); `more` (opcional, HTML) é a
+     * completa, com números reais, unidades, faixas da ANEEL e fontes. Fica num <details> fechado e FORA de
+     * .page-text, então o "ouvir em voz alta" lê só a camada curta.
+     */
+    renderStudyMore(page) {
+        if (!page?.more) return '';
+        return `<details class="study-more">
+            <summary>Para saber mais (com números e fontes)</summary>
+            <div class="study-more-body">${page.more}</div>
+        </details>`;
+    },
+
+    /**
      * @param {'next'|'prev'|null} [turn] direção da folha virando; null = abertura do livro
      *   (anima o livro abrindo, sem folha virando)
      */
@@ -100,6 +113,7 @@ mixin(UIManager, {
                         </div>
                         ${currentPage.image ? `<div class="page-image"><img src="${currentPage.image}" alt="${currentPage.title}" onerror="this.parentElement.style.display='none'"></div>` : ''}
                         <div class="page-text">${currentPage.content}</div>
+                        ${this.renderStudyMore(currentPage)}
                         ${isLastPage ? this.renderStudySources(studyContent) : ''}
                         ${quizHTML}
                     </div>

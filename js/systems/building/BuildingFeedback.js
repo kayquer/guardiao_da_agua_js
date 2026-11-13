@@ -37,7 +37,7 @@ mixin(BuildingSystem, {
                 'Energia Insuficiente',
                 `Seus edifícios estão operando a apenas ${efficiencyPercent}% de eficiência por falta de energia.`,
                 'warning',
-                `Geração atual: ${generation} MW | Consumo: ${consumption} MW | Falta: ${deficit} MW\n\nConstrua usinas em ⚡ Energia (Campo Eólico, Usina Solar ou Hidrelétrica) para suprir a demanda.`,
+                `Geração atual: ${generation} kW | Consumo: ${consumption} kW | Falta: ${deficit} kW\n\nConstrua usinas em ⚡ Energia (Campo Eólico, Usina Solar ou Hidrelétrica) para suprir a demanda.`,
                 // Se esperou um livro/tutorial fechar: só mostra se ainda faltar energia (obras contam)
                 { stillRelevant: () => this.isEnergyShortProjected() }
             );
@@ -448,7 +448,7 @@ mixin(BuildingSystem, {
         }
 
         // Mostrar notificação aprimorada
-        this.showNotification(`🎉 ${buildingData.config.name} concluído com sucesso!`, 'success');
+        this.showNotification(`🎉 Pronto: ${buildingData.config.name}!`, 'success'); // sem gênero ("Prefeitura … concluído")
     },
 
     createCompletionCelebration(buildingData, worldPos) {

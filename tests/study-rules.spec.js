@@ -112,3 +112,24 @@ test('estudo opcional: prédio livre e "Ler o estudo (opcional)" no menu de cons
     await expect(page.locator('#study-book-overlay .skip-btn')).toHaveCount(0);
     expect(problems).toEqual([]);
 });
+
+// Leitura em duas camadas (pages[].more): o bloco completo vem fechado, fora do texto que o "ouvir" lê
+test('estudo da usina a carvão: "Para saber mais" fechado, com números e fontes, fora da camada curta', async ({ page }) => {
+    const problems = await play(page, { STUDY: 'obrigatorio', QUIZ: 'obrigatorio' });
+    expect(await page.evaluate(() => window.gameManager.studySystem.isStudyUnlocked('coal_plant'))).toBe(false);
+    await page.evaluate(() => window.gameManager.uiManager.openStudyBook('coal_plant'));
+    const more = page.locator('#study-book-overlay details.study-more');
+    await expect(more).toHaveCount(1);
+    await expect(more).not.toHaveAttribute('open', '');
+    await expect(more.locator('summary')).toHaveText(/Para saber mais \(com números e fontes\)/i);
+    await expect(page.locator('#study-book-overlay .page-text details')).toHaveCount(0);
+    expect(await page.locator('#study-book-overlay .page-text').innerText()).not.toMatch(/\d/);
+    await more.locator('summary').click();
+    await expect(more).toHaveAttribute('open', '');
+    await expect(more.locator('.study-more-body')).toContainText(/%/);
+    await expect(more.locator('.more-src')).toContainText(/Fonte/);
+    // Página seguinte: o bloco volta fechado
+    await page.locator('#study-book-overlay .next-btn').click();
+    await expect(page.locator('#study-book-overlay details.study-more')).not.toHaveAttribute('open', '');
+    expect(problems).toEqual([]);
+});

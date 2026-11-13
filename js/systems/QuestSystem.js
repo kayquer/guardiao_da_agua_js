@@ -279,7 +279,7 @@ class QuestSystem {
         } else if (Number.isFinite(spec.minWater)) {
             results.push((quest.lowestWater ?? 1) >= spec.minWater);
         }
-        results.push(this.isCityHealthy());
+        results.push(this.isCityHealthy(quest));
         quest.starResults = results;
         return results.filter(Boolean).length;
     }
@@ -289,15 +289,20 @@ class QuestSystem {
      * aquífero, rio, esgoto, energia). Um critério só (11/2026): antes a estrela usava outro, e o cartão podia mostrar
      * tudo com ✓ e negar a estrela sem dizer por quê.
      */
-    isCityHealthy() {
-        return this.getUnhealthyItems() !== null && this.getUnhealthyItems().length === 0;
+    isCityHealthy(quest = null) {
+        const sick = this.getUnhealthyItems(quest);
+        return sick !== null && sick.length === 0;
     }
 
-    /** Itens da bacia no vermelho (null = sem dados). */
-    getUnhealthyItems() {
+    /**
+     * Itens da bacia no vermelho (null = sem dados). `stars.ignore` da missão tira os itens que ela ainda não ensinou
+     * (missão 1: energia — a bomba fica pronta antes do sol, que é a missão seguinte, e a 3ª estrela era impossível).
+     */
+    getUnhealthyItems(quest = null) {
         const report = this.gameManager.resourceManager?.getBasinReport?.();
         if (!report) return null;
-        return report.filter(i => i.level === 'bad');
+        const ignore = new Set(quest?.stars?.ignore || []);
+        return report.filter(i => i.level === 'bad' && !ignore.has(i.id));
     }
 
     /** As metas de cada estrela em texto (painel da missão e cartão de comemoração). */
@@ -535,9 +540,46 @@ class QuestSystem {
                 }
                 break;
                 
-            case 'survival': {
-                const elapsed = (this.simNow() - quest.startTime) / 1000;
-                return Math.min(elapsed, objective.required);
+            case 'survival':
+                return this.measureSurvival(objective, quest);
+
+            // ===== Tipos novos (3ª auditoria: 13 das 19 missões eram "construa X + número") =====
+            case 'notebook': { // espécies registradas no caderno de campo (target 'registered' | 'threatened')
+                const nb = this.gameManager.fieldNotebook;
+                if (!nb || typeof FieldNotebook === 'undefined') return 0;
+                const ids = FieldNotebook.ids().filter(id => nb.isRegistered(id));
+                return objective.target === 'threatened' ? ids.filter(id => FieldNotebook.isThreatened(id)).length : ids.length;
+            }
+
+            case 'decisions': { // boas decisões com o Paulo depois que a missão começou (EventSystem.responseStats.good)
+                const stats = this.gameManager.eventSystem?.responseStats;
+                if (!stats) return objective.current || 0;
+                if (!Number.isFinite(objective.baseline)) objective.baseline = Math.max(0, (stats.good || 0) - (objective.current || 0));
+                return Math.max(0, (stats.good || 0) - objective.baseline);
+            }
+
+            case 'impervious': { // chão coberto (asfalto, telhado) em até `required` % da área construída
+                const share = this.getImperviousShare();
+                objective.share = Math.round(share);
+                return share <= objective.required ? objective.required : objective.required * (objective.required / Math.max(1, share));
+            }
+
+            case 'riparian': { // mudas prontas na mata ciliar (até TREES.RIPARIAN_DISTANCE da água): limpam mais
+                if (!buildingSystem || typeof TreeSystem === 'undefined') return 0;
+                const grid = this.gameManager.gridManager;
+                return buildingSystem.getBuildingsByType('tree_sapling')
+                    .filter(b => !b.underConstruction && TreeSystem.isRiparianCell(grid, b.gridX, b.gridZ)).length;
+            }
+
+            case 'hold': { // recurso no limite enquanto a crise da missão dura; abaixo dele = meta perdida (como 'avoid')
+                const type = quest.startEvent?.type;
+                const es = this.gameManager.eventSystem;
+                const active = !!type && !!es && [...es.activeEvents.values()].some(e => e.type === type);
+                if (active && resourceManager) {
+                    const value = this.getResourceValue(resourceManager.getAllResources(), objective.target);
+                    if (value < objective.threshold) objective.violated = true;
+                }
+                return 0;
             }
 
             case 'avoid':
@@ -553,6 +595,62 @@ class QuestSystem {
         return 0;
     }
     
+    /**
+     * "Atravessar N s de <crise>": conta só o tempo de jogo com a crise da missão (startEvent) ativa. Antes contava
+     * desde o início da missão, e o aviso do Paulo (45-90 s, dobrado por prêmio) comia a meta: a enchente terminava
+     * a missão no instante em que chegava (3ª auditoria, B1). Enquanto a crise não chega, `objective.waitingS` diz em
+     * quanto tempo (ou `awaitingDecision`), e o painel mostra. Crise que acabou antes (emergência, fim natural) = meta
+     * cumprida. Missão sem startEvent = tempo desde o início, como antes.
+     */
+    measureSurvival(objective, quest) {
+        const type = quest.startEvent?.type;
+        const es = this.gameManager.eventSystem;
+        if (!type || !es) return Math.min((this.simNow() - quest.startTime) / 1000, objective.required);
+        const now = this.simNow();
+        const elapsed = Number.isFinite(objective.lastSampleAt) ? Math.max(0, now - objective.lastSampleAt) / 1000 : 0;
+        objective.lastSampleAt = now;
+        const base = Number.isFinite(objective.survived) ? objective.survived : (objective.current || 0);
+        const active = [...es.activeEvents.values()].some(e => e.type === type);
+        const pending = es.pendingEvents.find(p => p.type === type);
+        if (active) {
+            objective.crisisSeen = true;
+            objective.waitingS = null;
+            objective.awaitingDecision = false;
+            objective.survived = Math.min(objective.required, base + elapsed);
+        } else if (pending) {
+            objective.awaitingDecision = !!pending.awaiting;
+            objective.waitingS = pending.awaiting ? null : Math.max(0, Math.ceil((pending.remainingTime || 0) / 1000));
+            objective.survived = base;
+        } else {
+            // nada ativo nem a caminho: a crise passou (ou foi encerrada) — atravessou
+            objective.waitingS = null;
+            objective.awaitingDecision = false;
+            objective.survived = objective.required;
+        }
+        return objective.survived;
+    }
+
+    /**
+     * Quanto da área construída a chuva não atravessa (0-100), com as mesmas regras do risco de enchente
+     * (EventSystem.getFloodRisk): ruas pelo runoffImpervious (asfalto 1, terra 0,6, cascalho 0,4), zonas pela fração do
+     * lote coberta, outros prédios 0,3; jardins de chuva, mudas e áreas verdes não cobrem nada.
+     */
+    getImperviousShare() {
+        const buildings = this.gameManager.buildingSystem?.getAllBuildings?.() || [];
+        let impervious = 0;
+        let area = 0;
+        buildings.forEach(b => {
+            if (b.underConstruction) return;
+            const cfg = b.config || {};
+            const cells = cfg.roadType ? 1 : (cfg.size || 1) ** 2;
+            area += cells;
+            if (cfg.roadType) impervious += cfg.runoffImpervious || 0;
+            else if (Number.isFinite(cfg.runoffImpervious)) impervious += cells * cfg.runoffImpervious;
+            else if (!cfg.runoffAbsorption && !cfg.plantedTree) impervious += cells * 0.3;
+        });
+        return area > 0 ? (impervious / area) * 100 : 0;
+    }
+
     getResourceValue(resources, target) {
         switch (target) {
             case 'water': return resources.water.current;
@@ -917,7 +1015,8 @@ class QuestSystem {
             if (info) shown.push(`${info.icon} ${info.name} ${value > 0 ? '+' : ''}${value}`);
         });
         if (shown.length && this.gameManager.gameState === 'playing') {
-            this.gameManager.uiManager?.showNotification?.(`🤝 Reputação${reason ? ` (${reason})` : ''}: ${shown.join(', ')}`, 'info', 4000);
+            // só no histórico (3ª auditoria: 4 toasts juntos depois de cada decisão); o painel de missões mostra a reputação
+            this.gameManager.uiManager?.showNotification?.(`🤝 Reputação${reason ? ` (${reason})` : ''}: ${shown.join(', ')}`, 'info', 4000, { quiet: true });
         }
     }
 
@@ -940,7 +1039,13 @@ class QuestSystem {
     // A ordem vem dos dados: prerequisites de cada missão (js/data/missions.js), na ordem de MISSIONS.
     // No máximo MAX_ACTIVE por categoria (11/2026: no ato 1 chegavam a 3 missões ao mesmo tempo); a liberada fica
     // na fila e começa quando a vaga abrir. Desafios da cidade (city_challenge_*) não contam nem esperam.
-    static MAX_ACTIVE = { primary: 1, secondary: 1 };
+    // Secundárias = 2 (3ª auditoria: com 1, e 15 das 19 missões secundárias, a campanha ramificada virava fila), mas
+    // no máximo uma crise (missão com startEvent) por vez.
+    static MAX_ACTIVE = { primary: 1, secondary: 2 };
+
+    hasActiveCrisis() {
+        return [...this.activeQuests].some(id => !!this.quests.get(id)?.startEvent);
+    }
 
     activeCountByCategory() {
         const count = { primary: 0, secondary: 0 };
@@ -959,6 +1064,7 @@ class QuestSystem {
             const challenge = String(id).startsWith('city_challenge_');
             const cat = quest.category === 'primary' ? 'primary' : 'secondary';
             if (!challenge && count[cat] >= (QuestSystem.MAX_ACTIVE[cat] ?? Infinity)) return;
+            if (quest.startEvent && this.hasActiveCrisis()) return; // uma crise de cada vez
             this.startQuest(id);
             if (!challenge && this.activeQuests.has(id)) count[cat]++;
         });
@@ -986,11 +1092,25 @@ class QuestSystem {
             return;
         }
         const enemies = eventSystem.eventsAgainst?.(spec.type) || [];
-        [...eventSystem.activeEvents.values()].filter(e => enemies.includes(e.type)).forEach(e => eventSystem.endEvent(e.id));
+        const ended = [...eventSystem.activeEvents.values()].filter(e => enemies.includes(e.type));
+        ended.forEach(e => eventSystem.endEvent(e.id));
         eventSystem.pendingEvents = eventSystem.pendingEvents.filter(p => !enemies.includes(p.type));
-        while (eventSystem.getOngoingEventTypes().length >= (eventSystem.maxSimultaneous ?? 3) && eventSystem.activeEvents.size) {
-            const oldest = [...eventSystem.activeEvents.values()].sort((a, b) => (a.startTime ?? 0) - (b.startTime ?? 0))[0];
-            eventSystem.endEvent(oldest.id);
+        const name = type => eventSystem.eventTypes?.get?.(type)?.name || type;
+        if (ended.length) {
+            this.gameManager.uiManager?.showNotification?.(`${ended.map(e => name(e.type)).join(' e ')} acabou antes da hora: o tempo virou.`, 'info', 5000);
+        }
+        // Limite de eventos ao mesmo tempo: conta ativos e anunciados (antes só encerrava ativos, e com 3 avisos na
+        // fila a crise entrava como 4º). Primeiro sai o ativo mais antigo; sem ativo, o aviso mais antigo que não é crise de missão.
+        const max = eventSystem.maxSimultaneous ?? 3;
+        while (eventSystem.getOngoingEventTypes().length >= max) {
+            if (eventSystem.activeEvents.size) {
+                const oldest = [...eventSystem.activeEvents.values()].sort((a, b) => (a.startTime ?? 0) - (b.startTime ?? 0))[0];
+                eventSystem.endEvent(oldest.id);
+                continue;
+            }
+            const drop = eventSystem.pendingEvents.findIndex(p => !p.mission);
+            if (drop < 0) break;
+            eventSystem.pendingEvents.splice(drop, 1);
         }
         eventSystem.announceEvent(spec.type, { duration: spec.durationMs, mission: quest.id });
     }

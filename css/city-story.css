@@ -1,0 +1,256 @@
+/* =========================================================================
+   A HISTÓRIA DA CIDADE (11/2026)
+   - Planos de câmera na cena do jogo (js/systems/CityCinematic.js): faixas de cinema, legenda, "Pular"
+   - Diário da cidade na pausa (#diary-panel, js/systems/ui/CityDiaryUI.js) e o resumo na tela de vitória
+   - Derrota que ensina a causa (GameOverSystem.analyzeDefeat) e a tendência de cada ponto de volta
+   ========================================================================= */
+
+/* ----- Plano de câmera: some com o HUD, ficam as faixas, a legenda e o "Pular" ----- */
+#city-cinematic[hidden] { display: none !important; }
+
+#diary-panel[hidden] { display: none !important; }
+
+body.city-cinematic #game-screen > :not(#game-canvas):not(#city-cinematic),
+body.city-cinematic .mobile-toggle {
+    visibility: hidden !important;
+}
+
+.city-cinematic {
+    position: absolute;
+    inset: 0;
+    z-index: 95;
+    pointer-events: auto;
+    cursor: pointer;
+    overflow: hidden;
+    font-family: var(--gda-font);
+}
+
+.city-cinematic .cc-bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 11vh;
+    background: #05080f;
+    transition: transform var(--gda-dur-slow, 0.6s) cubic-bezier(0.6, 0, 0.3, 1);
+}
+
+.city-cinematic .cc-bar--top { top: 0; transform: translateY(-100%); }
+.city-cinematic .cc-bar--bottom { bottom: 0; transform: translateY(100%); }
+.city-cinematic.is-on .cc-bar { transform: none; }
+
+/* Plano curto da espécie: faixas mais finas */
+.city-cinematic[data-kind="species"] .cc-bar { height: 8vh; }
+
+.city-cinematic .cc-caption {
+    position: absolute;
+    left: clamp(16px, 6vw, 96px);
+    right: 16px;
+    bottom: calc(11vh + 24px);
+    margin: 0;
+    font-family: var(--gda-font-display);
+    font-weight: 400;
+    font-size: clamp(1.4rem, 3vw, 2.4rem);
+    line-height: 1.12;
+    color: var(--gda-ink-on-dark);
+    text-shadow: 0 3px 0 var(--gda-ink), 2px 0 0 var(--gda-ink), -2px 0 0 var(--gda-ink), 0 -2px 0 var(--gda-ink), 0 8px 24px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    zoom: var(--text-scale, 1);
+}
+
+.city-cinematic .cc-caption::before {
+    content: "";
+    display: block;
+    width: 56px;
+    height: 6px;
+    margin-bottom: 10px;
+    border-radius: var(--gda-r-pill);
+    background: var(--gda-accent-light);
+}
+
+.city-cinematic[data-kind="species"] .cc-caption {
+    bottom: calc(8vh + 20px);
+    font-size: clamp(1.1rem, 2.2vw, 1.7rem);
+}
+
+.city-cinematic .cc-caption.is-on { animation: ccCaption 4.2s ease forwards; }
+.city-cinematic[data-kind="species"] .cc-caption.is-on { animation: ccCaptionHold 3.2s ease forwards; }
+
+@keyframes ccCaption {
+    0% { opacity: 0; transform: translateY(14px); }
+    14% { opacity: 1; transform: none; }
+    82% { opacity: 1; transform: none; }
+    100% { opacity: 0; transform: translateY(-6px); }
+}
+
+@keyframes ccCaptionHold {
+    0% { opacity: 0; transform: translateY(10px); }
+    15% { opacity: 1; transform: none; }
+    100% { opacity: 1; transform: none; }
+}
+
+.city-cinematic .cc-skip {
+    position: absolute;
+    right: 16px;
+    bottom: max(12px, calc(5.5vh - 20px));
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gda-space-2);
+    padding: 8px 14px 8px 18px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    border-radius: var(--gda-r-pill);
+    background: rgba(5, 8, 15, 0.45);
+    color: var(--gda-ink-on-dark);
+    font-family: var(--gda-font);
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.city-cinematic .cc-skip:hover,
+.city-cinematic .cc-skip:focus-visible {
+    background: rgba(72, 221, 250, 0.3);
+    border-color: var(--gda-accent-light);
+    outline: var(--gda-focus, 3px solid var(--gda-accent-2));
+}
+
+.city-cinematic .cc-skip-key {
+    padding: 1px 7px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+    opacity: 0.85;
+}
+
+@media (pointer: coarse) {
+    .city-cinematic .cc-skip-key { display: none; }
+}
+
+@media (max-width: 768px) {
+    .city-cinematic .cc-bar { height: 8vh; }
+    .city-cinematic .cc-caption { bottom: calc(8vh + 60px); }
+}
+
+/* ----- Diário da cidade (pausa) ----- */
+.diary-panel .diary-intro { margin: 0 0 var(--gda-space-3, 12px); color: var(--gda-ink-muted); }
+
+.diary-list {
+    list-style: none;
+    margin: 0;
+    padding: 4px 2px;
+    max-height: 56vh;
+    overflow-y: auto;
+    zoom: var(--text-scale, 1);
+}
+
+.diary-list .diary-day {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    margin: 10px 0 4px;
+    padding: 2px 0;
+    background: var(--gda-surface);
+    color: var(--gda-accent-strong);
+    font-size: var(--gda-text-xs, 0.78rem);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.diary-list .diary-day:first-child { margin-top: 0; }
+
+.diary-entry {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 0 0 6px;
+    padding: 8px 10px;
+    border: 1px solid var(--gda-border);
+    border-radius: var(--gda-r-md);
+    background: var(--gda-surface-2);
+    color: var(--gda-ink);
+}
+
+.diary-entry .diary-icon { flex: 0 0 auto; font-size: 1.25rem; line-height: 1.2; }
+.diary-entry .diary-icon .ui-icon { width: 24px; height: 24px; }
+.diary-entry .diary-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.diary-entry .diary-detail { color: var(--gda-ink-muted); }
+.diary-entry .diary-good { color: var(--gda-good); font-weight: 700; }
+.diary-entry .diary-bad { color: var(--gda-bad); font-weight: 700; }
+.diary-entry .diary-stars { color: var(--gda-accent-2-deep); letter-spacing: 1px; white-space: nowrap; }
+
+.diary-entry .diary-threat {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 0 8px;
+    border-radius: var(--gda-r-pill);
+    background: var(--gda-bad-soft);
+    color: var(--gda-bad);
+    font-size: 0.75rem;
+    font-weight: 700;
+    vertical-align: 1px;
+}
+
+.diary-entry.diary-mission { border-color: var(--gda-accent-soft); background: var(--gda-surface); box-shadow: var(--gda-shadow-xs); }
+.diary-entry.diary-return { border-color: var(--gda-good-strong); background: var(--gda-good-soft); }
+
+.diary-empty {
+    padding: 14px;
+    border: 1px dashed var(--gda-border-strong);
+    border-radius: var(--gda-r-md);
+    color: var(--gda-ink-muted);
+    text-align: center;
+}
+
+/* Resumo na tela de vitória */
+.diary-summary { margin: 0.8rem 0; }
+.diary-summary small { color: var(--gda-ink-muted); font-weight: 400; }
+.diary-list--mini { max-height: none; overflow: visible; zoom: 1; }
+.diary-list--mini .diary-entry { padding: 6px 8px; margin-bottom: 4px; font-size: 0.92rem; }
+
+.diary-day-pill {
+    flex: 0 0 auto;
+    padding: 1px 8px;
+    border-radius: var(--gda-r-pill);
+    background: var(--gda-accent-soft);
+    color: var(--gda-accent-strong);
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* ----- Derrota: a causa ----- */
+#gameover-container .gameover-causes li:nth-child(2) {
+    padding: 4px 8px;
+    border-left: 4px solid var(--gda-bad-strong);
+    border-radius: 0 var(--gda-r-xs) var(--gda-r-xs) 0;
+    background: var(--gda-bad-soft);
+}
+
+#gameover-container .gameover-tips li:first-child { font-weight: 700; }
+
+/* ----- Pontos de volta: como a cidade estava e para onde ia ----- */
+#gameover-container .recovery-btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+#gameover-container .recovery-trend {
+    display: block;
+    max-width: 260px;
+    font-size: 0.72rem;
+    font-weight: 400;
+    line-height: 1.25;
+    opacity: 0.95;
+}
+
+#gameover-container .recovery-trend .rt-bad { text-decoration: underline wavy; text-underline-offset: 2px; }
+#gameover-container .recovery-trend .rt-bad::before { content: "! "; font-weight: 700; }
+#gameover-container .recovery-trend .rt-good::before { content: "✓ "; }
+#gameover-container .recovery-trend--risky { font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) {
+    .city-cinematic .cc-bar { transition: none; }
+    .city-cinematic .cc-caption.is-on { animation: none; opacity: 1; }
+}

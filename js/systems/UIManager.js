@@ -222,6 +222,7 @@ class UIManager {
         this.setupAchievementsPanel();
         this.setupSavesPanel(); // ui/SavesUI.js
         this.setupNotebookPanel(); // ui/FieldNotebookUI.js
+        this.setupDiaryPanel(); // ui/CityDiaryUI.js
         this.setupIdleHints();
         this.setupSettingsPanel();
 
@@ -683,7 +684,7 @@ class UIManager {
             '.swal2-container', '.central-alert-overlay', '#study-book-overlay', '#controls-modal',
             '#weather-modal', '#lessons-hub', '#lesson-book', '.mission-interface', '.choice-dialog', '.loan-interface',
             '.resource-details-panel', '#notification-history', '#research-panel', '#achievements-panel', '#saves-panel', '#notebook-panel', '#settings-panel', '#tech-modal', '#event-decision', '#mission-card',
-            '#species-card'
+            '#species-card', '#diary-panel', '#city-cinematic'
         ];
         return popups.some(selector => shown(document.querySelector(selector)));
     }
@@ -757,7 +758,7 @@ class UIManager {
             const current = Math.round(resources.electricity.current || 0);
             const maxAvailable = Math.round(resources.electricity.generation || 0);
 
-            this.setText(this.elements.electricityAmount, `${current}/${maxAvailable} MW`);
+            this.setText(this.elements.electricityAmount, `${current}/${maxAvailable} kW`);
 
             // Classe de status pela eficiência (toggle não mexe no DOM se já está certo)
             const efficiency = resources.electricity.efficiency || 0;
@@ -818,7 +819,7 @@ class UIManager {
         if (compactEnergy && resources.electricity) {
             const current = Math.round(resources.electricity.current || 0);
             const generation = Math.round(resources.electricity.generation || 0);
-            compactEnergy.textContent = `${current}/${generation}MW`;
+            compactEnergy.textContent = `${current}/${generation}kW`;
         }
 
         // Population
@@ -1258,11 +1259,24 @@ class UIManager {
         AudioManager.playSound('sfx_click');
     }
 
-    /** Um botão só (#btn-speed) com a velocidade atual; o clique abre #speed-menu com 1x/2x/3x. Fecha ao escolher,
+    /** Um botão só (#btn-speed) com a velocidade atual; o clique abre #speed-menu com 0,5x/1x/2x/3x. Fecha ao escolher,
      *  ao clicar fora e no Esc (GameManager chama closeSpeedMenu antes de pensar em pausar). */
     setupSpeedMenu() {
         const { speedBtn, speedMenu } = this.elements;
         if (!speedBtn || !speedMenu) return;
+        // 0,5x (acessibilidade: mais tempo para ler e decidir) antes do 1x
+        if (!speedMenu.querySelector('[data-speed="0.5"]')) {
+            const slow = document.createElement('button');
+            slow.type = 'button';
+            slow.className = 'speed-option';
+            slow.setAttribute('role', 'menuitemradio');
+            slow.setAttribute('aria-checked', 'false');
+            slow.dataset.speed = '0.5';
+            slow.innerHTML = '<b>0,5x</b> Devagar';
+            speedMenu.prepend(slow);
+        }
+        this.updateSpeedButtonTitle();
+        if (typeof InputBindings !== 'undefined') InputBindings.onChange(() => this.updateSpeedButtonTitle());
         speedBtn.addEventListener('click', event => {
             event.stopPropagation();
             if (speedMenu.hidden) this.openSpeedMenu();
@@ -1301,11 +1315,28 @@ class UIManager {
         return true;
     }
 
+    /** "0,5x", "1x"… (vírgula decimal do pt-BR). */
+    formatSpeed(speed) {
+        return `${String(speed).replace('.', ',')}x`;
+    }
+
+    /** Dica do botão com as teclas atuais das velocidades (InputBindings). */
+    updateSpeedButtonTitle() {
+        const btn = this.elements.speedBtn;
+        if (!btn || typeof InputBindings === 'undefined') return;
+        const keys = ['speedHalf', 'speed1', 'speed2', 'speed3'].map(id => InputBindings.keysFor(id)[0]).filter(Boolean)
+            .map(code => InputBindings.label(code));
+        btn.title = keys.length ? `Velocidade do jogo (teclas ${keys.slice(0, -1).join(', ')}${keys.length > 1 ? ' e ' : ''}${keys[keys.length - 1]})` : 'Velocidade do jogo';
+    }
+
     updateTimeScaleUI(speed) {
         const current = document.getElementById('speed-current');
-        if (current) current.textContent = `${speed}x`;
-        this.elements.speedBtn?.setAttribute('aria-label', `Velocidade do jogo: ${speed}x`);
-        this.elements.speedBtn?.classList.toggle('active', speed !== 1);
+        const label = this.formatSpeed(speed);
+        if (current) current.textContent = label;
+        this.elements.speedBtn?.setAttribute('aria-label', `Velocidade do jogo: ${label}`);
+        // Acelerado = destaque do tema; devagar (0,5x) = cor própria (css/speed-menu.css)
+        this.elements.speedBtn?.classList.toggle('active', speed > 1);
+        this.elements.speedBtn?.classList.toggle('slow', speed < 1);
         document.querySelectorAll('#speed-menu .speed-option').forEach(option => {
             const on = Number(option.dataset.speed) === speed;
             option.classList.toggle('active', on);
@@ -1322,6 +1353,7 @@ class UIManager {
             this.closeAchievementsPanel({ focus: false });
             this.closeSavesPanel({ focus: false });
             this.closeNotebookPanel({ focus: false });
+            this.closeDiaryPanel({ focus: false });
             this.closeSettingsPanel({ focus: false });
             this.elements.pauseOverlay.classList.remove('hidden');
         }
@@ -1813,6 +1845,7 @@ class UIManager {
     showHelpModal() {
         const modal = document.getElementById('controls-modal');
         if (modal) {
+            this.renderControlsHelp?.(); // teclas atuais (InputBindings) e o controle (ui/SettingsUI.js)
             modal.style.display = 'flex';
             // Auto-detect device and pre-select the matching tab
             const isMobileDevice = this.isMobile || ('ontouchstart' in window && window.innerWidth <= 900);

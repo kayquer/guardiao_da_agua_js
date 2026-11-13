@@ -130,10 +130,15 @@ mixin(QuestSystem, {
                         onclick="event.stopPropagation(); window.gameManager.questSystem.goToBuildGoal('${obj.target}')"
                         onkeydown="if (event.key === 'Enter') window.gameManager.questSystem.goToBuildGoal('${obj.target}')"`
                     : '';
+                // "Atravessar N s de crise": o relógio só anda com a crise ativa (QuestSystem.measureSurvival)
+                const crisis = !done && obj.type === 'survival' && mission.startEvent
+                    ? this.gameManager.eventSystem?.eventTypes?.get?.(mission.startEvent.type)?.name : null;
+                const wait = crisis && obj.awaitingDecision ? `${crisis}: o Paulo espera a sua decisão`
+                    : crisis && Number.isFinite(obj.waitingS) ? `${crisis} chega em ~${obj.waitingS} s de jogo` : '';
                 return `<li class="mission-goal ${done ? 'done' : ''} ${link ? 'goal-link' : ''}"${linkAttrs}>
                     <span class="goal-check">${done ? '✓' : ''}</span>
-                    <span class="goal-text">${obj.description}</span>
-                    <b class="goal-count">${fmt(Math.min(obj.current, obj.required))}/${fmt(obj.required)}</b>
+                    <span class="goal-text">${obj.description}${wait ? `<small class="goal-wait">${wait}</small>` : ''}</span>
+                    <b class="goal-count">${obj.type === 'impervious' ? `${Number.isFinite(obj.share) ? obj.share : '—'}% (máx. ${obj.required}%)` : `${fmt(Math.min(obj.current, obj.required))}/${fmt(obj.required)}`}</b>
                     ${link ? '<span class="goal-go" aria-hidden="true">' + uiIcon('ui-build') + ' ›</span>' : ''}
                 </li>`;
             }).join('')}

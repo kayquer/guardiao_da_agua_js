@@ -764,8 +764,10 @@ const BUILDING_TYPES = {
         }
     },
 
+    // Fósseis com portão (3ª auditoria: o carvão saía no minuto zero e, sozinho, levava a poluição a 100% em 2,5 min).
+    // Só depois da primeira indústria: é quem precisa de muita energia firme, dia e noite.
     thermal_plant: {
-        tier: 2, group: 'Fósseis', techRequires: [],
+        tier: 2, group: 'Fósseis', techRequires: [{ ids: ['zone_industrial_light', 'zone_industrial_balanced', 'zone_industrial_heavy'], count: 1, label: 'Zona Industrial' }],
         name: 'Termelétrica a Gás',
         description: 'Queima gás natural: liga na hora, faça sol ou chuva, e custa pouco para construir. Mas o gás custa caro todo mês e a fumaça esquenta o planeta',
         category: 'power',
@@ -804,7 +806,7 @@ const BUILDING_TYPES = {
     },
 
     coal_plant: {
-        tier: 1, group: 'Fósseis', techRequires: [],
+        tier: 2, group: 'Fósseis', techRequires: [{ ids: ['zone_industrial_light', 'zone_industrial_balanced', 'zone_industrial_heavy'], count: 1, label: 'Zona Industrial' }],
         name: 'Usina a Carvão',
         description: 'Barata de construir, mas o carvão comprado todo mês pesa no caixa, a fumaça suja o ar e a água e esquenta o planeta. É a fonte mais poluente',
         category: 'power',
@@ -934,9 +936,11 @@ const BUILDING_TYPES = {
     },
 
     small_hydro: {
-        tier: 2, group: 'Hídrica', techRequires: [{ id: 'solar_micro', count: 2 }],
-        name: 'PCH (Pequena Central Hidrelétrica)',
-        description: 'Uma barragem baixa no rio gira uma turbina pequena. Gera dia e noite e alaga pouca terra, mas na seca o rio baixa e ela gera menos',
+        // pede a bomba pronta: quem já tira água do rio/aquífero sabe mexer com água (antes pedia 2 microgerações solares,
+        // um elo sem sentido). Pelo tamanho no jogo (160 kW) é uma CGH, a menor hidrelétrica da ANEEL (até 5 MW).
+        tier: 2, group: 'Hídrica', techRequires: [{ id: 'water_pump', count: 1 }],
+        name: 'Mini Hidrelétrica (CGH)',
+        description: 'Central Geradora Hidrelétrica: a menor hidrelétrica que a ANEEL reconhece. Uma barragem baixa no rio gira uma turbina pequena. Gera dia e noite e alaga pouca terra, mas na seca o rio baixa e ela gera menos',
         category: 'power',
         powerSource: 'hydro',
         cost: 8000,
@@ -952,7 +956,7 @@ const BUILDING_TYPES = {
     solar_tracker: {
         tier: 3, group: 'Solar · geração centralizada', techRequires: [{ id: 'solar_farm', count: 2 }],
         name: 'Usina Solar Centralizada',
-        description: 'Usina de grande porte (geração centralizada, acima de 3 MW): vende energia em leilão ou no mercado livre, e os painéis com rastreadores seguem o sol do nascer ao pôr',
+        description: 'A usina solar grande, ligada direto na rede (geração centralizada, a maior classe da ANEEL): vende energia em leilão ou no mercado livre, e os painéis com rastreadores seguem o sol do nascer ao pôr',
         category: 'power',
         powerSource: 'solar',
         cost: 21000,

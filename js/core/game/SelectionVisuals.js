@@ -365,7 +365,8 @@ mixin(GameManager, {
         const half = (gm.cellSize * 0.95) / 2;
         const positions = [], colors = [], indices = [], normals = [];
         const cells = [];
-        const valid = [0.15, 0.95, 0.35, 0.4], invalid = [1, 0.15, 0.15, 0.4];
+        // Verde = cabe, vermelho = não cabe; no modo de daltonismo, as cores dele (ColorMode)
+        const valid = [...ColorMode.rgb('good', [0.15, 0.95, 0.35]), 0.4], invalid = [...ColorMode.rgb('bad', [1, 0.15, 0.15]), 0.4];
         for (let x = 0; x < size; x++) {
             for (let z = 0; z < size; z++) {
                 const ok = this.buildingSystem.canPlaceBuilding(x, z, buildingType, { quiet: true }).canPlace;

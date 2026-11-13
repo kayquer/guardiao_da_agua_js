@@ -70,7 +70,8 @@ test('métricas contam só o que está pronto, por tipo de rua e de zona', () =>
     assert.deepStrictEqual([m.road_paved, m.road_gravel, m.road_dirt], [2, 1, 1]);
     assert.deepStrictEqual([m.zone_residential, m.zone_commercial, m.zone_industrial], [1, 1, 1]);
     assert.deepStrictEqual([m.trees, m.riparian_planted, m.recycling, m.high_tech], [2, 1, 1, 1]);
-    assert.deepStrictEqual([m.power, m.storage], [400, 2500]);
+    // energia: só renovável pronta (o campo eólico), não a geração total da cidade
+    assert.deepStrictEqual([m.power, m.storage], [BUILDINGS.wind_farm.powerGeneration, 2500]);
     assert.strictEqual(m.runoff_controls, 1, 'jardim de chuva segura a chuva');
     const green = 2 * BUILDINGS.tree_sapling.cost + BUILDINGS.rain_garden.cost + BUILDINGS.wind_farm.cost + BUILDINGS.recycling_point.cost;
     assert.strictEqual(m.green_invested, green, 'mudas, jardim de chuva, eólica e reciclagem (limpa); bomba, zona e rua não');
@@ -114,11 +115,13 @@ test('trilhas de tempo: rio cheio soma, falta de água zera a sequência, esgoto
 });
 
 test('nível novo vira um aviso só (o maior), com espaço entre avisos; save antigo guarda em silêncio', () => {
-    const { qs, toasts, resources } = setup();
+    const city = [];
+    const { qs, toasts, resources } = setup(city);
     qs.updateAchievementTracks(); // 1ª conferência: nada ainda
     assert.strictEqual(toasts.length, 0);
 
-    resources.electricity.generation = 2000; // pula 3 níveis de uma vez
+    // pula 3 níveis de uma vez (a trilha conta a geração renovável pronta, não a total)
+    city.push({ type: 'usina_teste', config: { renewable: true, powerGeneration: 2000, cost: 0 } });
     qs.lastTrackCheckAt = 0;
     qs.updateAchievementTracks();
     assert.ok(['track_power_1', 'track_power_2', 'track_power_3'].every(id => qs.achievements.has(id)));

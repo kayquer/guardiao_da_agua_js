@@ -96,7 +96,7 @@ mixin(TutorialSystem, {
                 return `A cidade gasta <b>${n(demand)} L/min</b> e produz só <b>${n(production)} L/min</b>: a caixa d'água está esvaziando.${energy}`;
             }
             case 'energy':
-                return `As usinas geram <b>${n(r.electricity?.generation || 0)} MW</b>, mas a cidade usa <b>${n(r.electricity?.consumption || 0)} MW</b>. Todos os prédios estão trabalhando mais devagar.`;
+                return `As usinas geram <b>${n(r.electricity?.generation || 0)} kW</b>, mas a cidade usa <b>${n(r.electricity?.consumption || 0)} kW</b>. Todos os prédios estão trabalhando mais devagar.`;
             case 'pollution': {
                 const p = rm.getPollutionBalance();
                 return `A cidade suja <b>${n(p.sources + p.sewage)}</b> por minuto (fábricas, lixo e esgoto) e limpa só <b>${n(p.reduction)}</b>.`;

@@ -17,25 +17,29 @@
         "pageNumber": 1,
         "title": "O que faz uma bomba de água?",
         "content": "<p>Debaixo da terra existe muita água guardada entre rochas e areia. Ela fica em grandes reservatórios naturais chamados <b>aquíferos</b>. A bomba de água serve para puxar essa água lá de baixo e levar até a cidade.</p><ul><li><b>Motor:</b> dá a força para puxar a água.</li><li><b>Canos:</b> levam a água até a superfície.</li><li><b>Controle:</b> decide quanta água sai e com que força.</li></ul><p>💡 O Brasil tem um dos maiores reservatórios de água subterrânea do mundo, maior do que muitos países inteiros!</p>",
-        "image": "assets/images/studies/bomba-de-agua.webp"
+        "image": "assets/images/studies/bomba-de-agua.webp",
+        "more": "<p>Potência para elevar água: <b>P = ρ · g · Q · H / η</b>. Elevar 10 L/s a 50 m com rendimento de 60% exige cerca de <b>8 kW</b>. Em poços fundos, o comum é a bomba submersa, com motor e bomba lá embaixo. Segundo o Atlas Brasil da ANA (2010), 39% dos municípios eram abastecidos só por água subterrânea, 47% só por rios e represas e 14% pelos dois.</p><p class=\"more-src\">Fontes: ANA, Atlas Brasil; USGS.</p>"
       },
       {
         "pageNumber": 2,
         "title": "Como a água chega lá embaixo",
         "content": "<p>A água subterrânea vem da chuva. O caminho é assim:</p><ul><li><b>Chuva:</b> a água cai sobre o solo.</li><li><b>Infiltração:</b> ela entra na terra por pequenos buracos e rachaduras.</li><li><b>Percolação:</b> depois de entrar, ela vai descendo devagar pelo solo e pelas rochas até encontrar uma camada que não deixa a água passar.</li><li><b>Reservatório:</b> ali ela se acumula, formando o aquífero.</li></ul><p>⚠️ Esse caminho é <b>muito lento</b>. A natureza demora bastante para encher o aquífero de novo. Se a bomba tirar água mais rápido do que a chuva repõe, o reservatório vai secando aos poucos.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Só uma parte da chuva <b>recarrega</b> o aquífero: depende do solo, da declividade, da vegetação e da impermeabilização (em áreas asfaltadas, quase nada infiltra). A água pode ficar no subsolo de dias a milhares de anos, conforme a profundidade e o tipo de rocha.</p><p class=\"more-src\">Fonte: USGS, aquíferos e água subterrânea.</p>"
       },
       {
         "pageNumber": 3,
         "title": "Quando se bombeia demais",
         "content": "<p>Tirar água demais traz problemas para a cidade e para a natureza:</p><ul><li><b>A água fica mais funda:</b> o nível baixa e fica mais difícil alcançar.</li><li><b>O chão pode afundar:</b> sem a água que ocupava os espaços entre os grãos, as camadas de terra se apertam e o terreno cede.</li><li><b>Água salgada invade:</b> perto do mar, o sal pode estragar a água doce.</li><li><b>Rios e plantas sofrem:</b> muitos rios e árvores dependem dessa água escondida.</li></ul><p>A bomba também gasta <b>energia elétrica</b>. Quanto mais funda está a água, mais energia ela precisa para puxá-la.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Bombear forma um <b>cone de rebaixamento</b> em volta do poço. Com bombeamento excessivo por décadas, o solo cede (<b>subsidência</b>): no Vale de San Joaquin, na Califórnia, o terreno baixou quase 9 m entre 1925 e 1977 (USGS), e partes da Cidade do México afundam dezenas de centímetros por ano. No litoral, o rebaixamento puxa água salgada para o aquífero (intrusão salina).</p><p class=\"more-src\">Fontes: USGS, subsidência; CETESB, águas subterrâneas.</p>"
       },
       {
         "pageNumber": 4,
         "title": "Usando a bomba com cuidado",
         "content": "<p>Dá para usar a bomba sem acabar com a água. Algumas boas práticas:</p><ul><li><b>Vigiar o nível:</b> acompanhar se a água lá embaixo está baixando.</li><li><b>Tirar só o necessário:</b> respeitar o tempo que a natureza leva para repor.</li><li><b>Consertar vazamentos:</b> água perdida no caminho é desperdício.</li><li><b>Ter outras fontes:</b> juntar a bomba com captação de água da chuva.</li><li><b>Proteger onde a chuva entra:</b> manter o solo livre e verde para a água infiltrar.</li></ul><p>A água é de todos, e beber e cozinhar vêm antes de qualquer outro uso. ✅ Agora você pode usar a bomba de forma responsável!</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Pela <b>Lei 9.433/1997</b> (Política Nacional de Recursos Hídricos), captar água subterrânea exige <b>outorga</b> do órgão estadual, que fixa a vazão máxima; o poço deve ter medidor de vazão e de nível. Na distribuição, o Brasil perde cerca de <b>37% a 40%</b> da água tratada em vazamentos e ligações irregulares (SNIS).</p><p class=\"more-src\">Fontes: Lei 9.433/1997; SNIS; Trata Brasil.</p>"
       }
     ],
     "quiz": {
@@ -110,25 +114,29 @@
         "pageNumber": 1,
         "title": "O que é um jardim de chuva?",
         "content": "<p>Um jardim de chuva é um canteiro um pouco mais baixo que o chão em volta. Quando chove, a água corre para ele em vez de escorrer pela rua.</p><ul><li><b>Buraco raso:</b> funciona como uma bacia que segura a água.</li><li><b>Solo fofo:</b> uma mistura de terra que deixa a água entrar fácil.</li><li><b>Plantas da região:</b> aguentam tanto tempo seco quanto encharcado.</li><li><b>Cobertura de folhas:</b> protege o solo e mantém a umidade.</li></ul><p>💡 Um jardim de chuva absorve bem mais água do que um gramado comum.</p>",
-        "image": "assets/images/studies/jardim-de-chuva.webp"
+        "image": "assets/images/studies/jardim-de-chuva.webp",
+        "more": "<p>Tecnicamente, o jardim de chuva é uma célula de <b>biorretenção</b>: depressão que acumula de 15 a 30 cm de água, sobre um solo preparado com areia e composto, camada de brita e, em solo argiloso, um dreno no fundo.</p><p class=\"more-src\">Fontes: EPA, infraestrutura verde; USGS.</p>"
       },
       {
         "pageNumber": 2,
         "title": "Como ele limpa a água",
         "content": "<p>A água da rua chega suja: traz terra, óleo dos carros e restos de lixo. No jardim, ela passa por um caminho de limpeza:</p><ul><li><b>Captação:</b> a água da chuva é levada até o jardim.</li><li><b>Espera:</b> ela fica parada por pouco tempo, sem pressa.</li><li><b>Infiltração:</b> entra no solo devagar.</li><li><b>Filtragem:</b> raízes e pequenos seres do solo seguram a sujeira.</li><li><b>Recarga:</b> a água mais limpa chega ao reservatório subterrâneo.</li></ul><p>🌱 De quebra, o jardim vira casa para abelhas, borboletas e outros bichinhos.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Estudos de biorretenção costumam medir remoção de mais de <b>80% dos sólidos em suspensão</b> e de boa parte dos metais pesados; a remoção de nutrientes varia mais. O jardim deve esvaziar em <b>24 a 48 horas</b>, antes que o mosquito da dengue complete o ciclo de ovo a adulto (cerca de 7 a 10 dias).</p><p class=\"more-src\">Fontes: EPA; USGS.</p>"
       },
       {
         "pageNumber": 3,
         "title": "Escolhendo as plantas",
         "content": "<p>Nem toda planta serve para um jardim de chuva. As melhores são as <b>nativas</b>, que já nasciam na região e estão acostumadas ao clima.</p><ul><li><b>Para lugares de sol forte:</b> capins altos e plantas de brejo, como a taboa, que é ótima para filtrar a água.</li><li><b>Para lugares de meia-sombra:</b> plantas resistentes, como samambaias e lírios.</li></ul><p>A planta certa precisa gostar de ficar molhada depois da chuva e também aguentar dias secos.</p><p>⚠️ Evite plantas invasoras, que se espalham e tomam o lugar das outras, e plantas que dão muito trabalho para cuidar.</p>",
-        "image": "assets/images/studies/plantas-nativas.webp"
+        "image": "assets/images/studies/plantas-nativas.webp",
+        "more": "<p>Prefira espécies nativas da região e evite invasoras como o <b>lírio-do-brejo</b> (Hedychium coronarium), que é asiático e toma conta de margens de rios no Brasil. A taboa (Typha domingensis) é nativa e filtra bem a água.</p><p class=\"more-src\">Fonte: EPA, infraestrutura verde.</p>"
       },
       {
         "pageNumber": 4,
         "title": "O que a cidade ganha",
         "content": "<p>Quando a cidade é cheia de asfalto e cimento, a água da chuva não tem para onde ir. Ela corre toda de uma vez para os bueiros, que transbordam, e vem a enchente.</p><p>Com jardins de chuva espalhados, parte dessa água fica guardada no solo. Isso traz várias vantagens:</p><ul><li>🌊 Menos enchentes e bueiros menos cheios.</li><li>💧 Mais água limpa chegando aos rios e ao subsolo.</li><li>🌡️ Ruas mais frescas nos dias quentes.</li><li>🦋 Mais vida e mais verde na cidade.</li><li>💰 Menos gasto com canos e obras grandes.</li></ul><p>✅ Parabéns! Você entendeu como a natureza ajuda a cidade.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Pelo <b>método racional</b>, Q = C · i · A: o coeficiente de escoamento C vai de 0,70 a 0,95 em asfalto e concreto e de 0,05 a 0,35 em gramados. Uma regra prática é dar ao jardim de <b>10% a 20%</b> da área impermeável que drena para ele. As “cidades-esponja” da China, programa iniciado em 2015, têm a meta de reter e aproveitar 70% da chuva nas áreas urbanas.</p><p class=\"more-src\">Fontes: USGS, escoamento; EPA.</p>"
       }
     ],
     "quiz": {
@@ -481,25 +489,29 @@
         "pageNumber": 1,
         "title": "O que é um poço artesiano?",
         "content": "<p>Um poço artesiano é um buraco bem fundo feito no chão para alcançar a <b>água subterrânea</b>, aquela que fica guardada entre rochas e areia, bem abaixo dos nossos pés.</p><ul><li><b>Perfuração:</b> máquinas furam o solo até achar uma camada com água.</li><li><b>Tubo de proteção:</b> impede que as paredes do poço desmoronem.</li><li><b>Bomba:</b> puxa a água até a superfície.</li><li><b>Filtro:</b> segura areia e pedrinhas.</li></ul><p>💡 O nome \"artesiano\" vem de uma região da França onde esse tipo de poço ficou famoso há muito tempo.</p>",
-        "image": "assets/images/studies/poco-artesiano.webp"
+        "image": "assets/images/studies/poco-artesiano.webp",
+        "more": "<p>Um <b>poço tubular profundo</b> tem de dezenas a centenas de metros. Leva revestimento (PVC reforçado ou aço), <b>filtros</b> na altura do aquífero, pré-filtro de cascalho, cimentação do espaço em volta do tubo e <b>laje de proteção</b> na boca. As normas ABNT NBR 12212 (projeto) e NBR 12244 (construção) tratam desses poços.</p><p class=\"more-src\">Fontes: CETESB, águas subterrâneas; USGS.</p>"
       },
       {
         "pageNumber": 2,
         "title": "De onde vem a água subterrânea?",
         "content": "<p>A chuva não some quando cai no chão. Parte dela entra na terra, passa entre grãos de areia e rachaduras e vai descendo, como numa esponja gigante. Lá embaixo, ela se junta em camadas de rocha cheias de buraquinhos: o <b>aquífero</b>.</p><ul><li><b>Aquífero livre:</b> fica mais perto da superfície e recebe a chuva direto. É como um balde aberto.</li><li><b>Aquífero confinado:</b> fica apertado entre duas rochas que não deixam a água passar. É como uma garrafa fechada: quando se fura, a água sobe sozinha pelo tubo, às vezes até jorrar!</li></ul><p>Na verdade, só é artesiano o poço que fura um aquífero confinado. No dia a dia, muita gente chama qualquer poço fundo de artesiano.</p><p>🌧️ A água de um poço pode ter caído como chuva há muitíssimo tempo.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>No <b>aquífero livre</b> (freático), a água está em contato com o ar pelo solo. No <b>confinado</b>, fica presa entre camadas impermeáveis e sob pressão; quando a pressão leva a água acima do terreno, o poço é <b>artesiano jorrante</b>.</p><p class=\"more-src\">Fonte: USGS, água artesiana.</p>"
       },
       {
         "pageNumber": 3,
         "title": "O Aquífero Guarani",
         "content": "<p>Debaixo do Brasil existe um dos maiores reservatórios de água doce do planeta: o <b>Aquífero Guarani</b>.</p><ul><li>🌎 Ele é maior do que muitos países inteiros.</li><li>🌍 Passa por baixo de vários estados do Brasil e também da Argentina, do Paraguai e do Uruguai.</li><li>💧 Guarda água suficiente para matar a sede de muita gente por muito tempo.</li><li>🌡️ Em alguns lugares, a água sai quentinha e é usada em piscinas termais.</li></ul><p>O nome homenageia o povo indígena Guarani, que vivia na região.</p><p>⚠️ Mas a água volta para ele bem devagar. Se tirarmos mais do que a chuva repõe, ele diminui.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>O <b>Sistema Aquífero Guarani</b> ocupa cerca de <b>1,1 a 1,2 milhão de km²</b>, cerca de 70% no Brasil, sob oito estados (MS, RS, SP, PR, GO, MG, SC e MT), além de Argentina, Paraguai e Uruguai. Estudos indicam que o Sistema Aquífero Grande Amazônia guarda volume ainda maior.</p><p class=\"more-src\">Fontes: ANA; CETESB.</p>"
       },
       {
         "pageNumber": 4,
         "title": "Cuidando da água subterrânea",
         "content": "<p>A água lá de baixo pode ser contaminada pelo que acontece aqui em cima. O que suja o solo acaba descendo junto com a chuva.</p><ul><li>🚫 Lixões sem proteção.</li><li>🏭 Produtos químicos de fábricas.</li><li>🌾 Agrotóxico demais nas plantações.</li><li>🚽 Fossas mal feitas e ⛽ vazamentos de postos de gasolina.</li></ul><p><b>Como proteger:</b> preservar a mata, principalmente perto de nascentes, jogar lixo e produtos químicos no lugar certo e só abrir poços com autorização.</p><p>💡 <b>Dica para o jogo:</b> construa poços perto de áreas verdes e longe das zonas industriais!</p>",
-        "image": null
+        "image": null,
+        "more": "<p>A <b>Portaria GM/MS 888/2021</b> define os padrões de potabilidade. Um contaminante comum em poços rasos perto de fossas é o <b>nitrato</b>, com limite de 10 mg/L (como nitrogênio). Por isso o poço precisa de um <b>perímetro de proteção</b>, longe de fossas, lixões e postos de combustível.</p><p class=\"more-src\">Fontes: Ministério da Saúde; CETESB.</p>"
       }
     ],
     "quiz": {
@@ -669,31 +681,36 @@
         "pageNumber": 1,
         "title": "Uma fábrica de água limpa",
         "content": "<p>A <b>Estação de Tratamento de Água</b>, a <b>ETA</b>, funciona como uma fábrica: entra água de rios, lagos e represas, e sai água segura para beber, cozinhar e tomar banho.</p><p>A água do rio pode até parecer limpa, mas carrega coisas que não vemos:</p><ul><li><b>Germes</b> (bactérias e vírus) que causam doenças.</li><li><b>Terra e areia</b>, que deixam a água turva.</li><li><b>Restos de plantas e algas</b>, que mudam o gosto e a cor.</li><li><b>Produtos</b> que escorrem das fazendas e das cidades.</li></ul><p>Sem a estação, essa água iria direto para as torneiras. Por isso ela é uma das construções mais importantes de uma cidade.</p>",
-        "image": "assets/images/studies/estacao-de-tratamento.webp"
+        "image": "assets/images/studies/estacao-de-tratamento.webp",
+        "more": "<p>O tratamento convencional tem as etapas de <b>coagulação, floculação, decantação, filtração, desinfecção</b>, <b>fluoretação</b> e correção do pH. Cerca de 84% dos brasileiros recebem água por rede, mas mais de <b>30 milhões</b> de pessoas ainda vivem sem água tratada (SNIS).</p><p class=\"more-src\">Fontes: SNIS; Trata Brasil.</p>"
       },
       {
         "pageNumber": 2,
         "title": "Buscando a água no rio",
         "content": "<p>Antes de tratar, é preciso <b>buscar</b> a água. Isso se chama <b>captação</b>. A água pode vir de baixo da terra (os poços e as bombas do aquífero) ou da superfície: <b>rios</b>, <b>lagos</b> e <b>represas</b>.</p><p>A estação não fica na beira do rio, porque ali estão a planície, que alaga, e a mata protegida. Por isso uma <b>bomba</b> na margem empurra a água por um cano grande, a <b>adutora</b>, até a estação. Quanto mais longe, mais cano e mais energia para bombear.</p><p><b>Atenção:</b> o rio não é infinito. Se a cidade tira água mais depressa do que as nascentes, os afluentes e a chuva conseguem repor, o rio <b>baixa</b>. Rio baixo deixa menos água para a cidade, para os peixes e para quem vive dele.</p><p>Por isso o <b>esgoto tratado</b> é tão importante: a estação de esgoto devolve ao rio uma água limpa, que ajuda o rio a se manter cheio e vivo.</p>",
-        "image": "assets/images/studies/captacao-rio.webp"
+        "image": "assets/images/studies/captacao-rio.webp",
+        "more": "<p>A captação em rio ou represa tem grades, caixa de areia e bombas de recalque e precisa de <b>outorga</b>: da ANA em rios federais, do órgão estadual nos demais (Lei 9.433/1997). Rios mais poluídos exigem mais produtos químicos e encarecem o tratamento.</p><p class=\"more-src\">Fontes: ANA; Lei 9.433/1997.</p>"
       },
       {
         "pageNumber": 3,
         "title": "Juntando a sujeira",
         "content": "<p>Primeiro, bombas puxam a água do rio. Grades na entrada seguram galhos, folhas e lixo grande.</p><p>Depois, a estação coloca na água um produto que funciona como um <b>ímã de sujeira</b>: as partículas pequenininhas, que sozinhas nunca afundariam, começam a grudar umas nas outras.</p><p>Em seguida, a água é mexida devagar em tanques. As partículas vão se juntando e formam <b>flocos</b> cada vez maiores e mais pesados, parecidos com algodão sujo.</p><p><b>Pense assim:</b> jogue purpurina num copo d'água e depois um pouco de cola. A purpurina se junta em bolinhas maiores. É mais ou menos isso que acontece na estação.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>O coagulante, em geral <b>sulfato de alumínio</b> ou <b>cloreto férrico</b>, é misturado em segundos (mistura rápida); depois, na floculação, a água passa cerca de 20 a 40 minutos em agitação lenta para os flocos crescerem.</p><p class=\"more-src\">Fonte: Sabesp.</p>"
       },
       {
         "pageNumber": 4,
         "title": "Separando e protegendo",
         "content": "<p>Agora a água descansa em tanques grandes, <b>parada</b>. Como os flocos são mais pesados que a água, eles afundam e formam uma camada de lodo no fundo. A água mais limpa fica em cima.</p><p>Essa água passa por <b>filtros</b> de areia, pedrinhas e carvão, que seguram a sujeira que ainda sobrou, como uma peneira bem fina.</p><p>No fim, entra o <b>cloro</b>, que mata os germes que restaram. Um pouquinho de cloro continua na água para protegê-la durante a viagem pelos canos até as casas. Também se coloca <b>flúor</b>, que ajuda a proteger os dentes contra cáries.</p>",
-        "image": null
+        "image": null,
+        "more": "<ul><li><b>Decantação:</b> cerca de 2 a 3 horas.</li><li><b>Filtração:</b> filtros rápidos de areia e antracito; a água filtrada deve ter turbidez de até <b>0,5 uT</b> na grande maioria das amostras.</li><li><b>Desinfecção:</b> pelo menos <b>0,2 mg/L de cloro residual livre</b> em qualquer ponto da rede.</li><li><b>Flúor:</b> obrigatório onde há ETA (Lei 6.050/1974), em torno de 0,7 mg/L.</li></ul><p class=\"more-src\">Fontes: Portaria GM/MS 888/2021; Lei 6.050/1974.</p>"
       },
       {
         "pageNumber": 5,
         "title": "Água tratada é saúde",
         "content": "<p>Antes das estações de tratamento, muita gente ficava doente ou até morria por beber água contaminada.</p><p>A água tratada ajuda a evitar doenças como:</p><ul><li>diarreia;</li><li>cólera e febre tifoide;</li><li>hepatite;</li><li>vermes e outros parasitas.</li></ul><p>Ainda existem muitos brasileiros sem água tratada em casa. Levar tratamento a todos é um desafio importante.</p><p>Tem mais: cuidar da água sai barato. O dinheiro gasto com tratamento e saneamento evita gastos muito maiores com remédios e hospitais. Cidade com água tratada é cidade com gente mais saudável.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>A OMS estima que a água de beber contaminada cause cerca de <b>505 mil mortes por diarreia</b> por ano no mundo. O <b>Marco Legal do Saneamento</b> (Lei 14.026/2020) fixou a meta de <b>99%</b> da população com água potável e 90% com coleta e tratamento de esgoto até 2033.</p><p class=\"more-src\">Fontes: OMS, água potável; Lei 14.026/2020.</p>"
       }
     ],
     "quiz": {
@@ -771,25 +788,29 @@
         "pageNumber": 1,
         "title": "Para onde vai a água suja?",
         "content": "<p>Toda água que usamos vira <b>esgoto</b>: a do banho, da descarga, da louça e das fábricas. Ela desce pelos canos e corre por baixo da rua.</p><p>Se esse esgoto for jogado direto no rio, a sujeira e os germes deixam a água fedida e perigosa. Os peixes ficam sem ar, as pessoas ficam doentes e o rio morre aos poucos.</p><p>A <b>Estação de Tratamento de Esgoto</b>, a <b>ETE</b>, faz o caminho contrário da estação de água: ela recebe a água suja da cidade e só devolve ao rio depois de limpa.</p>",
-        "image": "assets/images/studies/estacao-de-esgoto.webp"
+        "image": "assets/images/studies/estacao-de-esgoto.webp",
+        "more": "<p>Cerca de <b>80%</b> da água consumida vira esgoto (coeficiente de retorno). Cada pessoa gera por dia cerca de <b>50 a 60 g de DBO</b>, a demanda bioquímica de oxigênio, que mede quanto oxigênio os micróbios gastam para decompor a sujeira. No Brasil, pouco mais da metade da população tem coleta de esgoto, e só cerca de metade do esgoto gerado é tratada (SNIS 2022).</p><p class=\"more-src\">Fontes: SNIS; Trata Brasil.</p>"
       },
       {
         "pageNumber": 2,
         "title": "Grades, areia e bactérias trabalhadoras",
         "content": "<p>Primeiro, o esgoto passa por <b>grades</b> que seguram o lixo grande, como plástico e panos. Depois, a areia que veio junto afunda num tanque e é retirada.</p><p>Aí começa a parte mais curiosa: no <b>tanque de aeração</b>, máquinas sopram ar e a água fica cheia de bolhas. Esse ar alimenta milhões de <b>bactérias</b> do bem, que <b>comem a sujeira</b> dissolvida na água.</p><p><b>Pense assim:</b> é como um time de faxineiros minúsculos. Quanto mais ar eles recebem, mais rápido limpam.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Etapas: <b>preliminar</b> (grades e caixa de areia), <b>primária</b> (decantação) e <b>secundária</b>, biológica. Os <b>lodos ativados</b> (com aeração) removem cerca de 85% a 95% da DBO. No Brasil também são muito usados os reatores anaeróbios <b>UASB</b>, que gastam pouca energia e produzem biogás, muitas vezes seguidos de um pós-tratamento.</p><p class=\"more-src\">Fontes: Sabesp; ANA.</p>"
       },
       {
         "pageNumber": 3,
         "title": "O lodo afunda, a água limpa volta",
         "content": "<p>Depois da aeração, a água descansa num tanque redondo, o <b>decantador</b>. As bactérias e a sujeira que sobrou afundam e formam o <b>lodo</b>. Uma ponte gira devagar raspando o fundo e levando esse lodo embora.</p><p>O lodo seca em leitos de terra e pode virar <b>adubo</b> ou até energia.</p><p>A água de cima, já limpa, volta para o <b>rio</b>. Assim o rio recebe de volta a água que a cidade usou, e fica mais cheio, mais limpo e cheio de vida.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>O lodo é adensado, digerido e desidratado. A digestão anaeróbia produz <b>biogás</b> com cerca de 60% a 70% de metano, que pode gerar energia para a própria ETE. O uso do lodo tratado (biossólido) na agricultura segue a <b>Resolução CONAMA 498/2020</b>.</p><p class=\"more-src\">Fontes: CONAMA; Sabesp.</p>"
       },
       {
         "pageNumber": 4,
         "title": "Esgoto tratado é rio vivo",
         "content": "<p>Muitos lugares do Brasil ainda não têm o esgoto tratado. Quando a cidade investe em estações de esgoto, acontecem coisas boas:</p><ul><li>os peixes e as aves voltam para o rio;</li><li>menos gente fica doente;</li><li>a água que a próxima cidade vai buscar no rio chega mais limpa;</li><li>o rio não baixa tanto, porque recebe a água de volta.</li></ul><p>Tratar a água para beber e tratar o esgoto são as duas metades do mesmo cuidado: uma tira água do rio, a outra devolve.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>A <b>Resolução CONAMA 430/2011</b> exige, para esgoto sanitário lançado em rio, DBO de até <b>120 mg/L</b> ou remoção mínima de 60%. Num rio de classe 2 (CONAMA 357/2005), o oxigênio dissolvido deve ficar acima de <b>5 mg/L</b>, nível de que a maioria dos peixes precisa. A meta do Marco Legal do Saneamento (Lei 14.026/2020) é 90% da população com coleta e tratamento até 2033.</p><p class=\"more-src\">Fontes: CONAMA; Lei 14.026/2020.</p>"
       }
     ],
     "quiz": {
@@ -866,25 +887,29 @@
         "pageNumber": 1,
         "title": "O estoque de água da cidade",
         "content": "<p>Imagine se o mercado só recebesse comida na hora exata em que você fosse comer. Seria uma confusão! Com a água é parecido.</p><p>Os <b>reservatórios</b> são grandes tanques que guardam água já tratada, para que ela esteja pronta sempre que alguém abrir a torneira.</p><ul><li><b>Elevado:</b> fica num lugar alto ou numa torre.</li><li><b>Apoiado:</b> fica no chão, perto das estações de tratamento.</li><li><b>Enterrado:</b> fica embaixo da terra, protegido do calor e da sujeira.</li></ul><p>Existem reservatórios pequenos, como a caixa d'água de uma casa, e outros gigantes, capazes de abastecer bairros inteiros.</p>",
-        "image": "assets/images/studies/reservatorio.webp"
+        "image": "assets/images/studies/reservatorio.webp",
+        "more": "<p>Uma regra clássica de projeto é guardar pelo menos <b>um terço</b> do volume consumido no dia de maior consumo. O consumo médio no Brasil fica em torno de <b>150 litros por pessoa por dia</b> (SNIS); a ONU considera de 50 a 100 litros o necessário para as necessidades básicas.</p><p class=\"more-src\">Fontes: SNIS; ONU.</p>"
       },
       {
         "pageNumber": 2,
         "title": "A ajuda da gravidade",
         "content": "<p>A água sempre desce. Os engenheiros aproveitam essa força da natureza, a <b>gravidade</b>, para gastar menos energia.</p><ul><li>Bombas levam a água até um reservatório alto.</li><li>Lá em cima, ela fica guardada.</li><li>Quando você abre a torneira, a gravidade faz a água descer pelos canos até a sua casa.</li></ul><p>Quanto mais alto o reservatório, mais forte a água sai na torneira.</p><p><b>Vantagens:</b> as bombas não precisam ficar ligadas o tempo todo, a água continua chegando mesmo se faltar luz (até o tanque esvaziar) e a cidade gasta menos com máquinas.</p><p><b>Teste em casa, com um adulto:</b> faça um furinho na lateral de uma garrafa, perto do fundo, e encha de água sobre a pia. Com a garrafa cheia, o jato sai forte; conforme o nível desce, ele enfraquece. Quanto mais água em cima, mais força!</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Cada <b>10 m</b> de altura de água dão cerca de <b>100 kPa</b> (1 kgf/cm², ou 10 metros de coluna d'água) de pressão na torneira. A norma ABNT NBR 12218 pede pressão dinâmica mínima de cerca de 100 kPa na rede e limita a estática a algo entre 400 e 500 kPa, para não estourar canos.</p><p class=\"more-src\">Fontes: Sabesp; ABNT NBR 12218.</p>"
       },
       {
         "pageNumber": 3,
         "title": "Pronto para emergências",
         "content": "<p>Os reservatórios não servem só para o dia a dia. Eles salvam a cidade quando algo dá errado:</p><ul><li><b>Falta de luz:</b> a bomba para, mas a água guardada continua descendo.</li><li><b>Conserto de canos:</b> o abastecimento continua enquanto a equipe trabalha.</li><li><b>Incêndios:</b> os bombeiros precisam de muita água de uma vez.</li><li><b>Seca:</b> a reserva dá um fôlego a mais, mas não cria água nova. Quem segura a cidade na seca são as represas e a economia de todos.</li><li><b>Enchentes:</b> se a captação no rio fica ruim, a reserva segura a cidade por um tempo.</li></ul><p>Os reservatórios da cidade costumam guardar água para algumas horas de uso, e a caixa d'água de casa, para cerca de um dia. Na seca, economizar água ajuda a reserva não acabar.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Parte do volume fica reservada para <b>combate a incêndio</b>. Bombear para o reservatório de madrugada, no horário fora de ponta (tarifa de energia mais barata), e distribuir por gravidade de dia reduz a conta de luz da companhia.</p><p class=\"more-src\">Fontes: Sabesp; ANEEL.</p>"
       },
       {
         "pageNumber": 4,
         "title": "Onde construir o reservatório",
         "content": "<p>No jogo e na vida real, o lugar do reservatório faz toda a diferença:</p><ul><li><b>Lugar alto:</b> aproveita a gravidade e dá mais força à água.</li><li><b>Perto das casas:</b> a água chega com mais pressão.</li><li><b>Ligado à rede:</b> precisa receber água da estação de tratamento e mandar para os canos da cidade.</li><li><b>Longe da poluição:</b> assim a água guardada continua limpa.</li></ul><p><b>Curiosidade:</b> em Nova York, muitos prédios ainda têm caixas d'água de madeira nos telhados, uma tradição bem antiga.</p><p>Agora você sabe como os reservatórios mantêm a cidade abastecida!</p>",
-        "image": null
+        "image": null,
+        "more": "<p>O Brasil perde cerca de <b>37% a 40%</b> da água tratada na distribuição (SNIS). Pressão alta aumenta os vazamentos, por isso as companhias usam <b>válvulas redutoras de pressão</b> e setorização da rede.</p><p class=\"more-src\">Fontes: SNIS; Trata Brasil.</p>"
       }
     ],
     "quiz": {
@@ -1320,25 +1345,29 @@
         "pageNumber": 1,
         "title": "O que é um Parque Linear?",
         "content": "<p>Um parque linear é uma <b>faixa comprida de área verde</b> que acompanha o caminho de um rio ou córrego. Ele não é quadrado como uma praça: é longo e estreito, seguindo a água.</p><p>Para que ele serve?</p><ul><li><b>Proteger o rio</b> contra lixo, sujeira e casas construídas na beira.</li><li><b>Evitar enchentes</b>, dando espaço para a água se espalhar.</li><li><b>Lazer</b>, com ciclovias e pistas de caminhada.</li><li><b>Ligar bairros</b>, como um corredor verde para pessoas e animais.</li></ul><p>Muitos rios das cidades foram escondidos em tubos debaixo do chão. O parque linear ajuda a trazer esses rios de volta para perto das pessoas.</p>",
-        "image": "assets/images/studies/parque-linear.webp"
+        "image": "assets/images/studies/parque-linear.webp",
+        "more": "<p>O <b>Código Florestal</b> (Lei 12.651/2012, art. 4º) define a faixa de Área de Preservação Permanente (APP) nas margens dos rios: <b>30 m</b> para rios com menos de 10 m de largura, 50 m (10 a 50 m), 100 m (50 a 200 m), 200 m (200 a 600 m) e 500 m (mais de 600 m). A Lei 14.285/2021 permite que municípios definam faixas próprias em áreas urbanas consolidadas.</p><p class=\"more-src\">Fonte: Lei 12.651/2012.</p>"
       },
       {
         "pageNumber": 2,
         "title": "Como o Parque Protege a Água",
         "content": "<p>As plantas da beira do rio são como guardiãs da água:</p><ul><li><b>Seguram a terra:</b> as raízes das árvores impedem que o barranco desmorone e encha o rio de lama.</li><li><b>Filtram a sujeira:</b> a vegetação segura parte da poluição antes que ela chegue à água.</li><li><b>Dão espaço para a cheia:</b> na chuva forte, o rio transborda sobre o gramado, e não sobre ruas e casas.</li><li><b>Deixam a água entrar no chão:</b> a terra sem asfalto absorve a chuva e guarda água no subsolo.</li></ul><p>Quando alguém constrói casas coladas no rio e tira as plantas, o resultado costuma ser enchente e água suja. Por isso, a lei manda preservar uma faixa verde na beira dos rios.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Faixas de mata ciliar retêm grande parte do sedimento e dos nutrientes que desceriam com a enxurrada, e a sombra das árvores baixa a temperatura da água, o que aumenta o oxigênio dissolvido disponível para os peixes.</p><p class=\"more-src\">Fontes: USGS, infiltração e escoamento.</p>"
       },
       {
         "pageNumber": 3,
         "title": "Bom para a Cidade e para as Pessoas",
         "content": "<p>Parques lineares já transformaram bairros inteiros pelo Brasil. Onde antes havia córrego sujo e terreno abandonado, hoje há árvores, bicicletas e famílias passeando.</p><ul><li><b>Saúde:</b> mais espaço para caminhar, correr e pedalar.</li><li><b>Menos estresse:</b> ficar perto da natureza acalma.</li><li><b>Mais segurança:</b> um lugar iluminado e cheio de gente é mais seguro que um terreno vazio.</li><li><b>Ar mais fresco:</b> as árvores fazem sombra e deixam o bairro menos quente.</li><li><b>Sala de aula ao ar livre</b> para as escolas.</li></ul>",
-        "image": null
+        "image": null,
+        "more": "<p>Em Seul, o córrego <b>Cheonggyecheon</b>, que estava coberto por uma via expressa, foi reaberto em 2005 como parque linear, e a temperatura no entorno caiu alguns graus nos dias quentes. Em São Paulo, o Parque Várzeas do Tietê foi planejado para se estender por dezenas de quilômetros ao longo do rio.</p><p class=\"more-src\">Fontes: EPA, infraestrutura verde.</p>"
       },
       {
         "pageNumber": 4,
         "title": "No Jogo",
         "content": "<p>No Guardião da Água, construir um parque linear ao longo do rio <b>reduz a poluição</b>, <b>ajuda a prevenir enchentes</b> e <b>deixa a população mais feliz</b>.</p><p>Pense assim: o rio precisa de espaço e de plantas na beira para ficar limpo. Se você der isso a ele, ele devolve água mais limpa e menos alagamento para a cidade.</p><p>Agora você sabe por que parques lineares são tão importantes para uma cidade que cuida da sua água!</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Parques lineares são <b>soluções baseadas na natureza</b>: combinam drenagem, lazer e biodiversidade. Canalizar o córrego em concreto acelera a água e empurra a enchente para quem mora rio abaixo; a várzea vegetada guarda a cheia e solta a água devagar.</p><p class=\"more-src\">Fontes: USGS; Lei 12.651/2012.</p>"
       }
     ],
     "quiz": {
@@ -1594,25 +1623,29 @@
         "pageNumber": 1,
         "title": "Eletricidade que Vem do Vento",
         "content": "<p>Energia eólica é a <b>eletricidade feita com o vento</b>. Parece mágica, mas é ciência!</p><ul><li>O <b>vento empurra as pás</b> da turbina, que são enormes.</li><li>As pás <b>giram um eixo</b>, como um cata-vento gigante.</li><li>Esse giro move um <b>gerador</b>, que transforma movimento em eletricidade.</li><li>A energia segue pelos <b>fios</b> até as casas e fábricas.</li></ul><p>Uma única turbina grande consegue abastecer muitas casas. E o \"combustível\", que é o vento, sai de graça!</p>",
-        "image": "assets/images/studies/parque-eolico.webp"
+        "image": "assets/images/studies/parque-eolico.webp",
+        "more": "<p>Os aerogeradores instalados no Brasil nos últimos anos têm de <b>4 a 7 MW</b> cada, torres de 100 a 150 m e rotores de 150 a 170 m de diâmetro. A potência do vento é P = ½ · ρ · A · v³ (cresce com o cubo da velocidade), e nenhuma turbina aproveita mais que <b>59,3%</b> dela (limite de Betz).</p><p class=\"more-src\">Fontes: CRESESB/CEPEL; EPE.</p>"
       },
       {
         "pageNumber": 2,
         "title": "O Brasil e os Ventos",
         "content": "<p>O Brasil está entre os países que <b>mais produzem energia com o vento</b> no mundo.</p><p>A maior parte dos parques eólicos fica no <b>Nordeste</b>, onde o vento sopra forte e quase sempre do mesmo jeito.</p><p>E tem uma vantagem esperta: lá, o vento costuma ser mais forte justamente na época de <b>pouca chuva</b>. É quando os rios baixam e as usinas que usam água produzem menos. Assim, uma fonte cobre a falta da outra!</p>",
-        "image": null
+        "image": null,
+        "more": "<p>A capacidade eólica instalada no Brasil passou de <b>30 GW</b> em 2024, com cerca de 90% no Nordeste (Bahia e Rio Grande do Norte à frente), e a eólica já responde por mais de um décimo da eletricidade do país. A “safra dos ventos” do Nordeste vai de cerca de junho a novembro, justamente o período seco das grandes bacias do Sudeste e do Centro-Oeste: vento e água se complementam.</p><p class=\"more-src\">Fontes: EPE, Balanço Energético Nacional; ABEEólica; ONS.</p>"
       },
       {
         "pageNumber": 3,
         "title": "Por que o Vento é uma Boa Escolha",
         "content": "<ul><li><b>Não solta fumaça</b> nem gases que esquentam o planeta enquanto funciona.</li><li><b>Não gasta água</b>, ao contrário das usinas que queimam carvão ou gás e precisam de água para esfriar.</li><li><b>Nunca acaba:</b> sempre vai ventar.</li><li><b>Combustível grátis</b> e muitos empregos.</li></ul><p>Tem mais: as torres podem ficar em fazendas. O agricultor recebe um aluguel pelo espaço e continua plantando e criando animais entre as torres. Ver vacas pastando embaixo de turbinas gigantes é comum no Nordeste!</p>",
-        "image": null
+        "image": null,
+        "more": "<ul><li><b>Fator de capacidade:</b> a média da eólica brasileira passa de <b>40%</b>, entre as mais altas do mundo (a média mundial em terra fica perto de 35%).</li><li><b>Água:</b> a operação praticamente não usa água; térmicas a vapor consomem da ordem de 2.000 a 3.000 L por MWh.</li><li><b>Ciclo de vida:</b> cerca de <b>11 g de CO₂ equivalente por kWh</b>, contra cerca de 490 g do gás em ciclo combinado e 820 g do carvão (IPCC).</li></ul><p class=\"more-src\">Fontes: IPCC; USGS; EPE.</p>"
       },
       {
         "pageNumber": 4,
         "title": "Desafios e Futuro",
         "content": "<p>Nem tudo é perfeito:</p><ul><li><b>O vento para às vezes.</b> Quando isso acontece, a eletricidade cai. Por isso a cidade precisa de outras fontes de energia junto.</li><li><b>Aves e morcegos</b> podem bater nas pás.</li><li><b>Barulho:</b> as turbinas devem ficar longe das casas.</li><li>Algumas pessoas acham que elas <b>mudam a paisagem</b>.</li></ul><p>No futuro, teremos turbinas <b>no mar</b>, onde venta ainda mais, turbinas maiores e <b>baterias gigantes</b> para guardar energia para quando o vento parar.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>O licenciamento ambiental avalia rotas de aves migratórias e colônias de morcegos antes de liberar um parque. A OMS recomenda que o ruído médio de turbinas fique abaixo de <b>45 dB</b> (Lden). As pás são de compósito de fibra de vidro e resina, difíceis de reciclar; a troca de turbinas antigas por novas, mais potentes, no mesmo lugar se chama <b>repotenciação</b>.</p><p class=\"more-src\">Fontes: OMS, diretrizes de ruído ambiental; Ibama.</p>"
       }
     ],
     "quiz": {
@@ -1683,25 +1716,29 @@
         "pageNumber": 1,
         "title": "Eletricidade Direto do Sol",
         "content": "<p>Energia solar é a <b>eletricidade feita com a luz do sol</b>. Quem faz isso são os painéis solares, aquelas placas escuras que você já viu em telhados.</p><ul><li>A <b>luz do sol bate</b> no painel.</li><li>O material do painel <b>reage à luz</b> e cria uma corrente elétrica.</li><li>Um aparelho <b>ajusta essa corrente</b> para o tipo que usamos em casa.</li><li>A eletricidade vai para a casa ou para a rede da cidade.</li></ul><p>O sol manda para a Terra muito mais energia do que o mundo inteiro usa. O desafio é conseguir captar e guardar essa energia.</p>",
-        "image": "assets/images/studies/fazenda-solar.webp"
+        "image": "assets/images/studies/fazenda-solar.webp",
+        "more": "<p>Células de silício usam o <b>efeito fotovoltaico</b>: a luz solta elétrons, que viram corrente contínua; módulos comerciais convertem cerca de <b>20% a 23%</b> da luz. O Sol entrega à Terra cerca de 170 mil terawatts de potência, milhares de vezes o que a humanidade consome.</p><p class=\"more-src\">Fonte: CRESESB/CEPEL.</p>"
       },
       {
         "pageNumber": 2,
         "title": "O País do Sol",
         "content": "<p>O Brasil recebe <b>sol forte quase o ano inteiro</b>. Até a parte menos ensolarada do nosso país recebe mais sol do que países europeus que já usam muita energia solar!</p><p>O sertão do Nordeste é uma das regiões mais ensolaradas do planeta.</p><p>Por isso, a energia solar cresceu muito rápido por aqui. Hoje, muitas casas e empresas produzem a própria eletricidade com painéis no telhado, e grandes usinas solares já funcionam em vários estados.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Pelo Atlas Brasileiro de Energia Solar (INPE), a irradiação no Brasil fica em torno de <b>1.500 a 2.400 kWh por m² por ano</b>, contra cerca de 900 a 1.250 na Alemanha. Desde 2023 a solar é a segunda maior fonte em potência instalada no país, atrás só da hidráulica, e passou de 40 GW em 2024 (ANEEL; ABSOLAR).</p><p>Pelas regras da ANEEL (Lei 14.300/2022): <b>microgeração</b> até 75 kW, <b>minigeração</b> acima de 75 kW e até 3 MW, e <b>geração centralizada</b> acima disso. No jogo, a Fazenda Solar é minigeração; a cidade do jogo é pequena (escala reduzida), mas as faixas citadas são as reais.</p><p class=\"more-src\">Fontes: INPE; ANEEL; Lei 14.300/2022.</p>"
       },
       {
         "pageNumber": 3,
         "title": "Por que Apostar no Sol",
         "content": "<ul><li><b>Energia limpa:</b> não solta fumaça nem gases que esquentam o planeta.</li><li><b>Silêncio total:</b> os painéis não fazem barulho.</li><li><b>Não gasta água</b> para funcionar.</li><li><b>Não acaba:</b> o sol vai continuar brilhando por muito, muito tempo.</li><li><b>Conta de luz bem menor</b> para quem instala em casa.</li><li><b>Muitos empregos</b> para instalar e cuidar dos painéis.</li></ul><p>E em dia nublado? O painel <b>continua funcionando</b>, porque um pouco de luz atravessa as nuvens. Só que produz menos energia do que num dia de sol forte.</p>",
-        "image": null
+        "image": null,
+        "more": "<ul><li><b>Ciclo de vida:</b> cerca de <b>40 a 50 g de CO₂ equivalente por kWh</b> (IPCC), contra 820 g do carvão.</li><li><b>Degradação:</b> cerca de 0,5% de perda por ano; as garantias costumam prometer 80% a 85% da potência após 25 anos.</li><li><b>Retorno energético:</b> um painel devolve a energia gasta para fabricá-lo em cerca de 1 a 2 anos.</li></ul><p class=\"more-src\">Fontes: IPCC; CRESESB/CEPEL.</p>"
       },
       {
         "pageNumber": 4,
         "title": "A Fazenda Solar e o Futuro",
         "content": "<p>Uma fazenda solar é uma <b>área enorme coberta de painéis</b>, feita para mandar eletricidade para a cidade inteira.</p><ul><li>Alguns painéis <b>giram sozinhos</b> para seguir o sol durante o dia e produzem mais.</li><li>Dá para <b>plantar embaixo</b> dos painéis: eles fazem sombra para algumas plantas, e o agricultor ganha com a energia e com a colheita.</li></ul><p>Desafios: o sol se põe toda noite, então é preciso <b>baterias</b> para guardar energia; e os painéis velhos precisam ser <b>reciclados</b>.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Rastreadores de um eixo aumentam a geração em cerca de 15% a 25%. Na <b>agrivoltaica</b>, painéis mais altos dividem o terreno com pasto ou lavoura. Um módulo é feito principalmente de vidro e alumínio, que somam a maior parte do peso e são recicláveis; a Lei 12.305/2010 (Política Nacional de Resíduos Sólidos) prevê logística reversa para eletroeletrônicos.</p><p class=\"more-src\">Fontes: EPE; Lei 12.305/2010.</p>"
       }
     ],
     "quiz": {
@@ -1772,25 +1809,29 @@
         "pageNumber": 1,
         "title": "Transformando Água em Eletricidade",
         "content": "<p>Uma usina hidrelétrica faz eletricidade com a <b>força da água em movimento</b>.</p><ul><li>Uma <b>barragem</b> fecha o rio e forma um lago enorme, chamado reservatório.</li><li>A água <b>desce com força</b> por grandes tubos.</li><li>Essa força <b>gira turbinas</b> gigantes.</li><li>As turbinas movem um <b>gerador</b>, que produz eletricidade.</li><li>A energia viaja por fios até as cidades.</li></ul><p>A maior parte da eletricidade do Brasil vem de hidrelétricas. Nosso país tem muitos rios grandes e algumas das maiores usinas do mundo.</p>",
-        "image": "assets/images/studies/usina-hidreletrica.webp"
+        "image": "assets/images/studies/usina-hidreletrica.webp",
+        "more": "<p>A potência é <b>P = ρ · g · Q · H · η</b> (densidade da água, gravidade, vazão, queda e rendimento, perto de 0,9). Itaipu tem <b>14.000 MW</b> em 20 unidades de 700 MW; Belo Monte, cerca de 11.200 MW. Uma CGH tem até 5 MW e uma PCH, até 30 MW (classificação da ANEEL).</p><p class=\"more-src\">Fontes: USGS; ANEEL.</p>"
       },
       {
         "pageNumber": 2,
         "title": "O Outro Lado da Moeda",
         "content": "<p>A água do rio se renova com a chuva, mas as grandes usinas causam <b>impactos fortes</b>:</p><ul><li><b>Áreas alagadas:</b> o lago cobre florestas, plantações, cachoeiras e até cidades.</li><li><b>Pessoas deslocadas:</b> comunidades da beira do rio e povos indígenas perdem suas terras.</li><li><b>Peixes presos:</b> a barragem bloqueia o caminho dos peixes rio acima.</li><li><b>Gases:</b> as plantas que ficam debaixo d'água apodrecem e soltam gases que esquentam o planeta.</li><li><b>Rio diferente:</b> abaixo da barragem, o rio passa a correr de outro jeito.</li></ul><p>Por isso, construir uma grande usina sempre gera muito debate.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>O lago de Sobradinho (BA) cobre mais de <b>4.000 km²</b> e deslocou dezenas de milhares de pessoas. Balbina (AM) alagou cerca de 2.400 km² de floresta para apenas 250 MW, exemplo clássico de pouca energia por área alagada. Reservatórios tropicais com muita matéria orgânica submersa emitem metano.</p><p class=\"more-src\">Fontes: EPE; ANEEL.</p>"
       },
       {
         "pageNumber": 3,
         "title": "Água e Energia Andam Juntas",
         "content": "<p>Água e energia dependem uma da outra.</p><p><b>Precisamos de água para fazer energia:</b> a usina precisa de rio cheio. Na seca, o reservatório baixa, a usina produz menos e o país já passou por crises de falta de energia por causa disso.</p><p><b>Precisamos de energia para ter água:</b> bombas elétricas puxam e levam a água até as casas, e as estações que limpam água e esgoto gastam muita energia.</p><p>Então, quando você <b>economiza água</b>, também economiza energia. E quando economiza energia, ajuda a poupar água. Tudo está ligado!</p>",
-        "image": null
+        "image": null,
+        "more": "<p>A hidráulica gera <b>mais da metade</b> da eletricidade brasileira (cerca de 59% em 2023). Em 2001, a falta de chuva levou a um racionamento com meta de 20% de economia; em 2021, a crise hídrica criou a bandeira tarifária Escassez Hídrica. No outro sentido, bombear e tratar água está entre os maiores custos das companhias de saneamento, depois da folha de pagamento.</p><p class=\"more-src\">Fontes: EPE, Balanço Energético Nacional; ANEEL; ONS.</p>"
       },
       {
         "pageNumber": 4,
         "title": "O Futuro: Misturar Fontes",
         "content": "<ul><li><b>Usinas pequenas</b>, que aproveitam quedas d'água menores e causam menos estrago.</li><li><b>Usinas sem lago grande</b>, que usam só a correnteza do rio.</li><li><b>Modernizar usinas antigas</b> para gerar mais sem construir novas barragens.</li><li><b>Juntar com sol e vento:</b> quando chove pouco, costuma ter mais sol e vento.</li></ul><p>O segredo não é escolher uma fonte só, e sim <b>combinar várias</b>. Assim, quando uma falha, as outras ajudam.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Belo Monte, Jirau e Santo Antônio são usinas <b>a fio d'água</b>, com reservatórios pequenos para seu tamanho. <b>Hidrelétricas reversíveis</b> bombeiam água para um lago mais alto quando sobra energia e a soltam quando falta: são a maior parte do armazenamento de energia do mundo. A <b>repotenciação</b> troca turbinas antigas por novas e gera mais sem nova barragem.</p><p class=\"more-src\">Fontes: EPE, Plano Decenal de Expansão de Energia; ONS.</p>"
       }
     ],
     "quiz": {
@@ -2407,25 +2448,29 @@
         "pageNumber": 1,
         "title": "O que sai de uma cana",
         "content": "<p>A cana-de-açúcar é uma planta comprida e cheia de caldo doce. Na usina, ela vira várias coisas:</p><ul><li>🍬 <b>Açúcar</b>, que vai para a cozinha.</li><li>⛽ <b>Etanol</b>, o álcool que abastece os carros nos postos.</li><li>⚡ <b>Eletricidade</b>, feita com o <b>bagaço</b>, aquela palha que sobra depois de espremer a cana.</li></ul><p>Por isso ela se chama <b>sucroenergética</b>: faz açúcar e energia.</p><p>🇧🇷 O Brasil é <b>referência no mundo</b> em etanol de cana e em energia feita com bagaço!</p>",
-        "image": "assets/images/studies/usina-sucroenergetica.webp"
+        "image": "assets/images/studies/usina-sucroenergetica.webp",
+        "more": "<p>Cada tonelada de cana rende cerca de <b>85 litros de etanol</b> (ou cerca de 135 kg de açúcar), cerca de 250 a 280 kg de bagaço úmido e uma quantidade parecida de palha. O Brasil é o maior produtor de cana do mundo, com safras na casa de <b>700 milhões de toneladas</b> (Conab).</p><p class=\"more-src\">Fontes: Conab; EPE.</p>"
       },
       {
         "pageNumber": 2,
         "title": "Bagaço que vira luz",
         "content": "<p>Sabe o bagaço que sobra quando você toma caldo de cana na feira? Na usina, ele não vai para o lixo:</p><ul><li>🔥 O bagaço é queimado numa <b>caldeira</b>.</li><li>♨️ O fogo ferve água e faz <b>vapor</b>.</li><li>🌀 O vapor gira uma <b>turbina</b> ligada a um gerador.</li><li>⚡ A eletricidade abastece a própria usina e a sobra vai para a cidade.</li></ul><p>Isso se chama <b>bioeletricidade</b>. E tem uma vantagem: a colheita da cana acontece justamente na época mais seca, quando os rios baixam e as hidrelétricas produzem menos.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>A biomassa responde por cerca de <b>8%</b> da eletricidade brasileira, e o bagaço de cana é a maior parte disso. A geração se concentra de abril a novembro, na safra do Centro-Sul, que coincide com o período seco: a bioeletricidade complementa as hidrelétricas. Caldeiras de alta pressão (65 a 100 bar) permitem vender muito mais energia à rede.</p><p class=\"more-src\">Fontes: EPE, Balanço Energético Nacional.</p>"
       },
       {
         "pageNumber": 3,
         "title": "Os cuidados com a água",
         "content": "<p>A usina também traz desafios, e muitos têm a ver com a água:</p><ul><li>💧 <b>Usa muita água</b> para lavar a cana e esfriar as máquinas. Usinas modernas reaproveitam boa parte dela.</li><li>🟤 Fazer etanol deixa um líquido escuro chamado <b>vinhaça</b>. Se cair no rio, os micróbios que a decompõem gastam o oxigênio da água, e os peixes morrem sufocados.</li><li>🌱 Bem usada, a vinhaça vira <b>adubo</b>: ela é espalhada com cuidado nos canaviais, o que se chama <b>fertirrigação</b>.</li></ul><p>A mesma vinhaça que mata um rio pode ajudar a plantação a crescer. Tudo depende de como é usada!</p>",
-        "image": null
+        "image": null,
+        "more": "<p>A <b>vinhaça</b> sai na proporção de cerca de <b>10 a 15 litros por litro de etanol</b>, com carga orgânica dezenas de vezes maior que a do esgoto doméstico. Usada na fertirrigação, devolve potássio ao solo, mas a dose é controlada pelos órgãos ambientais (em São Paulo, pela CETESB) para não contaminar rios e o aquífero. Usinas modernas reduziram a captação de água para cerca de 1 m³ por tonelada de cana.</p><p class=\"more-src\">Fontes: CETESB; EPE.</p>"
       },
       {
         "pageNumber": 4,
         "title": "Queimadas e monocultura",
         "content": "<p>Outros cuidados importantes:</p><ul><li>🔥 Antigamente era comum <b>queimar a palha</b> do canavial antes da colheita. A fumaça faz mal para quem respira e suja o ar das cidades. Hoje, na maior parte dos canaviais, máquinas colhem a cana crua e a palha fica protegendo o solo.</li><li>🌾 A <b>monocultura</b>, que é plantar só cana em áreas enormes, deixa o solo cansado e espanta bichos e plantas nativas.</li><li>🌳 Manter as <b>matas na beira dos rios</b> no meio do canavial protege a água e a vida.</li></ul><p>Uma usina bem cuidada gera energia renovável. Mal cuidada, polui o ar, a terra e a água.</p><p>✅ Agora teste seus conhecimentos!</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Em São Paulo, a Lei estadual 11.241/2002 e o Protocolo Agroambiental de 2007 anteciparam o fim da queima da palha nas áreas mecanizáveis. O Zoneamento Agroecológico da Cana (2009) vedou a expansão na Amazônia e no Pantanal; o decreto foi revogado em 2019.</p><p class=\"more-src\">Fontes: CETESB, qualidade do ar; EPE.</p>"
       }
     ],
     "quiz": {
@@ -2501,25 +2546,29 @@
         "pageNumber": 1,
         "title": "O que é biomassa?",
         "content": "<p><b>Biomassa</b> é todo material que vem de seres vivos, principalmente de plantas. Na usina de biomassa, o combustível são <b>restos</b> que sobrariam de outras atividades:</p><ul><li>🪵 <b>Cavaco</b>: madeira picada em pedacinhos, de serrarias e de galhos.</li><li>🌾 <b>Casca de arroz</b>, que sobra nas beneficiadoras do Sul.</li><li>🥥 Cascas de coco, de castanha e de outros frutos.</li></ul><p>Em vez de apodrecer ou ser queimado à toa, esse resto vira <b>eletricidade</b>.</p>",
-        "image": "assets/images/studies/usina-biomassa.webp"
+        "image": "assets/images/studies/usina-biomassa.webp",
+        "more": "<p>Cavaco de eucalipto e pinus, casca de arroz e resíduos de serraria têm poder calorífico de cerca de <b>3.000 a 4.500 kcal/kg</b> quando secos; a umidade derruba esse valor. O Rio Grande do Sul produz cerca de 70% do arroz brasileiro, e a casca vira combustível em usinas locais.</p><p class=\"more-src\">Fonte: EPE, ABCdEnergia.</p>"
       },
       {
         "pageNumber": 2,
         "title": "Como a usina funciona",
         "content": "<p>A ideia é parecida com a de uma panela de pressão gigante:</p><ul><li>🔥 A biomassa é queimada numa <b>caldeira</b>.</li><li>♨️ O calor ferve água e faz <b>vapor</b>.</li><li>🌀 O vapor gira uma <b>turbina</b>, que move o gerador.</li><li>⚡ A eletricidade segue pelos fios até a cidade.</li></ul><p>Uma vantagem: ao contrário do sol e do vento, a biomassa pode ser queimada <b>a qualquer hora</b>, de dia ou de noite, com vento ou sem vento.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Usinas a vapor de biomassa convertem cerca de <b>20% a 30%</b> da energia do combustível em eletricidade; com <b>cogeração</b> (usar também o vapor ou o calor em processos industriais), o aproveitamento total passa de 70%. Como queima um combustível guardado, é <b>despachável</b>: liga quando a rede precisa.</p><p class=\"more-src\">Fonte: EPE.</p>"
       },
       {
         "pageNumber": 3,
         "title": "Renovável, mas com condições",
         "content": "<p>Uma árvore, enquanto cresce, puxa do ar o gás que esquenta o planeta. Quando ela é queimada, devolve esse gás. Por isso a biomassa pode ser renovável: <b>uma planta nova puxa de volta o que a velha soltou</b>.</p><p>Mas isso só vale se:</p><ul><li>✅ A madeira vier de <b>reflorestamento</b>, áreas plantadas para isso, ou de <b>resíduos</b>.</li><li>❌ Nunca de <b>mata nativa derrubada</b>. Cortar floresta para queimar destrói rios, bichos e o clima.</li></ul>",
-        "image": null
+        "image": null,
+        "more": "<p>No ciclo de vida, o IPCC estima cerca de <b>230 g de CO₂ equivalente por kWh</b> para a biomassa dedicada, contra 820 g do carvão; o número piora muito se a madeira vier de desmatamento. O Brasil tem cerca de <b>10 milhões de hectares</b> de florestas plantadas (Ibá), e a certificação florestal ajuda a garantir a origem.</p><p class=\"more-src\">Fontes: IPCC; EPE.</p>"
       },
       {
         "pageNumber": 4,
         "title": "Fumaça e filtros",
         "content": "<p>Queimar qualquer coisa solta <b>fumaça</b>, com fuligem e pozinho que fazem mal para o pulmão e sujam o ar.</p><ul><li>🧯 Por isso a usina precisa de <b>filtros</b> na chaminé, que seguram a fuligem antes de ela sair.</li><li>🏘️ Deve ficar <b>longe das casas</b>.</li><li>💧 Também usa água para fazer o vapor, que precisa ser bem cuidada.</li></ul><p>No jogo, a usina de biomassa dá energia firme, mas aumenta um pouco a poluição. Combinar com sol e vento é o melhor caminho!</p><p>✅ Agora teste seus conhecimentos!</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Filtros de mangas e precipitadores eletrostáticos retêm mais de <b>99%</b> das partículas. A <b>Resolução CONAMA 382/2006</b> fixa limites de emissão de poluentes para fontes fixas, incluindo caldeiras que queimam derivados de madeira e bagaço.</p><p class=\"more-src\">Fontes: CETESB, qualidade do ar; CONAMA.</p>"
       }
     ],
     "quiz": {
@@ -2591,25 +2640,29 @@
         "pageNumber": 1,
         "title": "Energia de dentro do átomo",
         "content": "<p>Tudo no mundo é feito de pecinhas minúsculas chamadas <b>átomos</b>. Alguns átomos bem pesados, como o do <b>urânio</b>, podem ser partidos em dois pedaços. Isso se chama <b>fissão</b>.</p><p>Quando um átomo se parte, ele solta <b>muito calor</b>. E na usina nuclear isso acontece com uma quantidade enorme de átomos, dentro de uma peça bem protegida chamada <b>reator</b>.</p><p>💡 Um punhado pequeno de combustível nuclear gera tanta energia quanto montanhas de carvão!</p>",
-        "image": "assets/images/studies/usina-nuclear.webp"
+        "image": "assets/images/studies/usina-nuclear.webp",
+        "more": "<p>A fissão completa de 1 kg de urânio-235 libera cerca de <b>80 TJ</b> de calor, o equivalente a queimar cerca de 2.700 toneladas de carvão. O combustível de reatores como os de Angra é urânio enriquecido a cerca de 3% a 5% de urânio-235, em pastilhas montadas em varetas.</p><p class=\"more-src\">Fontes: Eletronuclear; CNEN.</p>"
       },
       {
         "pageNumber": 2,
         "title": "Do calor à tomada",
         "content": "<p>Depois do calor, o caminho é parecido com o de outras usinas:</p><ul><li>⚛️ O calor da fissão <b>ferve água</b>.</li><li>♨️ A água vira <b>vapor</b> com muita força.</li><li>🌀 O vapor gira uma <b>turbina</b> ligada ao gerador.</li><li>⚡ A eletricidade vai para as cidades.</li></ul><p>Vantagens: produz <b>muita energia num espaço pequeno</b>, funciona dia e noite, faça chuva ou faça sol, e quase não solta fumaça nem gás que esquenta o planeta.</p><p>🇧🇷 O Brasil tem usinas nucleares em <b>Angra dos Reis</b>, no litoral do Rio de Janeiro, à beira do mar.</p>",
-        "image": null
+        "image": null,
+        "more": "<ul><li><b>Angra 1:</b> 640 MW, em operação comercial desde 1985.</li><li><b>Angra 2:</b> 1.350 MW, desde 2001.</li><li><b>Angra 3:</b> 1.405 MW, com a obra parada há anos.</li></ul><p>A nuclear gera cerca de <b>2%</b> da eletricidade brasileira, com fator de capacidade de cerca de 85% a 90%, e emite cerca de <b>12 g de CO₂ equivalente por kWh</b> no ciclo de vida (IPCC).</p><p class=\"more-src\">Fontes: Eletronuclear; EPE; IPCC.</p>"
       },
       {
         "pageNumber": 3,
         "title": "Uma usina que bebe muita água",
         "content": "<p>O vapor que sai da turbina precisa ser <b>esfriado</b> para virar água de novo. Para isso, a usina usa <b>muita, muita água</b>:</p><ul><li>🌊 Pode puxar água do <b>mar</b> ou de um <b>rio</b> grande.</li><li>☁️ Ou usar <b>torres de resfriamento</b>, aquelas chaminés largas que soltam nuvens brancas. Aquilo é só vapor de água, não é fumaça!</li></ul><p>⚠️ A água devolvida ao mar ou ao rio volta <b>morna</b>. Água mais quente guarda menos oxigênio, e isso atrapalha <b>peixes</b>, corais e outros bichos que vivem ali.</p><p>Por isso a usina nuclear é construída perto de muita água e precisa ser vigiada o tempo todo.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Angra usa <b>água do mar</b> da enseada de Itaorna, na baía da Ilha Grande, num circuito aberto: a água volta ao mar alguns graus mais quente, e o efeito é monitorado. Usinas com torre de resfriamento úmida consomem da ordem de <b>2.500 litros de água por MWh</b>.</p><p class=\"more-src\">Fontes: Eletronuclear; USGS.</p>"
       },
       {
         "pageNumber": 4,
         "title": "Riscos e responsabilidade",
         "content": "<p>A energia nuclear exige cuidados enormes:</p><ul><li>☢️ O combustível usado vira <b>rejeito radioativo</b>, um lixo perigoso que precisa ficar guardado em lugar seguro por <b>muito, muito tempo</b>, mais do que muitas vidas humanas.</li><li>🛡️ A <b>segurança é rígida</b>: paredes grossas de concreto e aço, vários sistemas de emergência e gente treinada vigiando sem parar.</li><li>🚨 Acidentes são raros, mas, quando acontecem, podem espalhar contaminação por regiões inteiras.</li></ul><p>No jogo, ela é a tecnologia mais avançada: precisa de <b>universidade</b> e de <b>centro de pesquisa</b>. Muita energia, muita responsabilidade!</p><p>✅ Agora teste seus conhecimentos!</p>",
-        "image": null
+        "image": null,
+        "more": "<p>O combustível usado (rejeito de alta atividade) fica em piscinas e em armazenamento a seco dentro do próprio terreno de Angra; a CNEN licencia e fiscaliza. Os maiores acidentes nucleares foram Chernobyl (1986) e Fukushima (2011). O maior acidente radiológico do Brasil não foi numa usina: em Goiânia, em 1987, uma cápsula de césio-137 de um aparelho de radioterapia abandonado foi aberta, e quatro pessoas morreram nas semanas seguintes.</p><p class=\"more-src\">Fontes: CNEN; Eletronuclear.</p>"
       }
     ],
     "quiz": {
@@ -2685,25 +2738,29 @@
         "pageNumber": 1,
         "title": "O mar que sobe e desce",
         "content": "<p>Quem já foi à praia percebeu: em algumas horas o mar <b>avança</b> sobre a areia e, depois, <b>recua</b>. Isso é a <b>maré</b>.</p><p>Quem puxa a água é principalmente a <b>Lua</b>! A força da gravidade dela atrai os oceanos, e o Sol ajuda um pouco. Com a Terra girando, o mar sobe e desce todos os dias, num ritmo que dá para prever com antecedência.</p><p>💡 Por isso os pescadores consultam a tabela das marés antes de sair com o barco.</p>",
-        "image": "assets/images/studies/usina-maremotriz.webp"
+        "image": "assets/images/studies/usina-maremotriz.webp",
+        "more": "<p>Na maior parte do litoral as marés são <b>semidiurnas</b>: duas marés altas e duas baixas por dia, com ciclo de cerca de 12 h 25 min. Nas luas nova e cheia (sizígia), Sol e Lua puxam juntos e as marés ficam maiores; a Lua responde por cerca de dois terços da força de maré.</p><p class=\"more-src\">Fonte: NOAA, marés.</p>"
       },
       {
         "pageNumber": 2,
         "title": "Água em movimento é energia",
         "content": "<p>Uma usina maremotriz fecha parte de uma baía com uma <b>barragem baixa</b> cheia de comportas.</p><ul><li>🌊 Quando a maré sobe, a água entra pelos canais.</li><li>⚙️ No caminho ela gira <b>turbinas</b> escondidas debaixo d'água.</li><li>⚡ As turbinas giram geradores, que fazem eletricidade.</li></ul><p>Quando a maré desce, a água sai pelo mesmo caminho e gira as turbinas de novo!</p>",
-        "image": null
+        "image": null,
+        "more": "<p>As maiores usinas de barragem são <b>La Rance</b> (França, 240 MW, em operação desde 1966) e <b>Sihwa</b> (Coreia do Sul, 254 MW, desde 2011). Há também turbinas de corrente de maré, sem barragem, presas no fundo de canais estreitos. No mundo inteiro, a energia das marés soma pouco mais de meio gigawatt.</p><p class=\"more-src\">Fontes: EPE; NOAA.</p>"
       },
       {
         "pageNumber": 3,
         "title": "Por que precisa de muita água?",
         "content": "<p>A maré só empurra bastante água em lugares <b>abertos e grandes</b>, como baías e estuários, onde o rio encontra o mar.</p><p>No Brasil, a costa do <b>Maranhão</b> tem uma das maiores marés do país, e a região de São Luís já estudou usinas assim.</p><p>No jogo, a usina só pode ser construída num <b>corpo d'água grande</b>: um laguinho não tem maré que chegue.</p>",
-        "image": null
+        "image": null,
+        "more": "<p>A energia de cada ciclo cresce com o <b>quadrado da amplitude</b> da maré: E ≈ ½ · ρ · g · A · h², em que A é a área da bacia e h a diferença entre maré alta e baixa. Em São Luís (MA), a amplitude passa de 6 m nas marés de sizígia; na maior parte do litoral brasileiro fica abaixo de 2 m. Na Baía de Fundy, no Canadá, chega a cerca de 16 m. O jogo usa uma cidade pequena, em escala reduzida.</p><p class=\"more-src\">Fontes: NOAA; EPE.</p>"
       },
       {
         "pageNumber": 4,
         "title": "Vantagens e cuidados",
         "content": "<ul><li>✅ A maré nunca falta: a Lua puxa o mar todos os dias, mesmo quando não a vemos no céu, faça sol ou chuva.</li><li>✅ Não solta fumaça nem queima combustível.</li><li>⚠️ A barragem muda o caminho da água: peixes e manguezais precisam de passagens e de cuidado.</li><li>⚠️ É cara e difícil de construir, por isso é uma tecnologia avançada.</li></ul><p>✅ Agora teste seus conhecimentos!</p>",
-        "image": null
+        "image": null,
+        "more": "<p>Barragens de maré mudam a circulação, a salinidade e o depósito de sedimentos do estuário; em La Rance, a variação de maré dentro da bacia diminuiu e a fauna mudou nas primeiras décadas. Por isso estuários com manguezais, berçário de peixes e caranguejos, exigem estudo ambiental cuidadoso.</p><p class=\"more-src\">Fontes: EPE; NOAA.</p>"
       }
     ],
     "quiz": {
@@ -3074,6 +3131,978 @@
       {
         "label": "USGS Water Science School — Água salgada e salinidade",
         "url": "https://www.usgs.gov/special-topics/water-science-school/science/saline-water-and-salinity"
+      }
+    ]
+  },
+  "coal_plant": {
+    "buildingId": "coal_plant",
+    "buildingName": "Usina a Carvão",
+    "category": "power",
+    "difficulty": "intermediário",
+    "studyTitle": "Usina a Carvão: Energia com Fumaça",
+    "studyIcon": "🏭",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender como a usina a carvão transforma fogo em eletricidade",
+      "Perceber que o combustível precisa ser comprado o tempo todo",
+      "Reconhecer o que a fumaça e as cinzas fazem com o ar, a água e o clima"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Uma Pedra que Pega Fogo",
+        "content": "<p>O <b>carvão mineral</b> é uma pedra preta que nasceu de plantas enterradas há muito, muito tempo. Debaixo da terra, com calor e peso, elas viraram uma pedra que queima.</p><p>Na usina, o caminho é este:</p><ul><li>O carvão é <b>moído</b> até virar pó.</li><li>O pó <b>queima numa caldeira</b> enorme.</li><li>O fogo <b>ferve água</b> e faz vapor.</li><li>O vapor <b>gira uma turbina</b> ligada ao gerador, que faz eletricidade.</li></ul><p>É o mesmo jeito de uma panela de pressão gigante. A diferença está no que vai para o fogo.</p>",
+        "image": "assets/images/studies/usina-carvao.webp",
+        "more": "<p>Uma usina a carvão converte em eletricidade só cerca de <b>33% a 40%</b> da energia do combustível; o resto vira calor jogado no ar e na água de resfriamento. O carvão mineral brasileiro tem muita cinza (com frequência mais de 40% da massa), o que reduz o rendimento e aumenta o resíduo.</p><p>As usinas brasileiras ficam em Santa Catarina e no Rio Grande do Sul, perto das minas de carvão nacional, e em portos do Ceará e do Maranhão, que queimam carvão importado.</p><p class=\"more-src\">Fontes: EPE, ABCdEnergia e Balanço Energético Nacional.</p>"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Barata para Construir, Cara para Manter",
+        "content": "<p>Construir uma usina a carvão custa pouco perto de outras usinas grandes, e ela <b>liga a qualquer hora</b>, faça sol, chuva ou calmaria.</p><p>Mas tem um porém: o carvão <b>acaba no fogo</b>. Para a usina continuar funcionando, é preciso <b>comprar carvão o tempo todo</b>, trazido das minas de trem, de caminhão ou de navio. A conta chega todo mês, sem parar.</p><p>O sol e o vento são de graça. O carvão, não.</p>",
+        "image": null,
+        "more": "<p>Toda usina tem dois tipos de custo: o de <b>construir</b> (investimento, em R$ por kW instalado) e o de <b>operar</b>. Nas térmicas, a operação é medida pelo <b>custo variável unitário (CVU)</b>, em R$ por MWh, que paga o combustível cada vez que a usina é ligada.</p><p>O <b>ONS</b> liga primeiro as usinas de menor custo (ordem de mérito); térmicas caras só entram quando faltam água, vento ou sol. Os CVUs, publicados pela ANEEL e pela CCEE, vão de pouco mais de cem reais por MWh nas térmicas mais eficientes a mais de mil reais por MWh nas movidas a óleo. Eólica e solar não pagam combustível: quase todo o custo está na construção, e os preços contratados nos leilões de energia nova dessas fontes estão entre os mais baixos do país.</p><p class=\"more-src\">Fontes: ONS; ANEEL; CCEE; EPE, leilões de energia.</p>"
+      },
+      {
+        "pageNumber": 3,
+        "title": "Fumaça no Ar, Sujeira na Água",
+        "content": "<ul><li><b>Fumaça e fuligem:</b> um pozinho preto que entra no pulmão e causa tosse, asma e outras doenças.</li><li><b>Gases que esquentam o planeta:</b> o carvão é o combustível que mais solta gás carbônico para cada pedaço de energia.</li><li><b>Chuva ácida:</b> alguns gases da chaminé se misturam com a chuva e deixam rios, lagos e plantações doentes.</li><li><b>Cinzas:</b> sobra muita cinza, que precisa ser guardada com cuidado para não sujar o solo e a água.</li><li><b>Água quente:</b> a usina usa muita água para esfriar o vapor. Se essa água volta quente para o rio, os peixes sofrem.</li></ul>",
+        "image": null,
+        "more": "<ul><li><b>Gás carbônico (CO₂):</b> cerca de <b>0,9 a 1 tonelada por MWh</b> numa usina a carvão, contra cerca de 0,35 a 0,4 t/MWh numa térmica a gás de ciclo combinado. Somando todo o ciclo de vida, o IPCC estima cerca de 820 g de CO₂ equivalente por kWh para o carvão, contra cerca de 11 a 12 g para a eólica e a nuclear.</li><li><b>Poluentes do ar:</b> dióxido de enxofre (SO₂, que causa a chuva ácida), óxidos de nitrogênio (NOx), partículas finas (MP2,5) e mercúrio. A OMS estima que a poluição do ar externo causou cerca de <b>4,2 milhões de mortes prematuras</b> no mundo em 2019.</li><li><b>Água:</b> com torre de resfriamento úmida, uma térmica a vapor consome da ordem de <b>2.000 a 3.000 litros de água por MWh</b>.</li></ul><p class=\"more-src\">Fontes: OMS; IPCC; CETESB; USGS.</p>"
+      },
+      {
+        "pageNumber": 4,
+        "title": "Por que Ainda Existe?",
+        "content": "<p>No Brasil, o carvão faz <b>só um pedacinho</b> da nossa eletricidade. A maior parte vem da água, do vento, do sol e das plantas.</p><p>Ele ainda é usado porque <b>não depende do tempo</b>: segura a cidade quando falta chuva para as hidrelétricas. Mas muitos países estão <b>desligando suas usinas a carvão</b> e trocando por sol, vento e baterias.</p><p>Na sua cidade, a usina a carvão pode tirar você de um aperto. Só lembre: <b>cada dia ligada é mais fumaça e mais dinheiro gasto</b>.</p>",
+        "image": null,
+        "more": "<p>Em 2023, cerca de <b>89%</b> da eletricidade brasileira veio de fontes renováveis (hidráulica, eólica, solar e biomassa); no mundo, a média fica perto de 30%. O carvão costuma ficar abaixo de 5% da geração brasileira, subindo em anos secos.</p><p>O Reino Unido, onde nasceram as usinas a carvão, desligou a última delas em <b>setembro de 2024</b>. No Brasil, a <b>Lei 14.299/2022</b> criou um programa de transição energética justa para a região carbonífera de Santa Catarina, que prevê contratar as usinas de lá até 2040 enquanto a economia da região muda.</p><p class=\"more-src\">Fontes: EPE, Balanço Energético Nacional; MME.</p>"
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Uma cidade construiu uma usina a carvão porque era barata. Meses depois, o caixa está sempre apertado. Por quê?",
+          "options": [
+            "A usina para de funcionar quando o dia está nublado",
+            "A fumaça obriga a cidade a pintar as casas toda semana",
+            "O carvão queima e precisa ser comprado o tempo todo",
+            "O vento estraga a chaminé e ela precisa ser trocada"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A página sobre o custo explica que o carvão acaba no fogo: para a usina continuar ligada, é preciso comprar carvão o tempo todo, e a conta chega todo mês."
+        },
+        {
+          "id": 2,
+          "question": "Os moradores que vivem perto da usina a carvão começaram a tossir mais. Qual é a causa mais provável?",
+          "options": [
+            "A fumaça e a fuligem que saem da chaminé",
+            "O barulho da turbina",
+            "A sombra da chaminé sobre as casas",
+            "A água fria que a usina devolve ao rio"
+          ],
+          "correctAnswer": 0,
+          "explanation": "A fuligem é um pozinho preto que sai com a fumaça, entra no pulmão e causa tosse e asma."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "thermal_plant",
+      "gas_combined",
+      "solar_micro"
+    ],
+    "relatedConcepts": [
+      "fossil_fuels",
+      "air_pollution",
+      "climate_change"
+    ],
+    "sources": [
+      {
+        "label": "EPE — Fontes de energia",
+        "url": "https://www.epe.gov.br/pt/abcdenergia/fontes-de-energia"
+      },
+      {
+        "label": "OMS — Qualidade do ar e saúde",
+        "url": "https://www.who.int/news-room/fact-sheets/detail/ambient-(outdoor)-air-quality-and-health"
+      },
+      {
+        "label": "USGS — Água usada por termelétricas",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/thermoelectric-power-water-use"
+      }
+    ]
+  },
+  "thermal_plant": {
+    "buildingId": "thermal_plant",
+    "buildingName": "Termelétrica a Gás",
+    "category": "power",
+    "difficulty": "intermediário",
+    "studyTitle": "Termelétrica a Gás: A Usina de Reserva",
+    "studyIcon": "🔥",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender como a termelétrica transforma gás em eletricidade",
+      "Perceber por que ela é ligada quando falta chuva, sol ou vento",
+      "Pesar a rapidez do gás contra o preço do combustível e a poluição"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Uma Chama que Gira Turbina",
+        "content": "<p>A termelétrica a gás queima <b>gás natural</b>, um gás que fica preso debaixo da terra e do mar, muitas vezes junto do petróleo. Ele chega à usina por canos compridos, os <b>gasodutos</b>, ou em navios, tão gelado que vira líquido.</p><ul><li>O gás <b>queima</b> dentro de uma turbina parecida com um motor de avião.</li><li>O ar quente e rápido <b>gira a turbina</b>.</li><li>A turbina <b>move o gerador</b>, que faz eletricidade.</li></ul>",
+        "image": "assets/images/studies/termeletrica-gas.webp",
+        "more": "<p>Uma termelétrica a gás de <b>ciclo aberto</b> (só a turbina a gás) converte cerca de <b>35% a 40%</b> da energia do gás em eletricidade. O gás natural é principalmente <b>metano (CH₄)</b>. No Brasil ele vem do pré-sal e de outros campos, do gasoduto Bolívia–Brasil e de navios de <b>GNL</b>, o gás natural liquefeito, resfriado a cerca de −162 °C.</p><p class=\"more-src\">Fontes: EPE, ABCdEnergia; MME.</p>"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Liga na Hora que Precisa",
+        "content": "<p>A grande vantagem do gás é a <b>rapidez</b>. A usina pode ser ligada em pouco tempo, de dia ou de noite, faça sol ou chuva.</p><p>Por isso ela funciona como um <b>goleiro reserva</b>: quando o rio baixa e as hidrelétricas produzem menos, ou quando o vento para, as termelétricas entram em campo para não faltar luz.</p><p>Só que, em anos de seca, o país liga muitas delas, e a <b>conta de luz de todo mundo fica mais cara</b>.</p>",
+        "image": null,
+        "more": "<p>Turbinas a gás de ciclo aberto saem do zero à potência máxima em <b>minutos</b>, por isso cobrem a reserva e os horários de maior consumo. O <b>ONS</b> decide quais usinas ligar pela ordem de custo e pela segurança da rede.</p><p>A ANEEL repassa à conta de luz o custo de ligar térmicas pelas <b>bandeiras tarifárias</b> (verde, amarela e vermelha patamares 1 e 2). Na crise hídrica de 2021 foi criada a bandeira <b>Escassez Hídrica</b>, de R$ 14,20 a cada 100 kWh consumidos.</p><p class=\"more-src\">Fontes: ANEEL, bandeiras tarifárias; ONS.</p>"
+      },
+      {
+        "pageNumber": 3,
+        "title": "O Preço do Gás",
+        "content": "<ul><li><b>Combustível caro:</b> o gás é comprado o tempo todo, e o preço sobe e desce com o mercado do mundo inteiro.</li><li><b>Gases que esquentam o planeta:</b> o gás polui menos que o carvão, mas ainda solta gás carbônico.</li><li><b>Vazamentos:</b> se o gás escapa dos canos sem queimar, ele esquenta o planeta ainda mais.</li><li><b>Fumaça mais limpa que a do carvão</b>, quase sem fuligem, mas com gases que irritam o pulmão.</li></ul>",
+        "image": null,
+        "more": "<ul><li><b>CO₂:</b> cerca de <b>0,5 a 0,6 t por MWh</b> em ciclo aberto, mais ou menos metade do carvão.</li><li><b>Metano:</b> se escapa sem queimar, aquece o planeta cerca de <b>80 vezes mais</b> que o CO₂ num período de 20 anos (IPCC, sexto relatório).</li><li><b>NOx:</b> a chama muito quente forma óxidos de nitrogênio, que irritam as vias respiratórias e ajudam a formar ozônio perto do chão.</li><li><b>Preço:</b> o gás é cotado em dólar e acompanha o mercado internacional; em 2022, a guerra na Ucrânia fez o preço do GNL disparar no mundo todo.</li></ul><p class=\"more-src\">Fontes: IPCC; CETESB; EPE.</p>"
+      },
+      {
+        "pageNumber": 4,
+        "title": "Ponte ou Desvio?",
+        "content": "<p>Muita gente chama o gás de <b>energia de transição</b>: uma ponte enquanto a cidade ainda não tem sol, vento e baterias suficientes.</p><p>Uma termelétrica mais moderna, a de <b>ciclo combinado</b>, aproveita o calor que sairia pela chaminé e gera mais com o mesmo gás.</p><p>O segredo é usar a termelétrica <b>como reserva</b>, nas horas de aperto, e não como a fonte principal da cidade.</p>",
+        "image": null,
+        "more": "<p>A participação do gás natural na eletricidade brasileira muda muito com a chuva: em anos secos, como 2021, passou de <b>12%</b>; em anos chuvosos, fica bem abaixo disso. Um ciclo combinado converte <b>55% a 60%</b> da energia do gás, contra 35% a 40% do ciclo aberto.</p><p class=\"more-src\">Fontes: EPE, Balanço Energético Nacional; ONS.</p>"
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Num ano de muita seca, o rio baixa e as hidrelétricas produzem menos. O que costuma acontecer?",
+          "options": [
+            "As termelétricas param, porque também precisam de chuva",
+            "A eletricidade fica mais barata para todo mundo",
+            "As termelétricas a gás são ligadas e a conta de luz sobe",
+            "Os painéis solares deixam de funcionar"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A termelétrica é o goleiro reserva: entra quando o rio baixa. Como o gás é comprado o tempo todo, a conta de luz fica mais cara."
+        },
+        {
+          "id": 2,
+          "question": "Qual é o melhor jeito de usar uma termelétrica a gás numa cidade que quer ser limpa?",
+          "options": [
+            "Como fonte principal, ligada o dia inteiro",
+            "Como reserva, nas horas em que falta sol, vento ou chuva",
+            "Só ao meio-dia, quando o sol está mais forte",
+            "Ligada junto com todas as outras usinas, sempre"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A última página diz que o segredo é usar a termelétrica como reserva, nas horas de aperto, e não como a fonte principal."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "gas_combined",
+      "coal_plant",
+      "grid_battery"
+    ],
+    "relatedConcepts": [
+      "fossil_fuels",
+      "energy_reserve",
+      "electricity_tariffs"
+    ],
+    "sources": [
+      {
+        "label": "EPE — Fontes de energia",
+        "url": "https://www.epe.gov.br/pt/abcdenergia/fontes-de-energia"
+      },
+      {
+        "label": "ANEEL — Agência Nacional de Energia Elétrica",
+        "url": "https://www.gov.br/aneel/pt-br"
+      },
+      {
+        "label": "ONS — Operador Nacional do Sistema Elétrico",
+        "url": "https://www.ons.org.br"
+      }
+    ]
+  },
+  "gas_combined": {
+    "buildingId": "gas_combined",
+    "buildingName": "Termelétrica de Ciclo Combinado",
+    "category": "power",
+    "difficulty": "avançado",
+    "studyTitle": "Ciclo Combinado: O Mesmo Gás, Mais Energia",
+    "studyIcon": "🔥",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender como duas turbinas aproveitam o mesmo combustível",
+      "Diferenciar menos poluição por energia de poluição nenhuma",
+      "Perceber que a usina também gasta água para esfriar o vapor"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Duas Turbinas, Um Só Fogo",
+        "content": "<p>Numa termelétrica comum, o gás queima, gira uma turbina e o ar <b>muito quente</b> sai pela chaminé. Muito calor vai embora sem uso.</p><p>Na usina de <b>ciclo combinado</b>, esse calor é aproveitado:</p><ul><li>A <b>primeira turbina</b> gira com o gás queimando.</li><li>O ar quente que sairia pela chaminé <b>ferve água</b> numa caldeira.</li><li>O vapor gira uma <b>segunda turbina</b>.</li></ul><p>É como assar um bolo e usar o calor do forno, depois, para secar a roupa.</p>",
+        "image": "assets/images/studies/ciclo-combinado.webp",
+        "more": "<p>A turbina a gás solta os gases a cerca de <b>500 a 600 °C</b>. Uma caldeira de recuperação de calor usa esse calor para fazer vapor, que move uma turbina a vapor. Em geral, cerca de dois terços da potência vêm da turbina a gás e um terço da turbina a vapor.</p><p class=\"more-src\">Fonte: EPE, ABCdEnergia.</p>"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Mais Energia, Menos Fumaça por Energia",
+        "content": "<p>Com o mesmo gás, a usina de ciclo combinado faz <b>bem mais eletricidade</b> que uma termelétrica simples. Então, para cada pedaço de energia, ela queima menos gás e solta <b>menos fumaça</b>.</p><p>Mas atenção: ela é <b>grande</b>. Gera tanta energia que acaba queimando muito gás no total. Menos fumaça por energia não quer dizer fumaça nenhuma.</p>",
+        "image": null,
+        "more": "<ul><li><b>Eficiência:</b> 55% a 62% no ciclo combinado, contra 35% a 40% no ciclo aberto e 33% a 40% numa usina a carvão.</li><li><b>CO₂:</b> cerca de <b>0,35 a 0,4 t por MWh</b>, menos da metade do carvão. No ciclo de vida, o IPCC estima cerca de 490 g de CO₂ equivalente por kWh, contra 820 g do carvão.</li><li><b>Tamanho:</b> usinas de ciclo combinado vão de centenas a mais de mil megawatts; a usina Porto de Sergipe, por exemplo, tem cerca de 1,5 GW.</li></ul><p class=\"more-src\">Fontes: EPE; IPCC.</p>"
+      },
+      {
+        "pageNumber": 3,
+        "title": "Água para Esfriar",
+        "content": "<p>A segunda turbina usa vapor, e o vapor precisa ser <b>esfriado</b> para virar água de novo. Para isso a usina gasta água, que vem do rio ou da rede da cidade.</p><ul><li>As torres de resfriamento soltam <b>nuvens brancas</b>: é vapor de água, não fumaça.</li><li>Na seca, essa água <b>faz falta</b> para as pessoas e para o rio.</li><li>Algumas usinas esfriam com ar, como um ventilador gigante, e gastam bem menos água.</li></ul>",
+        "image": null,
+        "more": "<p>Com torre de resfriamento úmida, o ciclo combinado consome da ordem de <b>700 a 1.000 litros de água por MWh</b>, menos que uma usina a carvão (cerca de 2.000 a 3.000 L/MWh), porque só a parte a vapor precisa de resfriamento. Com condensador a ar (resfriamento seco) o consumo de água cai muito, mas a eficiência diminui um pouco e o custo sobe.</p><p class=\"more-src\">Fonte: USGS, água usada por termelétricas.</p>"
+      },
+      {
+        "pageNumber": 4,
+        "title": "Mais Cara de Construir",
+        "content": "<p>Uma usina de ciclo combinado custa <b>muito mais para construir</b> e precisa de engenheiros e de pesquisa. E o gás continua sendo comprado todo mês.</p><p>Ela é uma boa troca quando a cidade precisa de muita energia firme, a qualquer hora. O melhor é combinar: <b>sol e vento</b> na maior parte do tempo, e a usina a gás <b>só quando faltar</b>.</p>",
+        "image": null,
+        "more": "<p>Por unidade de potência, o ciclo combinado custa mais para construir que uma turbina a gás simples, mas gasta bem menos combustível por MWh: compensa quando a usina fica ligada muitas horas. Nos planos da EPE (Plano Decenal de Expansão de Energia), térmicas a gás aparecem como <b>potência firme</b> para cobrir a variação de eólica e solar, ao lado de baterias e de hidrelétricas reversíveis.</p><p class=\"more-src\">Fontes: EPE, Plano Decenal de Expansão de Energia; ONS.</p>"
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "O que a usina de ciclo combinado faz com o ar quente que sairia pela chaminé?",
+          "options": [
+            "Joga no rio para esquentar a água",
+            "Usa para ferver água e girar uma segunda turbina",
+            "Guarda numa bateria para a noite",
+            "Solta mais depressa para limpar o céu"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A primeira página mostra que o calor que iria embora ferve água, e o vapor gira uma segunda turbina."
+        },
+        {
+          "id": 2,
+          "question": "Perto da usina aparece uma nuvem branca saindo da torre de resfriamento. O que é essa nuvem?",
+          "options": [
+            "Fumaça cheia de fuligem",
+            "Gás natural escapando sem queimar",
+            "Poeira da caldeira",
+            "Vapor de água"
+          ],
+          "correctAnswer": 3,
+          "explanation": "A página sobre a água explica que as torres de resfriamento soltam vapor de água, não fumaça."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "thermal_plant",
+      "grid_battery",
+      "research_center"
+    ],
+    "relatedConcepts": [
+      "energy_efficiency",
+      "fossil_fuels",
+      "water_energy_nexus"
+    ],
+    "sources": [
+      {
+        "label": "EPE — Fontes de energia",
+        "url": "https://www.epe.gov.br/pt/abcdenergia/fontes-de-energia"
+      },
+      {
+        "label": "USGS — Água usada por termelétricas",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/thermoelectric-power-water-use"
+      },
+      {
+        "label": "ONS — Operador Nacional do Sistema Elétrico",
+        "url": "https://www.ons.org.br"
+      }
+    ]
+  },
+  "solar_micro": {
+    "buildingId": "solar_micro",
+    "buildingName": "Microgeração Solar",
+    "category": "power",
+    "difficulty": "básico",
+    "studyTitle": "Microgeração Solar: A Usina do Tamanho de um Quintal",
+    "studyIcon": "☀️",
+    "estimatedTime": "4 minutos",
+    "learningObjectives": [
+      "Entender como uma usina solar pequena se liga à rede da cidade",
+      "Conhecer os três tamanhos de usina solar: micro, mini e centralizada",
+      "Perceber como a sobra de energia vira crédito na conta de luz"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Pequena, mas Ligada à Rede",
+        "content": "<p>A <b>microgeração solar</b> é a menor usina que pode ser ligada à rede elétrica: alguns painéis num telhado, num quintal ou num terreno do tamanho de uma chácara.</p><ul><li>De dia, os painéis <b>transformam luz em eletricidade</b>.</li><li>Um aparelho chamado <b>inversor</b> deixa essa eletricidade igual à da tomada.</li><li>O que a casa não usa <b>vai para a rede</b> e ajuda os vizinhos.</li></ul>",
+        "image": "assets/images/studies/microgeracao-solar.webp",
+        "more": "<p>Painéis comerciais de silício convertem cerca de <b>20% a 23%</b> da luz em eletricidade, em <b>corrente contínua</b>. O inversor transforma em <b>corrente alternada</b> de 127/220 V e 60 Hz, igual à da tomada. No Brasil, cada <b>1 kWp</b> (quilowatt-pico) instalado gera em média cerca de <b>110 a 140 kWh por mês</b>, conforme a região.</p><p class=\"more-src\">Fontes: CRESESB/CEPEL; ANEEL.</p>"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Pequena, Média e Grande",
+        "content": "<p>A agência que cuida das regras da energia no Brasil, a <b>ANEEL</b>, separa as usinas solares pelo tamanho:</p><ul><li><b>Microgeração:</b> as menores, em casas, escolas, lojas e sítios.</li><li><b>Minigeração:</b> usinas médias, como uma fazenda solar que abastece um bairro.</li><li><b>Geração centralizada:</b> as gigantes, que vendem energia para o país inteiro.</li></ul><p>As duas primeiras ficam <b>perto de quem usa a energia</b>. Por isso se chamam <b>geração distribuída</b>: a energia nasce espalhada pela cidade, em vez de vir de longe.</p>",
+        "image": null,
+        "more": "<ul><li><b>Microgeração distribuída:</b> potência instalada de até <b>75 kW</b>.</li><li><b>Minigeração distribuída:</b> acima de 75 kW e até <b>3 MW</b> para fontes não despacháveis, como a solar (até 5 MW para fontes despacháveis, como o biogás).</li><li><b>Geração centralizada:</b> usinas maiores, que vendem energia em leilões (mercado regulado) ou no mercado livre e se ligam à rede de transmissão.</li></ul><p>Uma casa costuma usar sistemas de 3 a 6 kWp; 75 kW equivalem a cerca de 135 painéis de 550 W. O jogo usa uma cidade pequena, em escala reduzida (a Microgeração Solar do jogo gera 45 kW); as faixas acima são as reais.</p><p class=\"more-src\">Fontes: Lei 14.300/2022; ANEEL, Resolução Normativa 1.059/2023.</p>"
+      },
+      {
+        "pageNumber": 3,
+        "title": "A Conta de Luz que Vira Crédito",
+        "content": "<p>Quando os painéis produzem mais do que a casa gasta, a sobra vai para a rede e vira <b>crédito</b>, como um cofrinho de energia.</p><p>À noite, quando o sol some, a casa usa energia da rede e <b>desconta do cofrinho</b>. No fim do mês, a conta de luz fica bem menor.</p><p>Assim, cada família, escola ou comércio pode virar um pouquinho <b>produtor de energia</b>.</p>",
+        "image": null,
+        "more": "<p>É o <b>Sistema de Compensação de Energia Elétrica (SCEE)</b>, criado pela ANEEL em 2012 (Resolução Normativa 482) e transformado em lei em 2022 (Lei 14.300). A energia injetada vira créditos em kWh, válidos por <b>60 meses</b>, que podem abater a conta da mesma unidade ou de outras do mesmo titular. Para quem entrou no sistema a partir de 2023, uma parte do custo de uso da rede de distribuição (o chamado “fio B”) passou a ser cobrada de forma escalonada.</p><p class=\"more-src\">Fontes: Lei 14.300/2022; ANEEL.</p>"
+      },
+      {
+        "pageNumber": 4,
+        "title": "Começar Pequeno",
+        "content": "<ul><li><b>Barata:</b> é o jeito mais em conta de começar a gerar energia limpa.</li><li><b>Rápida:</b> fica pronta em pouco tempo.</li><li><b>Sem fumaça e sem barulho.</b></li><li><b>De noite e com nuvem gera menos</b>, então a cidade precisa somar outras fontes ou baterias.</li></ul><p>Muitas usinas pequenas juntas fazem diferença. Um bairro inteiro com painéis pode gerar tanto quanto uma usina grande, sem alagar nada e sem queimar nada.</p>",
+        "image": null,
+        "more": "<p>A geração distribuída solar no Brasil passou de poucos megawatts em 2015 para <b>dezenas de gigawatts</b> em 2024, a maior parte em telhados e pequenos terrenos, e hoje soma mais potência que a solar centralizada (ANEEL; ABSOLAR). O preço dos módulos fotovoltaicos caiu cerca de <b>90%</b> entre 2010 e 2020 (IRENA).</p><p>Painéis fixos no Brasil têm <b>fator de capacidade</b> de cerca de 15% a 20%: em média, produzem como se funcionassem a toda potência por 4 a 5 horas por dia.</p><p class=\"more-src\">Fontes: ANEEL; IRENA; CRESESB/CEPEL.</p>"
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Uma escola tem painéis solares. Num sábado de sol, ela está fechada e quase não gasta energia. O que acontece com a energia que sobra?",
+          "options": [
+            "Se perde no ar",
+            "Vai para a rede e vira crédito para a escola usar depois",
+            "Esquenta demais e queima os painéis",
+            "Fica guardada dentro dos painéis até segunda-feira"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A página do cofrinho explica que a sobra vai para a rede e vira crédito, que é descontado quando a escola usa energia da rede."
+        },
+        {
+          "id": 2,
+          "question": "Por que a microgeração faz parte da geração distribuída?",
+          "options": [
+            "Porque só funciona em alguns dias da semana",
+            "Porque usa fios muito compridos vindos de longe",
+            "Porque a energia nasce espalhada pela cidade, perto de quem usa",
+            "Porque é entregue de graça nas casas"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A página sobre os tamanhos diz que micro e minigeração ficam perto de quem usa a energia: ela nasce espalhada pela cidade."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "solar_farm",
+      "solar_tracker",
+      "grid_battery"
+    ],
+    "relatedConcepts": [
+      "renewable_energy",
+      "distributed_generation",
+      "net_metering"
+    ],
+    "sources": [
+      {
+        "label": "Lei 14.300/2022 — micro e minigeração distribuída",
+        "url": "https://www.planalto.gov.br/ccivil_03/_ato2019-2022/2022/lei/l14300.htm"
+      },
+      {
+        "label": "ANEEL — Agência Nacional de Energia Elétrica",
+        "url": "https://www.gov.br/aneel/pt-br"
+      },
+      {
+        "label": "CRESESB/CEPEL — Energia solar e eólica",
+        "url": "https://cresesb.cepel.br"
+      }
+    ]
+  },
+  "solar_tracker": {
+    "buildingId": "solar_tracker",
+    "buildingName": "Usina Solar Centralizada",
+    "category": "power",
+    "difficulty": "intermediário",
+    "studyTitle": "Usina Solar Centralizada: Painéis que Seguem o Sol",
+    "studyIcon": "🔆",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender o que torna uma usina solar centralizada",
+      "Ver como os rastreadores fazem os painéis seguirem o sol",
+      "Perceber por que sobra energia ao meio-dia e falta à noite"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Uma Usina do Tamanho de Muitos Campos",
+        "content": "<p>A <b>usina solar centralizada</b> é a maior das usinas solares: fileiras e mais fileiras de painéis ocupando uma área do tamanho de muitos campos de futebol.</p><p>Ela não fica no telhado de ninguém. A energia sai por <b>linhas de transmissão</b>, aquelas torres altas de fios, e viaja até cidades que podem estar bem longe.</p>",
+        "image": "assets/images/studies/usina-solar-centralizada.webp",
+        "more": "<p>Pela classificação da ANEEL, a geração centralizada começa onde termina a minigeração distribuída (acima de <b>3 MW</b> para a solar). Usinas assim precisam de <b>autorização (outorga) da ANEEL</b> e se ligam a subestações de alta tensão. No Brasil, os complexos solares vão de dezenas a centenas de MW, e ocupam cerca de <b>1 a 2 hectares por MW</b>. O jogo usa uma cidade pequena, em escala reduzida (a usina do jogo gera 520 kW); as faixas citadas aqui são as reais.</p><p class=\"more-src\">Fontes: ANEEL; EPE.</p>"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Girassóis de Metal",
+        "content": "<p>Os painéis dessa usina ficam presos em <b>rastreadores</b>: motores que viram os painéis devagar durante o dia, como um girassol.</p><ul><li>De manhã, olham para o <b>leste</b>, onde o sol nasce.</li><li>Ao meio-dia, ficam <b>deitados</b>, olhando para cima.</li><li>À tarde, viram para o <b>oeste</b>, onde o sol se põe.</li></ul><p>Seguindo o sol, cada painel recebe mais luz e a usina <b>produz bem mais</b> do que se os painéis ficassem parados.</p>",
+        "image": null,
+        "more": "<p>Rastreadores de <b>um eixo</b> (eixo norte-sul, girando de leste para oeste) costumam aumentar a geração anual em cerca de <b>15% a 25%</b> em relação a painéis fixos. Muitas usinas usam também <b>módulos bifaciais</b>, que captam pela face de trás a luz refletida pelo chão. Com rastreador, o fator de capacidade de usinas no Nordeste chega a cerca de <b>25% a 30%</b>.</p><p class=\"more-src\">Fontes: CRESESB/CEPEL; EPE.</p>"
+      },
+      {
+        "pageNumber": 3,
+        "title": "Energia Vendida para o País",
+        "content": "<p>Usinas assim são tão grandes que vendem energia em <b>leilões</b>: o governo pergunta quem entrega energia pelo menor preço, e as empresas disputam.</p><p>O Nordeste e o norte de Minas Gerais têm muitas dessas usinas, porque lá o sol é forte e chove pouco em boa parte do ano.</p><p>Toda essa energia entra numa <b>rede que liga quase o Brasil inteiro</b>. Uma equipe nacional acompanha a rede o tempo todo e decide quais usinas ligar a cada momento.</p>",
+        "image": null,
+        "more": "<p>A energia é vendida no <b>Ambiente de Contratação Regulada (ACR)</b>, em leilões organizados pela ANEEL e pela EPE para as distribuidoras, ou no <b>Ambiente de Contratação Livre (ACL)</b>, em contratos diretos com grandes consumidores. O <b>Sistema Interligado Nacional (SIN)</b>, operado pelo <b>ONS</b>, liga quase todo o país; ficam de fora só alguns sistemas isolados, principalmente na Amazônia. No leilão de energia nova A-6 de 2019, a solar foi contratada a cerca de <b>R$ 84 por MWh</b>, um dos preços mais baixos já registrados no país.</p><p class=\"more-src\">Fontes: EPE, leilões de energia; ONS; CCEE.</p>"
+      },
+      {
+        "pageNumber": 4,
+        "title": "Os Desafios do Grande",
+        "content": "<ul><li><b>Ocupa muito chão:</b> o melhor é usar terra já desmatada ou pasto velho, nunca derrubar mata.</li><li><b>Precisa de linhas de transmissão</b>, que são caras e demoram para ficar prontas.</li><li><b>Ao meio-dia sobra, à noite falta:</b> ao meio-dia a usina gera muito, mas à noite não gera nada. Por isso as <b>baterias</b> estão ficando tão importantes.</li><li><b>Poeira:</b> painéis sujos geram menos e precisam ser lavados.</li></ul>",
+        "image": null,
+        "more": "<p><b>Corte de geração (curtailment):</b> em 2024 e 2025 o ONS mandou reduzir com frequência a produção de usinas eólicas e solares no Nordeste, por falta de linhas de transmissão e por sobra de energia nas horas de sol. É o efeito da <b>curva do pato</b>: a carga líquida (consumo menos a geração solar) despenca ao meio-dia e sobe depressa no começo da noite, exigindo fontes rápidas ou armazenamento.</p><p class=\"more-src\">Fontes: ONS; EPE.</p>"
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Por que os painéis da usina centralizada giram durante o dia?",
+          "options": [
+            "Para espantar os passarinhos",
+            "Para seguir o sol e receber mais luz",
+            "Para fugir da chuva",
+            "Para se esfriar com o vento"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Os rastreadores viram os painéis como um girassol: seguindo o sol, cada painel recebe mais luz e a usina produz mais."
+        },
+        {
+          "id": 2,
+          "question": "A usina centralizada gera muito ao meio-dia e nada à noite. O que ajuda a cidade a usar essa energia também à noite?",
+          "options": [
+            "Pintar os painéis de preto",
+            "Girar os painéis mais depressa à noite",
+            "Construir mais linhas de transmissão",
+            "Baterias que guardam a sobra do dia"
+          ],
+          "correctAnswer": 3,
+          "explanation": "A última página explica que à noite a usina não gera nada, por isso as baterias, que guardam a sobra do meio-dia, estão ficando tão importantes."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "solar_farm",
+      "grid_battery",
+      "solar_floating"
+    ],
+    "relatedConcepts": [
+      "renewable_energy",
+      "solar_tracking",
+      "energy_storage"
+    ],
+    "sources": [
+      {
+        "label": "ANEEL — Agência Nacional de Energia Elétrica",
+        "url": "https://www.gov.br/aneel/pt-br"
+      },
+      {
+        "label": "ONS — Operador Nacional do Sistema Elétrico",
+        "url": "https://www.ons.org.br"
+      },
+      {
+        "label": "EPE — Fontes de energia",
+        "url": "https://www.epe.gov.br/pt/abcdenergia/fontes-de-energia"
+      }
+    ]
+  },
+  "solar_floating": {
+    "buildingId": "solar_floating",
+    "buildingName": "Usina Solar Flutuante",
+    "category": "power",
+    "difficulty": "avançado",
+    "studyTitle": "Usina Solar Flutuante: Painéis sobre a Água",
+    "studyIcon": "🛟",
+    "estimatedTime": "4 minutos",
+    "learningObjectives": [
+      "Entender como painéis solares podem boiar num lago ou represa",
+      "Ver como sol e água se ajudam numa usina híbrida",
+      "Perceber os cuidados para não prejudicar a vida do lago"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Painéis que Boiam",
+        "content": "<p>Na <b>usina solar flutuante</b>, os painéis ficam em cima de <b>boias</b>, presas no fundo ou na margem de um lago ou represa por cordas e âncoras. Eles sobem e descem junto com o nível da água.</p><p>Cabos à prova d'água levam a eletricidade até a margem, e dali para a cidade.</p>",
+        "image": "assets/images/studies/solar-flutuante.webp",
+        "more": "<p>As plataformas usam flutuadores de <b>polietileno de alta densidade (PEAD)</b>, ancorados no fundo ou nas margens com folga para acompanhar a variação do nível do reservatório, que numa hidrelétrica pode passar de vários metros ao longo do ano.</p><p class=\"more-src\">Fonte: EPE, ABCdEnergia.</p>"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Por que Colocar na Água?",
+        "content": "<ul><li><b>Não ocupa terra:</b> o chão fica livre para plantar, para a mata e para as casas.</li><li><b>A água esfria os painéis:</b> painel quente gera menos. Em cima da água, mais fresquinho, ele trabalha melhor.</li><li><b>Menos evaporação:</b> a sombra dos painéis protege a água do sol forte, e menos água some no ar. Sobra um pouco mais para o rio.</li></ul>",
+        "image": null,
+        "more": "<ul><li>Painéis perdem cerca de <b>0,3% a 0,5% da potência por °C</b> acima de 25 °C; o resfriamento pela água costuma render alguns pontos percentuais a mais de geração que uma usina igual em terra.</li><li>A cobertura reduz bastante a evaporação na área coberta, o que interessa em reservatórios do semiárido, que perdem muita água para o ar.</li></ul><p class=\"more-src\">Fontes: CRESESB/CEPEL; EPE.</p>"
+      },
+      {
+        "pageNumber": 3,
+        "title": "Sol e Água Trabalhando Juntos",
+        "content": "<p>Um lugar muito bom para essas usinas é o <b>lago de uma hidrelétrica</b>, onde a ligação com a rede já existe.</p><p>E os dois se ajudam: <b>de dia, o sol gera energia</b> e a hidrelétrica pode economizar água no lago. <b>À noite</b>, a água guardada gira as turbinas. É como ter uma bateria feita de água.</p><p>O Brasil já testou usinas flutuantes em represas do Norte e do Nordeste.</p>",
+        "image": null,
+        "more": "<p>Projetos-piloto de cerca de 1 MW nos reservatórios de <b>Balbina (AM)</b>, da Eletronorte, e de <b>Sobradinho (BA)</b>, da Chesf, testaram o modelo <b>híbrido</b> solar + hidrelétrica: a usina solar usa a subestação e a linha de transmissão da hidrelétrica, e cada MWh solar gerado de dia permite guardar água para gerar à noite. A ANEEL regulamentou as usinas híbridas e associadas em 2021.</p><p class=\"more-src\">Fontes: ANEEL; MME.</p>"
+      },
+      {
+        "pageNumber": 4,
+        "title": "Cuidados com o Lago",
+        "content": "<ul><li><b>Não cobrir o lago inteiro:</b> plantas e algas da água precisam de luz, e os peixes precisam delas.</li><li><b>Ondas e ventos fortes</b> exigem boias e âncoras bem firmes.</li><li><b>Custa mais</b> que uma usina em terra.</li><li>Só cabe em <b>lagos e represas grandes</b>: num laguinho não há espaço.</li></ul>",
+        "image": null,
+        "more": "<p>Projetos costumam cobrir só uma fração do espelho d'água para não prejudicar a luz, a troca de oxigênio e a vida aquática; o licenciamento ambiental avalia caso a caso. O custo de implantação costuma ser cerca de <b>10% a 20% maior</b> que o de uma usina equivalente em terra, por causa dos flutuadores, da ancoragem e dos cabos submersos.</p><p class=\"more-src\">Fontes: EPE; Ibama.</p>"
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Uma cidade tem pouca terra livre, mas uma represa grande. Qual vantagem da usina flutuante é mais importante para ela?",
+          "options": [
+            "Os painéis ficam mais bonitos na água",
+            "A usina não ocupa terra, que fica livre para outras coisas",
+            "A água faz os painéis gerarem também à noite",
+            "Os peixes limpam os painéis"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A segunda página diz que a usina flutuante não ocupa terra: o chão fica livre para plantar, para a mata e para as casas."
+        },
+        {
+          "id": 2,
+          "question": "Por que a usina flutuante ajuda o rio a ter um pouco mais de água?",
+          "options": [
+            "Os painéis puxam a chuva para o lago",
+            "As boias derretem e viram água",
+            "A sombra dos painéis faz menos água evaporar",
+            "A eletricidade enche o lago"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A sombra dos painéis protege a água do sol forte, e menos água some no ar."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "solar_tracker",
+      "hydroelectric_plant",
+      "grid_battery"
+    ],
+    "relatedConcepts": [
+      "renewable_energy",
+      "hybrid_plants",
+      "evaporation"
+    ],
+    "sources": [
+      {
+        "label": "ANEEL — Agência Nacional de Energia Elétrica",
+        "url": "https://www.gov.br/aneel/pt-br"
+      },
+      {
+        "label": "EPE — Fontes de energia",
+        "url": "https://www.epe.gov.br/pt/abcdenergia/fontes-de-energia"
+      }
+    ]
+  },
+  "wind_small": {
+    "buildingId": "wind_small",
+    "buildingName": "Aerogerador Pequeno",
+    "category": "power",
+    "difficulty": "básico",
+    "studyTitle": "Aerogerador Pequeno: Um Cata-vento que Acende a Luz",
+    "studyIcon": "🌬️",
+    "estimatedTime": "4 minutos",
+    "learningObjectives": [
+      "Entender como o vento vira eletricidade",
+      "Descobrir os melhores lugares para uma turbina pequena",
+      "Perceber por que sol e vento formam uma boa dupla"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Um Cata-vento de Verdade",
+        "content": "<p>O <b>aerogerador pequeno</b> é uma turbina de vento do tamanho certo para uma casa, um sítio ou um bairro. Ele fica no alto de uma torre, onde o vento sopra mais livre.</p><ul><li>O vento <b>empurra as pás</b>.</li><li>As pás <b>giram um eixo</b>.</li><li>O eixo move um <b>gerador</b>, que faz eletricidade.</li></ul>",
+        "image": "assets/images/studies/aerogerador-pequeno.webp",
+        "more": "<p>Aerogeradores de pequeno porte vão de menos de 1 kW a cerca de <b>100 kW</b>; em casas e sítios, o comum é de 1 a 10 kW, com rotores de 2 a 10 metros. Até 75 kW, entram na <b>microgeração distribuída</b> e geram créditos na conta de luz, como os painéis solares (Lei 14.300/2022).</p><p class=\"more-src\">Fontes: CRESESB/CEPEL; Lei 14.300/2022.</p>"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Onde Venta Mais",
+        "content": "<ul><li><b>No alto:</b> perto do chão, árvores e casas freiam o vento. Mais alto, ele corre livre.</li><li><b>Em encostas e morros:</b> o vento sobe a ladeira e acelera.</li><li><b>Em campos abertos e perto do mar.</b></li></ul><p>Um detalhe surpreendente: quando o vento fica <b>um pouco mais forte</b>, a energia cresce <b>muito</b>. Um lugar com vento só um pouquinho melhor faz uma diferença enorme.</p>",
+        "image": null,
+        "more": "<p>A potência do vento cresce com o <b>cubo da velocidade</b>: P = ½ · ρ · A · v³, em que ρ ≈ 1,2 kg/m³ é a densidade do ar e A é a área varrida pelas pás. Vento duas vezes mais forte carrega <b>oito vezes</b> mais energia. Nenhuma turbina aproveita mais que <b>59,3%</b> dessa energia (limite de Betz); as reais ficam em torno de 35% a 45%. Turbinas pequenas costumam começar a girar com cerca de <b>3 m/s</b> (11 km/h).</p><p class=\"more-src\">Fonte: CRESESB/CEPEL, energia eólica.</p>"
+      },
+      {
+        "pageNumber": 3,
+        "title": "De Dia e de Noite",
+        "content": "<p>O sol só aparece de dia. O vento pode soprar <b>a qualquer hora</b>, inclusive à noite. Por isso sol e vento formam uma boa dupla: um cobre a falta do outro.</p><p>Mas o vento também <b>para</b> às vezes. Em dias de calmaria, a turbina fica parada. E com <b>tempestade forte</b> ela se desliga sozinha para não quebrar.</p>",
+        "image": null,
+        "more": "<p>Turbinas têm uma <b>velocidade de corte</b>: acima de cerca de 25 m/s (90 km/h) nas grandes, e às vezes menos nas pequenas, elas travam ou viram as pás para não quebrar. Em locais urbanos, a turbulência entre prédios derruba o <b>fator de capacidade</b> de um aerogerador pequeno para algo como 10% a 20%; em campo aberto e no alto ele melhora bastante.</p><p class=\"more-src\">Fonte: CRESESB/CEPEL.</p>"
+      },
+      {
+        "pageNumber": 4,
+        "title": "Pequeno e na Medida",
+        "content": "<ul><li><b>Sem fumaça</b> e sem gastar água.</li><li><b>Faz um pouco de barulho</b>, então deve ficar longe das janelas.</li><li><b>Precisa de manutenção:</b> peças que giram se desgastam.</li><li>Gera <b>menos</b> que as turbinas gigantes de um campo eólico, mas é bom para começar e para lugares longe da rede.</li></ul>",
+        "image": null,
+        "more": "<p>A OMS recomenda que o ruído médio de turbinas eólicas fique abaixo de <b>45 dB</b> (indicador Lden), nas diretrizes de ruído ambiental de 2018. Regra prática de instalação: a parte de baixo das pás deve ficar bem acima de árvores e telhados vizinhos, com frequência citada como cerca de 9 m acima de qualquer obstáculo das redondezas.</p><p class=\"more-src\">Fontes: OMS, diretrizes de ruído ambiental; CRESESB/CEPEL.</p>"
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Onde é melhor instalar um aerogerador pequeno?",
+          "options": [
+            "Dentro de um vale cercado de árvores altas",
+            "Embaixo de uma ponte",
+            "No alto de uma encosta, onde o vento corre livre",
+            "Ao lado de um prédio que segura o vento"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A página sobre onde venta mais diz que no alto e nas encostas o vento corre livre e acelera."
+        },
+        {
+          "id": 2,
+          "question": "Por que sol e vento formam uma boa dupla?",
+          "options": [
+            "O vento pode soprar à noite, quando o sol não aparece",
+            "O vento limpa a poeira dos painéis",
+            "O sol faz o vento parar ao meio-dia",
+            "Os dois só funcionam juntos ao meio-dia"
+          ],
+          "correctAnswer": 0,
+          "explanation": "O sol só aparece de dia, mas o vento pode soprar a qualquer hora: um cobre a falta do outro."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "wind_farm",
+      "solar_micro",
+      "wind_offshore"
+    ],
+    "relatedConcepts": [
+      "renewable_energy",
+      "wind_power",
+      "distributed_generation"
+    ],
+    "sources": [
+      {
+        "label": "CRESESB/CEPEL — Energia solar e eólica",
+        "url": "https://cresesb.cepel.br"
+      },
+      {
+        "label": "Lei 14.300/2022 — micro e minigeração distribuída",
+        "url": "https://www.planalto.gov.br/ccivil_03/_ato2019-2022/2022/lei/l14300.htm"
+      }
+    ]
+  },
+  "wind_offshore": {
+    "buildingId": "wind_offshore",
+    "buildingName": "Eólica Offshore",
+    "category": "power",
+    "difficulty": "avançado",
+    "studyTitle": "Eólica Offshore: Turbinas Dentro d'Água",
+    "studyIcon": "🌀",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender por que o vento sobre a água é mais forte e constante",
+      "Perceber por que construir no mar é caro e difícil",
+      "Pensar nos cuidados com peixes, aves e pescadores"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Gigantes Dentro d'Água",
+        "content": "<p><b>Offshore</b> é uma palavra em inglês que quer dizer <b>longe da costa</b>, mar adentro. A eólica offshore coloca turbinas gigantes dentro da água, presas no fundo ou até boiando, amarradas com cabos.</p><p>Cada turbina é mais alta que um prédio enorme, e cada pá é comprida como um avião grande.</p>",
+        "image": "assets/images/studies/eolica-offshore.webp",
+        "more": "<p>Turbinas offshore atuais têm de <b>12 a 15 MW</b> cada (modelos maiores já estão em teste), rotores com mais de <b>200 metros</b> de diâmetro e pás com mais de 100 m. Em águas rasas, até cerca de 50 a 60 m de profundidade, usam fundações fixas, como estacas cravadas no fundo; em águas mais fundas, plataformas <b>flutuantes</b> ancoradas.</p><p class=\"more-src\">Fonte: EPE, Roadmap Eólica Offshore Brasil.</p>"
+      },
+      {
+        "pageNumber": 2,
+        "title": "O Vento da Água",
+        "content": "<p>Na água não há morros, árvores nem prédios para atrapalhar. Por isso o vento sopra <b>mais forte e mais constante</b>.</p><p>Uma turbina na água gira mais horas por dia e gera <b>muito mais</b> que uma igual em terra. O litoral do Brasil, principalmente no Nordeste e no Sul, tem ventos muito bons para isso.</p>",
+        "image": null,
+        "more": "<p>O fator de capacidade de parques offshore modernos fica em torno de <b>40% a 50%</b>, contra cerca de 35% da média mundial em terra (no Nordeste brasileiro a eólica em terra já passa de 40%). A EPE estimou o potencial técnico offshore do Brasil em cerca de <b>700 GW</b> em águas de até 50 m de profundidade.</p><p class=\"more-src\">Fontes: EPE; ABEEólica.</p>"
+      },
+      {
+        "pageNumber": 3,
+        "title": "Caro e Difícil",
+        "content": "<ul><li><b>Construir na água é caro:</b> precisa de navios especiais, bases firmes e cabos que passam pelo fundo.</li><li><b>Consertar é difícil:</b> a equipe vai de barco ou de helicóptero.</li><li><b>Água salgada e ondas</b> desgastam as peças.</li><li>Só cabe em <b>águas grandes</b>: num laguinho não há espaço nem vento que chegue.</li></ul>",
+        "image": null,
+        "more": "<p>Segundo a IRENA, o custo nivelado da energia (LCOE) da eólica offshore no mundo ficou em cerca de <b>US$ 75 por MWh</b> em 2023, ainda acima da eólica em terra (cerca de US$ 33/MWh) e da solar centralizada (cerca de US$ 44/MWh).</p><p class=\"more-src\">Fonte: IRENA, custos de geração renovável.</p>"
+      },
+      {
+        "pageNumber": 4,
+        "title": "Cuidando de Quem Vive na Água",
+        "content": "<p>Antes de construir, é preciso estudar a vida da água:</p><ul><li><b>Peixes, baleias e golfinhos</b> se assustam com o barulho da obra.</li><li><b>Aves marinhas</b> podem bater nas pás.</li><li><b>Pescadores</b> precisam continuar trabalhando.</li></ul><p>Por outro lado, as bases das turbinas podem virar <b>abrigo para peixes</b>, como pequenos recifes. O Brasil aprovou há pouco as regras para essas usinas, e muitos projetos estão sendo estudados.</p>",
+        "image": null,
+        "more": "<p>Em janeiro de 2025, a <b>Lei 15.097/2025</b> criou o marco legal da geração de energia offshore no Brasil: a União cede áreas do mar por autorização ou concessão, com estudos ambientais e consulta às comunidades de pesca. Antes da lei, o <b>Ibama</b> já havia recebido pedidos de licenciamento que, somados, passavam de <b>200 GW</b>.</p><p class=\"more-src\">Fontes: MME; Ibama.</p>"
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Por que uma turbina dentro d'água costuma gerar mais que uma igual em terra?",
+          "options": [
+            "A água salgada dá mais força às pás",
+            "Sobre a água o vento sopra mais forte e mais constante",
+            "Sobre a água faz mais sol",
+            "As ondas empurram as pás"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Na água não há morros, árvores nem prédios: o vento sopra mais forte e mais constante, e a turbina gira mais horas por dia."
+        },
+        {
+          "id": 2,
+          "question": "Antes de construir uma eólica offshore, por que é preciso estudar a vida na água?",
+          "options": [
+            "Porque a obra e as pás podem afetar peixes, baleias, aves e pescadores",
+            "Porque os peixes giram as turbinas",
+            "Porque a turbina deixa a água mais salgada",
+            "Porque as turbinas atraem tubarões para a praia"
+          ],
+          "correctAnswer": 0,
+          "explanation": "A última página mostra que o barulho da obra assusta peixes, baleias e golfinhos, as aves podem bater nas pás e os pescadores precisam continuar trabalhando."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "wind_farm",
+      "wind_small",
+      "tidal_plant"
+    ],
+    "relatedConcepts": [
+      "renewable_energy",
+      "wind_power",
+      "marine_ecosystems"
+    ],
+    "sources": [
+      {
+        "label": "EPE — Fontes de energia",
+        "url": "https://www.epe.gov.br/pt/abcdenergia/fontes-de-energia"
+      },
+      {
+        "label": "MME — Ministério de Minas e Energia",
+        "url": "https://www.gov.br/mme/pt-br"
+      },
+      {
+        "label": "Ibama — licenciamento ambiental",
+        "url": "https://www.gov.br/ibama/pt-br"
+      }
+    ]
+  },
+  "small_hydro": {
+    "buildingId": "small_hydro",
+    "buildingName": "CGH (Central Geradora Hidrelétrica)",
+    "category": "power",
+    "difficulty": "intermediário",
+    "studyTitle": "CGH: A Menor Hidrelétrica",
+    "studyIcon": "💧",
+    "estimatedTime": "5 minutos",
+    "learningObjectives": [
+      "Entender como uma hidrelétrica pequena usa a força do rio",
+      "Comparar os tamanhos de hidrelétrica e o quanto cada uma alaga",
+      "Perceber que a energia do rio depende da chuva, da mata e dos peixes"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Uma Hidrelétrica de Bolso",
+        "content": "<p>A <b>CGH</b>, Central Geradora Hidrelétrica, usa a força da água do rio para fazer eletricidade, como uma hidrelétrica gigante, só que bem menor.</p><ul><li>Uma <b>barragem baixa</b> segura um pouco de água.</li><li>A água desce por um <b>cano</b> até a casa de força.</li><li>Ela <b>gira uma turbina</b> ligada ao gerador.</li><li>Depois a água <b>volta para o rio</b>, logo abaixo.</li></ul>",
+        "image": "assets/images/studies/cgh.webp",
+        "more": "<p>A potência de uma hidrelétrica é <b>P = ρ · g · Q · H · η</b>: densidade da água (1.000 kg/m³), gravidade (9,8 m/s²), vazão (m³/s), altura da queda (m) e rendimento do conjunto turbina-gerador (cerca de 0,85 a 0,92). Exemplo: 2 m³/s caindo 20 m com rendimento de 0,9 dão cerca de <b>350 kW</b>; 10 m³/s caindo 50 m dão cerca de 4,4 MW.</p><p class=\"more-src\">Fonte: USGS, como funciona uma hidrelétrica.</p>"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Pequena, Média e Grande",
+        "content": "<p>A ANEEL separa as hidrelétricas pelo tamanho. A <b>CGH</b> é a menor de todas. Depois vem a <b>PCH</b>, a Pequena Central Hidrelétrica, e no topo ficam as <b>usinas hidrelétricas</b> gigantes.</p><p>As grandes formam lagos enormes que cobrem matas, casas e cidades. A CGH faz um <b>lago pequeno</b>, ou quase nenhum: aproveita uma queda d'água ou a correnteza.</p><p>Por isso ela <b>alaga pouca terra</b>, desloca menos famílias e fica pronta mais depressa.</p>",
+        "image": null,
+        "more": "<ul><li><b>CGH</b> (central geradora hidrelétrica): até <b>5 MW</b>; basta comunicar a ANEEL, sem outorga.</li><li><b>PCH</b> (pequena central hidrelétrica): acima de 5 MW e até <b>30 MW</b>, com reservatório pequeno (até cerca de 13 km²).</li><li><b>UHE</b> (usina hidrelétrica): acima disso. Itaipu tem 14.000 MW, e o lago de Sobradinho, mais de 4.000 km².</li></ul><p>O jogo usa uma cidade pequena, em escala reduzida (a CGH do jogo gera 160 kW); as faixas acima são as reais.</p><p class=\"more-src\">Fontes: ANEEL; EPE.</p>"
+      },
+      {
+        "pageNumber": 3,
+        "title": "Dia e Noite, mas Depende da Chuva",
+        "content": "<p>Enquanto o rio corre, a CGH <b>gera de dia e de noite</b>, sem fumaça. Isso é ótimo para juntar com o sol.</p><p>Mas ela depende do rio. Na <b>seca</b>, o rio baixa e a usina <b>gera menos</b>. Se a mata da beira do rio for derrubada, a terra desce com a chuva e entope o lago com lama.</p><p>Cuidar da bacia, com <b>mata ciliar</b> e nascentes protegidas, é cuidar da energia também.</p>",
+        "image": null,
+        "more": "<p>Usinas <b>a fio d'água</b> quase não armazenam: geram conforme a vazão do dia. Na crise hídrica de 2021, a pior seca registrada em mais de 90 anos na bacia do Paraná, a geração hidráulica caiu e o país ligou térmicas caras. O <b>assoreamento</b> (sedimento que se acumula no reservatório) reduz o volume útil e desgasta as turbinas; bacias com mata ciliar e solo coberto mandam muito menos sedimento para o rio.</p><p class=\"more-src\">Fontes: ONS; EPE.</p>"
+      },
+      {
+        "pageNumber": 4,
+        "title": "O Caminho dos Peixes",
+        "content": "<ul><li>Muitos peixes <b>sobem o rio</b> para botar ovos, como o dourado e o curimbatá. A barragem pode bloquear esse caminho.</li><li>Uma <b>escada de peixes</b>, uma rampa com degraus de água, ajuda alguns a passar.</li><li>Várias usinas no mesmo rio somam efeitos: cada uma é pequena, mas juntas mudam muito o rio.</li><li>A usina precisa deixar sempre <b>um pouco de água correndo</b> no trecho entre a barragem e a casa de força.</li></ul>",
+        "image": null,
+        "more": "<p>Peixes de piracema, como dourado, curimbatá e pintado, sobem dezenas a centenas de quilômetros para desovar. Escadas e elevadores de peixes funcionam bem para algumas espécies e mal para outras; por isso a avaliação ambiental olha o conjunto de barragens de um rio, e não cada usina isolada. A ANA e os órgãos estaduais definem a <b>vazão remanescente</b> (ou ecológica) que deve ficar no trecho de vazão reduzida.</p><p class=\"more-src\">Fontes: ANA; ANEEL.</p>"
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Num ano de seca, a CGH da cidade começou a gerar menos energia. Por quê?",
+          "options": [
+            "A seca deixa os fios mais compridos",
+            "Os peixes desligaram a turbina",
+            "O rio baixou e tem menos água para girar a turbina",
+            "Faltou sol para a barragem"
+          ],
+          "correctAnswer": 2,
+          "explanation": "A usina depende do rio: na seca o rio baixa, passa menos água pela turbina e ela gera menos."
+        },
+        {
+          "id": 2,
+          "question": "A cidade quer que a CGH continue gerando bem por muitos anos. O que mais ajuda?",
+          "options": [
+            "Proteger a mata da beira do rio e as nascentes",
+            "Derrubar as árvores para o rio ficar mais largo",
+            "Fechar o rio inteiro com uma barragem bem alta",
+            "Jogar areia no lago para ele ficar raso"
+          ],
+          "correctAnswer": 0,
+          "explanation": "Sem mata ciliar, a terra desce com a chuva e entope o lago com lama. Cuidar da bacia é cuidar da energia."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "hydroelectric_plant",
+      "linear_park",
+      "solar_micro"
+    ],
+    "relatedConcepts": [
+      "renewable_energy",
+      "hydropower",
+      "riparian_forest"
+    ],
+    "sources": [
+      {
+        "label": "ANEEL — Agência Nacional de Energia Elétrica",
+        "url": "https://www.gov.br/aneel/pt-br"
+      },
+      {
+        "label": "USGS — Como funciona uma hidrelétrica",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/hydroelectric-power-how-it-works"
+      },
+      {
+        "label": "EPE — Fontes de energia",
+        "url": "https://www.epe.gov.br/pt/abcdenergia/fontes-de-energia"
+      }
+    ]
+  },
+  "grid_battery": {
+    "buildingId": "grid_battery",
+    "buildingName": "Bateria da Rede",
+    "category": "power",
+    "difficulty": "intermediário",
+    "studyTitle": "Bateria da Rede: Guardando o Sol para a Noite",
+    "studyIcon": "🔋",
+    "estimatedTime": "4 minutos",
+    "learningObjectives": [
+      "Entender que a bateria guarda energia, mas não gera",
+      "Perceber por que a energia solar sobra ao meio-dia e falta à noite",
+      "Conhecer os cuidados com baterias grandes"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "Uma Bateria do Tamanho de um Contêiner",
+        "content": "<p>Sabe a bateria do celular? A <b>bateria da rede</b> é a mesma ideia, só que enorme: vários armários do tamanho de um contêiner, cheios de baterias, ligados à rede elétrica da cidade.</p><ul><li>Quando <b>sobra energia</b>, ela carrega.</li><li>Quando <b>falta energia</b>, ela descarrega e manda a energia de volta para a rede.</li></ul>",
+        "image": "assets/images/studies/bateria-da-rede.webp",
+        "more": "<p>Os sistemas de armazenamento em baterias (<b>BESS</b>) para a rede usam hoje principalmente lítio-ferro-fosfato (<b>LFP</b>). Um contêiner padrão guarda cerca de <b>3 a 5 MWh</b>. A potência (MW) diz a que velocidade a bateria entrega a energia; a capacidade (MWh) diz por quanto tempo: uma bateria de 100 MW e 400 MWh entrega 100 MW durante 4 horas.</p><p class=\"more-src\">Fontes: EPE; ANEEL.</p>"
+      },
+      {
+        "pageNumber": 2,
+        "title": "O Problema do Meio-dia",
+        "content": "<p>As usinas solares geram <b>muito ao meio-dia</b>, quando muita gente nem está em casa. Mas a cidade gasta mais energia <b>no fim da tarde e à noite</b>: luz acesa, chuveiro, televisão.</p><p>Sem bateria, a sobra do meio-dia se perde, e à noite é preciso ligar outra usina, muitas vezes uma que <b>queima combustível</b>.</p><p>A bateria <b>leva a energia do sol para a noite</b>.</p>",
+        "image": null,
+        "more": "<p>É a <b>curva do pato</b>: com muita solar, a carga líquida cai ao meio-dia e sobe depressa entre o fim da tarde e o começo da noite. Baterias de <b>2 a 4 horas</b> de duração são as mais usadas para deslocar essa energia. A Califórnia, por exemplo, passou de cerca de 500 MW de baterias em 2020 para mais de 10 GW em 2024.</p><p class=\"more-src\">Fontes: ONS; EPE.</p>"
+      },
+      {
+        "pageNumber": 3,
+        "title": "Rápida como um Raio",
+        "content": "<p>A bateria responde <b>muito depressa</b>, mais que qualquer usina. Se uma usina desliga de repente, ou uma nuvem grande cobre os painéis, a bateria entra na hora e segura a rede.</p><p>Assim, a luz das casas <b>não pisca</b> e os aparelhos não estragam.</p>",
+        "image": null,
+        "more": "<p>Baterias respondem em <b>milissegundos</b>; turbinas a gás de partida rápida levam minutos e hidrelétricas, de segundos a minutos. Por isso elas prestam <b>serviços ancilares</b>, como o controle de frequência: a rede brasileira funciona em <b>60 Hz</b> e precisa de equilíbrio constante entre o que é gerado e o que é consumido, coordenado pelo ONS.</p><p class=\"more-src\">Fonte: ONS.</p>"
+      },
+      {
+        "pageNumber": 4,
+        "title": "Os Cuidados",
+        "content": "<ul><li><b>Não gera energia:</b> só guarda. Precisa de usinas para carregar.</li><li><b>Perde um pouquinho</b> no caminho: sai menos do que entrou.</li><li><b>Envelhece</b> como a do celular e, um dia, precisa ser trocada.</li><li><b>Reciclagem:</b> os metais de dentro são valiosos e não podem ir para o lixo comum.</li><li><b>Segurança:</b> precisa de ventilação e proteção contra fogo.</li></ul>",
+        "image": null,
+        "more": "<ul><li><b>Eficiência de ida e volta:</b> cerca de <b>85% a 90%</b>.</li><li><b>Vida útil:</b> da ordem de <b>4.000 a 6.000 ciclos</b> (10 a 15 anos) para LFP.</li><li><b>Preço:</b> o pacote de baterias de íon-lítio ficou cerca de <b>90% mais barato</b> entre 2010 e 2023 (BloombergNEF).</li><li><b>Regras no Brasil:</b> a ANEEL discute a regulamentação do armazenamento, e o governo prepara leilões de capacidade que incluem baterias.</li><li><b>Descarte:</b> a Política Nacional de Resíduos Sólidos (Lei 12.305/2010) exige logística reversa de pilhas e baterias.</li></ul><p class=\"more-src\">Fontes: ANEEL; MME; Lei 12.305/2010.</p>"
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Uma cidade tem muitas usinas solares e falta energia à noite. Como a bateria da rede ajuda?",
+          "options": [
+            "Produz energia sozinha, sem precisar de usinas",
+            "Guarda a energia que sobra ao meio-dia e devolve à noite",
+            "Faz o sol durar mais tempo no céu",
+            "Faz a cidade gastar menos durante o dia"
+          ],
+          "correctAnswer": 1,
+          "explanation": "A bateria leva a energia do sol para a noite: carrega com a sobra do meio-dia e devolve quando falta."
+        },
+        {
+          "id": 2,
+          "question": "Por que a bateria sozinha não resolve a falta de energia da cidade?",
+          "options": [
+            "Porque ela só guarda energia: precisa de usinas para carregar",
+            "Porque só funciona em dias de chuva",
+            "Porque solta muita fumaça",
+            "Porque precisa de um rio por perto"
+          ],
+          "correctAnswer": 0,
+          "explanation": "A última página lembra que a bateria não gera energia: só guarda o que as usinas produziram."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "solar_farm",
+      "solar_tracker",
+      "solar_micro"
+    ],
+    "relatedConcepts": [
+      "energy_storage",
+      "renewable_energy",
+      "grid_stability"
+    ],
+    "sources": [
+      {
+        "label": "ANEEL — Agência Nacional de Energia Elétrica",
+        "url": "https://www.gov.br/aneel/pt-br"
+      },
+      {
+        "label": "ONS — Operador Nacional do Sistema Elétrico",
+        "url": "https://www.ons.org.br"
+      },
+      {
+        "label": "MME — Ministério de Minas e Energia",
+        "url": "https://www.gov.br/mme/pt-br"
       }
     ]
   }

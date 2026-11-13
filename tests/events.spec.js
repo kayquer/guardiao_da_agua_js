@@ -108,6 +108,7 @@ test('vitória: "Cidade Guardiã" pausa, mostra os números e "Continuar jogando
     const problems = watchErrors(page);
     await ready(page);
     await page.evaluate(() => window.gameManager.gameOverSystem.showVictory());
+    await page.evaluate(() => CityCinematic.current?.skip()); // pula o voo da vitória (tests/city-story.spec.js)
     await expect(page.locator('#gameover-title')).toHaveText(/Cidade Guardiã/);
     await expect(page.locator('#gameover-text')).toContainText('Aquífero');
     expect(await page.evaluate(() => window.gameManager.isSimulationRunning())).toBe(false);

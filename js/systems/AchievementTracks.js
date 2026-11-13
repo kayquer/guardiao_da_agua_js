@@ -149,8 +149,11 @@ QuestSystem.measureAchievementMetrics = (buildings, r, extra = {}) => {
         riparian_planted: 0, runoff_controls: 0, green_invested: 0,
         river_minutes: Math.floor(t.riverS / 60), no_shortage_minutes: Math.floor(t.noShortageBestS / 60),
         sewage_minutes: Math.floor(t.sewageS / 60),
-        power: r?.electricity?.generation || 0, storage: r?.water?.storage || 0
+        power: 0, storage: r?.water?.storage || 0
     };
+    // Indústria só conta com a poluição da cidade em até INDUSTRY_CLEAN_MAX; energia só de fonte renovável
+    // (3ª auditoria: com o carvão de volta, a trilha "Força da Natureza" premiava fumaça)
+    const cleanAir = (r?.pollution?.current ?? 0) <= QuestSystem.INDUSTRY_CLEAN_MAX;
     for (const b of buildings || []) {
         const c = b?.config;
         if (!c || b.underConstruction) continue;
@@ -167,11 +170,16 @@ QuestSystem.measureAchievementMetrics = (buildings, r, extra = {}) => {
         if ((c.runoffAbsorption || 0) > 0) m.runoff_controls++;
         if (QuestSystem.isGreenBuilding(b.type, c)) m.green_invested += c.cost || 0;
         if (c.waste) m.recycling++;
+        if (c.renewable && c.powerGeneration) m.power += Number.isFinite(b.appliedPowerGeneration) ? b.appliedPowerGeneration : c.powerGeneration;
         const zone = String(c.zoneType || '').split('_')[0];
+        if (zone === 'industrial' && !cleanAir) continue;
         if (zone && `zone_${zone}` in m) m[`zone_${zone}`]++;
     }
+    m.power = Math.round(m.power);
     return m;
 };
+
+QuestSystem.INDUSTRY_CLEAN_MAX = 40;
 
 /** Quantos níveis da trilha o valor já alcança (0-5). */
 QuestSystem.trackLevel = (track, value) => (track?.levels || []).filter(l => (value || 0) >= l.goal).length;

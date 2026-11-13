@@ -109,7 +109,9 @@ test('cada bacia tem a sua fauna, e os ameaçados só chegam com a bacia recuper
     const litoral = FieldNotebook.ids('litoral');
     assert.ok(sertao.includes('arara_azul_de_lear') && !vale.includes('arara_azul_de_lear'));
     assert.ok(litoral.includes('guaiamum') && !sertao.includes('guaiamum'));
-    assert.ok(!vale.includes('vitoria_regia') && !vale.includes('ariranha'), 'nada de bicho amazônico no riacho do vale');
+    // 3ª auditoria: o vale é um rio do interior da bacia do Paraná (com várzea); o litoral é a Mata Atlântica do mar
+    for (const id of ['vitoria_regia', 'ariranha', 'cervo_pantanal', 'piracanjuba']) assert.ok(!litoral.includes(id), `${id} não é do litoral`);
+    assert.ok(!vale.includes('surubim') && FieldNotebook.ids('serra').includes('surubim'), 'surubim-do-iguaçu só no rio encaixado do planalto');
     assert.ok(!PROPS.mandacaru.basins || !PROPS.mandacaru.basins.includes('vale'), 'mandacaru só na caatinga');
     for (const id of Object.keys(NOTEBOOK)) {
         if (NOTEBOOK[id].status !== 'LC') assert.ok(PROPS[id].ecology > 0, `${id}: ameaçado sem progressão (ecology)`);

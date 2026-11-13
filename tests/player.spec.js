@@ -282,6 +282,7 @@ test('guias em sequência: água + energia → reservatório → zoneamento → 
         gm.studySystem.isBuildingUnlocked = () => true;
         gm.resourceManager.resources.budget.current = 1e6;
         TutorialSystem.GUIDE_PACE_MS = 0; // sem o intervalo entre guias, que tem teste próprio abaixo
+        TutorialSystem.READING_GAP_MS = 0; // nem o minuto de jogo entre leituras (testado em "não abrem em cadeia")
     });
 
     // Água sem energia ainda não abre nada
@@ -291,6 +292,14 @@ test('guias em sequência: água + energia → reservatório → zoneamento → 
     expect(await page.evaluate(() => window.gameManager.tutorialSystem.isActive)).toBe(false);
     const power = await page.evaluate(() => [...window.gameManager.buildingSystem.buildingTypes].find(([, t]) => t.powerGeneration > 0 && t.visible)[0]);
     expect(await build(power)).toBe(true);
+    // Uma bomba só ainda não dá conta da cidade: o guia "Água e energia funcionando!" espera a água fechar a conta
+    // (TutorialSystem.isSupplyOk — antes ele abria com a caixa caindo)
+    await page.waitForTimeout(2500);
+    await closeCards(page, 500);
+    expect(await page.evaluate(() => window.gameManager.tutorialSystem.isActive)).toBe(false);
+    for (let i = 0; i < 3 && !(await page.evaluate(() => TutorialSystem.isSupplyOk(window.gameManager))); i++) {
+        expect(await build('water_pump')).toBe(true);
+    }
 
     await expect(title).toHaveText('Água e energia funcionando!', { timeout: 8000 });
     expect(await page.evaluate(() => window.gameManager.gameState)).toBe('tutorial'); // congela enquanto ensina
@@ -449,11 +458,17 @@ test('guias sem gatilho próprio não abrem em cadeia', async ({ page }, testInf
         const ts = window.gameManager.tutorialSystem;
         ts.complete();
         ts.lastGuideEnd = Date.now() - 10000; // passou da espera de 3 s, não do intervalo de 90 s
+        ts.lastReadingAt = -Infinity;
         ts.checkGuides();
         const early = ts.isActive;
+        // passou o intervalo de 90 s, mas houve uma leitura há menos de um minuto de jogo (READING_GAP_MS)
         ts.lastGuideEnd = Date.now() - TutorialSystem.GUIDE_PACE_MS - 1;
+        ts.lastReadingAt = window.gameManager.gameTime;
         ts.checkGuides();
-        return { early, late: ts.isActive && ts.guideId };
+        const gap = ts.isActive;
+        ts.lastReadingAt = window.gameManager.gameTime - TutorialSystem.READING_GAP_MS - 1;
+        ts.checkGuides();
+        return { early, gap, late: ts.isActive && ts.guideId };
     });
-    expect(opened).toEqual({ early: false, late: 'zoning' });
+    expect(opened).toEqual({ early: false, gap: false, late: 'zoning' });
 });

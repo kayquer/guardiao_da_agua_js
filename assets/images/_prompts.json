@@ -813,6 +813,106 @@
         540
       ],
       "prompt": "Educational cutaway illustration of a seawater desalination plant on the coast of Ceará, Brazil: a large pipe taking sea water from the ocean, pre-filters, a building with rows of white reverse osmosis membrane tubes shown in a cutaway, salt being held back while fresh turquoise water flows to a blue reservoir and to the city of Fortaleza, a separate brown pipe returning concentrated brine far into the sea, high-voltage power lines feeding the plant, coconut palms on the beach. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo."
+    },
+    "assets/images/studies/usina-carvao.webp": {
+      "usedIn": "Estudo - Usina a Carvão, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational illustration of a coal-fired power plant in southern Brazil: a conveyor carrying black coal from a pile into a boiler building, a tall chimney releasing grey smoke, a cutaway inset showing fire boiling water into steam that spins a turbine and generator, a cooling pond, power lines to a town, and a family nearby covering their mouths, with a contrasting clean green hill with trees on the other side. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/termeletrica-gas.webp": {
+      "usedIn": "Estudo - Termelétrica a Gás, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational illustration of a natural gas power plant in Brazil: a gas pipeline arriving at a compact turbine hall with a cutaway of a jet-engine-like gas turbine spinning a generator, a short exhaust stack with a faint heat haze, a ship carrying liquefied gas in a distant port, power lines to a city at dusk with lights turning on. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/ciclo-combinado.webp": {
+      "usedIn": "Estudo - Termelétrica de Ciclo Combinado, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational cutaway illustration of a combined cycle power plant: a gas turbine on the left, its hot exhaust flowing into a heat recovery boiler that makes steam, a second steam turbine on the right, a cooling tower releasing white water vapor clouds, arrows of warm color showing heat being reused, engineers on a walkway, Brazilian landscape behind. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/microgeracao-solar.webp": {
+      "usedIn": "Estudo - Microgeração Solar, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of small-scale solar generation in a Brazilian small farm (chácara): a few rows of solar panels in the yard and on the roof of a simple house, a small inverter box on the wall, a power line connecting to the street grid with a glowing arrow sending extra energy to the neighbors, a child and a grandparent watching the sunny sky. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/aerogerador-pequeno.webp": {
+      "usedIn": "Estudo - Aerogerador Pequeno, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a small wind turbine on a slender tower on top of a grassy hill in rural Brazil, three blades spinning in the breeze, a small farmhouse and a vegetable garden below, wind lines flowing up the slope, a starry evening sky on one side showing it still works at night. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/bateria-da-rede.webp": {
+      "usedIn": "Estudo - Bateria da Rede, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational illustration of a grid battery storage facility: rows of container-sized battery cabinets with cooling fans next to a solar farm, a split scene with a bright midday sun charging the batteries and the same city at night lit by energy flowing back from the batteries, glowing arrows showing the flow, technicians in safety gear. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/cgh.webp": {
+      "usedIn": "Estudo - CGH (Central Geradora Hidrelétrica), pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Educational illustration of a very small hydropower station on a Brazilian river with riparian forest: a low weir diverting part of the water into a penstock pipe down to a small powerhouse with a cutaway turbine, water returning to the river below, a fish ladder beside the weir with dourado fish swimming up, green forest protecting both banks. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/usina-solar-centralizada.webp": {
+      "usedIn": "Estudo - Usina Solar Centralizada, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Aerial illustration of a large utility-scale solar plant in the sunny semi-arid Northeast of Brazil: long rows of solar panels on single-axis trackers tilting to follow the sun, a substation and tall transmission towers carrying power far away, caatinga vegetation preserved around the plant, a technician cleaning dusty panels. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/eolica-offshore.webp": {
+      "usedIn": "Estudo - Eólica Offshore, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of an offshore wind farm off the coast of northeastern Brazil: giant wind turbines standing in turquoise sea water, a cutaway showing a foundation fixed to the seabed and a cable running along the bottom to the shore, a maintenance boat, seabirds flying at a distance, dolphins and fish around the bases, artisanal fishing boats sailing safely nearby. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/images/studies/solar-flutuante.webp": {
+      "usedIn": "Estudo - Usina Solar Flutuante, pag. 1",
+      "aspect": "16:9",
+      "size": [
+        960,
+        540
+      ],
+      "prompt": "Illustration of a floating solar plant on a hydroelectric reservoir in Brazil: rows of solar panels on floating blue platforms anchored with cables, a dam and powerhouse in the background sharing the same transmission line, open water left free with fish and aquatic plants, shade under the panels keeping the water cool, sunny sky. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
+      "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
     }
   }
 }

@@ -137,6 +137,8 @@ class TutorialSystem {
             character: 'Claudia',
             background: 'assets/images/tutorial/bg-rio-boas-vindas.webp',
             title: 'Boas-vindas, {nome}!',
+            lessonTitle: 'Por que a água precisa de você',
+            lessonText: 'Você já pôs a cidade para andar, {nome}. Agora a gente vai entender por que ela existe: a água que a gente bebe, usa no banho e leva para as plantações está em perigo! <img src="assets/images/lessons/guardiao-da-agua.webp" alt="Dois jovens pegando água limpa de um riacho com as mãos" style="width:100%; border-radius:8px; margin:10px 0;"/> Cuidar desse tesouro é o trabalho do <b>Guardião da Água</b>, e eu vou estar do seu lado em cada passo.',
             text: 'Nossa cidade está com um problema sério: a água que a gente bebe, usa no banho e leva para as plantações está em perigo! <img src="assets/images/lessons/guardiao-da-agua.webp" alt="Dois jovens pegando água limpa de um riacho com as mãos" style="width:100%; border-radius:8px; margin:10px 0;"/> Por isso você foi escolhido como o novo <b>Guardião da Água</b>. Sua missão é proteger esse tesouro, e eu vou estar do seu lado, te ensinando cada passo. Topa cuidar da água com a gente?',
             icon: '👋'
         },
@@ -374,7 +376,7 @@ class TutorialSystem {
         {
             group: 'missions', mode: 'coach', character: 'Claudia', icon: '🏗️',
             title: 'Atalho para construir',
-            text: 'Viu o <b>🏗️ ›</b> numa meta? <b>Clique na meta</b> e eu te levo direto ao prédio na aba de construções! Pode construir ali mesmo (a obra começa assim que o tutorial terminar) e depois clique em <b>Próximo</b>.',
+            text: 'Viu o <b>🏗️ ›</b> numa meta? <b>Clique na meta</b> e eu te levo direto ao prédio na aba de construções! Pode construir ali mesmo (a obra começa assim que o tutorial terminar) e depois clique em <b>Próximo</b>. Dica: ponha a bomba encostada numa <b>rua</b> (🛣️ Asfalto): prédio sem rua do lado trabalha a 75%.',
             targets: ['.mission-details .mission-goal.goal-link', '.mission-details .mission-goals', '.hud-right'],
             // sem advanceOnClick: clicar na meta abria o menu na Bomba e o passo seguinte o fechava na mesma hora
             // (o jogador via "construa a bomba" e não conseguia); agora ele constrói ou fecha e segue no Próximo
@@ -442,7 +444,7 @@ class TutorialSystem {
         {
             group: 'interface', mode: 'coach', character: 'Claudia', icon: '🏗️',
             title: 'Construções',
-            text: 'Aqui ficam as construções, separadas por categoria. As marcadas com 🔒 ainda estão bloqueadas: clique nelas para <b>estudar</b> e desbloquear.',
+            text: 'Aqui ficam as construções, separadas por categoria. [[estudo:As marcadas com 🔒 ainda estão bloqueadas: clique nelas para <b>estudar</b> e desbloquear.||As que têm 🔒 pedem outra construção antes. E cada uma tem um <b>estudo</b> curto: ler até o fim deixa aquele prédio um pouco mais eficiente.]]',
             targets: ['#building-panel', '.mobile-toggle.left']
         },
         {
@@ -492,7 +494,7 @@ class TutorialSystem {
             background: 'assets/images/tutorial/bg-causa-efeito.webp',
             intro: true,
             title: 'Prazer, {nome}! Eu sou o Paulo',
-            text: 'Sou o <b>Secretário Municipal de Meio Ambiente</b>. Meu trabalho é ficar de olho no tempo, no rio e no ar da cidade. Quando vier uma <b>seca</b>, uma <b>chuva forte</b>, um <b>vazamento</b> ou uma <b>oportunidade</b> (como um dinheiro do governo), eu chamo você e trago <b>quatro escolhas</b>: 🛡️ a melhor resolve quase tudo, mas custa mais e às vezes pede um prédio pronto; as outras ajudam menos; e <b>não fazer nada</b> deixa o problema inteiro (ou faz a gente perder a chance). Acertar várias seguidas rende prêmio! Também sou eu quem avisa quando a poluição sobe ou o aquífero baixa. Conto com você, {nome}!',
+            text: 'Sou o <b>Secretário Municipal de Meio Ambiente</b>. Meu trabalho é ficar de olho no tempo, no rio e no ar da cidade. Quando vier uma <b>seca</b>, uma <b>chuva forte</b>, um <b>vazamento</b> ou uma <b>oportunidade</b> (como um dinheiro do governo), eu chamo você e trago <b>quatro escolhas</b>, e cada uma cobra um preço diferente: dinheiro, um prédio pronto, a paciência dos moradores ou a água do aquífero. <b>Nenhuma é sempre a certa</b>: antes de escolher, olhe o quadro <b>Como está a cidade agora</b>. <b>Não fazer nada</b> deixa o problema inteiro (ou faz a gente perder a chance), mas guarda o dinheiro. Depois eu conto o que achei. Acertar várias seguidas rende prêmio! Também sou eu quem avisa quando a poluição sobe ou o aquífero baixa. Conto com você, {nome}!',
             icon: '🧢'
         },
 
@@ -568,6 +570,7 @@ class TutorialSystem {
         const guide = TutorialSystem.nextGuide(gm);
         // Guias sem gatilho próprio não abrem em cadeia: um de cada vez, com tempo de jogar entre eles
         if (guide?.paced && Date.now() - (this.lastGuideEnd || 0) < TutorialSystem.GUIDE_PACE_MS) return;
+        if (guide && !guide.immediate && !this.readingGapOver()) return;
         if (guide) this.startGuide(guide.id);
         else this.checkRescue?.(); // recurso caindo sem parar: guia de socorro (RescueGuides.js)
     }
@@ -582,6 +585,12 @@ class TutorialSystem {
      * central, abre o guia 'energy' assim que o jogo estiver livre (checkGuides). Retorna true se o guia vai
      * aparecer (quem chamou não mostra o alerta); false se o jogador já viu o guia.
      */
+    /** Passou um minuto de jogo desde a última leitura (READING_GAP_MS)? */
+    readingGapOver() {
+        const now = this.gameManager.gameTime || 0;
+        return !Number.isFinite(this.lastReadingAt) || now - this.lastReadingAt >= TutorialSystem.READING_GAP_MS;
+    }
+
     requestEnergyGuide() {
         if (TutorialSystem.guidesDone().includes('energy')) return false;
         if (this.isActive && this.run === 'guide' && this.guideId === 'energy') return true;
@@ -636,6 +645,8 @@ class TutorialSystem {
             // o cartão de comemoração (ui/MissionCardUI.js) ainda na tela ou na fila: espera ele fechar
             const ui = this.gameManager.uiManager;
             if (ui?.hasMessageWaiting?.()) return setTimeout(open, 1000);
+            // um guia aberto ou uma leitura há menos de um minuto de jogo: a aula espera a vez
+            if (this.isActive || (this.gameManager.gameState === 'playing' && !this.readingGapOver())) return setTimeout(open, 2000);
             const next = LessonProgress.forMission(missionId);
             if (next == null) {
                 this.lessonsDeferred = false;
@@ -795,12 +806,13 @@ class TutorialSystem {
         this.lastStoryStep = mode === 'story' ? this.currentStep : null;
 
         document.getElementById('tutorial-icon').innerHTML = step.icon ? uiIcon(step.icon, 'lg') : '';
-        document.getElementById('tutorial-title').textContent = PlayerProfile.personalize(step.title);
+        document.getElementById('tutorial-title').textContent = PlayerProfile.personalize(this.run !== 'tutorial' && step.lessonTitle ? step.lessonTitle : step.title);
         const text = document.getElementById('tutorial-text');
         // Última página de uma aula: as fontes com link, como no livro
         const endsChapter = typeof step.chapter === 'number' && this.steps[this.currentStep + 1]?.chapter !== step.chapter;
         // Passos de interface citam botões ("toque em 🏗️"), que agora são SVG; o texto das aulas (capítulos) fica como está
-        const stepText = PlayerProfile.personalize(step.text);
+        const lessonRun = this.run !== 'tutorial' && step.lessonText; // aula aberta depois de jogar: sem "boas-vindas"
+        const stepText = TutorialSystem.studyText(PlayerProfile.personalize(lessonRun ? step.lessonText : step.text));
         text.innerHTML = (typeof step.chapter === 'number' ? stepText : uiIconsIn(stepText)) +
             (endsChapter ? this.gameManager.uiManager?.renderLessonSources?.(step.chapter) || '' : '');
         text.scrollTop = 0;
@@ -896,7 +908,7 @@ class TutorialSystem {
         const target = placing ? null : this.findTarget(step.targets);
 
         const hint = document.getElementById('tutorial-hint');
-        const hintHtml = (placing ? step.placingHint : target?.text) || '';
+        const hintHtml = TutorialSystem.studyText((placing ? step.placingHint : target?.text) || '');
         if (hintHtml !== this.lastHint) {
             this.lastHint = hintHtml;
             hint.hidden = !hintHtml;
@@ -1087,6 +1099,7 @@ class TutorialSystem {
 
         const gm = this.gameManager;
         gm.gameState = 'playing';
+        this.lastReadingAt = gm.gameTime || 0; // ritmo de leitura (READING_GAP_MS)
         if (this.run === 'guide') {
             TutorialSystem.markGuideDone(this.guideId);
             this.lastGuideEnd = Date.now();
@@ -1115,6 +1128,27 @@ TutorialSystem.REPLAY_PARTS = [
 ];
 
 TutorialSystem.GUIDE_PACE_MS = 90000;
+// No máximo uma leitura (aula depois de missão ou guia) por minuto de jogo simulado (3ª auditoria: 14 painéis em
+// 26 s depois do tutorial). Guias com `immediate` (energia da missão, ruas ao abrir a categoria) não esperam.
+TutorialSystem.READING_GAP_MS = 60000;
+
+/**
+ * Texto que muda com as regras de estudo: `[[estudo:se obrigatório||se opcional]]`. No modo loja estudar não trava
+ * nada, e os guias diziam "estude para liberar" (3ª auditoria). Resolvido na hora de mostrar (os testes trocam
+ * STUDY_RULES na página).
+ */
+TutorialSystem.studyText = (html) => {
+    const optional = typeof StudySystem !== 'undefined' && StudySystem.rules?.().study === 'opcional';
+    return String(html || '').replace(/\[\[estudo:([^|\]]*)\|\|([^\]]*)\]\]/g, (_, required, opt) => (optional ? opt : required));
+};
+
+/** Água e energia dando conta de verdade (produção ≥ consumo nos dois), não só "existe um prédio de cada". */
+TutorialSystem.isSupplyOk = (gm) => {
+    const rm = gm?.resourceManager;
+    if (!rm) return false;
+    const el = rm.resources.electricity || {};
+    return (rm.getWaterBalance?.().deficit ?? 1) <= 0 && (el.generation || 0) >= (el.consumption || 0);
+};
 TutorialSystem.GROUP_LABELS = { hello: 'Boas-vindas', intro: 'Introdução', cityhall: 'Prefeitura', missions: 'Missões', interface: 'Interface', end: 'Final' };
 TutorialSystem.SKIP_LABELS = { intro: 'Pular aulas', missions: 'Pular esta parte', interface: 'Pular esta parte' };
 
@@ -1225,8 +1259,8 @@ TutorialSystem.TOPICS = {
         steps: [
             { title: 'Geração x consumo', text: 'Aqui você vê a energia da cidade. <b>Geração</b> é o que as usinas produzem; <b>consumo</b> é o que bombas, estações de tratamento e zonas gastam. A conta precisa fechar: geração <b>maior ou igual</b> ao consumo.', targets: ['.resource-item:has(#electricity-amount)', '#compact-energy'] },
             { title: 'Eficiência baixa', expression: 'worried', text: 'Se a cidade gasta mais do que gera, a energia é dividida e <b>todos os prédios trabalham mais devagar</b>: com metade da energia, as bombas tiram metade da água e o tratamento limpa menos. A eficiência mostra isso.' },
-            { title: 'Como gerar', text: 'Na categoria <b>⚡ Energia</b> ficam as usinas. Prefira as <b>limpas</b>: o <b>Campo Eólico</b> usa o vento para girar as pás e um gerador, sem poluir a água nem o ar.<img src="assets/images/studies/parque-eolico.webp" alt="Campo eólico: o vento gira as pás e o gerador manda energia para a cidade" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin:8px 0;"/>', targets: ['.category-btn[data-category="power"]'] },
-            { title: 'Sempre uma folga', text: 'Gere um pouco <b>mais</b> do que a cidade usa: cada obra nova de água, tratamento ou moradia aumenta o consumo. Usina bloqueada? Clique nela para estudar e liberar!' }
+            { title: 'Como gerar', text: 'Na categoria <b>⚡ Energia</b> ficam as usinas. Prefira as <b>limpas</b>: comece pela <b>Microgeração Solar</b>, a mais barata, que transforma a luz do sol em eletricidade sem fumaça. Depois vêm o vento (aerogeradores) e a força do rio (hidrelétricas). Carvão e gás são baratos de construir, mas sujam o ar e custam caro todo mês.<img src="assets/images/studies/fazenda-solar.webp" alt="Painéis solares transformando a luz do sol em energia para a cidade" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin:8px 0;"/>', targets: ['.category-btn[data-category="power"]'] },
+            { title: 'Sempre uma folga', text: 'Gere um pouco <b>mais</b> do que a cidade usa: cada obra nova de água, tratamento ou moradia aumenta o consumo. [[estudo:Usina bloqueada? Clique nela para estudar e liberar!||Usina com 🔒? O cartão diz o que construir antes.]]' }
         ]
     }
 };
@@ -1239,7 +1273,7 @@ TutorialSystem.GUIDES_KEY = STORAGE_PREFIX + 'guides';
 // Alvos do passo "construa": acompanham o aluno abrindo menu (mobile) → categoria → prédio
 TutorialSystem.buildTargets = (typeId, category, label) => [
     { selector: '#build-info-construct:not([hidden])', text: '👆 Agora clique (ou toque) em <b>Construir</b>.' },
-    { selector: `.building-item[data-building-type="${typeId}"]`, text: `👆 Escolha <b>${label}</b>. Bloqueado? Veja o que falta e estude para liberar.`, scrollIn: '#build-modal-grid' },
+    { selector: `.building-item[data-building-type="${typeId}"]`, text: `👆 Escolha <b>${label}</b>. Com 🔒? Veja o que falta[[estudo: e estude para liberar||]].`, scrollIn: '#build-modal-grid' },
     { selector: `.category-btn[data-category="${category}"]`, text: '👆 Abra esta categoria.' },
     { selector: '.mobile-toggle.left', text: '👆 Toque em <b>🏗️</b> para abrir as construções.' }
 ];
@@ -1257,15 +1291,14 @@ TutorialSystem.GUIDES = [
     {
         // Primeira falta de energia (alerta "Energia Insuficiente" ou eficiência < 100%): substitui o alerta
         // central nessa primeira vez (requestEnergyGuide). Sem 'after': vale a qualquer momento, uma vez por jogador.
-        id: 'energy', title: 'Energia', icon: '⚡',
+        // 11/2026: é o briefing da missão energy_01 (antes eram 5 páginas repetindo o que a missão pedia)
+        id: 'energy', title: 'Energia', icon: '⚡', immediate: true,
         when: gm => !!gm.tutorialSystem?.energyGuidePending || TutorialSystem.isEnergyShort(gm),
         steps: [
-            { title: 'Faltou energia!', expression: 'worried', text: '{nome}, a cidade está gastando mais energia do que produz. <b>Geração</b> é o que as usinas produzem; <b>consumo</b> é o que bombas, estações de tratamento e zonas gastam.', targets: ['.resource-item:has(#electricity-amount)', '#compact-energy'] },
-            { title: 'O que acontece agora', text: 'Com menos energia do que precisa, <b>todos os prédios trabalham mais devagar</b>: a eficiência cai, as bombas tiram menos água, o tratamento limpa menos e os moradores ficam insatisfeitos.' },
-            { title: 'O sol pode ajudar', text: 'O jeito mais barato de começar é o sol: uma <b>Microgeração Solar</b>, a menor usina que a ANEEL deixa ligar na rede, transforma a luz em eletricidade sem fumaça. De noite e com nuvem eles geram menos; depois você pode somar vento, rio e baterias.<img src="assets/images/studies/parque-eolico.webp" alt="Energia limpa: painéis e turbinas mandam energia para a cidade" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin:8px 0;"/>' },
+            { title: 'Faltou energia!', expression: 'worried', text: '{nome}, a bomba precisa de energia e a cidade ainda não gera o bastante. <b>Geração</b> é o que as usinas produzem; <b>consumo</b> é o que bombas, estações e zonas gastam. Com menos energia do que precisa, <b>todos os prédios trabalham mais devagar</b>: a bomba tira menos água.', targets: ['.resource-item:has(#electricity-amount)', '#compact-energy'] },
             {
                 title: 'Construa uma Microgeração Solar', waitFor: 'solar_micro',
-                text: 'Abra <b>⚡ Energia</b> e construa uma <b>Microgeração Solar</b>. Sem dinheiro agora? Use <b>Fazer depois</b>.',
+                text: 'O jeito mais barato de começar é o sol: a <b>Microgeração Solar</b>, a menor usina que a ANEEL deixa ligar na rede, transforma luz em eletricidade sem fumaça (de noite e com nuvem gera menos). Abra <b>⚡ Energia</b> e construa uma: é a missão <b>Energia para a Bomba</b>. Sem dinheiro agora? Use <b>Fazer depois</b>.',
                 placingHint: '👆 Escolha um terreno livre perto da cidade.',
                 enter: gm => gm.uiManager.uiState.currentCategory !== 'power' && gm.uiManager.selectCategory('power'),
                 targets: TutorialSystem.buildTargets('solar_micro', 'power', 'a Microgeração Solar')
@@ -1276,7 +1309,7 @@ TutorialSystem.GUIDES = [
     {
         // Primeira vez que abre a categoria 🛣️ Asfalto (UIManager.selectCategory chama checkGuides na hora)
         // ou já tem rua. Sem 'after': vale a qualquer momento, uma vez por jogador.
-        id: 'roads', title: 'Ruas', icon: '🛣️',
+        id: 'roads', title: 'Ruas', icon: '🛣️', immediate: true, // o próprio jogador abriu a categoria
         when: gm => gm.uiManager?.uiState?.currentCategory === 'roads' ||
             gm.buildingSystem.getAllBuildings().some(b => b.config?.roadType),
         steps: [
@@ -1304,7 +1337,7 @@ TutorialSystem.GUIDES = [
             { title: 'A ETA busca água no rio', text: 'A <b>Estação de Tratamento de Água (ETA)</b> capta a água do rio e deixa ela boa para beber. Ela precisa ficar a até <b>10 blocos</b> do rio, mas fora da planície e da APP: a cidade instala sozinha uma <b>bomba na margem</b> e os <b>canos</b> até a estação. Ela dá o dobro de água de um poço, mas os produtos do tratamento <b>poluem</b> um pouco e as máquinas gastam <b>energia</b>.<img src="assets/images/studies/captacao-rio.webp" alt="Bomba na beira do rio e um cano azul levando a água até a estação de tratamento" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin:8px 0;"/>' },
             {
                 title: 'Construa uma ETA', waitFor: 'water_treatment_plant',
-                text: 'Abra <b>💧 Água</b> e construa uma <b>Estação de Tratamento de Água</b> perto de um rio ou lago. Está bloqueada? Clique nela para <b>estudar</b> e liberar. Sem dinheiro agora? Use <b>Fazer depois</b>.',
+                text: 'Abra <b>💧 Água</b> e construa uma <b>Estação de Tratamento de Água</b> perto de um rio ou lago. [[estudo:Está bloqueada? Clique nela para <b>estudar</b> e liberar. ||]]Sem dinheiro agora? Use <b>Fazer depois</b>.',
                 placingHint: '👆 Chegue perto da água (até 10 blocos). O texto junto do cursor mostra quantos canos serão instalados.',
                 enter: gm => gm.uiManager.uiState.currentCategory !== 'water' && gm.uiManager.selectCategory('water'),
                 targets: TutorialSystem.buildTargets('water_treatment_plant', 'water', 'a 🏞️ Estação de Tratamento de Água')
@@ -1315,9 +1348,10 @@ TutorialSystem.GUIDES = [
     },
     {
         id: 'storage', title: 'Guardar água', icon: '🛢️',
-        // água e energia funcionando: hora de guardar para os dias secos
+        // água e energia funcionando DE VERDADE (produção ≥ consumo): antes bastava existir um prédio de cada, e o
+        // guia dizia "funcionando!" com a caixa caindo 172 L/min (3ª auditoria, B7)
         when: gm => TutorialSystem.completedBuildings(gm, c => c.waterProduction > 0) &&
-            TutorialSystem.completedBuildings(gm, c => c.powerGeneration > 0),
+            TutorialSystem.completedBuildings(gm, c => c.powerGeneration > 0) && TutorialSystem.isSupplyOk(gm),
         steps: [
             { title: 'Água e energia funcionando!', expression: 'happy', text: 'Muito bem, {nome}! A cidade já tem <b>água</b> e <b>energia</b>. Mas e quando não chover? Rios e represas baixam na seca. Por isso as cidades <b>guardam água</b> em reservatórios.' },
             {

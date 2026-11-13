@@ -97,8 +97,8 @@ const ACHIEVEMENT_TRACKS = {
         ]
     },
     power: {
-        icon: 'ach-power', title: 'Força da Natureza', metric: 'power', unit: 'MW',
-        description: 'Gere {n} MW de energia ao mesmo tempo.',
+        icon: 'ach-power', title: 'Força da Natureza', metric: 'power', unit: 'kW',
+        description: 'Gere {n} kW de energia renovável (sol, vento, água, biomassa) ao mesmo tempo.',
         levels: [
             { goal: 400, name: 'Luz Acesa' },
             { goal: 1000, name: 'Cidade Iluminada' },
@@ -164,7 +164,7 @@ const ACHIEVEMENT_TRACKS = {
     },
     industrial_zones: {
         icon: 'ach-industrial', title: 'Distrito Industrial', metric: 'zone_industrial',
-        description: 'Tenha {n} zonas industriais.',
+        description: 'Tenha {n} zonas industriais com a poluição da cidade em até 40%.',
         levels: [
             { goal: 2, name: 'Primeira Fábrica' },
             { goal: 5, name: 'Distrito Industrial' },

@@ -10,6 +10,9 @@
  * entra no modo de construção. Não pausa o jogo. No celular o modal é tela cheia e as informações
  * substituem os cards (← Voltar).
  */
+
+// Prédio que polui pelo menos isto por minuto ganha no cartão o tempo até a poluição chegar a 100% (getPollutionFillMinutes)
+const BuildMenuUI_POLLUTION_FILL_WARN = 15;
 mixin(UIManager, {
     /** Uma vez por página (initialize roda de novo ao carregar um save). */
     setupBuildModal() {
@@ -142,6 +145,24 @@ mixin(UIManager, {
     },
 
     /**
+     * Prédio que polui muito (≥ POLLUTION_FILL_WARN/min): em quanto tempo de jogo ele leva a poluição a 100% com a
+     * cidade como está agora (getPollutionBalance + a poluição dele). 3ª auditoria: a Usina a Carvão, sozinha, levava
+     * a cidade à derrota em 2,5 min e nada no cartão avisava. Sem perigo em 30 min = sem linha.
+     */
+    getPollutionFillMinutes(type) {
+        const rm = this.gameManager?.resourceManager;
+        if (!rm?.getPollutionBalance || (type.pollutionGeneration || 0) < BuildMenuUI_POLLUTION_FILL_WARN) return null;
+        const now = rm.resources.pollution?.current || 0;
+        const max = rm.resources.pollution?.max || 100;
+        const net = rm.getPollutionBalance().net + type.pollutionGeneration;
+        if (net <= 0) return null;
+        const minutes = (max - now) / net;
+        if (minutes > 30) return null;
+        const when = minutes < 1 ? 'menos de 1 min' : `~${Math.round(minutes)} min`;
+        return `leva a poluição de ${Math.round(now)}% a ${Math.round(max)}% em ${when} de jogo (fim de jogo), se nada limpar`;
+    },
+
+    /**
      * Linhas de efeito do prédio a partir dos campos que a simulação lê (applyBuildingEffects, EventSystem).
      * Uma fonte só para o menu de construção (type) e para o painel do prédio pronto (com building: valores reais —
      * rendimento de água com seca/aquífero, energia pela fase da zona). tests/unit/data.test.js confere a cobertura.
@@ -159,15 +180,17 @@ mixin(UIManager, {
         } else if (type.waterProduction) add('💧 Produz água', `${fmt(type.waterProduction)} L/min`, 'good');
         if (type.waterStorage) add('🛢️ Guarda água', `${fmt(type.waterStorage)} L`, 'good');
         if (type.waterConsumption) add('🚰 Gasta água', `${fmt(type.waterConsumption * (type.rainwaterReuse ? 0.5 : 1))} L/min`, 'bad');
-        if (type.powerGeneration) add('⚡ Gera energia', `${fmt(type.powerGeneration)} MW${rented}`, 'good');
+        if (type.powerGeneration) add('⚡ Gera energia', `${fmt(type.powerGeneration)} kW${rented}`, 'good');
         if (type.powerConsumption) {
             // Zona consome pela fase (BuildingEfficiency.getBuildingPowerConsumption)
             const now = building?.active && bs?.getBuildingPowerConsumption ? bs.getBuildingPowerConsumption(building) : type.powerConsumption;
-            const ofFull = now !== type.powerConsumption ? ` (de ${fmt(type.powerConsumption)} MW com a zona completa)` : '';
-            add('🔌 Usa energia', `${fmt(now)} MW${ofFull}`, 'bad', 'power-consumption');
+            const ofFull = now !== type.powerConsumption ? ` (de ${fmt(type.powerConsumption)} kW com a zona completa)` : '';
+            add('🔌 Usa energia', `${fmt(now)} kW${ofFull}`, 'bad', 'power-consumption');
         }
         if (type.pollutionReduction) add('🌿 Limpa a poluição', `-${fmt(type.pollutionReduction)}/min`, 'good');
         if (type.pollutionGeneration) add('🏭 Polui', `+${fmt(type.pollutionGeneration)}/min`, 'bad');
+        const fill = !building ? this.getPollutionFillMinutes?.(type) : null;
+        if (fill) add('⚠️ Com a cidade de agora', fill, 'bad', 'pollution-fill');
         if (type.satisfactionBonus) add('😊 Satisfação', `+${fmt(type.satisfactionBonus)}`, 'good');
         if (type.incomeGeneration) add('💵 Rende', `R$ ${fmt(type.incomeGeneration)}/min${rented}`, 'good');
         if (type.populationCapacity || type.population) add('👥 Moradores', fmt(type.populationCapacity || type.population), 'good');

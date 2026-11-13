@@ -86,6 +86,7 @@ mixin(UIManager, {
         AudioManager.playSound('sfx_panel_open');
         const open = {
             achievements: () => this.openAchievementsPanel(),
+            diary: () => this.openDiaryPanel(),
             settings: () => this.openSettingsPanel(),
             notifications: () => this.openNotificationHistory(),
             research: () => this.openResearchPanel()

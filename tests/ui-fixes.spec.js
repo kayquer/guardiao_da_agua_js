@@ -262,7 +262,7 @@ test('menu do jogador: o nome abre o menu; cada item abre o seu painel; aulas sa
     };
 
     await open();
-    await expect(menu.locator('[data-player-action]')).toHaveText(['Perfil e pausa', 'Aulas e estudos', 'Conquistas', 'Configurações', 'Notificações', 'Dados da pesquisa', 'Salvar jogo']);
+    await expect(menu.locator('[data-player-action]')).toHaveText(['Perfil e pausa', 'Aulas e estudos', 'Conquistas', 'Diário da cidade', 'Configurações', 'Notificações', 'Dados da pesquisa', 'Salvar jogo']);
     await pick('pause');
     await expect(menu).toBeHidden();
     await expect(page.locator('#pause-overlay')).toBeVisible();

@@ -27,3 +27,139 @@
     font-weight: 700;
     opacity: 0.85;
 }
+
+/* ===== Acessibilidade (ui/SettingsUI.js setupAccessibilitySettings): cores, tela cheia e teclas ===== */
+.color-picker .gfx-seg button {
+    flex: 1 1 auto;
+    white-space: normal;
+    line-height: 1.15;
+}
+
+.fullscreen-picker .fullscreen-btn,
+.keys-picker .keys-reset {
+    justify-self: end;
+    min-height: 36px;
+    padding: 4px 16px;
+    font-size: var(--gda-text-sm);
+}
+
+.keys-picker .keys-list,
+.keys-picker .keys-status {
+    grid-column: 1 / -1;
+}
+
+.keys-list {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.keys-group {
+    margin-top: var(--gda-space-2);
+    font-size: var(--gda-text-xs);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gda-ink-muted);
+}
+
+.keys-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gda-space-2);
+    padding: 3px 6px;
+    border-radius: var(--gda-r-xs);
+    background: var(--gda-surface-2);
+    color: var(--gda-ink);
+    font-size: var(--gda-text-sm);
+    font-weight: 700;
+}
+
+.keys-slots {
+    display: inline-flex;
+    flex-shrink: 0;
+    gap: var(--gda-space-1);
+}
+
+.key-btn {
+    min-width: 64px;
+    min-height: 32px;
+    padding: 2px 8px;
+    border: 1px solid var(--gda-border-strong);
+    border-radius: var(--gda-r-sm);
+    background: var(--gda-surface);
+    color: var(--gda-ink);
+    font-family: var(--gda-font);
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: var(--gda-shadow-xs);
+    transition: background var(--gda-dur-fast) ease, box-shadow var(--gda-dur-fast) ease;
+}
+
+.key-btn kbd {
+    font-family: inherit;
+    font-size: var(--gda-text-sm);
+}
+
+.key-btn:hover:not(:disabled) {
+    background: var(--gda-accent-soft);
+    box-shadow: inset 0 0 0 1.5px var(--gda-accent);
+}
+
+.key-btn:focus-visible {
+    outline: var(--gda-focus-light);
+    outline-offset: 1px;
+}
+
+.key-btn.empty kbd {
+    color: var(--gda-ink-muted);
+}
+
+.key-btn:disabled {
+    cursor: default;
+    background: var(--gda-surface-3);
+    color: var(--gda-ink-muted);
+    box-shadow: none;
+}
+
+.key-btn.waiting {
+    background: var(--gda-accent-2);
+    border-color: var(--gda-accent-2-deep);
+    color: var(--gda-accent-2-ink);
+    animation: key-wait 1s ease-in-out infinite;
+}
+
+@keyframes key-wait {
+    50% { box-shadow: 0 0 0 4px rgba(255, 210, 63, 0.45); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .key-btn.waiting { animation: none; }
+}
+
+.keys-status {
+    min-height: 1.2em;
+    margin: 0;
+    font-size: var(--gda-text-sm);
+    font-weight: 700;
+    color: var(--gda-ink);
+}
+
+.keys-status[data-kind="bad"] { color: var(--gda-bad); }
+.keys-status[data-kind="warn"] { color: var(--gda-ok); }
+.keys-status[data-kind="wait"] { color: var(--gda-accent-strong); }
+
+/* Celular/tablet sem teclado: a lista de teclas não serve (o controle e o toque continuam) */
+@media (hover: none) and (pointer: coarse) {
+    #pause-keys { display: none; }
+}
+
+/* Pausa → Controles (UIManager.renderControlsHelp): o modal agora é claro, o texto de abertura era branco */
+#controls-modal .controls-intro {
+    color: var(--gda-ink-muted);
+    font-family: var(--gda-font);
+    font-weight: 600;
+}

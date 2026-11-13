@@ -157,18 +157,18 @@ const PROP_TYPES = {
     garca: { file: 'garca.glb', group: 'fauna', place: 'bank', size: 0.45, max: 6, cleanBelow: [55, 35], motion: 'perch' },
     capivara: { file: 'capivara.glb', group: 'fauna', place: 'bank', size: 0.45, max: 5, cleanBelow: [60, 40], motion: 'graze' },
     tartaruga: { file: 'tartaruga.glb', group: 'fauna', place: 'bank', size: 0.28, max: 4, cleanBelow: [45, 25], motion: 'graze' },
-    vitoria_regia: { file: 'vitoria_regia.glb', group: 'natureza', place: 'water', size: 0.7, max: 8, cleanBelow: [55, 35], motion: 'bob', basins: ['litoral'] },
+    vitoria_regia: { file: 'vitoria_regia.glb', group: 'natureza', place: 'water', size: 0.7, max: 8, cleanBelow: [55, 35], motion: 'bob', basins: ['vale'] }, // Victoria cruziana: lagoas da bacia do Paraná-Paraguai, não do litoral
     sapo: { file: 'sapo.glb', group: 'fauna', place: 'bank', size: 0.2, max: 5, cleanBelow: [40, 20], motion: 'hop' }, // anfíbio: o primeiro a sumir
     lambaris: { file: 'lambaris.glb', group: 'fauna', place: 'water', size: 0.45, max: 6, cleanBelow: [50, 30], motion: 'swim' },
     // Kit Fauna Ameaçada (Livro Vermelho, ICMBio 2018): os mais exigentes, um ou dois por mapa, cada um no seu bioma
-    ariranha: { file: 'ariranha.glb', kit: 'fauna/mamiferos/ariranha', group: 'fauna', place: 'bank', size: 0.55, max: 2, cleanBelow: [40, 20], motion: 'graze', basins: ['litoral'], ecology: 0.75 },
+    ariranha: { file: 'ariranha.glb', kit: 'fauna/mamiferos/ariranha', group: 'fauna', place: 'bank', size: 0.55, max: 2, cleanBelow: [40, 20], motion: 'graze', basins: ['vale'], ecology: 0.75 }, // rios do interior (Pantanal, bacia do Paraná), não o mar
     boto_cinza: { file: 'boto_cinza.glb', kit: 'fauna/mamiferos/boto_cinza', group: 'fauna', place: 'water', size: 0.7, max: 2, cleanBelow: [45, 25], motion: 'swim', basins: ['litoral'], ecology: 0.5 },
     guaiamum: { file: 'guaiamum.glb', kit: 'fauna/invertebrados/guaiamum', group: 'fauna', place: 'bank', size: 0.22, max: 2, cleanBelow: [45, 25], motion: 'graze', basins: ['litoral'], ecology: 0.3 },
     pato_mergulhao: { file: 'pato_mergulhao.glb', kit: 'fauna/aves/pato_mergulhao', group: 'fauna', place: 'water', size: 0.32, max: 2, cleanBelow: [30, 12], motion: 'swim', basins: ['serra', 'vale'], ecology: 0.9 },
     soco_boi_escuro: { file: 'soco_boi_escuro.glb', kit: 'fauna/aves/soco_boi_escuro', group: 'fauna', place: 'bank', size: 0.4, max: 2, cleanBelow: [55, 35], motion: 'perch', basins: ['serra', 'vale'], ecology: 0.35 },
     ra_das_pedras: { file: 'ra_das_pedras.glb', kit: 'fauna/anfibios/ra_das_pedras', group: 'fauna', place: 'bank', size: 0.22, max: 2, cleanBelow: [35, 15], motion: 'hop', basins: ['serra'], ecology: 0.45 },
-    piracanjuba: { file: 'piracanjuba.glb', kit: 'fauna/peixes/piracanjuba', group: 'fauna', place: 'water', size: 0.4, max: 2, cleanBelow: [45, 25], motion: 'swim', basins: ['vale', 'litoral'], ecology: 0.4 },
-    surubim: { file: 'surubim.glb', kit: 'fauna/peixes/surubim_do_iguacu', group: 'fauna', place: 'water', size: 0.45, max: 2, cleanBelow: [40, 20], motion: 'swim', basins: ['vale', 'serra'], ecology: 0.6 },
+    piracanjuba: { file: 'piracanjuba.glb', kit: 'fauna/peixes/piracanjuba', group: 'fauna', place: 'water', size: 0.4, max: 2, cleanBelow: [45, 25], motion: 'swim', basins: ['vale'], ecology: 0.4 }, // bacia do Paraná-Prata
+    surubim: { file: 'surubim.glb', kit: 'fauna/peixes/surubim_do_iguacu', group: 'fauna', place: 'water', size: 0.45, max: 2, cleanBelow: [40, 20], motion: 'swim', basins: ['serra'], ecology: 0.6 }, // endêmico do baixo Iguaçu: rio encaixado no planalto
     libelula: { file: 'libelula.glb', kit: 'fauna/invertebrados/libelula_januaria', group: 'fauna', place: 'bank', size: 0.24, max: 2, cleanBelow: [45, 25], motion: 'fly', basins: ['vale', 'serra', 'litoral'], ecology: 0.2 },
     egla: { file: 'egla.glb', kit: 'fauna/invertebrados/egla_rossiana', group: 'fauna', place: 'bank', size: 0.2, max: 2, cleanBelow: [30, 12], motion: 'graze', basins: ['vale', 'serra'], ecology: 0.7 },
 
@@ -181,8 +181,8 @@ const PROP_TYPES = {
     anta: { file: 'anta.glb', kit: 'fauna/mamiferos/anta', group: 'fauna', place: 'rural', size: 0.62, max: 2, cleanBelow: [65, 45], motion: 'graze', basins: ['vale', 'serra', 'litoral'], ecology: 0.5 },
     onca_pintada: { file: 'onca_pintada.glb', kit: 'fauna/mamiferos/onca_pintada', group: 'fauna', place: 'rural', size: 0.62, max: 1, cleanBelow: [55, 35], motion: 'graze', ecology: 0.85 },
     lobo_guara: { file: 'lobo_guara.glb', kit: 'fauna/mamiferos/lobo_guara', group: 'fauna', place: 'rural', size: 0.52, max: 2, cleanBelow: [70, 50], motion: 'graze', basins: ['vale', 'serra'], ecology: 0.4 },
-    cervo_pantanal: { file: 'cervo_pantanal.glb', kit: 'fauna/mamiferos/cervo_do_pantanal', group: 'fauna', place: 'land', size: 0.6, max: 2, cleanBelow: [60, 40], motion: 'graze', basins: ['litoral', 'vale'], ecology: 0.6 },
-    mico_leao_dourado: { file: 'mico_leao_dourado.glb', kit: 'fauna/mamiferos/mico_leao_dourado', group: 'fauna', place: 'land', size: 0.3, max: 2, cleanBelow: [70, 50], motion: 'hop', basins: ['serra', 'litoral'], ecology: 0.55 },
+    cervo_pantanal: { file: 'cervo_pantanal.glb', kit: 'fauna/mamiferos/cervo_do_pantanal', group: 'fauna', place: 'land', size: 0.6, max: 2, cleanBelow: [60, 40], motion: 'graze', basins: ['vale'], ecology: 0.6 }, // várzeas do Pantanal e do rio Paraná
+    mico_leao_dourado: { file: 'mico_leao_dourado.glb', kit: 'fauna/mamiferos/mico_leao_dourado', group: 'fauna', place: 'land', size: 0.3, max: 2, cleanBelow: [70, 50], motion: 'hop', basins: ['litoral'], ecology: 0.55 }, // mata de baixada do litoral fluminense
     muriqui_do_sul: { file: 'muriqui_do_sul.glb', kit: 'fauna/mamiferos/muriqui_do_sul', group: 'fauna', place: 'land', size: 0.42, max: 2, cleanBelow: [65, 45], motion: 'hop', basins: ['serra'], ecology: 0.75 },
     gaviao_real: { file: 'gaviao_real.glb', kit: 'fauna/aves/gaviao_real', group: 'fauna', place: 'land', size: 0.5, max: 1, cleanBelow: [60, 40], motion: 'perch', basins: ['serra', 'litoral'], ecology: 0.9 },
     morfo: { file: 'morfo.glb', kit: 'fauna/invertebrados/morfo_menelaus', group: 'fauna', place: 'land', size: 0.22, max: 2, cleanBelow: [70, 50], motion: 'fly', basins: ['vale', 'serra', 'litoral'], ecology: 0.3 },

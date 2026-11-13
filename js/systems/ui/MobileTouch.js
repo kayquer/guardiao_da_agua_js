@@ -344,7 +344,7 @@ mixin(UIManager, {
                     infoText += `💧 Produção: ${building.config.waterProduction}L/min\n`;
                 }
                 if (building.config.energyConsumption) {
-                    infoText += `⚡ Consumo: ${building.config.energyConsumption}MW\n`;
+                    infoText += `⚡ Consumo: ${building.config.energyConsumption}kW\n`;
                 }
                 if (building.config.maintenanceCost) {
                     infoText += `🔧 Manutenção: R$ ${building.config.maintenanceCost}/min`;
@@ -840,7 +840,7 @@ mixin(UIManager, {
                 content += `
                         <div class="detail-row">
                             <span class="detail-label">${uiIcon('res-energy')} Geração:</span>
-                            <span class="detail-value">${building.config.powerGeneration} MW</span>
+                            <span class="detail-value">${building.config.powerGeneration} kW</span>
                         </div>
                 `;
             }

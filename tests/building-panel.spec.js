@@ -242,10 +242,7 @@ test('guia de energia: a primeira falta de energia abre a Cláudia no lugar do a
     await expect(title).toHaveText('Faltou energia!', { timeout: 8000 });
     await expect(page.locator('.central-alert-overlay')).toHaveCount(0); // o guia substitui o alerta
     expect(await page.evaluate(() => window.gameManager.gameState)).toBe('tutorial');
-    await page.click('#tutorial-next-btn');
-    await expect(title).toHaveText('O que acontece agora');
-    await page.click('#tutorial-next-btn');
-    await expect(title).toHaveText('O sol pode ajudar'); // começar pelo sol: o jeito mais barato hoje
+    // 11/2026: 2 páginas (era 5): o guia é o briefing da missão energy_01 — começar pelo sol, o jeito mais barato
     await page.click('#tutorial-next-btn');
     await expect(title).toHaveText('Construa uma Microgeração Solar');
     await expect(page.locator('#tutorial-next-btn')).toBeDisabled(); // espera a obra (ou "Fazer depois")

@@ -537,8 +537,9 @@ class BuildingSystem {
             this.activateBuildingCooldown();
         }
 
-        // Mostrar notificação de sucesso
-        this.showNotification(`${buildingType.name} construído com sucesso!`, 'success');
+        // Obra começou: só no histórico (o canteiro já aparece no mapa). Antes dizia "construído com sucesso" na
+        // colocação, com o gênero errado ("Prefeitura Municipal construído") e junto do toast de conclusão.
+        if (!isRoad) this.gameManager?.uiManager?.showNotification?.(`Obra iniciada: ${buildingType.name}`, 'info', 3000, { quiet: true });
 
         // Avisar já na colocação se faltará energia quando a obra terminar (o consumo só entra na conclusão)
         if (buildingType.powerConsumption && window.gameManager && gameManager.resourceManager) {
@@ -1808,18 +1809,19 @@ class BuildingSystem {
             if (this.previewMesh.material) {
                 // Laranja: pode construir, mas derruba árvores (TreeSystem)
                 const treesHere = this.gameManager?.treeSystem?.countTreesInArea(gridX, gridZ, buildingType.size) || 0;
+                // Cores pelo modo de daltonismo (ColorMode): no normal, laranja/verde/vermelho de sempre
                 if (isValid && treesHere) {
-                    this.previewMesh.material.diffuseColor = new BABYLON.Color3(1, 0.6, 0);
+                    this.previewMesh.material.diffuseColor = ColorMode.color3('warn', [1, 0.6, 0]);
                     this.previewMesh.material.alpha = 0.7;
-                    this.previewMesh.material.emissiveColor = new BABYLON.Color3(0.25, 0.12, 0);
+                    this.previewMesh.material.emissiveColor = ColorMode.color3('warn', [0.25, 0.12, 0], 0.25);
                 } else if (isValid) {
-                    this.previewMesh.material.diffuseColor = new BABYLON.Color3(0, 1, 0); // Verde para válido
+                    this.previewMesh.material.diffuseColor = ColorMode.color3('good', [0, 1, 0]); // Verde para válido
                     this.previewMesh.material.alpha = 0.6;
-                    this.previewMesh.material.emissiveColor = new BABYLON.Color3(0, 0.2, 0);
+                    this.previewMesh.material.emissiveColor = ColorMode.color3('good', [0, 0.2, 0], 0.2);
                 } else {
-                    this.previewMesh.material.diffuseColor = new BABYLON.Color3(1, 0, 0); // Vermelho para inválido
+                    this.previewMesh.material.diffuseColor = ColorMode.color3('bad', [1, 0, 0]); // Vermelho para inválido
                     this.previewMesh.material.alpha = 0.8;
-                    this.previewMesh.material.emissiveColor = new BABYLON.Color3(0.2, 0, 0);
+                    this.previewMesh.material.emissiveColor = ColorMode.color3('bad', [0.2, 0, 0], 0.2);
                 }
                 // ETA: fantasma da bomba e dos canos + quantos blocos até a água (WaterIntake.js)
                 const intakePlan = isValid && buildingType.surfaceWater
@@ -1844,13 +1846,13 @@ class BuildingSystem {
             // ===== ENHANCED MARKER VISUAL FEEDBACK =====
             const material = this.previewMarker.material;
             if (isValid) {
-                material.diffuseColor = new BABYLON.Color3(0, 1, 0); // Verde
-                material.emissiveColor = new BABYLON.Color3(0, 0.3, 0);
+                material.diffuseColor = ColorMode.color3('good', [0, 1, 0]); // Verde (ou a cor do modo de daltonismo)
+                material.emissiveColor = ColorMode.color3('good', [0, 0.3, 0], 0.3);
                 // Animação suave para posição válida
                 this.previewMarker.scaling = new BABYLON.Vector3(1, 1, 1);
             } else {
-                material.diffuseColor = new BABYLON.Color3(1, 0, 0); // Vermelho
-                material.emissiveColor = new BABYLON.Color3(0.3, 0, 0);
+                material.diffuseColor = ColorMode.color3('bad', [1, 0, 0]); // Vermelho
+                material.emissiveColor = ColorMode.color3('bad', [0.3, 0, 0], 0.3);
                 // Animação de "shake" para posição inválida
                 this.previewMarker.scaling = new BABYLON.Vector3(1.1, 1, 1.1);
             }
@@ -1981,11 +1983,11 @@ class BuildingSystem {
             // Material baseado na validade
             const material = new BABYLON.StandardMaterial(`cell_indicator_mat_${gridX}_${gridZ}`, this.scene);
             if (isValid) {
-                material.diffuseColor = new BABYLON.Color3(0, 0.8, 0); // Verde
-                material.emissiveColor = new BABYLON.Color3(0, 0.2, 0);
+                material.diffuseColor = ColorMode.color3('good', [0, 0.8, 0], 0.8); // Verde
+                material.emissiveColor = ColorMode.color3('good', [0, 0.2, 0], 0.2);
             } else {
-                material.diffuseColor = new BABYLON.Color3(0.8, 0, 0); // Vermelho
-                material.emissiveColor = new BABYLON.Color3(0.2, 0, 0);
+                material.diffuseColor = ColorMode.color3('bad', [0.8, 0, 0], 0.8); // Vermelho
+                material.emissiveColor = ColorMode.color3('bad', [0.2, 0, 0], 0.2);
             }
             material.alpha = 0.4;
 

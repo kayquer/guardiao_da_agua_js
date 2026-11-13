@@ -101,7 +101,13 @@ const SUPPORTED = {
     resource: o => RESOURCE_TARGETS.includes(o.target),
     sustained: o => RESOURCE_TARGETS.includes(o.target) && typeof o.threshold === 'number',
     survival: o => o.target === 'time' && o.required > 0,
-    avoid: o => ['water_shortage'].includes(o.target)
+    avoid: o => ['water_shortage'].includes(o.target),
+    // 3ª auditoria: tipos que não são "construa X"
+    notebook: o => ['registered', 'threatened'].includes(o.target) && o.required > 0,
+    decisions: o => o.target === 'good' && o.required > 0,
+    impervious: o => o.target === 'city' && o.required > 0 && o.required < 100,
+    riparian: o => o.target === 'tree_sapling' && o.required > 0,
+    hold: o => RESOURCE_TARGETS.includes(o.target) && typeof o.threshold === 'number' && o.required === 0
 };
 
 test('todo objetivo de missão é de um tipo que o motor mede', () => {
@@ -110,6 +116,7 @@ test('todo objetivo de missão é de um tipo que o motor mede', () => {
             const check = SUPPORTED[o.type];
             assert.ok(check, `${mid}/${o.id}: tipo '${o.type}' não implementado`);
             assert.ok(check(o), `${mid}/${o.id}: alvo '${o.target}' inválido para '${o.type}'`);
+            if (o.type === 'hold') assert.ok(m.startEvent, `${mid}/${o.id}: 'hold' só vale durante a crise da missão (startEvent)`);
         }
     }
 });

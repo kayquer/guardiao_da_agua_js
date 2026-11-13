@@ -46,6 +46,8 @@ test('toasts flutuantes: empilham, somem, clique fecha e não cobrem o HUD', asy
     await expect(page.locator('#toast-stack')).toHaveAttribute('aria-live', 'polite');
 
     // Posição: computador = acima da barra inferior e fora do menu da esquerda; celular = abaixo da barra de recursos
+    // (mede depois da animação de entrada, que desliza o toast 24 px vindo da direita)
+    await toasts.last().evaluate(el => Promise.all(el.getAnimations().map(a => a.finished)));
     const box = await toasts.last().boundingBox();
     const viewport = page.viewportSize();
     if (mobile) {

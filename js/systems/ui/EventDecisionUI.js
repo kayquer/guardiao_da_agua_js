@@ -158,6 +158,7 @@ mixin(UIManager, {
             } else {
                 chips.push(chip(false, 'Estrago e duração inteiros'));
                 chips.push(chip(true, `Caixa livre (empresas +${EventSystem.NONE_BONUS.business})`));
+                chips.push(chip(true, `Conserto pela metade por ${Math.round(EventSystem.REPAIR_RESERVE_MS / 60000)} min`));
             }
         } else {
             chips.push(option.gain > 0 ? chip(true, `Aproveita ${pct(option.gain)}`) : chip(false, 'Perde a oportunidade'));

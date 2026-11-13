@@ -1,0 +1,90 @@
+/* Modo para daltonismo (js/systems/ColorMode.js → html[data-color-mode]), escolhido em Configurações.
+   Carregado por último: troca os pares verde/vermelho de estado por pares que quem tem daltonismo distingue.
+   - deutan (deuteranopia e protanopia, confunde verde e vermelho): azul = bom, laranja = ruim, amarelo = atenção
+   - tritan (tritanopia, confunde azul e amarelo): verde-água = bom, vermelho-magenta = ruim, violeta = atenção
+   Sem atributo = cores de sempre. A cor nunca é o único sinal (selos "!"/"✕", rótulos e padrões de borda continuam). */
+
+/* ===== Tokens de estado (css/theme.css) ===== */
+html[data-color-mode="deutan"] {
+    --gda-good: #0b5fa5;          /* texto 6.4:1 */
+    --gda-good-soft: #dcecfa;
+    --gda-good-strong: #2b8ae0;
+    --gda-ok: #6b5600;            /* atenção: texto 6.6:1 */
+    --gda-ok-soft: #fff6c7;
+    --gda-ok-strong: #f2c500;
+    --gda-bad: #a84300;           /* texto 6.0:1 */
+    --gda-bad-soft: #fde5d2;
+    --gda-bad-strong: #e66a00;
+    --cm-good: #0b5fa5;
+    --cm-bad: #a84300;
+    --cm-ok: #6b5600;
+    --cm-good-bright: #2b8ae0;
+    --cm-bad-bright: #e66a00;
+    --cm-ok-bright: #f2c500;
+}
+
+html[data-color-mode="tritan"] {
+    --gda-good: #00695c;          /* texto 6.5:1 */
+    --gda-good-soft: #d7f2ee;
+    --gda-good-strong: #00a08a;
+    --gda-ok: #5b3c8f;            /* atenção: texto 8.0:1 */
+    --gda-ok-soft: #ece4f8;
+    --gda-ok-strong: #8e6bc9;
+    --gda-bad: #b0124a;           /* texto 6.6:1 */
+    --gda-bad-soft: #fbe0ea;
+    --gda-bad-strong: #e3245e;
+    --cm-good: #00695c;
+    --cm-bad: #b0124a;
+    --cm-ok: #5b3c8f;
+    --cm-good-bright: #00a08a;
+    --cm-bad-bright: #e3245e;
+    --cm-ok-bright: #8e6bc9;
+}
+
+/* ===== HUD de recursos: setas de tendência e fases (css/resource-hud.css) ===== */
+html[data-color-mode] .res-trend--good { color: var(--cm-good-bright); }
+html[data-color-mode] .res-trend--bad { color: var(--cm-bad-bright); }
+
+html[data-color-mode] .resource-item.res-tier-critical {
+    border-color: var(--cm-bad-bright);
+    animation-name: res-tier-critical-cm;
+}
+
+@keyframes res-tier-critical-cm {
+    0%, 100% { box-shadow: var(--shadow-cartoon), inset 0 -4px 0 rgba(0, 0, 0, 0.2), 0 0 0 transparent; }
+    50% { box-shadow: var(--shadow-cartoon), inset 0 -4px 0 rgba(0, 0, 0, 0.2), 0 0 16px var(--cm-bad-bright); }
+}
+
+html[data-color-mode] .compact-resource-item.res-tier-critical {
+    background: color-mix(in srgb, var(--cm-bad-bright) 35%, transparent);
+    animation: none;
+    box-shadow: inset 0 0 0 2px var(--cm-bad-bright);
+}
+
+/* Selos "!" e "✕" das pílulas (css/accessibility.css) */
+html[data-color-mode] .resource-item:has(.resource-value.warning)::after { background: var(--cm-ok-bright); color: #000; }
+html[data-color-mode] .resource-item:has(.resource-value.critical)::after { background: var(--cm-bad); color: #fff; }
+/* ui.css pinta o número com !important */
+html[data-color-mode] .resource-value.critical { color: var(--cm-bad) !important; text-shadow: none; }
+html[data-color-mode] .resource-value.warning { color: var(--cm-ok) !important; text-shadow: none; }
+
+/* ===== Rótulo da obra junto do cursor (BuildingFeedback.updatePlacementLabel) ===== */
+html[data-color-mode] #placement-label[data-state="ok"] { border-left-color: var(--cm-good-bright); }
+html[data-color-mode] #placement-label[data-state="trees"] { border-left-color: var(--cm-ok-bright); }
+html[data-color-mode] #placement-label[data-state="bad"] { border-left-color: var(--cm-bad-bright); background: var(--gda-bad-soft); }
+
+/* ===== Painéis de recurso (fundo claro; css/accessibility.css) ===== */
+html[data-color-mode] .resource-details-panel .stat-value.positive,
+html[data-color-mode] .resource-details-panel .building-production,
+html[data-color-mode] .resource-details-panel .factor-good b,
+html[data-color-mode] .resource-details-panel .factor-good .factor-detail,
+html[data-color-mode] .resource-details-panel .renewable-indicator.is-renewable { color: var(--cm-good); }
+
+html[data-color-mode] .resource-details-panel .stat-value.negative,
+html[data-color-mode] .resource-details-panel .building-consumption,
+html[data-color-mode] .resource-details-panel .building-cost,
+html[data-color-mode] .resource-details-panel .factor-bad b,
+html[data-color-mode] .resource-details-panel .factor-bad .factor-detail { color: var(--cm-bad); }
+
+html[data-color-mode] .resource-details-panel .stat-value.warn,
+html[data-color-mode] .resource-details-panel .factor-ok .factor-detail { color: var(--cm-ok); }

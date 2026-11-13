@@ -99,34 +99,132 @@ class GameOverSystem {
         };
     }
 
-    /** Linhas de "O que aconteceu" com os números da hora da derrota (L/min, poluição/min, prédios). */
-    describeRun(reason) {
-        const rm = this.gameManager.resourceManager;
+    // ===== A CAUSA DA DERROTA (11/2026: antes eram só dicas genéricas) =====
+    // Poluição: as maiores fontes com a parte de cada uma (mesma conta do painel ☣️ e dos totais: o que cada prédio
+    // pronto somou em ResourceManager.addPollutionSource, + esgoto dos moradores, + o resto = eventos). Água: produção ×
+    // gasto e quem mais gastava (ResourceManager.getWaterConsumers, a mesma lista do painel 💧). A 1ª dica fala da
+    // maior fonte/do maior consumidor.
+
+    /**
+     * Fontes de poluição por minuto, agrupadas por tipo, da maior para a menor (puro: testável sem DOM).
+     * buildings = BuildingSystem.getAllBuildings(); balance = ResourceManager.getPollutionBalance().
+     * Devolve { total, groups: [{ key, name, config?, count, total, share }] }.
+     */
+    static pollutionCulprits(buildings = [], balance = {}) {
+        const groups = new Map();
+        let fromBuildings = 0;
+        for (const b of buildings) {
+            if (!b?.config || !b.effectsApplied) continue;
+            const value = Number.isFinite(b.appliedPollution) ? b.appliedPollution : (b.config.pollutionGeneration || 0);
+            if (!(value > 0)) continue;
+            const key = b.type || b.config.id;
+            const g = groups.get(key) || { key, name: b.config.name, config: b.config, count: 0, total: 0 };
+            g.count++;
+            g.total += value;
+            fromBuildings += value;
+            groups.set(key, g);
+        }
+        const list = [...groups.values()];
+        const sewage = Math.max(0, balance.sewage || 0);
+        if (sewage > 0.05) list.push({ key: 'sewage', name: 'Esgoto dos moradores', count: 1, total: sewage });
+        const other = Math.max(0, balance.sources || 0) - fromBuildings;
+        if (other > 0.5) list.push({ key: 'events', name: 'Eventos (queimada, enchente…)', count: 1, total: other });
+        const total = Math.max(0, balance.sources || 0) + sewage;
+        list.sort((a, b) => b.total - a.total);
+        list.forEach(g => { g.share = total > 0 ? g.total / total : 0; });
+        return { total, groups: list };
+    }
+
+    /** Dica que fala da maior fonte de poluição (ou null). */
+    static pollutionTip(group) {
+        if (!group) return null;
+        const c = group.config || {};
+        const name = `<b>${group.name}</b>`;
+        if (group.key === 'sewage') return '🚽 O <b>esgoto dos moradores</b> era a maior fonte: construa uma <b>ETE</b> antes de abrir bairros novos';
+        if (group.key === 'events') return '🔥 Os <b>eventos</b> jogaram muita poluição de uma vez: responda às decisões do Paulo e guarde limpeza sobrando para as crises';
+        if ((c.powerGeneration || 0) > 0 && !c.renewable) return `⚡ ${name} era a maior fonte: troque por energia limpa (sol, vento, água) ou só ligue com tratamento e árvores sobrando`;
+        if (c.category === 'industrial') return `🏭 ${name} era a maior fonte: indústria só com tratamento sobrando, e prefira a versão mais leve`;
+        if (c.zoneType) return `🏘️ ${name} era a maior fonte: bairro maior pede mais <b>ETE</b> e filtros antes de crescer`;
+        return `🏗️ ${name} era a maior fonte: compense com limpeza (ETE, filtros, mudas na beira do rio) ou recicle o prédio`;
+    }
+
+    /** Quem mais gastava água (getWaterConsumers): { total, groups: [{ key, name, count, total, share }] }. */
+    static waterCulprits(consumers = { groups: [], total: 0 }) {
+        const total = Math.max(0, consumers.total || 0);
+        const groups = (consumers.groups || []).filter(g => g.total > 0).map(g => ({
+            key: g.key, name: g.config ? g.config.name : g.name, config: g.config || null,
+            count: g.count || 1, total: g.total, people: g.people || 0, share: total > 0 ? g.total / total : 0
+        })).sort((a, b) => b.total - a.total);
+        return { total, groups };
+    }
+
+    /** Dica que fala do maior consumidor de água (ou null). */
+    static waterTip(group, production = 0) {
+        if (!(production > 0)) return '💧 Nenhuma fonte de água estava funcionando: comece por uma <b>Bomba de Água</b> e veja se ela tem energia e rua';
+        if (!group) return null;
+        const c = group.config || {};
+        const name = `<b>${group.name}</b>`;
+        if (group.key === 'residents' || c.zoneType || group.people >= 1) return `👥 ${name} era quem mais gastava (os moradores): abra bairros novos só quando a produção de água sobrar`;
+        if (c.category === 'industrial') return `🏭 ${name} gastava muita água: indústria pede mais captação ou água de reúso`;
+        return `🚰 ${name} era quem mais gastava: antes de construir outro, ponha mais captação ou um reservatório`;
+    }
+
+    /** "<b>Usina a Carvão</b>" ou "<b>3× Zona Industrial</b>". */
+    static groupLabel(g) {
+        return `<b>${g.count > 1 ? `${g.count}× ` : ''}${g.name}</b>`;
+    }
+
+    /** Linhas de "O que aconteceu" + a 1ª dica (sobre a maior causa). { lines, tip, culprits }. */
+    analyzeDefeat(reason) {
+        const gm = this.gameManager;
+        const rm = gm.resourceManager;
         const res = rm?.resources;
-        if (!res) return [];
+        if (!res) return { lines: [], tip: null, culprits: null };
         const fmt = n => Math.round(n).toLocaleString('pt-BR');
-        const count = ids => (this.gameManager.buildingSystem?.getAllBuildings() || [])
-            .filter(b => ids.includes(b.type) && !b.underConstruction).length;
+        const pct = share => `${Math.round(share * 100)}%`;
+        const buildings = gm.buildingSystem?.getAllBuildings() || [];
+        const count = ids => buildings.filter(b => ids.includes(b.type) && !b.underConstruction).length;
         if (reason === 'water_depleted') {
             const { production, demand } = rm.getWaterBalance();
-            const lines = [`💧 A cidade gastava <b>${fmt(demand)} L/min</b> e produzia só <b>${fmt(production)} L/min</b>`,
-                `👥 ${fmt(res.population.current)} moradores e ${count(['water_pump', 'water_well'])} fonte(s) de água prontas`,
-                `🛢️ A caixa da cidade guardava até ${fmt(res.water.storage || res.water.max || 0)} litros`];
+            const bs = gm.buildingSystem;
+            const consumers = rm.getWaterConsumers?.(buildings, bs?.getEffectivePopulationCapacity ? b => bs.getEffectivePopulationCapacity(b) : undefined);
+            const culprits = GameOverSystem.waterCulprits(consumers);
+            const top = culprits.groups[0];
+            const lines = [`💧 A cidade gastava <b>${fmt(demand)} L/min</b> e produzia só <b>${fmt(production)} L/min</b>`];
+            if (top) {
+                lines.push(`🚰 Quem mais gastava: ${GameOverSystem.groupLabel(top)}, com <b>${fmt(top.total)} dos ${fmt(culprits.total)} L/min</b> (${pct(top.share)})`);
+                culprits.groups.slice(1, 3).forEach(g => lines.push(`· ${GameOverSystem.groupLabel(g)}: ${fmt(g.total)} L/min (${pct(g.share)})`));
+            }
+            lines.push(`👥 ${fmt(res.population.current)} moradores e ${count(['water_pump', 'water_well', 'water_treatment_plant'])} fonte(s) de água prontas`,
+                `🛢️ A caixa da cidade guardava até ${fmt(res.water.storage || res.water.max || 0)} litros`);
             if ((res.water.productionMultiplier ?? 1) < 1) lines.push('☀️ Uma seca cortou a produção das bombas e poços');
-            return lines;
+            return { lines, tip: GameOverSystem.waterTip(top, production), culprits };
         }
-        const { sources, sewage, reduction } = rm.getPollutionBalance();
-        return [`☣️ Entrava <b>${fmt(sources + sewage)}</b> de poluição por minuto (${fmt(sewage)} do esgoto dos moradores) e a limpeza tirava só <b>${fmt(reduction)}</b>`,
-            `🏭 ${count(['treatment_plant', 'filter_station'])} estação(ões) de tratamento prontas`,
-            `🌳 ${fmt(this.gameManager.treeSystem?.trees?.size ?? 0)} árvores em pé`];
+        const balance = rm.getPollutionBalance();
+        const culprits = GameOverSystem.pollutionCulprits(buildings, balance);
+        const top = culprits.groups[0];
+        const lines = [`☣️ Entrava <b>${fmt(culprits.total)}</b> de poluição por minuto e a limpeza tirava só <b>${fmt(balance.reduction)}</b>`];
+        if (top) {
+            lines.push(`🏭 Quem mais sujava: ${GameOverSystem.groupLabel(top)}, com <b>${fmt(top.total)} dos ${fmt(culprits.total)}</b> pontos de poluição por minuto (${pct(top.share)})`);
+            culprits.groups.slice(1, 3).forEach(g => lines.push(`· ${GameOverSystem.groupLabel(g)}: ${fmt(g.total)} por minuto (${pct(g.share)})`));
+        }
+        lines.push(`🧪 ${count(['treatment_plant', 'filter_station'])} estação(ões) de tratamento prontas`,
+            `🌳 ${fmt(gm.treeSystem?.trees?.size ?? 0)} árvores em pé`);
+        return { lines, tip: GameOverSystem.pollutionTip(top), culprits };
+    }
+
+    /** Linhas de "O que aconteceu" com os números da hora da derrota (L/min, poluição/min, prédios). */
+    describeRun(reason) {
+        return this.analyzeDefeat(reason).lines;
     }
 
     buildMessageText(message, reason) {
-        const happened = this.describeRun(reason);
+        const { lines: happened, tip } = this.analyzeDefeat(reason);
+        const tips = tip ? [tip, ...message.tips.slice(0, 4)] : message.tips;
         return `<p>${message.intro}</p>
-            ${happened.length ? `<p><strong>O que aconteceu?</strong></p><ul>${happened.map(l => `<li>${l}</li>`).join('')}</ul>` : ''}
+            ${happened.length ? `<p><strong>O que aconteceu?</strong></p><ul class="gameover-causes">${happened.map(l => `<li>${l}</li>`).join('')}</ul>` : ''}
             <p><strong>Dicas para a próxima vez:</strong></p>
-            <ul>${message.tips.map(t => `<li>${t}</li>`).join('')}</ul>`;
+            <ul class="gameover-tips">${tips.map(t => `<li>${t}</li>`).join('')}</ul>`;
     }
 
     /**
@@ -243,9 +341,22 @@ class GameOverSystem {
             const button = document.createElement('button');
             button.className = 'tutorial-btn recovery-btn';
             button.dataset.slot = o.slot;
-            button.textContent = o.slot === 'rewind'
+            const label = document.createElement('span');
+            label.className = 'recovery-label';
+            label.textContent = o.slot === 'rewind'
                 ? `⏪ Voltar ${o.minutesBack} ${o.minutesBack === 1 ? 'minuto' : 'minutos'}`
                 : `🛟 Voltar ao ponto seguro (${o.minutesBack} min antes)`;
+            button.append(label);
+            // Como a cidade estava ali e para onde ia (SavePointTrend): não voltar às cegas para um ponto já perdido
+            if (o.trend) {
+                const trend = document.createElement('small');
+                trend.className = `recovery-trend${o.trend.risky ? ' recovery-trend--risky' : ''}`;
+                trend.innerHTML = o.trend.parts.map(p => `<span class="${p.bad ? 'rt-bad' : p.good ? 'rt-good' : ''}">${p.text}</span>`).join(', ');
+                trend.prepend(`há ${o.minutesBack} min: `);
+                if (o.trend.risky) trend.append(' — cuidado: a cidade já ia mal ali');
+                button.append(trend);
+                button.setAttribute('aria-label', `${label.textContent}. ${trend.textContent}`);
+            }
             button.addEventListener('click', () => this.gameManager.restoreSavePoint(o.slot));
             return button;
         }));
@@ -373,11 +484,51 @@ class GameOverSystem {
     }
 
     // ===== VITÓRIA (missão com victory: true) =====
-    // Mesmo diálogo do fim de jogo, com a Cláudia feliz, os números da cidade e "Continuar jogando".
+    // Primeiro um voo de câmera (~12 s) sobre a cidade do próprio jogador (js/systems/CityCinematic.js: rio, bairros,
+    // usinas/ETE, giro lento), com faixas de cinema e legendas com os números da partida; pulável, e sem voo com
+    // movimento reduzido. A simulação fica parada no voo (gameState 'cinematic'). Depois, o mesmo diálogo do fim de
+    // jogo, com a Cláudia feliz, os números da cidade, o resumo do Diário da cidade e "Continuar jogando".
     // Pausa como um popup (holdPause) e não apaga nem encerra nada: o jogo segue no modo livre.
     showVictory() {
         const container = document.getElementById('gameover-container');
-        if (!container || this.isGameOver) return;
+        if (!container || this.isGameOver || this.showingVictory || this.victoryFlight) return;
+        const gm = this.gameManager;
+        gm.cityDiary?.check?.(gm); // a missão final entra no diário antes da tela
+        const started = typeof CityCinematic !== 'undefined' &&
+            CityCinematic.playVictory(gm, this.victoryCaptions(), () => {
+                this.victoryFlight = false;
+                this.showVictoryScreen();
+            });
+        if (started) this.victoryFlight = true;
+        else this.showVictoryScreen();
+    }
+
+    /** Números reais da partida para as legendas do voo. */
+    getVictoryStats() {
+        const gm = this.gameManager;
+        const res = gm.resourceManager?.resources;
+        return {
+            day: typeof CityDiary !== 'undefined' ? CityDiary.dayOf(gm) : 1,
+            population: Math.round(res?.population?.current || 0),
+            river: Math.round(gm.resourceManager?.getRiverLevel?.() ?? res?.water?.river ?? 100),
+            species: gm.fieldNotebook?.count?.() || 0,
+            missions: gm.questSystem?.completedQuests?.size || 0
+        };
+    }
+
+    victoryCaptions() {
+        const s = this.getVictoryStats();
+        const fmt = n => n.toLocaleString('pt-BR');
+        return [
+            { at: 0.04, text: `Dia ${fmt(s.day)} · ${fmt(s.population)} moradores` },
+            { at: 0.36, text: `Rio em ${s.river}%${s.species ? ` · ${s.species} ${s.species === 1 ? 'espécie registrada' : 'espécies registradas'} no caderno` : ''}` },
+            { at: 0.68, text: `${fmt(s.missions)} ${s.missions === 1 ? 'missão cumprida' : 'missões cumpridas'} · Cidade Guardiã!` }
+        ];
+    }
+
+    showVictoryScreen() {
+        const container = document.getElementById('gameover-container');
+        if (!container || this.isGameOver || this.showingVictory) return;
         this.showingVictory = true;
         if (typeof ResearchLog !== 'undefined') ResearchLog.record('victory');
         this.gameManager.holdPause?.('victory');
@@ -386,6 +537,7 @@ class GameOverSystem {
         const res = this.gameManager.resourceManager?.resources;
         const fmt = n => Math.round(n || 0).toLocaleString('pt-BR');
         const qs = this.gameManager.questSystem;
+        const stats = this.getVictoryStats();
         const background = document.getElementById('gameover-background');
         if (background) background.style.backgroundImage = "url('assets/images/tutorial/bg-cidade-rio.webp')";
         const slot = document.getElementById('gameover-portrait');
@@ -409,11 +561,14 @@ class GameOverSystem {
             text.innerHTML = `<p>${PlayerProfile.personalize('Parabéns, {nome}! Sua cidade cresceu e a água continua lá: no rio, na caixa e debaixo da terra.')}</p>
                 <p><strong>Sua cidade agora:</strong></p>
                 <ul>
+                    <li>📅 ${fmt(stats.day)} ${stats.day === 1 ? 'dia' : 'dias'} de jogo</li>
                     <li>👥 ${fmt(res?.population.current)} moradores, ${fmt(res?.population.satisfaction)}% satisfeitos</li>
-                    <li>☣️ Poluição em ${fmt(res?.pollution.current)}%</li>
+                    <li>🏞️ Rio em ${fmt(stats.river)}% · ☣️ Poluição em ${fmt(res?.pollution.current)}%</li>
                     <li>🪨 Aquífero em ${fmt(this.gameManager.resourceManager?.getAquiferLevel())}%</li>
+                    <li>📓 ${stats.species} ${stats.species === 1 ? 'espécie registrada' : 'espécies registradas'} no caderno de campo</li>
                     <li>⭐ ${fmt(qs?.totalScore)} pontos e ${qs?.achievements?.size || 0} conquista(s)</li>
                 </ul>
+                ${this.gameManager.uiManager?.renderDiarySummary?.() || ''}
                 <p>Você pode continuar cuidando da cidade no modo livre: os eventos continuam chegando.</p>`;
         }
         const character = document.getElementById('gameover-character-name');

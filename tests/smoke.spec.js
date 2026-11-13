@@ -184,7 +184,9 @@ test('tutorial congela o jogo e guia a construção da prefeitura', async ({ pag
     expect(await page.evaluate(() => window.gameManager.gameState)).toBe('playing');
     await page.waitForFunction(() => window.gameManager.gameTime > 0);
 
-    // Missão concluída → a próxima aula (a 1, só vista pela metade) abre sozinha no painel, com o jogo pausado
+    // Missão concluída → a próxima aula (a 1, só vista pela metade) abre sozinha no painel, com o jogo pausado.
+    // Ela espera um minuto de jogo desde a última leitura (TutorialSystem.READING_GAP_MS): aqui o minuto já passou
+    await page.evaluate(() => { window.gameManager.tutorialSystem.lastReadingAt = -Infinity; });
     await page.evaluate(() => window.gameManager.questSystem.completeQuest('tutorial_01'));
     // Primeiro a comemoração (cartão com estrelas); a aula espera ele fechar
     await expect(page.locator('#mission-card')).toBeVisible();

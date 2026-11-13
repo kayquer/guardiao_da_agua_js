@@ -784,7 +784,8 @@ function aboutResearchHtml() {
                 código do jogador, a idade e a cidade (nunca o apelido).`
             : `O apelido, as configurações e os jogos salvos ficam só neste navegador, neste aparelho: o jogo não tem
                 conta, não registra o que você faz e não envia nada para nós. Só se você informar a sua cidade, o nome
-                dela é consultado num serviço público de previsão do tempo (Open-Meteo), para mostrar o clima de lá.`
+                dela é consultado num serviço público de previsão do tempo (Open-Meteo), para mostrar o clima de lá. Ao escolher
+                o estado no cadastro, a lista de cidades vem de um serviço público do IBGE.`
     };
 }
 

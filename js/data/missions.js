@@ -14,7 +14,9 @@ const MISSIONS = {
         estimatedTime: '5 minutos',
         lesson: 1, // aula ao concluir: a água do planeta: de onde vem a água da bomba
         prerequisites: [],
-        stars: { parMs: 180000 }, // ⭐⭐ em até 3 min de jogo; ⭐⭐⭐ cidade sem recurso no vermelho (QuestSystem.computeStars)
+        // ⭐⭐ em até 3 min de jogo; ⭐⭐⭐ bacia saudável (QuestSystem.computeStars) — sem contar a energia, que é a
+        // missão seguinte (energy_01): a bomba fica pronta antes do sol e a 3ª estrela era impossível
+        stars: { parMs: 180000, ignore: ['energy'] },
         objectives: [
             {
                 id: 'build_water_pump',
@@ -246,7 +248,9 @@ const MISSIONS = {
                 target: 'water_shortage',
                 current: 0,
                 required: 0
-            }
+            },
+            // 'hold': vale só enquanto a seca dura (QuestSystem.checkObjectiveProgress)
+            { id: 'river_in_drought', description: 'Durante a seca, não deixar o rio baixar de 30%', type: 'hold', target: 'river', current: 0, required: 0, threshold: 30 }
         ],
         rewards: {
             discount: { water_well: 50 }, // o próximo Poço Artesiano sai pela metade
@@ -303,9 +307,10 @@ const MISSIONS = {
                 required: 3
             },
             {
-                // era "satisfação > 60%", que já começa cumprida (a cidade abre com ~90%): meta vazia
+                // era "satisfação > 60%", que já começa cumprida (a cidade abre com ~90%): meta vazia. Com 30 moradores e
+                // lugar para 40 (ResourceManager.BASE_POPULATION_CAPACITY), os 50 só cabem com a zona pronta
                 id: 'first_residents',
-                description: 'Receber os primeiros moradores (chegar a 50 habitantes)',
+                description: 'Receber moradores na zona nova (chegar a 50 habitantes)',
                 type: 'resource',
                 target: 'population',
                 current: 0,
@@ -361,7 +366,8 @@ const MISSIONS = {
         missionIcon: '⚡',
         objectives: [
             { id: 'first_wind', description: 'Construir 1 Aerogerador Pequeno', type: 'build', target: 'wind_small', current: 0, required: 1 },
-            { id: 'clean_air', description: 'Manter a poluição abaixo de 35%', type: 'resource', target: 'pollution', current: 0, required: 35, comparison: 'less' }
+            { id: 'clean_air', description: 'Manter a poluição abaixo de 35%', type: 'resource', target: 'pollution', current: 0, required: 35, comparison: 'less' },
+            { id: 'good_call', description: 'Tomar 1 boa decisão com o Secretário Paulo', type: 'decisions', target: 'good', current: 0, required: 1 }
         ],
         rewards: {
             discount: { solar_farm: 30 }, // a próxima Usina Solar sai 30% mais barata
@@ -385,8 +391,9 @@ const MISSIONS = {
         stars: { parMs: 600000 },
         missionIcon: '🌳',
         objectives: [
-            { id: 'riparian_saplings', description: 'Ter 8 Mudas de Árvore (as da beira do rio limpam mais)', type: 'build', target: 'tree_sapling', current: 0, required: 8 },
-            { id: 'river_full', description: 'Manter o rio acima de 70%', type: 'resource', target: 'river', current: 0, required: 70, comparison: 'greater' }
+            { id: 'riparian_saplings', description: 'Plantar 6 Mudas de Árvore na mata ciliar (até 2 blocos do rio)', type: 'riparian', target: 'tree_sapling', current: 0, required: 6 },
+            { id: 'river_full', description: 'Manter o rio acima de 70%', type: 'resource', target: 'river', current: 0, required: 70, comparison: 'greater' },
+            { id: 'river_life', description: 'Registrar 3 bichos no Caderno de Campo (toque neles no mapa)', type: 'notebook', target: 'registered', current: 0, required: 3 }
         ],
         rewards: {
             discount: { rain_garden: 40 },
@@ -550,7 +557,9 @@ const MISSIONS = {
         missionIcon: '🧽',
         objectives: [
             { id: 'linear_park', description: 'Construir 1 Parque Linear', type: 'build', target: 'linear_park', current: 0, required: 1 },
-            { id: 'aquifer_ok', description: 'Manter o aquífero acima de 60%', type: 'resource', target: 'aquifer', current: 0, required: 60, comparison: 'greater' }
+            { id: 'aquifer_ok', description: 'Manter o aquífero acima de 60%', type: 'resource', target: 'aquifer', current: 0, required: 60, comparison: 'greater' },
+            { id: 'sponge_city', description: 'Cidade-esponja: no máximo 50% do chão construído coberto (asfalto e telhado)', type: 'impervious', target: 'city', current: 0, required: 50 },
+            { id: 'rare_guest', description: 'Registrar 1 bicho ameaçado de extinção no Caderno de Campo', type: 'notebook', target: 'threatened', current: 0, required: 1 }
         ],
         rewards: {
             emergency: 1,

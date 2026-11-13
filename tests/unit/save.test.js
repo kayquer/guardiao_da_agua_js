@@ -361,3 +361,25 @@ test('save: ponto seguro só com a cidade bem (água, poluição longe do alarme
     assert.strictEqual(SaveSystem.isSafePoint(game(30, 20, 70)), false, 'derrota nunca é ponto seguro');
     assert.strictEqual(SaveSystem.isSafePoint(null), false);
 });
+
+test('save: Diário da cidade volta como estava; save antigo (sem diário) = diário vazio', () => {
+    const CityDiary = load('js/systems/CityDiary.js')('CityDiary');
+    const gm = { gameTime: 5000, gameStartTime: new Date(0), gameClockTime: new Date(3 * 86400000), buildingSystem: { getAllBuildings: () => [
+        { type: 'city_hall', config: { name: 'Prefeitura', category: 'public' }, underConstruction: false }
+    ] } };
+    const diary = new CityDiary();
+    diary.check(gm);
+    diary.add('mission', { key: 'tutorial_01', icon: '✅', text: 'Missão concluída: {nome} chegou', stars: 2 }, gm);
+    const saved = roundTrip(diary.getSaveData());
+
+    const loaded = new CityDiary();
+    loaded.loadData(saved);
+    same(loaded.entries, diary.entries);
+    same(loaded.entries.map(e => [e.kind, e.day]), [['build', 4], ['mission', 4]]);
+    assert.strictEqual(loaded.check(gm).length, 0, 'a prefeitura não entra de novo depois de carregar');
+
+    const old = new CityDiary();
+    old.loadData(undefined);
+    assert.strictEqual(old.entries.length, 0);
+    assert.strictEqual(old.check(gm).length, 0, 'o que já existia no save antigo não vira marco');
+});

@@ -156,6 +156,7 @@ class GameManager {
             this.pollutionVisuals = new PollutionVisuals(this);
             this.propSystem = new PropSystem(this); // props de cenário (js/data/props.js)
             this.fieldNotebook = new FieldNotebook(); // caderno de campo: bichos que voltam/somem (js/data/fieldNotebook.js)
+            this.cityDiary = new CityDiary(); // diário da cidade: marcos da partida com o dia (js/systems/CityDiary.js)
 
             // Aguardar carregamento do conteúdo educacional
             await this.studySystem.initialize();
@@ -382,6 +383,12 @@ class GameManager {
         // Atalhos no document (não no scene.onKeyboardObservable do Babylon, que só recebe a tecla com o canvas em foco:
         // depois de clicar num botão do HUD, Espaço e 1/2/3 paravam de funcionar)
         document.addEventListener('keydown', event => this.handleKeyboardEvent(event));
+
+        // Controle de videogame (Gamepad API): lido a cada quadro em startRenderLoop; sem controle, nada roda
+        if (typeof GamepadInput !== 'undefined') {
+            this.gamepadInput = new GamepadInput(this);
+            this.gamepadInput.attach();
+        }
 
         log('🎮 Controles inicializados: SimCity Camera + Building Placement');
     }
@@ -678,6 +685,8 @@ class GameManager {
         this.framePacer = new FramePacer();
         this.engine.runRenderLoop(() => {
             const currentTime = performance.now();
+            // Controle: lido antes do limitador (na pausa o jogo desenha a 5 FPS e um toque no Start se perderia)
+            this.gamepadInput?.poll(currentTime);
             // Quadro pulado: nada é desenhado nem simulado; o próximo recebe o tempo acumulado (lastUpdateTime)
             if (!this.framePacer.ready(currentTime, this.getFrameRateTarget())) return;
 
@@ -796,6 +805,7 @@ class GameManager {
         if (this.questSystem) {
             this.questSystem.update(deltaTime * this.timeScale);
         }
+        this.cityDiary?.tick(deltaTime * this.timeScale, this); // diário da cidade: olha os sistemas a cada 2 s de jogo
 
         // Tecnologias novas (árvore tecnológica): confere ~1 vez por segundo de jogo
         this.techCheckTimer = (this.techCheckTimer || 0) + deltaTime * this.timeScale;
@@ -943,7 +953,8 @@ class GameManager {
             const message = toState === 'day' ?
                 '🌅 Amanheceu! Um novo dia começou.' :
                 '🌙 Anoiteceu! A cidade se prepara para descansar.';
-            this.uiManager.showNotification(message, 'info');
+            // só no histórico (3ª auditoria: um toast a cada ~35 s de jogo virava ruído)
+            this.uiManager.showNotification(message, 'info', 4000, { quiet: true });
         }
     }
 
@@ -979,6 +990,7 @@ class GameManager {
         this.uiManager?.notificationLog?.clear(); // histórico de notificações é por partida
         this.clearSavePoints?.(); // pontos de volta são da partida (core/game/SavePoints.js)
         this.fieldNotebook?.loadData(null); // caderno de campo é da partida
+        this.cityDiary?.reset(); // diário da cidade também
         this.techTree?.reset();
         if (this.gameOverSystem) { // as 3 declarações de emergência voltam; as ganhas em missão somem
             this.gameOverSystem.emergenciesUsed = 0;
@@ -1209,7 +1221,7 @@ class GameManager {
 
             // Tempo e relógio do jogo
             this.gameTime = Number(saveData.gameTime) || 0;
-            this.timeScale = [1, 2, 3].includes(saveData.timeScale) ? saveData.timeScale : 1;
+            this.timeScale = [0.5, 1, 2, 3].includes(saveData.timeScale) ? saveData.timeScale : 1;
             if (saveData.gameClockTime) {
                 this.gameStartTime = new Date(saveData.gameStartTime || saveData.gameClockTime);
                 this.gameClockTime = new Date(saveData.gameClockTime);
@@ -1239,6 +1251,7 @@ class GameManager {
             this.loanManager?.loadData(saveData.loans);
             this.uiManager?.notificationLog?.loadData(saveData.notifications); // save antigo: histórico vazio
             this.fieldNotebook?.loadData(saveData.notebook); // save antigo: caderno vazio (a 1ª olhada registra o que há)
+            this.cityDiary?.loadData(saveData.diary); // save antigo: diário vazio (a 1ª olhada só marca o que já existe)
             if (this.tutorialSystem && saveData.tutorial) {
                 this.tutorialSystem.lessonsDeferred = !!saveData.tutorial.lessonsDeferred;
             }
@@ -1373,36 +1386,48 @@ class GameManager {
     }
 
     /**
-     * Espaço (pausa/continua) e 1/2/3 (velocidade) de qualquer lugar da tela. O Esc fica com os listeners próprios
-     * (cancelar obra, fechar painéis, pausa em captura).
+     * Pausar (Espaço) e velocidades (0/1/2/3) de qualquer lugar da tela, pelas teclas de InputBindings (o jogador
+     * pode trocar nas Configurações). O Esc fica com os listeners próprios (cancelar obra, fechar painéis, pausa em
+     * captura); a tecla alternativa de "cancelar" vira um Esc (dispatchEscape).
      */
     handleKeyboardEvent(event) {
         if (event.ctrlKey || event.metaKey || event.altKey) return;
+        if (this.uiManager?.keyCapture) return; // esperando a tecla nova nas Configurações
         // Digitando num campo, ou num diálogo cujos botões o Espaço aciona: a tecla é deles
         const el = event.target;
         if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
+        const action = typeof InputBindings !== 'undefined' ? InputBindings.actionFor(event.code) : null;
+        if (action === 'cancel' && event.code !== 'Escape') {
+            if (!event.repeat) {
+                event.preventDefault();
+                this.dispatchEscape();
+            }
+            return;
+        }
         if (document.querySelector('.swal2-container')) return;
         const interactive = el?.closest?.('button, a[href], [role="button"], summary');
         if (interactive?.closest(GameManager.KEY_DIALOGS)) return;
 
-        switch (event.code) {
-            case 'Space':
-                if (event.repeat || (this.gameState !== 'playing' && this.gameState !== 'paused')) break;
-                event.preventDefault(); // não rola a página
-                // Botão do HUD em foco: solta o foco, senão o Espaço também o "clicaria" ao soltar a tecla
-                if (interactive && interactive === document.activeElement) interactive.blur();
-                if (this.gameState === 'playing') this.pauseGame();
-                else this.resumeGame();
-                break;
-            case 'Digit1':
-            case 'Digit2':
-            case 'Digit3':
-            case 'Numpad1':
-            case 'Numpad2':
-            case 'Numpad3':
-                if (this.gameState === 'playing' || this.gameState === 'paused') this.setTimeScale(Number(event.code.slice(-1)));
-                break;
+        if (action === 'pause') {
+            if (event.repeat || (this.gameState !== 'playing' && this.gameState !== 'paused')) return;
+            event.preventDefault(); // não rola a página
+            // Botão do HUD em foco: solta o foco, senão o Espaço também o "clicaria" ao soltar a tecla
+            if (interactive && interactive === document.activeElement) interactive.blur();
+            if (this.gameState === 'playing') this.pauseGame();
+            else this.resumeGame();
+        } else if (action && InputBindings.SPEEDS[action] !== undefined) {
+            if (this.gameState === 'playing' || this.gameState === 'paused') this.setTimeScale(InputBindings.SPEEDS[action]);
         }
+    }
+
+    /**
+     * Um Esc de mentira no elemento em foco: a tecla alternativa de "cancelar" e o botão B do controle passam pelo
+     * mesmo caminho do Esc de verdade (cancelar obra, fechar painéis e diálogos, pausar com nada aberto).
+     */
+    dispatchEscape() {
+        const target = document.activeElement && document.activeElement !== document.body ? document.activeElement : document.body;
+        target.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true, cancelable: true }));
+        target.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true, cancelable: true }));
     }
 
     enterBuildMode(buildingType) {
@@ -1507,6 +1532,7 @@ class GameManager {
         // (senão o Esc que fecha um painel também pausaria)
         window.addEventListener('keydown', event => {
             if (event.key !== 'Escape') return;
+            if (this.uiManager?.keyCapture) return; // o Esc cancela a troca de tecla nas Configurações (ui/SettingsUI.js)
             // Tutorial interativo (modo coach: guias, aulas rápidas, partes do tutorial inicial) não fecha pelo Esc,
             // nem os painéis que ele destaca: só cancela a construção em andamento (fecha-se pelos botões do cartão)
             const tut = this.tutorialSystem;
@@ -1623,6 +1649,7 @@ class GameManager {
             tutorial: { lessonsDeferred: !!this.tutorialSystem?.lessonsDeferred },
             notifications: this.uiManager?.notificationLog?.getSaveData() ?? [],
             notebook: this.fieldNotebook?.getSaveData() ?? null,
+            diary: this.cityDiary?.getSaveData() ?? null,
             basin: typeof Basin !== 'undefined' ? Basin.id() : 'vale', // bacia do terreno (js/data/basinMaps.js; antigo = vale)
             camera: this.getCameraSaveData()
         };

@@ -1,5 +1,5 @@
 /* Velocidade do jogo: um botão (#btn-speed, mesmo visual dos .control-btn) que abre #speed-menu
-   com 1x/2x/3x (UIManager.setupSpeedMenu). Rosa quando o jogo está acelerado. */
+   com 0,5x/1x/2x/3x (UIManager.setupSpeedMenu). Destaque (.active) quando acelerado; .slow em 0,5x. */
 .speed-control {
     position: relative;
 }
@@ -16,6 +16,21 @@
 /* Rosa só se acelerado; em 1x fica verde como os outros (sem o pulso) */
 #btn-speed:not(.active) {
     animation: none;
+}
+
+/* 0,5x: amarelo calmo do tema (não é o destaque de "acelerado"), com o texto escuro */
+#btn-speed.slow {
+    background: var(--gda-accent-2);
+    border-color: var(--gda-accent-2-deep);
+    color: var(--gda-accent-2-ink);
+    box-shadow: 0 3px 0 var(--gda-accent-2-deep);
+    animation: none;
+}
+
+/* "0,5x" tem o dobro de letras de "1x": cabe no mesmo botão redondo */
+#btn-speed.slow #speed-current {
+    font-size: 0.8em;
+    letter-spacing: -0.5px;
 }
 
 #btn-speed .speed-caret {

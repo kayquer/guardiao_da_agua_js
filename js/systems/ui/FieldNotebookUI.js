@@ -44,11 +44,47 @@ mixin(UIManager, {
         // Um momento grande por vez; os outros do mesmo instante entram só no histórico
         moments.forEach((f, i) => {
             const known = notebook.isRegistered(f.id);
-            if (!known) return i === 0 ? this.hintNewSpecies(f) : null;
+            if (!known) return i === 0 ? this.announceNewSpecies(f) : null;
             return i === 0 ? this.celebrateFieldReturn(f) : this.recordFieldReturn(f);
         });
         gone.filter(g => g.notify && notebook.isRegistered(g.id)).forEach(g => this.warnFieldLoss(g.id));
         if (this.isNotebookPanelOpen()) this.renderNotebookPanel();
+    },
+
+    /**
+     * Bicho novo no mapa. Se é uma espécie AMEAÇADA aparecendo pela 1ª vez na partida e o jogador está à toa (sem
+     * obra, popup, painel ou tutorial), a câmera faz um planinho de ~3 s até ela, com faixas de cinema e a legenda da
+     * Márcia (js/systems/CityCinematic.js; pulável; uma vez por espécie; nada com movimento reduzido). Depois (ou
+     * sem o plano), a pista de sempre.
+     */
+    announceNewSpecies(found) {
+        if (found.first && this.canPlaySpeciesCut(found)) {
+            const e = FieldNotebook.entry(found.id);
+            this.speciesCutsShown.add(found.id);
+            const started = CityCinematic.playSpecies(this.gameManager, found.cell,
+                `Márcia: olha ali, ${e.look}! É um bicho raro… toque nele para anotar no caderno.`,
+                () => this.hintNewSpecies(found));
+            if (started) {
+                if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_discovery', 0.6);
+                return;
+            }
+        }
+        this.hintNewSpecies(found);
+    },
+
+    /** Plano da espécie ameaçada: 1ª vez na partida, jogador à toa, sem movimento reduzido. */
+    canPlaySpeciesCut({ id, cell }) {
+        const gm = this.gameManager;
+        this.speciesCutsShown = this.speciesCutsShown || new Set();
+        if (!cell || this.speciesCutsShown.has(id) || typeof CityCinematic === 'undefined') return false;
+        if (!FieldNotebook.isThreatened(id) || CityCinematic.reducedMotion() || CityCinematic.current) return false;
+        // à toa = jogo rodando, sem obra/prévia/seleção, sem popup, menu de construção ou painel da direita, sem
+        // arrastar a câmera e sem mensagem na fila (não usa isIdleForEscPause: o uiState dela guarda o último painel)
+        return !!gm.isSimulationRunning?.() && !gm.tutorialSystem?.isActive && !gm.buildMode &&
+            !gm.buildingSystem?.previewMode && !gm.selectedBuilding && !gm.cameraControls?.isDragging &&
+            !this.isInfoPopupOpen() && !this.isBuildModalOpen?.() && !this.isHudRightVisible?.() &&
+            !document.querySelector('.hud-left.active, .hud-right.active') &&
+            !this.isMessageSlotBusy?.() && !this.hasMessageWaiting?.();
     },
 
     /** Bicho que o jogador ainda não registrou chegou: a Márcia dá a pista, sem contar quem é. */

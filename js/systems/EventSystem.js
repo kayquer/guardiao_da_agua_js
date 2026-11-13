@@ -561,7 +561,24 @@ class EventSystem {
 
     static MAX_PRESSURE = 0.6;
 
+    /**
+     * Carência do começo (3ª auditoria, B10: seca aos 3 min, vazamento aos 5 e queimada aos 7, antes do primeiro
+     * bairro): nenhum evento sorteado nos primeiros GRACE_MS de jogo, nem antes do primeiro bairro pronto — até
+     * GRACE_MAX_MS. Crises de missão (startMissionEvent) não passam por aqui.
+     */
+    inGracePeriod() {
+        const t = this.gameManager?.gameTime || 0;
+        if (t < EventSystem.GRACE_MS) return true;
+        if (t >= EventSystem.GRACE_MAX_MS) return false;
+        const buildings = this.gameManager?.buildingSystem?.getAllBuildings?.() || [];
+        return !buildings.some(b => !b.underConstruction && String(b.config?.zoneType || '').startsWith('residential'));
+    }
+
+    static GRACE_MS = 5 * 60 * 1000;
+    static GRACE_MAX_MS = 10 * 60 * 1000;
+
     tryGenerateEvent() {
+        if (this.inGracePeriod()) return;
         if (Math.random() > this.eventProbability * this.difficultyMultiplier * this.getCityPressure()) {
             return; // Não gerar evento desta vez
         }
@@ -884,7 +901,8 @@ class EventSystem {
         const total = eventType.warning ? this.getWarningTime() : 0;
         const pending = {
             id: `decide_${Date.now()}_${eventTypeId}`, type: eventTypeId, total, remainingTime: total,
-            choiceId: null, awaiting: true, askedAt: this.gameManager.gameTime || 0, duration: options.duration
+            choiceId: null, awaiting: true, askedAt: this.gameManager.gameTime || 0, duration: options.duration,
+            mission: options.mission || null // crise de missão: não sai da fila pelo limite de eventos (QuestSystem.startMissionEvent)
         };
         this.pendingEvents.push(pending);
         if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_alert_warning', 0.7, { ifQuiet: true });
@@ -897,7 +915,7 @@ class EventSystem {
         const eventType = this.eventTypes.get(eventTypeId);
         if (!eventType) return null;
         const total = this.getWarningTime();
-        const pending = { id: `warn_${Date.now()}_${eventTypeId}`, type: eventTypeId, total, remainingTime: total, choiceId: null, duration: options.duration };
+        const pending = { id: `warn_${Date.now()}_${eventTypeId}`, type: eventTypeId, total, remainingTime: total, choiceId: null, duration: options.duration, mission: options.mission || null };
         this.pendingEvents.push(pending);
         const seconds = Math.round(total / 1000 / (this.gameManager.timeScale || 1));
         this.gameManager.uiManager?.showNotification(`⚠️ Previsão: ${eventType.icon} ${eventType.name} em ~${seconds} s.`, 'warning', 8000);
@@ -952,7 +970,14 @@ class EventSystem {
     }
 
     // ===== AVALIAÇÃO DA ESCOLHA (pela situação da cidade, não pelo preço) =====
-    static NONE_BONUS = { business: 2 }; // quem não gasta numa ameaça agrada quem paga imposto
+    // "Não fazer nada" numa ameaça: as empresas gostam (+4, era +2 — simbólico demais, 3ª auditoria) e o dinheiro
+    // guardado vira reserva de conserto (REPAIR_RESERVE_MS de jogo com o conserto pela metade, getRepairCost)
+    static NONE_BONUS = { business: 4 };
+    static REPAIR_RESERVE_MS = 6 * 60 * 1000;
+
+    isRepairReserveActive() {
+        return (this.gameManager?.gameTime || 0) < (this.repairReserveUntil || 0);
+    }
     static GOOD_THREAT_IMPACT = 0.7;      // ameaça: precisa cortar pelo menos 30% do estrago
     static GOOD_OPPORTUNITY_GAIN = 0.4;   // oportunidade: aproveitar pelo menos 40%
 
@@ -1032,6 +1057,8 @@ class EventSystem {
         // "Não fazer nada" também tem um lado bom: o caixa fica livre para obras, e as empresas gostam (NONE_BONUS)
         if (option.tier === 'none' && config?.response?.kind === 'threat') {
             this.gameManager.questSystem?.changeReputation?.(EventSystem.NONE_BONUS, config.name);
+            // e o dinheiro guardado vira reserva de conserto: o que o evento estragar sai pela metade por um tempo
+            this.repairReserveUntil = Math.max(this.repairReserveUntil || 0, (this.gameManager.gameTime || 0) + EventSystem.REPAIR_RESERVE_MS);
         }
         this.eventHistory.push({ type: pending.type, choice: option.id, tier: option.tier, auto, good: verdict.good, startTime: Date.now() });
         this.recordResponse(config, option, auto, verdict);
@@ -1161,17 +1188,20 @@ class EventSystem {
     // ===== NOTIFICAÇÕES =====
     notifyEventStart(event) {
         if (this.gameManager.uiManager) {
+            // Evento decidido com o Paulo: o jogador já leu a explicação no modal — início e dica vão só para o
+            // histórico (3ª auditoria: reputação + evento + Paulo + dica = 4 toasts no mesmo segundo)
+            const quiet = !!event.config.response;
             this.gameManager.uiManager.showNotification(
                 `${event.config.icon} ${event.config.name}: ${event.config.description}`,
                 event.config.severity === 'positive' ? 'success' : 
                 event.config.severity === 'high' ? 'error' : 'warning',
-                8000
+                8000, quiet ? { quiet: true } : undefined
             );
             
             // Mostrar conteúdo educacional se disponível
             if (event.config.educationalContent) {
                 setTimeout(() => {
-                    this.showEducationalContent(event.config.educationalContent);
+                    this.showEducationalContent(event.config.educationalContent, { quiet });
                 }, 2000);
             }
         }
@@ -1192,12 +1222,12 @@ class EventSystem {
     }
     
     /** Dica do evento num toast longo: o fato + uma dica sorteada. */
-    showEducationalContent(content) {
+    showEducationalContent(content, { quiet = false } = {}) {
         const uiManager = this.gameManager.uiManager;
         if (!uiManager || !content?.message) return;
         const tips = content.tips || [];
         const tip = tips.length ? ` Dica: ${tips[Math.floor(Math.random() * tips.length)]}.` : '';
-        uiManager.showNotification(`💡 ${content.message}${tip}`, 'info', 12000);
+        uiManager.showNotification(`💡 ${content.message}${tip}`, 'info', 12000, quiet ? { quiet: true } : undefined);
     }
     
     // ===== UTILITÁRIOS =====
@@ -1227,7 +1257,8 @@ class EventSystem {
             eventHistory: this.eventHistory.slice(-50),
             lastEventTime: this.lastEventTime,
             difficultyMultiplier: this.difficultyMultiplier,
-            eventsEnabled: this.eventsEnabled
+            eventsEnabled: this.eventsEnabled,
+            repairReserveUntil: this.repairReserveUntil || 0
         };
     }
 
@@ -1244,6 +1275,7 @@ class EventSystem {
         this.lastEventTime = data.lastEventTime || 0;
         this.difficultyMultiplier = data.difficultyMultiplier || 1.0;
         this.eventsEnabled = data.eventsEnabled !== undefined ? data.eventsEnabled : true;
+        this.repairReserveUntil = Number(data.repairReserveUntil) || 0;
     }
 }
 

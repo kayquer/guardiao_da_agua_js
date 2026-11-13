@@ -157,14 +157,14 @@ mixin(BuildingSystem, {
 
     getRoadGhostTemplate(valid) {
         if (!this.roadGhostTemplates) this.roadGhostTemplates = {};
-        const key = valid ? 'ok' : 'bad';
+        const key = `${valid ? 'ok' : 'bad'}_${ColorMode.current()}`; // uma por modo de daltonismo
         let mesh = this.roadGhostTemplates[key];
         if (mesh && !mesh.isDisposed()) return mesh;
         const size = this.gridManager.cellSize * 0.96;
         mesh = BABYLON.MeshBuilder.CreateBox(`roadGhost_${key}`, { width: size, height: 0.06, depth: size }, this.scene);
         const mat = new BABYLON.StandardMaterial(`roadGhostMat_${key}`, this.scene);
-        mat.diffuseColor = valid ? new BABYLON.Color3(0.2, 0.9, 0.35) : new BABYLON.Color3(0.95, 0.2, 0.15);
-        mat.emissiveColor = valid ? new BABYLON.Color3(0.05, 0.3, 0.1) : new BABYLON.Color3(0.3, 0.05, 0.03);
+        mat.diffuseColor = valid ? ColorMode.color3('good', [0.2, 0.9, 0.35]) : ColorMode.color3('bad', [0.95, 0.2, 0.15]);
+        mat.emissiveColor = valid ? ColorMode.color3('good', [0.05, 0.3, 0.1], 0.3) : ColorMode.color3('bad', [0.3, 0.05, 0.03], 0.3);
         mat.alpha = 0.55;
         mat.metadata = { preview: true };
         mesh.material = mat;

@@ -355,6 +355,10 @@ class SimCityCameraControls {
         // Add keyboard event listeners
         document.addEventListener('keydown', this.boundHandlers.keydown);
         document.addEventListener('keyup', this.boundHandlers.keyup);
+        // Trocou de janela com a tecla apertada: o keyup não chega e a câmera andaria sozinha
+        this.boundHandlers.blur = () => this.releaseKeys();
+        window.addEventListener('blur', this.boundHandlers.blur);
+        if (typeof InputBindings !== 'undefined') InputBindings.onChange(() => this.releaseKeys());
     }
     
     handlePan(event) {
@@ -494,64 +498,37 @@ class SimCityCameraControls {
         return Math.min(2.5, Math.max(0.5, (this.camera.radius || 30) / 30));
     }
     
+    /**
+     * Teclas de câmera pelas ações de InputBindings (o jogador pode trocar nas Configurações). `keys` guarda o
+     * estado por direção (w/s/a/d = frente/trás/esquerda/direita, q/e = girar), lido em updateKeyboardMovement.
+     */
+    static KEY_STATE = { camForward: 'w', camBack: 's', camLeft: 'a', camRight: 'd', rotateLeft: 'q', rotateRight: 'e' };
+
+    keyAction(event) {
+        if (typeof InputBindings === 'undefined') return null;
+        return InputBindings.actionFor(event.code);
+    }
+
     handleKeyDown(event) {
         // Digitando num campo (nome, cidade...): W/A/S/D/R são letras, não comandos de câmera
         const el = event.target;
         if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
-        switch (event.code) {
-            case 'KeyW':
-            case 'ArrowUp':
-                this.keys.w = true;
-                break;
-            case 'KeyS':
-            case 'ArrowDown':
-                this.keys.s = true;
-                break;
-            case 'KeyA':
-            case 'ArrowLeft':
-                this.keys.a = true;
-                break;
-            case 'KeyD':
-            case 'ArrowRight':
-                this.keys.d = true;
-                break;
-            case 'KeyQ':
-                this.keys.q = true;
-                break;
-            case 'KeyE':
-                this.keys.e = true;
-                break;
-            case 'KeyR':
-                this.resetCamera();
-                break;
-        }
+        if (event.ctrlKey || event.metaKey || event.altKey) return;
+        if (this.gameManager?.uiManager?.keyCapture) return; // esperando a tecla nova nas Configurações
+        const action = this.keyAction(event);
+        const state = SimCityCameraControls.KEY_STATE[action];
+        if (state) this.keys[state] = true;
+        else if (action === 'camReset') this.resetCamera();
     }
-    
+
     handleKeyUp(event) {
-        switch (event.code) {
-            case 'KeyW':
-            case 'ArrowUp':
-                this.keys.w = false;
-                break;
-            case 'KeyS':
-            case 'ArrowDown':
-                this.keys.s = false;
-                break;
-            case 'KeyA':
-            case 'ArrowLeft':
-                this.keys.a = false;
-                break;
-            case 'KeyD':
-            case 'ArrowRight':
-                this.keys.d = false;
-                break;
-            case 'KeyQ':
-                this.keys.q = false;
-                break;
-            case 'KeyE':
-                this.keys.e = false;
-                break;
-        }
+        const state = SimCityCameraControls.KEY_STATE[this.keyAction(event)];
+        if (state) this.keys[state] = false;
+    }
+
+    /** Solta todas as teclas (a janela perdeu o foco ou as teclas mudaram com uma apertada). */
+    releaseKeys() {
+        for (const key of Object.keys(this.keys)) this.keys[key] = false;
     }
     
     // Roda dentro do render do Babylon (antes era um requestAnimationFrame próprio, um segundo laço por quadro)
@@ -701,6 +678,7 @@ class SimCityCameraControls {
         // Remove document event listeners
         document.removeEventListener('keydown', this.boundHandlers.keydown);
         document.removeEventListener('keyup', this.boundHandlers.keyup);
+        window.removeEventListener('blur', this.boundHandlers.blur);
         document.removeEventListener('pointermove', this.boundHandlers.documentPointermove);
         document.removeEventListener('pointerup', this.boundHandlers.documentPointerup);
         

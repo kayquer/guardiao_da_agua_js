@@ -120,7 +120,7 @@ test('zona consome energia pela fase e aparece no painel de energia e no da zona
         gm.selectBuilding(gm.buildingSystem.buildings.get(id));
     }, zone.id);
     const panel = page.locator('#details-content');
-    await expect(panel.locator('.power-consumption')).toContainText(`${stage3.full} MW`);
+    await expect(panel.locator('.power-consumption')).toContainText(`${stage3.full} kW`);
     await expect(panel.locator('.zone-energy-warning')).toContainText('Falta energia');
     await expect(panel.locator('.no-road-warning')).toBeVisible();
 
