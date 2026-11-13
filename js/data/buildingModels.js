@@ -66,7 +66,7 @@ const BUILDING_MODELS = {
     nuclear_plant:         { file: 'blender/nuclear_plant.glb', tris: 1488 },
     biomass_plant:         { file: 'blender/biomass_plant.glb', tris: 1056 },
     sugarcane_mill:        { file: 'blender/sugarcane_mill.glb', tris: 1440 },
-    solar_rooftop:         { file: 'blender/solar_rooftop.glb', tris: 824 },
+    solar_micro:           { file: 'blender/solar_micro.glb', tris: 956 },
     wind_small:            { file: 'blender/wind_small.glb', tris: 854 },
     small_hydro:           { file: 'blender/small_hydro.glb', tris: 1060 },
     solar_tracker:         { file: 'blender/solar_tracker.glb', tris: 1484 },

@@ -1,0 +1,162 @@
+/* =========================================================================
+   TEMA — tokens de design (11/2026)
+   A linguagem do carrossel das bacias (css/basin-picker.css): cartões claros com tinta azul-marinho,
+   um destaque ciano, cantos bem redondos, sombras macias, rótulos pequenos em caixa alta e botões em pílula.
+   Carregado logo depois de styles.css: só define variáveis e primitivos neutros (não ganha de nenhum
+   componente). A pele dos componentes fica em css/theme-skin.css, carregado por último.
+   Para UI nova: use as variáveis --gda-* (nunca cores soltas) e as classes de botão .gda-btn.
+   ========================================================================= */
+
+:root {
+    /* ----- Fontes ----- */
+    --gda-font: 'M PLUS Rounded 1c', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    --gda-font-display: 'Lilita One', 'M PLUS Rounded 1c', sans-serif; /* só peso 400 (font-synthesis: none) */
+
+    /* ----- Superfícies ----- */
+    --gda-surface: #ffffff;
+    --gda-surface-2: #f3f9fc;            /* blocos dentro do cartão (traços do carrossel) */
+    --gda-surface-3: #e7f2f8;            /* hover / trilha de barra */
+    --gda-surface-gradient: linear-gradient(180deg, #ffffff 0%, #f2f9fc 100%);
+    --gda-surface-glass: rgba(250, 253, 255, 0.86);
+    --gda-surface-glass-strong: rgba(255, 255, 255, 0.95);
+    --gda-surface-dark: rgba(6, 26, 62, 0.92);   /* fundo do carrossel: telas cheias e véus */
+    --gda-backdrop:
+        radial-gradient(ellipse 70% 55% at 50% 42%, rgba(33, 191, 239, 0.3), transparent 72%),
+        radial-gradient(ellipse 50% 40% at 15% 100%, rgba(72, 221, 250, 0.16), transparent 70%),
+        linear-gradient(180deg, rgba(6, 26, 62, 0.93), rgba(2, 10, 28, 0.97));
+    --gda-scrim: rgba(4, 18, 40, 0.55);  /* véu atrás de diálogos */
+    --gda-border: #dcebf3;
+    --gda-border-strong: #c2d9e7;
+
+    /* ----- Tinta (contraste AA sobre --gda-surface e --gda-surface-2) ----- */
+    --gda-ink: #15324e;                  /* 12.6:1 */
+    --gda-ink-muted: #49647d;            /* 6.1:1 */
+    --gda-ink-on-dark: #f4fbff;
+    --gda-ink-on-dark-muted: rgba(226, 244, 255, 0.86);
+
+    /* ----- Destaques ----- */
+    --gda-accent: #1187d9;               /* ciano do "Jogar aqui" */
+    --gda-accent-strong: #0b6db3;        /* texto/link em fundo claro: 5.4:1 */
+    --gda-accent-deep: #0b5c9e;          /* "degrau" do botão primário */
+    --gda-accent-light: #48ddfa;         /* ponto ativo, brilho em fundo escuro */
+    --gda-accent-soft: #e2f2fd;          /* fundo de chip/ícone */
+    --gda-accent-gradient: linear-gradient(180deg, #1c8fd8 0%, #0a5fa6 100%); /* texto branco no meio do botão: 4.6:1 */
+    --gda-accent-2: #ffd23f;             /* amarelo do selo e do foco */
+    --gda-accent-2-ink: #4a3300;
+    --gda-accent-2-deep: #d9a400;
+
+    /* ----- Estados ----- */
+    --gda-good: #1d7a3e;                 /* texto 5.6:1 */
+    --gda-good-soft: #e1f4e6;
+    --gda-good-strong: #27a356;
+    --gda-ok: #9a5a00;                   /* atenção: texto 5.3:1 */
+    --gda-ok-soft: #fff0d6;
+    --gda-ok-strong: #f0a020;
+    --gda-bad: #c62828;                  /* texto 5.6:1 */
+    --gda-bad-soft: #fde4e4;
+    --gda-bad-strong: #e53935;
+    --gda-info: var(--gda-accent-strong);
+    --gda-info-soft: var(--gda-accent-soft);
+
+    /* ----- Cantos ----- */
+    --gda-r-xs: 8px;
+    --gda-r-sm: 10px;
+    --gda-r-md: 14px;
+    --gda-r-lg: 18px;
+    --gda-r-xl: 24px;
+    --gda-r-pill: 999px;
+
+    /* ----- Sombras ----- */
+    --gda-shadow-xs: 0 1px 2px rgba(13, 40, 70, 0.08);
+    --gda-shadow-sm: 0 2px 8px rgba(13, 40, 70, 0.10);
+    --gda-shadow-md: 0 10px 28px rgba(13, 40, 70, 0.16);
+    --gda-shadow-lg: 0 24px 60px rgba(4, 20, 45, 0.38);
+    --gda-shadow-ring: 0 0 0 1px rgba(255, 255, 255, 0.25);
+    --gda-shadow-btn: 0 4px 0 var(--gda-accent-deep), 0 10px 22px rgba(17, 135, 217, 0.32);
+    --gda-blur: 14px;
+
+    /* ----- Espaço ----- */
+    --gda-space-1: 4px;
+    --gda-space-2: 8px;
+    --gda-space-3: 12px;
+    --gda-space-4: 16px;
+    --gda-space-5: 22px;
+    --gda-space-6: 28px;
+
+    /* ----- Tipo ----- */
+    --gda-text-xs: 11px;                 /* rótulo em caixa alta */
+    --gda-text-sm: 13px;
+    --gda-text-md: 15px;
+    --gda-text-lg: 18px;
+    --gda-text-xl: 24px;
+
+    /* ----- Foco (teclado) ----- */
+    --gda-focus: 3px solid var(--gda-accent-2);          /* em fundo escuro */
+    --gda-focus-light: 3px solid var(--gda-accent-strong); /* em fundo claro */
+    --gda-focus-offset: 3px;
+
+    /* ----- Movimento ----- */
+    --gda-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --gda-dur-fast: 0.15s;
+    --gda-dur: 0.3s;
+    --gda-dur-slow: 0.55s;
+}
+
+/* ===== Primitivos para UI nova (os componentes antigos recebem o mesmo visual em theme-skin.css) ===== */
+.gda-card {
+    background: var(--gda-surface-gradient);
+    color: var(--gda-ink);
+    border: 1px solid var(--gda-border);
+    border-radius: var(--gda-r-xl);
+    box-shadow: var(--gda-shadow-md);
+}
+
+.gda-label {
+    font-size: var(--gda-text-xs);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gda-ink-muted);
+}
+
+.gda-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--gda-space-2);
+    min-height: 44px;
+    padding: 8px 22px;
+    border: 0;
+    border-radius: var(--gda-r-pill);
+    font-family: var(--gda-font);
+    font-size: var(--gda-text-md);
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform var(--gda-dur-fast) ease, box-shadow var(--gda-dur-fast) ease, background var(--gda-dur-fast) ease, filter var(--gda-dur-fast) ease;
+}
+
+.gda-btn--primary {
+    background: var(--gda-accent-gradient);
+    color: #ffffff;
+    box-shadow: var(--gda-shadow-btn);
+}
+
+.gda-btn--primary:hover { transform: translateY(-1px); filter: brightness(1.06); }
+.gda-btn--primary:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--gda-accent-deep); }
+
+.gda-btn--secondary {
+    background: var(--gda-surface);
+    color: var(--gda-accent-strong);
+    box-shadow: inset 0 0 0 2px var(--gda-border-strong), var(--gda-shadow-xs);
+}
+
+.gda-btn--secondary:hover { background: var(--gda-surface-2); box-shadow: inset 0 0 0 2px var(--gda-accent), var(--gda-shadow-xs); }
+
+.gda-btn--ghost {
+    background: transparent;
+    color: var(--gda-ink-muted);
+}
+
+.gda-btn--ghost:hover { background: var(--gda-surface-3); color: var(--gda-ink); }
+
+.gda-btn:focus-visible { outline: var(--gda-focus-light); outline-offset: var(--gda-focus-offset); }

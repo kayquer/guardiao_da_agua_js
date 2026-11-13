@@ -2230,21 +2230,21 @@
       "sm": "svg/wind-farm-sm.svg"
     }
   },
-  "solar-rooftop": {
-    "title": "Telhados Solares",
+  "solar-micro": {
+    "title": "Microgeração Solar",
     "area": "building",
     "emoji": [
-      "🏠"
+      "🔆"
     ],
     "usedIn": [
-      "js/data/buildings.js (solar_rooftop.icon)",
+      "js/data/buildings.js (solar_micro.icon)",
       "js/systems/ui/ResourcePanels.js (.building-icon)",
       "js/systems/UIManager.js (lista de construção)"
     ],
     "size": "both",
     "files": {
-      "lg": "svg/solar-rooftop.svg",
-      "sm": "svg/solar-rooftop-sm.svg"
+      "lg": "svg/solar-micro.svg",
+      "sm": "svg/solar-micro-sm.svg"
     }
   },
   "wind-small": {

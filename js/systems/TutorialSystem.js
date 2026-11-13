@@ -1262,13 +1262,13 @@ TutorialSystem.GUIDES = [
         steps: [
             { title: 'Faltou energia!', expression: 'worried', text: '{nome}, a cidade está gastando mais energia do que produz. <b>Geração</b> é o que as usinas produzem; <b>consumo</b> é o que bombas, estações de tratamento e zonas gastam.', targets: ['.resource-item:has(#electricity-amount)', '#compact-energy'] },
             { title: 'O que acontece agora', text: 'Com menos energia do que precisa, <b>todos os prédios trabalham mais devagar</b>: a eficiência cai, as bombas tiram menos água, o tratamento limpa menos e os moradores ficam insatisfeitos.' },
-            { title: 'O sol pode ajudar', text: 'O jeito mais barato de começar é o sol: <b>Telhados Solares</b> põem painéis nos telhados das casas, e a luz vira eletricidade sem fumaça. De noite e com nuvem eles geram menos; depois você pode somar vento, rio e baterias.<img src="assets/images/studies/parque-eolico.webp" alt="Energia limpa: painéis e turbinas mandam energia para a cidade" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin:8px 0;"/>' },
+            { title: 'O sol pode ajudar', text: 'O jeito mais barato de começar é o sol: uma <b>Microgeração Solar</b>, a menor usina que a ANEEL deixa ligar na rede, transforma a luz em eletricidade sem fumaça. De noite e com nuvem eles geram menos; depois você pode somar vento, rio e baterias.<img src="assets/images/studies/parque-eolico.webp" alt="Energia limpa: painéis e turbinas mandam energia para a cidade" style="width:100%; max-height:150px; object-fit:cover; border-radius:8px; margin:8px 0;"/>' },
             {
-                title: 'Construa Telhados Solares', waitFor: 'solar_rooftop',
-                text: 'Abra <b>⚡ Energia</b> e construa <b>Telhados Solares</b>. Sem dinheiro agora? Use <b>Fazer depois</b>.',
+                title: 'Construa uma Microgeração Solar', waitFor: 'solar_micro',
+                text: 'Abra <b>⚡ Energia</b> e construa uma <b>Microgeração Solar</b>. Sem dinheiro agora? Use <b>Fazer depois</b>.',
                 placingHint: '👆 Escolha um terreno livre perto da cidade.',
                 enter: gm => gm.uiManager.uiState.currentCategory !== 'power' && gm.uiManager.selectCategory('power'),
-                targets: TutorialSystem.buildTargets('solar_rooftop', 'power', 'os Telhados Solares')
+                targets: TutorialSystem.buildTargets('solar_micro', 'power', 'a Microgeração Solar')
             },
             { title: 'Energia a caminho!', expression: 'happy', text: 'Quando a obra terminar, a geração sobe e a eficiência volta a <b>100%</b>. Dica: gere sempre um pouco <b>mais</b> do que a cidade usa, porque cada obra nova aumenta o consumo.', targets: ['.resource-item:has(#electricity-amount)', '#compact-energy'] }
         ]

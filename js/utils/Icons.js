@@ -44,7 +44,7 @@ const UI_ICON_FILES = {
     'zone-industrial-balanced': 'b', 'zone-industrial-heavy': 'b', 'zone-commercial-light': 'b',
     'zone-commercial-balanced': 'b', 'zone-commercial-heavy': 'b', 'hydroelectric-plant': 'b',
     'power-pole': 'b', 'thermal-plant': 'b', 'nuclear-plant': 'b', 'coal-plant': 'b', 'solar-farm': 'b',
-    'wind-farm': 'b', 'solar-rooftop': 'b', 'wind-small': 'b', 'small-hydro': 'b', 'solar-tracker': 'b',
+    'wind-farm': 'b', 'solar-micro': 'b', 'wind-small': 'b', 'small-hydro': 'b', 'solar-tracker': 'b',
     'grid-battery': 'b', 'wind-offshore': 'b', 'gas-combined': 'b', 'solar-floating': 'b', 'city-hall': 'b', 'school': 'b', 'technical-school': 'b', 'hospital': 'b', 'fire-station': 'b',
     'police-station': 'b', 'research-center': 'b', 'university': 'b', 'shopping-center': 'b',
     'office-building': 'b', 'bank': 'b', 'restaurant': 'b', 'museum': 'b', 'park': 'b', 'monument': 'b',

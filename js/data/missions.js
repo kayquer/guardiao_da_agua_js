@@ -47,10 +47,10 @@ const MISSIONS = {
     },
 
     // Logo depois da bomba (11/2026): a bomba precisa de energia e a cidade não tinha nenhuma; o jogador ficava sem o
-    // que fazer. O sol é o começo mais barato (Telhados Solares)
+    // que fazer. O sol é o começo mais barato (Microgeração Solar)
     energy_01: {
         title: 'Energia para a Bomba',
-        description: 'A bomba precisa de energia para puxar a água. O jeito mais barato de começar é o sol: painéis nos telhados.',
+        description: 'A bomba precisa de energia para puxar a água. O jeito mais barato de começar é o sol: uma microgeração solar, a menor usina que a ANEEL permite ligar na rede.',
         type: 'tutorial',
         category: 'secondary',
         difficulty: 'beginner',
@@ -59,7 +59,7 @@ const MISSIONS = {
         stars: { parMs: 180000 },
         missionIcon: '⚡',
         objectives: [
-            { id: 'first_solar', description: 'Construir 1 Telhado Solar', type: 'build', target: 'solar_rooftop', current: 0, required: 1 }
+            { id: 'first_solar', description: 'Construir 1 Microgeração Solar', type: 'build', target: 'solar_micro', current: 0, required: 1 }
         ],
         rewards: {
             score: 100,

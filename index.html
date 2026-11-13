@@ -44,14 +44,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
     <!-- CSS -->
     <link rel="stylesheet" href="css/styles.css?v=479ea2e3">
+    <link rel="stylesheet" href="css/theme.css?v=065f9eae">
     <link rel="stylesheet" href="css/ui.css?v=0d16bd32">
     <link rel="stylesheet" href="css/responsive.css?v=23c12369">
     <link rel="stylesheet" href="css/tutorial.css?v=e47f4e97">
     <link rel="stylesheet" href="css/lessons.css?v=e68e4db9">
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
     <link rel="stylesheet" href="css/player.css?v=ecaea69e">
-    <link rel="stylesheet" href="css/menu.css?v=ad09dab4">
-    <link rel="stylesheet" href="css/basin-picker.css?v=47123a10">
+    <link rel="stylesheet" href="css/menu.css?v=0283cea9">
+    <link rel="stylesheet" href="css/basin-picker.css?v=f894766c">
     <link rel="stylesheet" href="css/notice.css?v=d7a53eab">
     <link rel="stylesheet" href="css/research.css?v=0f6fc4df">
     <link rel="stylesheet" href="css/settings.css?v=4caa15a0">
@@ -70,6 +71,7 @@
     <link rel="stylesheet" href="css/build-menu.css?v=6a2bed6d">
     <link rel="stylesheet" href="css/terrain-health.css?v=02aad804">
     <link rel="stylesheet" href="css/layout.css?v=c43a43fd">
+    <link rel="stylesheet" href="css/theme-skin.css?v=814d1019">
 
     <!-- Babylon.js CDN -->
     <script src="https://cdn.babylonjs.com/v9.31.2/babylon.js"></script>
@@ -574,12 +576,12 @@
                 <div class="pp-stats" id="pp-stats"></div>
                 <div class="overlay-buttons pp-buttons">
                     <button id="btn-resume" class="overlay-btn primary">▶ Continuar</button>
-                    <button id="btn-settings" class="overlay-btn secondary" aria-haspopup="dialog">⚙️ Configurações</button>
+                    <button id="btn-settings" class="overlay-btn secondary" aria-haspopup="dialog"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-settings.svg" alt="" aria-hidden="true" draggable="false"> Configurações</button>
                     <button id="btn-help" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-help.svg" alt="" aria-hidden="true" draggable="false"> Controles</button>
                     <button id="btn-notifications" class="overlay-btn secondary" aria-haspopup="dialog"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-history.svg" alt="" aria-hidden="true" draggable="false"> Notificações</button>
-                    <button id="btn-achievements" class="overlay-btn secondary" aria-haspopup="dialog">🏅 Conquistas</button>
+                    <button id="btn-achievements" class="overlay-btn secondary" aria-haspopup="dialog"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-medal.svg" alt="" aria-hidden="true" draggable="false"> Conquistas</button>
                     <button id="btn-notebook" class="overlay-btn secondary" aria-haspopup="dialog">📓 Caderno de campo</button>
-                    <button id="btn-research" class="overlay-btn secondary" aria-haspopup="dialog">📊 Dados da pesquisa</button>
+                    <button id="btn-research" class="overlay-btn secondary" aria-haspopup="dialog"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-stats.svg" alt="" aria-hidden="true" draggable="false"> Dados da pesquisa</button>
                     <button id="btn-save-game" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-save.svg" alt="" aria-hidden="true" draggable="false"> Salvar jogo</button>
                     <button id="btn-saves" class="overlay-btn secondary" aria-haspopup="dialog">📂 Jogos salvos</button>
                     <button id="btn-main-menu" class="overlay-btn secondary"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-home.svg" alt="" aria-hidden="true" draggable="false"> Menu principal</button>
@@ -588,7 +590,7 @@
             <!-- Configurações (gráficos, texto, clima e som): ui/SettingsUI.js; o bloco de som entra por setupSoundPanel -->
             <div id="settings-panel" class="overlay-content notif-history settings-panel" role="dialog" aria-modal="true" aria-labelledby="st-title" hidden>
                 <div class="nh-head">
-                    <h2 id="st-title">⚙️ Configurações</h2>
+                    <h2 id="st-title"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-settings.svg" alt="" aria-hidden="true" draggable="false"> Configurações</h2>
                 </div>
                 <div class="settings-body">
                     <div id="pause-gfx" class="gfx-picker gfx-picker--panel" data-gfx-picker>
@@ -653,7 +655,7 @@
             <!-- Vitrine: conquistas e estrelas das missões (ui/AchievementsUI.js) -->
             <div id="achievements-panel" class="overlay-content notif-history achievements-panel" role="dialog" aria-modal="true" aria-labelledby="ach-heading" hidden>
                 <div class="nh-head">
-                    <h2 id="ach-heading">🏅 Conquistas</h2>
+                    <h2 id="ach-heading"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-medal.svg" alt="" aria-hidden="true" draggable="false"> Conquistas</h2>
                     <span class="nh-count" id="ach-count"></span>
                 </div>
                 <div id="ach-body" class="ach-body"></div>
@@ -664,7 +666,7 @@
             <!-- Registro de pesquisa do perfil (ResearchLog) e exportação: ui/ResearchUI.js -->
             <div id="research-panel" class="overlay-content notif-history research-panel" role="dialog" aria-modal="true" aria-labelledby="rs-title" hidden>
                 <div class="nh-head">
-                    <h2 id="rs-title">📊 Dados da pesquisa</h2>
+                    <h2 id="rs-title"><img class="ui-icon ui-icon--sm" src="assets/icons/svg/ui-stats.svg" alt="" aria-hidden="true" draggable="false"> Dados da pesquisa</h2>
                     <span class="nh-count" id="rs-count"></span>
                 </div>
                 <p class="nh-hint">Para o professor e a pesquisa: o que este jogador leu, respondeu e decidiu. Os arquivos e o envio saem sem o apelido (código do jogador, idade e cidade).</p>
@@ -775,15 +777,15 @@
     <script src="js/data/basinIcons.js?v=1b2658ec"></script>
     <script src="js/data/terrainInfo.js?v=d9b1d2a2"></script>
     <script src="js/data/terrainHealth.js?v=57dae5b8"></script>
-    <script src="js/data/buildings.js?v=a55ffb96"></script>
-    <script src="js/data/buildingModels.js?v=809d5d16"></script>
+    <script src="js/data/buildings.js?v=567295ab"></script>
+    <script src="js/data/buildingModels.js?v=8bedd647"></script>
     <script src="js/data/zoneLots.js?v=984ebf74"></script>
     <script src="js/data/props.js?v=b3d0b4e4"></script>
     <script src="js/data/fieldNotebook.js?v=a51df4eb"></script>
     <script src="js/data/resourceStates.js?v=c0802704"></script>
-    <script src="js/data/missions.js?v=bb7b3b9f"></script>
+    <script src="js/data/missions.js?v=8748d75c"></script>
     <script src="js/data/achievementTracks.js?v=eb7e178b"></script>
-    <script src="js/data/rescueGuides.js?v=c9c9c5c7"></script>
+    <script src="js/data/rescueGuides.js?v=148facf4"></script>
     <script src="js/data/brazil.js?v=c0fa1745"></script>
     <script src="js/data/lessons.js?v=97c30f82"></script>
     <script src="js/data/introCity.js?v=a2e6387e"></script>
@@ -873,7 +875,7 @@
 
     <!-- Utilitários primeiro -->
     <script src="js/utils/GameUtils.js?v=a634beeb"></script>
-    <script src="js/utils/Icons.js?v=173e9656"></script>
+    <script src="js/utils/Icons.js?v=5bf57b4a"></script>
     <script src="js/utils/GameLogo.js?v=760d4841"></script>
     <script src="js/utils/AssetLoader.js?v=a1f12c46"></script>
     <script src="js/utils/AudioManager.js?v=ac1792da"></script>
@@ -950,7 +952,7 @@
     <script src="js/systems/SaveSystem.js?v=f87b5ff7"></script>
     <script src="js/systems/StudySystem.js?v=7ed0bbc6"></script>
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
-    <script src="js/systems/TutorialSystem.js?v=07b74389"></script>
+    <script src="js/systems/TutorialSystem.js?v=276eb27a"></script>
     <script src="js/systems/RescueGuides.js?v=c4db5930"></script>
     <script src="js/systems/GameOverSystem.js?v=f9097b91"></script>
     <script src="js/systems/PlayerProfile.js?v=1efbe8d5"></script>
@@ -963,7 +965,7 @@
     <script src="js/systems/TerrainHealth.js?v=f0e79e43"></script>
     <script src="js/systems/WeatherService.js?v=52df4562"></script>
     <script src="js/systems/SimulatedWeather.js?v=d656940f"></script>
-    <script src="js/systems/ResearchLog.js?v=91dee18a"></script>
+    <script src="js/systems/ResearchLog.js?v=078d2836"></script>
     <script src="js/systems/ResearchSync.js?v=3374482b"></script>
     <script src="js/systems/LessonProgress.js?v=e5a2ef53"></script>
 

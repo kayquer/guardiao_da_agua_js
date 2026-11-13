@@ -247,9 +247,9 @@ test('guia de energia: a primeira falta de energia abre a Cláudia no lugar do a
     await page.click('#tutorial-next-btn');
     await expect(title).toHaveText('O sol pode ajudar'); // começar pelo sol: o jeito mais barato hoje
     await page.click('#tutorial-next-btn');
-    await expect(title).toHaveText('Construa Telhados Solares');
+    await expect(title).toHaveText('Construa uma Microgeração Solar');
     await expect(page.locator('#tutorial-next-btn')).toBeDisabled(); // espera a obra (ou "Fazer depois")
-    await expect(page.locator('.building-item[data-building-type="solar_rooftop"]')).toBeVisible();
+    await expect(page.locator('.building-item[data-building-type="solar_micro"]')).toBeVisible();
 
     await page.click('#tutorial-skip-btn'); // "Fazer depois" conta como visto
     await expect(page.locator('#tutorial-container')).toBeHidden();

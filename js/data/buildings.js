@@ -823,9 +823,9 @@ const BUILDING_TYPES = {
     },
 
     solar_farm: {
-        tier: 2, group: 'Solar', techRequires: [{ id: 'solar_rooftop', count: 2 }],
-        name: 'Usina Solar',
-        description: 'Um campo de painéis transforma a luz do sol em eletricidade, sem fumaça e com pouca manutenção. Com nuvens e à noite gera menos',
+        tier: 2, group: 'Solar · geração distribuída', techRequires: [{ id: 'solar_micro', count: 2 }],
+        name: 'Fazenda Solar (Minigeração)',
+        description: 'A fazenda solar comercial: minigeração distribuída (até 3 MW pela ANEEL), alguns hectares de painéis que abastecem a cidade sem fumaça e com pouca manutenção. Com nuvens e à noite gera menos',
         category: 'power',
         powerSource: 'solar', // entrega pelo sol: menos com nuvem, chuva e de noite
         cost: 9000,
@@ -898,11 +898,13 @@ const BUILDING_TYPES = {
         requirements: { terrain: ['grassland'], nearWater: false }
     },
 
-    // Novas usinas (11/2026): começar pelo sol é o mais barato hoje (geração distribuída), e cada fonte tem níveis
-    solar_rooftop: {
-        tier: 1, group: 'Solar', techRequires: [],
-        name: 'Telhados Solares',
-        description: 'Painéis nos telhados das casas: o jeito mais barato de começar a gerar energia limpa. Pouca energia por bloco, e de noite ou com nuvem gera menos',
+    // Novas usinas (11/2026): começar pelo sol é o mais barato hoje, e cada fonte tem níveis. O solar segue a
+    // classificação da ANEEL (Lei 14.300): microgeração distribuída (até 75 kW) → minigeração distribuída (até 3 MW,
+    // a "fazenda solar" comercial) → geração centralizada (usinas grandes que vendem em leilão ou no mercado livre)
+    solar_micro: {
+        tier: 1, group: 'Solar · geração distribuída', techRequires: [],
+        name: 'Microgeração Solar',
+        description: 'Uma usina solar pequena num terreno do tamanho de uma chácara (microgeração, até 75 kW pelas regras da ANEEL): o jeito mais barato de começar. De noite ou com nuvem gera menos',
         category: 'power',
         powerSource: 'solar',
         cost: 2400,
@@ -916,7 +918,7 @@ const BUILDING_TYPES = {
     },
 
     wind_small: {
-        tier: 1, group: 'Eólica', techRequires: [{ id: 'solar_rooftop', count: 1 }],
+        tier: 1, group: 'Eólica', techRequires: [{ id: 'solar_micro', count: 1 }],
         name: 'Aerogerador Pequeno',
         description: 'Uma turbina pequena para o bairro. Gera de dia e de noite quando venta; em encosta venta mais',
         category: 'power',
@@ -932,7 +934,7 @@ const BUILDING_TYPES = {
     },
 
     small_hydro: {
-        tier: 2, group: 'Hídrica', techRequires: [{ id: 'solar_rooftop', count: 2 }],
+        tier: 2, group: 'Hídrica', techRequires: [{ id: 'solar_micro', count: 2 }],
         name: 'PCH (Pequena Central Hidrelétrica)',
         description: 'Uma barragem baixa no rio gira uma turbina pequena. Gera dia e noite e alaga pouca terra, mas na seca o rio baixa e ela gera menos',
         category: 'power',
@@ -948,9 +950,9 @@ const BUILDING_TYPES = {
     },
 
     solar_tracker: {
-        tier: 3, group: 'Solar', techRequires: [{ id: 'solar_farm', count: 2 }],
-        name: 'Usina Solar com Rastreadores',
-        description: 'Os painéis giram e seguem o sol do nascer ao pôr, gerando bem mais que painéis parados no mesmo espaço',
+        tier: 3, group: 'Solar · geração centralizada', techRequires: [{ id: 'solar_farm', count: 2 }],
+        name: 'Usina Solar Centralizada',
+        description: 'Usina de grande porte (geração centralizada, acima de 3 MW): vende energia em leilão ou no mercado livre, e os painéis com rastreadores seguem o sol do nascer ao pôr',
         category: 'power',
         powerSource: 'solar',
         cost: 21000,
@@ -1011,7 +1013,7 @@ const BUILDING_TYPES = {
     },
 
     solar_floating: {
-        tier: 4, group: 'Solar', techRequires: [{ id: 'solar_tracker', count: 1 }],
+        tier: 4, group: 'Solar · geração centralizada', techRequires: [{ id: 'solar_tracker', count: 1 }],
         name: 'Usina Solar Flutuante',
         description: 'Painéis boiando num lago ou represa: não ocupam terra, a água esfria os painéis e a sombra diminui a evaporação, devolvendo um pouco de água ao rio',
         category: 'power',

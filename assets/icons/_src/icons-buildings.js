@@ -401,28 +401,31 @@ module.exports = [
             poly('94,104 98,62 102,62 106,104', '#fff') + blades(100, 62, 20, 3) +
             g(thick('M8 72h18', P.blue[0], 3), { a: A('drift', 3) }) + g(thick('M70 30h14', P.blue[0], 3), { a: A('drift', 3, 1.5) }),
         () => poly('13.5,29 15,13 17,13 18.5,29', '#fff', { w: 1.5 }) + blades(16, 13, 10, 4, 1.5), [ST + ' (wind_farm)']),
-    // Casinhas com placas no telhado: brilho varrendo as placas, sol girando e raio subindo para a rede.
-    B('solar-rooftop', 'solar_rooftop', 'Telhados Solares', '🏠',
+    // Microgeração (sítio): duas fileiras curtas de painéis no chão, brilho varrendo as placas, sol girando
+    // e a energia correndo pelo cabo até o inversor com faixa amarela.
+    B('solar-micro', 'solar_micro', 'Microgeração Solar', '🔆',
         () => {
-            const P1 = '22,66 31,49 63,49 72,66', P2 = '86,79 93,66 109,66 116,79';
-            return ground() + sunSpin(24, 22, 9) +
-                box(84, 78, 34, 28, 'sand') + poly('80,80 92,62 110,62 122,80', P.red[0]) +
-                poly(P2, P.blue[1]) + line('M101 66v13M89.5 72.5h23', { s: P.glass[0], w: 1.8 }) + win(95, 87, 12, 10) +
-                box(18, 68, 54, 38, 'white') + poly('12,70 28,44 66,44 80,70', P.red[0]) +
-                poly(P1, P.blue[1]) + line('M38 66l4-17M56 66l-4-17M26.5 57.5h41', { s: P.glass[0], w: 1.8 }) +
-                clip('rf', poly(P1, '#000') + poly(P2, '#000')) +
-                clipped('rf', g(rect(42, 40, 9, 50, '#fff', { s: 'none', op: 0.75 }) + rect(54, 40, 4, 50, '#fff', { s: 'none', op: 0.5 }), { a: A('sweep', 2.8) }) +
-                    g(rect(98, 56, 7, 30, '#fff', { s: 'none', op: 0.75 }), { a: A('sweep', 2.8, 1.4) })) +
-                poly(P1, 'none') + poly(P2, 'none') +
-                doorL(28, 84, 12, 22) + win(50, 80, 14, 12) +
-                g(path(boltD(104, 38, 0.55), P.yellow[0], { w: 2 }), { a: A('zap', 2.4, 0, 'center', 'linear') }) + spark(82, 30, 4.5, 3.4, 1.5);
+            const pts = (x, y, w) => `${x},${y + 14} ${x + 6},${y} ${x + w + 6},${y} ${x + w},${y + 14}`;
+            const R = [[40, 62, 42, 14], [16, 80, 46, 10]];
+            const mesa = ([x, y, w, h]) => line(`M${x + 5} ${y + 13}v${h}M${x + w - 5} ${y + 13}v${h}M${x + w + 2} ${y + 6}v${h + 7}`, { w: 2.5 }) +
+                poly(pts(x, y, w), P.blue[1]) +
+                line([0.25, 0.5, 0.75].map(t => `M${f1(x + t * w)} ${y + 14}l6-14`).join('') + `M${x + 3} ${y + 7}h${w}`, { s: P.glass[0], w: 1.8 });
+            return ground() + sunSpin(26, 28, 10) +
+                thick('M40 106H100', P.dark[0], 3, { ow: 2 }) + g(line('M40 106H100', { s: P.yellow[0], w: 3, da: '4 8' }), { a: A('flow', 0.8, 0, 'center', 'linear') }) +
+                R.map(mesa).join('') +
+                clip('mc', R.map(([x, y, w]) => poly(pts(x, y, w), '#000')).join('')) +
+                clipped('mc', g(rect(40, 54, 9, 50, '#fff', { s: 'none', op: 0.75 }) + rect(52, 54, 4, 50, '#fff', { s: 'none', op: 0.5 }), { a: A('sweep', 2.8) })) +
+                R.map(([x, y, w]) => poly(pts(x, y, w), 'none')).join('') +
+                rect(92, 72, 28, 6, P.dark[0], { rx: 2 }) + box(94, 78, 24, 28, 'white', { rx: 2 }) + rect(94, 86, 24, 6, P.yellow[0], { w: 2 }) +
+                g(path(boltD(106, 42, 0.55), P.yellow[0], { w: 2 }), { a: A('zap', 2.4, 0, 'center', 'linear') }) + spark(70, 40, 4.5, 3.4, 1.5);
         },
         () => g(pivot(26, 6, 5.5) + line('M26 1.2v-1M30.8 6h1M26 10.8v1M21.2 6h-1', { s: P.yellow[1], w: 1.4 }), { a: A('spin', 8, 0, 'center', 'linear') }) +
             circ(26, 6, 3.2, P.yellow[0], { w: 1.2 }) +
-            rect(22, 22, 8, 7, P.sand[0], { w: 1.3 }) + poly('20.5,22.5 26,17 31.5,22.5', P.red[0], { w: 1.3 }) +
-            rect(4, 18, 16, 11, '#fff', { w: 1.5 }) + poly('2,19 7,10 17,10 22,19', P.red[0], { w: 1.5 }) +
-            poly('5,18 8.5,11.5 15.5,11.5 19,18', P.blue[1], { w: 1.2 }) + line('M12 11.5V18M6.8 14.8h10.4', { s: P.glass[0], w: 0.9 }) +
-            rect(7, 22, 4, 7, P.brown[0], { w: 1.2 })),
+            line('M5 21v7M15 21v7M19 17v11', { w: 1.3 }) +
+            poly('2,21 6,12 22,12 18,21', P.blue[1], { w: 1.2 }) + line('M8 21l4-9M14 21l4-9M4 16.5h16', { s: P.glass[0], w: 0.9 }) +
+            clip('p', poly('2,21 6,12 22,12 18,21', '#000')) + clipped('p', g(rect(8, 9, 3, 15, '#fff', { s: 'none', op: 0.8 }), { a: A('sweep', 2.8) })) +
+            poly('2,21 6,12 22,12 18,21', 'none') +
+            rect(22, 19, 8, 9, '#fff', { w: 1.3 }) + rect(22, 21.5, 8, 2.5, P.yellow[0], { w: 1 }) + line('M1 28.5h30', { w: 1.4 })),
     // Aerogerador pequeno numa torre de treliça: pás girando, vento passando, armário com faixa amarela.
     B('wind-small', 'wind_small', 'Aerogerador Pequeno', '🌬️',
         () => ground() + g(cloud(102, 24, 0.45), { a: A('drift', 7) }) +

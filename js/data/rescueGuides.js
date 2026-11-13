@@ -22,7 +22,7 @@ const RESCUE_GUIDES = {
         icon: '⚡', title: 'Falta energia faz tempo', category: 'power',
         targets: ['.resource-item:has(#electricity-amount)', '#compact-energy'],
         suggest: [
-            { id: 'solar_rooftop', why: 'o mais barato: painéis nos telhados (de noite gera menos)' },
+            { id: 'solar_micro', why: 'o mais barato: uma usina solar pequena (de noite gera menos)' },
             { id: 'wind_small', why: 'gera de dia e de noite quando venta' },
             { id: 'solar_farm', why: 'muitos painéis juntos, sem fumaça' },
             { id: 'small_hydro', why: 'a força do rio gera dia e noite' },
@@ -75,7 +75,7 @@ const RESCUE_GUIDES = {
             { id: 'zone_residential_light', why: 'casas novas para quem quer morar aqui' },
             { id: 'zone_residential_balanced', why: 'mais moradores no mesmo espaço' },
             { id: 'water_pump', why: 'sem água, as zonas param de crescer e encolhem' },
-            { id: 'solar_rooftop', why: 'sem energia, as zonas crescem devagar' }
+            { id: 'solar_micro', why: 'sem energia, as zonas crescem devagar' }
         ],
         tip: 'Zona sem água, sem energia ou com poluição alta volta de fase e perde moradores.'
     }

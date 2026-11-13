@@ -10,8 +10,8 @@
     --bp-card-w: min(580px, 84vw);
     --bp-step: calc(var(--bp-card-w) * 0.88);
     --bp-view-h: clamp(130px, 30vh, 290px);
-    --bp-ink: #15324e;
-    --bp-muted: #49647d;
+    --bp-ink: var(--gda-ink);
+    --bp-muted: var(--gda-ink-muted);
 
     position: fixed;
     inset: 0;
@@ -19,8 +19,8 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr) auto auto;
-    color: #f4fbff;
-    font-family: 'M PLUS Rounded 1c', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    color: var(--gda-ink-on-dark);
+    font-family: var(--gda-font);
     opacity: 0;
     transition: opacity 0.3s ease;
     isolation: isolate;
@@ -33,10 +33,7 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-    background:
-        radial-gradient(ellipse 70% 55% at 50% 42%, rgba(33, 191, 239, 0.3), transparent 72%),
-        radial-gradient(ellipse 50% 40% at 15% 100%, rgba(72, 221, 250, 0.16), transparent 70%),
-        linear-gradient(180deg, rgba(6, 26, 62, 0.93), rgba(2, 10, 28, 0.97));
+    background: var(--gda-backdrop);
     backdrop-filter: blur(10px);
 }
 
@@ -48,7 +45,7 @@
 
 .bp-title {
     margin: 0;
-    font-family: 'Lilita One', 'M PLUS Rounded 1c', sans-serif;
+    font-family: var(--gda-font-display);
     font-weight: 400;
     font-size: clamp(26px, 3.6vw, 44px);
     line-height: 1.1;
@@ -62,7 +59,7 @@
     max-width: 640px;
     font-size: clamp(14px, 1.3vw, 17px);
     line-height: 1.4;
-    color: rgba(226, 244, 255, 0.86);
+    color: var(--gda-ink-on-dark-muted);
 }
 
 /* ===== PALCO E CARTÕES ===== */
@@ -94,12 +91,12 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border-radius: 26px;
-    background: linear-gradient(180deg, #ffffff 0%, #f2f9fc 100%);
+    border-radius: calc(var(--gda-r-xl) + 2px);
+    background: var(--gda-surface-gradient);
     color: var(--bp-ink);
     box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.25);
     transform: translate(-50%, -50%) translateX(calc(var(--bp-off, 0) * var(--bp-step) + var(--bp-drag, 0px))) scale(var(--bp-scale));
-    transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease, filter 0.4s ease, box-shadow 0.4s ease;
+    transition: transform 0.55s var(--gda-ease), opacity 0.4s ease, filter 0.4s ease, box-shadow 0.4s ease;
     will-change: transform;
 }
 
@@ -189,12 +186,12 @@
     gap: 6px;
     padding: 5px 12px 5px 8px;
     border-radius: 999px;
-    background: #ffd23f;
-    color: #4a3300;
+    background: var(--gda-accent-2);
+    color: var(--gda-accent-2-ink);
     font-size: 13px;
     font-weight: 800;
     letter-spacing: 0.02em;
-    box-shadow: 0 3px 0 #d9a400, 0 6px 14px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 3px 0 var(--gda-accent-2-deep), 0 6px 14px rgba(0, 0, 0, 0.2);
 }
 
 .bp-badge svg { width: 16px; height: 16px; color: #b57a00; }
@@ -232,7 +229,7 @@
 
 .bp-name {
     margin: 0;
-    font-family: 'Lilita One', 'M PLUS Rounded 1c', sans-serif;
+    font-family: var(--gda-font-display);
     font-weight: 400;
     font-size: clamp(22px, 2.1vw, 28px);
     line-height: 1.1;
@@ -256,16 +253,16 @@
 }
 
 .bp-trait {
-    --bp-trait: #1187d9;
-    --bp-trait-bg: #e2f2fd;
+    --bp-trait: var(--gda-accent);
+    --bp-trait-bg: var(--gda-accent-soft);
     display: flex;
     align-items: center;
     gap: 10px;
     min-width: 0;
     padding: 8px 10px;
-    border-radius: 14px;
-    background: #f3f9fc;
-    border: 1px solid #dcebf3;
+    border-radius: var(--gda-r-md);
+    background: var(--gda-surface-2);
+    border: 1px solid var(--gda-border);
 }
 
 .bp-trait--relief { --bp-trait: #2f7a3f; --bp-trait-bg: #e1f2dc; }
@@ -317,10 +314,10 @@
     padding: 8px 28px;
     border: 0;
     border-radius: 999px;
-    background: linear-gradient(180deg, #3fd0f5 0%, #1187d9 100%);
-    box-shadow: 0 4px 0 #0b5c9e, 0 10px 22px rgba(17, 135, 217, 0.35);
+    background: var(--gda-accent-gradient);
+    box-shadow: var(--gda-shadow-btn);
     color: #ffffff;
-    font-family: 'Lilita One', 'M PLUS Rounded 1c', sans-serif;
+    font-family: var(--gda-font-display);
     font-size: 21px;
     letter-spacing: 0.02em;
     cursor: pointer;
@@ -329,8 +326,8 @@
 
 .bp-play svg { width: 20px; height: 20px; }
 
-.bp-card.is-focus .bp-play:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 6px 0 #0b5c9e, 0 14px 26px rgba(17, 135, 217, 0.45); }
-.bp-play:active { transform: translateY(2px); box-shadow: 0 2px 0 #0b5c9e, 0 6px 14px rgba(17, 135, 217, 0.3); }
+.bp-card.is-focus .bp-play:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 6px 0 var(--gda-accent-deep), 0 14px 26px rgba(17, 135, 217, 0.45); }
+.bp-play:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--gda-accent-deep), 0 6px 14px rgba(17, 135, 217, 0.3); }
 .bp-card:not(.is-focus) .bp-play { filter: grayscale(0.4); opacity: 0.7; }
 
 .basin-picker.is-chosen .bp-card.is-focus .bp-play { filter: brightness(1.15); }
@@ -389,8 +386,8 @@
 
 .bp-dot.is-on {
     width: 34px;
-    background: #48ddfa;
-    border-color: #48ddfa;
+    background: var(--gda-accent-light);
+    border-color: var(--gda-accent-light);
 }
 
 /* ===== RODAPÉ ===== */
@@ -452,8 +449,8 @@
 
 /* Foco visível em tudo que é botão (teclado) */
 .basin-picker button:focus-visible {
-    outline: 3px solid #ffd23f;
-    outline-offset: 3px;
+    outline: var(--gda-focus);
+    outline-offset: var(--gda-focus-offset);
 }
 
 /* ===== ÍCONES ANIMADOS (basinIcons.js) — só no cartão em foco ===== */
