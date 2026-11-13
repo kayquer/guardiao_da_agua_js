@@ -1,6 +1,7 @@
-// Copia os props do Kit Props Brasil Low Poly (repo próprio, gerado no Blender) para models/props/.
-// Uso: node scripts/sync-props.js [<pasta do kit>]   (padrão: ../kit-props-brasil-lowpoly)
-// Só entram os tipos de js/data/props.js (models/props/<id>.glb, sem as pastas de categoria do kit);
+// Copia os props do Kit Props Brasil Low Poly (repo próprio, gerado no Blender) para models/props/, e os bichos
+// marcados com `kit: 'fauna/<grupo>/<id>'` do Kit Fauna Ameaçada Low Poly (../kit-fauna-ameacada-lowpoly).
+// Uso: node scripts/sync-props.js [<pasta do kit de props>] [<pasta do kit de fauna>]
+// Só entram os tipos de js/data/props.js (models/props/<file>, sem as pastas de categoria dos kits);
 // .glb de models/props/ que não está mais na tabela é apagado. Depois: npm run test:unit (props.test.js).
 const fs = require('fs');
 const path = require('path');
@@ -8,6 +9,7 @@ const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
 const KIT = path.resolve(process.argv[2] || path.join(ROOT, '..', 'kit-props-brasil-lowpoly'));
+const FAUNA_KIT = path.resolve(process.argv[3] || path.join(ROOT, '..', 'kit-fauna-ameacada-lowpoly'));
 const OUT = path.join(ROOT, 'models', 'props');
 
 const ctx = {};
@@ -30,7 +32,10 @@ const missing = [];
 const wanted = new Set();
 for (const [id, type] of Object.entries(types)) {
     wanted.add(type.file);
-    const src = found.get(type.file);
+    const src = type.kit?.startsWith('fauna/')
+        ? path.join(FAUNA_KIT, 'models', `${type.kit.slice('fauna/'.length)}.glb`)
+        : found.get(type.file);
+    if (src && !fs.existsSync(src)) { missing.push(id); continue; }
     if (!src) { missing.push(id); continue; }
     fs.copyFileSync(src, path.join(OUT, type.file));
 }

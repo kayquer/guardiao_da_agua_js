@@ -185,7 +185,7 @@ test('sem o .glb (rota bloqueada) o prédio fica no procedural, sem erro', async
     expect(s.fromModel).toBe(false);
     expect(s.metadata.buildingId).toBe(id);
     expect(s.selected).toBe(id);
-    expect(warnings.some(w => w.includes('building-a.glb'))).toBe(true);
+    expect(warnings.some(w => w.includes('predio_apartamentos.glb'))).toBe(true);
 
     // Um segundo prédio do mesmo tipo não tenta baixar de novo e nasce procedural
     const other = await place(page, 'apartment');
@@ -266,7 +266,7 @@ test('prévia de posicionamento e obra mostram o modelo .glb (procedural só de 
         return c.r === 1 && c.g === 0;
     }, spot)).toBe(true);
 
-    // Sair do modo construção descarta o fantasma e o material dele, nunca a textura do modelo-base
+    // Sair do modo construção descarta o fantasma e o material dele, nunca o modelo-base (nem o material dele)
     expect(await page.evaluate(name => {
         const gm = window.gameManager, bs = gm.buildingSystem;
         gm.exitBuildMode();
@@ -275,9 +275,9 @@ test('prévia de posicionamento e obra mostram o modelo .glb (procedural só de 
             preview: bs.previewMesh,
             ghosts: gm.scene.meshes.filter(m => m.name.startsWith('preview_house')).length,
             material: gm.scene.materials.some(m => m.name === name),
-            texture: !!template.material.diffuseTexture?.getInternalTexture() && !template.isDisposed()
+            template: !template.isDisposed() && gm.scene.materials.includes(template.material)
         };
-    }, preview.materialName)).toEqual({ preview: null, ghosts: 0, material: false, texture: true });
+    }, preview.materialName)).toEqual({ preview: null, ghosts: 0, material: false, template: true });
 
     // Remover a obra no meio leva junto barra, plaquinha e partículas de progresso
     expect(await page.evaluate(id => {

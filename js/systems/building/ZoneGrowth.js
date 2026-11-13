@@ -11,7 +11,7 @@
  * 2. Pronta (completeConstruction → onZoneConstructionComplete) ela entra na fase 0 e cresce sozinha pelo
  *    tempo de jogo (simNow, nunca Date.now): cada fase leva ZONE_GROWTH.stageMs com ritmo 1; satisfação,
  *    falta de água e de energia mudam o ritmo (getZoneGrowthRate) — sem água a zona para.
- * 3. As peças da fase (casas/prédios/fábricas da Kenney e peças de obra procedurais) são INSTÂNCIAS
+ * 3. As peças da fase (casas/prédios/fábricas do Kit Prédios Brasil e peças de obra procedurais) são INSTÂNCIAS
  *    (createInstance) de modelos-base escondidos por arquivo (zonePieceTemplates — nunca descarte), filhas da
  *    laje: giram, sobem e são descartadas junto com o prédio. Ao mudar de fase só entram/saem as peças que
  *    mudaram; as novas sobem do chão (ZONE_GROWTH.growMs). Cada instância leva metadata.buildingId (clique).
@@ -716,7 +716,7 @@ mixin(BuildingSystem, {
         const material = new BABYLON.StandardMaterial(`zonePieceMat_${file}`, this.scene);
         material.diffuseColor = new BABYLON.Color3(1, 1, 1);
         material.specularColor = new BABYLON.Color3(0.08, 0.08, 0.08);
-        material.emissiveColor = new BABYLON.Color3(0.14, 0.14, 0.15); // como os prédios da Kenney
+        material.emissiveColor = new BABYLON.Color3(0.14, 0.14, 0.15); // como os outros prédios
         material.diffuseTexture = data.texture;
         material.backFaceCulling = false;
         template.material = material;

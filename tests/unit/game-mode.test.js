@@ -19,7 +19,10 @@ test('modo: ?modo= na URL troca; nome desconhecido fica no padrão; os dois modo
     assert.strictEqual(MODES.pesquisa.noticeEveryStart, true);
     assert.strictEqual(MODES.loja.study.STUDY, 'opcional');
     assert.strictEqual(MODES.loja.research, false);
-    assert.strictEqual(g('STUDY_RULES.STUDY'), MODES[g('GAME_MODE')].study.STUDY, 'STUDY_RULES vem do modo');
+    assert.strictEqual(g('STUDY_RULES.STUDY'), MODES[g('GameMode.id()')].study.STUDY, 'STUDY_RULES vem do modo');
+    // a versão publicada é a de loja; teste automatizado (sem navegador ou com navigator.webdriver) roda na pesquisa
+    assert.strictEqual(g('GAME_MODE'), 'loja');
+    assert.strictEqual(g('GameMode.fallback()'), 'pesquisa');
 });
 
 test('cadastro: na pesquisa tudo é obrigatório; na loja só o apelido (idade, estado e cidade opcionais)', () => {

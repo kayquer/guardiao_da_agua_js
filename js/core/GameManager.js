@@ -535,6 +535,8 @@ class GameManager {
     }
 
     handleBuildingSelection(x, y) {
+        // Bicho do caderno de campo exatamente sob o cursor vem antes do prédio de trás (ui/FieldNotebookUI.js)
+        if (this.uiManager?.showSpeciesAtScreen?.(x, y, { exact: true })) return;
         // ===== UNIFIED BUILDING SELECTION (same approach as mobile/touch) =====
         // Prédios primeiro (pickBuildingFirst), depois confere metadata.buildingId
         const pickInfo = this.pickBuildingFirst(x, y);
@@ -612,11 +614,11 @@ class GameManager {
     }
 
     handleTerrainClick(x, y) {
+        // Bicho do caderno de campo perto do clique (na tela): a ficha dele no lugar do painel do terreno
+        if (this.uiManager?.showSpeciesAtScreen?.(x, y)) return;
         // Árvore nativa na frente do terreno: seleciona a árvore (painel próprio, TreeSystem.selectAt)
         if (this.treeSystem?.selectAt(x, y)) return;
         const gridPos = this.pickTerrainCell(x, y);
-        // Bicho do caderno de campo ali: a nota da Márcia no lugar do painel do terreno (ui/FieldNotebookUI.js)
-        if (gridPos && this.uiManager?.showSpeciesAt?.(gridPos.x, gridPos.z)) return;
         if (gridPos) {
             // Get terrain type
             const terrainType = this.gridManager.getTerrainType(gridPos.x, gridPos.z);

@@ -30,11 +30,17 @@ test('começo: só natureza e bichos do rio, em no máximo 4 meshes, leves e sem
     expect(stats.meshes).toBeLessThanOrEqual(4);
     const groups = await page.evaluate(types => types.map(id => PROP_TYPES[id].group), Object.keys(stats.types));
     expect(groups.every(g => g === 'natureza' || g === 'fauna')).toBe(true);
-    const maxTris = await page.evaluate(() => PROP_SETTINGS.MAX_TRIS);
-    expect(stats.triangles).toBeLessThanOrEqual(stats.shown * maxTris);
-    const meshes = await page.evaluate(() => window.gameManager.scene.meshes.filter(m => m.metadata?.props)
+    const budget = await page.evaluate(types => types.reduce((sum, [id, n]) =>
+        sum + n * (PROP_TYPES[id].kit ? PROP_SETTINGS.MAX_TRIS_FAUNA : PROP_SETTINGS.MAX_TRIS), 0), Object.entries(stats.types));
+    expect(stats.triangles).toBeLessThanOrEqual(budget);
+    expect(stats.movers).toBeGreaterThan(0); // bichos, capim e o que boia se mexem
+    // Parados: juntos em pedaços, sem picking, congelados, sem sombra. Que se mexem: instâncias; só os bichos do caderno clicam
+    const meshes = await page.evaluate(() => window.gameManager.scene.meshes.filter(m => m.metadata?.props && m.name.startsWith('props_'))
         .map(m => ({ pickable: m.isPickable, frozen: m.isWorldMatrixFrozen, shadow: !!window.gameManager.shadowGenerator?.getShadowMap()?.renderList?.includes(m) })));
     meshes.forEach(m => expect(m).toEqual({ pickable: false, frozen: true, shadow: false }));
+    const movers = await page.evaluate(() => [...window.gameManager.propSystem.movers.values()]
+        .map(m => ({ instance: m.inst instanceof BABYLON.InstancedMesh, ok: m.inst.isPickable === !!FIELD_NOTEBOOK[m.p.id] })));
+    movers.forEach(m => expect(m).toEqual({ instance: true, ok: true }));
     expect(problems).toEqual([]);
 });
 

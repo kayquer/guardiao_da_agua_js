@@ -11,7 +11,7 @@
  * ZONE_LOTS[idDaZona] = { ground, stages: [fase0, fase1, fase2, fase3] }
  *   ground   chão da fase final: 'grass' (residencial), 'paved' (comercial), 'concrete' (industrial)
  *   peça     { file, x, z, rot?, scale?, w?, d?, h? }
- *     file   '.glb' relativo a models/buildings/ (Kenney, CC0) ou 'prop:<nome>' (peça de obra procedural, ZONE_PROPS)
+ *     file   '.glb' relativo a models/buildings/ (Kit Prédios Brasil, CC0) ou 'prop:<nome>' (peça de obra procedural, ZONE_PROPS)
  *     x, z   centro da peça em CÉLULAS, a partir do canto do lote (0..size). +X = direita da câmera isométrica,
  *            -Z = frente (a câmera olha de +X/-Z): o que é alto vai para o fundo (z grande, x pequeno)
  *     rot    quartos de volta (0-3), como building.rotation (rotation.y = rot × 90°): 0 = fachada para -Z
@@ -24,7 +24,7 @@
  * satisfação, água e energia aceleram, freiam ou param o crescimento. Os efeitos da zona
  * (capacidade de população, empregos e receita) valem effectScale[fase] do valor cheio.
  */
-const ZONE_LOT_MODEL_SCALE = 0.65; // células por unidade dos modelos da Kenney (casa ≈ 0,85 × 0,65 célula)
+const ZONE_LOT_MODEL_SCALE = 0.65; // células por unidade dos modelos do kit (casa ≈ 1,3 × 0,65 célula; medidas em tools/alvos.json do kit)
 
 const ZONE_GROWTH = {
     regressBelow: 0.5, // eficiência abaixo disto: a zona volta de fase (ZoneGrowth.computeZoneGrowthRate)
@@ -70,9 +70,7 @@ const ZONE_PROPS = {
     crane:      { w: 1.3, d: 0.16, h: 2.0 }     // grua (lança para -X)
 };
 
-const SUB = 'kenney/suburban/';
-const COM = 'kenney/commercial/';
-const IND = 'kenney/industrial/';
+const BR = 'brasil/'; // Kit Prédios Brasil Low Poly (models/buildings/brasil/<grupo>/<id>.glb, scripts/sync-buildings.js)
 
 const ZONE_LOTS = {
     // ===== RESIDENCIAL =====
@@ -88,23 +86,23 @@ const ZONE_LOTS = {
                 { file: 'prop:foundation', x: 0.5, z: 0.5, w: 0.85, d: 0.68 },
                 { file: 'prop:foundation', x: 0.5, z: 1.5, w: 0.85, d: 0.7 },
                 { file: 'prop:foundation', x: 1.5, z: 1.5, w: 0.85, d: 0.68 },
-                { file: SUB + 'building-type-h.glb', x: 1.5, z: 0.5 },
+                { file: BR + 'residencial/casa_popular.glb', x: 1.5, z: 0.5 },
                 { file: 'prop:bricks', x: 1.0, z: 1.0 }, { file: 'prop:digger', x: 0.5, z: 1.5, rot: 3 }
             ],
             [
-                { file: SUB + 'building-type-h.glb', x: 1.5, z: 0.5 },
-                { file: SUB + 'building-type-i.glb', x: 0.5, z: 0.5 },
+                { file: BR + 'residencial/casa_popular.glb', x: 1.5, z: 0.5 },
+                { file: BR + 'residencial/casa_alpendre.glb', x: 0.5, z: 0.5 },
                 { file: 'prop:foundation', x: 0.5, z: 1.5, w: 0.85, d: 0.7 },
                 { file: 'prop:scaffold', x: 1.5, z: 1.5, w: 0.85, d: 0.68, h: 0.45 },
                 { file: 'prop:bricks', x: 1.0, z: 1.0 }, { file: 'prop:dirt', x: 0.5, z: 1.5 }
             ],
             [
-                { file: SUB + 'building-type-h.glb', x: 1.5, z: 0.5 },
-                { file: SUB + 'building-type-i.glb', x: 0.5, z: 0.5 },
-                { file: SUB + 'building-type-g.glb', x: 0.5, z: 1.5 },
-                { file: SUB + 'building-type-a.glb', x: 1.5, z: 1.5 },
-                { file: SUB + 'tree-large.glb', x: 1.0, z: 1.0 },
-                { file: SUB + 'tree-small.glb', x: 0.08, z: 1.0 }, { file: SUB + 'tree-small.glb', x: 1.92, z: 1.0 }
+                { file: BR + 'residencial/casa_popular.glb', x: 1.5, z: 0.5 },
+                { file: BR + 'residencial/casa_alpendre.glb', x: 0.5, z: 0.5 },
+                { file: BR + 'residencial/casa_laje.glb', x: 0.5, z: 1.5 },
+                { file: BR + 'residencial/casa_terrea.glb', x: 1.5, z: 1.5 },
+                { file: BR + 'verde/arvore_ipe.glb', x: 1.0, z: 1.0 },
+                { file: BR + 'verde/arvore_pequena.glb', x: 0.08, z: 1.0 }, { file: BR + 'verde/arvore_pequena.glb', x: 1.92, z: 1.0 }
             ]
         ]
     },
@@ -120,22 +118,22 @@ const ZONE_LOTS = {
                 { file: 'prop:foundation', x: 0.5, z: 0.5, w: 0.88, d: 0.68 },
                 { file: 'prop:foundation', x: 0.5, z: 1.5, w: 0.9, d: 0.66 },
                 { file: 'prop:foundation', x: 1.5, z: 1.5, w: 0.9, d: 0.72 },
-                { file: SUB + 'building-type-c.glb', x: 1.5, z: 0.5 },
+                { file: BR + 'residencial/casa_sobrado.glb', x: 1.5, z: 0.5 },
                 { file: 'prop:digger', x: 0.5, z: 1.5, rot: 3 }, { file: 'prop:bricks', x: 1.0, z: 1.0 }
             ],
             [
-                { file: SUB + 'building-type-c.glb', x: 1.5, z: 0.5 },
-                { file: SUB + 'building-type-j.glb', x: 0.5, z: 0.5 },
+                { file: BR + 'residencial/casa_sobrado.glb', x: 1.5, z: 0.5 },
+                { file: BR + 'residencial/sobrados_geminados.glb', x: 0.5, z: 0.5 },
                 { file: 'prop:scaffold', x: 0.5, z: 1.5, w: 0.9, d: 0.66, h: 0.6 },
                 { file: 'prop:scaffold', x: 1.5, z: 1.5, w: 0.9, d: 0.72, h: 0.35 },
                 { file: 'prop:bricks', x: 1.0, z: 1.02 }
             ],
             [
-                { file: SUB + 'building-type-c.glb', x: 1.5, z: 0.5 },
-                { file: SUB + 'building-type-j.glb', x: 0.5, z: 0.5 },
-                { file: SUB + 'building-type-o.glb', x: 0.5, z: 1.5 },
-                { file: SUB + 'building-type-s.glb', x: 1.5, z: 1.5 },
-                { file: SUB + 'tree-large.glb', x: 1.0, z: 1.0 }, { file: SUB + 'tree-small.glb', x: 1.0, z: 0.1 }
+                { file: BR + 'residencial/casa_sobrado.glb', x: 1.5, z: 0.5 },
+                { file: BR + 'residencial/sobrados_geminados.glb', x: 0.5, z: 0.5 },
+                { file: BR + 'residencial/casa_dois_andares.glb', x: 0.5, z: 1.5 },
+                { file: BR + 'residencial/sobrado_comercio.glb', x: 1.5, z: 1.5 },
+                { file: BR + 'verde/arvore_ipe.glb', x: 1.0, z: 1.0 }, { file: BR + 'verde/arvore_pequena.glb', x: 1.0, z: 0.1 }
             ]
         ]
     },
@@ -152,22 +150,22 @@ const ZONE_LOTS = {
                 { file: 'prop:foundation', x: 1.5, z: 1.5, w: 0.9, d: 0.85 },
                 { file: 'prop:foundation', x: 0.5, z: 0.5, w: 0.85, d: 0.85 },
                 { file: 'prop:foundation', x: 1.5, z: 0.5, w: 0.8, d: 0.8 },
-                { file: COM + 'building-b.glb', x: 0.5, z: 1.5, scale: 1.35 },
+                { file: BR + 'comercial/predio_hotel.glb', x: 0.5, z: 1.5, scale: 1.35 },
                 { file: 'prop:crane', x: 1.05, z: 1.0 }, { file: 'prop:pipes', x: 1.5, z: 0.5 }
             ],
             [
-                { file: COM + 'building-b.glb', x: 0.5, z: 1.5, scale: 1.35 },
-                { file: COM + 'building-a.glb', x: 1.5, z: 1.5, scale: 1.35 },
+                { file: BR + 'comercial/predio_hotel.glb', x: 0.5, z: 1.5, scale: 1.35 },
+                { file: BR + 'comercial/predio_apartamentos.glb', x: 1.5, z: 1.5, scale: 1.35 },
                 { file: 'prop:scaffold', x: 0.5, z: 0.5, w: 0.85, d: 0.85, h: 0.75 },
                 { file: 'prop:foundation', x: 1.5, z: 0.5, w: 0.8, d: 0.8 },
                 { file: 'prop:crane', x: 1.05, z: 1.0 }, { file: 'prop:bricks', x: 1.5, z: 0.5 }
             ],
             [
-                { file: COM + 'building-b.glb', x: 0.5, z: 1.5, scale: 1.35 },
-                { file: COM + 'building-a.glb', x: 1.5, z: 1.5, scale: 1.35 },
-                { file: COM + 'building-d.glb', x: 0.5, z: 0.5, scale: 1.4 },
-                { file: SUB + 'tree-large.glb', x: 1.3, z: 0.65 }, { file: SUB + 'tree-large.glb', x: 1.75, z: 0.35 },
-                { file: SUB + 'tree-small.glb', x: 1.75, z: 0.8 }, { file: SUB + 'planter.glb', x: 1.35, z: 0.25 }
+                { file: BR + 'comercial/predio_hotel.glb', x: 0.5, z: 1.5, scale: 1.35 },
+                { file: BR + 'comercial/predio_apartamentos.glb', x: 1.5, z: 1.5, scale: 1.35 },
+                { file: BR + 'comercial/predio_banco.glb', x: 0.5, z: 0.5, scale: 1.4 },
+                { file: BR + 'verde/arvore_ipe.glb', x: 1.3, z: 0.65 }, { file: BR + 'verde/arvore_ipe.glb', x: 1.75, z: 0.35 },
+                { file: BR + 'verde/arvore_pequena.glb', x: 1.75, z: 0.8 }, { file: BR + 'verde/jardineira.glb', x: 1.35, z: 0.25 }
             ]
         ]
     },
@@ -184,22 +182,22 @@ const ZONE_LOTS = {
             [
                 { file: 'prop:foundation', x: 0.5, z: 1.5, w: 0.9, d: 0.88 },
                 { file: 'prop:foundation', x: 1.5, z: 1.5, w: 0.72, d: 0.88 },
-                { file: IND + 'building-k.glb', x: 1.5, z: 0.5 },
+                { file: BR + 'industrial/deposito.glb', x: 1.5, z: 0.5 },
                 { file: 'prop:digger', x: 0.5, z: 0.5 }, { file: 'prop:pipes', x: 1.0, z: 1.0, rot: 1 }
             ],
             [
-                { file: IND + 'building-k.glb', x: 1.5, z: 0.5 },
-                { file: IND + 'building-h.glb', x: 0.5, z: 1.5 },
+                { file: BR + 'industrial/deposito.glb', x: 1.5, z: 0.5 },
+                { file: BR + 'industrial/oficina.glb', x: 0.5, z: 1.5 },
                 { file: 'prop:scaffold', x: 1.5, z: 1.5, w: 0.72, d: 0.88, h: 0.4 },
-                { file: IND + 'shipping-container-a.glb', x: 0.3, z: 0.45 }
+                { file: BR + 'carga/conteiner_a.glb', x: 0.3, z: 0.45 }
             ],
             [
-                { file: IND + 'building-k.glb', x: 1.5, z: 0.5 },
-                { file: IND + 'building-h.glb', x: 0.5, z: 1.5 },
-                { file: IND + 'building-i.glb', x: 1.5, z: 1.5 },
-                { file: IND + 'shipping-container-a.glb', x: 0.3, z: 0.45 },
-                { file: IND + 'shipping-container-b.glb', x: 0.6, z: 0.45 },
-                { file: IND + 'detail-tank.glb', x: 0.5, z: 0.85, scale: 0.8 }
+                { file: BR + 'industrial/deposito.glb', x: 1.5, z: 0.5 },
+                { file: BR + 'industrial/oficina.glb', x: 0.5, z: 1.5 },
+                { file: BR + 'industrial/galpao_pequeno.glb', x: 1.5, z: 1.5 },
+                { file: BR + 'carga/conteiner_a.glb', x: 0.3, z: 0.45 },
+                { file: BR + 'carga/conteiner_b.glb', x: 0.6, z: 0.45 },
+                { file: BR + 'carga/tanque.glb', x: 0.5, z: 0.85, scale: 0.8 }
             ]
         ]
     },
@@ -214,21 +212,21 @@ const ZONE_LOTS = {
             [
                 { file: 'prop:foundation', x: 0.62, z: 1.5, w: 1.12, d: 0.86 },
                 { file: 'prop:foundation', x: 1.55, z: 1.45, w: 0.6, d: 0.95 },
-                { file: IND + 'building-p.glb', x: 1.0, z: 0.45 },
+                { file: BR + 'industrial/galpao_comprido.glb', x: 1.0, z: 0.45 },
                 { file: 'prop:crane', x: 1.05, z: 1.0, scale: 0.8 }
             ],
             [
-                { file: IND + 'building-p.glb', x: 1.0, z: 0.45 },
-                { file: IND + 'building-g.glb', x: 0.62, z: 1.5 },
+                { file: BR + 'industrial/galpao_comprido.glb', x: 1.0, z: 0.45 },
+                { file: BR + 'industrial/centro_pesquisa.glb', x: 0.62, z: 1.5 },
                 { file: 'prop:scaffold', x: 1.55, z: 1.45, w: 0.6, d: 0.95, h: 0.7 },
                 { file: 'prop:pipes', x: 1.75, z: 0.95, rot: 1 }
             ],
             [
-                { file: IND + 'building-p.glb', x: 1.0, z: 0.45 },
-                { file: IND + 'building-g.glb', x: 0.62, z: 1.5 },
-                { file: IND + 'building-d.glb', x: 1.55, z: 1.45 },
-                { file: IND + 'chimney-medium.glb', x: 1.82, z: 0.42, scale: 0.8 },
-                { file: IND + 'shipping-container-c.glb', x: 0.18, z: 0.45 }
+                { file: BR + 'industrial/galpao_comprido.glb', x: 1.0, z: 0.45 },
+                { file: BR + 'industrial/centro_pesquisa.glb', x: 0.62, z: 1.5 },
+                { file: BR + 'industrial/galpao_tecnologia.glb', x: 1.55, z: 1.45 },
+                { file: BR + 'carga/chamine_media.glb', x: 1.82, z: 0.42, scale: 0.8 },
+                { file: BR + 'carga/conteiner_c.glb', x: 0.18, z: 0.45 }
             ]
         ]
     },
@@ -245,24 +243,24 @@ const ZONE_LOTS = {
                 { file: 'prop:foundation', x: 0.85, z: 2.25, w: 1.4, d: 1.1 },
                 { file: 'prop:foundation', x: 2.3, z: 2.25, w: 0.9, d: 1.2 },
                 { file: 'prop:foundation', x: 0.75, z: 0.7, w: 1.2, d: 1.2 },
-                { file: IND + 'building-s.glb', x: 2.15, z: 0.55, scale: 1.1 },
+                { file: BR + 'industrial/armazem_porto.glb', x: 2.15, z: 0.55, scale: 1.1 },
                 { file: 'prop:crane', x: 1.6, z: 1.55 }, { file: 'prop:digger', x: 0.75, z: 0.7, rot: 3 }
             ],
             [
-                { file: IND + 'building-s.glb', x: 2.15, z: 0.55, scale: 1.1 },
-                { file: IND + 'building-e.glb', x: 0.85, z: 2.25, scale: 1.25 },
+                { file: BR + 'industrial/armazem_porto.glb', x: 2.15, z: 0.55, scale: 1.1 },
+                { file: BR + 'industrial/fabrica.glb', x: 0.85, z: 2.25, scale: 1.25 },
                 { file: 'prop:scaffold', x: 2.3, z: 2.25, w: 0.9, d: 1.2, h: 1.0 },
                 { file: 'prop:foundation', x: 0.75, z: 0.7, w: 1.2, d: 1.2 },
                 { file: 'prop:crane', x: 1.6, z: 1.55 }, { file: 'prop:pipes', x: 0.75, z: 0.7 }
             ],
             [
-                { file: IND + 'building-s.glb', x: 2.15, z: 0.55, scale: 1.1 },
-                { file: IND + 'building-e.glb', x: 0.85, z: 2.25, scale: 1.25 },
-                { file: IND + 'building-n.glb', x: 2.3, z: 2.25, scale: 1.2 },
-                { file: IND + 'detail-tank-large.glb', x: 0.75, z: 0.75, scale: 1.05 },
-                { file: IND + 'chimney-large.glb', x: 1.65, z: 1.45, scale: 0.9 },
-                { file: IND + 'shipping-container-a.glb', x: 1.45, z: 0.4, rot: 1 },
-                { file: IND + 'shipping-container-c.glb', x: 1.45, z: 0.72, rot: 1 }
+                { file: BR + 'industrial/armazem_porto.glb', x: 2.15, z: 0.55, scale: 1.1 },
+                { file: BR + 'industrial/fabrica.glb', x: 0.85, z: 2.25, scale: 1.25 },
+                { file: BR + 'industrial/silo_industria.glb', x: 2.3, z: 2.25, scale: 1.2 },
+                { file: BR + 'carga/tanque_grande.glb', x: 0.75, z: 0.75, scale: 1.05 },
+                { file: BR + 'carga/chamine_grande.glb', x: 1.65, z: 1.45, scale: 0.9 },
+                { file: BR + 'carga/conteiner_a.glb', x: 1.45, z: 0.4, rot: 1 },
+                { file: BR + 'carga/conteiner_c.glb', x: 1.45, z: 0.72, rot: 1 }
             ]
         ]
     },
@@ -279,22 +277,22 @@ const ZONE_LOTS = {
             [
                 { file: 'prop:foundation', x: 0.5, z: 1.45, w: 0.82, d: 0.9 },
                 { file: 'prop:foundation', x: 1.5, z: 1.45, w: 0.82, d: 0.9 },
-                { file: COM + 'building-c.glb', x: 1.5, z: 0.5, scale: 1.2 },
+                { file: BR + 'comercial/padaria_toldo.glb', x: 1.5, z: 0.5, scale: 1.2 },
                 { file: 'prop:digger', x: 0.5, z: 0.5 }, { file: 'prop:pipes', x: 1.0, z: 1.0, rot: 1 }
             ],
             [
-                { file: COM + 'building-c.glb', x: 1.5, z: 0.5, scale: 1.2 },
-                { file: COM + 'building-c.glb', x: 0.5, z: 1.45, scale: 1.2, rot: 3 },
+                { file: BR + 'comercial/padaria_toldo.glb', x: 1.5, z: 0.5, scale: 1.2 },
+                { file: BR + 'comercial/padaria_toldo.glb', x: 0.5, z: 1.45, scale: 1.2, rot: 3 },
                 { file: 'prop:scaffold', x: 1.5, z: 1.45, w: 0.82, d: 0.9, h: 0.6 },
                 { file: 'prop:bricks', x: 0.5, z: 0.5 }
             ],
             [
-                { file: COM + 'building-c.glb', x: 1.5, z: 0.5, scale: 1.2 },
-                { file: COM + 'building-c.glb', x: 0.5, z: 1.45, scale: 1.2, rot: 3 },
-                { file: SUB + 'building-type-q.glb', x: 1.5, z: 1.45 },
-                { file: COM + 'detail-parasol-a.glb', x: 0.3, z: 0.35 },
-                { file: COM + 'detail-parasol-b.glb', x: 0.72, z: 0.55 },
-                { file: SUB + 'planter.glb', x: 0.5, z: 0.9 }, { file: SUB + 'tree-small.glb', x: 0.92, z: 0.15 }
+                { file: BR + 'comercial/padaria_toldo.glb', x: 1.5, z: 0.5, scale: 1.2 },
+                { file: BR + 'comercial/padaria_toldo.glb', x: 0.5, z: 1.45, scale: 1.2, rot: 3 },
+                { file: BR + 'residencial/casa_quintal.glb', x: 1.5, z: 1.45 },
+                { file: BR + 'mobiliario/guarda_sol_a.glb', x: 0.3, z: 0.35 },
+                { file: BR + 'mobiliario/guarda_sol_b.glb', x: 0.72, z: 0.55 },
+                { file: BR + 'verde/jardineira.glb', x: 0.5, z: 0.9 }, { file: BR + 'verde/arvore_pequena.glb', x: 0.92, z: 0.15 }
             ]
         ]
     },
@@ -310,22 +308,22 @@ const ZONE_LOTS = {
                 { file: 'prop:foundation', x: 0.5, z: 1.5, w: 0.82, d: 0.82 },
                 { file: 'prop:foundation', x: 1.5, z: 1.5, w: 0.82, d: 0.82 },
                 { file: 'prop:foundation', x: 0.5, z: 0.5, w: 0.8, d: 0.8 },
-                { file: COM + 'building-d.glb', x: 1.5, z: 0.5, scale: 1.3 },
+                { file: BR + 'comercial/predio_banco.glb', x: 1.5, z: 0.5, scale: 1.3 },
                 { file: 'prop:crane', x: 1.0, z: 1.05, scale: 0.9 }
             ],
             [
-                { file: COM + 'building-d.glb', x: 1.5, z: 0.5, scale: 1.3 },
-                { file: COM + 'building-skyscraper-a.glb', x: 0.5, z: 1.5, scale: 0.85 },
+                { file: BR + 'comercial/predio_banco.glb', x: 1.5, z: 0.5, scale: 1.3 },
+                { file: BR + 'comercial/torre_escritorios.glb', x: 0.5, z: 1.5, scale: 0.85 },
                 { file: 'prop:scaffold', x: 1.5, z: 1.5, w: 0.82, d: 0.82, h: 0.8 },
                 { file: 'prop:foundation', x: 0.5, z: 0.5, w: 0.8, d: 0.8 },
                 { file: 'prop:bricks', x: 0.5, z: 0.5 }
             ],
             [
-                { file: COM + 'building-d.glb', x: 1.5, z: 0.5, scale: 1.3 },
-                { file: COM + 'building-skyscraper-a.glb', x: 0.5, z: 1.5, scale: 0.85 },
-                { file: COM + 'building-b.glb', x: 1.5, z: 1.5, scale: 1.3 },
-                { file: COM + 'building-c.glb', x: 0.5, z: 0.5, scale: 1.2 },
-                { file: COM + 'detail-awning-wide.glb', x: 0.5, z: 0.08 }
+                { file: BR + 'comercial/predio_banco.glb', x: 1.5, z: 0.5, scale: 1.3 },
+                { file: BR + 'comercial/torre_escritorios.glb', x: 0.5, z: 1.5, scale: 0.85 },
+                { file: BR + 'comercial/predio_hotel.glb', x: 1.5, z: 1.5, scale: 1.3 },
+                { file: BR + 'comercial/padaria_toldo.glb', x: 0.5, z: 0.5, scale: 1.2 },
+                { file: BR + 'mobiliario/toldo.glb', x: 0.5, z: 0.08 }
             ]
         ]
     },
@@ -343,28 +341,28 @@ const ZONE_LOTS = {
                 { file: 'prop:foundation', x: 1.5, z: 2.45, w: 0.95, d: 0.95 },
                 { file: 'prop:foundation', x: 2.45, z: 2.45, w: 0.95, d: 0.95 },
                 { file: 'prop:foundation', x: 0.5, z: 1.45, w: 0.85, d: 0.85 },
-                { file: COM + 'building-d.glb', x: 2.5, z: 0.5, scale: 1.4 },
+                { file: BR + 'comercial/predio_banco.glb', x: 2.5, z: 0.5, scale: 1.4 },
                 { file: 'prop:crane', x: 1.5, z: 1.55 }, { file: 'prop:digger', x: 1.0, z: 0.5 }
             ],
             [
-                { file: COM + 'building-d.glb', x: 2.5, z: 0.5, scale: 1.4 },
-                { file: COM + 'building-skyscraper-e.glb', x: 0.55, z: 2.45 },
-                { file: COM + 'building-b.glb', x: 2.5, z: 1.5, scale: 1.4 },
+                { file: BR + 'comercial/predio_banco.glb', x: 2.5, z: 0.5, scale: 1.4 },
+                { file: BR + 'comercial/torre_alta.glb', x: 0.55, z: 2.45 },
+                { file: BR + 'comercial/predio_hotel.glb', x: 2.5, z: 1.5, scale: 1.4 },
                 { file: 'prop:scaffold', x: 1.5, z: 2.45, w: 0.95, d: 0.95, h: 1.3 },
                 { file: 'prop:scaffold', x: 2.45, z: 2.45, w: 0.95, d: 0.95, h: 0.7 },
                 { file: 'prop:crane', x: 1.5, z: 1.55 }
             ],
             [
-                { file: COM + 'building-d.glb', x: 2.5, z: 0.5, scale: 1.4 },
-                { file: COM + 'building-skyscraper-e.glb', x: 0.55, z: 2.45 },
-                { file: COM + 'building-b.glb', x: 2.5, z: 1.5, scale: 1.4 },
-                { file: COM + 'building-skyscraper-a.glb', x: 1.5, z: 2.45 },
-                { file: COM + 'building-skyscraper-e.glb', x: 2.45, z: 2.45, scale: 0.85 },
-                { file: COM + 'building-a.glb', x: 0.5, z: 1.45, scale: 1.4 },
-                { file: COM + 'building-c.glb', x: 1.5, z: 0.5, scale: 1.3 },
-                { file: COM + 'detail-parasol-a.glb', x: 0.35, z: 0.4 },
-                { file: COM + 'detail-parasol-b.glb', x: 0.8, z: 0.65 },
-                { file: SUB + 'tree-large.glb', x: 1.5, z: 1.45 }
+                { file: BR + 'comercial/predio_banco.glb', x: 2.5, z: 0.5, scale: 1.4 },
+                { file: BR + 'comercial/torre_alta.glb', x: 0.55, z: 2.45 },
+                { file: BR + 'comercial/predio_hotel.glb', x: 2.5, z: 1.5, scale: 1.4 },
+                { file: BR + 'comercial/torre_escritorios.glb', x: 1.5, z: 2.45 },
+                { file: BR + 'comercial/torre_alta.glb', x: 2.45, z: 2.45, scale: 0.85 },
+                { file: BR + 'comercial/predio_apartamentos.glb', x: 0.5, z: 1.45, scale: 1.4 },
+                { file: BR + 'comercial/padaria_toldo.glb', x: 1.5, z: 0.5, scale: 1.3 },
+                { file: BR + 'mobiliario/guarda_sol_a.glb', x: 0.35, z: 0.4 },
+                { file: BR + 'mobiliario/guarda_sol_b.glb', x: 0.8, z: 0.65 },
+                { file: BR + 'verde/arvore_ipe.glb', x: 1.5, z: 1.45 }
             ]
         ]
     }

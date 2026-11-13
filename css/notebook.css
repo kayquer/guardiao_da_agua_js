@@ -34,3 +34,51 @@
 
 /* o painel (.notif-history) pinta títulos de branco com contorno: no papel claro eles sumiam */
 .nb-text b { color: #1a2a3a; text-shadow: none; -webkit-text-stroke: 0; font-size: 1rem; }
+
+/* Página ainda não encontrada: sombra do bicho e um "?" por cima (o caderno vira caça) */
+.nb-entry.nb-unknown .nb-icon { position: relative; }
+.nb-shadow { filter: grayscale(1) brightness(0.15); opacity: 0.35; }
+.nb-q { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.4rem; color: #546e7a; }
+.nb-entry.nb-nearby { border-color: #f9a825; background: #fff8e1; }
+.nb-entry.nb-here, .nb-entry.nb-gone { cursor: pointer; }
+.nb-entry.nb-here:hover, .nb-entry.nb-gone:hover { border-color: #2e7d32; }
+.nb-sci { font-size: 0.78rem; color: #546e7a; }
+
+/* Ficha da espécie (ui/FieldNotebookUI.js openSpeciesCard): pausa o jogo (UIManager.isInfoPopupOpen) */
+#species-card[hidden] { display: none !important; }
+.species-card {
+    position: fixed; inset: 0; z-index: 12000;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(10, 30, 20, 0.35);
+    padding: 16px;
+}
+.species-card .sc-box {
+    width: min(460px, 100%); max-height: calc(100vh - 32px); overflow-y: auto;
+    background: #fffdf5; color: #263238; border-radius: 18px; border: 3px solid #2e7d32;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    padding: 16px 18px; text-align: left; zoom: var(--text-scale, 1);
+    animation: sc-pop 0.28s ease-out;
+}
+@keyframes sc-pop { from { transform: scale(0.9); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .species-card .sc-box { animation: none; } }
+.sc-new { background: #ffe082; color: #5d4300; font-weight: bold; text-align: center; border-radius: 999px; padding: 3px 10px; margin-bottom: 8px; }
+.sc-head { display: flex; align-items: center; gap: 10px; }
+.sc-icon { font-size: 2.6rem; line-height: 1; }
+.sc-title { flex: 1; min-width: 0; }
+.sc-title h2 { margin: 0; font-size: 1.3rem; color: #1a2a3a; text-shadow: none; -webkit-text-stroke: 0; }
+.sc-title i { font-size: 0.85rem; color: #546e7a; }
+.sc-status { font-size: 0.75rem; font-weight: bold; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.sc-status--LC { background: #c8e6c9; color: #1b5e20; }
+.sc-status--VU { background: #fff3c4; color: #7a5a00; }
+.sc-status--EN { background: #ffd9b3; color: #8d3d00; }
+.sc-status--CR { background: #ffcdd2; color: #8e0000; }
+.sc-facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 12px 0; font-size: 0.88rem; }
+.sc-facts dt { font-weight: bold; color: #37474f; }
+.sc-facts dd { margin: 0; }
+.sc-note, .sc-help { font-size: 0.9rem; line-height: 1.4; margin: 8px 0; }
+.sc-help { background: #e8f5e9; border-radius: 10px; padding: 6px 10px; }
+.sc-source { display: block; font-size: 0.72rem; color: #607d8b; margin-top: 8px; }
+.sc-buttons { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; flex-wrap: wrap; }
+.nb-text .nb-status { align-self: flex-start; }
+.nb-entry.nb-nearby .nb-q { color: #e65100; }
+.sc-buttons .overlay-btn { font-size: 1rem; padding: 8px 16px; min-width: 0; width: auto; margin: 0; }

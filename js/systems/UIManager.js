@@ -674,7 +674,8 @@ class UIManager {
         const popups = [
             '.swal2-container', '.central-alert-overlay', '#study-book-overlay', '#controls-modal',
             '#weather-modal', '#lessons-hub', '#lesson-book', '.mission-interface', '.choice-dialog', '.loan-interface',
-            '.resource-details-panel', '#notification-history', '#research-panel', '#achievements-panel', '#saves-panel', '#notebook-panel', '#settings-panel', '#tech-modal', '#event-decision', '#mission-card'
+            '.resource-details-panel', '#notification-history', '#research-panel', '#achievements-panel', '#saves-panel', '#notebook-panel', '#settings-panel', '#tech-modal', '#event-decision', '#mission-card',
+            '#species-card'
         ];
         return popups.some(selector => shown(document.querySelector(selector)));
     }

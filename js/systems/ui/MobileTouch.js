@@ -281,6 +281,8 @@ mixin(UIManager, {
                                     this.gameManager.selectBuilding(building, { sound: true });
                                     log(`🏢 Building selected via tap with aura: ${building.config.name}`);
                                 }
+                            } else if (this.gameManager.uiManager?.showSpeciesAtScreen?.(touch.clientX, touch.clientY, { touch: true })) {
+                                log('🐾 Bicho do caderno tocado');
                             } else if (this.gameManager.treeSystem?.selectAt(touch.clientX, touch.clientY)) {
                                 log('🌳 Árvore nativa selecionada via toque');
                             } else {

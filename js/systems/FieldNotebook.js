@@ -1,8 +1,13 @@
 /**
  * Caderno de Campo da Márcia — sem DOM nem Babylon (testável em tests/unit/notebook.test.js).
  *
- * Recebe o que o PropSystem desenhou (placements com modelo carregado) e descobre quais espécies do caderno
- * (FIELD_NOTEBOOK) chegaram ou sumiram desde a última olhada:
+ * Duas coisas diferentes (11/2026):
+ *   - AVISTAR: a espécie está no mapa (o PropSystem pôs). Fica em `seen`; serve para os avisos de chegada e saída;
+ *   - REGISTRAR: o jogador tocou no bicho no mapa (`register`). Só aí a página do caderno acende (nome, foto, ficha);
+ *     antes ela fica apagada, com "?" e a dica de onde procurar. É isso que faz o caderno virar uma caça.
+ *
+ * Recebe o plano do PropSystem e descobre quais espécies do caderno (FIELD_NOTEBOOK) chegaram ou sumiram desde a
+ * última olhada:
  *   - a primeira olhada da partida (ou depois de carregar) só registra, em silêncio: o rio do começo já tem bichos;
  *   - espécie nova no mapa → `found` (first = nunca vista; returned = tinha sumido e voltou: o grande momento);
  *   - espécie que saiu → `gone` (o Paulo avisa: bicho sumindo é sinal de água piorando).
@@ -13,9 +18,23 @@ class FieldNotebook {
     static MOMENT_COOLDOWN_MS = 180000;
 
     constructor() {
-        this.seen = {};          // id → { first (gameTime), returns, goneAt?, lastMoment? }
+        this.seen = {};          // id → { first (gameTime), returns, goneAt?, lastMoment? } — avistada no mapa
+        this.registered = {};    // id → { at (gameTime) } — o jogador tocou nela: a página do caderno acendeu
         this.present = new Set();
         this.primed = false;
+    }
+
+    /** Toque no bicho: registra no caderno. true = página nova (primeira vez). */
+    register(id, gameTime = 0) {
+        if (!FieldNotebook.entry(id)) return false;
+        if (this.registered[id]) return false;
+        this.registered[id] = { at: gameTime };
+        if (!this.seen[id]) this.seen[id] = { first: gameTime, returns: 0 };
+        return true;
+    }
+
+    isRegistered(id) {
+        return !!this.registered[id];
     }
 
     static entry(id) {
@@ -83,23 +102,36 @@ class FieldNotebook {
         return { found, gone };
     }
 
-    /** Situação de cada espécie para o caderno: 'here' (no mapa), 'gone' (já vista, sumiu) ou 'unknown'. */
+    /**
+     * Situação de cada espécie para o caderno: 'unknown' (ainda não registrada: página apagada), 'here' (registrada e
+     * no mapa agora) ou 'gone' (registrada, mas sumiu).
+     */
     status(id) {
-        if (this.present.has(id)) return 'here';
-        return this.seen[id] ? 'gone' : 'unknown';
+        if (!this.registered[id]) return 'unknown';
+        return this.present.has(id) ? 'here' : 'gone';
+    }
+
+    /** Está no mapa agora (registrada ou não). */
+    isPresent(id) {
+        return this.present.has(id);
     }
 
     count() {
-        return FieldNotebook.ids().filter(id => this.seen[id]).length;
+        return FieldNotebook.ids().filter(id => this.registered[id]).length;
     }
 
     getSaveData() {
-        return { seen: structuredClone(this.seen) };
+        return { seen: structuredClone(this.seen), registered: structuredClone(this.registered) };
     }
 
-    /** Depois de carregar, a próxima olhada é silenciosa (os bichos de agora já estavam lá). */
+    /**
+     * Depois de carregar, a próxima olhada é silenciosa (os bichos de agora já estavam lá). Save de antes do registro
+     * por toque (sem `registered`): o que ele já tinha visto conta como registrado (as páginas já estavam abertas).
+     */
     loadData(data) {
         this.seen = data?.seen && typeof data.seen === 'object' ? structuredClone(data.seen) : {};
+        if (data?.registered && typeof data.registered === 'object') this.registered = structuredClone(data.registered);
+        else this.registered = Object.fromEntries(Object.entries(this.seen).map(([id, rec]) => [id, { at: rec.first || 0 }]));
         this.present = new Set();
         this.primed = false;
     }

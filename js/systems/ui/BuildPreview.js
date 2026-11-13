@@ -116,7 +116,7 @@ class BuildPreview {
         return mesh;
     }
 
-    /** Lote da zona na fase completa: laje com a cor do chão + peças da Kenney (sem os adereços de obra). */
+    /** Lote da zona na fase completa: laje com a cor do chão + peças do kit (sem os adereços de obra). */
     async buildZoneLot(typeId) {
         const lot = ZONE_LOTS[typeId];
         const size = BUILDING_TYPES[typeId]?.size || 2;

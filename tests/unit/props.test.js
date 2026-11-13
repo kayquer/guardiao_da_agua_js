@@ -14,6 +14,7 @@ const BUILDINGS = g('BUILDING_TYPES');
 const PROPS_DIR = path.join(ROOT, 'models', 'props');
 const PLACES = ['land', 'hill', 'bank', 'water', 'road', 'zone', 'near', 'rural', 'city'];
 const GROUPS = ['natureza', 'fauna', 'rua', 'rural', 'rio', 'tecnologia', 'poluicao'];
+const MOTIONS = ['bob', 'swim', 'graze', 'hop', 'perch', 'fly', 'soar', 'sway'];
 
 function glbTriangles(file) {
     const data = fs.readFileSync(file);
@@ -37,6 +38,11 @@ test('cada tipo tem campos válidos e prédios exigidos que existem', () => {
         if (t.cleanBelow) assert.ok(t.cleanBelow[0] > t.cleanBelow[1], `${id}.cleanBelow [some, cheio]`);
         if (t.deforestation) assert.ok(t.deforestation[0] < t.deforestation[1] && t.deforestation[1] <= 1, `${id}.deforestation [de, até] em 0-1`);
         if (t.face) assert.ok(['water', 'road'].includes(t.face), `${id}.face`);
+        // tamanho no mundo (célula = 2; casa ≈ 1,1): nada de hidrante da altura de uma casa
+        assert.ok(t.size >= 0.15 && t.size <= 1.4, `${id}.size ${t.size} fora de 0,15-1,4`);
+        if (t.motion) assert.ok(MOTIONS.includes(t.motion), `${id}.motion`);
+        if (t.clump) assert.ok(Number.isInteger(t.clump) && t.clump <= 4 && t.size <= SETTINGS.SMALL, `${id}.clump só para peça pequena (1-4)`);
+        if (t.kit) assert.match(t.kit, /^fauna\/[a-z]+\/[a-z_]+$/, `${id}.kit`);
     }
 });
 
@@ -46,7 +52,8 @@ test('todo prop tem o .glb, é leve (≤ MAX_TRIS) e não sobra .glb sem uso em 
         const file = path.join(PROPS_DIR, t.file);
         assert.ok(fs.existsSync(file), `falta models/props/${t.file}`);
         const { tris, json } = glbTriangles(file);
-        assert.ok(tris <= SETTINGS.MAX_TRIS, `${id}: ${tris} triângulos (máximo ${SETTINGS.MAX_TRIS})`);
+        const budget = t.kit ? SETTINGS.MAX_TRIS_FAUNA : SETTINGS.MAX_TRIS;
+        assert.ok(tris <= budget, `${id}: ${tris} triângulos (máximo ${budget})`);
         assert.ok(!(json.images || []).length, `${id}: sem textura (cor por vértice)`);
     }
     const used = new Set(Object.values(TYPES).map(t => t.file));
@@ -71,27 +78,51 @@ const ids = plan => new Set(plan.map(p => p.id));
 
 test('cidade nova: só natureza e bichos do rio; nada de rua, campo, tecnologia ou poluição', () => {
     const plan = Planner.plan(world(), state());
-    assert.ok(ofGroup(plan, 'natureza').length > 20);
+    assert.ok(ofGroup(plan, 'natureza').length > 12);
     assert.ok(ids(plan).has('garca') && ids(plan).has('vitoria_regia'));
     for (const p of plan) assert.ok(['natureza', 'fauna'].includes(TYPES[p.id].group) && !TYPES[p.id].level, `${p.id} no começo`);
 });
 
-test('um prop por célula, nunca em célula ocupada/com árvore, e cada lugar respeita o terreno', () => {
+test('célula dividida em 4 quartos: peça grande sozinha, até 4 pequenas; nunca em célula ocupada/com árvore', () => {
     const occupied = ['5,5', '5,6', '11,4'];
     const trees = ['6,6', '9,9'];
     const plan = Planner.plan(world({ occupied, trees }), state({ pollution: 80, level: 4 }));
-    const cells = new Set();
+    const cells = new Map();
     for (const p of plan) {
         const key = `${p.x},${p.z}`;
-        assert.ok(!cells.has(key), `duas peças em ${key}`);
-        cells.add(key);
+        if (!cells.has(key)) cells.set(key, []);
+        cells.get(key).push(p);
         assert.ok(!occupied.includes(key) && !trees.includes(key), `${p.id} em ${key} ocupada`);
         const t = TYPES[p.id];
         if (t.place === 'water') assert.strictEqual(p.x, 10, `${p.id} fora da água`);
         else assert.notStrictEqual(p.x, 10, `${p.id} na água`);
         if (t.place === 'bank') assert.ok(Math.abs(p.x - 10) === 1, `${p.id} longe da margem`);
         if (t.place === 'hill') assert.ok(p.x >= 2 && p.x <= 3 && p.z >= 2 && p.z <= 3, `${p.id} fora da encosta`);
+        assert.ok(Math.abs(p.ox) < 1 && Math.abs(p.oz) < 1, `${p.id} sai da célula (${p.ox}, ${p.oz})`);
     }
+    let shared = 0;
+    cells.forEach((items, key) => {
+        const big = items.filter(p => !Planner.isSmall(TYPES[p.id]));
+        if (big.length) assert.strictEqual(items.length, 1, `peça grande dividindo ${key}: ${items.map(p => p.id)}`);
+        assert.ok(items.length <= 4, `mais de 4 peças em ${key}`);
+        if (items.length > 1) shared++;
+    });
+    assert.ok(shared > 0, 'peças pequenas dividem o bloco (moitas, sapo na taboa)');
+});
+
+test('metade da densidade e espaçamento: hidrantes nunca a menos de 6 células um do outro', () => {
+    assert.strictEqual(SETTINGS.DENSITY, 0.5);
+    const roads = [];
+    for (let i = 0; i < 18; i++) roads.push({ type: 'paved_road', x: 4, z: i + 1, size: 1, finished: true, road: true });
+    for (let i = 0; i < 8; i++) roads.push({ type: 'paved_road', x: 5 + i, z: 9, size: 1, finished: true, road: true });
+    const w = world({ buildings: roads, occupied: roads.map(r => `${r.x},${r.z}`) });
+    const plan = Planner.plan(w, state({ level: 4 }));
+    const hydrants = plan.filter(p => p.id === 'hidrante');
+    assert.ok(hydrants.length >= 1);
+    hydrants.forEach((a, i) => hydrants.slice(i + 1).forEach(b => {
+        assert.ok(Math.max(Math.abs(a.x - b.x), Math.abs(a.z - b.z)) >= TYPES.hidrante.spacing, `hidrantes em ${a.x},${a.z} e ${b.x},${b.z}`);
+    }));
+    assert.ok(plan.filter(p => p.id === 'poste_concreto').length <= Math.ceil(TYPES.poste_concreto.max * SETTINGS.DENSITY));
 });
 
 test('determinístico: o mesmo estado dá o mesmo plano; mais intensidade só acrescenta', () => {

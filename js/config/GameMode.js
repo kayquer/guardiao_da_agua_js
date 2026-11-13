@@ -37,8 +37,12 @@ const GAME_MODES = {
     }
 };
 
-// evolucao-pesquisa: segue no modo da pesquisa (o aviso e as regras do estudo ficam); 'loja' = versão de loja
-const GAME_MODE = 'pesquisa';
+// evolucao-pesquisa: versão de loja por padrão (11/2026); a pesquisa abre com ?modo=pesquisa
+const GAME_MODE = 'loja';
+// Navegador automatizado (Playwright, navigator.webdriver) e testes de unidade usam a pesquisa, a mais rígida
+// (estudo e prova obrigatórios, mapa fixo, registro): a suíte E2E foi escrita para ela. A loja tem a própria
+// suíte (tests/game-mode.spec.js com ?modo=loja, tests/unit/game-mode.test.js).
+const GAME_MODE_TESTS = 'pesquisa';
 
 const GameMode = {
     /** Modo a partir da busca da URL (?modo=…) e do padrão; nome desconhecido = o padrão. Puro. */
@@ -49,8 +53,14 @@ const GameMode = {
         return GAME_MODES[fallback] ? fallback : 'pesquisa';
     },
 
+    /** Padrão desta aba: GAME_MODE, ou GAME_MODE_TESTS em teste (sem navegador de verdade ou navigator.webdriver). */
+    fallback() {
+        const automated = typeof navigator === 'undefined' || !!navigator.webdriver;
+        return automated ? GAME_MODE_TESTS : GAME_MODE;
+    },
+
     id() {
-        return GameMode.resolve(typeof location !== 'undefined' ? location.search : '');
+        return GameMode.resolve(typeof location !== 'undefined' ? location.search : '', GameMode.fallback());
     },
 
     current() {

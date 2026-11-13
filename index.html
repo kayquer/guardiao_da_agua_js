@@ -63,7 +63,7 @@
     <link rel="stylesheet" href="css/event-decision.css?v=e18592ea">
     <link rel="stylesheet" href="css/mission-bar.css?v=b538d06b">
     <link rel="stylesheet" href="css/saves.css?v=57419e51">
-    <link rel="stylesheet" href="css/notebook.css?v=a56533ed">
+    <link rel="stylesheet" href="css/notebook.css?v=945e0257">
     <link rel="stylesheet" href="css/player-menu.css?v=543aadee">
     <link rel="stylesheet" href="css/speed-menu.css?v=b403791f">
     <link rel="stylesheet" href="css/build-menu.css?v=6a2bed6d">
@@ -173,7 +173,7 @@
             <p id="start-notice-version" class="start-notice__version" hidden></p>
         </footer>
     </div>
-    <script src="js/config/GameMode.js?v=e7536b4e"></script>
+    <script src="js/config/GameMode.js?v=9e443410"></script>
     <script src="js/ui/StartNotice.js?v=d5b8da90"></script>
 
     <!-- Tela de Loading -->
@@ -603,7 +603,7 @@
                     <h2 id="notebook-heading">📓 Caderno de campo da Márcia</h2>
                     <span class="nh-count" id="notebook-count"></span>
                 </div>
-                <p class="notebook-intro">Cada bicho do rio é um sinal: quando a água está boa, eles aparecem; quando ela piora, eles somem. Clique num bicho no mapa para ver a página dele.</p>
+                <p class="notebook-intro">Cada bicho é um sinal: quando a água e a mata estão boas, eles aparecem; quando pioram, eles somem. As páginas apagadas são bichos que você ainda não encontrou: toque num bicho no mapa para anotar.</p>
                 <ul id="notebook-list" class="notebook-list"></ul>
                 <div class="overlay-buttons nh-buttons">
                     <button id="btn-notebook-back" class="overlay-btn primary">⬅ Voltar</button>
@@ -744,10 +744,10 @@
     <script src="js/systems/Basin.js?v=cd015765"></script>
     <script src="js/data/terrainInfo.js?v=d9b1d2a2"></script>
     <script src="js/data/buildings.js?v=e7dccf17"></script>
-    <script src="js/data/buildingModels.js?v=ceb82622"></script>
-    <script src="js/data/zoneLots.js?v=21837fd4"></script>
-    <script src="js/data/props.js?v=3f040e21"></script>
-    <script src="js/data/fieldNotebook.js?v=0fec7500"></script>
+    <script src="js/data/buildingModels.js?v=e13d17ed"></script>
+    <script src="js/data/zoneLots.js?v=ae9557ce"></script>
+    <script src="js/data/props.js?v=d3660060"></script>
+    <script src="js/data/fieldNotebook.js?v=1ff46145"></script>
     <script src="js/data/resourceStates.js?v=c0802704"></script>
     <script src="js/data/missions.js?v=9eb9438f"></script>
     <script src="js/data/achievementTracks.js?v=eb7e178b"></script>
@@ -857,7 +857,7 @@
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=f9674bb9"></script>
 
-    <script src="js/core/GameManager.js?v=095a7382"></script>
+    <script src="js/core/GameManager.js?v=d09855ab"></script>
     <script src="js/core/game/Diagnostics.js?v=8ec9d8c0"></script>
     <script src="js/core/game/SelectionVisuals.js?v=034e13b1"></script>
     <script src="js/core/game/CameraGuard.js?v=2024c210"></script>
@@ -868,7 +868,7 @@
     <script src="js/systems/building/BuildingMeshes.js?v=8b1c4df0"></script>
     <script src="js/systems/building/BuildingFeedback.js?v=09351d35"></script>
     <script src="js/systems/building/BuildingModels.js?v=f04f80df"></script>
-    <script src="js/systems/building/ZoneGrowth.js?v=45d13e72"></script>
+    <script src="js/systems/building/ZoneGrowth.js?v=0065dbd5"></script>
     <script src="js/systems/building/TreeGrowth.js?v=e026299e"></script>
     <script src="js/systems/building/BuildingRecycle.js?v=c079106f"></script>
     <script src="js/systems/building/WaterIntake.js?v=f609d1a9"></script>
@@ -881,21 +881,21 @@
     <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
     <script src="js/systems/ResourceTrends.js?v=16c746be"></script>
     <script src="js/systems/DeclineWatch.js?v=e0e70d98"></script>
-    <script src="js/systems/UIManager.js?v=492fd959"></script>
-    <script src="js/systems/ui/MobileTouch.js?v=91fdcc8a"></script>
+    <script src="js/systems/UIManager.js?v=29d788c4"></script>
+    <script src="js/systems/ui/MobileTouch.js?v=520621e6"></script>
     <script src="js/systems/ui/StudyBookUI.js?v=e2076f6d"></script>
     <script src="js/systems/ui/LoanUI.js?v=58e6338c"></script>
     <script src="js/systems/ui/ResourceHud.js?v=f31ddbce"></script>
     <script src="js/systems/ui/IdleHints.js?v=c75e6450"></script>
     <script src="js/systems/ui/AchievementsUI.js?v=ac1a3b8d"></script>
     <script src="js/systems/ui/SavesUI.js?v=1e957956"></script>
-    <script src="js/systems/ui/FieldNotebookUI.js?v=518c96bc"></script>
+    <script src="js/systems/ui/FieldNotebookUI.js?v=36ddc5c2"></script>
     <script src="js/systems/ui/PlayerMenu.js?v=44d0da74"></script>
     <script src="js/systems/ui/MissionCardUI.js?v=0ca1f235"></script>
     <script src="js/systems/ui/ResourcePanels.js?v=a33efe29"></script>
     <script src="js/systems/ui/EventUI.js?v=72f71fc0"></script>
     <script src="js/systems/ui/EventDecisionUI.js?v=eea55cbf"></script>
-    <script src="js/systems/ui/BuildPreview.js?v=f1c6658f"></script>
+    <script src="js/systems/ui/BuildPreview.js?v=e014184b"></script>
     <script src="js/systems/ui/BuildMenuUI.js?v=45d5e59b"></script>
     <script src="js/systems/ui/MissionBar.js?v=8e720656"></script>
     <script src="js/systems/ui/TechTreeUI.js?v=2ee956b7"></script>
@@ -923,9 +923,9 @@
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
     <script src="js/systems/TreeSystem.js?v=0bb86b6c"></script>
-    <script src="js/systems/props/PropPlanner.js?v=481bad15"></script>
-    <script src="js/systems/PropSystem.js?v=066e98e6"></script>
-    <script src="js/systems/FieldNotebook.js?v=7ac386d3"></script>
+    <script src="js/systems/props/PropPlanner.js?v=48b2b1bb"></script>
+    <script src="js/systems/PropSystem.js?v=b2a8787b"></script>
+    <script src="js/systems/FieldNotebook.js?v=fc9d5a20"></script>
     <script src="js/systems/WeatherService.js?v=52df4562"></script>
     <script src="js/systems/SimulatedWeather.js?v=d656940f"></script>
     <script src="js/systems/ResearchLog.js?v=705ef998"></script>

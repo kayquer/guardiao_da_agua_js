@@ -10,7 +10,7 @@
  *   tris       triângulos do arquivo (conferido em tests/unit/models.test.js; orçamento ≤ 1.500)
  *   scale      multiplica o encaixe automático (padrão 1)
  *   rotationY  giro em radianos aplicado ao modelo antes de encaixar (padrão 0). A fachada dos modelos
- *              da Kenney já fica em -Z, de frente para a câmera isométrica (CAMERA.ISOMETRIC_ALPHA = -45°)
+ *              dos kits próprios já fica em -Z, de frente para a câmera isométrica (CAMERA.ISOMETRIC_ALPHA = -45°)
  *   yOffset    deslocamento vertical em unidades do mundo, depois de assentar a base no chão (padrão 0)
  *   tint       '#rrggbb' multiplicado sobre a cor da textura (padrão branco = sem tinta)
  *
@@ -19,10 +19,11 @@
  * passar de BUILDING_MODEL_MAX_HEIGHT × esse lado, o modelo inteiro encolhe até caber (torres finas
  * ficariam gigantes perto do resto da cidade).
  *
- * Modelos: Kenney (www.kenney.nl), City Kit Commercial 2.1, Suburban 2.0 e Industrial 2.0 — CC0
- * (models/buildings/kenney/<kit>/License.txt).
+ * Modelos: Kit Prédios Brasil Low Poly (brasil/<grupo>/<id>.glb, CC0, github.com/kayquer/kit-predios-brasil-lowpoly,
+ * copiados por scripts/sync-buildings.js): casas, sobrados, prédios, comércio, galpões e públicos com cara de cidade
+ * brasileira — substituíram os kits da Kenney em 11/2026.
  * Modelos próprios (blender/<id>.glb): feitos no Blender por script, regeráveis por
- * models/buildings/blender/_src/<id>.py (estilo Kenney: low poly facetado, cores chapadas, sem textura).
+ * models/buildings/blender/_src/<id>.py (low poly facetado, cores chapadas, sem textura).
  * Água, tratamento e energia só podem usar modelo próprio — o pack não tem nada fiel a essas peças.
  */
 const BUILDING_MODEL_FILL = 0.9;
@@ -54,7 +55,7 @@ const BUILDING_MODELS = {
     ecopark:               { file: 'blender/ecopark.glb', tris: 1480 },
 
     // ===== ARMAZENAMENTO (reservatório = modelo próprio) =====
-    water_tower:           { file: 'kenney/industrial/water-tower.glb', tris: 968 },
+    water_tower:           { file: 'brasil/industrial/caixa_dagua_taca.glb', tris: 1300 },
     water_tank:            { file: 'blender/water_tank.glb', tris: 868 },
 
     // ===== ENERGIA (modelos próprios; as pás da eólica são nós "pas_N" no .glb e giram no jogo) =====
@@ -71,37 +72,37 @@ const BUILDING_MODELS = {
     coal_plant:            { file: 'blender/coal_plant.glb', tris: 512 },
 
     // ===== RESIDENCIAL =====
-    house:                 { file: 'kenney/suburban/building-type-a.glb', tris: 1174 },
-    apartment:             { file: 'kenney/commercial/building-a.glb', tris: 1252 },
+    house:                 { file: 'brasil/residencial/casa_terrea.glb', tris: 1048 },
+    apartment:             { file: 'brasil/comercial/predio_apartamentos.glb', tris: 1176 },
 
     // ===== COMERCIAL =====
-    restaurant:            { file: 'kenney/commercial/building-c.glb', tris: 1195 },
-    office_building:       { file: 'kenney/commercial/building-skyscraper-a.glb', tris: 1292 },
-    bank:                  { file: 'kenney/commercial/building-d.glb', tris: 1100 },
-    shopping_center:       { file: 'kenney/industrial/building-p.glb', tris: 1162 },
+    restaurant:            { file: 'brasil/comercial/padaria_toldo.glb', tris: 1024 },
+    office_building:       { file: 'brasil/comercial/torre_escritorios.glb', tris: 984 },
+    bank:                  { file: 'brasil/comercial/predio_banco.glb', tris: 964 },
+    shopping_center:       { file: 'brasil/comercial/shopping.glb', tris: 992 },
 
     // ===== TURISMO =====
-    hotel:                 { file: 'kenney/commercial/building-b.glb', tris: 1276 },
+    hotel:                 { file: 'brasil/comercial/predio_hotel.glb', tris: 1328 },
     museum:                { file: 'blender/museum.glb', tris: 1238 },
     park:                  { file: 'blender/park.glb', tris: 1484 },
     monument:              { file: 'blender/monument.glb', tris: 1154 },
 
     // ===== PÚBLICOS =====
     city_hall:             { file: 'blender/city_hall.glb', tris: 1146 },
-    school:                { file: 'kenney/suburban/building-type-m.glb', tris: 1112 },
-    technical_school:      { file: 'kenney/commercial/building-c.glb', tris: 1195, tint: '#c5cae9' }, // mesmo prédio do restaurante, azulado
+    school:                { file: 'brasil/publico/escola_estadual.glb', tris: 1176 },
+    technical_school:      { file: 'brasil/publico/escola_tecnica.glb', tris: 1128 },
     hospital:              { file: 'blender/hospital.glb', tris: 1224 },
     university:            { file: 'blender/university.glb', tris: 1352 },
-    fire_station:          { file: 'kenney/industrial/building-h.glb', tris: 698 },
-    police_station:        { file: 'kenney/industrial/building-o.glb', tris: 868 },
-    research_center:       { file: 'kenney/industrial/building-g.glb', tris: 1242 },
+    fire_station:          { file: 'brasil/publico/quartel_bombeiros.glb', tris: 1096 },
+    police_station:        { file: 'brasil/publico/delegacia.glb', tris: 808 },
+    research_center:       { file: 'brasil/industrial/centro_pesquisa.glb', tris: 1344 },
     water_research_center: { file: 'blender/water_research_center.glb', tris: 1112 },
     linear_park:           { file: 'blender/linear_park.glb', tris: 900 },
     green_roof:            { file: 'blender/green_roof.glb', tris: 1332 },
     green_wall:            { file: 'blender/green_wall.glb', tris: 876 },
 
     // ===== INDUSTRIAL =====
-    tech_center:           { file: 'kenney/industrial/building-d.glb', tris: 1158 },
-    factory:               { file: 'kenney/industrial/building-e.glb', tris: 1484 },
-    port:                  { file: 'kenney/industrial/building-s.glb', tris: 876 }
+    tech_center:           { file: 'brasil/industrial/galpao_tecnologia.glb', tris: 1272 },
+    factory:               { file: 'brasil/industrial/fabrica.glb', tris: 1392 },
+    port:                  { file: 'brasil/publico/porto.glb', tris: 1460 }
 };

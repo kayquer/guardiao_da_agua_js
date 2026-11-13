@@ -96,7 +96,7 @@ test('lotes: arquivos existem, peças válidas e dentro de size × size células
                 if (piece.file.startsWith('prop:')) {
                     assert.ok(PROPS[piece.file.slice(5)], `${where}: peça de obra inexistente`);
                 } else {
-                    assert.match(piece.file, /^kenney\/[a-z]+\/[a-z0-9-]+\.glb$/, `${where}: caminho`);
+                    assert.match(piece.file, /^brasil\/[a-z]+\/[a-z0-9_]+\.glb$/, `${where}: caminho`);
                     assert.ok(fs.existsSync(path.join(MODELS_DIR, piece.file)), `${where}: arquivo não existe`);
                     for (const key of ['w', 'd', 'h']) assert.ok(!(key in piece), `${where}: ${key} só vale para prop:`);
                 }
