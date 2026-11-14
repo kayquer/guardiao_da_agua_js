@@ -79,6 +79,7 @@ async function main() {
                 const gm = window.gameManager, bs = gm.buildingSystem;
                 gm.studySystem.isBuildingUnlocked = () => true;
                 gm.resourceManager.resources.budget.current = 1e9;
+                gm.resourceManager.resources.population.current = 5000; // prédios com populationRequirement
                 bs.buildingCooldown.active = false;
                 // Lugar válido mais perto do centro do mapa
                 const spots = [];

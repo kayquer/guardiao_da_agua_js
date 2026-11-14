@@ -74,6 +74,7 @@ class PropSystem {
             terrain: (x, z) => gm.getTerrainType(x, z),
             occupied: (x, z) => !!gm.occupationGrid?.[x]?.[z],
             tree: (x, z) => !!trees?.has(`${x},${z}`),
+            treeCount: trees?.size || 0, // PropPlanner.signature: árvore caiu = replaneja
             buildings
         };
     }
@@ -126,9 +127,20 @@ class PropSystem {
 
     refresh() {
         if (this.disposed || !this.gridManager?.occupationGrid?.length) return;
+        const forced = this.dirty;
         this.dirty = false;
         this.timer = 0;
-        this.placements = PropPlanner.plan(this.buildWorld(), this.buildState());
+        const world = this.buildWorld(), state = this.buildState();
+        // Cidade igual à do último plano (mesma assinatura): o plano sairia idêntico, e com ele os pedaços e os
+        // bichos. Só o caderno de campo recebe o plano de novo, como antes. markDirty (obra, modelo que chegou,
+        // qualidade) sempre replaneja.
+        const signature = PropPlanner.signature(world, state);
+        if (!forced && this.placements && signature === this.planSignature) {
+            this.gameManager.uiManager?.onPropsPlanned?.(this.placements);
+            return;
+        }
+        this.planSignature = signature;
+        this.placements = PropPlanner.plan(world, state);
 
         // Tipos que aparecem pela primeira vez: baixa o modelo e replaneja quando chegar
         const needed = new Set(this.placements.map(p => p.id));

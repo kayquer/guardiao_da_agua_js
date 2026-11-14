@@ -36,7 +36,7 @@ test('imposto de comércio e de turismo vem do campo taxGroup (parque linear e e
     const mult = rm.taxRates.developmentMultiplier;
     assert.strictEqual(rm.taxRevenue.tourism, rm.taxRates.perTourism * mult, 'só o hotel pronto');
     assert.strictEqual(rm.taxRevenue.business, rm.taxRates.perCommercial * mult, 'só o shopping');
-    for (const [id, b] of Object.entries(BUILDINGS)) if (b.taxGroup) assert.ok(['commerce', 'tourism'].includes(b.taxGroup), id);
+    for (const [id, b] of Object.entries(BUILDINGS)) if (b.taxGroup) assert.ok(['commerce', 'tourism', 'industry'].includes(b.taxGroup), id); // industry: fábricas avulsas (CityFinance.groupOf)
 });
 
 test('energia pelo clima: vento, sol (dia/noite/nuvem) e rio na seca', () => {

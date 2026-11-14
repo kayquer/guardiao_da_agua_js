@@ -194,7 +194,8 @@ test('missão parada vira lembrete com atalho de construir; cada lembrete espera
 
 test('vigia de queda: só "cai sem parar" conta; ruído e subida não', () => {
     const w = new DeclineWatch({ sampleMs: 5000, windowMs: 60000 });
-    const r = { water: { current: 1000, storage: 1000 }, pollution: { current: 40 }, budget: { current: 20000 }, population: { current: 100, satisfaction: 60 }, electricity: { generation: 10, consumption: 5 } };
+    // tanque já abaixo de 60% (a regra da água só vale aí: acima disso não é socorro)
+    const r = { water: { current: 600, storage: 1000 }, pollution: { current: 40 }, budget: { current: 20000 }, population: { current: 100, satisfaction: 60 }, electricity: { generation: 10, consumption: 5 } };
     for (let t = 0; t <= 60000; t += 5000) {
         r.water.current -= 20; // 2% por amostra: 24% no minuto
         r.pollution.current += t === 30000 ? -0.5 : 1; // um passo de ruído
@@ -203,6 +204,10 @@ test('vigia de queda: só "cai sem parar" conta; ruído e subida não', () => {
     assert.deepStrictEqual(JSON.stringify(w.declining()), JSON.stringify(['water', 'pollution']));
     assert.strictEqual(DeclineWatch.isDeclining('water', [0.9, 0.85, 0.9, 0.8, 0.85, 0.75]), false, 'sobe e desce não é cair sem parar');
     assert.strictEqual(DeclineWatch.isDeclining('energy', [0.8, 0.8, 0.79, 0.8]), true);
+    // 4ª auditoria: satisfação 100 → 90 (noite das microgerações) não é "moradores tristes"; abaixo de 65, é
+    assert.strictEqual(DeclineWatch.isDeclining('satisfaction', [100, 98, 96, 94, 92, 90]), false);
+    assert.strictEqual(DeclineWatch.isDeclining('satisfaction', [70, 68, 66, 64, 62, 60]), true);
+    assert.strictEqual(DeclineWatch.isDeclining('water', [0.95, 0.9, 0.85, 0.8, 0.75, 0.7]), false, 'tanque acima de 60%');
     const short = new DeclineWatch();
     short.sample(r, 0); short.sample(r, 5000); short.sample(r, 10000);
     assert.strictEqual(short.declining().length, 0, 'janela curta não conta');

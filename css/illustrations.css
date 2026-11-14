@@ -15,15 +15,46 @@
     box-shadow: 0 0 0 1px var(--gda-border-strong), var(--gda-shadow-sm);
 }
 
+/* Camadas empilhadas na moldura, que já tem o tamanho final (aspect-ratio): nada pula quando chegam.
+   ::before = brilho de carregando (embaixo de tudo); .ail-raw = imagem crua, sem fade: o navegador pinta assim que
+   decodifica (decoding="async") e ela cobre o brilho; .ail-svg = guache + animação, cobre a crua num crossfade
+   (CROSSFADE_MS em js/ui/AnimatedIllustration.js = --gda-dur-slow) e depois a crua sai do DOM. */
+.ail-raw,
 .ail-svg {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
+}
+
+.ail-raw { object-fit: cover; } /* = preserveAspectRatio="xMidYMid slice" do SVG */
+
+.ail-svg {
     opacity: 0;
     transition: opacity var(--gda-dur-slow) var(--gda-ease);
 }
 
 .ail--ready .ail-svg { opacity: 1; }
+.ail--instant .ail-svg { transition: none; } /* já tratada nesta página: nasce pronta */
+
+/* Carregando (nem a crua decodificou): brilho que passa, como o esqueleto de vídeo. Só começa depois de 0,2 s
+   (figura em cache não pisca) e fica embaixo da crua, que o cobre quando chega. */
+.ail--loading::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.55) 50%, transparent 80%);
+    transform: translateX(-100%);
+    animation: ail-shimmer 1.4s ease-in-out 0.2s infinite;
+}
+
+.ail--backdrop.ail--loading::before { opacity: 0.3; } /* tela cheia: bem discreto sobre o gradiente */
+
+@keyframes ail-shimmer {
+    to { transform: translateX(100%); }
+}
 
 /* Fundo de tela cheia (tutorial no celular, vitória): sem moldura, cobre tudo */
 .ail--backdrop {
@@ -256,10 +287,12 @@
 
 /* Fora da tela (IntersectionObserver) ou painel escondido: tudo parado */
 .ail--paused,
-.ail--paused * { animation-play-state: paused !important; }
+.ail--paused *,
+.ail--paused::before { animation-play-state: paused !important; }
 
 /* Movimento reduzido: figura parada (os desenhos ficam na posição de descanso: setas acesas, gotas no lugar) */
 @media (prefers-reduced-motion: reduce) {
     .ail *,
-    .ail { animation: none !important; transition: none !important; }
+    .ail,
+    .ail::before { animation: none !important; transition: none !important; }
 }

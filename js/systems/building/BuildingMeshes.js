@@ -739,7 +739,8 @@ mixin(BuildingSystem, {
         shadow.position.z = buildingMesh.position.z;
         shadow.rotation.y = buildingMesh.rotation.y;
         shadow.position.y = terrainHeight + SHADOW_HEIGHT_OFFSET;
-
+        // Parada no chão: matriz congelada (só gira com o prédio, e setGroundShadowRotation recongela)
+        shadow.freezeWorldMatrix();
 
         // Associate shadow with building
         buildingMesh.shadowMesh = shadow;
@@ -877,7 +878,18 @@ mixin(BuildingSystem, {
         const mesh = building?.mesh;
         if (!mesh || mesh.isDisposed?.() || building.rotateAnimation) return;
         mesh.rotation = this.getBuildingRotationVector(building);
-        if (mesh.shadowMesh) mesh.shadowMesh.rotation.y = mesh.rotation.y;
+        this.setGroundShadowRotation(mesh);
+    },
+
+    /**
+     * A sombra falsa no chão acompanha o giro do prédio. A matriz dela fica congelada (createStandardizedBuildingShadow):
+     * freezeWorldMatrix() de novo recalcula com a rotação nova e volta a congelar.
+     */
+    setGroundShadowRotation(mesh) {
+        const shadow = mesh?.shadowMesh;
+        if (!shadow || shadow.isDisposed?.()) return;
+        shadow.rotation.y = mesh.rotation.y;
+        shadow.freezeWorldMatrix();
     },
 
     /**
@@ -941,7 +953,7 @@ mixin(BuildingSystem, {
             const t = duration ? Math.min(1, (performance.now() - startTime) / duration) : 1;
             const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
             mesh.rotation.y = start + diff * eased;
-            if (mesh.shadowMesh) mesh.shadowMesh.rotation.y = mesh.rotation.y;
+            this.setGroundShadowRotation(mesh);
             if (t >= 1) { finish(); return; }
             requestAnimationFrame(step);
         };
@@ -966,39 +978,49 @@ mixin(BuildingSystem, {
 
     createTerrainConnection(buildingMesh, gridX, gridZ, terrainHeight) {
         // Criar uma pequena base que conecta o edifício ao terreno
-        const size = this.gridManager.cellSize * 0.95;
-
-        const connection = BABYLON.MeshBuilder.CreateBox(`connection_${buildingMesh.name}`, {
-            width: size,
-            height: 0.05,
-            depth: size
-        }, this.scene);
+        // Instância de uma laje-modelo escondida por cor (getTerrainConnectionTemplate): todas as lajes saem num
+        // draw call só. Antes cada prédio tinha a sua caixa e o seu material, iguais (75 draw calls a mais numa
+        // cidade de 75 prédios).
+        const terrainType = this.gridManager.getTerrainType(gridX, gridZ);
+        const connection = this.getTerrainConnectionTemplate(terrainType).createInstance(`connection_${buildingMesh.name}`);
 
         const worldPos = this.gridManager.gridToWorld(gridX, gridZ);
         connection.position = worldPos;
         connection.position.y = terrainHeight + 0.025;
-
-        // Material que combina com o terreno
-        const terrainType = this.gridManager.getTerrainType(gridX, gridZ);
-        const connectionMaterial = new BABYLON.StandardMaterial(`connectionMat_${buildingMesh.name}`, this.scene);
-
-        if (terrainType === 'dirt') {
-            connectionMaterial.diffuseColor = new BABYLON.Color3(0.45, 0.25, 0.15);
-        } else if (terrainType === 'rock') {
-            connectionMaterial.diffuseColor = new BABYLON.Color3(0.35, 0.35, 0.35);
-        } else {
-            connectionMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.3, 0.2);
-        }
-
-        connectionMaterial.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
-        connection.material = connectionMaterial;
-        connection.receiveShadows = true;
+        // Não se mexe depois de criada (o prédio gira no centro dele, a laje fica): matriz congelada
+        connection.freezeWorldMatrix();
 
         // Associar conexão ao edifício e rastrear para limpeza
         buildingMesh.terrainConnection = connection;
         this.connectionMeshes.set(buildingMesh.name, connection);
 
         return connection;
+    },
+
+    /**
+     * Laje de ligação com o terreno (caixa 0,95 célula × 0,05), escondida: cada prédio usa uma instância dela.
+     * Uma por cor de chão (terra, pedra, o resto) — as mesmas cores de antes. Nunca descarte: as instâncias
+     * dependem dela (removê-las com dispose() sem descartar material: o material é de todas).
+     */
+    getTerrainConnectionTemplate(terrainType) {
+        const kind = terrainType === 'dirt' || terrainType === 'rock' ? terrainType : 'default';
+        this.terrainConnectionTemplates = this.terrainConnectionTemplates || new Map();
+        const cached = this.terrainConnectionTemplates.get(kind);
+        if (cached && !cached.isDisposed()) return cached;
+        const size = this.gridManager.cellSize * 0.95;
+        const template = BABYLON.MeshBuilder.CreateBox(`terrainConnectionTemplate_${kind}`, { width: size, height: 0.05, depth: size }, this.scene);
+        // Nome sem o prefixo "connection" dos materiais por prédio (tests/performance.spec.js conta os que vazam)
+        const material = new BABYLON.StandardMaterial(`terrainConnectionMat_${kind}`, this.scene);
+        material.diffuseColor = kind === 'dirt' ? new BABYLON.Color3(0.45, 0.25, 0.15)
+            : kind === 'rock' ? new BABYLON.Color3(0.35, 0.35, 0.35)
+                : new BABYLON.Color3(0.4, 0.3, 0.2);
+        material.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+        template.material = material;
+        template.receiveShadows = true;
+        template.isVisible = false;
+        template.isPickable = false;
+        this.terrainConnectionTemplates.set(kind, template);
+        return template;
     },
 
     createMinecraftBuildingMaterial(buildingType) {

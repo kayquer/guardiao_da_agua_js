@@ -9,10 +9,11 @@ class DeclineWatch {
 
     // Piora mínima na janela para contar. energy: faltando energia em todas as amostras e sem melhorar.
     static RULES = {
-        water: { drop: 0.1 },                    // 10% do tanque
+        water: { drop: 0.1, max: 0.6 },          // 10% do tanque, e só já abaixo de 60%
         pollution: { rise: 6, min: 35 },         // +6 pontos, já acima de 35
         budget: { dropRatio: 0.1, dropMin: 2000 },
-        satisfaction: { drop: 5 },
+        // −5 pontos e só abaixo de 65 (a 4ª auditoria viu o guia "moradores tristes" abrir com 90-100%)
+        satisfaction: { drop: 5, max: 65 },
         population: { dropRatio: 0.05 },
         energy: { below: 0.98 }
     };
@@ -72,7 +73,7 @@ class DeclineWatch {
             case 'pollution': return worse >= rule.rise && last >= rule.min;
             case 'budget': return worse >= Math.max(rule.dropMin, Math.abs(first) * rule.dropRatio);
             case 'population': return first > 0 && worse >= first * rule.dropRatio;
-            default: return worse >= rule.drop;
+            default: return worse >= rule.drop && (rule.max === undefined || last < rule.max);
         }
     }
 }

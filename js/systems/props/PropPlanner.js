@@ -117,6 +117,32 @@ const PropPlanner = {
         return { k, cap };
     },
 
+    /** Quantos de um tipo o plano quer agora (o que plan usa do estado da cidade, além da qualidade). */
+    wantOf(type, state, counts, quality, density) {
+        const { k, cap } = PropPlanner.intensity(type, state, counts);
+        const want = Math.round(cap * k * quality * density);
+        return k > 0 && want === 0 && cap > 0 ? 1 : want; // o primeiro aparece logo (sinal visível de mudança)
+    },
+
+    /**
+     * Tudo de que plan depende, numa string: prédios (tipo, lugar, pronto), árvores, qualidade e quantos de cada
+     * tipo. Mesma assinatura = mesmo plano (plan é determinístico), então o PropSystem não replaneja à toa a cada
+     * 2 s com a cidade parada (o plano custa ~10-35 ms numa cidade grande: um tranco a cada replanejamento).
+     * O terreno não muda durante a partida; `world.treeCount` (opcional) = árvores de pé.
+     */
+    signature(world, state, types = PROP_TYPES, settings = PROP_SETTINGS) {
+        const counts = {};
+        const parts = [];
+        (world.buildings || []).forEach(b => {
+            parts.push(`${b.type}@${b.x},${b.z},${b.size || 1}${b.finished ? '' : '*'}${b.zone || ''}`);
+            if (!b.road && b.finished) counts[b.type] = (counts[b.type] || 0) + 1;
+        });
+        const quality = settings.QUALITY[state.quality] ?? 1;
+        const density = settings.DENSITY ?? 1;
+        const wants = Object.values(types).map(type => PropPlanner.wantOf(type, state, counts, quality, density));
+        return `${world.size}|${state.quality}|${world.treeCount ?? ''}|${wants.join(',')}|${parts.join(';')}`;
+    },
+
     /** Peça pequena (um quarto da célula) ou grande (célula inteira). */
     isSmall(type, settings = PROP_SETTINGS) {
         return (type.size || 0.5) <= settings.SMALL;
@@ -164,18 +190,49 @@ const PropPlanner = {
         const isRoad = (x, z) => inside(x, z) && roadSet.has(idx(x, z));
         const N4 = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 
-        const free = (x, z) => !world.occupied(x, z) && !world.tree(x, z) && world.terrain(x, z) !== 'water';
-        const grass = (x, z) => { const t = world.terrain(x, z); return t === 'grassland' || t === 'floodplain'; };
+        // Mapa da célula lido uma vez por plano (antes: terrain/occupied/tree de novo para cada tipo × 1.600 células,
+        // e tree monta a chave "x,z" — ~35 ms e megabytes de lixo a cada replanejamento numa cidade grande).
+        // Mesmas regras de antes: free = sem prédio, sem árvore e fora d'água; grass = planalto ou várzea.
+        const cellCount = size * size;
+        const WATER = new Uint8Array(cellCount), FREE = new Uint8Array(cellCount), GRASS = new Uint8Array(cellCount);
+        const HILL = new Uint8Array(cellCount), OCC = new Uint8Array(cellCount);
+        for (let x = 0; x < size; x++) {
+            for (let z = 0; z < size; z++) {
+                const i = idx(x, z), t = world.terrain(x, z);
+                WATER[i] = t === 'water' ? 1 : 0;
+                GRASS[i] = t === 'grassland' || t === 'floodplain' ? 1 : 0;
+                HILL[i] = t === 'hill' ? 1 : 0;
+                OCC[i] = world.occupied(x, z) ? 1 : 0;
+                FREE[i] = !OCC[i] && !WATER[i] && !world.tree(x, z) ? 1 : 0;
+            }
+        }
+        const free = (x, z) => FREE[idx(x, z)] === 1;
+        const grass = (x, z) => GRASS[idx(x, z)] === 1;
+        const water4 = (x, z) => (z > 0 && WATER[idx(x, z - 1)]) || (x + 1 < size && WATER[idx(x + 1, z)]) ||
+            (z + 1 < size && WATER[idx(x, z + 1)]) || (x > 0 && WATER[idx(x - 1, z)]);
+        const land4 = (x, z) => (z > 0 && !WATER[idx(x, z - 1)]) || (x + 1 < size && !WATER[idx(x + 1, z)]) ||
+            (z + 1 < size && !WATER[idx(x, z + 1)]) || (x > 0 && !WATER[idx(x - 1, z)]);
+        const road4 = (x, z) => isRoad(x, z - 1) || isRoad(x + 1, z) || isRoad(x, z + 1) || isRoad(x - 1, z);
         const neighborsWhere = (x, z, test) => N4.filter(([dx, dz]) => test(x + dx, z + dz));
         const fits = {
             land: (x, z) => free(x, z) && grass(x, z),
-            hill: (x, z) => free(x, z) && world.terrain(x, z) === 'hill',
-            bank: (x, z) => free(x, z) && neighborsWhere(x, z, isWater).length > 0,
-            water: (x, z) => isWater(x, z) && !world.occupied(x, z) && N4.some(([dx, dz]) => inside(x + dx, z + dz) && !isWater(x + dx, z + dz)),
-            road: (x, z) => free(x, z) && neighborsWhere(x, z, isRoad).length > 0,
+            hill: (x, z) => free(x, z) && HILL[idx(x, z)] === 1,
+            bank: (x, z) => free(x, z) && !!water4(x, z),
+            water: (x, z) => WATER[idx(x, z)] === 1 && !OCC[idx(x, z)] && !!land4(x, z),
+            road: (x, z) => free(x, z) && road4(x, z),
             zone: (x, z) => free(x, z) && dZone[idx(x, z)] <= 2,
             city: (x, z) => free(x, z) && grass(x, z) && dBuild[idx(x, z)] <= 3,
             rural: (x, z) => free(x, z) && grass(x, z) && buildCells.length > 0 && dBuild[idx(x, z)] > settings.RURAL_DISTANCE - 1
+        };
+        // Ruído das manchas por grupo, calculado uma vez por célula (era de novo para cada tipo do grupo)
+        const noiseCache = new Map();
+        const noiseAt = (x, z, groupSeed, cell) => {
+            const k = `${groupSeed}|${cell}`;
+            let field = noiseCache.get(k);
+            if (!field) { field = new Float64Array(cellCount).fill(NaN); noiseCache.set(k, field); }
+            const i = idx(x, z);
+            if (Number.isNaN(field[i])) field[i] = PropPlanner.noise(x, z, groupSeed, cell);
+            return field[i];
         };
 
         const quality = settings.QUALITY[state.quality] ?? 1;
@@ -186,12 +243,12 @@ const PropPlanner = {
         const ctx = { isWater, isRoad, neighborsWhere };
         for (const [id, type] of Object.entries(types)) {
             if (out.length >= totalCap) break;
-            const { k, cap } = PropPlanner.intensity(type, state, counts);
-            let want = Math.round(cap * k * quality * density);
-            if (k > 0 && want === 0 && cap > 0) want = 1; // o primeiro aparece logo (sinal visível de mudança)
+            let want = PropPlanner.wantOf(type, state, counts, quality, density);
             if (want <= 0) continue;
             const seed = PropPlanner.seedOf(id);
-            const fit = type.place === 'near' ? ((x, z) => free(x, z) && nearField(type.requires)[idx(x, z)] <= 3) : fits[type.place];
+            // campo de distância procurado uma vez por tipo (antes: ids.join a cada célula)
+            const near = type.place === 'near' ? nearField(type.requires) : null;
+            const fit = near ? ((x, z) => free(x, z) && near[idx(x, z)] <= 3) : fits[type.place];
             if (!fit) continue;
             const small = PropPlanner.isSmall(type, settings);
             const cluster = settings.CLUSTER?.[type.group] || 0;
@@ -202,7 +259,7 @@ const PropPlanner = {
                     const u = used[idx(x, z)];
                     if ((small ? u === PropPlanner.FULL : u !== 0) || !fit(x, z)) continue;
                     let key = PropPlanner.hash(x, z, seed);
-                    if (cluster) key *= 1 - cluster * PropPlanner.noise(x, z, groupSeed, settings.CLUSTER_CELLS || 6);
+                    if (cluster) key *= 1 - cluster * noiseAt(x, z, groupSeed, settings.CLUSTER_CELLS || 6);
                     cands.push([key, x, z]);
                 }
             }

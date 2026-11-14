@@ -616,19 +616,9 @@ mixin(BuildingSystem, {
         material.metadata = { perBuilding: true };
         lot.material = material;
 
-        // Moldura na cor da zona (marcação do terreno), material compartilhado por tipo
-        const t = 0.1;
-        const parts = [[side, t, 0, (side - t) / 2], [side, t, 0, -(side - t) / 2], [t, side - 2 * t, (side - t) / 2, 0], [t, side - 2 * t, -(side - t) / 2, 0]]
-            .map(([w, d, x, z]) => {
-                const vd = BABYLON.VertexData.CreateBox({ width: w, height: 0.03, depth: d });
-                vd.transform(BABYLON.Matrix.Translation(x, 0.115, z));
-                return vd;
-            });
-        const borderData = parts[0];
-        borderData.merge(parts.slice(1));
-        const border = new BABYLON.Mesh(`zoneBorder_${buildingType.id}_${lot.uniqueId}`, this.scene);
-        borderData.applyToMesh(border);
-        border.material = this.getZoneBorderMaterial(buildingType);
+        // Moldura na cor da zona (marcação do terreno): instância da moldura-modelo do tipo (mesma geometria e
+        // material em todas as zonas do tipo → um draw call por tipo, e não um por zona)
+        const border = this.getZoneBorderTemplate(buildingType, side).createInstance(`zoneBorder_${buildingType.id}_${lot.uniqueId}`);
         border.isPickable = false;
         border.parent = lot;
 
@@ -644,6 +634,33 @@ mixin(BuildingSystem, {
         if (ground === 'grass') return new BABYLON.Color3(0.42, 0.66, 0.33);
         if (ground === 'paved') return new BABYLON.Color3(0.74, 0.74, 0.72);
         return new BABYLON.Color3(0.56, 0.56, 0.56);
+    },
+
+    /**
+     * Moldura escondida de um tipo de zona (4 réguas de 0,1 × 0,03 em volta do lote de lado `side`): cada lote usa
+     * uma instância dela. Nunca descarte: as instâncias dependem dela.
+     */
+    getZoneBorderTemplate(buildingType, side) {
+        this.zoneBorderTemplates = this.zoneBorderTemplates || new Map();
+        const key = `${buildingType.id}|${side}`;
+        const cached = this.zoneBorderTemplates.get(key);
+        if (cached && !cached.isDisposed()) return cached;
+        const t = 0.1;
+        const parts = [[side, t, 0, (side - t) / 2], [side, t, 0, -(side - t) / 2], [t, side - 2 * t, (side - t) / 2, 0], [t, side - 2 * t, -(side - t) / 2, 0]]
+            .map(([w, d, x, z]) => {
+                const vd = BABYLON.VertexData.CreateBox({ width: w, height: 0.03, depth: d });
+                vd.transform(BABYLON.Matrix.Translation(x, 0.115, z));
+                return vd;
+            });
+        const borderData = parts[0];
+        borderData.merge(parts.slice(1));
+        const template = new BABYLON.Mesh(`zoneBorderTemplate_${buildingType.id}`, this.scene);
+        borderData.applyToMesh(template);
+        template.material = this.getZoneBorderMaterial(buildingType);
+        template.isPickable = false;
+        template.isVisible = false;
+        this.zoneBorderTemplates.set(key, template);
+        return template;
     },
 
     getZoneBorderMaterial(buildingType) {

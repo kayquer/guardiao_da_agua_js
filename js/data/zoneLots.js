@@ -54,7 +54,7 @@ const ZONE_EVOLUTION = {
         ],
         heavy: [
             { ids: ['paved_road'], label: 'rua de asfalto' },
-            { ids: ['rain_garden', 'linear_park', 'green_roof', 'erosion_control'], label: 'um controle de enxurrada (jardim de chuva, parque linear, telhado verde ou controle de erosão)' },
+            { ids: ['rain_garden', 'linear_park', 'green_roof', 'erosion_control'], label: 'um controle de enxurrada (jardim de chuva, parque linear, teto verde ou controle de erosão)' },
             { energySpare: true, label: 'energia sobrando para o bairro maior' }
         ]
     }

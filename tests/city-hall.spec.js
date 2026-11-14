@@ -76,6 +76,10 @@ test('prefeitura: impostos e funcionários', async ({ page }, testInfo) => {
     await expect(staffPopup.locator('#cs-tab-hire')).toHaveAttribute('aria-selected', 'true'); // ninguém ainda: Contratar
     await expect(staffPopup.locator('.cs-role[data-role="assistente_social"] .cs-reason')).toContainText('Libera com 150 moradores');
     await expect(staffPopup.locator('.cs-role[data-role="assistente_social"] .cs-hire')).toBeDisabled();
+    // no lugar do ícone, os rostos que podem ser sorteados (com retrato pronto) giram com um sorriso
+    await expect(staffPopup.locator('.cs-role[data-role="obras"] .cs-role-faces.has-faces .cs-face-layer').first()).toBeVisible();
+    await expect.poll(() => page.evaluate(() => !!document.querySelector('.cs-role[data-role="obras"] .cs-face-layer image[data-layer="happy"].on')),
+        { timeout: 5000 }).toBe(true);
 
     const before = await page.evaluate(() => ({
         budget: window.gameManager.resourceManager.resources.budget.current,
@@ -102,7 +106,9 @@ test('prefeitura: impostos e funcionários', async ({ page }, testInfo) => {
     });
     expect(before.budget - after.budget).toBeGreaterThanOrEqual(before.fee); // cobrou a contratação
     expect(after.slots).toBe(4);
-    expect(after.payroll).toBe(80);
+    expect(after.payroll).toBe(await page.evaluate(() => CityStaff.salaryOf(window.gameManager.cityStaff.staff[0])));
+    // talento sorteado na contratação, dentro da faixa
+    expect(Object.values(person.talent).every(v => v >= 0.85 && v <= 1.15)).toBe(true);
     expect(after.popup).toBe(true);
     await card.locator('#staff-hire-ok').click();
     await expect(card).toBeHidden();
@@ -112,9 +118,12 @@ test('prefeitura: impostos e funcionários', async ({ page }, testInfo) => {
     await expect(staffPopup.locator('#cs-tab-team')).toHaveAttribute('aria-selected', 'true');
     const personCard = staffPopup.locator(`.cs-person[data-person="${person.id}"]`);
     await expect(personCard).toContainText('Mestre de obras');
-    await expect(personCard).toContainText('obras 6% mais rápidas');
+    const bonusText = await page.evaluate(() => window.gameManager.uiManager.describeStaffBonus(window.gameManager.cityStaff.staff[0]));
+    expect(bonusText).toMatch(/obras \d+% mais rápidas/);
+    await expect(personCard).toContainText(bonusText);
+    await expect(personCard.locator('.cs-talent')).toContainText('Talento');
     await expect(personCard.locator('.cs-pip.on')).toHaveCount(1);
-    await expect(staffPopup.locator('#cs-payroll')).toContainText('R$ 80/min');
+    await expect(staffPopup.locator('#cs-payroll')).toContainText(`R$ ${after.payroll}/min`);
 
     await personCard.locator('.cs-talk').click();
     const talk = page.locator('#staff-talk');
@@ -133,7 +142,7 @@ test('prefeitura: impostos e funcionários', async ({ page }, testInfo) => {
     // ===== Nível novo =====
     await page.evaluate(() => {
         const gm = window.gameManager, cs = gm.cityStaff;
-        cs.kpiGood = () => true; // "obras entregues" indo bem
+        cs.kpiState = () => 'good'; // "obras entregues" indo bem
         cs.staff[0].xp = 99;
         cs.tick(1000, gm);
         gm.uiManager.onStaffEvents(cs.takeEvents());

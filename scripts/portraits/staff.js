@@ -9,7 +9,7 @@
 // A chave vem só da variável OPENROUTER_KEY (ou OPENROUTER_API_KEY), nunca gravada.
 // Uso: OPENROUTER_KEY=... node scripts/portraits/staff.js [--only id,id] [--wave 2|all] [--mosaic arquivo.png]
 //   --only   só estes ids (ex.: eng_ambiental-f-3,obras-m-1)
-//   --wave   1 (padrão) = variantes 1-3; 2 = variantes 4 e 5; all = as 5
+//   --wave   1 (padrão) = variantes 1-3; 2 = variantes 4 e 5; 3 = 6-8 (só obras e serviços); all = todas
 //   --mosaic além de gerar, monta um mosaico (base + 5 camadas) de cada pessoa pronta em <arquivo>-<id>.png
 //   --bases  monta só o mosaico de todas as bases prontas em <arquivo> (sem gerar nada)
 //   --offline não gera nada: só refaz js/data/staffPortraits.js e os registros das pessoas já prontas
@@ -96,7 +96,11 @@ const GROUPS = {
     v2: { n: 2, wave: 1, desc: 'a white Brazilian with fair skin' },
     v3: { n: 3, wave: 1, desc: 'a Black Brazilian with dark brown skin' },
     v4: { n: 4, wave: 2, desc: 'an East Asian Brazilian (Japanese-Brazilian descent) with light warm skin' },
-    v5: { n: 5, wave: 2, desc: 'an Indigenous Brazilian with warm copper-brown skin, wearing ordinary everyday clothes like any city employee' }
+    v5: { n: 5, wave: 2, desc: 'an Indigenous Brazilian with warm copper-brown skin, wearing ordinary everyday clothes like any city employee' },
+    // 3ª leva: os cargos com mais vagas (obras 3, serviços 2) ganham mais rostos — outra pessoa, outro cabelo e porte
+    v6: { n: 6, wave: 3, desc: 'a pardo (mixed-race) Brazilian with warm medium-brown skin', roles: ['obras', 'servicos'] },
+    v7: { n: 7, wave: 3, desc: 'a white Brazilian with fair skin', roles: ['obras', 'servicos'] },
+    v8: { n: 8, wave: 3, desc: 'a Black Brazilian with dark brown skin', roles: ['obras', 'servicos'] }
 };
 const HAIR = {
     v1: {
@@ -120,6 +124,7 @@ const HAIR = {
         m: ['straight black hair in a bowl cut', 'short straight black hair', 'shoulder-length straight black hair', 'straight black hair tied back']
     }
 };
+HAIR.v6 = HAIR.v1; HAIR.v7 = HAIR.v2; HAIR.v8 = HAIR.v3;
 // O estilo comum fala em aquarela e natureza: sem isto o modelo enche o fundo de respingos e folhas
 const BACKGROUND = 'The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.';
 const BODIES = ['a slim build', 'an average build', 'a stocky build with broad shoulders', 'a plus-size build and a round face', 'an athletic build'];
@@ -520,6 +525,7 @@ function personMosaic(person, out) {
 function allPeople(wave) {
     const list = [];
     for (const role of ROLE_IDS) for (const gender of Object.keys(GENDERS)) for (const group of GROUP_IDS) {
+        if (GROUPS[group].roles && !GROUPS[group].roles.includes(role)) continue;
         const person = personFor(role, gender, group);
         if (wave === 'all' || String(person.wave) === String(wave)) list.push(person);
     }

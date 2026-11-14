@@ -716,6 +716,7 @@ const BUILDING_TYPES = {
         size: 3,
         powerGeneration: 650,
         renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
+        runoffImpervious: 0, // fica sobre a água: não cobre chão (sem o campo, a enchente contava 0,3 por célula)
         waterConsumption: 0,
         pollutionGeneration: 0,
         maintenanceCost: 160,
@@ -737,6 +738,7 @@ const BUILDING_TYPES = {
         size: 2,
         powerGeneration: 420,
         renewable: true, // fonte renovável (painel ⚡ Fontes de Energia)
+        runoffImpervious: 0, // fica sobre a água: não cobre chão (sem o campo, a enchente contava 0,3 por célula)
         maintenanceCost: 300,
         reputationOnBuild: { environment: 2 },
         icon: '🌗',
@@ -885,6 +887,7 @@ const BUILDING_TYPES = {
         tier: 4, group: 'Biomassa', techRequires: [{ id: 'biomass_plant', count: 1 }, { ids: ['zone_industrial_light', 'zone_industrial_balanced', 'zone_industrial_heavy'], count: 2, label: 'Zonas Industriais' }],
         reputationOnBuild: { business: 3, environment: -1 },
         name: 'Usina Sucroenergética',
+        taxGroup: 'industry', // imposto da indústria (CityFinance.groupOf): a prefeitura fica com mais ou menos da renda
         description: 'A cana vira açúcar e etanol, e o bagaço queimado gera eletricidade. Gasta muita água e a vinhaça precisa de cuidado',
         category: 'power',
         cost: 30000,
@@ -922,7 +925,7 @@ const BUILDING_TYPES = {
     wind_small: {
         tier: 1, group: 'Eólica', techRequires: [{ id: 'solar_micro', count: 1 }],
         name: 'Aerogerador Pequeno',
-        description: 'Uma turbina pequena para o bairro. Gera de dia e de noite quando venta; em encosta venta mais',
+        description: 'Uma turbina pequena para o bairro. Gera de dia e de noite quando venta; com pouco vento gera menos e com ventania forte desliga em parte',
         category: 'power',
         powerSource: 'wind',
         cost: 4200,
@@ -947,6 +950,7 @@ const BUILDING_TYPES = {
         size: 2,
         powerGeneration: 160,
         renewable: true,
+        runoffImpervious: 0, // fica sobre a água: não cobre chão (sem o campo, a enchente contava 0,3 por célula)
         maintenanceCost: 45,
         icon: '💧',
         color: '#4FC3F7',
@@ -993,6 +997,7 @@ const BUILDING_TYPES = {
         size: 3,
         powerGeneration: 750,
         renewable: true,
+        runoffImpervious: 0, // fica sobre a água: não cobre chão (sem o campo, a enchente contava 0,3 por célula)
         maintenanceCost: 260,
         icon: '🌀',
         color: '#0277BD',
@@ -1027,6 +1032,7 @@ const BUILDING_TYPES = {
         powerGeneration: 480,
         riverRecharge: 0.3, // menos evaporação
         renewable: true,
+        runoffImpervious: 0, // fica sobre a água: não cobre chão (sem o campo, a enchente contava 0,3 por célula)
         maintenanceCost: 120,
         icon: '🛟',
         color: '#29B6F6',
@@ -1038,7 +1044,7 @@ const BUILDING_TYPES = {
         tier: 1, group: 'Governo', techRequires: [],
         reputationOnBuild: { government: 3 },
         name: 'Prefeitura Municipal',
-        description: 'Centro administrativo da cidade - simboliza o desenvolvimento urbano',
+        description: 'Centro do governo da cidade. Clique nela pronta para ajustar os impostos (Financeiro) e contratar a equipe (Funcionários)',
         category: 'public',
         pollutionGeneration: 1, // banheiros e limpeza do prédio
         waterConsumption: 10,
@@ -1103,7 +1109,7 @@ const BUILDING_TYPES = {
         tier: 2, group: 'Educação e saúde', techRequires: [{ id: 'school', count: 1 }],
         reputationOnBuild: { citizens: 3 },
         name: 'Hospital',
-        description: 'Centro médico que melhora a saúde e satisfação dos cidadãos',
+        description: 'Centro médico: moradores bem atendidos ficam mais satisfeitos. Gasta bastante água e o esgoto precisa de tratamento',
         category: 'public',
         pollutionGeneration: 4, // limpeza constante; o esgoto hospitalar precisa de tratamento
         waterConsumption: 50,
@@ -1123,7 +1129,7 @@ const BUILDING_TYPES = {
     fire_station: {
         tier: 1, group: 'Segurança', techRequires: [{ id: 'city_hall', count: 1 }],
         name: 'Corpo de Bombeiros',
-        description: 'Estação de bombeiros que protege a cidade',
+        description: 'Protege a cidade: com os bombeiros prontos, o Secretário Paulo ganha uma resposta melhor contra queimadas',
         category: 'public',
         pollutionGeneration: 1, // água para treinar e abastecer os caminhões
         waterConsumption: 30,
@@ -1164,7 +1170,7 @@ const BUILDING_TYPES = {
     research_center: {
         tier: 3, group: 'Pesquisa', techRequires: [{ id: 'school', count: 1 }],
         name: 'Centro de Pesquisa',
-        description: 'Centro de pesquisa que reduz custos de construção em 10-15% e melhora eficiência de edifícios próximos',
+        description: 'Pesquisadores ajudam os vizinhos: prédios a até 3 blocos funcionam melhor e as obras construídas ali perto saem mais baratas',
         category: 'science',
         cost: 35000,
         size: 2,
@@ -1174,6 +1180,7 @@ const BUILDING_TYPES = {
         recycleBonus: 0.1, // +10% no valor de reciclar prédios (BuildingRecycle.js)
         powerConsumption: 80,
         waterConsumption: 25,
+        pollutionGeneration: 1, // gente trabalhando = esgoto (todo prédio com gente polui um pouco; faltava na ciência)
         // ===== EFFICIENCY BONUSES =====
         constructionCostReduction: 0.125, // 12.5% average (10-15% range)
         nearbyEfficiencyBonus: 0.125, // 12.5% average (10-15% range)
@@ -1190,7 +1197,7 @@ const BUILDING_TYPES = {
     university: {
         tier: 4, group: 'Pesquisa', techRequires: [{ id: 'research_center', count: 1 }, { id: 'school', count: 2 }],
         name: 'Universidade',
-        description: 'Universidade que reduz custos de construção em 15-25% e melhora significativamente a eficiência de edifícios próximos',
+        description: 'Ensino e pesquisa: prédios a até 5 blocos funcionam bem melhor e as obras construídas ali perto saem mais baratas',
         category: 'science',
         cost: 60000,
         size: 3,
@@ -1201,6 +1208,7 @@ const BUILDING_TYPES = {
         recycleBonus: 0.15, // +15% no valor de reciclar prédios (BuildingRecycle.js)
         powerConsumption: 120,
         waterConsumption: 40,
+        pollutionGeneration: 2, // muitos alunos: esgoto como o da escola técnica
         // ===== EFFICIENCY BONUSES =====
         constructionCostReduction: 0.20, // 20% average (15-25% range)
         nearbyEfficiencyBonus: 0.20, // 20% average (15-25% range)
@@ -1290,7 +1298,7 @@ const BUILDING_TYPES = {
     restaurant: {
         tier: 2, group: 'Comércio e serviços', techRequires: [{ ids: ['zone_commercial_light', 'zone_commercial_balanced', 'zone_commercial_heavy'], count: 1, label: 'Zona Comercial' }],
         name: 'Restaurante',
-        description: 'Restaurante que atrai turistas; a cozinha precisa de água para funcionar',
+        description: 'Restaurante do bairro; a cozinha precisa de água para funcionar',
         category: 'commercial',
         pollutionGeneration: 3, // gordura e óleo na pia vão para o esgoto
         needsWater: true, // cozinha não funciona sem água
@@ -1411,6 +1419,7 @@ const BUILDING_TYPES = {
         tier: 3, group: 'Indústria', techRequires: [{ ids: ['zone_industrial_light', 'zone_industrial_balanced', 'zone_industrial_heavy'], count: 3, label: 'Zonas Industriais' }],
         reputationOnBuild: { business: 2, environment: -2 },
         name: 'Fábrica de Exportação',
+        taxGroup: 'industry', // imposto da indústria (CityFinance.groupOf): a prefeitura fica com mais ou menos da renda
         description: 'Fábrica que produz bens para exportação e gera receita',
         category: 'industrial',
         cost: 70000,
@@ -1432,6 +1441,7 @@ const BUILDING_TYPES = {
     tech_center: {
         tier: 4, group: 'Indústria', techRequires: [{ id: 'factory', count: 1 }, { id: 'research_center', count: 1 }],
         name: 'Centro Tecnológico',
+        taxGroup: 'industry', // imposto da indústria (CityFinance.groupOf): a prefeitura fica com mais ou menos da renda
         description: 'Centro de desenvolvimento tecnológico que gera receita através de inovação',
         category: 'industrial',
         cost: 90000,
@@ -1456,6 +1466,7 @@ const BUILDING_TYPES = {
         tier: 5, group: 'Indústria', techRequires: [{ id: 'tech_center', count: 1 }],
         reputationOnBuild: { business: 2, environment: -2 },
         name: 'Porto Comercial',
+        taxGroup: 'industry', // imposto da indústria (CityFinance.groupOf): a prefeitura fica com mais ou menos da renda
         description: 'Porto de mercadorias: precisa de um rio limpo e fundo, e com o rio poluído menos navios atracam',
         category: 'industrial',
         needsCleanWater: true, // rio poluído e assoreado espanta os navios
@@ -1481,6 +1492,7 @@ const BUILDING_TYPES = {
     water_research_center: {
         tier: 5, group: 'Pesquisa', techRequires: [{ id: 'university', count: 1 }, { id: 'monitoring_station', count: 1 }],
         name: 'Centro de Pesquisas Hídricas',
+        powerConsumption: 100, // laboratórios e equipamentos (o Centro de Pesquisa usa 80 kW, a universidade 120)
         icon: '🔬',
         category: 'science',
         cost: 100000,
@@ -1497,9 +1509,11 @@ const BUILDING_TYPES = {
         nearbyEfficiencyBonus: 0.2,
         effectRadius: 5,
         pollutionReduction: 5,
+        waterConsumption: 25, // gente trabalhando gasta água e faz esgoto, como o Centro de Pesquisa (faltava)
+        pollutionGeneration: 1,
         maintenanceCost: 800,
         recycleBonus: 0.1, // +10% no valor de reciclar prédios (BuildingRecycle.js)
-        description: 'Centro avançado para pesquisa e desenvolvimento de tecnologias hídricas',
+        description: 'Laboratórios que estudam a água da região: prédios a até 5 blocos funcionam bem melhor e o rio fica um pouco mais limpo',
         educationalContent: {
             concepts: ['centros de pesquisas', 'inovação tecnológica', 'gestão hídrica'],
             facts: [
@@ -1595,7 +1609,7 @@ const BUILDING_TYPES = {
         satisfactionBonus: 12,
         maintenanceCost: 80,
         needsRoad: false, // solução da natureza: funciona sem rua
-        description: 'Plantas no telhado seguram parte da chuva, diminuem a enxurrada e deixam o prédio mais fresco',
+        description: 'Plantas no telhado seguram parte da chuva, diminuem a enxurrada, limpam o ar e ajudam a água a voltar para o aquífero',
         educationalContent: {
             concepts: ['tetos verdes', 'eficiência energética', 'retenção de água'],
             facts: [
@@ -1624,7 +1638,7 @@ const BUILDING_TYPES = {
         satisfactionBonus: 15,
         maintenanceCost: 60,
         needsRoad: false, // solução da natureza: funciona sem rua
-        description: 'Sistema vertical de plantas que purifica o ar e reduz temperatura',
+        description: 'Plantas numa parede alta limpam o ar, seguram um pouco da chuva e deixam a rua mais agradável',
         educationalContent: {
             concepts: ['paredes verdes', 'purificação do ar', 'ilha de calor urbana'],
             facts: [
@@ -1653,6 +1667,7 @@ const BUILDING_TYPES = {
         satisfactionBonus: 20,
         maintenanceCost: 120,
         needsRoad: false, // solução da natureza: funciona sem rua
+        runoffImpervious: 0, // fica sobre a água: não cobre chão (sem o campo, a enchente contava 0,3 por célula)
         description: 'Ilhas de plantas sobre a água: as raízes filtram a sujeira e ajudam a limpar o rio',
         educationalContent: {
             concepts: ['jardins flutuantes', 'plantas filtradoras', 'fitorremediação'],
@@ -1672,6 +1687,7 @@ const BUILDING_TYPES = {
         earlyWarning: true, // avisa eventos com o dobro de antecedência (EventSystem.getWarningTime)
         reputationOnBuild: { environment: 1, government: 2 },
         name: 'Estação de Monitoramento',
+        needsRoad: false, // sensor: vai na beira do rio e na várzea, onde não há rua
         icon: '📊',
         category: 'science',
         cost: 20000,
@@ -1684,7 +1700,7 @@ const BUILDING_TYPES = {
         },
         pollutionReduction: 6, // acha cedo quem polui: o problema é corrigido antes de crescer
         maintenanceCost: 150,
-        description: 'Sistema automatizado de monitoramento da qualidade da água',
+        description: 'Estação automática na beira do rio que mede a água e o tempo: secas e enchentes chegam com o dobro de aviso',
         educationalContent: {
             concepts: ['monitoramento ambiental', 'qualidade da água', 'sensores IoT'],
             facts: [
@@ -1699,6 +1715,7 @@ const BUILDING_TYPES = {
     water_quality_monitor: {
         tier: 2, group: 'Monitoramento', techRequires: [{ id: 'treatment_plant', count: 1 }],
         name: 'Monitor de Qualidade',
+        needsRoad: false, // sensor: vai na beira do rio e na várzea, onde não há rua
         icon: '🔍',
         category: 'science',
         cost: 12000,
@@ -1711,7 +1728,7 @@ const BUILDING_TYPES = {
         pollutionReduction: 5,
         satisfactionBonus: 8, // moradores confiam na água da torneira
         maintenanceCost: 100,
-        description: 'Equipamento para análise contínua de parâmetros de qualidade da água',
+        description: 'Sensores que analisam a água o tempo todo: acham cedo a sujeira e ajudam a limpar o rio. Pode ficar na beira do rio e até na água',
         educationalContent: {
             concepts: ['qualidade da água', 'parâmetros físico-químicos', 'saúde pública'],
             facts: [
@@ -1733,7 +1750,7 @@ const BUILDING_TYPES = {
         buildTime: 20,
         size: 1,
         requirements: {
-            terrain: ['grassland', 'highland']
+            terrain: ['grassland', 'hill'] // era 'highland', terreno que o mapa nunca gera: não dava para pôr na encosta
         },
         pollutionReduction: 6, // menos terra descendo para o rio
         maintenanceCost: 80,

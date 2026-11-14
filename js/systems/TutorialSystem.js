@@ -142,7 +142,7 @@ class TutorialSystem {
             title: 'Boas-vindas, {nome}!',
             lessonTitle: 'Por que a água precisa de você',
             lessonText: 'Você já pôs a cidade para andar, {nome}. Agora a gente vai entender por que ela existe: a água que a gente bebe, usa no banho e leva para as plantações está em perigo! <img src="assets/images/lessons/guardiao-da-agua.webp" alt="Dois jovens pegando água limpa de um riacho com as mãos" style="width:100%; border-radius:8px; margin:10px 0;"/> Cuidar desse tesouro é o trabalho do <b>Guardião da Água</b>, e eu vou estar do seu lado em cada passo.',
-            text: 'Nossa cidade está com um problema sério: a água que a gente bebe, usa no banho e leva para as plantações está em perigo! <img src="assets/images/lessons/guardiao-da-agua.webp" alt="Dois jovens pegando água limpa de um riacho com as mãos" style="width:100%; border-radius:8px; margin:10px 0;"/> Por isso você foi escolhido como o novo <b>Guardião da Água</b>. Sua missão é proteger esse tesouro, e eu vou estar do seu lado, te ensinando cada passo. Topa cuidar da água com a gente?',
+            text: 'Nossa cidade está com um problema sério: a água que a gente bebe, usa no banho e leva para as plantações está em perigo! <img src="assets/images/lessons/guardiao-da-agua.webp" alt="Dois jovens pegando água limpa de um riacho com as mãos" style="width:100%; border-radius:8px; margin:10px 0;"/> Por isso a cidade conta com você: a missão de <b>Guardião da Água</b> agora é sua. Ela é proteger esse tesouro, e eu vou estar do seu lado, te ensinando cada passo. Topa cuidar da água com a gente?',
             icon: '👋'
         },
 
@@ -348,7 +348,7 @@ class TutorialSystem {
         {
             group: 'first', mode: 'coach', character: 'Claudia', icon: '🎯',
             title: 'Sua primeira missão',
-            text: 'Aqui embaixo fica a <b>missão da vez</b>: construir uma <b>💧 Bomba de Água</b>. Ela puxa a água guardada <b>debaixo da terra</b>, no aquífero. Clique na missão para ver as metas: numa meta com <b>🏗️ ›</b> eu te levo direto ao prédio. Dica: encoste a bomba numa <b>rua</b> (sem rua do lado, ela trabalha a 75%).',
+            text: 'Aqui embaixo fica a <b>missão da vez</b>: construir uma <b>💧 Bomba de Água</b>. Ela puxa a água guardada <b>debaixo da terra</b>, no aquífero. Clique na missão para ver as metas: numa meta com <b>🏗️ ›</b> eu te levo direto ao prédio. Dica: prédio sem <b>rua</b> do lado trabalha a 75%. Ainda não tem rua? Trace um pedaço em <b>🛣️ Asfalto</b> (fica pronto na hora e custa pouco) e ponha a bomba encostada nele.',
             targets: ['.hud-bottom .mission-info', '.hud-bottom-toggle']
         },
         {
@@ -396,7 +396,7 @@ class TutorialSystem {
         {
             group: 'missions', mode: 'coach', character: 'Claudia', icon: '🏗️',
             title: 'Atalho para construir',
-            text: 'Viu o <b>🏗️ ›</b> numa meta? <b>Clique na meta</b> e eu te levo direto ao prédio na aba de construções! Pode construir ali mesmo (a obra começa assim que o tutorial terminar) e depois clique em <b>Próximo</b>. Dica: ponha a bomba encostada numa <b>rua</b> (🛣️ Asfalto): prédio sem rua do lado trabalha a 75%.',
+            text: 'Viu o <b>🏗️ ›</b> numa meta? <b>Clique na meta</b> e eu te levo direto ao prédio na aba de construções! Pode construir ali mesmo (a obra começa assim que o tutorial terminar) e depois clique em <b>Próximo</b>. Dica: prédio sem <b>rua</b> do lado trabalha a 75%. Depois do tutorial, trace um pedaço de rua em <b>🛣️ Asfalto</b> (fica pronto na hora) e ponha a bomba encostada nele.',
             targets: ['.mission-details .mission-goal.goal-link', '.mission-details .mission-goals', '.hud-right'],
             // sem advanceOnClick: clicar na meta abria o menu na Bomba e o passo seguinte o fechava na mesma hora
             // (o jogador via "construa a bomba" e não conseguia); agora ele constrói ou fecha e segue no Próximo
@@ -836,6 +836,8 @@ class TutorialSystem {
         text.innerHTML = (typeof step.chapter === 'number' ? stepText : uiIconsIn(stepText)) +
             (endsChapter ? this.gameManager.uiManager?.renderLessonSources?.(step.chapter) || '' : '');
         AnimatedIllustration.enhance(text); // figuras da aula viram ilustração animada (js/ui/AnimatedIllustration.js)
+        const nextStep = this.steps[this.currentStep + 1]; // a figura da próxima página já vai sendo pintada
+        AnimatedIllustration.prefetch(nextStep?.text, nextStep?.lessonText, window.innerWidth <= 768 ? nextStep?.background : null);
         text.scrollTop = 0;
         document.getElementById('tutorial-character-name').textContent = TutorialSystem.displayName(step.character);
 

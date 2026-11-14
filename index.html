@@ -50,7 +50,7 @@
     <link rel="stylesheet" href="css/tutorial.css?v=6bbfde7c">
     <link rel="stylesheet" href="css/lessons.css?v=e68e4db9">
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
-    <link rel="stylesheet" href="css/illustrations.css?v=ad7e6e0d">
+    <link rel="stylesheet" href="css/illustrations.css?v=caaf7634">
     <link rel="stylesheet" href="css/player.css?v=748ededd">
     <link rel="stylesheet" href="css/menu.css?v=0283cea9">
     <link rel="stylesheet" href="css/basin-picker.css?v=f894766c">
@@ -62,7 +62,7 @@
     <link rel="stylesheet" href="css/resource-hud.css?v=c17137eb">
     <link rel="stylesheet" href="css/achievements.css?v=c3053f66">
     <link rel="stylesheet" href="css/mission-card.css?v=92936753">
-    <link rel="stylesheet" href="css/city-hall.css?v=63133443">
+    <link rel="stylesheet" href="css/city-hall.css?v=11c4064a">
     <link rel="stylesheet" href="css/events.css?v=f06ffb3d">
     <link rel="stylesheet" href="css/event-decision.css?v=270ea5b9">
     <link rel="stylesheet" href="css/mission-bar.css?v=b538d06b">
@@ -71,7 +71,7 @@
     <link rel="stylesheet" href="css/city-story.css?v=d9843394">
     <link rel="stylesheet" href="css/player-menu.css?v=543aadee">
     <link rel="stylesheet" href="css/speed-menu.css?v=da7c60dc">
-    <link rel="stylesheet" href="css/build-menu.css?v=6a2bed6d">
+    <link rel="stylesheet" href="css/build-menu.css?v=2d3bd63c">
     <link rel="stylesheet" href="css/terrain-health.css?v=02aad804">
     <link rel="stylesheet" href="css/aquifer-view.css?v=89540114">
     <link rel="stylesheet" href="css/layout.css?v=c43a43fd">
@@ -804,14 +804,15 @@
     <script src="js/data/basinIcons.js?v=1b2658ec"></script>
     <script src="js/data/terrainInfo.js?v=d9b1d2a2"></script>
     <script src="js/data/terrainHealth.js?v=57dae5b8"></script>
-    <script src="js/data/buildings.js?v=3f64429d"></script>
+    <script src="js/data/buildings.js?v=00462604"></script>
     <script src="js/data/buildingModels.js?v=8bedd647"></script>
-    <script src="js/data/zoneLots.js?v=66a8c337"></script>
+    <script src="js/data/zoneLots.js?v=c5f3c11d"></script>
     <script src="js/data/props.js?v=0fe7ecf0"></script>
     <script src="js/data/fieldNotebook.js?v=bf914731"></script>
     <script src="js/data/resourceStates.js?v=c0802704"></script>
     <script src="js/data/missions.js?v=ef46a106"></script>
-    <script src="js/data/cityHall.js?v=a63ce88e"></script>
+    <script src="js/data/cityHall.js?v=1acd6bcf"></script>
+    <script src="js/data/cityServices.js?v=6a1a0f03"></script>
     <script src="js/data/staffTalk.js?v=3db19405"></script>
     <script src="js/data/achievementTracks.js?v=d055198b"></script>
     <script src="js/data/rescueGuides.js?v=148facf4"></script>
@@ -819,7 +820,7 @@
     <script src="js/data/lessons.js?v=97c30f82"></script>
     <script src="js/data/introCity.js?v=a2e6387e"></script>
     <script src="js/data/portraits.js?v=939f497c"></script>
-    <script src="js/data/staffPortraits.js?v=4b078a56"></script>
+    <script src="js/data/staffPortraits.js?v=d3042ab4"></script>
     <script src="js/data/illustrations.js?v=fb348641"></script>
     <script src="js/data/audioManifest.js?v=c6c165dd"></script>
 
@@ -912,7 +913,7 @@
     <script src="js/utils/AudioManager.js?v=419c9a40"></script>
     <script src="js/utils/audio/SoundDirector.js?v=3ce4427e"></script>
     <script src="js/ui/AnimatedPortrait.js?v=7a5cbd3d"></script>
-    <script src="js/ui/AnimatedIllustration.js?v=6c29cb6d"></script>
+    <script src="js/ui/AnimatedIllustration.js?v=9a0ed126"></script>
 
     <!-- Core systems - ordem de dependência -->
     <script src="js/systems/TextSize.js?v=e91ba427"></script>
@@ -920,37 +921,37 @@
     <script src="js/systems/ColorMode.js?v=5c076f0d"></script>
     <script src="js/systems/GraphicsQuality.js?v=32cafd55"></script>
     <script src="js/core/GridManager.js?v=5651167a"></script>
-    <script src="js/core/ResourceManager.js?v=e8f71e1d"></script>
+    <script src="js/core/ResourceManager.js?v=35a47bc6"></script>
 
     <!-- Camera Controls (before GameManager) -->
     <script src="js/systems/SimCityCameraControls.js?v=22daacaa"></script>
     <script src="js/systems/GamepadInput.js?v=0c8007c0"></script>
 
-    <script src="js/core/GameManager.js?v=be5b86dc"></script>
+    <script src="js/core/GameManager.js?v=943834c6"></script>
     <script src="js/core/game/Diagnostics.js?v=8ec9d8c0"></script>
     <script src="js/core/game/SelectionVisuals.js?v=d8184bfe"></script>
     <script src="js/core/game/CameraGuard.js?v=2024c210"></script>
     <script src="js/core/game/SavePoints.js?v=861cd30e"></script>
 
     <!-- Game systems -->
-    <script src="js/systems/BuildingSystem.js?v=03c7f851"></script>
-    <script src="js/systems/building/BuildingMeshes.js?v=8b1c4df0"></script>
-    <script src="js/systems/building/BuildingFeedback.js?v=3e035e1e"></script>
+    <script src="js/systems/BuildingSystem.js?v=5c646e48"></script>
+    <script src="js/systems/building/BuildingMeshes.js?v=c49e49b5"></script>
+    <script src="js/systems/building/BuildingFeedback.js?v=7a29c922"></script>
     <script src="js/systems/building/BuildingModels.js?v=f04f80df"></script>
-    <script src="js/systems/building/ZoneGrowth.js?v=d3143258"></script>
+    <script src="js/systems/building/ZoneGrowth.js?v=d132c6bf"></script>
     <script src="js/systems/building/TreeGrowth.js?v=cdc7bf25"></script>
     <script src="js/systems/building/BuildingRecycle.js?v=c079106f"></script>
     <script src="js/systems/building/WaterIntake.js?v=f609d1a9"></script>
-    <script src="js/systems/building/BuildingEfficiency.js?v=9666efb3"></script>
+    <script src="js/systems/building/BuildingEfficiency.js?v=aefe3f6a"></script>
     <script src="js/systems/roads/RoadNetwork.js?v=9cef4abd"></script>
     <script src="js/systems/roads/RoadMeshes.js?v=ccb485f2"></script>
     <script src="js/systems/roads/RoadPlacement.js?v=e8485e8e"></script>
     <script src="js/systems/shared/VehicleMeshes.js?v=53516ed0"></script>
-    <script src="js/systems/CityLifeSystem.js?v=54ff85d0"></script>
+    <script src="js/systems/CityLifeSystem.js?v=e48c8d98"></script>
     <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
     <script src="js/systems/ResourceTrends.js?v=16c746be"></script>
-    <script src="js/systems/DeclineWatch.js?v=e0e70d98"></script>
-    <script src="js/systems/UIManager.js?v=6b3d8226"></script>
+    <script src="js/systems/DeclineWatch.js?v=e62c84f1"></script>
+    <script src="js/systems/UIManager.js?v=189a40bc"></script>
     <script src="js/systems/ui/MobileTouch.js?v=d1317e2b"></script>
     <script src="js/systems/ui/StudyBookUI.js?v=6b38320e"></script>
     <script src="js/systems/ui/LoanUI.js?v=58e6338c"></script>
@@ -961,15 +962,16 @@
     <script src="js/systems/ui/SavesUI.js?v=1e957956"></script>
     <script src="js/systems/ui/FieldNotebookUI.js?v=cbc506bb"></script>
     <script src="js/systems/ui/PlayerMenu.js?v=30e6f98f"></script>
-    <script src="js/systems/ui/MissionCardUI.js?v=d2a4bed0"></script>
-    <script src="js/systems/ui/CityHallUI.js?v=954b5798"></script>
+    <script src="js/systems/ui/MissionCardUI.js?v=c4eb697c"></script>
+    <script src="js/systems/ui/CityHallUI.js?v=cf4b212d"></script>
     <script src="js/systems/ui/ResourcePanels.js?v=49d2fb31"></script>
     <script src="js/systems/ui/AquiferViewUI.js?v=0731582e"></script>
     <script src="js/systems/ui/EventUI.js?v=72f71fc0"></script>
     <script src="js/systems/ui/EventDecisionUI.js?v=d6bf36af"></script>
     <script src="js/systems/ui/BuildPreview.js?v=e014184b"></script>
     <script src="js/systems/ui/BasinPreview.js?v=8785ecbe"></script>
-    <script src="js/systems/ui/BuildMenuUI.js?v=aedf8563"></script>
+    <script src="js/data/buildGuides.js?v=3774f67f"></script>
+    <script src="js/systems/ui/BuildMenuUI.js?v=f5f4dcf0"></script>
     <script src="js/systems/ui/MissionBar.js?v=8e720656"></script>
     <script src="js/systems/ui/TechTreeUI.js?v=2ee956b7"></script>
     <script src="js/systems/ui/MobilePanels.js?v=bf67381b"></script>
@@ -977,33 +979,34 @@
     <script src="js/systems/ui/CompassUI.js?v=9e3e44fa"></script>
     <script src="js/systems/ui/ResearchUI.js?v=8c9a823e"></script>
     <script src="js/systems/ui/SettingsUI.js?v=3fa4d7b7"></script>
-    <script src="js/systems/ui/LessonBookUI.js?v=60c7a0ae"></script>
+    <script src="js/systems/ui/LessonBookUI.js?v=68aa5359"></script>
     <script src="js/systems/ui/TreeInfoUI.js?v=5c03494f"></script>
     <script src="js/systems/ui/TerrainHealthUI.js?v=63a2ce87"></script>
     <script src="js/systems/LoanManager.js?v=6a416acb"></script>
-    <script src="js/systems/QuestSystem.js?v=73c22443"></script>
+    <script src="js/systems/QuestSystem.js?v=de93bd73"></script>
     <script src="js/systems/ui/MissionUI.js?v=71f7ded8"></script>
     <script src="js/systems/CityChallenges.js?v=33f98f4d"></script>
     <script src="js/systems/AchievementTracks.js?v=46e3cd19"></script>
     <script src="js/systems/MissionReminders.js?v=203dd893"></script>
-    <script src="js/systems/EventSystem.js?v=4314593c"></script>
+    <script src="js/systems/EventSystem.js?v=6cec8d26"></script>
     <script src="js/systems/SaveSystem.js?v=f87b5ff7"></script>
     <script src="js/systems/StudySystem.js?v=7ed0bbc6"></script>
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
-    <script src="js/systems/TutorialSystem.js?v=394a3655"></script>
+    <script src="js/systems/TutorialSystem.js?v=f6325308"></script>
     <script src="js/systems/RescueGuides.js?v=2bcaabe3"></script>
-    <script src="js/systems/GameOverSystem.js?v=811fe3ee"></script>
+    <script src="js/systems/GameOverSystem.js?v=9512240d"></script>
     <script src="js/systems/PlayerProfile.js?v=1efbe8d5"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
     <script src="js/systems/TreeSystem.js?v=4c85492c"></script>
-    <script src="js/systems/props/PropPlanner.js?v=d6aaf6fa"></script>
-    <script src="js/systems/PropSystem.js?v=f69a4a73"></script>
+    <script src="js/systems/props/PropPlanner.js?v=d80c942b"></script>
+    <script src="js/systems/PropSystem.js?v=9a58e998"></script>
     <script src="js/systems/FieldNotebook.js?v=3f2fd7c6"></script>
     <script src="js/systems/CityDiary.js?v=7cb08944"></script>
     <script src="js/systems/CityMoments.js?v=e4bf90ec"></script>
-    <script src="js/systems/CityFinance.js?v=5a17eb55"></script>
-    <script src="js/systems/CityStaff.js?v=b713a38d"></script>
+    <script src="js/systems/CityFinance.js?v=5847876f"></script>
+    <script src="js/systems/CityStaff.js?v=ca2334bd"></script>
+    <script src="js/systems/CityServices.js?v=be9557dd"></script>
     <script src="js/systems/StaffTalk.js?v=67035e17"></script>
     <script src="js/systems/SavePointTrend.js?v=5dd5bb30"></script>
     <script src="js/systems/CityCinematic.js?v=4cb876d8"></script>

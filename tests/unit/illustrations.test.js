@@ -94,3 +94,15 @@ test('tratamento: puro, determinístico e dentro de 0-255; Kuwahara mantém uma 
     AI.kuwahara(flat, w, h, 2);
     assert.ok(Array.from(flat).every(v => v === 120));
 });
+
+test('prefetch acha as figuras citadas em textos de passos e caminhos (sem repetir)', () => {
+    const html = 'Veja <img src="assets/images/lessons/erosao.webp" alt=""> e <img src="assets/images/lessons/erosao.webp">' +
+        ' e <img src="assets/images/tutorial/bg-bacia.webp?v=2"> mas não <img src="assets/images/studies/x.webp">';
+    const found = AI.sourcesIn(html, null, undefined, ['assets/images/lessons/enchente.webp'], 'sem figura');
+    assert.deepStrictEqual(Array.from(found), [
+        'assets/images/lessons/erosao.webp',
+        'assets/images/tutorial/bg-bacia.webp?v=2',
+        'assets/images/lessons/enchente.webp'
+    ]);
+    assert.strictEqual(AI.sourcesIn().length, 0);
+});

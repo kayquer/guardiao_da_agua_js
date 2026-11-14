@@ -95,11 +95,12 @@ test('prédios verdes e de monitoramento mudam poluição/armazenamento e custam
     assert.strictEqual(rm.resources.water.storage, storage + BUILDINGS.rain_garden.waterStorage);
 });
 
-test('soluções da natureza funcionam sem rua; monitoramento precisa', () => {
+test('soluções da natureza e sensores funcionam sem rua; bomba precisa', () => {
     const { bs } = city();
-    ['rain_garden', 'green_roof', 'green_wall', 'floating_garden', 'linear_park']
+    // monitoramento vai na APP e na várzea, onde não há rua (decisão de 11/2026)
+    ['rain_garden', 'green_roof', 'green_wall', 'floating_garden', 'linear_park', 'monitoring_station', 'water_quality_monitor']
         .forEach(id => assert.strictEqual(bs.buildingNeedsRoad(BUILDINGS[id]), false, id));
-    assert.strictEqual(bs.buildingNeedsRoad(BUILDINGS.monitoring_station), true);
+    assert.strictEqual(bs.buildingNeedsRoad(BUILDINGS.water_pump), true);
 });
 
 test('save antigo (sem buildingIncome/buildingSatisfaction) recompõe pelos prédios prontos', () => {
@@ -131,4 +132,50 @@ test('jogo novo tem capacidade de água definida desde o primeiro instante', () 
     assert.ok(Number.isFinite(water.storage) && water.storage > 0, String(water.storage));
     rm.addWaterStorage(500);
     assert.strictEqual(water.storage, water.max + 500);
+});
+
+test('imposto dos moradores: chegada contínua (× atração) e casas que esvaziam aos poucos (4ª auditoria)', () => {
+    const run = (finance, pop, max) => {
+        const { rm } = city([]);
+        rm.gameManager.cityFinance = finance;
+        rm.getSatisfactionFactors = () => [{ value: 90 }];
+        rm.calculatePopulationAttraction = () => 1.5;
+        rm.updatePopulationCapacity = () => { rm.resources.population.max = max; };
+        rm.resources.population.current = pop;
+        rm.updatePopulation();
+        return rm.resources.population.current;
+    };
+    const normal = run({ attraction: () => 1, occupancy: () => 1 }, 30, 1000) - 30;
+    const high = run({ attraction: () => 0.7, occupancy: () => 1 }, 30, 1000) - 30;
+    assert.ok(normal > 0);
+    assert.ok(Math.abs(high / normal - 0.7) < 1e-9, 'Muito alto: chegam exatamente 30% menos (era só um portão)');
+    // cidade cheia e casas ocupadas em 72%: gente sai aos poucos, nunca abaixo do alvo
+    const full = run({ attraction: () => 0.7, occupancy: () => 0.72 }, 1000, 1000);
+    assert.ok(full < 1000 && full >= 720, `saiu gente: ${full}`);
+    assert.strictEqual(run({ attraction: () => 0.7, occupancy: () => 0.72 }, 721, 1000), 720);
+});
+
+test('"Nível de Água Baixo" só com a água caindo: reservatório novo não dispara alerta (4ª auditoria)', () => {
+    const { rm } = city([]);
+    const alerts = [];
+    rm.gameManager.uiManager = { showCentralAlert: (title, msg) => alerts.push(msg) };
+    const w = rm.resources.water;
+    Object.assign(w, { current: 580, max: 1000 });
+    rm.checkWaterThresholds();               // 58%: nada
+    w.max = 1500;                            // reservatório pronto: 39% sem perder água
+    rm.checkWaterThresholds();
+    assert.strictEqual(alerts.length, 0, 'fazer a coisa certa não é avisado como perigo');
+    w.current = 570; rm.checkWaterThresholds(); // caindo, mas a faixa de 50% já foi marcada em silêncio
+    assert.strictEqual(alerts.length, 0);
+    w.current = 360; rm.checkWaterThresholds(); // 24% caindo: avisa
+    assert.strictEqual(alerts.length, 1);
+    assert.match(alerts[0], /25%/);
+});
+
+test('requisito de moradores (populationRequirement no prédio ou em requirements.population)', () => {
+    const { bs } = city();
+    assert.strictEqual(bs.getPopulationRequirement(BUILDINGS.university), 500);
+    assert.strictEqual(bs.getPopulationRequirement(BUILDINGS.factory), 300);
+    assert.strictEqual(bs.getPopulationRequirement(BUILDINGS.water_research_center), 1000);
+    assert.strictEqual(bs.getPopulationRequirement(BUILDINGS.water_pump), 0);
 });

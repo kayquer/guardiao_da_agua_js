@@ -169,7 +169,7 @@ mixin(UIManager, {
      * (✓ bem, ! atenção, ✕ mal) e a dica do primeiro que vai mal. É o retorno por conceito, não só pelas estrelas.
      */
     renderBasinReport(quest = null) {
-        const ignore = new Set(quest?.stars?.ignore || []);
+        const ignore = new Set(quest ? (this.gameManager.questSystem?.getStarSpec?.(quest)?.ignore || []) : []);
         // item que a missão ainda não ensinou (stars.ignore) aparece neutro: "vem na próxima missão"
         const report = (this.gameManager.resourceManager?.getBasinReport?.() || [])
             .map(i => (ignore.has(i.id) && i.level === 'bad' ? { ...i, level: 'ok', text: `${i.text} (vem na próxima missão)` } : i));

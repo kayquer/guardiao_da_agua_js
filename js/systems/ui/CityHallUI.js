@@ -46,7 +46,8 @@ mixin(UIManager, {
     // ===== Painel da Prefeitura =====
 
     getCityHallActionsHtml(building) {
-        if (building?.type !== 'city_hall' || building.underConstruction || !this.gameManager?.cityFinance) return '';
+        // administrativeBonus (js/data/buildings.js): o prédio que administra a cidade abre Financeiro e Funcionários
+        if (!building?.config?.administrativeBonus || building.underConstruction || !this.gameManager?.cityFinance) return '';
         return `
             <div class="city-hall-actions">
                 <button type="button" class="action-btn city-hall-btn" id="btn-city-finance"
@@ -136,7 +137,10 @@ mixin(UIManager, {
             clearInterval(this.cityFinanceTimer);
             this.cityFinanceTimer = null;
         }
-        if (id === 'city-staff') this.destroyStaffPortraits('team');
+        if (id === 'city-staff') {
+            this.destroyStaffPortraits('team');
+            this.stopHireFaces();
+        }
         this.syncCityHallOpen();
         if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_panel_close');
         const back = this.cityHallReturnFocus;
@@ -263,6 +267,13 @@ mixin(UIManager, {
             if (p.satisfaction) parts.push({ text: `satisfação ${p.satisfaction > 0 ? '+' : '−'}${Math.abs(p.satisfaction)}`, good: p.satisfaction > 0 });
             const r = p.attraction / (g.attraction[from] || 1) - 1;
             if (Math.abs(r) >= 0.005) parts.push({ text: `chegam ${pct(r)} ${r > 0 ? 'mais' : 'menos'} moradores`, good: r > 0 });
+            const occ = p.occupancy - p.occupancyFrom;
+            if (Math.abs(occ) >= 0.005) {
+                parts.push({ text: occ < 0
+                    ? `${pct(1 - p.occupancy)} das casas esvaziam em ~3 min`
+                    : 'famílias que saíram voltam aos poucos', good: occ > 0 });
+                if (Number.isFinite(p.laterDelta)) parts.push({ text: `depois: ${p.laterDelta >= 0 ? '+' : '−'}R$ ${Math.abs(p.laterDelta).toLocaleString('pt-BR')}/min`, good: p.laterDelta >= 0 });
+            }
         } else {
             const who = group === 'commerce' ? 'comércio' : 'indústria';
             const r = p.growth / (g.growth[from] || 1) - 1;
@@ -385,6 +396,7 @@ mixin(UIManager, {
 
     setStaffTab(tab, { focus = false } = {}) {
         this.staffTab = tab === 'hire' ? 'hire' : 'team';
+        this.stopHireFaces();
         const el = document.getElementById('city-staff');
         if (!el) return;
         el.querySelectorAll('.ch-tab').forEach(t => {
@@ -402,6 +414,7 @@ mixin(UIManager, {
         const el = document.getElementById('city-staff');
         const gm = this.gameManager, staff = gm?.cityStaff;
         if (!el || !staff) return;
+        this.stopHireFaces();
         if (this.staffTab === 'team') this.renderStaffTeam(el.querySelector('#cs-panel-team'));
         else this.renderStaffHire(el.querySelector('#cs-panel-hire'));
         const payroll = staff.payroll();
@@ -440,10 +453,21 @@ mixin(UIManager, {
         }).filter(Boolean).join(' · ');
     },
 
-    /** Linha da barra de progresso: quanto falta, parado ou nível máximo. */
+    /** "Talento acima da média (+9%)" — o fator sorteado na contratação (CityStaff.talentAverage). */
+    describeStaffTalent(person) {
+        if (!person?.talent || !Object.keys(person.talent).length) return null;
+        const avg = CityStaff.talentAverage(person);
+        const pct = Math.round((avg - 1) * 100);
+        if (pct >= 4) return { text: `Talento acima da média (+${pct}%)`, state: 'up' };
+        if (pct <= -4) return { text: `Talento abaixo da média (−${Math.abs(pct)}%)`, state: 'down' };
+        return { text: 'Talento na média', state: 'mid' };
+    },
+
+    /** Linha da barra de progresso: quanto falta, parado, esperando trabalho ou nível máximo. */
     describeStaffProgress(person) {
         const role = STAFF_ROLES[person.role];
         if ((person.level || 1) >= STAFF_MAX_LEVEL) return { text: 'Nível máximo! Já rende tudo o que pode.', state: 'max' };
+        if (person.idle) return { text: role.kpiIdle || 'Esperando trabalho para ganhar experiência.', state: 'idle' };
         if (person.good === false) return { text: `Parado: ${role.kpiText} não está indo bem.`, state: 'stopped' };
         const { left } = CityStaff.progress(person);
         const min = Math.max(1, Math.ceil(left));
@@ -466,6 +490,7 @@ mixin(UIManager, {
                     <div class="cs-bar cs-bar--${progress.state}" role="progressbar" aria-label="Até o próximo nível" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(ratio * 100)}"><span style="width:${Math.round(ratio * 100)}%"></span></div>
                     <p class="cs-xp cs-xp--${progress.state}">${progress.state === 'stopped' ? '! ' : ''}${progress.text}</p>
                     <p class="cs-bonus">${this.describeStaffBonus(person)}</p>
+                    ${(() => { const t = this.describeStaffTalent(person); return t ? `<p class="cs-talent cs-talent--${t.state}">${t.text}</p>` : ''; })()}
                     <p class="cs-salary">Salário: <b>${this.formatMoney(CityStaff.salaryOf(person))}/min</b></p>
                     <div class="cs-actions">
                         <button type="button" class="gda-btn gda-btn--primary cs-talk" data-person="${person.id}">Conversar</button>
@@ -499,13 +524,13 @@ mixin(UIManager, {
                 : `Libera com ${role.cap.unlockAt.toLocaleString('pt-BR')} moradores · +1 vaga a cada ${role.cap.extraEvery.toLocaleString('pt-BR')}`;
             return `
                 <article class="cs-role${gate.ok ? '' : ' is-locked'}" data-role="${id}">
-                    <div class="cs-role-icon" aria-hidden="true">${uiIcon(role.icon, 'lg')}</div>
+                    <div class="cs-role-icon cs-role-faces" data-role="${id}" aria-hidden="true">${uiIcon(role.icon, 'lg')}</div>
                     <div class="cs-info">
                         <h3 class="cs-name">${this.staffRoleTitle(role)}</h3>
                         <p class="cs-what">${role.what}</p>
                         <ul class="cs-facts">
                             <li><span>Vagas</span><b>${staff.count(id)}/${cap}</b></li>
-                            <li><span>Salário</span><b>${this.formatMoney(role.salary)}/min</b></li>
+                            <li><span>Salário</span><b>${this.formatMoney(role.salary * (1 + STAFF_TALENT.salaryWeight * (STAFF_TALENT.min - 1)))}–${this.formatMoney(role.salary * (1 + STAFF_TALENT.salaryWeight * (STAFF_TALENT.max - 1))).replace('R$ ', '')}/min</b></li>
                             <li><span>Contratar</span><b>${this.formatMoney(CityStaff.hireCost(id))}</b></li>
                         </ul>
                         <p class="cs-rule">${rule}</p>
@@ -520,7 +545,76 @@ mixin(UIManager, {
             <h3 class="gda-label cs-group">Equipe de base</h3>
             <div class="cs-grid">${ids.filter(id => STAFF_ROLES[id].group === 'base').map(card).join('')}</div>
             <h3 class="gda-label cs-group">Especialistas (chegam com a cidade crescendo)</h3>
-            <div class="cs-grid">${ids.filter(id => STAFF_ROLES[id].group !== 'base').map(card).join('')}</div>`;
+            <div class="cs-grid">${ids.filter(id => STAFF_ROLES[id].group !== 'base').map(card).join('')}</div>
+            <p class="cs-hire-note">Cada pessoa chega com um talento sorteado: rende de 15% a menos a 15% a mais e pede salário de acordo.</p>`;
+        this.startHireFaces(panel);
+    },
+
+    // ===== Rostos que giram na aba Contratar =====
+    // Cada cargo mostra, um de cada vez, os rostos que ainda podem ser sorteados (CityStaff#availableFaces: nenhum
+    // rosto que já trabalhou neste jogo); cada um entra, sorri e dá lugar ao próximo. Sem retrato pronto, fica o ícone.
+
+    startHireFaces(panel) {
+        this.stopHireFaces();
+        const staff = this.gameManager?.cityStaff;
+        if (!staff || typeof AnimatedPortrait === 'undefined' || typeof PORTRAIT_MANIFEST === 'undefined') return;
+        const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        const states = [];
+        panel.querySelectorAll('.cs-role-faces').forEach((slot, i) => {
+            const faces = staff.availableFaces(slot.dataset.role).filter(k => PORTRAIT_MANIFEST[k]);
+            if (!faces.length) return;
+            for (let j = faces.length - 1; j > 0; j--) { // ordem embaralhada
+                const k = Math.floor(Math.random() * (j + 1));
+                [faces[j], faces[k]] = [faces[k], faces[j]];
+            }
+            const state = { slot, faces, index: 0, layers: [], timers: [] };
+            slot.classList.add('has-faces');
+            this.showHireFace(state, { animate: false, smile: !reduce });
+            if (!reduce && faces.length > 1) {
+                // defasados para os cartões não trocarem todos juntos
+                state.timers.push(setTimeout(() => {
+                    state.interval = setInterval(() => this.nextHireFace(state), 3200);
+                }, 500 + i * 380));
+            }
+            states.push(state);
+        });
+        this.hireFaces = states;
+    },
+
+    nextHireFace(state) {
+        if (!state.slot.isConnected) return;
+        state.index = (state.index + 1) % state.faces.length;
+        this.showHireFace(state, { animate: true, smile: true });
+    },
+
+    showHireFace(state, { animate, smile }) {
+        let portrait;
+        try {
+            portrait = new AnimatedPortrait(state.faces[state.index], { crop: 'face', label: '' });
+        } catch (error) {
+            logWarn('⚠️ Rosto da contratação indisponível:', state.faces[state.index], error);
+            return;
+        }
+        const layer = document.createElement('div');
+        layer.className = 'cs-face-layer';
+        layer.appendChild(portrait.el);
+        if (animate) layer.classList.add('is-entering');
+        state.slot.appendChild(layer);
+        const old = state.layers.splice(0);
+        state.layers.push({ layer, portrait });
+        if (animate) requestAnimationFrame(() => layer.classList.remove('is-entering'));
+        old.forEach(o => state.timers.push(setTimeout(() => { o.portrait.destroy?.(); o.layer.remove(); }, animate ? 600 : 0)));
+        // entra sério e abre um sorriso
+        if (smile) state.timers.push(setTimeout(() => portrait.setExpression?.('happy'), 900));
+    },
+
+    stopHireFaces() {
+        for (const state of this.hireFaces || []) {
+            clearInterval(state.interval);
+            state.timers.forEach(t => clearTimeout(t));
+            state.layers.forEach(o => o.portrait.destroy?.());
+        }
+        this.hireFaces = [];
     },
 
     onStaffPanelClick(event) {
@@ -723,7 +817,8 @@ mixin(UIManager, {
         const intro = StaffTalk.resolve(STAFF_TALK[person.role]?.intro?.[Math.floor(Math.random() * (STAFF_TALK[person.role]?.intro?.length || 1))] || '',
             person.gender, this.staffTalkVars(person));
         overlay.querySelector('.staff-hire-intro').textContent = intro;
-        overlay.querySelector('.staff-hire-bonus span').textContent = `Já ajuda: ${this.describeStaffBonus(person)}.`;
+        const talent = this.describeStaffTalent(person);
+        overlay.querySelector('.staff-hire-bonus span').textContent = `Já ajuda: ${this.describeStaffBonus(person)}.${talent ? ` ${talent.text}.` : ''}`;
         (document.getElementById('game-screen') || document.body).appendChild(overlay);
 
         const { el, portrait } = this.createStaffPortrait(person, { crop: 'face', scope: overlay });

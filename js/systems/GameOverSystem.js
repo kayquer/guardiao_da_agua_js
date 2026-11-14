@@ -495,6 +495,7 @@ class GameOverSystem {
         if (!container || this.isGameOver || this.showingVictory || this.victoryFlight) return;
         const gm = this.gameManager;
         gm.cityDiary?.check?.(gm); // a missão final entra no diário antes da tela
+        AnimatedIllustration.prefetch('assets/images/tutorial/bg-cidade-rio.webp'); // o fundo da vitória pinta durante o voo
         const started = typeof CityCinematic !== 'undefined' &&
             CityCinematic.playVictory(gm, this.victoryCaptions(), () => {
                 this.victoryFlight = false;

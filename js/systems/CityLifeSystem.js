@@ -21,8 +21,16 @@ class CityLifeSystem {
     }
 
     /** Blocos de rua ligados a outro bloco (isolados não contam para o trânsito). */
+    // A rede só muda em onRoadBuilt (getRoadNetwork devolve uma nova): a conta fica guardada para ela.
+    // update() pergunta a cada quadro e connectedCount quebrava a chave de cada bloco ("x,z".split) — ~33 KB
+    // de lixo por quadro numa cidade com 150 ruas.
     getConnectedRoadCount() {
-        return this.network ? this.network.connectedCount() : 0;
+        if (!this.network) return 0;
+        if (this.connectedFor !== this.network) {
+            this.connectedFor = this.network;
+            this.connectedRoads = this.network.connectedCount();
+        }
+        return this.connectedRoads;
     }
 
     /** Quantos veículos a rede comporta agora: nenhum abaixo do mínimo, depois 1 a cada 4 blocos. */

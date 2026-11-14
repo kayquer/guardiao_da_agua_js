@@ -21,7 +21,11 @@ const TAX_GROUPS = {
         label: 'Moradores', short: 'IPTU', icon: '🏠',
         what: 'Imposto sobre as casas (IPTU). É a maior fonte de dinheiro da cidade.',
         satisfaction: [6, 3, 0, -4, -11],        // pontos de satisfação (entram devagar: CityFinance.SATISFACTION_EASE_S)
-        attraction: [1.2, 1.1, 1, 0.9, 0.7]      // × chegada de moradores (ResourceManager.calculatePopulationAttraction)
+        attraction: [1.2, 1.1, 1, 0.9, 0.7],     // × chegada de moradores por segundo (ResourceManager.updatePopulation)
+        // parte das casas que continua ocupada: com imposto alto, famílias se mudam para a cidade vizinha aos poucos
+        // (CityFinance.OCCUPANCY_EASE_S). Rende mais hoje e encolhe depois: com a cidade cheia, Alto ≈ +6% e Muito
+        // alto ≈ o mesmo que Normal na receita dos moradores, com menos satisfação (sem estratégia dominante)
+        occupancy: [1, 1, 1, 0.88, 0.72]
     },
     commerce: {
         label: 'Comércio e serviços', short: 'ISS', icon: '🏬',
@@ -48,13 +52,13 @@ const STAFF_ROLES = {
         title: { f: 'Mestre de obras', m: 'Mestre de obras' }, group: 'base', icon: '👷',
         what: 'Mais uma obra ao mesmo tempo e obras mais rápidas.',
         cap: { base: 3 }, salary: 80,
-        bonus: { slots: 1, buildTime: [0.06, 0.1, 0.13, 0.17, 0.2] },
-        kpi: 'builds', kpiText: 'obras entregues'
+        bonus: { slots: 1, buildTime: [0.05, 0.07, 0.09, 0.11, 0.13] },
+        kpi: 'builds', kpiText: 'obras entregues', kpiIdle: 'Esperando obra nova para ganhar experiência.'
     },
     servicos: {
         title: { f: 'Técnica de manutenção', m: 'Técnico de manutenção' }, group: 'base', icon: '🧰',
         what: 'Menos falha de equipamento e conserto aos poucos do estrago de enchentes.',
-        cap: { base: 2 }, salary: 50,
+        cap: { base: 2 }, salary: 70,
         bonus: { failure: [0.2, 0.26, 0.33, 0.39, 0.45], repairPerMin: [0.04, 0.05, 0.06, 0.07, 0.08] },
         kpi: 'efficiency', kpiText: 'prédios funcionando bem'
     },
@@ -76,36 +80,37 @@ const STAFF_ROLES = {
         title: { f: 'Engenheira civil', m: 'Engenheiro civil' }, group: 'specialist', icon: '📐',
         what: 'Construções mais baratas.',
         cap: { unlockAt: 400, extraEvery: 500 }, salary: 180,
-        bonus: { buildCost: [0.06, 0.09, 0.12, 0.15, 0.18] },
-        kpi: 'builds', kpiText: 'obras entregues'
+        bonus: { buildCost: [0.05, 0.07, 0.09, 0.11, 0.13] },
+        kpi: 'builds', kpiText: 'obras entregues', kpiIdle: 'Esperando obra nova para ganhar experiência.'
     },
     economista: {
         title: { f: 'Economista', m: 'Economista' }, group: 'specialist', icon: '📊',
         what: 'Manutenção dos prédios mais barata.',
         cap: { unlockAt: 500, extraEvery: 500 }, salary: 200,
-        bonus: { maintenance: [0.06, 0.09, 0.12, 0.15, 0.18] },
-        kpi: 'budget', kpiText: 'saldo da cidade positivo'
+        bonus: { maintenance: [0.05, 0.065, 0.08, 0.095, 0.11] },
+        kpi: 'budget', kpiText: 'saldo positivo e sem cair'
     },
     eng_agronomo: {
         title: { f: 'Engenheira agrônoma', m: 'Engenheiro agrônomo' }, group: 'specialist', icon: '🌱',
         what: 'Árvores, mudas e obras verdes rendem mais; mudas crescem mais rápido.',
-        cap: { unlockAt: 600, extraEvery: 500 }, salary: 160,
-        bonus: { green: [0.08, 0.13, 0.19, 0.24, 0.3] },
+        cap: { unlockAt: 600, extraEvery: 500 }, salary: 120,
+        bonus: { green: [0.12, 0.18, 0.25, 0.32, 0.4] },
         kpi: 'trees', kpiText: 'árvores e mata ciliar'
     },
     veterinario: {
         title: { f: 'Veterinária', m: 'Veterinário' }, group: 'specialist', icon: '🐾',
         what: 'Bichos raros chegam antes e aguentam mais antes de sumir; moradores mais contentes.',
-        cap: { unlockAt: 750, extraEvery: 500 }, salary: 150,
+        cap: { unlockAt: 750, extraEvery: 500 }, salary: 120,
         bonus: { ecology: [0.05, 0.08, 0.11, 0.14, 0.18], tolerance: [3, 4, 5, 6, 8], satisfaction: [1, 1, 2, 2, 3] },
         kpi: 'fauna', kpiText: 'rio vivo e bichos no caderno'
     },
     geografo: {
         title: { f: 'Geógrafa', m: 'Geógrafo' }, group: 'specialist', icon: '🗺️',
         what: 'Secas, enchentes e chuvas fortes fazem menos estrago, com aviso mais cedo.',
-        cap: { unlockAt: 900, extraEvery: 500 }, salary: 180,
+        cap: { unlockAt: 900, extraEvery: 500 }, salary: 130,
         bonus: { climate: [0.06, 0.1, 0.14, 0.19, 0.24], warning: [0.15, 0.2, 0.25, 0.3, 0.4] },
-        kpi: 'climate', kpiText: 'crises atravessadas'
+        kpi: 'climate', kpiText: 'crises atravessadas com rio e aquífero acima de 40%',
+        kpiIdle: 'Sem crise de clima agora: ganha experiência atravessando a próxima.'
     }
 };
 
@@ -115,10 +120,17 @@ const STAFF_MAX_LEVEL = 5;
 const STAFF_SALARY_STEP = 0.15;   // +15% de salário por nível (o bônus sobe mais rápido: sensação de conquista)
 const STAFF_HIRE_MONTHS = 1;      // contratar custa 1 "mês" de salário (LoanManager.MONTH_MS = 2 min de jogo)
 
+// Talento sorteado na contratação: cada bônus da pessoa (as tabelas por nível acima) × um fator entre min e max,
+// guardado e mantido em todos os níveis (evolui na mesma proporção). Quem rende mais pede mais: o salário acompanha
+// metade do desvio médio (salaryWeight), então o valor por real fica entre −8% e +7% da curva — dentro do "perfect
+// imbalance" de 10-15% de Schreiber e Romero (Game Balance, cap. 8). A escolha: ficar com quem veio ou demitir e
+// pagar outra contratação, perdendo o nível.
+const STAFF_TALENT = { min: 0.85, max: 1.15, salaryWeight: 0.5 };
+
 // Retratos: cada cargo e gênero tem variantes numeradas (staff/<cargo>-<f|m>-<n>), sorteadas com chance igual entre
 // as que existem no manifesto (PORTRAIT_MANIFEST). STAFF_PORTRAIT_VARIANTS = quantas tentar (1 … n); sem nenhuma pronta,
 // o jogo usa o avatar de reserva com as iniciais.
-const STAFF_PORTRAIT_VARIANTS = 5;
+const STAFF_PORTRAIT_VARIANTS = 8; // 1-5 em todo cargo; 6-8 só nos cargos com mais vagas (obras e serviços)
 
 // Nomes brasileiros comuns (IBGE, Censo 2010/2022) — sorteados na contratação
 const STAFF_NAMES = {

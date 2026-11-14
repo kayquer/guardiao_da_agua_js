@@ -661,6 +661,9 @@ class EventSystem {
         // geógrafo/a (CityStaff, bonus 'climate'): seca, enchente e chuva forte fazem menos estrago
         const climate = this.gameManager.cityStaff?.bonus?.('climate') || 0;
         if (climate && ['drought', 'flood', 'heavy_rain'].includes(eventTypeId)) event.effectScale = (event.effectScale ?? 1) * (1 - climate);
+        // bombeiros (CityServices 'safety'): queimada e enchente fazem menos estrago
+        const safety = this.gameManager.cityServices?.bonus?.('safety') || 0;
+        if (safety && ['wildfire', 'flood'].includes(eventTypeId)) event.effectScale = (event.effectScale ?? 1) * (1 - safety);
         // Ameaças crescem com a cidade (getCityPressure); a seca de missão mantém a força escrita no texto dela
         if (eventType.response?.kind === 'threat' && !Number.isFinite(options.duration)) {
             event.effectScale = (event.effectScale ?? 1) * this.getCityPressure();

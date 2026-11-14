@@ -184,7 +184,8 @@
 
 .ch-seg {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    /* minmax(0, 1fr): com 1fr a coluna cresce com o texto ("✓ Muito baixo", texto Grande/Maior) e empurra as outras */
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 4px;
     margin-top: var(--gda-space-3);
     padding: 4px;
@@ -193,8 +194,12 @@
 }
 
 .ch-seg-btn {
+    min-width: 0;
     min-height: 40px;
     padding: 4px 6px;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+    hyphens: auto;
     border: 0;
     border-radius: var(--gda-r-pill);
     background: transparent;
@@ -214,10 +219,13 @@
     box-shadow: 0 2px 0 var(--gda-accent-deep);
 }
 
-.ch-seg-btn.is-on::before { content: '✓ '; }
+.ch-seg-btn.is-on::before { content: '✓\00a0'; }
 .ch-seg-btn[disabled] { color: var(--gda-ink-muted); cursor: not-allowed; opacity: 0.6; }
 
-.ch-preview { min-height: 1.5em; margin: var(--gda-space-2) 0 0; font-size: var(--gda-text-sm); color: var(--gda-ink-muted); }
+/* altura reservada para a prévia mais longa (moradores: receita, satisfação, chegada, casas, depois): passar o mouse
+   num nível não muda a altura da seção nem empurra as de baixo */
+.ch-preview { min-height: calc(3 * 1.45em); margin: var(--gda-space-2) 0 0; font-size: var(--gda-text-sm); line-height: 1.45; color: var(--gda-ink-muted); }
+.ch-preview span { white-space: nowrap; }
 .ch-preview.is-preview { color: var(--gda-ink); }
 .ch-up { color: var(--gda-good); font-weight: 800; }
 .ch-down { color: var(--gda-bad); font-weight: 800; }
@@ -285,6 +293,18 @@
 .cs-face > * { width: 100%; height: 100%; }
 .cs-role-icon { flex: none; width: 56px; height: 56px; display: grid; place-items: center; background: var(--gda-accent-soft); border-radius: var(--gda-r-md); }
 .cs-role.is-locked .cs-role-icon { filter: grayscale(0.7); }
+/* rostos que giram (CityHallUI.startHireFaces): um por cima do outro, com fade */
+.cs-role-faces.has-faces { position: relative; width: 72px; height: 72px; overflow: hidden; border-radius: 50%; background: var(--gda-surface-2); box-shadow: 0 0 0 3px var(--gda-surface), 0 0 0 4px var(--gda-border); }
+.cs-role-faces.has-faces > :not(.cs-face-layer) { display: none; }
+.cs-face-layer { position: absolute; inset: 0; opacity: 1; transform: scale(1); transition: opacity 500ms var(--gda-ease), transform 500ms var(--gda-ease); }
+.cs-face-layer.is-entering { opacity: 0; transform: scale(0.92); }
+.cs-face-layer > * { width: 100%; height: 100%; }
+.cs-role.is-locked .cs-role-faces.has-faces { filter: grayscale(0.6); opacity: 0.85; }
+.cs-hire-note { margin: var(--gda-space-3) 0 0; font-size: var(--gda-text-sm); color: var(--gda-ink-muted); }
+.cs-talent { margin: 2px 0; font-size: var(--gda-text-sm); font-weight: 700; }
+.cs-talent--up { color: var(--gda-good); }
+.cs-talent--down { color: var(--gda-ok); }
+.cs-talent--mid { color: var(--gda-ink-muted); }
 
 .cs-info { flex: 1; min-width: 0; }
 .cs-name { margin: 0; font-size: var(--gda-text-lg); font-weight: 800; color: var(--gda-ink); line-height: 1.2; }
@@ -297,11 +317,13 @@
 .cs-bar { height: 8px; margin: 6px 0 4px; border-radius: var(--gda-r-pill); background: var(--gda-surface-3); overflow: hidden; }
 .cs-bar span { display: block; height: 100%; border-radius: inherit; background: var(--gda-accent-gradient); }
 .cs-bar--stopped span { background: var(--gda-ok-strong); }
+.cs-bar--idle span { background: var(--gda-border-strong); }
 .cs-bar--max span { background: var(--gda-good-strong); }
 
 .cs-xp { margin: 0; font-size: var(--gda-text-sm); color: var(--gda-ink-muted); }
 .cs-xp--stopped { color: var(--gda-ok); font-weight: 700; }
 .cs-xp--max { color: var(--gda-good); font-weight: 700; }
+.cs-xp--idle { color: var(--gda-ink-muted); font-style: italic; }
 .cs-bonus { margin: 6px 0 2px; font-size: var(--gda-text-sm); font-weight: 700; color: var(--gda-good); }
 .cs-salary { margin: 0 0 var(--gda-space-2); font-size: var(--gda-text-sm); color: var(--gda-ink-muted); }
 .cs-salary b { color: var(--gda-ink); }
@@ -504,4 +526,5 @@
 
 @media (prefers-reduced-motion: reduce) {
     .ch-overlay, .ch-card { animation: none; }
+    .cs-face-layer { transition: none; }
 }

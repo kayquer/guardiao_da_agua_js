@@ -73,7 +73,7 @@
       ]
     },
     "relatedBuildings": [
-      "well",
+      "water_well",
       "rain_garden"
     ],
     "relatedConcepts": [
@@ -1308,7 +1308,7 @@
       ]
     },
     "relatedBuildings": [
-      "water_treatment",
+      "water_treatment_plant",
       "rain_garden"
     ],
     "relatedConcepts": [
@@ -1402,8 +1402,7 @@
     },
     "relatedBuildings": [
       "park",
-      "rain_garden",
-      "bioswale"
+      "rain_garden"
     ],
     "relatedConcepts": [
       "riparian_protection",
@@ -1427,7 +1426,7 @@
   },
   "green_wall": {
     "buildingId": "green_wall",
-    "buildingName": "Muro Verde",
+    "buildingName": "Parede Verde",
     "category": "public",
     "difficulty": "intermediário",
     "studyTitle": "Muros Verdes: Jardins Verticais nas Cidades",
@@ -1517,7 +1516,7 @@
   },
   "green_roof": {
     "buildingId": "green_roof",
-    "buildingName": "Telhado Verde",
+    "buildingName": "Teto Verde",
     "category": "public",
     "difficulty": "intermediário",
     "studyTitle": "Telhados Verdes: Quando o Jardim Sobe ao Topo",
@@ -1607,7 +1606,7 @@
   },
   "wind_farm": {
     "buildingId": "wind_farm",
-    "buildingName": "Parque Eólico",
+    "buildingName": "Campo Eólico",
     "category": "energy",
     "difficulty": "intermediário",
     "studyTitle": "Energia Eólica: O Poder do Vento",
@@ -1700,7 +1699,7 @@
   },
   "solar_farm": {
     "buildingId": "solar_farm",
-    "buildingName": "Fazenda Solar",
+    "buildingName": "Fazenda Solar (Minigeração)",
     "category": "energy",
     "difficulty": "intermediário",
     "studyTitle": "Energia Solar: A Força do Sol",
@@ -1793,7 +1792,7 @@
   },
   "hydroelectric_plant": {
     "buildingId": "hydroelectric_plant",
-    "buildingName": "Usina Hidrelétrica",
+    "buildingName": "Hidrelétrica",
     "category": "energy",
     "difficulty": "avançado",
     "studyTitle": "Energia Hidrelétrica: O Poder da Água em Movimento",
@@ -2341,7 +2340,7 @@
   },
   "ecopark": {
     "buildingId": "ecopark",
-    "buildingName": "Ecoparque (Central de Tratamento Avançado)",
+    "buildingName": "Ecoparque",
     "category": "treatment",
     "difficulty": "avançado",
     "studyTitle": "Ecoparque: Rumo ao Lixo Zero",
@@ -3912,7 +3911,7 @@
   },
   "small_hydro": {
     "buildingId": "small_hydro",
-    "buildingName": "CGH (Central Geradora Hidrelétrica)",
+    "buildingName": "Mini Hidrelétrica (CGH)",
     "category": "power",
     "difficulty": "intermediário",
     "studyTitle": "CGH: A Menor Hidrelétrica",
@@ -4103,6 +4102,90 @@
       {
         "label": "MME — Ministério de Minas e Energia",
         "url": "https://www.gov.br/mme/pt-br"
+      }
+    ]
+  },
+  "erosion_control": {
+    "buildingId": "erosion_control",
+    "buildingName": "Controle de Erosão",
+    "category": "nature",
+    "difficulty": "iniciante",
+    "studyTitle": "Controle de Erosão: Segurando a Terra no Lugar",
+    "studyIcon": "🛡️",
+    "estimatedTime": "4 minutos",
+    "learningObjectives": [
+      "Entender o que é erosão e por que ela acontece",
+      "Perceber como a terra que desce o morro deixa o rio raso e barrento",
+      "Conhecer jeitos simples de segurar a terra no lugar"
+    ],
+    "pages": [
+      {
+        "pageNumber": 1,
+        "title": "A Terra que Desce o Morro",
+        "content": "<p>Quando chove forte num morro sem plantas, a água desce <b>correndo</b> e leva a terra junto. Isso é a <b>erosão</b>.</p><p>A terra levada vai parar no fundo do rio. O rio fica <b>raso e barrento</b>, os peixes sofrem e, na próxima chuva forte, a água transborda mais fácil. Esse entupimento do rio se chama <b>assoreamento</b>.</p><p>Quem segura a terra são as <b>raízes</b> das plantas. Por isso, morro sem mato e beira de rio sem árvores sofrem mais com a erosão.</p>",
+        "image": "assets/images/lessons/erosao.webp"
+      },
+      {
+        "pageNumber": 2,
+        "title": "Como Segurar a Terra",
+        "content": "<p>Dá para frear a água que desce o morro:</p><ul><li><b>Terraços:</b> degraus feitos no morro. A água para em cada degrau e entra no chão, em vez de descer de uma vez.</li><li><b>Barreiras:</b> fileiras de pedras, troncos ou sacos de terra atravessadas na encosta, que seguram a enxurrada.</li><li><b>Plantas de raiz forte:</b> capim, arbustos e árvores cobrem o chão e amarram a terra com as raízes.</li></ul><p>Com a água descendo devagar, mais chuva entra na terra e enche a água debaixo do chão, e a terra fica no lugar.</p>",
+        "image": null
+      },
+      {
+        "pageNumber": 3,
+        "title": "Na Sua Cidade",
+        "content": "<p>No jogo, o <b>Controle de Erosão</b> pode ir na encosta e funciona sem rua. Ele faz duas coisas:</p><ul><li><b>Segura a enxurrada:</b> a cidade corre menos risco de enchente.</li><li><b>Segura a terra:</b> menos barro chega ao rio, e a poluição cai um pouco.</li></ul><p>Ele também conta como <b>controle de enxurrada</b> perto dos bairros: um bairro cheio de telhados e asfalto precisa de um por perto para não alagar quando chove.</p><p>Lembre também das estradas de terra: a enxurrada que passa por elas leva barro para o rio. Cuidar do chão é cuidar da água!</p>",
+        "image": null
+      }
+    ],
+    "quiz": {
+      "enabled": true,
+      "passingScore": 50,
+      "questions": [
+        {
+          "id": 1,
+          "question": "Choveu forte num morro sem nenhuma planta. O que deve acontecer com o rio lá embaixo?",
+          "options": [
+            "Ele fica mais fundo e mais limpo",
+            "Ele recebe a terra que desceu e fica raso e barrento",
+            "Nada muda, porque a chuva não chega ao rio",
+            "Ele seca na mesma hora"
+          ],
+          "correctAnswer": 1,
+          "explanation": "Sem raízes para segurar, a água leva a terra do morro para o rio, que fica raso e barrento: é o assoreamento."
+        },
+        {
+          "id": 2,
+          "question": "Por que os terraços (degraus no morro) ajudam a evitar a erosão?",
+          "options": [
+            "Porque fazem a água descer mais rápido",
+            "Porque impedem a chuva de cair no morro",
+            "Porque a água para em cada degrau, desce devagar e entra no chão",
+            "Porque tiram as plantas do caminho da água"
+          ],
+          "correctAnswer": 2,
+          "explanation": "Cada degrau segura um pouco da água: ela desce devagar, entra no chão e não arrasta a terra."
+        }
+      ]
+    },
+    "relatedBuildings": [
+      "rain_garden",
+      "tree_sapling",
+      "linear_park"
+    ],
+    "relatedConcepts": [
+      "erosion",
+      "siltation",
+      "soil_conservation"
+    ],
+    "sources": [
+      {
+        "label": "Embrapa Solos — conservação do solo",
+        "url": "https://www.embrapa.br/solos"
+      },
+      {
+        "label": "USGS Water Science School — Sedimentos nos rios (em inglês)",
+        "url": "https://www.usgs.gov/special-topics/water-science-school/science/sediment-and-suspended-sediment"
       }
     ]
   }

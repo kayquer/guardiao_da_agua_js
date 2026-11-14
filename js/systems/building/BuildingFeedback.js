@@ -32,18 +32,42 @@ mixin(BuildingSystem, {
         const deficit = consumption - generation;
 
         const uiManager = window.gameManager?.uiManager;
+        // Falta pequena (≥ 90% de eficiência, ex.: 1 kW à noite com microgeração): aviso discreto, não alerta central
+        if (uiManager?.showNotification && (electricity.efficiency || 0) >= 0.9) {
+            uiManager.showNotification(`⚡ Falta um pouco de energia (${efficiencyPercent}%): faltam ${deficit} kW. ${this.describeAvailablePower()}`, 'warning', 6000);
+            return;
+        }
         if (uiManager && uiManager.showCentralAlert) {
             uiManager.showCentralAlert(
                 'Energia Insuficiente',
                 `Seus edifícios estão operando a apenas ${efficiencyPercent}% de eficiência por falta de energia.`,
                 'warning',
-                `Geração atual: ${generation} kW | Consumo: ${consumption} kW | Falta: ${deficit} kW\n\nConstrua usinas em ⚡ Energia (Campo Eólico, Usina Solar ou Hidrelétrica) para suprir a demanda.`,
+                `Geração atual: ${generation} kW | Consumo: ${consumption} kW | Falta: ${deficit} kW\n\n${this.describeAvailablePower()}`,
                 // Se esperou um livro/tutorial fechar: só mostra se ainda faltar energia (obras contam)
                 { stillRelevant: () => this.isEnergyShortProjected() }
             );
         } else {
             this.showNotification(`Energia insuficiente! Eficiência: ${efficiencyPercent}%`, 'warning');
         }
+    },
+
+    /**
+     * Sugestão do alerta de energia só com usinas que o jogador já pode construir (tecnologia alcançada e visível),
+     * renováveis primeiro e as mais baratas antes — o texto fixo mandava fazer Campo Eólico e Hidrelétrica ainda
+     * travados (4ª auditoria).
+     */
+    describeAvailablePower() {
+        const study = window.gameManager?.studySystem;
+        const list = [...this.buildingTypes.entries()]
+            .filter(([id, c]) => (c.powerGeneration || 0) > 0
+                && (typeof FEATURE_FLAGS === 'undefined' || FEATURE_FLAGS.isBuildingVisible(id))
+                && (!study?.isTechReached || study.isTechReached(id)))
+            .sort(([, a], [, b]) => (b.renewable ? 1 : 0) - (a.renewable ? 1 : 0) || (a.cost || 0) - (b.cost || 0))
+            .slice(0, 3)
+            .map(([, c]) => c.name);
+        if (!list.length) return 'Construa uma usina em ⚡ Energia para suprir a demanda.';
+        const names = list.length > 1 ? `${list.slice(0, -1).join(', ')} ou ${list[list.length - 1]}` : list[0];
+        return `Já dá para construir em ⚡ Energia: ${names}.`;
     },
 
     // Falta energia contando as obras em andamento (o consumo/geração delas só entra na conclusão)?

@@ -16,28 +16,68 @@
  * painel (o elemento sai do DOM). prefers-reduced-motion: nada se mexe (css/illustrations.css).
  * Arquivo sem entrada no manifesto: a imagem com o tratamento, sem camadas.
  *
+ * Aparece na hora (o guache leva ~0,3-1,5 s por figura, conforme a máquina): a moldura já nasce com o tamanho
+ * final (aspect-ratio) e um brilho de "carregando" discreto (.ail--loading, só depois de 0,2 s); a imagem crua
+ * (<img class="ail-raw" decoding="async">) entra assim que decodifica (.ail--raw) e, quando o guache fica pronto,
+ * o SVG animado cobre a crua num crossfade curto (.ail--ready) e a crua sai do DOM. Arquivo já tratado nesta
+ * página: o SVG nasce pronto, sem crua nem crossfade (.ail--instant). O tratamento roda inteiro no Worker
+ * (createImageBitmap → OffscreenCanvas → JPEG; sem OffscreenCanvas, só os pixels vão ao Worker), uma vez por
+ * URL (o cache guarda também o que está em andamento), e `prefetch(...)` trata em segundo plano a figura da
+ * próxima página (fila de baixa prioridade: não atrasa a figura que está na tela).
+ *
  * Uso: AnimatedIllustration.enhance(el)  → troca os <img> de tutorial/aulas dentro de `el`;
- *      AnimatedIllustration.mountBackdrop(el, src) → fundo de tela cheia (cobre, sem barras).
+ *      AnimatedIllustration.mountBackdrop(el, src) → fundo de tela cheia (cobre, sem barras);
+ *      AnimatedIllustration.prefetch(texto | caminho, ...) → trata antes as figuras citadas.
  */
 class AnimatedIllustration {
     constructor(src, { alt = '', backdrop = false } = {}) {
+        const self = AnimatedIllustration;
         this.src = src;
-        this.key = AnimatedIllustration.keyOf(src);
+        this.key = self.keyOf(src);
         this.data = (typeof ILLUSTRATIONS !== 'undefined' && ILLUSTRATIONS[this.key]) || null;
-        this.uid = `ail${++AnimatedIllustration.count}`;
-        this.random = AnimatedIllustration.seeded(this.key || src);
+        this.uid = `ail${++self.count}`;
+        this.random = self.seeded(this.key || src);
+        this.href = self.treated.get(self.urlOf(src)) || ''; // já tratada nesta página: nasce pronta
 
         this.el = document.createElement('figure');
-        this.el.className = `ail${backdrop ? ' ail--backdrop' : ''}${this.data ? '' : ' ail--still'}`;
+        this.el.className = `ail${backdrop ? ' ail--backdrop' : ''}${this.data ? '' : ' ail--still'}` +
+            (this.href ? ' ail--ready ail--instant' : ' ail--loading');
         this.el.dataset.illustration = this.key || src;
-        this.el.innerHTML = this.render(alt);
+        this.el.innerHTML = (this.href ? '' : `<img class="ail-raw" src="${ailAttr(src)}" alt="" aria-hidden="true" decoding="async">`) +
+            this.render(alt);
         this.svg = this.el.querySelector('svg');
 
-        AnimatedIllustration.treat(src).then(url => {
+        if (!this.href) {
+            this.showRaw();
+            self.treat(src).then(url => this.reveal(url));
+        }
+        self.watch(this.el);
+    }
+
+    /** A imagem crua entra assim que decodifica (enquanto o guache não fica pronto). */
+    showRaw() {
+        const raw = this.el.querySelector('.ail-raw');
+        const shown = () => {
+            this.el.classList.remove('ail--loading');
+            this.el.classList.add('ail--raw');
+        };
+        const decoding = typeof raw.decode === 'function' ? raw.decode() : Promise.reject(new Error('decode'));
+        decoding.then(shown, () => raw.addEventListener('load', shown, { once: true }));
+    }
+
+    /** Guache pronto: decodifica antes (sem quadro vazio), põe nas camadas e faz o crossfade por cima da crua. */
+    reveal(url) {
+        const self = AnimatedIllustration;
+        self.decodeUrl(url).then(() => {
+            this.href = url;
             this.svg.querySelectorAll('image').forEach(img => img.setAttribute('href', url));
-            this.el.classList.add('ail--ready');
+            requestAnimationFrame(() => {
+                this.el.classList.remove('ail--loading');
+                this.el.classList.add('ail--ready');
+                // depois do crossfade a crua (já coberta) sai: uma camada a menos para compor
+                setTimeout(() => this.el.querySelector('.ail-raw')?.remove(), self.CROSSFADE_MS + 150);
+            });
         });
-        AnimatedIllustration.watch(this.el);
     }
 
     // ===== DESENHO =====
@@ -51,7 +91,7 @@ class AnimatedIllustration {
                 <radialGradient id="${this.uid}-glow"><stop offset="0" stop-color="#fff6cf" stop-opacity="0.95"/><stop offset="0.45" stop-color="#ffe9a6" stop-opacity="0.45"/><stop offset="1" stop-color="#ffe9a6" stop-opacity="0"/></radialGradient>
                 <radialGradient id="${this.uid}-vignette" r="0.75"><stop offset="0.6" stop-color="#15324e" stop-opacity="0"/><stop offset="1" stop-color="#15324e" stop-opacity="0.28"/></radialGradient>
             </defs>
-            <image class="ail-base" width="${W}" height="${H}" preserveAspectRatio="none"/>
+            <image class="ail-base" width="${W}" height="${H}" preserveAspectRatio="none"${this.hrefAttr()}/>
             ${cuts}<g class="ail-fx">${fx}</g>
             <rect class="ail-vignette" width="${W}" height="${H}" fill="url(#${this.uid}-vignette)"/>
         </svg>`;
@@ -78,9 +118,14 @@ class AnimatedIllustration {
             const half = (cut.dur ?? AnimatedIllustration.FLOW_DUR[cut.kind] ?? 0) / 2;
             const delay = `animation-delay:${ailRound(-(this.random() * 4) - k * half, 2)}s`;
             out += `<g class="ail-cut ail-cut--${cut.kind}" style="${vars.join(';')};${delay}">` +
-                `<image width="${W}" height="${H}" preserveAspectRatio="none" mask="url(#${id})"/></g>`;
+                `<image width="${W}" height="${H}" preserveAspectRatio="none" mask="url(#${id})"${this.hrefAttr()}/></g>`;
         }
         return out;
+    }
+
+    /** href das camadas quando a figura já nasce pronta (senão entra no reveal). */
+    hrefAttr() {
+        return this.href ? ` href="${ailAttr(this.href)}"` : '';
     }
 
     renderFx(item) {
@@ -146,71 +191,189 @@ class AnimatedIllustration {
     }
 
     // ===== TRATAMENTO (uma vez por arquivo) =====
-    /** Promise do URL tratado (blob); sem canvas ou com erro, o próprio arquivo. */
-    static treat(src) {
-        const cache = AnimatedIllustration.cache;
-        if (!cache.has(src)) {
-            cache.set(src, AnimatedIllustration.process(src).catch(() => src));
+    /** URL absoluta (mesma chave para 'assets/x.webp', './assets/x.webp' e o endereço completo). */
+    static urlOf(src) {
+        try {
+            return new URL(String(src), document.baseURI).href;
+        } catch {
+            return String(src);
         }
-        return cache.get(src);
+    }
+
+    /**
+     * Promise do URL tratado (blob); sem canvas ou com erro, o próprio arquivo. Uma vez por URL: o cache guarda
+     * também o que está em andamento (duas figuras iguais ao mesmo tempo esperam o mesmo trabalho).
+     * `low` = adiantado (prefetch): só começa com nada mais rodando; quem pede sem `low` passa na frente.
+     */
+    static treat(src, { low = false } = {}) {
+        const self = AnimatedIllustration;
+        const url = self.urlOf(src);
+        let job = self.cache.get(url);
+        if (!job) {
+            job = { url, low };
+            job.promise = new Promise(resolve => { job.resolve = resolve; });
+            self.cache.set(url, job);
+            self.queue.push(job);
+        } else if (!low) {
+            job.low = false;
+        }
+        self.pump();
+        return job.promise;
+    }
+
+    /** Começa o que estiver na fila: os pedidos da tela já, os adiantados um de cada vez e só com tudo parado. */
+    static pump() {
+        const self = AnimatedIllustration;
+        for (;;) {
+            let at = self.queue.findIndex(job => !job.low);
+            if (at < 0 && self.running === 0 && self.queue.length) at = 0;
+            if (at < 0) return;
+            const job = self.queue.splice(at, 1)[0];
+            self.running++;
+            self.process(job.url)
+                .catch(err => {
+                    if (typeof logWarn === 'function') logWarn('AnimatedIllustration: sem guache para', job.url, err);
+                    return job.url;
+                })
+                .then(url => {
+                    self.running--;
+                    self.treated.set(job.url, url);
+                    job.resolve(url);
+                    self.pump();
+                });
+        }
+    }
+
+    /** Figuras de tutorial/aulas citadas em textos (HTML de passos) ou caminhos, sem repetir. Puro. */
+    static sourcesIn(...sources) {
+        const found = new Set();
+        for (const source of sources.flat(2)) {
+            if (typeof source !== 'string') continue;
+            for (const m of source.matchAll(/assets\/images\/(?:tutorial|lessons)\/[\w-]+\.webp(?:\?[\w=.&-]*)?/g)) found.add(m[0]);
+        }
+        return [...found];
+    }
+
+    /** Trata antes (em idle, baixa prioridade) as figuras citadas: a próxima página já abre animada. */
+    static prefetch(...sources) {
+        const self = AnimatedIllustration;
+        const list = self.sourcesIn(...sources).filter(src => !self.cache.has(self.urlOf(src)));
+        if (!list.length) return 0;
+        const run = () => list.forEach(src => self.treat(src, { low: true }));
+        if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 1500 });
+        else setTimeout(run, 300);
+        return list.length;
+    }
+
+    /** Decodifica o URL antes de mostrar (o SVG não pisca vazio no crossfade); erro = segue assim mesmo. */
+    static decodeUrl(url) {
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = url;
+        return img.decode().catch(() => {});
     }
 
     static async process(src) {
+        const self = AnimatedIllustration;
         const img = new Image();
+        img.decoding = 'async';
         img.src = src;
         await img.decode();
-        const t = AnimatedIllustration.TREATMENT;
+        const t = self.TREATMENT;
         const w = Math.min(img.naturalWidth, t.maxWidth);
         const h = Math.round(img.naturalHeight * w / img.naturalWidth);
+        // Caminho rápido: tudo no Worker (desenho, pixels, guache e JPEG); a thread principal só decodifica
+        if (self.paintInWorker !== false && typeof createImageBitmap === 'function' && typeof OffscreenCanvas !== 'undefined' &&
+            self.startWorker()) {
+            try {
+                const bitmap = await createImageBitmap(img);
+                const blob = await self.post({ kind: 'paint', bitmap, w, h, t, quality: self.JPEG_QUALITY }, [bitmap]);
+                return URL.createObjectURL(blob);
+            } catch {
+                self.paintInWorker = false; // Worker sem OffscreenCanvas: o caminho de antes, abaixo
+            }
+        }
         const canvas = document.createElement('canvas');
         canvas.width = w;
         canvas.height = h;
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         ctx.drawImage(img, 0, 0, w, h);
         const image = ctx.getImageData(0, 0, w, h);
-        image.data.set(await AnimatedIllustration.runTreatment(image.data, w, h, t));
+        image.data.set(await self.runTreatment(image.data, w, h, t));
         ctx.putImageData(image, 0, 0);
-        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', self.JPEG_QUALITY));
         if (!blob) throw new Error('toBlob');
         return URL.createObjectURL(blob);
     }
 
     /**
-     * Roda o tratamento num Worker (≈ 0,2-0,4 s por figura: fora da thread principal, a página não trava).
-     * O Worker é montado com o código destas mesmas funções; sem Worker, roda aqui mesmo.
+     * Worker do tratamento (≈ 0,3-1,5 s por figura, conforme a máquina: fora da thread principal, a página não
+     * trava), montado com o código destas mesmas funções. Criado na primeira figura; null = sem Worker.
      */
+    static startWorker() {
+        const self = AnimatedIllustration;
+        if (self.worker !== undefined) return self.worker;
+        try {
+            const code = `const ailClamp = ${ailClamp};
+                const AnimatedIllustration = { ${self.applyTreatment}, ${self.kuwahara}, ${self.boxBlend}, ${self.seeded} };
+                onmessage = async e => {
+                    const { id, kind, w, h, t } = e.data;
+                    try {
+                        if (kind === 'paint') {
+                            const canvas = new OffscreenCanvas(w, h);
+                            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                            ctx.drawImage(e.data.bitmap, 0, 0, w, h);
+                            e.data.bitmap.close();
+                            const image = ctx.getImageData(0, 0, w, h);
+                            AnimatedIllustration.applyTreatment(image.data, w, h, t);
+                            ctx.putImageData(image, 0, 0);
+                            postMessage({ id, result: await canvas.convertToBlob({ type: 'image/jpeg', quality: e.data.quality }) });
+                        } else {
+                            AnimatedIllustration.applyTreatment(new Uint8ClampedArray(e.data.buf), w, h, t);
+                            postMessage({ id, result: e.data.buf }, [e.data.buf]);
+                        }
+                    } catch (err) {
+                        postMessage({ id, error: String((err && err.message) || err) });
+                    }
+                };`;
+            self.worker = new Worker(URL.createObjectURL(new Blob([code], { type: 'text/javascript' })));
+            self.jobs = new Map();
+            self.worker.onmessage = e => {
+                const job = self.jobs.get(e.data.id);
+                self.jobs.delete(e.data.id);
+                if (e.data.error) job?.reject(new Error(e.data.error));
+                else job?.resolve(e.data.result);
+            };
+            self.worker.onerror = () => { // Worker quebrou: ninguém fica esperando, e o resto roda aqui mesmo
+                self.worker.terminate();
+                self.worker = null;
+                self.jobs.forEach(job => job.reject(new Error('worker')));
+                self.jobs.clear();
+            };
+        } catch {
+            self.worker = null;
+        }
+        return self.worker;
+    }
+
+    static post(message, transfer) {
+        const self = AnimatedIllustration;
+        const id = ++self.jobCount;
+        return new Promise((resolve, reject) => {
+            self.jobs.set(id, { resolve, reject });
+            self.worker.postMessage({ ...message, id }, transfer);
+        });
+    }
+
+    /** Só os pixels no Worker (sem OffscreenCanvas); sem Worker, roda aqui mesmo. */
     static runTreatment(data, w, h, t) {
         const self = AnimatedIllustration;
-        if (self.worker === undefined) {
-            try {
-                const code = `const ailClamp = ${ailClamp};
-                    const AnimatedIllustration = { ${self.applyTreatment}, ${self.kuwahara}, ${self.boxBlend}, ${self.seeded} };
-                    onmessage = e => {
-                        const { id, buf, w, h, t } = e.data;
-                        const px = new Uint8ClampedArray(buf);
-                        AnimatedIllustration.applyTreatment(px, w, h, t);
-                        postMessage({ id, buf }, [buf]);
-                    };`;
-                self.worker = new Worker(URL.createObjectURL(new Blob([code], { type: 'text/javascript' })));
-                self.jobs = new Map();
-                self.worker.onmessage = e => {
-                    self.jobs.get(e.data.id)?.(new Uint8ClampedArray(e.data.buf));
-                    self.jobs.delete(e.data.id);
-                };
-            } catch {
-                self.worker = null;
-            }
-        }
-        if (!self.worker) {
+        if (!self.startWorker()) {
             self.applyTreatment(data, w, h, t);
             return Promise.resolve(data);
         }
-        const id = ++self.jobCount;
         const buf = data.slice().buffer;
-        return new Promise(resolve => {
-            self.jobs.set(id, resolve);
-            self.worker.postMessage({ id, buf, w, h, t }, [buf]);
-        });
+        return self.post({ kind: 'pixels', buf, w, h, t }, [buf]).then(result => new Uint8ClampedArray(result));
     }
 
     /**
@@ -345,10 +508,21 @@ function ailClamp(v) {
     return v < 0 ? 0 : v > 255 ? 255 : v;
 }
 
+function ailAttr(text) {
+    return String(text).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
 AnimatedIllustration.W = 1600;
 AnimatedIllustration.H = 900;
 AnimatedIllustration.count = 0;
-AnimatedIllustration.cache = new Map();
+AnimatedIllustration.cache = new Map(); // URL absoluta → { promise, low } (pronto ou em andamento)
+AnimatedIllustration.treated = new Map(); // URL absoluta → URL tratado (blob), para nascer pronta
+AnimatedIllustration.queue = [];
+AnimatedIllustration.running = 0;
+AnimatedIllustration.paintInWorker = undefined; // false = o Worker não tem OffscreenCanvas (só pixels lá)
+/** Crossfade da crua para a animada (ms): igual ao --gda-dur-slow da transição em css/illustrations.css. */
+AnimatedIllustration.CROSSFADE_MS = 550;
+AnimatedIllustration.JPEG_QUALITY = 0.9;
 AnimatedIllustration.watched = new Set();
 AnimatedIllustration.observer = null;
 AnimatedIllustration.worker = undefined; // criado na primeira figura (null = sem Worker)

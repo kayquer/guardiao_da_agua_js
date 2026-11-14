@@ -29,7 +29,7 @@ test('aula e tutorial mostram a ilustração animada em camadas', async ({ page 
 
     const figure = await openBookOnFigure(page);
     await expect(figure).toHaveClass(/ail--ready/, { timeout: 15000 }); // tratamento pronto (Worker)
-    expect(await page.locator('#lesson-book .book-text img[src*="assets/images/lessons/"]').count()).toBe(0);
+    expect(await page.locator('#lesson-book .book-text img[src*="assets/images/lessons/"]:not(.ail-raw)').count()).toBe(0); // a crua (.ail-raw) é da figura
     const info = await figure.evaluate(el => ({
         cuts: el.querySelectorAll('.ail-cut').length,
         fx: el.querySelectorAll('.ail-fx > g > *').length,
@@ -56,6 +56,80 @@ test('aula e tutorial mostram a ilustração animada em camadas', async ({ page 
     }
     await expect(page.locator('#tutorial-text .ail--ready')).toHaveCount(1, { timeout: 15000 });
     expect(await page.locator('#tutorial-text .ail .ail-cut').count()).toBeGreaterThanOrEqual(2);
+    expect(problems).toEqual([]);
+});
+
+test('a figura aparece na hora (esqueleto, depois a crua) e só então vira a animada, sem pular', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'mesma lógica no celular');
+    const problems = watchProblems(page);
+    await startGame(page);
+    await page.evaluate(() => window.gameManager.tutorialSystem.complete());
+    // Imagem lenta (rede) e guache segurado até o teste liberar: dá para ver cada fase
+    let releaseImage;
+    const imageGate = new Promise(resolve => { releaseImage = resolve; });
+    await page.route('**/assets/images/lessons/**', async route => {
+        await imageGate;
+        await route.continue();
+    });
+    await page.evaluate(() => {
+        const AI = window.AnimatedIllustration;
+        const process = AI.process;
+        const gate = new Promise(resolve => { window.__releaseGouache = resolve; });
+        AI.process = async src => { await gate; return process.call(AI, src); };
+    });
+
+    const figure = await openBookOnFigure(page);
+    // 1) esqueleto: moldura já no tamanho final, brilho de carregando, nada animado ainda
+    await expect(figure).toHaveClass(/ail--loading/);
+    const before = await figure.boundingBox();
+    expect(before.height).toBeGreaterThan(60);
+    expect(await figure.evaluate(el => getComputedStyle(el, '::before').content)).not.toBe('none');
+
+    // 2) a crua chega: aparece logo, ainda sem a animada
+    releaseImage();
+    await expect(figure).toHaveClass(/ail--raw/, { timeout: 10000 });
+    await expect(figure).not.toHaveClass(/ail--loading/);
+    const raw = await figure.evaluate(el => {
+        const img = el.querySelector('.ail-raw');
+        return { loaded: img.complete && img.naturalWidth > 0, opacity: getComputedStyle(img).opacity, svg: getComputedStyle(el.querySelector('svg')).opacity };
+    });
+    expect(raw).toEqual({ loaded: true, opacity: '1', svg: '0' });
+    await expect(figure).not.toHaveClass(/ail--ready/);
+
+    // 3) guache pronto: a animada cobre a crua (crossfade), a crua sai e o tamanho não muda
+    await page.evaluate(() => window.__releaseGouache());
+    await expect(figure).toHaveClass(/ail--ready/, { timeout: 15000 });
+    expect(await figure.locator('.ail-base').getAttribute('href')).toMatch(/^blob:/);
+    await expect(figure.locator('.ail-raw')).toHaveCount(0, { timeout: 5000 });
+    await expect.poll(() => figure.evaluate(el => getComputedStyle(el.querySelector('svg')).opacity)).toBe('1');
+    const after = await figure.boundingBox();
+    expect(Math.abs(after.height - before.height)).toBeLessThan(1);
+    expect(Math.abs(after.width - before.width)).toBeLessThan(1);
+
+    // 4) mesma figura de novo (página virada e volta): já nasce animada, sem crua nem esqueleto
+    const key = await figure.getAttribute('data-illustration');
+    const again = await page.evaluate(key => {
+        const holder = document.createElement('div');
+        holder.innerHTML = `<img src="assets/images/${key}" alt="x">`;
+        AnimatedIllustration.enhance(holder);
+        const el = holder.firstElementChild;
+        return { ready: el.classList.contains('ail--ready'), raw: el.querySelectorAll('.ail-raw').length };
+    }, key);
+    expect(again).toEqual({ ready: true, raw: 0 });
+
+    // 5) prefetch: a figura da próxima página já fica pronta antes de aparecer (uma vez só por arquivo)
+    const prefetched = await page.evaluate(async () => {
+        const AI = window.AnimatedIllustration;
+        const src = 'assets/images/lessons/erosao.webp';
+        AI.prefetch(`<img src="${src}">`, src);
+        const url = AI.urlOf(src);
+        for (let i = 0; i < 300 && !AI.treated.has(url); i++) await new Promise(r => setTimeout(r, 100));
+        const holder = document.createElement('div');
+        holder.innerHTML = `<img src="${src}" alt="x">`;
+        AI.enhance(holder);
+        return { treated: AI.treated.has(url), ready: holder.firstElementChild.classList.contains('ail--ready') };
+    });
+    expect(prefetched).toEqual({ treated: true, ready: true });
     expect(problems).toEqual([]);
 });
 

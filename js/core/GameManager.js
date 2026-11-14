@@ -160,6 +160,7 @@ class GameManager {
             this.cityMoments = new CityMoments(); // nascente, cheia contida, chuva real, 1ºs carros, álbum (js/systems/CityMoments.js)
             this.cityFinance = new CityFinance(); // impostos da prefeitura (js/systems/CityFinance.js)
             this.cityStaff = new CityStaff(); // funcionários da prefeitura (js/systems/CityStaff.js)
+            this.cityServices = new CityServices(this); // escola, hospital, bombeiros, polícia, atrações (js/systems/CityServices.js)
 
             // Aguardar carregamento do conteúdo educacional
             await this.studySystem.initialize();

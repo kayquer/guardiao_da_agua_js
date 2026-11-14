@@ -89,9 +89,20 @@ mixin(BuildingSystem, {
         return isZone && typeof ZONE_GROWTH !== 'undefined' ? full * ZONE_GROWTH.effectScale[0] : full;
     },
 
-    /** Imposto do grupo do prédio (comércio/indústria, CityFinance.efficiencyBonus): de +6% (muito baixo) a −10% (muito alto). */
+    /**
+     * Imposto do grupo do prédio (comércio/indústria, CityFinance.efficiencyBonus): de +6% (muito baixo) a −10% (muito
+     * alto), + polícia (CityServices 'security') para comércio e turismo — rua segura, loja aberta.
+     */
     getTaxEfficiencyBonus(building) {
-        return this.gameManager?.cityFinance?.efficiencyBonus?.(building?.config) || 0;
+        const tax = this.gameManager?.cityFinance?.efficiencyBonus?.(building?.config) || 0;
+        const commerce = typeof CityFinance !== 'undefined' && CityFinance.groupOf(building?.config) === 'commerce';
+        return tax + (commerce ? (this.gameManager?.cityServices?.bonus?.('security') || 0) : 0);
+    },
+
+    /** Moradores que a cidade precisa ter para construir (populationRequirement no prédio ou em requirements). */
+    getPopulationRequirement(config) {
+        const v = config?.populationRequirement ?? config?.requirements?.population ?? config?.requirements?.populationRequirement;
+        return Number.isFinite(v) && v > 0 ? v : 0;
     },
 
     /** Soma dos bônus de pesquisa por perto (determinístico; limite EFFICIENCY_RULES.researchBonusCap). */

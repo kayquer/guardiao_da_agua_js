@@ -8,7 +8,12 @@ test('corte do aquífero: abre pelo painel de água, nível ao vivo, canudo da b
     page.on('pageerror', e => errors.push(`pageerror: ${e.message}`));
     page.on('console', m => { if (m.type() === 'error') errors.push(`console.error: ${m.text()}`); });
     await startGame(page);
-    await page.evaluate(() => window.gameManager.tutorialSystem.complete());
+    await page.evaluate(() => {
+        window.gameManager.tutorialSystem.complete();
+        // a prefeitura sem usina dá o alerta central de energia, que no celular cobre o botão (não é o assunto aqui)
+        window.gameManager.buildingSystem._energyWarningCooldown = Date.now() + 1e9;
+        document.querySelector('.central-alert-overlay')?.remove();
+    });
 
     // Painel 💧 (no celular, o indicador compacto) → botão do bloco do aquífero
     if (testInfo.project.name === 'mobile') await page.locator('#compact-water').click();

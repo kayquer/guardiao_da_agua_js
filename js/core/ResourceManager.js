@@ -324,7 +324,11 @@ class ResourceManager {
 
         if (pollution.current < 20) factors.push({ key: 'pollution', icon: '🌿', label: 'Ar e rio limpos', value: 15 });
         else if (pollution.current < 50) factors.push({ key: 'pollution', icon: '🌿', label: 'Poluição moderada', value: 5 });
-        else factors.push({ key: 'pollution', icon: '🏭', label: 'Poluição alta', value: -15 });
+        else {
+            // hospital (CityServices 'health'): a poluição alta incomoda menos quem tem onde se tratar
+            const health = this.gameManager?.cityServices?.bonus?.('health') || 0;
+            factors.push({ key: 'pollution', icon: '🏭', label: health ? 'Poluição alta (hospital ajuda)' : 'Poluição alta', value: -15 * (1 - health) });
+        }
 
         // Árvores em pé (cai quando derrubadas para construir)
         if (this.greenBonus) factors.push({ key: 'green', icon: '🌳', label: 'Árvores e áreas verdes', value: this.greenBonus });
@@ -374,11 +378,24 @@ class ResourceManager {
         // Aplicar crescimento limitado pela capacidade. Quem chega: % da cidade ou, numa cidade pequena, pelo menos
         // MOVE_IN_PER_S famílias (senão 30 moradores levavam 20 min para encher uma zona). O piso é a população inicial:
         // era Math.max(100, …) com 30 de início — a cidade pulava para 100 em 3 s e a meta "50 moradores" nascia cumprida.
+        // Imposto dos moradores (CityFinance): × chegada (mais barato atrai, mais caro afasta) e parte das casas que
+        // fica ocupada (imposto alto: famílias se mudam para a cidade vizinha aos poucos)
+        const finance = this.gameManager?.cityFinance;
+        // × atrações (museu, parque, monumento, hotel) e × o ritmo das zonas residenciais prontas (growthRate)
+        const services = this.gameManager?.cityServices;
+        const taxArrival = (finance?.attraction?.() ?? 1) * (1 + (services?.bonus?.('attraction') || 0)) * (services?.residentialPace?.() ?? 1);
+        const occupied = Math.max(ResourceManager.MIN_POPULATION, population.max * (finance?.occupancy?.() ?? 1));
         const oldPopulation = population.current;
         let newPopulation = population.current * (1 + population.growth / 100);
-        if (population.growth > 0 && population.current < population.max) {
-            newPopulation = population.current + Math.max(population.current * population.growth / 100,
-                ResourceManager.MOVE_IN_PER_S * (population.growth / 0.1));
+        if (population.growth > 0) {
+            newPopulation = population.current < occupied
+                ? Math.min(occupied, population.current + taxArrival * Math.max(population.current * population.growth / 100,
+                    ResourceManager.MOVE_IN_PER_S * (population.growth / 0.1)))
+                : population.current;
+        }
+        // acima das casas ocupadas: saem aos poucos (nunca abaixo do alvo)
+        if (newPopulation > occupied && population.current > occupied) {
+            newPopulation = Math.max(occupied, Math.min(newPopulation, population.current - Math.max(ResourceManager.MOVE_IN_PER_S, population.current * 0.002)));
         }
         population.current = Math.max(ResourceManager.MIN_POPULATION, Math.min(population.max, newPopulation));
         
@@ -417,7 +434,7 @@ class ResourceManager {
     // 40 (era 500, depois 100): as casas que a cidade já tem — 30 moradores e lugar para mais 10. Quem traz moradores
     // são as zonas residenciais (a meta "50 moradores" da missão 2 só se cumpre com a zona pronta)
     static BASE_POPULATION_CAPACITY = 40;
-    static MOVE_IN_PER_S = 0.1; // famílias que chegam por segundo com a cidade atraente (6 por minuto)
+    static MOVE_IN_PER_S = 0.25; // moradores que chegam por segundo com a cidade atraente (15 por minuto; 6/min era lento demais — 4ª auditoria)
     static get MIN_POPULATION() { return GAME_CONFIG.resources.initialPopulation; } // a cidade nunca esvazia abaixo de quem já morava
 
     /**
@@ -467,9 +484,8 @@ class ResourceManager {
         else if (pollution.current > 40) attractionFactor *= 0.8;
         else if (pollution.current < 20) attractionFactor *= 1.1; // Limpo
 
-        // Imposto dos moradores (CityFinance): mais barato atrai, mais caro afasta
-        attractionFactor *= this.gameManager?.cityFinance?.attraction?.() ?? 1;
-
+        // O imposto dos moradores não entra aqui (isto é só um portão por faixas): ele multiplica a chegada de moradores
+        // em updatePopulation, de forma contínua — a prévia "chegam 30% menos moradores" é exatamente o que acontece
         return Math.max(0, Math.min(2.0, attractionFactor));
     }
 
@@ -712,7 +728,7 @@ class ResourceManager {
         
         // população + consumo fixo dos edifícios (add/removeWaterConsumption)
         // × demandMultiplier dos eventos (visitantes, campanha de conservação); desperdício = 10% + vazamentos
-        water.consumption = (population.current * ResourceManager.WATER_PER_PERSON + (water.buildingConsumption || 0)) *
+        water.consumption = (population.current * this.waterPerPerson() + (water.buildingConsumption || 0)) *
             (water.demandMultiplier ?? 1);
         water.waste = water.consumption * 0.1 + (water.extraWaste || 0);
         
@@ -874,6 +890,11 @@ class ResourceManager {
     // caminho (ex.: add/removeWaterConsumption ou addExpense direto) aparece numa linha "Outros", e a soma bate.
     static WATER_PER_PERSON = 2;
 
+    /** Água por morador agora: escola e universidade ensinam a economizar (CityServices 'education'). */
+    waterPerPerson() {
+        return ResourceManager.WATER_PER_PERSON * (1 - (this.gameManager?.cityServices?.bonus?.('education') || 0));
+    }
+
     /** L/min que um prédio pronto consome (fixo, fora os moradores). Muda plantada: o que está aplicado na etapa. */
     static buildingWaterUse(building) {
         if (building?.treeApplied) return Number(building.treeApplied.water) || 0;
@@ -909,7 +930,7 @@ class ResourceManager {
     getWaterConsumers(buildings = [], popCapacityOf = b => b.config?.populationCapacity || b.config?.population || 0) {
         const population = this.resources.population;
         const water = this.resources.water;
-        const perPerson = ResourceManager.WATER_PER_PERSON;
+        const perPerson = this.waterPerPerson();
         const people = Math.max(0, population.current || 0);
         const housing = buildings.filter(b => b.active).map(b => ({ building: b, cap: Math.max(0, popCapacityOf(b) || 0) }));
         const capSum = housing.reduce((sum, h) => sum + h.cap, 0);
@@ -1021,13 +1042,21 @@ class ResourceManager {
 
         const percent = (water.current / water.max) * 100;
         const thresholds = [50, 25, 10, 5];
+        // Só avisa quando a água está caindo de verdade: terminar um reservatório aumenta a capacidade e a porcentagem
+        // cai sem faltar água (4ª auditoria: "caiu para 50%" logo depois de fazer a coisa certa). Nesse caso a faixa
+        // é marcada em silêncio e o próximo aviso só vem se a reserva continuar baixando.
+        const capacityGrew = this._lastWaterMax !== undefined && water.max > this._lastWaterMax + 0.5;
+        const falling = this._lastWaterLevel === undefined || water.current < this._lastWaterLevel - 0.01;
+        this._lastWaterMax = water.max;
+        this._lastWaterLevel = water.current;
 
         for (const threshold of thresholds) {
             if (percent <= threshold && (this._lastWaterThreshold === undefined || this._lastWaterThreshold > threshold)) {
                 this._lastWaterThreshold = threshold;
+                if (capacityGrew || !falling) break;
 
                 const messages = {
-                    50: 'O nível de água caiu para 50%. Fique atento ao consumo da sua cidade.',
+                    50: 'A reserva de água ficou abaixo da metade e está baixando. Fique atento ao consumo da sua cidade.',
                     25: 'Alerta! Apenas 25% da água restante. Considere construir novas fontes de captação.',
                     10: 'Situação crítica! Apenas 10% de água restante. Ação imediata necessária!',
                     5: 'EMERGÊNCIA! Apenas 5% de água! Sua cidade está prestes a entrar em colapso!'

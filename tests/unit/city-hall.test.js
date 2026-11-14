@@ -128,8 +128,7 @@ test('contratar: cobra 1 mês de salário, respeita vagas e dinheiro; demitir co
     const gm = fakeGame({ budget: 1000 });
     const staff = new CityStaff();
     assert.strictEqual(CityStaff.hireCost('obras'), 160); // R$ 80/min × 2 min
-    let seq = 0;
-    const rng = () => [0.2, 0.1, 0.3, 0.4, 0.6, 0.7, 0.8, 0.9][seq++ % 8];
+    const rng = () => 0.5; // talento 1,0 (o meio da faixa): salário = o da tabela
     const a = staff.hire('obras', gm, rng);
     assert.ok(a.ok);
     assert.strictEqual(gm.resourceManager.resources.budget.current, 840);
@@ -169,7 +168,7 @@ test('progressão: só ganha experiência com o número indo bem; sobe de nível
     const gm = fakeGame({ satisfaction: 70 });
     const staff = new CityStaff();
     gm.resourceManager.resources.population.current = 200;
-    const { person } = staff.hire('assistente_social', gm);
+    const { person } = staff.hire('assistente_social', gm, () => 0.5);
     // satisfação boa e parada (≥ 60, não caindo): conta
     for (let i = 0; i < 3 * 60; i++) { gm.gameTime += 1000; staff.tick(1000, gm); }
     assert.strictEqual(person.level, 2);
@@ -205,7 +204,7 @@ test('bônus de todo cargo cresce do nível 1 ao 5 mais que o salário (sensaç�
 test('serviços gerais consertam aos poucos o estrago de enchente; save/load guarda o quadro', () => {
     const gm = fakeGame();
     const staff = new CityStaff();
-    staff.hire('servicos', gm);
+    staff.hire('servicos', gm, () => 0.5);
     const b = { damageFactor: 0.5, config: { name: 'x' } };
     gm.buildings.push(b);
     for (let i = 0; i < 60; i++) staff.tick(1000, gm);
@@ -219,4 +218,78 @@ test('serviços gerais consertam aos poucos o estrago de enchente; save/load gua
     old.loadData({ staff: [{ role: 'cargo_que_nao_existe' }, { role: 'obras', level: 9 }] });
     assert.strictEqual(old.staff.length, 1);
     assert.strictEqual(old.staff[0].level, 5);
+});
+
+test('imposto dos moradores: casas esvaziam devagar e a prévia mostra o "depois" (sem estratégia dominante)', () => {
+    const f = new CityFinance();
+    const occ = TAX_GROUPS.residents.occupancy;
+    // cidade cheia: receita de longo prazo = nível × casas ocupadas — Muito alto não passa o Normal em mais de 2%
+    assert.ok(1.4 * occ[4] <= 1.02, 'Muito alto ≈ Normal no longo prazo');
+    assert.ok(1.2 * occ[3] > 1 && 1.2 * occ[3] < 1.1, 'Alto: pouco acima do Normal');
+    const p = f.preview('residents', 'muito_alto', { residents: 1000 });
+    assert.strictEqual(p.revenueDelta, 400);
+    assert.strictEqual(p.laterDelta, Math.round(1000 * (1.4 * occ[4] - 1)));
+    assert.ok(f.setLevel('residents', 'muito_alto', 0).ok);
+    f.tick(60000, null);
+    assert.ok(f.occupancy() < 1 && f.occupancy() > occ[4], 'em 1 min ainda não saiu todo mundo');
+    for (let i = 0; i < 20; i++) f.tick(60000, null);
+    assert.strictEqual(f.occupancy(), occ[4]);
+    const back = new CityFinance();
+    back.loadData(JSON.parse(JSON.stringify(f.getSaveData())));
+    assert.strictEqual(back.occupancy(), occ[4]);
+});
+
+test('talento sorteado na contratação: dentro da faixa, igual em todos os níveis, salário acompanha', () => {
+    const T = g('STAFF_TALENT');
+    for (let i = 0; i < 50; i++) {
+        const t = CityStaff.randomTalent('veterinario');
+        assert.strictEqual(JSON.stringify(Object.keys(t).sort()), JSON.stringify(['ecology', 'satisfaction', 'tolerance']));
+        for (const v of Object.values(t)) assert.ok(v >= T.min && v <= T.max, `talento ${v}`);
+    }
+    assert.strictEqual(JSON.stringify(Object.keys(CityStaff.randomTalent('obras'))), '["buildTime"]', 'o fixo (+1 obra) não varia');
+    assert.strictEqual(CityStaff.randomTalent('obras', () => 0.5).buildTime, 1);
+    const strong = { role: 'eng_civil', level: 1, talent: { buildCost: T.max } };
+    const weak = { role: 'eng_civil', level: 1, talent: { buildCost: T.min } };
+    assert.ok(Math.abs(CityStaff.personBonus(strong, 'buildCost') - STAFF_ROLES.eng_civil.bonus.buildCost[0] * T.max) < 1e-9);
+    // evolui na mesma proporção
+    strong.level = 5;
+    assert.ok(Math.abs(CityStaff.personBonus(strong, 'buildCost') / STAFF_ROLES.eng_civil.bonus.buildCost[4] - T.max) < 1e-9);
+    strong.level = 1;
+    // quem rende mais pede mais, mas o valor por real fica entre −8% e +7% (perfect imbalance de 10-15%, Game Balance)
+    assert.ok(CityStaff.salaryOf(strong) > CityStaff.salaryOf(weak));
+    const valuePerReal = p => CityStaff.personBonus(p, 'buildCost') / CityStaff.salaryOf(p);
+    const mid = { role: 'eng_civil', level: 1, talent: { buildCost: 1 } };
+    for (const p of [strong, weak]) assert.ok(Math.abs(valuePerReal(p) / valuePerReal(mid) - 1) <= 0.09);
+    // save antigo sem talento = 1
+    assert.strictEqual(CityStaff.salaryOf({ role: 'eng_civil', level: 1 }), STAFF_ROLES.eng_civil.salary);
+});
+
+test('rosto e nome não voltam a ser sorteados; KPI sem trabalho fica "esperando"', () => {
+    const gm = fakeGame({ budget: 1e6 });
+    const staff = new CityStaff();
+    // manifesto de mentira: obras com 2 rostos de cada gênero
+    const manifest = g('typeof PORTRAIT_MANIFEST === "undefined" ? (globalThis.PORTRAIT_MANIFEST = {}) : PORTRAIT_MANIFEST');
+    ['f-1', 'f-2', 'm-1', 'm-2'].forEach(k => { manifest[`staff/obras-${k}`] = { face: [0, 0, 1, 1], layers: {} }; });
+    const a = staff.hire('obras', gm).person;
+    const b = staff.hire('obras', gm).person;
+    assert.notStrictEqual(a.portrait, b.portrait);
+    assert.notStrictEqual(a.name.split(' ')[0], b.name.split(' ')[0]);
+    staff.fire(a.id);
+    // quem saiu também não volta enquanto houver rosto novo
+    const faces = staff.availableFaces('obras');
+    assert.ok(!faces.includes(a.portrait) && !faces.includes(b.portrait) && faces.length === 2);
+    const c = staff.hire('obras', gm).person;
+    assert.ok(![a.portrait, b.portrait].includes(c.portrait));
+    const back = new CityStaff();
+    back.loadData(JSON.parse(JSON.stringify(staff.getSaveData())));
+    assert.strictEqual(JSON.stringify(back.usedFaces.sort()), JSON.stringify(staff.usedFaces.sort()));
+    ['f-1', 'f-2', 'm-1', 'm-2'].forEach(k => delete manifest[`staff/obras-${k}`]);
+    // sem obra nova e sem crise: esperando (não "parado")
+    assert.strictEqual(staff.kpiState('builds', gm), 'idle');
+    gm.eventSystem = { activeEvents: new Map(), pendingEvents: [] };
+    assert.strictEqual(staff.kpiState('climate', gm), 'idle');
+    gm.eventSystem.activeEvents.set(1, { type: 'drought' });
+    assert.strictEqual(staff.kpiState('climate', gm), 'good');
+    gm.resourceManager.resources.water.river = 30;
+    assert.strictEqual(staff.kpiState('climate', gm), 'bad');
 });

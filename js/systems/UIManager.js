@@ -622,7 +622,8 @@ class UIManager {
     // Livro de aulas, central de aulas, tutorial (story ou coach) ou livro de estudo visível
     isReadingOverlayOpen() {
         return ['#lessons-hub', '#lesson-book', '#study-book-overlay', '#tutorial-container', '#mission-card',
-            '#city-finance', '#city-staff', '#staff-hire-card', '#staff-talk'] // prefeitura (ui/CityHallUI.js)
+            '#city-finance', '#city-staff', '#staff-hire-card', '#staff-talk', // prefeitura (ui/CityHallUI.js)
+            '#aquifer-view'] // corte do aquífero: alerta central espera ele fechar (4ª auditoria: duas modais juntas)
             .some(selector => (document.querySelector(selector)?.getClientRects().length || 0) > 0);
     }
 
@@ -687,6 +688,7 @@ class UIManager {
             '#weather-modal', '#lessons-hub', '#lesson-book', '.mission-interface', '.choice-dialog', '.loan-interface',
             '.resource-details-panel', '#notification-history', '#research-panel', '#achievements-panel', '#saves-panel', '#notebook-panel', '#settings-panel', '#tech-modal', '#event-decision', '#mission-card',
             '#species-card', '#diary-panel', '#city-cinematic', '#aquifer-view',
+            '#build-guide', // "Como funciona" da categoria (ui/BuildMenuUI.js)
             '#city-finance', '#city-staff', '#staff-hire-card', '#staff-talk' // prefeitura (ui/CityHallUI.js)
         ];
         return popups.some(selector => shown(document.querySelector(selector)));
@@ -1018,7 +1020,7 @@ class UIManager {
         return item;
     }
 
-    /** Estado do card agora: 'tech' (falta construir antes), 'locked' (falta estudo), 'disabled' (falta dinheiro) ou 'ok'. */
+    /** Estado do card: 'tech' (falta construir antes), 'locked' (falta estudo), 'population' (falta gente), 'disabled' (falta dinheiro) ou 'ok'. */
     getBuildingItemState(buildingType) {
         const study = this.gameManager.studySystem;
         if (!this.gameManager.buildingSystem.isBuildingUnlocked(buildingType.id)) {
@@ -1026,6 +1028,9 @@ class UIManager {
         }
         const rm = this.gameManager.resourceManager;
         if (this.gameManager.tutorialSystem?.isFreeBuilding?.(buildingType.id)) return 'ok';
+        // falta gente na cidade (populationRequirement): como falta de dinheiro, com o motivo no card
+        const popNeed = this.gameManager.buildingSystem.getPopulationRequirement?.(buildingType) || 0;
+        if (popNeed && (rm?.resources?.population?.current || 0) < popNeed) return 'population';
         const cost = this.gameManager.questSystem?.getPerkCost?.(buildingType.id, buildingType.cost) ?? buildingType.cost;
         return !rm || rm.canAfford(cost) ? 'ok' : 'disabled';
     }
@@ -1039,7 +1044,7 @@ class UIManager {
         item.dataset.study = String(hasStudyContent && !tech);
         item.classList.toggle('locked', locked);
         item.classList.toggle('tech-locked', tech);
-        item.classList.toggle('disabled', state === 'disabled');
+        item.classList.toggle('disabled', state === 'disabled' || state === 'population');
         if (locked) item.dataset.locked = 'true';
         else delete item.dataset.locked;
 
@@ -1057,6 +1062,9 @@ class UIManager {
         } else if (locked) {
             costText = uiIcon('status-locked') + ' Bloqueado';
             if (hasStudyContent) descText = 'Estude para liberar';
+        } else if (state === 'population') {
+            const need = this.gameManager.buildingSystem.getPopulationRequirement(buildingType);
+            descText = `Precisa de ${need.toLocaleString('pt-BR')} moradores na cidade`;
         }
 
         item.innerHTML = `

@@ -301,7 +301,9 @@ class QuestSystem {
     getUnhealthyItems(quest = null) {
         const report = this.gameManager.resourceManager?.getBasinReport?.();
         if (!report) return null;
-        const ignore = new Set(quest?.stars?.ignore || []);
+        // a especificação vem de getStarSpec: quest.stars vira o NÚMERO de estrelas na conclusão, e o cartão (que
+        // pergunta depois) perdia o ignore — "✕ Energia" ao lado de "★ bacia saudável" (4ª auditoria)
+        const ignore = new Set(quest ? (this.getStarSpec(quest).ignore || []) : []);
         return report.filter(i => i.level === 'bad' && !ignore.has(i.id));
     }
 

@@ -224,3 +224,25 @@ test('frente para a água: o -Z do modelo aponta para a célula de água vizinha
         assert.ok(Math.abs(fx - Math.sign(10 - p.x)) < 1e-6 && Math.abs(fz) < 1e-6, `${p.id} em ${p.x},${p.z} olha para (${fx.toFixed(2)}, ${fz.toFixed(2)})`);
     });
 });
+
+// PropSystem.refresh pula o replanejamento quando a assinatura não muda (o plano custa ~10-35 ms numa cidade grande)
+test('assinatura do plano: igual quando o plano seria igual; muda com prédio, árvore, qualidade e quantidade', () => {
+    const sig = (w, s) => Planner.signature(w, s);
+    const house = { type: 'zone_residential_light', x: 4, z: 6, size: 2, finished: true, road: false, zone: 'residential' };
+    const base = sig(world({ buildings: [house] }), state({ pollution: 50 }));
+    assert.strictEqual(sig(world({ buildings: [house] }), state({ pollution: 50 })), base);
+    // poluições diferentes com a mesma assinatura dão de fato o mesmo plano
+    const plans = new Map();
+    let repeated = 0;
+    for (let p = 0; p <= 100; p += 0.73) {
+        const w = world({ buildings: [house] }), s = state({ pollution: p });
+        const key = sig(w, s), plan = JSON.stringify(Planner.plan(w, s));
+        if (plans.has(key)) { repeated++; assert.strictEqual(plan, plans.get(key), `poluição ${p}`); } else plans.set(key, plan);
+    }
+    assert.ok(repeated > 50, 'a maioria das poluições vizinhas não muda o plano');
+    assert.notStrictEqual(sig(world({ buildings: [house] }), state({ pollution: 90 })), base);
+    assert.notStrictEqual(sig(world({ buildings: [{ ...house, finished: false }] }), state({ pollution: 50 })), base);
+    assert.notStrictEqual(sig(world({ buildings: [{ ...house, x: 5 }] }), state({ pollution: 50 })), base);
+    assert.notStrictEqual(sig(world({ buildings: [house] }), state({ pollution: 50, quality: 'low' })), base);
+    assert.notStrictEqual(sig({ ...world({ buildings: [house] }), treeCount: 3 }, state({ pollution: 50 })), base);
+});

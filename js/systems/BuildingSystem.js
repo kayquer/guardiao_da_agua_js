@@ -285,6 +285,17 @@ class BuildingSystem {
                 : { canPlace: false, reason: road.reason, userFriendly: true };
         }
 
+        // Prédios de cidade maior (populationRequirement): banco, shopping, fábrica, universidade… só com gente para usar
+        const popNeed = this.getPopulationRequirement?.(buildingType) || 0;
+        const pop = this.gameManager?.resourceManager?.resources?.population?.current;
+        if (popNeed && Number.isFinite(pop) && pop < popNeed) {
+            return {
+                canPlace: false,
+                reason: `${buildingType.name} precisa de ${popNeed.toLocaleString('pt-BR')} moradores (agora ${Math.floor(pop).toLocaleString('pt-BR')})`,
+                userFriendly: true
+            };
+        }
+
         // Planície e APP não aceitam prédios: vale para cada célula, um prédio grande não pode invadir a faixa. Vem antes do
         // "área ocupada": perto do rio, o motivo que o aluno precisa ler é este.
         // Prédios sobre a água (usina, porto, jardim flutuante) ficam no rio e podem encostar nas margens.
@@ -325,6 +336,26 @@ class BuildingSystem {
                 return {
                     canPlace: false,
                     reason: `Você não pode construir ${buildingType.name} em ${currentTerrainName}. Requer: ${requiredTerrainNames}`,
+                    userFriendly: true
+                };
+            }
+
+            // Jardim flutuante (waterBody): o rio ou lago precisa ter espaço para a plataforma inteira (size²)
+            if (buildingType.requirements.waterBody && this.gridManager.getWaterBodySize?.(gridX, gridZ) < (buildingType.size || 1) ** 2) {
+                return {
+                    canPlace: false,
+                    reason: `${buildingType.name} precisa de um rio ou lago com espaço para ele inteiro`,
+                    userFriendly: true
+                };
+            }
+
+            // Verba garantida (requirements.budget): o caixa precisa ter pelo menos esse valor
+            const needCash = buildingType.requirements.budget;
+            const cash = this.gameManager?.resourceManager?.resources?.budget?.current;
+            if (Number.isFinite(needCash) && Number.isFinite(cash) && cash < needCash) {
+                return {
+                    canPlace: false,
+                    reason: `${buildingType.name} precisa de R$ ${needCash.toLocaleString('pt-BR')} em caixa`,
                     userFriendly: true
                 };
             }
@@ -705,7 +736,10 @@ class BuildingSystem {
             // Remover conexão de terreno associada
             const connectionMesh = this.connectionMeshes.get(meshName);
             if (connectionMesh && !connectionMesh.isDisposed()) {
-                connectionMesh.dispose(true, true); // o material é só deste prédio (createConnectionMesh)
+                // Laje do terreno = instância (getTerrainConnectionTemplate): o material é de todas, fica.
+                // Ligação de infraestrutura (createConnectionMesh): o material é só dela
+                if (connectionMesh instanceof BABYLON.InstancedMesh) connectionMesh.dispose();
+                else connectionMesh.dispose(true, true);
                 this.connectionMeshes.delete(meshName);
             }
 
@@ -2404,7 +2438,8 @@ class BuildingSystem {
 
                 // Dispor o mesh de conexão
                 if (mesh && !mesh.isDisposed()) {
-                    if (mesh.material) {
+                    // Instância (laje do terreno): o material é da laje-modelo, de todos os prédios
+                    if (mesh.material && !(mesh instanceof BABYLON.InstancedMesh)) {
                         mesh.material.dispose();
                     }
                     mesh.dispose();

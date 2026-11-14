@@ -6,7 +6,12 @@
 //   - custo/tempo de obra: gasto médio com obras por minuto naquela fase × bônus (ou o tempo poupado, convertido);
 //   - manutenção: manutenção total × bônus;
 //   - poluição: pontos/min cortados × preço do ponto de limpeza mais barato da fase (ETE: manutenção ÷ limpeza);
-//   - satisfação: +1 ponto ≈ +0,5% no multiplicador de desenvolvimento do imposto por morador (ResourceManager).
+//   - satisfação: +1 ponto ≈ +0,5% no multiplicador de desenvolvimento do imposto por morador (ResourceManager);
+//   - verde (agrônomo/a): limpeza das árvores (nativas: city.trees × TREES.POLLUTION_REDUCTION × 1,5 de mata ciliar
+//     média; mudas adultas: a última etapa de treeStages) e das obras da categoria natureza × bônus × preço do ponto.
+//   Veterinário/a e geógrafo/a não viram R$ (bichos raros antes; crises de clima mais fracas e avisadas antes): o valor
+//   deles é evitar perda (seca/enchente) e o caderno — confira só que o salário fica abaixo do de quem rende em R$.
+// Talento: cada pessoa sai com bônus × 0,85-1,15 e salário × 0,925-1,075 (STAFF_TALENT); a tabela é o meio da faixa.
 const fs = require('fs');
 const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -22,10 +27,10 @@ const levels = load('js/data/cityHall.js', 'TAX_LEVELS');
 
 // Cidades típicas (montadas pela ordem das missões: bomba → energia → bairro → ETE → crescer)
 const CITIES = [
-    { name: 'começo (30-60 hab.)', pop: 50, sat: 60, build: { city_hall: 1, water_pump: 1, solar_micro: 1, zone_residential_light: 1 }, buildSpendPerMin: 900 },
-    { name: 'meio (250 hab.)', pop: 250, sat: 65, build: { city_hall: 1, water_pump: 2, water_treatment_plant: 1, treatment_plant: 1, water_tank: 1, solar_farm: 1, solar_micro: 2, zone_residential_light: 3, zone_residential_balanced: 1, zone_commercial_light: 2, zone_industrial_light: 1, school: 1, tree_sapling: 6 }, buildSpendPerMin: 2500 },
-    { name: 'fim do meio (500 hab.)', pop: 500, sat: 65, build: { city_hall: 1, water_pump: 3, water_well: 1, water_treatment_plant: 1, treatment_plant: 2, water_tank: 2, solar_farm: 2, wind_farm: 1, zone_residential_light: 2, zone_residential_balanced: 3, zone_commercial_light: 2, zone_commercial_balanced: 1, zone_industrial_light: 1, zone_industrial_balanced: 1, school: 1, hospital: 1, restaurant: 1, tree_sapling: 10, rain_garden: 1 }, buildSpendPerMin: 3500 },
-    { name: 'fim (1.000 hab.)', pop: 1000, sat: 70, build: { city_hall: 1, water_pump: 3, water_well: 2, water_treatment_plant: 2, treatment_plant: 3, water_tank: 3, solar_farm: 3, wind_farm: 2, zone_residential_balanced: 4, zone_residential_heavy: 2, zone_commercial_balanced: 2, zone_commercial_heavy: 1, zone_industrial_balanced: 2, school: 2, hospital: 1, restaurant: 1, hotel: 1, tree_sapling: 14, rain_garden: 2 }, buildSpendPerMin: 4500 }
+    { name: 'começo (30-60 hab.)', trees: 180, pop: 50, sat: 60, build: { city_hall: 1, water_pump: 1, solar_micro: 1, zone_residential_light: 1 }, buildSpendPerMin: 900 },
+    { name: 'meio (250 hab.)', trees: 160, pop: 250, sat: 65, build: { city_hall: 1, water_pump: 2, water_treatment_plant: 1, treatment_plant: 1, water_tank: 1, solar_farm: 1, solar_micro: 2, zone_residential_light: 3, zone_residential_balanced: 1, zone_commercial_light: 2, zone_industrial_light: 1, school: 1, tree_sapling: 6 }, buildSpendPerMin: 2500 },
+    { name: 'fim do meio (500 hab.)', trees: 140, pop: 500, sat: 65, build: { city_hall: 1, water_pump: 3, water_well: 1, water_treatment_plant: 1, treatment_plant: 2, water_tank: 2, solar_farm: 2, wind_farm: 1, zone_residential_light: 2, zone_residential_balanced: 3, zone_commercial_light: 2, zone_commercial_balanced: 1, zone_industrial_light: 1, zone_industrial_balanced: 1, school: 1, hospital: 1, restaurant: 1, tree_sapling: 10, rain_garden: 1 }, buildSpendPerMin: 3500 },
+    { name: 'fim (1.000 hab.)', trees: 120, pop: 1000, sat: 70, build: { city_hall: 1, water_pump: 3, water_well: 2, water_treatment_plant: 2, treatment_plant: 3, water_tank: 3, solar_farm: 3, wind_farm: 2, zone_residential_balanced: 4, zone_residential_heavy: 2, zone_commercial_balanced: 2, zone_commercial_heavy: 1, zone_industrial_balanced: 2, school: 2, hospital: 1, restaurant: 1, hotel: 1, tree_sapling: 14, rain_garden: 2 }, buildSpendPerMin: 4500 }
 ];
 
 const money = n => `R$ ${Math.round(n).toLocaleString('pt-BR')}`;
@@ -42,6 +47,9 @@ for (const city of CITIES) {
     const pollutionSources = list.reduce((s, b) => s + (b.pollutionGeneration || 0), 0);
     const ete = B.treatment_plant;
     const pricePerPollution = (ete.maintenanceCost || 300) / Math.max(1, ete.pollutionReduction || 40);
+    const saplingAdult = (B.tree_sapling?.treeStages || []).slice(-1)[0]?.pollutionReduction || 0;
+    const greenClean = city.trees * 0.04 * 1.5 + list.reduce((s, b) => s + (b === B.tree_sapling ? saplingAdult
+        : b.category === 'nature' ? (b.pollutionReduction || 0) : 0), 0);
 
     console.log(`\n== ${city.name}: receita ${money(income)}/min · manutenção ${money(maintenance)}/min · saldo ${money(income - maintenance)}/min · poluição dos prédios ${pollutionSources.toFixed(0)}/min`);
     console.log(`   impostos: moradores ${money(popTax)} · comércio ${money(commerceTax + commerceIncome)} · indústria ${money(industryIncome)}`);
@@ -56,6 +64,7 @@ for (const city of CITIES) {
             case 'eng_ambiental': return (pollutionSources + city.pop * 0.02) * at(r.bonus.pollution) * pricePerPollution; // prédios + esgoto (SEWAGE_PER_PERSON)
             case 'eng_civil': return city.buildSpendPerMin * at(r.bonus.buildCost);
             case 'economista': return maintenance * at(r.bonus.maintenance);
+            case 'eng_agronomo': return greenClean * at(r.bonus.green) * pricePerPollution;
             default: return null; // agrônomo, veterinário, geógrafo: valor em verde/fauna/crises, não em R$ (ver texto)
         }
     };

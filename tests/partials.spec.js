@@ -238,6 +238,7 @@ test('todo prédio visível pode ser construído', async ({ page }, testInfo) =>
         for (const [id, type] of bs.buildingTypes) {
             if (!type.visible) continue;
             gm.resourceManager.resources.budget.current = 1e9;
+            gm.resourceManager.resources.population.current = 5000; // prédios de cidade maior (populationRequirement)
             bs.buildingCooldown.active = false;
             let spot = null;
             for (let x = 0; x < 40 && !spot; x++) for (let z = 0; z < 40 && !spot; z++) {

@@ -6,7 +6,7 @@
  *   - ResourceManager.calculateTaxRevenue → revenue(group) no imposto por morador, no de comércio/turismo e na renda
  *     de zonas comerciais/industriais e prédios de comércio/turismo (incomeAdjust);
  *   - ResourceManager.getSatisfactionFactors → satisfactionNow() (entra devagar, SATISFACTION_EASE_S);
- *   - ResourceManager.calculatePopulationAttraction → attraction();
+ *   - ResourceManager.updatePopulation → attraction() (× chegada de moradores) e occupancy() (casas ocupadas, aos poucos);
  *   - ZoneGrowth.computeZoneGrowthRate → growth(zoneType); BuildingEfficiency → efficiencyBonus(building);
  *   - tick → confiança das empresas (reputação 'business') aos poucos.
  * Contra o truque de subir e baixar: cada imposto só muda de novo depois de CHANGE_COOLDOWN_MS de jogo, e a
@@ -15,6 +15,7 @@
 class CityFinance {
     static CHANGE_COOLDOWN_MS = 2 * 60 * 1000; // 1 "mês" de jogo (LoanManager.MONTH_MS)
     static SATISFACTION_EASE_S = 60;          // a satisfação leva ~1 min de jogo para chegar ao efeito do nível
+    static OCCUPANCY_EASE_S = 180;            // as famílias saem (ou voltam) em ~3 min de jogo
     static GROUPS = ['residents', 'commerce', 'industry'];
 
     constructor() {
@@ -25,6 +26,7 @@ class CityFinance {
         this.levels = { residents: 'normal', commerce: 'normal', industry: 'normal' };
         this.changedAt = { residents: -Infinity, commerce: -Infinity, industry: -Infinity };
         this.satisfactionNowValue = 0; // efeito atual (vai até o alvo aos poucos)
+        this.occupancyNowValue = 1;    // parte das casas ocupada (vai até o alvo do nível aos poucos)
     }
 
     static levelIndex(id) {
@@ -60,6 +62,15 @@ class CityFinance {
         return TAX_GROUPS.residents.attraction[this.index('residents')];
     }
 
+    /** Parte das casas ocupada agora (1 = todas; imposto alto esvazia aos poucos). */
+    occupancy() {
+        return this.occupancyNowValue;
+    }
+
+    occupancyTarget() {
+        return TAX_GROUPS.residents.occupancy?.[this.index('residents')] ?? 1;
+    }
+
     /** × velocidade das fases de uma zona comercial/industrial (1 para as outras). */
     growth(zoneCategory) {
         if (zoneCategory === 'commercial') return TAX_GROUPS.commerce.growth[this.index('commerce')];
@@ -73,6 +84,7 @@ class CityFinance {
         if (config.zoneType && config.category === 'industrial') return 'industry';
         if (config.zoneType && config.category === 'commercial') return 'commerce';
         if (config.taxGroup === 'commerce' || config.taxGroup === 'tourism') return 'commerce';
+        if (config.taxGroup === 'industry') return 'industry'; // fábrica, centro tecnológico, porto, usina de cana
         return null;
     }
 
@@ -101,7 +113,8 @@ class CityFinance {
 
     /**
      * Prévia de trocar o nível (puro sobre os números passados): { revenueDelta (R$/min), satisfaction, growth,
-     * efficiency, attraction } — base = { residents, commerce, industry } receita de hoje de cada grupo (R$/min).
+     * efficiency, attraction, occupancy, laterDelta } — base = { residents, commerce, industry } receita de hoje de
+     * cada grupo (R$/min). laterDelta (moradores) = a diferença depois que as famílias saem/voltam (cidade cheia).
      */
     preview(group, levelId, base = {}) {
         const from = this.index(group), to = CityFinance.levelIndex(levelId);
@@ -111,6 +124,12 @@ class CityFinance {
         if (group === 'residents') {
             out.satisfaction = g.satisfaction[to] - g.satisfaction[from];
             out.attraction = g.attraction[to];
+            const occNow = Math.max(0.05, this.occupancyNowValue), occTo = g.occupancy?.[to] ?? 1;
+            out.occupancy = occTo;
+            out.occupancyFrom = occNow;
+            if (Math.abs(occTo - occNow) >= 0.005) {
+                out.laterDelta = Math.round((base[group] || 0) / now / occNow * (next * occTo - now * occNow));
+            }
         } else {
             out.growth = g.growth[to];
             out.efficiency = g.efficiency[to];
@@ -127,6 +146,9 @@ class CityFinance {
         const k = Math.min(1, dt / CityFinance.SATISFACTION_EASE_S);
         this.satisfactionNowValue += (target - this.satisfactionNowValue) * k;
         if (Math.abs(target - this.satisfactionNowValue) < 0.05) this.satisfactionNowValue = target;
+        const occTarget = this.occupancyTarget();
+        this.occupancyNowValue += (occTarget - this.occupancyNowValue) * Math.min(1, dt / CityFinance.OCCUPANCY_EASE_S);
+        if (Math.abs(occTarget - this.occupancyNowValue) < 0.002) this.occupancyNowValue = occTarget;
         const trust = (TAX_GROUPS.commerce.trust[this.index('commerce')] + TAX_GROUPS.industry.trust[this.index('industry')]) * dt / 60;
         // direto no número (changeReputation escreveria no histórico a cada minuto); o painel de missões mostra
         const rep = gm?.questSystem?.stakeholderReputation;
@@ -137,7 +159,7 @@ class CityFinance {
     }
 
     getSaveData() {
-        return { levels: { ...this.levels }, changedAt: { ...this.changedAt }, satisfaction: this.satisfactionNowValue };
+        return { levels: { ...this.levels }, changedAt: { ...this.changedAt }, satisfaction: this.satisfactionNowValue, occupancy: this.occupancyNowValue };
     }
 
     loadData(data) {
@@ -149,6 +171,7 @@ class CityFinance {
             this.changedAt[g] = Number.isFinite(t) ? t : -Infinity;
         }
         this.satisfactionNowValue = Number.isFinite(data.satisfaction) ? data.satisfaction : this.satisfactionTarget();
+        this.occupancyNowValue = Number.isFinite(data.occupancy) ? data.occupancy : this.occupancyTarget();
     }
 }
 
