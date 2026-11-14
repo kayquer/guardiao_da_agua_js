@@ -737,8 +737,6 @@ mixin(UIManager, {
             }
         });
 
-        log(`✅ Selected ${selectedBuildings.length} buildings`);
-        console.table(selectedBuildings);
 
         // Show notification and display buildings in details panel
         if (selectedBuildings.length > 0) {

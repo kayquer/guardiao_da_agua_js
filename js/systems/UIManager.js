@@ -86,7 +86,6 @@ class UIManager {
         // ===== STANDARDIZED STATE UPDATE HELPER =====
         this.updatePanelState = (panelType) => {
             this.uiState.currentOpenPanel = panelType;
-            log(`📋 Panel state updated: ${panelType || 'null'}`);
         };
 
         // ===== EVENT LISTENER TRACKING =====

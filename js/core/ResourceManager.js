@@ -428,7 +428,6 @@ class ResourceManager {
         });
 
         this.resources.population.max = totalCapacity;
-        log(`👥 Capacidade populacional atualizada: ${totalCapacity}`);
     }
 
     // 40 (era 500, depois 100): as casas que a cidade já tem — 30 moradores e lugar para mais 10. Quem traz moradores

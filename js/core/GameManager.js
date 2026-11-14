@@ -90,9 +90,10 @@ class GameManager {
             lastErrorTime: 0
         };
 
-        // Monitoramento de memória e performance
+        // Monitoramento de memória: ferramenta de desenvolvimento, só com ?debug (no jogo de verdade ele escrevia
+        // "Uso de memória crítico" no console e mandava o jogador reiniciar, sem nada que o jogador pudesse fazer)
         this.memoryMonitoring = {
-            enabled: true,
+            enabled: DEBUG,
             lastCheck: 0,
             checkInterval: 5000, // Verificar a cada 5 segundos
             memoryHistory: [],
@@ -696,7 +697,9 @@ class GameManager {
             this.checkCanvasSize(currentTime); // tela pequena no canto (1×/s): corrige sozinho
 
             if (this.renderState.circuitBreakerActive) {
-                console.error('🚨 Circuit breaker ativo - render parado');
+                // uma vez só (antes repetia em todo quadro e enchia o console)
+                if (!this.renderState.breakerReported) console.error('🚨 Circuit breaker ativo - render parado');
+                this.renderState.breakerReported = true;
                 this.handleCriticalFailure();
                 return;
             }

@@ -1921,8 +1921,6 @@ class BuildingSystem {
         // Mostrar indicadores de células ocupadas para edifícios multi-célula
         this.updateMultiCellPreview(gridX, gridZ, buildingType.size, isValid);
 
-        // Log para debug (apenas quando a posição muda)
-        log(`🔍 Preview updated: (${gridX}, ${gridZ}) - ${isValid ? 'VALID' : 'INVALID'} - ${canPlaceResult.reason || 'No reason'}`);
     }
 
     updatePreviewUIFeedback(isValid, canPlaceResult) {
@@ -2824,8 +2822,6 @@ class BuildingSystem {
                 AudioManager.playSound('sfx_build_progress', 0.4);
                 buildingData.lastProgressAudio = currentMilestone;
                 buildingData.lastProgressSound = now;
-
-                log(`🔊 Som de progresso aprimorado (${Math.round(currentMilestone * 100)}%) para ${buildingData.config.name}`);
             }
 
         } catch (error) {

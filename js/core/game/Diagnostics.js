@@ -67,12 +67,8 @@ mixin(GameManager, {
             logWarn(`⚠️ Uso de memória alto: ${heapMB.toFixed(2)}MB`);
         }
 
-        if (heapMB > 200) {
-            console.error(`🚨 Uso de memória crítico: ${heapMB.toFixed(2)}MB`);
-            if (this.uiManager && this.uiManager.showAlert) {
-                this.uiManager.showAlert(`Uso de memória crítico: ${heapMB.toFixed(2)}MB. Considere reiniciar o jogo.`, 'error');
-            }
-        }
+        // só com ?debug (memoryMonitoring.enabled = DEBUG): aviso no console, nunca alerta ao jogador
+        if (heapMB > 200) logWarn(`🚨 Uso de memória crítico: ${heapMB.toFixed(2)}MB`);
     },
 
     // ===== FUNÇÕES DE DEBUG =====
@@ -145,7 +141,7 @@ mixin(GameManager, {
                 const diffMB = (memoryDiff / 1024 / 1024).toFixed(2);
 
                 if (memoryDiff > 5 * 1024 * 1024) {
-                    console.error(`🚨 POSSÍVEL VAZAMENTO: ${diffMB}MB`);
+                    logWarn(`🚨 POSSÍVEL VAZAMENTO: ${diffMB}MB`);
                 } else {
                     log(`✅ TESTE PASSOU: apenas ${diffMB}MB de diferença`);
                 }
