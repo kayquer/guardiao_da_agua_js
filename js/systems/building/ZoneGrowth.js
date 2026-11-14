@@ -468,8 +468,8 @@ mixin(BuildingSystem, {
     },
 
     /**
-     * Extras do painel da zona (UIManager.generateZoneStageStats): o que ela dá AGORA (fase × eficiência)
-     * e o botão "Evoluir" na fase final.
+     * Extra do bloco de fase da zona (UIManager.generateZoneStageStats): o que ela dá AGORA (fase × eficiência).
+     * O botão "Evoluir" da fase final fica nas ações do painel (UIManager.generateBuildingActions → getZoneEvolveHtml).
      */
     getZonePanelExtrasHtml(building) {
         if (this.getZoneStage(building) === null) return '';
@@ -480,22 +480,22 @@ mixin(BuildingSystem, {
         if (building.config.jobCapacity) parts.push(`💼 ${fmt(jobs)} empregos`);
         if (building.config.incomeGeneration) parts.push(`💵 R$ ${fmt(income)}/min`);
         const now = parts.length ? `<div class="stat-item zone-effects" id="zone-effects-${building.id}">Agora: ${parts.join(' · ')}</div>` : '';
-        return now + this.getZoneEvolveHtml(building);
+        return now;
     },
 
-    /** HTML do bloco "Evoluir" no painel da zona (UIManager.generateZoneStageStats); '' quando não se aplica. */
+    /** HTML do bloco "Evoluir" nas ações do painel da zona (UIManager.generateBuildingActions); '' quando não se aplica. */
     getZoneEvolveHtml(building) {
         const evo = this.getZoneEvolution(building);
         if (!evo) return '';
         const weight = ZONE_EVOLUTION.weightNames[ZONE_EVOLUTION.weights.find(w => evo.next.endsWith(`_${w}`))] || '';
         return `
-            <div class="zone-evolve" style="margin:6px 0 4px">
+            <div class="zone-evolve">
                 <button id="zone-evolve-btn-${building.id}" class="action-btn zone-evolve-btn" data-building-id="${building.id}"
                     ${evo.ok ? '' : 'disabled'} style="width:100%"
                     onclick="window.gameManager.buildingSystem.evolveZone('${building.id}')">
                     ⬆️ Evoluir para ${weight} — R$ ${evo.cost.toLocaleString('pt-BR')}
                 </button>
-                <div id="zone-evolve-why-${building.id}" class="zone-evolve-why" style="font-size:0.85em;opacity:0.85;margin-top:3px">${evo.reason}</div>
+                <div id="zone-evolve-why-${building.id}" class="zone-evolve-why">${evo.reason}</div>
             </div>`;
     },
 

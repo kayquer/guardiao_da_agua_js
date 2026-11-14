@@ -1,11 +1,11 @@
 /**
  * UIManager — Painéis das árvores: árvore NATIVA selecionada (showNativeTreeInfo) e as linhas da árvore
- * PLANTADA no painel do prédio (generatePlantedTreeStats: etapa, barra, tempo até a próxima etapa e efeito).
+ * PLANTADA no painel do prédio (generatePlantedTreeStats: tipo e efeito; generatePlantedTreeStageStats: etapa, barra e tempo).
  * Parte da classe UIManager (js/systems/UIManager.js), anexada via mixin(): use this.* normalmente.
  * Regras do crescimento: js/systems/building/TreeGrowth.js; árvores nativas: js/systems/TreeSystem.js.
  */
 mixin(UIManager, {
-    /** Linhas da árvore plantada no painel do prédio (vazio para os outros prédios). */
+    /** Linhas da árvore plantada no painel do prédio (vazio para os outros prédios). A etapa fica no bloco de fase. */
     generatePlantedTreeStats(building) {
         const bs = this.gameManager?.buildingSystem;
         if (!bs?.isPlantedTree?.(building)) return '';
@@ -17,8 +17,6 @@ mixin(UIManager, {
             return `${tag}<div class="stat-item">⛏️ Abrindo a cova: quando a muda for plantada vai precisar de rega (${fmt(first.waterConsumption)} L/min).</div>`;
         }
         const data = building.config.treeStages[stage];
-        const percent = Math.round(bs.getTreeStageProgress(building) * 100);
-        const growth = bs.describeTreeGrowth(building);
         const effect = data.waterConsumption > 0
             ? `<div class="stat-item tree-effect" data-effect="water">🚰 Rega da muda: consome ${fmt(data.waterConsumption)} L/min de água (ainda não limpa o ar)</div>`
             : `<div class="stat-item tree-effect" data-effect="pollution">🌿 Limpa o ar: -${fmt(bs.getTreeEffects(building).pollution)} de poluição/min (não precisa mais de rega)</div>`;
@@ -27,14 +25,29 @@ mixin(UIManager, {
             : `<div class="stat-note">Dica: árvores perto do rio (mata ciliar) limpam ${TREES.RIPARIAN_FACTOR}× mais.</div>`;
         return `
             ${tag}
-            ${riparian}
-            <div class="stat-item tree-stage" data-tree-stage="${stage}">🌳 Etapa: ${data.name} (${stage + 1}/4)</div>
-            <div class="tree-stage-track" style="height:8px;border-radius:4px;background:rgba(0,0,0,0.25);margin:2px 0 6px;overflow:hidden">
-                <div id="tree-stage-bar-${building.id}" class="tree-stage-bar" style="height:100%;width:${percent}%;background:${building.config.color || '#7CB342'};transition:width 0.4s"></div>
+            ${effect}
+            ${riparian}`;
+    },
+
+    /**
+     * Etapa da árvore plantada (nome, barra, tempo até a próxima e o motivo se parada) para o bloco de fase logo
+     * abaixo do cabeçalho (UIManager.generateStageBlock). Ids atualizados ao vivo por TreeGrowth.updateTreeStagePanel.
+     */
+    generatePlantedTreeStageStats(building) {
+        const bs = this.gameManager?.buildingSystem;
+        if (!bs?.isPlantedTree?.(building)) return '';
+        const stage = bs.getTreeStage(building);
+        if (stage === null) return '';
+        const data = building.config.treeStages[stage];
+        const percent = Math.round(bs.getTreeStageProgress(building) * 100);
+        const growth = bs.describeTreeGrowth(building);
+        return `
+            <div class="stat-item tree-stage stage-title" data-tree-stage="${stage}">🌳 Etapa: ${data.name} (${stage + 1}/4)</div>
+            <div class="tree-stage-track stage-track">
+                <div id="tree-stage-bar-${building.id}" class="tree-stage-bar stage-bar" style="width:${percent}%;background:${building.config.color || '#7CB342'}"></div>
             </div>
-            <div class="stat-item tree-stage-eta">⏱️ <span id="tree-stage-eta-${building.id}">${growth ? growth.eta : 'Árvore madura: crescimento completo'}</span></div>
-            <div id="tree-stage-why-${building.id}" class="tree-stage-why" style="font-size:0.85em;opacity:0.8;margin:-2px 0 4px">${growth?.reason || ''}</div>
-            ${effect}`;
+            <div class="stat-item tree-stage-eta stage-eta">⏱️ <span id="tree-stage-eta-${building.id}">${growth ? growth.eta : 'Árvore madura: crescimento completo'}</span></div>
+            <div id="tree-stage-why-${building.id}" class="tree-stage-why stage-why">${growth?.reason || ''}</div>`;
     },
 
     /** Linha das árvores plantadas no painel de poluição (vazio se não há nenhuma pronta). */

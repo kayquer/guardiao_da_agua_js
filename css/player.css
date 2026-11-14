@@ -199,6 +199,77 @@
     font-size: 1.15rem;
 }
 
+/* ----- Cadastro compacto: cabe sem rolar de 1280×720 e 1366×650 para cima (tests/layout.spec.js) -----
+   Cabeçalho menor; no computador o formulário é uma grade de 6 colunas: nome (4) + idade (2), estado (3) +
+   cidade (3), dificuldade em linha e os dois botões lado a lado. No celular continua uma coluna e a tela rola. */
+#profile-screen .profile-form-container {
+    max-width: 640px;
+    width: 100%;
+    padding: 1rem 1.25rem;
+}
+
+#profile-screen .menu-header h1 {
+    font-size: 2.3rem;
+    margin-bottom: 0.15rem;
+    animation: none;
+}
+
+#profile-screen .menu-header h1 .ui-icon { width: 1em; height: 1em; vertical-align: -0.12em; }
+
+#profile-screen .subtitle {
+    font-size: 1.05rem;
+    margin-bottom: 0;
+}
+
+.profile-form {
+    gap: 0.65rem;
+    margin-top: 0.75rem;
+}
+
+.profile-field { gap: 0.2rem; }
+
+.profile-field input,
+.profile-field select {
+    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.profile-errors {
+    min-height: 0;
+    margin: 0;
+}
+
+.profile-errors:empty { display: none; }
+
+.profile-form .menu-buttons {
+    flex-direction: row;
+    gap: 0.6rem;
+}
+
+.profile-form .menu-btn {
+    flex: 1 1 0;
+    min-height: 44px;
+    padding: 0.55rem 1.2rem;
+    font-size: 1.05rem;
+}
+
+.profile-form .menu-btn.primary { flex-grow: 2; }
+
+@media (min-width: 769px) {
+    .profile-form {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        align-items: start;
+        max-width: none;
+    }
+
+    .profile-form > * { grid-column: 1 / -1; }
+    .profile-form > .profile-field--name { grid-column: span 4; }
+    .profile-form > .profile-field--small { grid-column: span 2; }
+    .profile-form > .profile-field--uf { grid-column: span 3; }
+    .profile-form > .profile-field--city { grid-column: span 3; }
+}
+
 /* ===== HUD: JOGADOR + CLIMA ===== */
 .player-hud {
     display: flex;
@@ -1588,8 +1659,8 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
-    padding: 0.55rem 0.7rem;
+    gap: 0.1rem;
+    padding: 0.4rem 0.6rem;
     border: 3px solid #000;
     border-radius: 12px;
     background: rgba(255, 255, 255, 0.1);
@@ -1613,7 +1684,7 @@
 }
 
 .difficulty-name {
-    font-size: 1.05rem;
+    font-size: 1rem;
 }
 
 .difficulty-desc {
@@ -1626,5 +1697,18 @@
 @media (max-width: 560px) {
     .difficulty-options {
         grid-template-columns: 1fr;
+        gap: 0.4rem;
     }
+
+    /* Celular: cada cartão numa linha baixa (nome à esquerda, explicação ao lado) */
+    .difficulty-option {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .difficulty-name { flex: 0 0 6.2rem; }
+
+    #profile-screen .menu-header h1 { font-size: 1.9rem; }
+    #profile-screen .subtitle { font-size: 0.95rem; }
 }

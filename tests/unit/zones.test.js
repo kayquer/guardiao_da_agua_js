@@ -210,9 +210,9 @@ test('indicador: tempo até a próxima fase (ritmo e 2x/3x) e o motivo', () => {
     assert.strictEqual(bs.getZoneTimeToNextStage({ ...b, zoneStage: 3 }, 1), null, 'fase final');
 
     bs.getZoneGrowthConditions = () => ({ satisfaction: 50, waterShortage: false, energyEfficiency: 1 });
-    assert.strictEqual(bs.describeZoneGrowth(b).eta, `Próxima fase em ~${GROWTH.stageMs[0] / 2000} s`);
+    assert.strictEqual(bs.describeZoneGrowth(b).eta, `Próxima fase em ~${Math.ceil(GROWTH.stageMs[0] / 2000)} s`);
     bs.gameManager.timeScale = 2;
-    assert.strictEqual(bs.describeZoneGrowth(b).eta, `Próxima fase em ~${GROWTH.stageMs[0] / 4000} s`, '2x conta o tempo real');
+    assert.strictEqual(bs.describeZoneGrowth(b).eta, `Próxima fase em ~${Math.ceil(GROWTH.stageMs[0] / 4000)} s`, '2x conta o tempo real (arredondado para cima)');
     bs.gameManager.timeScale = 1;
     bs.getZoneGrowthConditions = () => ({ satisfaction: 0, waterShortage: false, energyEfficiency: 1 });
     const slow = bs.describeZoneGrowth({ ...b, zoneProgress: 0, zoneStage: 2 });

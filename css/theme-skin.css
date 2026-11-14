@@ -1159,6 +1159,137 @@
 
 .deselect-btn { min-height: 34px; padding: 6px 12px; font-size: 13px; color: var(--gda-ink-muted); }
 
+/* ----- Painel do prédio selecionado, compacto (UIManager.showBuildingSelectionInfo) -----
+   Cabeçalho baixo, os 4 dados num quadro 2 × 2, a fase (zona/muda) num bloco logo abaixo do cabeçalho,
+   efeitos em linhas juntas e botões menores. Texto ≥ 12 px; o foco segue var(--gda-focus-light). */
+.building-selection-info { padding: 10px 12px; }
+
+.building-selection-info .selection-header {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    gap: 6px;
+}
+
+.building-selection-info .selection-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.1rem;
+    line-height: 1.15;
+}
+
+.building-selection-info .selection-header h3 .ui-icon { width: 26px; height: 26px; flex: none; }
+
+.building-selection-info .deselect-btn {
+    min-height: 30px;
+    padding: 4px 10px;
+    gap: 4px;
+    font-size: 12px;
+}
+
+.building-selection-info .deselect-btn .ui-icon { width: 14px; height: 14px; }
+
+.building-selection-info .building-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 8px;
+    margin-bottom: 8px;
+}
+
+.building-selection-info .detail-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+    padding: 4px 8px;
+    background: var(--gda-surface-2);
+    border: 1px solid var(--gda-border);
+    border-radius: var(--gda-r-sm);
+    min-width: 0;
+}
+
+.building-selection-info .detail-label {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.building-selection-info .detail-value {
+    font-size: 13px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+/* Fase da zona / etapa da muda: logo abaixo do cabeçalho (ids ao vivo: ZoneGrowth/TreeGrowth.update*StagePanel) */
+.building-stage-block {
+    margin-bottom: 8px;
+    padding: 6px 10px 4px;
+    background: var(--gda-surface-2);
+    border: 1px solid var(--gda-border);
+    border-radius: var(--gda-r-md);
+}
+
+.building-stage-block .stat-item { border-bottom: 0; padding: 2px 0; }
+.building-stage-block .stage-title { font-weight: 800; }
+
+.building-stage-block .stage-track {
+    height: 8px;
+    margin: 3px 0 2px;
+    border-radius: var(--gda-r-pill);
+    background: var(--gda-surface-3);
+    box-shadow: inset 0 0 0 1px var(--gda-border);
+    overflow: hidden;
+}
+
+.building-stage-block .stage-bar {
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.4s ease;
+}
+
+.building-stage-block .stage-why {
+    margin: 0 0 2px;
+    font-size: 12px;
+    line-height: 1.3;
+    color: var(--gda-ink-muted);
+}
+
+.building-stage-block .stage-why:empty { display: none; }
+
+.building-selection-info .building-stats { margin-bottom: 8px; }
+
+.building-selection-info .stat-item {
+    padding: 3px 0;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.building-selection-info .stat-item .ui-icon { width: 16px; height: 16px; vertical-align: -3px; }
+
+.building-selection-info .stat-note {
+    padding: 1px 0 4px;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.building-selection-info .building-actions { gap: 6px; }
+
+.building-selection-info .action-btn {
+    min-height: 34px;
+    padding: 5px 12px;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+.building-selection-info .rotate-actions { gap: 6px; }
+.building-selection-info .rotate-btn { padding: 5px 6px; gap: 4px; font-size: 12.5px; }
+.building-selection-info .rotate-btn .rotate-icon { width: 18px; height: 18px; }
+.zone-evolve { margin: 0; }
+.zone-evolve-why { margin-top: 3px; font-size: 12px; line-height: 1.3; color: var(--gda-ink-muted); }
+
+.building-selection-info .action-btn:focus-visible,
+.building-selection-info .deselect-btn:focus-visible { outline: var(--gda-focus-light); outline-offset: 2px; }
+
 .rental-btn {
     background: var(--gda-accent-gradient);
     color: #ffffff;
@@ -2710,7 +2841,7 @@ body.menu-ready .menu-start-btn { animation-name: gda-start-glow; }
 }
 
 .profile-form {
-    padding: 1.4rem;
+    padding: 1rem 1.15rem; /* compacto: cabe sem rolar em 1366×650 (css/player.css "Cadastro compacto") */
     background: var(--gda-surface-gradient);
     border: 1px solid rgba(255, 255, 255, 0.6);
     border-radius: var(--gda-r-xl);
@@ -2724,7 +2855,7 @@ body.menu-ready .menu-start-btn { animation-name: gda-start-glow; }
     color: var(--gda-ink);
     font-family: var(--gda-font);
     font-weight: 800;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 
 .profile-field input,

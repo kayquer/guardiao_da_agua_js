@@ -212,22 +212,12 @@ test('tutorial das missões avança quando o aluno clica no que está destacado'
     await startGame(page);
     const title = page.locator('#tutorial-title');
 
-    await page.click('#tutorial-next-btn'); // "Vamos lá!": direto para a Prefeitura
+    // 11/2026: o tour das missões saiu do início (só o essencial) e ficou em Como jogar → Missões
     await page.evaluate(() => {
-        const gm = window.gameManager, bs = gm.buildingSystem;
-        gm.enterBuildMode('city_hall');
-        for (let x = 0; x < 40; x++) for (let z = 0; z < 40; z++) {
-            if (bs.canPlaceBuilding(x, z, 'city_hall').canPlace) { bs.confirmPlacement(x, z); gm.exitBuildMode(); return; }
-        }
+        const gm = window.gameManager;
+        gm.tutorialSystem.complete();
+        gm.tutorialSystem.replayPart('missions');
     });
-    await expect(title).toHaveText('Prefeitura construída!');
-    await page.click('#tutorial-next-btn');
-    await expect(title).toHaveText('Cuidado com as árvores');
-    await page.click('#tutorial-next-btn');
-    await expect(title).toHaveText('Hora de aprender sobre a água?');
-    await page.click('#tutorial-skip-btn'); // aulas "durante o jogo"
-    await expect(title).toHaveText('Quer conhecer as missões?');
-    await page.click('#tutorial-next-btn'); // "Mostrar"
 
     await expect(title).toHaveText('O botão de Missões');
     await page.click('#btn-missions');
@@ -252,15 +242,16 @@ test('tutorial das missões avança quando o aluno clica no que está destacado'
     await page.click('#tutorial-next-btn');
     await expect(title).toHaveText('A missão da vez');
     await page.click('.hud-bottom .mission-info');
-    await expect(title).toHaveText('Um tour pela tela?');
+    await expect(page.locator('#tutorial-container')).toBeHidden(); // última página da parte: fecha
     expect(problems).toEqual([]);
 });
 
 test('guias em sequência: água + energia → reservatório → zoneamento → públicos', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'mesma lógica; alvos do desktop');
     const problems = watchErrors(page);
-    // 'energy' já visto: a bomba sem usina deixa a eficiência < 100% e abriria o guia de energia (tests/energy-guide)
-    await startGame(page, { guides: ['energy'] });
+    // 'energy' já visto: a bomba sem usina deixa a eficiência < 100% e abriria o guia de energia (tests/energy-guide);
+    // 'tour'/'howto'/'paulo' também (a bomba cumpre a 1ª missão e abriria o tour — tests/tutorial-start.spec.js)
+    await startGame(page, { guides: ['energy', 'tour', 'howto', 'paulo'] });
     const title = page.locator('#tutorial-title');
     // Constrói direto (sem o modo de construção) e termina a obra na hora
     const build = (type, finish = true) => page.evaluate(({ type, finish }) => {
@@ -283,6 +274,7 @@ test('guias em sequência: água + energia → reservatório → zoneamento → 
         gm.resourceManager.resources.budget.current = 1e6;
         TutorialSystem.GUIDE_PACE_MS = 0; // sem o intervalo entre guias, que tem teste próprio abaixo
         TutorialSystem.READING_GAP_MS = 0; // nem o minuto de jogo entre leituras (testado em "não abrem em cadeia")
+        gm.tutorialSystem.lessonsDeferred = false; // a aula depois da missão (sempre adiada desde 11/2026) tem teste próprio no smoke
     });
 
     // Água sem energia ainda não abre nada
@@ -340,7 +332,7 @@ test('guias em sequência: água + energia → reservatório → zoneamento → 
     await page.click('#tutorial-skip-btn'); // "Fazer depois" também conta como visto
     await expect(title).toHaveText('Visitantes trazem dinheiro', { timeout: 8000 });
     expect(await page.evaluate(() => JSON.parse(localStorage.getItem(STORAGE_PREFIX + 'guides')).p_teste))
-        .toEqual(['energy', 'storage', 'zoning', 'public']);
+        .toEqual(['energy', 'tour', 'howto', 'paulo', 'storage', 'zoning', 'public']);
     expect(problems).toEqual([]);
 });
 
@@ -437,7 +429,7 @@ test('central de aulas: abas Como jogar / Conteúdo / Guias, refazer partes e fo
 
     // Como jogar: refaz o tour pela tela em cima do jogo (cartão pequeno, jogo congelado)
     await page.click('[data-lessons-tab="intro"]');
-    await expect(page.locator('[data-replay="part"]')).toHaveCount(4);
+    await expect(page.locator('[data-replay="part"]')).toHaveCount(5); // + 'A primeira missão' (11/2026)
     await page.click('[data-replay="part"][data-id="interface"]');
     await expect(page.locator('#tutorial-progress')).toContainText('Rever · Tour pela tela');
     expect(await page.evaluate(() => window.gameManager.gameState)).toBe('tutorial');

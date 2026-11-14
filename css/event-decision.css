@@ -243,3 +243,13 @@
 .decision-state ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; }
 .decision-state li { display: flex; gap: 6px; font-size: 0.85rem; }
 .decision-state li b { color: #0d47a1; }
+
+/* Primeira decisão: o Paulo se apresenta (EventDecisionUI, guia 'paulo'; antes era uma página do início do tutorial) */
+.decision-hello {
+    margin: 0 0 0.45rem;
+    padding: 6px 10px;
+    line-height: 1.35;
+    border-radius: var(--gda-r-sm, 10px);
+    background: var(--gda-accent-soft, #e3f4fb);
+    border-left: 3px solid var(--gda-accent, #0aa3c8);
+}

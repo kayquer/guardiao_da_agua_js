@@ -86,6 +86,11 @@ mixin(UIManager, {
         const threat = config.response.kind !== 'opportunity';
         const intro = PlayerProfile.personalize(config.response.intro || config.description);
         const seconds = pending.total > 0 ? Math.round(pending.total / 1000 / (this.gameManager.timeScale || 1)) : 0;
+        // Primeira decisão do jogador (11/2026): o Paulo se apresenta aqui, na hora em que importa, em vez de uma
+        // página no início do tutorial. Marca o guia 'paulo' como visto (por jogador, como os outros guias).
+        const firstTime = typeof TutorialSystem !== 'undefined' && !TutorialSystem.guidesDone().includes('paulo');
+        if (firstTime) TutorialSystem.markGuideDone('paulo');
+        const hello = firstTime ? PlayerProfile.personalize('<p class="decision-hello"><b>Prazer, {nome}! Eu sou o Paulo</b>, secretário de Meio Ambiente. Quando vier um problema ou uma chance, eu trago <b>quatro escolhas</b>: cada uma cobra um preço diferente e <b>nenhuma é sempre a certa</b>. Olhe <b>Como está a cidade agora</b> antes de decidir.</p>') : '';
         const when = threat
             ? (seconds ? `Chega em ~${seconds} s depois da sua decisão: dá tempo de se preparar.` : 'Começa assim que você decidir.')
             : 'Cada escolha ganha de um jeito e custa de outro.';
@@ -98,7 +103,7 @@ mixin(UIManager, {
                         <div class="decision-who">${PAULO} <small>· Secretaria Municipal de Meio Ambiente</small></div>
                         <h3 id="event-decision-title"><span aria-hidden="true">${uiIcon(config.icon, 'lg')}</span> ${config.name}
                             <span class="decision-kind">${threat ? 'Ameaça' : 'Oportunidade'}</span></h3>
-                        <p class="decision-intro">${intro}</p>
+                        ${hello}<p class="decision-intro">${intro}</p>
                         <p class="decision-when">${when}</p>
                     </div>
                     <button class="read-aloud-btn decision-read" type="button" aria-label="Ouvir">🔊</button>
@@ -114,7 +119,7 @@ mixin(UIManager, {
         portrait?.setExpression(threat ? 'worried' : 'happy');
         portrait?.talk?.(2500);
         setTimeout(() => AudioManager.onSpeaker('paulo', threat ? 'worried' : 'happy'), 450); // depois do som do modal
-        setupReadAloud(modal.querySelector('.decision-read'), () => `${config.name}. ${intro.replace(/<[^>]+>/g, '')}`);
+        setupReadAloud(modal.querySelector('.decision-read'), () => `${hello.replace(/<[^>]+>/g, '')} ${config.name}. ${intro.replace(/<[^>]+>/g, '')}`);
 
         modal.querySelectorAll('.decision-option').forEach(button => button.addEventListener('click', () => {
             const ok = es.chooseResponse(pending.id, button.dataset.option);

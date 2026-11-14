@@ -44,7 +44,7 @@ async function mockExternalApis(page, { forecast = FORECAST } = {}) {
 /** Perfil salvo + clique nele na tela inicial → espera o jogo inicializar (fica no tutorial). */
 // Guias progressivos (TutorialSystem.GUIDES) já feitos: senão eles abrem sozinhos quando o teste constrói
 // água + energia e congelam o jogo. O teste dos guias passa guides: [].
-const ALL_GUIDES = ['energy', 'roads', 'rivers', 'storage', 'zoning', 'public', 'tourism', 'industrial', 'commercial'];
+const ALL_GUIDES = ['energy', 'roads', 'rivers', 'tour', 'howto', 'paulo', 'storage', 'zoning', 'public', 'tourism', 'industrial', 'commercial'];
 
 /**
  * Escolhe a bacia no carrossel do modo loja (js/ui/BasinPicker.js): o ponto traz o cartão para o meio e o

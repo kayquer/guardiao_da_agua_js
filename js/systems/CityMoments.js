@@ -465,10 +465,15 @@ class CityMoments {
         return { target, alpha: CAMERA.ISOMETRIC_ALPHA, beta: CAMERA.ISOMETRIC_BETA, radius };
     }
 
-    /** Foto do mesmo ângulo por render target (sem HUD). Assíncrona; falha = sem foto, nunca erro na tela. */
+    /**
+     * Foto do mesmo ângulo por um render target PRÓPRIO (sem HUD). Não usa BABYLON.Tools.CreateScreenshotUsing-
+     * RenderTarget: ele muda o tamanho da engine (engine.setSize) enquanto a foto não fica pronta, e um quadro do
+     * jogo desenhado nesse meio-tempo deixava a tela pequena no canto inferior esquerdo. Aqui a engine nunca muda
+     * de tamanho: renderiza na textura, lê os pixels e monta o JPEG num canvas 2D. Assíncrona; falha = sem foto.
+     */
     capturePhoto(gm, key, title) {
         const scene = gm.scene, engine = gm.engine || scene?.getEngine?.();
-        if (!scene || !engine || typeof BABYLON === 'undefined' || !BABYLON.Tools?.CreateScreenshotUsingRenderTargetAsync) return null;
+        if (!scene || !engine || typeof BABYLON === 'undefined' || !BABYLON.RenderTargetTexture) return null;
         const pose = this.albumPose(gm);
         const camera = new BABYLON.ArcRotateCamera('album_camera', pose.alpha, pose.beta, pose.radius,
             new BABYLON.Vector3(pose.target.x, 0, pose.target.z), scene);
@@ -482,8 +487,17 @@ class CityMoments {
         // as nuvens ficam entre a câmera alta do álbum e a cidade: somem só durante a foto (volta no finally)
         const clouds = (gm.weatherEffects?.clouds || []).filter(c => c?.isVisible && !c.isDisposed?.());
         clouds.forEach(c => { c.isVisible = false; });
-        this.pendingPhoto = BABYLON.Tools.CreateScreenshotUsingRenderTargetAsync(engine, camera, { width, height }, 'image/jpeg', 1, false,
-            undefined, false, false, true, CityMoments.ALBUM_QUALITY)
+        let rtt = null;
+        this.pendingPhoto = Promise.resolve()
+            .then(() => {
+                rtt = new BABYLON.RenderTargetTexture('album_rtt', { width, height }, scene, false);
+                rtt.activeCamera = camera;
+                rtt.renderList = scene.meshes.filter(m => m.isEnabled() && m.isVisible && !m.isDisposed());
+                rtt.clearColor = scene.clearColor;
+                rtt.render(true);
+                return rtt.readPixels();
+            })
+            .then(pixels => CityMoments.pixelsToJpeg(pixels, width, height))
             .then(img => {
                 if (typeof img !== 'string' || !img.startsWith('data:image')) return null;
                 const album = this.getAlbum().filter(p => p.key !== key);
@@ -498,9 +512,29 @@ class CityMoments {
             })
             .finally(() => {
                 clouds.forEach(c => { if (!c.isDisposed?.()) c.isVisible = true; });
+                rtt?.dispose();
                 camera.dispose();
             });
         return this.pendingPhoto;
+    }
+
+    /** Pixels RGBA do render target (linhas de baixo para cima) → data URL JPEG. */
+    static pixelsToJpeg(pixels, width, height) {
+        if (!pixels || pixels.length < width * height * 4) return null;
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        const image = ctx.createImageData(width, height);
+        const row = width * 4;
+        const src = pixels instanceof Uint8Array || pixels instanceof Uint8ClampedArray ? pixels : new Uint8Array(pixels.buffer || pixels);
+        for (let y = 0; y < height; y++) {
+            const from = (height - 1 - y) * row;
+            image.data.set(src.subarray(from, from + row), y * row);
+        }
+        for (let i = 3; i < image.data.length; i += 4) image.data[i] = 255; // sem transparência
+        ctx.putImageData(image, 0, 0);
+        return canvas.toDataURL('image/jpeg', CityMoments.ALBUM_QUALITY);
     }
 }
 

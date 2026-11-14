@@ -186,6 +186,64 @@ for (const width of [800, 1024, 1366]) {
     });
 }
 
+// Cadastro compacto: o formulário inteiro (com "Começar") cabe sem rolar nas telas curtas, nos dois modos.
+for (const [width, height] of [[1366, 650], [1280, 720]]) {
+    for (const mode of ['pesquisa', 'loja']) {
+        test(`o cadastro do jogador cabe sem rolar em ${width}×${height} (modo ${mode})`, async ({ page }) => {
+            await page.setViewportSize({ width, height });
+            await mockExternalApis(page);
+            await page.goto(`/index.html?modo=${mode}`);
+            await page.click('#btn-new-game');
+            await expect(page.locator('#profile-screen')).toBeVisible();
+            expect(await page.evaluate(() => document.getElementById('profile-form').classList.contains('profile-form--nickname'))).toBe(mode === 'loja');
+            expect(await fits(page, '#profile-screen')).toBe(true);
+            for (const sel of ['#profile-name', '#profile-age', '#profile-uf', '#profile-city', '#profile-difficulty', '#btn-profile-start', '#btn-profile-back']) {
+                expect(await inView(page, sel), sel).toBe(true);
+            }
+            // Com um erro na tela, ainda cabe
+            await page.click('#btn-profile-start');
+            await expect(page.locator('#profile-errors')).not.toBeEmpty();
+            expect(await inView(page, '#btn-profile-start')).toBe(true);
+        });
+    }
+}
+
+// Zona e muda: o bloco da fase (nome, barra, próxima fase) vem logo abaixo do cabeçalho, antes dos efeitos.
+test('o bloco da fase fica logo abaixo do cabeçalho, acima dos efeitos', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 650 });
+    await startGame(page);
+    const result = await page.evaluate(() => {
+        const gm = window.gameManager, bs = gm.buildingSystem;
+        gm.tutorialSystem.complete();
+        gm.studySystem.isBuildingUnlocked = () => true;
+        bs.maxSimultaneousConstructions = Infinity;
+        const out = {};
+        for (const id of ['zone_residential_light', 'tree_sapling']) {
+            gm.resourceManager.resources.budget.current = 1e9;
+            bs.buildingCooldown.active = false;
+            let spot = null;
+            for (let x = 0; x < 40 && !spot; x++) for (let z = 0; z < 40 && !spot; z++) {
+                if (bs.canPlaceBuilding(x, z, id, { quiet: true }).canPlace) spot = [x, z];
+            }
+            const b = bs.placeBuilding(spot[0], spot[1], id);
+            bs.completeConstruction(b);
+            gm.uiManager.showBuildingSelectionInfo(b);
+            const block = document.querySelector('#details-content .building-stage-block');
+            const firstEffect = document.querySelector('#details-content .effect-line');
+            const prefix = id === 'tree_sapling' ? 'tree' : 'zone';
+            out[id] = {
+                afterHeader: block?.previousElementSibling?.classList.contains('selection-header') || false,
+                aboveEffects: !!block && !!firstEffect && block.getBoundingClientRect().bottom <= firstEffect.getBoundingClientRect().top,
+                bar: !!block?.querySelector(`#${prefix}-stage-bar-${b.id}`),
+                eta: !!block?.querySelector(`#${prefix}-stage-eta-${b.id}`)
+            };
+        }
+        return out;
+    });
+    const ok = { afterHeader: true, aboveEffects: true, bar: true, eta: true };
+    expect(result).toEqual({ zone_residential_light: ok, tree_sapling: ok });
+});
+
 // Prédio de nome longo: nada do painel fica cortado (o botão Desselecionar passava até 48 px da largura).
 for (const width of [800, 1366]) {
     test(`o painel do prédio não corta nada em ${width} px`, async ({ page }) => {

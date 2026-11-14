@@ -47,10 +47,11 @@
     <link rel="stylesheet" href="css/theme.css?v=065f9eae">
     <link rel="stylesheet" href="css/ui.css?v=0d16bd32">
     <link rel="stylesheet" href="css/responsive.css?v=23c12369">
-    <link rel="stylesheet" href="css/tutorial.css?v=e47f4e97">
+    <link rel="stylesheet" href="css/tutorial.css?v=6bbfde7c">
     <link rel="stylesheet" href="css/lessons.css?v=e68e4db9">
     <link rel="stylesheet" href="css/portraits.css?v=8f8d956b">
-    <link rel="stylesheet" href="css/player.css?v=ecaea69e">
+    <link rel="stylesheet" href="css/illustrations.css?v=ad7e6e0d">
+    <link rel="stylesheet" href="css/player.css?v=748ededd">
     <link rel="stylesheet" href="css/menu.css?v=0283cea9">
     <link rel="stylesheet" href="css/basin-picker.css?v=f894766c">
     <link rel="stylesheet" href="css/notice.css?v=d7a53eab">
@@ -62,7 +63,7 @@
     <link rel="stylesheet" href="css/achievements.css?v=c3053f66">
     <link rel="stylesheet" href="css/mission-card.css?v=92936753">
     <link rel="stylesheet" href="css/events.css?v=f06ffb3d">
-    <link rel="stylesheet" href="css/event-decision.css?v=12e5acb3">
+    <link rel="stylesheet" href="css/event-decision.css?v=270ea5b9">
     <link rel="stylesheet" href="css/mission-bar.css?v=b538d06b">
     <link rel="stylesheet" href="css/saves.css?v=57419e51">
     <link rel="stylesheet" href="css/notebook.css?v=8ad27e1f">
@@ -73,7 +74,7 @@
     <link rel="stylesheet" href="css/terrain-health.css?v=02aad804">
     <link rel="stylesheet" href="css/aquifer-view.css?v=89540114">
     <link rel="stylesheet" href="css/layout.css?v=c43a43fd">
-    <link rel="stylesheet" href="css/theme-skin.css?v=7c2b15b4">
+    <link rel="stylesheet" href="css/theme-skin.css?v=a7082bbb">
     <link rel="stylesheet" href="css/color-modes.css?v=5a19ac96">
 
     <!-- Babylon.js CDN -->
@@ -317,7 +318,8 @@
                 <p class="subtitle">Conte um pouco sobre você para começar</p>
             </div>
             <form id="profile-form" class="profile-form" novalidate>
-                <label class="profile-field">
+                <!-- Desktop: grade de 6 colunas (css/player.css "Cadastro compacto"): nome + idade, estado + cidade, dificuldade -->
+                <label class="profile-field profile-field--name">
                     <span>Seu primeiro nome ou apelido</span>
                     <input id="profile-name" name="name" type="text" maxlength="20" autocomplete="off" placeholder="Ex.: Ana" required>
                 </label>
@@ -325,23 +327,23 @@
                     <span>Sua idade</span>
                     <input id="profile-age" name="age" type="number" min="5" max="120" inputmode="numeric" placeholder="Ex.: 12" required>
                 </label>
-                <!-- Dificuldade (DIFFICULTY_LEVELS): opções montadas por main.js (initializeDifficultyChoice) -->
-                <fieldset class="profile-field difficulty-field">
-                    <legend>Dificuldade</legend>
-                    <div id="profile-difficulty" class="difficulty-options" role="radiogroup"></div>
-                </fieldset>
-                <label class="profile-field">
+                <label class="profile-field profile-field--uf">
                     <span>Seu estado</span>
                     <select id="profile-uf" name="uf" required>
                         <option value="">Escolha o estado...</option>
                     </select>
                 </label>
-                <label class="profile-field">
+                <label class="profile-field profile-field--city">
                     <span>Sua cidade</span>
                     <input id="profile-city" name="city" type="text" list="profile-city-options" autocomplete="off" placeholder="Escolha o estado primeiro" disabled required>
                     <datalist id="profile-city-options"></datalist>
                     <small id="profile-city-hint" class="profile-hint"></small>
                 </label>
+                <!-- Dificuldade (DIFFICULTY_LEVELS): opções montadas por main.js (initializeDifficultyChoice) -->
+                <fieldset class="profile-field difficulty-field">
+                    <legend>Dificuldade</legend>
+                    <div id="profile-difficulty" class="difficulty-options" role="radiogroup"></div>
+                </fieldset>
                 <p id="profile-errors" class="profile-errors" role="alert"></p>
                 <div class="menu-buttons">
                     <button id="btn-profile-start" type="submit" class="menu-btn primary">
@@ -803,7 +805,7 @@
     <script src="js/data/terrainHealth.js?v=57dae5b8"></script>
     <script src="js/data/buildings.js?v=3f64429d"></script>
     <script src="js/data/buildingModels.js?v=8bedd647"></script>
-    <script src="js/data/zoneLots.js?v=984ebf74"></script>
+    <script src="js/data/zoneLots.js?v=66a8c337"></script>
     <script src="js/data/props.js?v=0fe7ecf0"></script>
     <script src="js/data/fieldNotebook.js?v=bf914731"></script>
     <script src="js/data/resourceStates.js?v=c0802704"></script>
@@ -814,6 +816,7 @@
     <script src="js/data/lessons.js?v=97c30f82"></script>
     <script src="js/data/introCity.js?v=a2e6387e"></script>
     <script src="js/data/portraits.js?v=939f497c"></script>
+    <script src="js/data/illustrations.js?v=fb348641"></script>
     <script src="js/data/audioManifest.js?v=e61778ed"></script>
 
     <!-- ===== TUTORIAL SYSTEM ===== -->
@@ -905,6 +908,7 @@
     <script src="js/utils/AudioManager.js?v=ac1792da"></script>
     <script src="js/utils/audio/SoundDirector.js?v=1d5b7084"></script>
     <script src="js/ui/AnimatedPortrait.js?v=7a5cbd3d"></script>
+    <script src="js/ui/AnimatedIllustration.js?v=6c29cb6d"></script>
 
     <!-- Core systems - ordem de dependência -->
     <script src="js/systems/TextSize.js?v=e91ba427"></script>
@@ -918,7 +922,7 @@
     <script src="js/systems/SimCityCameraControls.js?v=22daacaa"></script>
     <script src="js/systems/GamepadInput.js?v=0c8007c0"></script>
 
-    <script src="js/core/GameManager.js?v=da257ef3"></script>
+    <script src="js/core/GameManager.js?v=1dabd31f"></script>
     <script src="js/core/game/Diagnostics.js?v=8ec9d8c0"></script>
     <script src="js/core/game/SelectionVisuals.js?v=d8184bfe"></script>
     <script src="js/core/game/CameraGuard.js?v=2024c210"></script>
@@ -929,7 +933,7 @@
     <script src="js/systems/building/BuildingMeshes.js?v=8b1c4df0"></script>
     <script src="js/systems/building/BuildingFeedback.js?v=3e035e1e"></script>
     <script src="js/systems/building/BuildingModels.js?v=f04f80df"></script>
-    <script src="js/systems/building/ZoneGrowth.js?v=0065dbd5"></script>
+    <script src="js/systems/building/ZoneGrowth.js?v=12f57189"></script>
     <script src="js/systems/building/TreeGrowth.js?v=e026299e"></script>
     <script src="js/systems/building/BuildingRecycle.js?v=c079106f"></script>
     <script src="js/systems/building/WaterIntake.js?v=f609d1a9"></script>
@@ -942,7 +946,7 @@
     <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
     <script src="js/systems/ResourceTrends.js?v=16c746be"></script>
     <script src="js/systems/DeclineWatch.js?v=e0e70d98"></script>
-    <script src="js/systems/UIManager.js?v=9c245896"></script>
+    <script src="js/systems/UIManager.js?v=5a489f17"></script>
     <script src="js/systems/ui/MobileTouch.js?v=d1317e2b"></script>
     <script src="js/systems/ui/StudyBookUI.js?v=6b38320e"></script>
     <script src="js/systems/ui/LoanUI.js?v=58e6338c"></script>
@@ -957,7 +961,7 @@
     <script src="js/systems/ui/ResourcePanels.js?v=49d2fb31"></script>
     <script src="js/systems/ui/AquiferViewUI.js?v=a1aa3591"></script>
     <script src="js/systems/ui/EventUI.js?v=72f71fc0"></script>
-    <script src="js/systems/ui/EventDecisionUI.js?v=69e9a6d5"></script>
+    <script src="js/systems/ui/EventDecisionUI.js?v=d6bf36af"></script>
     <script src="js/systems/ui/BuildPreview.js?v=e014184b"></script>
     <script src="js/systems/ui/BasinPreview.js?v=8785ecbe"></script>
     <script src="js/systems/ui/BuildMenuUI.js?v=aedf8563"></script>
@@ -968,8 +972,8 @@
     <script src="js/systems/ui/CompassUI.js?v=9e3e44fa"></script>
     <script src="js/systems/ui/ResearchUI.js?v=8c9a823e"></script>
     <script src="js/systems/ui/SettingsUI.js?v=3fa4d7b7"></script>
-    <script src="js/systems/ui/LessonBookUI.js?v=3122a13a"></script>
-    <script src="js/systems/ui/TreeInfoUI.js?v=e348aba5"></script>
+    <script src="js/systems/ui/LessonBookUI.js?v=60c7a0ae"></script>
+    <script src="js/systems/ui/TreeInfoUI.js?v=5c03494f"></script>
     <script src="js/systems/ui/TerrainHealthUI.js?v=63a2ce87"></script>
     <script src="js/systems/LoanManager.js?v=6a416acb"></script>
     <script src="js/systems/QuestSystem.js?v=b0bf0cd1"></script>
@@ -981,9 +985,9 @@
     <script src="js/systems/SaveSystem.js?v=f87b5ff7"></script>
     <script src="js/systems/StudySystem.js?v=7ed0bbc6"></script>
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
-    <script src="js/systems/TutorialSystem.js?v=0fce9f6f"></script>
+    <script src="js/systems/TutorialSystem.js?v=394a3655"></script>
     <script src="js/systems/RescueGuides.js?v=2bcaabe3"></script>
-    <script src="js/systems/GameOverSystem.js?v=258af9c8"></script>
+    <script src="js/systems/GameOverSystem.js?v=811fe3ee"></script>
     <script src="js/systems/PlayerProfile.js?v=1efbe8d5"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
@@ -992,7 +996,7 @@
     <script src="js/systems/PropSystem.js?v=bbabd8f3"></script>
     <script src="js/systems/FieldNotebook.js?v=3f2fd7c6"></script>
     <script src="js/systems/CityDiary.js?v=7cb08944"></script>
-    <script src="js/systems/CityMoments.js?v=f493eba5"></script>
+    <script src="js/systems/CityMoments.js?v=b38d5e80"></script>
     <script src="js/systems/SavePointTrend.js?v=5dd5bb30"></script>
     <script src="js/systems/CityCinematic.js?v=4cb876d8"></script>
     <script src="js/systems/TerrainHealth.js?v=f0e79e43"></script>

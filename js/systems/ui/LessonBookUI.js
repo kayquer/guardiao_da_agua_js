@@ -210,6 +210,7 @@ mixin(UIManager, {
             <h4 class="book-title">${step.icon ? uiIcon(step.icon, 'lg') : ''} ${PlayerProfile.personalize(step.title)}</h4>
             <div class="book-text">${PlayerProfile.personalize(step.text)}</div>
             ${last ? this.renderLessonSources(state.chapter) : ''}`;
+        AnimatedIllustration.enhance(book.querySelector('.book-text')); // figura animada (js/ui/AnimatedIllustration.js)
         book.querySelector('.book-right-content').scrollTop = 0;
         ResearchLog.startPage('book', state.chapter, step.title);
         book.querySelector('.book-dots').innerHTML = state.pages.map((_, i) =>

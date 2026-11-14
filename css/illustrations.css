@@ -1,0 +1,265 @@
+/* ===== ILUSTRAÇÕES ANIMADAS (js/ui/AnimatedIllustration.js + js/data/illustrations.js) =====
+   Moldura de "figura impressa": borda branca, cantos e sombra do tema. Dentro, um SVG em camadas:
+   base + recortes (.ail-cut) que se mexem pouco e desenhos vetoriais (.ail-fx). Só transform/opacity.
+   Coordenadas do SVG: viewBox 1600 × 900, então "px" nas animações = unidades da figura. */
+.ail {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    margin: 10px 0;
+    overflow: hidden;
+    border: 4px solid var(--gda-surface);
+    border-radius: var(--gda-r-md);
+    background: var(--gda-surface-2);
+    box-shadow: 0 0 0 1px var(--gda-border-strong), var(--gda-shadow-sm);
+}
+
+.ail-svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity var(--gda-dur-slow) var(--gda-ease);
+}
+
+.ail--ready .ail-svg { opacity: 1; }
+
+/* Fundo de tela cheia (tutorial no celular, vitória): sem moldura, cobre tudo */
+.ail--backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent; /* embaixo fica o gradiente do contêiner até a figura carregar */
+    box-shadow: none;
+}
+
+/* No livro de aulas a figura tinha teto de altura (mesmo corte de antes, "cover") */
+.book-text .ail { max-height: 220px; }
+
+/* ----- Recortes ----- */
+.ail-cut {
+    transform-box: view-box;
+    animation: var(--dur, 6s) ease-in-out infinite alternate;
+}
+
+.ail-cut--water { --dur: 6s; animation-name: ail-water; }
+.ail-cut--cloud { --dur: 16s; animation-name: ail-cloud; }
+.ail-cut--sway,
+.ail-cut--hang { --dur: 5s; animation-name: ail-sway; }
+.ail-cut--sun { --dur: 4s; animation-name: ail-sun; }
+.ail-cut--bob { --dur: 3.2s; animation-name: ail-bob; }
+.ail-cut--swim { --dur: 4.4s; animation-name: ail-swim; }
+.ail-cut--fall { --dur: 2.2s; animation: ail-fall var(--dur) linear infinite; }
+.ail-cut--rise { --dur: 3s; animation: ail-rise var(--dur) linear infinite; }
+
+@keyframes ail-water {
+    from { transform: translateX(calc(var(--amp, 6) * -1px)); }
+    to { transform: translateX(calc(var(--amp, 6) * 1px)) scaleY(1.006); }
+}
+
+@keyframes ail-cloud {
+    from { transform: translateX(calc(var(--amp, 14) * -1px)); }
+    to { transform: translateX(calc(var(--amp, 14) * 1px)); }
+}
+
+@keyframes ail-sway {
+    from { transform: rotate(calc(var(--amp, 0.8) * -1deg)); }
+    to { transform: rotate(calc(var(--amp, 0.8) * 1deg)); }
+}
+
+@keyframes ail-sun {
+    from { transform: scale(1); }
+    to { transform: scale(calc(1 + var(--amp, 5) / 100)); }
+}
+
+@keyframes ail-bob {
+    from { transform: translateY(calc(var(--amp, 4) * -1px)); }
+    to { transform: translateY(calc(var(--amp, 4) * 1px)); }
+}
+
+@keyframes ail-swim {
+    from { transform: translate(calc(var(--amp, 6) * -1px), 1px); }
+    to { transform: translate(calc(var(--amp, 6) * 1px), -2px); }
+}
+
+@keyframes ail-fall {
+    0% { transform: translateY(0); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translateY(calc(var(--amp, 14) * 1px)); opacity: 0; }
+}
+
+@keyframes ail-rise {
+    0% { transform: translateY(0); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translateY(calc(var(--amp, 18) * -1px)); opacity: 0; }
+}
+
+/* ----- Desenhos por cima ----- */
+.ail-p { animation: ail-travel 2s linear infinite; }
+.ail-p--puff { animation-name: ail-puff; animation-timing-function: ease-out; transform-box: fill-box; transform-origin: center; }
+.ail-p--glide { animation-timing-function: ease-in-out; }
+
+@keyframes ail-travel {
+    0% { transform: translate(0, 0); opacity: 0; }
+    12% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)); opacity: 0; }
+}
+
+@keyframes ail-puff {
+    0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+    20% { opacity: 0.6; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(1.9); opacity: 0; }
+}
+
+.ail-glint {
+    stroke: #ffffff;
+    stroke-width: 6;
+    stroke-linecap: round;
+    opacity: 0;
+    animation: ail-glint 4s ease-in-out infinite;
+}
+
+@keyframes ail-glint {
+    0% { opacity: 0; transform: translateX(-8px); }
+    35% { opacity: 0.9; }
+    70%, 100% { opacity: 0; transform: translateX(18px); }
+}
+
+.ail-drop-line {
+    stroke: rgba(228, 244, 255, 0.8);
+    stroke-width: 4;
+    stroke-linecap: round;
+}
+
+.ail-drop {
+    fill: #bfeaff;
+    stroke: var(--gda-ink);
+    stroke-width: 3;
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.6);
+}
+
+.ail-ripple {
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 4;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ail-ripple 1.6s ease-out infinite;
+}
+
+@keyframes ail-ripple {
+    0% { transform: scale(0.3); opacity: 0.9; }
+    45%, 100% { transform: scale(1.6); opacity: 0; }
+}
+
+.ail-bubble {
+    fill: rgba(255, 255, 255, 0.2);
+    stroke: rgba(255, 255, 255, 0.95);
+    stroke-width: 3.5;
+}
+
+.ail-fx-bubbles .ail-p { animation-timing-function: ease-in; }
+
+.ail-dot { stroke: rgba(255, 255, 255, 0.55); stroke-width: 2.5; }
+.ail-dot--water { fill: #a8e8ff; }
+.ail-dot--mud { fill: #9a6230; }
+.ail-dot--dirty { fill: #5b4a2a; stroke: rgba(255, 236, 190, 0.6); }
+.ail-dot--leaf { fill: #6fbf45; }
+
+/* Setas de fluxo: a onda acende uma de cada vez, do começo ao fim do caminho */
+.ail-chev {
+    opacity: 0.85;
+    animation: ail-chev 2.4s ease-in-out infinite;
+}
+
+.ail-chev path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.ail-chev-back { stroke: var(--gda-ink); stroke-width: 15; opacity: 0.6; }
+.ail-chev-line { stroke: var(--gda-accent-light); stroke-width: 8; }
+.ail-tone-dirty .ail-chev-line { stroke: #f2b46a; }
+.ail-tone-good .ail-chev-line { stroke: var(--gda-good-strong); }
+
+@keyframes ail-chev {
+    0%, 100% { opacity: 0.2; }
+    15% { opacity: 1; }
+    45% { opacity: 0.2; }
+}
+
+.ail-rays line {
+    stroke: #fff3c4;
+    stroke-width: 8;
+    stroke-linecap: round;
+    opacity: 0.6;
+}
+
+.ail-rays {
+    transform-box: view-box;
+    animation: ail-spin 60s linear infinite;
+}
+
+.ail-glow {
+    transform-box: view-box;
+    opacity: 0.7;
+    animation: ail-glow 4s ease-in-out infinite alternate;
+}
+
+@keyframes ail-spin { to { transform: rotate(360deg); } }
+
+@keyframes ail-glow {
+    from { opacity: 0.45; transform: scale(0.94); }
+    to { opacity: 0.95; transform: scale(1.06); }
+}
+
+.ail-puff--smoke { fill: rgba(118, 118, 124, 0.55); }
+.ail-puff--steam { fill: rgba(255, 255, 255, 0.6); }
+
+.ail-bird {
+    fill: none;
+    stroke: var(--gda-ink);
+    stroke-width: 5;
+    stroke-linecap: round;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ail-flap 0.45s ease-in-out infinite alternate;
+}
+
+@keyframes ail-flap { to { transform: scaleY(0.3); } }
+
+.ail-sparkle {
+    fill: #fffbe6;
+    stroke: var(--gda-accent-2-deep);
+    stroke-width: 1.5;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ail-twinkle 2.8s ease-in-out infinite;
+}
+
+@keyframes ail-twinkle {
+    0%, 100% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1) rotate(45deg); opacity: 1; }
+}
+
+.ail-vignette { pointer-events: none; }
+
+/* Fora da tela (IntersectionObserver) ou painel escondido: tudo parado */
+.ail--paused,
+.ail--paused * { animation-play-state: paused !important; }
+
+/* Movimento reduzido: figura parada (os desenhos ficam na posição de descanso: setas acesas, gotas no lugar) */
+@media (prefers-reduced-motion: reduce) {
+    .ail *,
+    .ail { animation: none !important; transition: none !important; }
+}

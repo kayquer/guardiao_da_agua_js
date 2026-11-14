@@ -187,3 +187,46 @@ test('vitória: a última legenda do voo diz quem cuidou da cidade', async ({ pa
     expect(captions).toHaveLength(4);
     expect(captions[3]).toBe('E quem cuidou dela foi você, Teste.');
 });
+
+test('tela pequena no canto: a foto do álbum não muda o tamanho da engine e o vigia corrige buffer e viewport', async ({ page }) => {
+    const problems = watchErrors(page);
+    await start(page);
+    const photo = await page.evaluate(async () => {
+        const gm = window.gameManager, e = gm.engine;
+        const before = [e.getRenderWidth(), e.getRenderHeight()];
+        let smallest = Infinity;
+        const obs = gm.scene.onAfterRenderObservable.add(() => { smallest = Math.min(smallest, e.getRenderWidth()); });
+        await gm.cityMoments.capturePhoto(gm, 'start', 'O começo');
+        await new Promise(r => setTimeout(r, 400));
+        gm.scene.onAfterRenderObservable.remove(obs);
+        // a foto não é preta: tem cor de verdade (terreno/água)
+        const img = new Image();
+        img.src = gm.cityMoments.getAlbum()[0].img;
+        await img.decode();
+        const c = document.createElement('canvas');
+        c.width = 40; c.height = 22;
+        const ctx = c.getContext('2d');
+        ctx.drawImage(img, 0, 0, 40, 22);
+        const d = ctx.getImageData(0, 0, 40, 22).data;
+        let sum = 0;
+        for (let i = 0; i < d.length; i += 4) sum += d[i] + d[i + 1] + d[i + 2];
+        return { before, after: [e.getRenderWidth(), e.getRenderHeight()], smallest, mean: sum / (d.length / 4) / 3 };
+    });
+    expect(photo.after).toEqual(photo.before);
+    expect(photo.smallest).toBe(photo.before[0]); // nenhum quadro desenhado em tamanho de foto
+    expect(photo.mean).toBeGreaterThan(30);
+
+    // buffer encolhido (como fazia a captura antiga) e viewport preso em cache: o vigia conserta em ~1 s
+    await page.evaluate(() => window.gameManager.engine.setSize(400, 225));
+    await page.waitForFunction(() => window.gameManager.engine.getRenderWidth() > 400, null, { timeout: 5000 });
+    await page.evaluate(() => {
+        const e = window.gameManager.engine;
+        e._gl.viewport(0, 0, 120, 80); // o Babylon acha que o viewport ainda é o da tela (cache)
+    });
+    await page.waitForFunction(() => {
+        const e = window.gameManager.engine, vp = e._gl.getParameter(e._gl.VIEWPORT);
+        return vp[2] >= e.getRenderWidth() * 0.9;
+    }, null, { timeout: 5000 });
+    expect(await page.evaluate(() => window.gameManager.canvasFixes)).toBeGreaterThanOrEqual(1); // o buffer; o viewport o Babylon refaz no quadro seguinte
+    expect(problems).toEqual([]);
+});

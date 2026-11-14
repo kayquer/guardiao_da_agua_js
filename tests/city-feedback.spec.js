@@ -44,7 +44,7 @@ test('zona mostra quanto falta para a próxima fase e por quê', async ({ page }
     const eta = page.locator(`#zone-stage-eta-${id}`);
     await expect(eta).toHaveText(/Próxima fase em ~\d+ s/);
     const first = Number((await eta.textContent()).match(/~(\d+)/)[1]);
-    expect(first).toBeLessThanOrEqual(20); // fase 0 → 1 em 20 s de jogo
+    expect(first).toBeLessThanOrEqual(30); // fase 0 → 1 em 30 s de jogo (ZONE_GROWTH, 11/2026)
     await page.waitForTimeout(2500);
     expect(Number((await eta.textContent()).match(/~(\d+)/)[1])).toBeLessThan(first); // conta regressiva ao vivo
 

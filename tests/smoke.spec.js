@@ -137,42 +137,22 @@ test('tutorial congela o jogo e guia a construção da prefeitura', async ({ pag
     await expect(page.locator('#tutorial-title')).toHaveText('Prefeitura construída!');
     await expect(next).toBeEnabled();
 
+    // 11/2026: o início tem só o essencial — Olá, Prefeitura, "Prefeitura construída!" (orçamento + árvores), a
+    // primeira missão e "Agora é com você!" (5 páginas; aulas, tour, causa e efeito e o Paulo vêm depois, em guias)
+    await expect(page.locator('#tutorial-title')).toContainText('Prefeitura construída');
+    await page.locator('#tutorial-read-btn').click(); // ler em voz alta no meio do tutorial não quebra nada
     await next.click();
-    await expect(page.locator('#tutorial-title')).toHaveText('Cuidado com as árvores');
+    await expect(tutorial).toHaveClass(/tutorial--coach/);
+    await expect(page.locator('#tutorial-title')).toHaveText('Sua primeira missão');
+    await expect(skip).toBeHidden(); // curto e obrigatório
     await next.click();
-
-    // Depois da Prefeitura: escolhe "aprender agora", ouve um trecho e pula o resto das aulas (passam a vir uma por missão)
-    await expect(tutorial).toHaveClass(/tutorial--story/);
-    await expect(page.locator('#tutorial-title')).toHaveText('Hora de aprender sobre a água?');
-    await expect(next).toHaveText('Aprender agora');
-    await expect(skip).toHaveText('Durante o jogo');
-    await next.click();
-    await page.locator('#tutorial-read-btn').click();
-    await skip.click();
-
-    // Partes opcionais: pula missões e interface; o final é obrigatório
-    await expect(page.locator('#tutorial-title')).toHaveText('Quer conhecer as missões?');
-    await skip.click();
-    await expect(page.locator('#tutorial-title')).toHaveText('Um tour pela tela?');
-    await skip.click();
-    await expect(tutorial).toHaveClass(/tutorial--story/);
-    await expect(skip).toBeHidden();
-    // Final: a Pesquisadora Márcia troca de retrato animado, todas as camadas vindas de assets/characters/marcia/
-    await expect(page.locator('#tutorial-character-name')).toHaveText('Pesquisadora Márcia');
-    await expect(portrait).toHaveAttribute('data-character', 'marcia');
-    expect(await portrait.locator('image').evaluateAll(images => images.map(i => i.getAttribute('href'))
-        .filter(href => !href.startsWith('assets/characters/marcia/')))).toEqual([]);
+    await expect(page.locator('#tutorial-title')).toHaveText('Agora é com você!');
+    expect(await page.evaluate(() => window.gameManager.tutorialSystem.steps.length)).toBe(5);
     // Todo passo tem personagem com retrato no manifesto (nenhum retrato vem da rede)
     expect(await page.evaluate(() => window.gameManager.tutorialSystem.tutorialSteps
         .filter(s => !PORTRAIT_MANIFEST[TutorialSystem.CHARACTERS[s.character]?.id])
         .map(s => s.title))).toEqual([]);
-    await next.click();
-    await next.click();
-    // O Secretário Paulo se apresenta (quem avisa dos eventos e dos alertas ambientais)
-    await expect(page.locator('#tutorial-character-name')).toHaveText('Secretário Paulo');
-    await expect(portrait).toHaveAttribute('data-character', 'paulo');
-    await next.click();
-    // A Cláudia volta, feliz no recado final
+    // A Cláudia feliz no recado final
     await expect(page.locator('#tutorial-character-name')).toHaveText('Pesquisadora Cláudia');
     await expect(portrait).toHaveAttribute('data-character', 'claudia');
     await expect(portrait.locator('[data-layer="happy"]')).toHaveClass(/(^|\s)on(\s|$)/);

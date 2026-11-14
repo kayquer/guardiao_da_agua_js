@@ -83,7 +83,7 @@ class TutorialSystem {
             character: 'Claudia',
             background: 'assets/images/tutorial/bg-rio-boas-vindas.webp',
             title: 'Olá, {nome}!',
-            text: 'Eu sou a <b>Pesquisadora Cláudia</b> e vou te ajudar a cuidar da água desta cidade. Vamos começar pelo começo: construir a <b>Prefeitura</b>, de onde você vai comandar tudo. Depois eu te conto como a água funciona!',
+            text: 'Eu sou a <b>Pesquisadora Cláudia</b> e vou te ajudar a cuidar da água desta cidade. Primeiro passo: construir a <b>Prefeitura</b>, de onde você vai comandar tudo.',
             nextLabel: 'Vamos lá!',
             icon: '💧'
         },
@@ -110,9 +110,12 @@ class TutorialSystem {
         {
             group: 'cityhall', mode: 'coach', character: 'Claudia', icon: '🎉',
             title: 'Prefeitura construída!',
-            text: 'Muito bem, {nome}! A cidade agora tem governo. Daqui pra frente, cada construção sai do <b>orçamento</b> da cidade: gaste com sabedoria.'
+            text: 'Muito bem, {nome}! Daqui pra frente, cada obra sai do <b>💰 orçamento</b> lá em cima. Uma dica: as <b>árvores</b> limpam o ar. Se a sombra da obra ficar <b>laranja</b>, ela derruba árvores e a poluição sobe.',
+            targets: ['.resource-item:has(#budget-amount)', '#compact-budget']
         },
         {
+            // só em "Como jogar → Primeiros passos" (o início ficou com o essencial: 11/2026)
+            replayOnly: true,
             group: 'cityhall', mode: 'coach', character: 'Claudia', icon: '🌳',
             title: 'Cuidado com as árvores',
             text: 'Viu os bosques no mapa? As árvores <b>limpam o ar</b> e deixam a cidade mais feliz. Se você construir em cima delas, elas são <b>derrubadas</b>: a <b>poluição sobe</b> e a <b>satisfação cai</b>. Quando a sombra da obra ficar <b>laranja</b>, tem árvore no caminho: prefira um terreno livre!'
@@ -339,7 +342,24 @@ class TutorialSystem {
             icon: '🧽'
         },
 
-        // ===== MISSÕES (opcional) =====
+        // ===== PRIMEIRA MISSÃO (obrigatório, 11/2026): o essencial para jogar, com uma pitada de conteúdo =====
+        // O resto (missões em detalhe, tour pela tela, causa e efeito, Paulo) vem depois, em guias e na central de
+        // aulas, quando o jogador já sabe construir (GUIDES 'tour' e 'howto'; o Paulo se apresenta na 1ª decisão).
+        {
+            group: 'first', mode: 'coach', character: 'Claudia', icon: '🎯',
+            title: 'Sua primeira missão',
+            text: 'Aqui embaixo fica a <b>missão da vez</b>: construir uma <b>💧 Bomba de Água</b>. Ela puxa a água guardada <b>debaixo da terra</b>, no aquífero. Clique na missão para ver as metas: numa meta com <b>🏗️ ›</b> eu te levo direto ao prédio. Dica: encoste a bomba numa <b>rua</b> (sem rua do lado, ela trabalha a 75%).',
+            targets: ['.hud-bottom .mission-info', '.hud-bottom-toggle']
+        },
+        {
+            group: 'first', mode: 'coach', character: 'Claudia', icon: '🌊', expression: 'happy',
+            title: 'Agora é com você!',
+            text: '<b>Arraste</b> para mover o mapa e use a <b>roda do mouse</b> para o zoom (no celular, um dedo arrasta e dois dão zoom). <b>Espaço</b> pausa. Fique de olho nos números lá em cima: <b>💧 água</b>, <b>☣️ poluição</b> e <b>💰 dinheiro</b>. Eu, o José, a Márcia e o Paulo aparecemos quando a cidade precisar!',
+            targets: ['.hud-top .resource-panel', '.resource-item:has(#water-amount)', '#compact-water'],
+            nextLabel: 'Começar a jogar!'
+        },
+
+        // ===== MISSÕES (só em "Como jogar") =====
         {
             group: 'missions', mode: 'coach', offer: true, character: 'Claudia', icon: '🎯',
             title: 'Quer conhecer as missões?',
@@ -473,7 +493,7 @@ class TutorialSystem {
             character: MARCIA,
             background: 'assets/images/tutorial/bg-causa-efeito.webp',
             title: 'Como o Jogo Funciona: Causa e Efeito!',
-            text: 'Quando eu coleto uma amostra no rio e o resultado da análise muda, eu vou atrás da causa. No jogo é igual! Imagine que a cidade é um organismo vivo: <img src="assets/images/lessons/causa-e-efeito.webp" alt="Jovens plantando árvores na margem deixam o rio limpo; o esgoto mais adiante deixa o rio sujo" style="width:100%; border-radius:8px; margin:10px 0;"/> ✅ Se você PLANTAR mata ciliar → Qualidade da água MELHORA ↑<br>❌ Se FALTAR tratamento de esgoto → Poluição AUMENTA ↑<br>✅ Se construir jardins de chuva → Enchentes DIMINUEM ↓<br>❌ Se usar muitos agrotóxicos → Peixes MORREM ↓<br>Cada ação tem uma reação! Observe os <b>indicadores coloridos</b> na tela: verde = bom, amarelo = atenção, vermelho = perigo! Pense antes de agir.',
+            text: TutorialSystem.causeEffectText(),
             icon: '⚙️'
         },
 
@@ -515,8 +535,11 @@ class TutorialSystem {
      * Inicia o tutorial. O GameManager já deixou o jogo em gameState 'tutorial' (congelado).
      */
     start() {
-        this.lessonsDeferred = false; // true = aulas sobre a água vêm uma por missão
-        return this.begin(this.tutorialSteps.filter(step => !step.bookOnly), 'tutorial');
+        // 11/2026: o início tem só o essencial (Olá → Prefeitura → primeira missão, 5 páginas; eram até ~30). As aulas
+        // sobre a água vêm sempre uma por missão (LessonProgress.forMission) e o resto em guias (GUIDES 'tour', 'howto').
+        this.lessonsDeferred = true;
+        return this.begin(this.tutorialSteps.filter(step =>
+            !step.bookOnly && !step.replayOnly && TutorialSystem.START_GROUPS.includes(this.groupOf(step))), 'tutorial');
     }
 
     /**
@@ -726,7 +749,7 @@ class TutorialSystem {
         if (step.waitForCategory) return this.gameManager.buildingSystem.buildingTypes.get(buildingTypeId)?.category === step.waitForCategory;
         // Tour das missões: o atalho da meta leva ao prédio dela, então ele pode ser construído ali mesmo (antes o
         // tutorial levava até a Bomba de Água e depois dizia "ainda não é hora de construir isso")
-        if (step.group === 'missions' && this.isMissionGoalBuilding(buildingTypeId)) return true;
+        if ((step.group === 'missions' || step.group === 'first') && this.isMissionGoalBuilding(buildingTypeId)) return true;
         return buildingTypeId === step.waitFor;
     }
 
@@ -790,10 +813,7 @@ class TutorialSystem {
         // No computador tudo acontece no painel à esquerda, com o mapa à vista; só o celular tem fundo de tela cheia
         if (step.background && window.innerWidth <= 768) {
             const background = document.getElementById('tutorial-background');
-            const img = new Image();
-            img.onload = () => { background.style.backgroundImage = `url('${step.background}')`; };
-            img.onerror = () => log('ℹ️ Using gradient fallback for background');
-            img.src = step.background;
+            AnimatedIllustration.mountBackdrop(background, step.background); // ilustração animada (sem imagem: o gradiente)
         }
 
         // Modo história = livro: vira a página (mesma animação do livro da central de aulas)
@@ -815,6 +835,7 @@ class TutorialSystem {
         const stepText = TutorialSystem.studyText(PlayerProfile.personalize(lessonRun ? step.lessonText : step.text));
         text.innerHTML = (typeof step.chapter === 'number' ? stepText : uiIconsIn(stepText)) +
             (endsChapter ? this.gameManager.uiManager?.renderLessonSources?.(step.chapter) || '' : '');
+        AnimatedIllustration.enhance(text); // figuras da aula viram ilustração animada (js/ui/AnimatedIllustration.js)
         text.scrollTop = 0;
         document.getElementById('tutorial-character-name').textContent = TutorialSystem.displayName(step.character);
 
@@ -971,8 +992,22 @@ class TutorialSystem {
         for (const t of targets) {
             const el = document.querySelector(t.selector || t);
             if (!el) continue;
-            // alvo dentro de lista rolável: traz para a vista se a lista estiver na tela
-            if (t.scrollIn && !this.isOnScreen(el) && this.isOnScreen(document.querySelector(t.scrollIn))) {
+            // Alvo dentro de uma lista com rolagem (cartões do menu de construção, missões, painel da direita):
+            // traz para a vista. Antes só rolava se o alvo estivesse fora da JANELA — a Prefeitura ficava dentro da
+            // janela, mas escondida embaixo da grade rolável do menu, e o tutorial apontava para o nada.
+            // Uma vez por alvo em cada passo: depois o jogador pode rolar a lista à vontade (a checagem roda a cada 250 ms)
+            if (this.autoScrollStep !== this.currentStep || this.autoScrollRun !== this.steps) {
+                this.autoScrollStep = this.currentStep;
+                this.autoScrollRun = this.steps;
+                this.autoScrolled = new Set();
+            }
+            const key = t.selector || t;
+            const scroller = !this.autoScrolled.has(key) && this.clippingScroller(el);
+            if (scroller && this.isOnScreen(scroller)) {
+                this.autoScrolled.add(key);
+                el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+            } else if (!this.autoScrolled.has(key) && t.scrollIn && !this.isOnScreen(el) && this.isOnScreen(document.querySelector(t.scrollIn))) {
+                this.autoScrolled.add(key);
                 el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
             }
             if (this.isOnScreen(el)) return { el, text: t.text };
@@ -980,7 +1015,26 @@ class TutorialSystem {
         return null;
     }
 
+    /**
+     * Primeiro ancestral com rolagem que esconde o elemento (ou parte dele, mais de 4 px), ou null. Só para
+     * elementos desenhados (display/visibility): um alvo escondido de propósito não faz nada rolar.
+     */
+    clippingScroller(el) {
+        if (!(el.checkVisibility?.({ checkVisibilityCSS: true }) ?? true)) return null;
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height) return null;
+        for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+            const style = getComputedStyle(p);
+            if (!/(auto|scroll|hidden)/.test(style.overflowY + style.overflowX)) continue;
+            if (p.scrollHeight <= p.clientHeight + 1 && p.scrollWidth <= p.clientWidth + 1) continue;
+            const c = p.getBoundingClientRect();
+            if (r.top < c.top - 4 || r.bottom > c.bottom + 4 || r.left < c.left - 4 || r.right > c.right + 4) return p;
+        }
+        return null;
+    }
+
     isOnScreen(el) {
+        if (!el) return false;
         const r = el.getBoundingClientRect();
         return r.width > 0 && r.height > 0 && r.right > 0 && r.bottom > 0 &&
             r.left < window.innerWidth && r.top < window.innerHeight &&
@@ -1119,9 +1173,62 @@ class TutorialSystem {
     }
 }
 
+/**
+ * Causa e efeito da Márcia em SVG (11/2026, era um texto com "→ ↑ ↓" e uma imagem de IA): cada linha é uma ação
+ * (desenho simples) → seta que corre → o efeito, com a setinha de tendência na cor do resultado (verde = bom,
+ * vermelho = perigo, as mesmas cores dos números do topo). Cores pelos tokens do tema (css/tutorial.css, .ce-*), sem
+ * texto preso em imagem; o aria-label conta o mesmo para leitor de tela. Sem movimento com prefers-reduced-motion.
+ */
+TutorialSystem.causeEffectSvg = () => {
+    const rows = [
+        { y: 10, good: true, act: 'Mata ciliar', eff: 'Água limpa', up: true, icon: 'tree', effIcon: 'drop' },
+        { y: 64, good: false, act: 'Esgoto sem tratar', eff: 'Poluição', up: true, icon: 'pipe', effIcon: 'smog' },
+        { y: 118, good: true, act: 'Jardim de chuva', eff: 'Enchente', up: false, icon: 'rain', effIcon: 'wave' },
+        { y: 172, good: false, act: 'Fábrica no rio', eff: 'Peixes', up: false, icon: 'factory', effIcon: 'fish' }
+    ];
+    const icons = {
+        tree: '<rect x="-2.5" y="2" width="5" height="10" rx="1.5" class="ce-wood"/><circle cx="0" cy="-3" r="9" class="ce-leaf"/><circle cx="-6" cy="2" r="5" class="ce-leaf"/><circle cx="6" cy="2" r="5" class="ce-leaf"/>',
+        pipe: '<rect x="-12" y="-5" width="16" height="9" rx="2" class="ce-metal"/><rect x="2" y="-8" width="5" height="15" rx="1.5" class="ce-metal"/><circle cx="9" cy="8" r="2.4" class="ce-mud ce-drip"/><circle cx="12" cy="12" r="1.8" class="ce-mud ce-drip ce-d2"/>',
+        rain: '<path d="M-10 -4 a6 6 0 0 1 6 -6 a7 7 0 0 1 13 2 a5 5 0 0 1 1 10 h-18 a5 5 0 0 1 -2 -6z" class="ce-cloud"/><path d="M-11 8 q11 9 22 0 v4 h-22z" class="ce-leaf"/><line x1="-4" y1="4" x2="-5" y2="8" class="ce-rainline ce-drip"/><line x1="3" y1="4" x2="2" y2="8" class="ce-rainline ce-drip ce-d2"/>',
+        factory: '<rect x="-12" y="-2" width="24" height="12" class="ce-metal"/><path d="M-12 -2 l7 -5 v5 l7 -5 v5 l7 -5 v5z" class="ce-metal"/><rect x="6" y="-12" width="4" height="10" class="ce-metal"/><circle cx="8" cy="-15" r="3" class="ce-smoke ce-puff"/>',
+        drop: '<path d="M0 -11 C6 -3 8 1 8 4 a8 8 0 0 1 -16 0 c0 -3 2 -7 8 -15z" class="ce-water"/><path d="M-3 3 a3 3 0 0 0 3 3" class="ce-shine"/>',
+        smog: '<circle cx="-5" cy="2" r="6" class="ce-smoke"/><circle cx="4" cy="-1" r="7" class="ce-smoke"/><circle cx="2" cy="6" r="5" class="ce-smoke"/>',
+        wave: '<path d="M-12 2 q4 -6 8 0 t8 0 t8 0 v8 h-24z" class="ce-water"/><path d="M-12 -4 q4 -6 8 0 t8 0 t8 0" class="ce-waveline"/>',
+        fish: '<path d="M-10 0 q8 -9 16 0 q-8 9 -16 0z" class="ce-fish"/><path d="M6 0 l6 -6 v12z" class="ce-fish"/><circle cx="-4" cy="-1.5" r="1.3" class="ce-eye"/>'
+    };
+    const trend = (up, good) => `<g class="ce-trend ${good ? 'ce-good' : 'ce-bad'} ${up ? 'ce-up' : 'ce-down'}">` +
+        `<circle r="11" class="ce-trend-bg"/><path d="${up ? 'M0 -6 l6 7 h-4 v5 h-4 v-5 h-4z' : 'M0 6 l6 -7 h-4 v-5 h-4 v5 h-4z'}" class="ce-trend-arrow"/></g>`;
+    const body = rows.map((r, i) => `
+        <g transform="translate(0 ${r.y})" class="ce-row ${r.good ? 'ce-good' : 'ce-bad'}">
+            <rect x="2" y="0" width="166" height="44" rx="12" class="ce-pill ce-pill-act"/>
+            <g transform="translate(24 22)" class="ce-icon">${icons[r.icon]}</g>
+            <text x="44" y="26.5" class="ce-label">${r.act}</text>
+            <line x1="174" y1="22" x2="200" y2="22" class="ce-flow" style="animation-delay:${i * 0.2}s"/>
+            <path d="M199 15 l9 7 l-9 7z" class="ce-head"/>
+            <rect x="214" y="0" width="144" height="44" rx="12" class="ce-pill ce-pill-eff"/>
+            <g transform="translate(236 22)" class="ce-icon">${icons[r.effIcon]}</g>
+            <text x="256" y="26.5" class="ce-label">${r.eff}</text>
+            <g transform="translate(340 22)">${trend(r.up, r.good)}</g>
+        </g>`).join('');
+    const label = rows.map(r => `${r.act}: ${r.eff.toLowerCase()} ${r.up ? 'sobe' : 'desce'} (${r.good ? 'bom' : 'perigo'})`).join('; ');
+    return `<figure class="cause-effect">
+        <svg viewBox="0 0 360 222" role="img" aria-label="Causa e efeito. ${label}.">${body}</svg>
+        <figcaption><span class="ce-key ce-good">bom</span><span class="ce-key ce-bad">perigo</span> as mesmas cores dos números lá de cima</figcaption>
+    </figure>`;
+};
+
+/** Texto da página de causa e efeito (Como jogar → Como o jogo funciona, e o guia 'howto'). */
+TutorialSystem.causeEffectText = () => 'Quando eu coleto uma amostra no rio e o resultado muda, eu vou atrás da <b>causa</b>. No jogo é igual: cada ação tem uma reação!' +
+    TutorialSystem.causeEffectSvg() +
+    'Observe os números do topo: a setinha mostra se estão subindo ou caindo. Pense antes de agir!';
+
+// Partes do tutorial inicial (11/2026: só o essencial; o resto vem nos guias 'tour' e 'howto')
+TutorialSystem.START_GROUPS = ['hello', 'cityhall', 'first'];
+
 // Partes do tutorial inicial que a central de aulas deixa refazer (aba "Como jogar")
 TutorialSystem.REPLAY_PARTS = [
     { group: 'cityhall', icon: '🏛️', title: 'Primeiros passos', summary: 'A Prefeitura, o orçamento e o cuidado com as árvores.' },
+    { group: 'first', icon: '🎯', title: 'A primeira missão', summary: 'Onde fica a missão da vez, a câmera e os números do topo.' },
     { group: 'missions', icon: '🎯', title: 'Missões', summary: 'Onde ficam as missões, os detalhes e o atalho para construir.' },
     { group: 'interface', icon: '🧭', title: 'Tour pela tela', summary: 'O que cada número do topo significa, câmera e pausa.' },
     { group: 'end', icon: '⚙️', title: 'Como o jogo funciona', summary: 'Causa e efeito, dicas da Pesquisadora Márcia, o Secretário Paulo e o recado final.' }
@@ -1149,7 +1256,7 @@ TutorialSystem.isSupplyOk = (gm) => {
     const el = rm.resources.electricity || {};
     return (rm.getWaterBalance?.().deficit ?? 1) <= 0 && (el.generation || 0) >= (el.consumption || 0);
 };
-TutorialSystem.GROUP_LABELS = { hello: 'Boas-vindas', intro: 'Introdução', cityhall: 'Prefeitura', missions: 'Missões', interface: 'Interface', end: 'Final' };
+TutorialSystem.GROUP_LABELS = { hello: 'Boas-vindas', intro: 'Introdução', cityhall: 'Prefeitura', first: 'Primeira missão', missions: 'Missões', interface: 'Interface', end: 'Final' };
 TutorialSystem.SKIP_LABELS = { intro: 'Pular aulas', missions: 'Pular esta parte', interface: 'Pular esta parte' };
 
 // ===== PERSONAGENS =====
@@ -1344,6 +1451,33 @@ TutorialSystem.GUIDES = [
             },
             { title: 'O rio também tem limite', expression: 'worried', text: 'Clique na 💧 água lá em cima: o painel mostra o nível dos <b>Rios e lagos</b>. A ETA faz o rio baixar; as nascentes e a chuva enchem de novo, e na <b>seca</b> enchem menos. Rio baixo dá menos água para a cidade e para os peixes.', targets: ['.resource-item:has(#water-amount)', '#compact-water'] },
             { title: 'Devolva a água limpa', expression: 'happy', text: 'O segredo é a <b>Estação de Tratamento de Esgoto (ETE)</b>, em <b>Tratamento</b>: ela limpa a água suja da cidade e devolve ao rio, que fica mais <b>cheio</b> e mais <b>vivo</b>. E as <b>árvores</b> ajudam o aquífero: as raízes deixam a chuva entrar no chão!', targets: ['.category-btn[data-category="treatment"]'] }
+        ]
+    },
+    {
+        // 11/2026: o tour pela tela saiu do início (eram 12 páginas antes de jogar). Vem depois da 1ª missão, já com o
+        // jogador sabendo construir, em 3 páginas do José
+        id: 'tour', title: 'A tela da cidade', icon: '🧭', paced: true,
+        when: gm => !!gm.questSystem?.completedQuests?.has('tutorial_01'),
+        steps: [
+            { character: 'Pescador José', title: 'Os números lá de cima',
+                text: 'Já viu que tem uma setinha em cada número? Ela diz se está <b>subindo</b> ou <b>caindo</b>.<br>💧 <b>Água</b> guardada: se acabar, é fim de jogo. ☣️ <b>Poluição</b>: em 100%, também. 👥 <b>Moradores</b> e 😊 <b>satisfação</b>. 💰 <b>Dinheiro</b> e ⚡ <b>energia</b>.<br><b>Clique num número</b> para ver de onde ele vem e para onde vai.',
+                targets: ['.hud-top .resource-panel', '.resource-item:has(#water-amount)', '#compact-water'] },
+            { character: 'Pescador José', title: 'Velocidade do jogo',
+                text: 'Este botão muda a velocidade do tempo: <b>0,5x</b>, <b>1x</b>, <b>2x</b> ou <b>3x</b> (teclas 0 a 3). Cidade tranquila? Acelere. Apertou? Volte para 1x.',
+                targets: ['#btn-speed', '.mobile-top-toggle.control-toggle'] },
+            { character: 'Pesquisadora Márcia', title: 'O seu menu',
+                text: 'Clique no <b>seu nome</b>: lá ficam a <b>pausa</b>, as <b>📚 Aulas e estudos</b>, o <b>📔 Diário da cidade</b>, as <b>🏅 Conquistas</b>, as <b>⚙️ Configurações</b> e o <b>💾 Salvar</b>. O jogo também salva sozinho.',
+                targets: ['#player-chip'] }
+        ]
+    },
+    {
+        // Causa e efeito e as dicas da Márcia: depois de 2 missões (antes eram páginas do início, sem contexto)
+        id: 'howto', after: 'tour', title: 'Como a cidade reage', icon: '⚙️', paced: true,
+        when: gm => (gm.questSystem?.completedQuests?.size || 0) >= 2,
+        steps: [
+            { character: 'Pesquisadora Márcia', title: 'Causa e efeito', text: TutorialSystem.causeEffectText() },
+            { character: 'Pesquisadora Márcia', title: 'Dicas do meu caderno', expression: 'happy',
+                text: '🔍 <b>Observe os sinais</b>: os números e os bichos do rio avisam cedo quando algo vai mal.<br>🌳 <b>Proteja primeiro</b>: mata ciliar evita problema depois.<br>💧 <b>Trate o esgoto</b> antes de a cidade crescer.<br>⚖️ <b>Equilibre</b> dinheiro e natureza.<br>Prevenir sai mais barato que consertar!' }
         ]
     },
     {

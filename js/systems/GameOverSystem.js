@@ -296,6 +296,7 @@ class GameOverSystem {
         // Update background
         const background = document.getElementById('gameover-background');
         if (background) {
+            AnimatedIllustration.unmount(background); // a vitória põe uma ilustração animada aqui
             background.style.backgroundImage = `url('${message.background}')`;
         }
 
@@ -542,7 +543,7 @@ class GameOverSystem {
         const qs = this.gameManager.questSystem;
         const stats = this.getVictoryStats();
         const background = document.getElementById('gameover-background');
-        if (background) background.style.backgroundImage = "url('assets/images/tutorial/bg-cidade-rio.webp')";
+        AnimatedIllustration.mountBackdrop(background, 'assets/images/tutorial/bg-cidade-rio.webp');
         const slot = document.getElementById('gameover-portrait');
         const id = TutorialSystem.CHARACTERS.Claudia?.id;
         if (slot && id && !this.portrait) {

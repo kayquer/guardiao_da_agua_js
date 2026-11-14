@@ -1968,6 +1968,8 @@ class UIManager {
                     <button class="deselect-btn" data-action="deselect">${uiIcon('ui-close')} Desselecionar</button>
                 </div>
 
+                ${this.generateStageBlock(building)}
+
                 <div class="building-details">
                     <div class="detail-row">
                         <span class="detail-label">Categoria:</span>
@@ -2076,10 +2078,18 @@ class UIManager {
 
         stats += this.gameManager?.buildingSystem?.generateEfficiencyWarnings?.(building) || ''; // sem rua, falta de energia
         stats += this.generateResidentStats(building);
-        stats += this.generateZoneStageStats(building);
         stats += this.generatePlantedTreeStats?.(building) || ''; // árvore plantada (ui/TreeInfoUI.js)
 
         return uiIconsIn(stats);
+    }
+
+    /**
+     * Fase da zona ou etapa da muda num bloco logo abaixo do cabeçalho do painel, antes dos efeitos: é o que
+     * muda enquanto o jogador olha. '' para os outros prédios e durante a obra.
+     */
+    generateStageBlock(building) {
+        const html = this.generateZoneStageStats(building) || this.generatePlantedTreeStageStats?.(building) || '';
+        return html ? `<div class="building-stage-block">${uiIconsIn(html)}</div>` : '';
     }
 
     /** Zona pronta: fase de crescimento (ZoneGrowth.js) com barra de progresso da fase. */
@@ -2092,13 +2102,13 @@ class UIManager {
         // Tempo até a próxima fase + o que acelera/freia; atualizado ao vivo por ZoneGrowth.updateZoneStagePanel
         const growth = bs.describeZoneGrowth?.(building);
         return `
-            <div class="stat-item zone-stage" data-zone-stage="${stage}">🏗️ Fase: <span id="zone-stage-name-${building.id}">${ZONE_GROWTH.stageNames[stage]} (${stage + 1}/4)</span></div>
-            <div class="zone-stage-track" style="height:8px;border-radius:4px;background:rgba(0,0,0,0.25);margin:2px 0 6px;overflow:hidden">
-                <div id="zone-stage-bar-${building.id}" class="zone-stage-bar" style="height:100%;width:${percent}%;background:${building.config.color || '#4CAF50'};transition:width 0.4s"></div>
+            <div class="stat-item zone-stage stage-title" data-zone-stage="${stage}">🏗️ Fase: <span id="zone-stage-name-${building.id}">${ZONE_GROWTH.stageNames[stage]} (${stage + 1}/4)</span></div>
+            <div class="zone-stage-track stage-track">
+                <div id="zone-stage-bar-${building.id}" class="zone-stage-bar stage-bar" style="width:${percent}%;background:${building.config.color || '#4CAF50'}"></div>
             </div>
-            <div class="stat-item zone-stage-eta">⏱️ <span id="zone-stage-eta-${building.id}" title="${growth?.reason || ''}">${growth ? growth.eta : 'Zona completa'}</span></div>
-            <div id="zone-stage-why-${building.id}" class="zone-stage-why" style="font-size:0.85em;opacity:0.8;margin:-2px 0 4px">${growth?.reason || ''}</div>
-            <div class="stat-item">📈 Ocupação da zona: ${effect}%</div>
+            <div class="stat-item zone-stage-eta stage-eta">⏱️ <span id="zone-stage-eta-${building.id}" title="${growth?.reason || ''}">${growth ? growth.eta : 'Zona completa'}</span></div>
+            <div id="zone-stage-why-${building.id}" class="zone-stage-why stage-why">${growth?.reason || ''}</div>
+            <div class="stat-item stage-occupancy">📈 Ocupação da zona: ${effect}%</div>
             ${bs.getZonePanelExtrasHtml?.(building) || ''}`;
     }
 
@@ -2141,8 +2151,9 @@ class UIManager {
     }
 
     generateBuildingActions(building) {
-        let actions = '';
         const config = building.config;
+        // Zona completa: "Evoluir para …" é a primeira ação (ZoneGrowth.getZoneEvolveHtml; '' quando não se aplica)
+        let actions = uiIconsIn(this.gameManager?.buildingSystem?.getZoneEvolveHtml?.(building) || '');
 
         // Girar o prédio (quartos de volta). Ruas (roadType) não giram: o encaixe automático decide
         if (this.gameManager?.buildingSystem?.canRotateBuilding?.(building)) {
@@ -2156,10 +2167,10 @@ class UIManager {
             actions += `
                 <div class="rotate-actions">
                     <button class="action-btn rotate-btn rotate-left" data-direction="-1" data-building-id="${building.id}" title="Girar para a esquerda" aria-label="Girar para a esquerda">
-                        <span class="rotate-icon-wrap">${arrow(true)}</span> Girar para a esquerda
+                        <span class="rotate-icon-wrap">${arrow(true)}</span> Girar à esquerda
                     </button>
                     <button class="action-btn rotate-btn rotate-right" data-direction="1" data-building-id="${building.id}" title="Girar para a direita" aria-label="Girar para a direita">
-                        <span class="rotate-icon-wrap">${arrow(false)}</span> Girar para a direita
+                        <span class="rotate-icon-wrap">${arrow(false)}</span> Girar à direita
                     </button>
                 </div>
             `;

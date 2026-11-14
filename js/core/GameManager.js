@@ -690,6 +690,7 @@ class GameManager {
             this.gamepadInput?.poll(currentTime);
             // Quadro pulado: nada é desenhado nem simulado; o próximo recebe o tempo acumulado (lastUpdateTime)
             if (!this.framePacer.ready(currentTime, this.getFrameRateTarget())) return;
+            this.checkCanvasSize(currentTime); // tela pequena no canto (1×/s): corrige sozinho
 
             if (this.renderState.circuitBreakerActive) {
                 console.error('🚨 Circuit breaker ativo - render parado');
@@ -1580,6 +1581,35 @@ class GameManager {
         return !this.buildMode && !this.buildingSystem?.previewMode && !this.selectedBuilding &&
             !this.tutorialSystem?.isActive && !ui?.uiState?.currentOpenPanel && !ui?.isInfoPopupOpen() && !ui?.isBuildModalOpen?.() &&
             !document.querySelector('.hud-left.active, .hud-right.active') && !ui?.isHudRightVisible?.();
+    }
+
+    /**
+     * Vigia do tamanho da tela (1 vez por segundo). Um jogador viu o jogo desenhado pequeno no canto inferior
+     * esquerdo, com o resto em azul: o buffer do canvas ou o viewport do WebGL ficou de outro tamanho que o canvas na
+     * tela (uma captura que mudou a engine de tamanho, tela cheia, zoom do navegador, aba escondida no resize). Se o
+     * tamanho de render não bate com o do canvas na tela, ou o viewport do GL não cobre o quadro, refaz o tamanho e
+     * limpa o cache de estado do Babylon (o viewport fica em cache e não seria corrigido sozinho).
+     */
+    checkCanvasSize(now = performance.now()) {
+        if (now - (this.canvasCheckAt || 0) < 1000) return;
+        this.canvasCheckAt = now;
+        const canvas = this.canvas, engine = this.engine;
+        if (!canvas || !engine || engine.isDisposed || !canvas.clientWidth || !canvas.clientHeight) return;
+        const hw = engine.getHardwareScalingLevel() || 1;
+        const wantW = Math.floor(canvas.clientWidth / hw), wantH = Math.floor(canvas.clientHeight / hw);
+        const sizeOff = Math.abs(engine.getRenderWidth() - wantW) > 2 || Math.abs(engine.getRenderHeight() - wantH) > 2;
+        let viewportOff = false;
+        const gl = engine._gl;
+        if (!sizeOff && gl && typeof gl.getParameter === 'function') {
+            const vp = gl.getParameter(gl.VIEWPORT);
+            // depois do quadro o viewport é o da tela inteira (pós-processos e câmera ocupam tudo)
+            viewportOff = !!vp && vp[2] > 0 && (vp[2] < engine.getRenderWidth() * 0.9 || vp[3] < engine.getRenderHeight() * 0.9);
+        }
+        if (!sizeOff && !viewportOff) return;
+        logWarn(`⚠️ Tela fora do tamanho (render ${engine.getRenderWidth()}×${engine.getRenderHeight()}, esperado ${wantW}×${wantH}${viewportOff ? ', viewport menor' : ''}): corrigindo`);
+        engine.wipeCaches?.(true);
+        this.handleResize();
+        this.canvasFixes = (this.canvasFixes || 0) + 1;
     }
 
     handleResize() {
