@@ -158,6 +158,8 @@ class GameManager {
             this.fieldNotebook = new FieldNotebook(); // caderno de campo: bichos que voltam/somem (js/data/fieldNotebook.js)
             this.cityDiary = new CityDiary(); // diário da cidade: marcos da partida com o dia (js/systems/CityDiary.js)
             this.cityMoments = new CityMoments(); // nascente, cheia contida, chuva real, 1ºs carros, álbum (js/systems/CityMoments.js)
+            this.cityFinance = new CityFinance(); // impostos da prefeitura (js/systems/CityFinance.js)
+            this.cityStaff = new CityStaff(); // funcionários da prefeitura (js/systems/CityStaff.js)
 
             // Aguardar carregamento do conteúdo educacional
             await this.studySystem.initialize();
@@ -809,6 +811,11 @@ class GameManager {
         }
         this.cityDiary?.tick(deltaTime * this.timeScale, this); // diário da cidade: olha os sistemas a cada 2 s de jogo
         this.cityMoments?.tick(deltaTime * this.timeScale, this); // momentos da cidade (mesmo ritmo, só olha)
+        // prefeitura: imposto mexendo devagar na satisfação; funcionários ganhando experiência
+        this.cityFinance?.tick(deltaTime * this.timeScale, this);
+        this.cityStaff?.tick(deltaTime * this.timeScale, this);
+        const staffEvents = this.cityStaff?.takeEvents?.() || [];
+        if (staffEvents.length) this.uiManager?.onStaffEvents?.(staffEvents);
 
         // Tecnologias novas (árvore tecnológica): confere ~1 vez por segundo de jogo
         this.techCheckTimer = (this.techCheckTimer || 0) + deltaTime * this.timeScale;
@@ -996,6 +1003,8 @@ class GameManager {
         this.cityDiary?.reset(); // diário da cidade também
         this.cityMoments?.reset(); // momentos da cidade: nascente, carros…
         this.cityMoments?.clearAlbum(); // e o álbum "Como a cidade mudou" do perfil (a cidade é outra)
+        this.cityFinance?.reset(); // impostos voltam ao normal
+        this.cityStaff?.reset(); // ninguém contratado
         this.techTree?.reset();
         if (this.gameOverSystem) { // as 3 declarações de emergência voltam; as ganhas em missão somem
             this.gameOverSystem.emergenciesUsed = 0;
@@ -1258,6 +1267,8 @@ class GameManager {
             this.fieldNotebook?.loadData(saveData.notebook); // save antigo: caderno vazio (a 1ª olhada registra o que há)
             this.cityDiary?.loadData(saveData.diary); // save antigo: diário vazio (a 1ª olhada só marca o que já existe)
             this.cityMoments?.loadData(saveData.moments, this); // depois das missões: as já cumpridas não ganham foto
+            this.cityFinance?.loadData(saveData.finance); // save antigo: impostos normais
+            this.cityStaff?.loadData(saveData.staff); // save antigo: ninguém contratado
             if (this.tutorialSystem && saveData.tutorial) {
                 this.tutorialSystem.lessonsDeferred = !!saveData.tutorial.lessonsDeferred;
             }
@@ -1689,6 +1700,8 @@ class GameManager {
             notebook: this.fieldNotebook?.getSaveData() ?? null,
             diary: this.cityDiary?.getSaveData() ?? null,
             moments: this.cityMoments?.getSaveData() ?? null,
+            finance: this.cityFinance?.getSaveData() ?? null,
+            staff: this.cityStaff?.getSaveData() ?? null,
             basin: typeof Basin !== 'undefined' ? Basin.id() : 'vale', // bacia do terreno (js/data/basinMaps.js; antigo = vale)
             camera: this.getCameraSaveData()
         };

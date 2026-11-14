@@ -123,6 +123,20 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         ui.closeMissionCard();
         gm.questSystem.buildCityChallenge(1);
 
+        // ui/CityHallUI (fluxo completo em tests/city-hall.spec.js): financeiro, equipe, contratação, conversa
+        ui.openCityFinance();
+        ui.showTaxPreview('commerce', 'alto');
+        ui.closeCityHallPopup('city-finance');
+        gm.resourceManager.resources.budget.current += 1000;
+        ui.openCityStaff('hire');
+        ui.hireStaff('obras');
+        ui.closeStaffHireCard();
+        ui.openStaffTalk(gm.cityStaff.staff[0].id);
+        ui.rerollStaffTalk();
+        ui.closeStaffTalk();
+        gm.cityStaff.fire(gm.cityStaff.staff[0].id);
+        ui.closeCityHallPopup('city-staff');
+
         // ui/ResourceHud
         ui.updateResourceHud(gm.resourceManager.resources);
 

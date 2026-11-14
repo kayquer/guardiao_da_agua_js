@@ -621,7 +621,8 @@ class UIManager {
 
     // Livro de aulas, central de aulas, tutorial (story ou coach) ou livro de estudo visível
     isReadingOverlayOpen() {
-        return ['#lessons-hub', '#lesson-book', '#study-book-overlay', '#tutorial-container', '#mission-card']
+        return ['#lessons-hub', '#lesson-book', '#study-book-overlay', '#tutorial-container', '#mission-card',
+            '#city-finance', '#city-staff', '#staff-hire-card', '#staff-talk'] // prefeitura (ui/CityHallUI.js)
             .some(selector => (document.querySelector(selector)?.getClientRects().length || 0) > 0);
     }
 
@@ -685,7 +686,8 @@ class UIManager {
             '.swal2-container', '.central-alert-overlay', '#study-book-overlay', '#controls-modal',
             '#weather-modal', '#lessons-hub', '#lesson-book', '.mission-interface', '.choice-dialog', '.loan-interface',
             '.resource-details-panel', '#notification-history', '#research-panel', '#achievements-panel', '#saves-panel', '#notebook-panel', '#settings-panel', '#tech-modal', '#event-decision', '#mission-card',
-            '#species-card', '#diary-panel', '#city-cinematic', '#aquifer-view'
+            '#species-card', '#diary-panel', '#city-cinematic', '#aquifer-view',
+            '#city-finance', '#city-staff', '#staff-hire-card', '#staff-talk' // prefeitura (ui/CityHallUI.js)
         ];
         return popups.some(selector => shown(document.querySelector(selector)));
     }
@@ -1402,7 +1404,7 @@ class UIManager {
     
     saveGame() {
         const ok = this.gameManager.saveGame();
-        AudioManager.playSound(ok ? 'sfx_success' : 'sfx_build_error');
+        AudioManager.playSound(ok ? 'sfx_game_saved' : 'sfx_build_error');
         // Retorno visível também na tela de pausa (as notificações ficam atrás dela)
         const button = this.elements.saveGameBtn;
         if (ok && button) {
@@ -2154,6 +2156,8 @@ class UIManager {
         const config = building.config;
         // Zona completa: "Evoluir para …" é a primeira ação (ZoneGrowth.getZoneEvolveHtml; '' quando não se aplica)
         let actions = uiIconsIn(this.gameManager?.buildingSystem?.getZoneEvolveHtml?.(building) || '');
+        // Prefeitura: Financeiro e Funcionários (ui/CityHallUI.js)
+        actions += this.getCityHallActionsHtml?.(building) || '';
 
         // Girar o prédio (quartos de volta). Ruas (roadType) não giram: o encaixe automático decide
         if (this.gameManager?.buildingSystem?.canRotateBuilding?.(building)) {

@@ -658,6 +658,9 @@ class EventSystem {
             if (options.verdict) event.verdict = options.verdict;
         }
         if (eventTypeId === 'flood') event.effectScale = (event.effectScale ?? 1) * this.getFloodRisk().risk;
+        // geógrafo/a (CityStaff, bonus 'climate'): seca, enchente e chuva forte fazem menos estrago
+        const climate = this.gameManager.cityStaff?.bonus?.('climate') || 0;
+        if (climate && ['drought', 'flood', 'heavy_rain'].includes(eventTypeId)) event.effectScale = (event.effectScale ?? 1) * (1 - climate);
         // Ameaças crescem com a cidade (getCityPressure); a seca de missão mantém a força escrita no texto dela
         if (eventType.response?.kind === 'threat' && !Number.isFinite(options.duration)) {
             event.effectScale = (event.effectScale ?? 1) * this.getCityPressure();
@@ -873,6 +876,8 @@ class EventSystem {
         }
         // Bacia da partida: litoral alaga mais, sertão seca e queima mais (js/data/basinMaps.js eventWeights)
         if (typeof Basin !== 'undefined') weight *= Basin.eventWeight(eventType.id);
+        // serviços gerais (CityStaff, bonus 'failure'): manutenção em dia, menos equipamento quebrando
+        if (eventType.id === 'equipment_failure') weight *= 1 - (this.gameManager.cityStaff?.bonus?.('failure') || 0);
         return weight;
     }
 
@@ -886,7 +891,8 @@ class EventSystem {
             .some(b => b.config?.earlyWarning && b.active && !b.underConstruction);
         // Estação de monitoramento ou prêmio de missão (rewards.earlyWarningMs): o dobro de tempo para se preparar
         const rewarded = !!this.gameManager.questSystem?.isEarlyWarningActive?.();
-        return EventSystem.WARNING_MS * (monitored || rewarded ? 2 : 1);
+        // geógrafo/a (CityStaff, bonus 'warning'): lê o mapa e o tempo, avisa mais cedo
+        return EventSystem.WARNING_MS * (monitored || rewarded ? 2 : 1) * (1 + (this.gameManager.cityStaff?.bonus?.('warning') || 0));
     }
 
     /**
@@ -1103,7 +1109,7 @@ class EventSystem {
             this.gameManager.resourceManager?.adjustResource('budget', EventSystem.STREAK_REWARD);
             this.gameManager.questSystem?.changeReputation?.({ government: 2 }, 'Boas decisões');
             ui?.showNotification(`🏅 Secretário Paulo: ${st.streak} boas decisões seguidas! O governo mandou R$ ${EventSystem.STREAK_REWARD.toLocaleString('pt-BR')} de prêmio.`, 'success', 7000);
-            if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_achievement');
+            if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_decision_streak'); // envelope + floreio
         }
         if (good && st.good === EventSystem.GUARDIAN_GOAL) this.gameManager.questSystem?.unlockAchievement?.('climate_guardian');
     }

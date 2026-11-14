@@ -222,8 +222,8 @@ class CityMoments {
             'José: olha lá… um olho-d\'água! Fazia anos que eu não via a água brotar dessa encosta.', toast, { radius: 15 });
         if (!started) toast();
         if (typeof AudioManager !== 'undefined') {
-            AudioManager.playSound('sfx_discovery', 0.7);
-            setTimeout(() => AudioManager.onSpeaker?.('jose', 'happy'), 500);
+            AudioManager.playSound('sfx_spring_return', 0.8); // a água brotando entre as pedras
+            setTimeout(() => AudioManager.onSpeaker?.('jose', 'happy'), 700);
         }
     }
 
@@ -231,6 +231,7 @@ class CityMoments {
         this.state.spring = null;
         this.disposeSpring();
         this.diary(gm, '🏜️', 'O olho-d\'água da encosta secou: o aquífero baixou demais');
+        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_spring_dry', 0.7);
         this.ui(gm)?.showNotification?.('Pescador José: o olho-d\'água da encosta secou… o aquífero baixou demais. Árvores e jardins de chuva ajudam a água a voltar para dentro da terra.', 'warning', 8000);
     }
 
@@ -347,7 +348,10 @@ class CityMoments {
                 `A água encheu a várzea e parou antes das casas · evitamos ${pct}% do estrago`, toast, { radius: 22 });
         }
         if (!started) toast();
-        if (typeof AudioManager !== 'undefined') setTimeout(() => AudioManager.onSpeaker?.('paulo', 'happy'), 400);
+        if (typeof AudioManager !== 'undefined') {
+            AudioManager.playSound('sfx_flood_contained', 0.75); // a cheia se espalhando calma pela várzea
+            setTimeout(() => AudioManager.onSpeaker?.('paulo', 'happy'), 900);
+        }
     }
 
     // ----- Chuva da sua cidade -----
@@ -371,7 +375,10 @@ class CityMoments {
         ui?.showNotification?.(
             `Secretário Paulo: está chovendo de verdade em ${city} agora, e na nossa cidade também! A chuva entra na terra e enche o aquífero: +${perMin}% por minuto enquanto chover.`,
             'info', 10000, { className: 'toast--moment', actions });
-        if (typeof AudioManager !== 'undefined') AudioManager.onSpeaker?.('paulo', 'happy');
+        if (typeof AudioManager !== 'undefined') {
+            AudioManager.playSound('sfx_real_rain_notice', 0.65); // primeiras gotas de chuva de verdade
+            setTimeout(() => AudioManager.onSpeaker?.('paulo', 'happy'), 600);
+        }
     }
 
     // ----- Primeiros carros -----
@@ -390,7 +397,7 @@ class CityMoments {
             return p ? { x: p.x, z: p.z } : null;
         }, 'Os primeiros carros na rua!', null);
         if (!started) toast();
-        if (typeof AudioManager !== 'undefined') setTimeout(() => AudioManager.playSound('sfx_car_horn', 0.6), started ? 900 : 0);
+        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_first_cars', 0.7); // motor, buzina amiga e o carro passando
     }
 
     // ----- Álbum "Como a cidade mudou" -----
@@ -503,6 +510,8 @@ class CityMoments {
                 const album = this.getAlbum().filter(p => p.key !== key);
                 album.push({ key, title: label, day, gt: Math.round(gm.gameTime || 0), img });
                 this.saveAlbum(CityMoments.trimAlbum(album, new Set([...(gm.questSystem?.completedQuests || []), key])));
+                // clique da câmera, baixinho (a foto sai no meio do jogo); a do começo é silenciosa
+                if (key !== 'start' && typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_album_photo', 0.5);
                 if (gm.uiManager?.isDiaryPanelOpen?.()) gm.uiManager.renderDiaryPanel();
                 return key;
             })

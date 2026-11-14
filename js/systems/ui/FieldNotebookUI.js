@@ -129,7 +129,7 @@ mixin(UIManager, {
             ]
         });
         if (typeof AudioManager !== 'undefined') {
-            AudioManager.playSound('sfx_discovery', 0.8); // som de descoberta (arpejo de sino)
+            AudioManager.playSound('sfx_species_return', 0.8); // "bem-vindo de volta": respingo + kalimba
             setTimeout(() => AudioManager.onSpeaker?.('marcia', 'happy'), 600);
         }
         if (typeof ResearchLog !== 'undefined') ResearchLog.record('notebook', { target: id, value: 'returned' });

@@ -89,7 +89,8 @@ class PropSystem {
         const deforestation = trees?.initialCount ? Math.max(0, 1 - trees.trees.size / trees.initialCount) : 0;
         return {
             level: PropPlanner.levelFor(population, missions),
-            pollution: res?.pollution?.current || 0,
+            // veterinário/a (CityStaff, bonus 'tolerance'): os bichos aguentam um pouco mais de poluição antes de sumir
+            pollution: Math.max(0, (res?.pollution?.current || 0) - (gm.cityStaff?.bonus?.('tolerance') || 0)),
             sewage: population >= 40 && !hasETE,
             deforestation,
             quality: gm.graphicsQuality || (typeof GraphicsQuality !== 'undefined' ? GraphicsQuality.current() : 'high'),
@@ -114,7 +115,9 @@ class PropSystem {
             // da mata ciliar nunca contava e só o relógio trazia os ameaçados)
             if (typeof TreeSystem !== 'undefined' && TreeSystem.isRiparianCell(gm.gridManager, b.gridX, b.gridZ)) riparian += b.type === 'linear_park' ? 2 : 1;
         });
-        return Math.min(1, (1 / 3) * Math.min(1, riverMin / 12) + (2 / 3) * Math.min(1, riparian / 10));
+        // veterinário/a (CityStaff, bonus 'ecology'): os bichos raros chegam antes
+        const vet = gm.cityStaff?.bonus?.('ecology') || 0;
+        return Math.min(1, (1 / 3) * Math.min(1, riverMin / 12) + (2 / 3) * Math.min(1, riparian / 10) + vet);
     }
 
     static keyOf(p) {

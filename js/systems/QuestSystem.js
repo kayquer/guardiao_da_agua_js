@@ -755,7 +755,10 @@ class QuestSystem {
         const perks = this.getPerks();
         if (perks.freeBuilds[typeId] > 0) return 0;
         const percent = perks.discounts[typeId];
-        return percent ? Math.round(cost * (1 - percent / 100)) : cost;
+        // engenheiro/a civil (CityStaff, bonus 'buildCost'): obra mais barata, junto com o prêmio de missão
+        const civil = 1 - (this.gameManager?.cityStaff?.bonus?.('buildCost') || 0);
+        if (civil === 1 && !percent) return cost;
+        return Math.round((percent ? cost * (1 - percent / 100) : cost) * civil);
     }
 
     /** A obra foi paga com o prêmio: gasta uma obra grátis ou o desconto. */

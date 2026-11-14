@@ -189,9 +189,25 @@ class ResourceManager {
         // Calculate tax revenue
         this.calculateTaxRevenue();
 
-        // Receita - Despesas
-        const netIncome = budget.income - budget.expenses;
+        // Receita - Despesas (- folha de funcionários + o que o economista economiza na manutenção)
+        const staff = this.getStaffBalance();
+        budget.payroll = staff.payroll;
+        budget.staffSavings = staff.savings;
+        const netIncome = budget.income - budget.expenses - staff.payroll + staff.savings;
         budget.current = Math.max(0, budget.current + (netIncome / 60)); // Por segundo
+    }
+
+    /**
+     * Funcionários da prefeitura (js/systems/CityStaff.js): { payroll, savings } em R$/min — a folha (salários) e a
+     * parte da manutenção dos prédios que o economista economiza. Sem o sistema (testes de unidade): zeros.
+     */
+    getStaffBalance() {
+        const staff = this.gameManager?.cityStaff;
+        if (!staff) return { payroll: 0, savings: 0 };
+        const buildings = this.gameManager.buildingSystem?.getAllBuildings?.() || [];
+        const maintenance = buildings.filter(b => b.effectsApplied)
+            .reduce((sum, b) => sum + ResourceManager.buildingMaintenance(b), 0);
+        return { payroll: staff.payroll(), savings: Math.round(maintenance * staff.bonus('maintenance')) };
     }
 
     // ===== TAX REVENUE SYSTEM =====
@@ -215,21 +231,35 @@ class ResourceManager {
         this.taxRates.developmentMultiplier = 1.0 + (totalBuildings * 0.01) + (satisfactionBonus * 0.5);
 
         // Population tax (income tax from citizens)
-        this.taxRevenue.population = population * this.taxRates.perCitizen * this.taxRates.developmentMultiplier;
+        // Financeiro da prefeitura (js/systems/CityFinance.js): cada grupo × o nível do imposto dele
+        const finance = this.gameManager.cityFinance;
+        const taxOf = group => finance?.revenue?.(group) ?? 1;
+        this.taxRevenue.population = population * this.taxRates.perCitizen * this.taxRates.developmentMultiplier * taxOf('residents');
 
         // Imposto de comércio e de turismo: pelo campo de dado taxGroup (antes era pelo nome do tipo, e "park" no
         // nome fazia o parque linear e o ecoparque pagarem imposto de turismo)
         const finished = buildings.filter(b => !b.underConstruction);
         const commercialBuildings = finished.filter(b => b.config?.taxGroup === 'commerce');
-        this.taxRevenue.business = commercialBuildings.length * this.taxRates.perCommercial * this.taxRates.developmentMultiplier;
+        this.taxRevenue.business = commercialBuildings.length * this.taxRates.perCommercial * this.taxRates.developmentMultiplier * taxOf('commerce');
 
         const tourismBuildings = finished.filter(b => b.config?.taxGroup === 'tourism');
-        this.taxRevenue.tourism = tourismBuildings.length * this.taxRates.perTourism * this.taxRates.developmentMultiplier;
+        this.taxRevenue.tourism = tourismBuildings.length * this.taxRates.perTourism * this.taxRates.developmentMultiplier * taxOf('commerce');
+        // Renda própria de zonas comerciais/industriais e prédios de comércio/turismo: a prefeitura fica com mais
+        // (ou menos) dela conforme o imposto do grupo — ajuste somado à parte (os efeitos dos prédios não mudam)
+        this.taxRevenue.incomeAdjust = 0;
+        if (finance && typeof CityFinance !== 'undefined') {
+            const bs = this.gameManager.buildingSystem;
+            for (const b of finished) {
+                const group = CityFinance.groupOf(b.config);
+                const mult = group ? taxOf(group) : 1;
+                if (mult !== 1) this.taxRevenue.incomeAdjust += (bs.getAppliedBuildingIncome?.(b) || 0) * (mult - 1);
+            }
+        }
 
         // Calculate total tax revenue
         // × confiança do comércio (reputação do grupo Comércio: 0,8× a 1,2×)
-        this.taxRevenue.total = (this.taxRevenue.population + this.taxRevenue.business + this.taxRevenue.tourism) *
-            this.getReputationModifiers().income;
+        this.taxRevenue.total = (this.taxRevenue.population + this.taxRevenue.business + this.taxRevenue.tourism +
+            this.taxRevenue.incomeAdjust) * this.getReputationModifiers().income;
 
         // Receita = base + impostos + o que os prédios rendem. Antes esta linha sobrescrevia a receita dos prédios
         // (addIncome) a cada segundo: comércio, turismo, indústria e aluguel não rendiam nada.
@@ -239,6 +269,28 @@ class ResourceManager {
 
     getTaxRevenue() {
         return { ...this.taxRevenue };
+    }
+
+    /**
+     * Receita de hoje de cada grupo de imposto (R$/min, já × o nível atual e a confiança do comércio), a mesma conta
+     * de calculateTaxRevenue separada por grupo: moradores; comércio = imposto de comércio + turismo + renda própria
+     * dos prédios/zonas comerciais × nível; indústria = renda própria das zonas industriais × nível. Base da prévia
+     * do Financeiro (CityFinance.preview, ui/CityHallUI.js).
+     */
+    getTaxBaseByGroup() {
+        const t = this.taxRevenue || {};
+        const rep = this.getReputationModifiers().income;
+        const out = { residents: (t.population || 0) * rep, commerce: ((t.business || 0) + (t.tourism || 0)) * rep, industry: 0 };
+        const finance = this.gameManager?.cityFinance;
+        const bs = this.gameManager?.buildingSystem;
+        if (finance && bs && typeof CityFinance !== 'undefined') {
+            for (const b of bs.getAllBuildings?.() || []) {
+                if (b.underConstruction) continue;
+                const group = CityFinance.groupOf(b.config);
+                if (group) out[group] += (bs.getAppliedBuildingIncome?.(b) || 0) * finance.revenue(group) * rep;
+            }
+        }
+        return out;
     }
 
     getTaxRates() {
@@ -287,6 +339,12 @@ class ResourceManager {
         // Confiança dos moradores na prefeitura (reputação, QuestSystem)
         const trust = this.getReputationModifiers().satisfaction;
         if (Math.abs(trust) >= 0.05) factors.push({ key: 'reputation', icon: '🤝', label: 'Confiança dos moradores', value: trust });
+
+        // Prefeitura: imposto dos moradores (entra devagar) e funcionários (assistente social, veterinário/a)
+        const tax = this.gameManager?.cityFinance?.satisfactionNow?.() || 0;
+        if (Math.abs(tax) >= 0.05) factors.push({ key: 'tax', icon: '🏠', label: 'Imposto dos moradores', value: tax });
+        const staffSat = this.gameManager?.cityStaff?.bonus?.('satisfaction') || 0;
+        if (staffSat) factors.push({ key: 'staff', icon: '🤝', label: 'Equipe da prefeitura', value: staffSat });
         return factors;
     }
 
@@ -409,6 +467,9 @@ class ResourceManager {
         else if (pollution.current > 40) attractionFactor *= 0.8;
         else if (pollution.current < 20) attractionFactor *= 1.1; // Limpo
 
+        // Imposto dos moradores (CityFinance): mais barato atrai, mais caro afasta
+        attractionFactor *= this.gameManager?.cityFinance?.attraction?.() ?? 1;
+
         return Math.max(0, Math.min(2.0, attractionFactor));
     }
 
@@ -434,11 +495,27 @@ class ResourceManager {
      */
     getPollutionBalance() {
         const pollution = this.resources.pollution;
-        const sources = Math.max(0, pollution.sources || 0);
-        const sewage = this.getSewagePollution();
-        const reduction = Math.max(0, pollution.reduction || 0);
+        const staff = this.gameManager?.cityStaff;
+        // engenheiro/a ambiental: os prédios poluem menos (CityStaff, bonus 'pollution')
+        const sources = Math.max(0, pollution.sources || 0) * (1 - (staff?.bonus?.('pollution') || 0));
+        // o esgoto dos moradores também (é a maior parte da poluição de uma cidade sem indústria pesada)
+        const sewage = this.getSewagePollution() * (1 - (staff?.bonus?.('pollution') || 0));
+        // engenheiro/a agrônomo/a: árvores e obras verdes limpam mais (bonus 'green' sobre a parte verde da limpeza)
+        const reduction = Math.max(0, pollution.reduction || 0) + (staff ? this.getGreenReduction() * staff.bonus('green') : 0);
         const reputation = this.getReputationModifiers().pollution;
         return { sources, sewage, reduction, reputation, net: sources + sewage - reduction - reputation };
+    }
+
+    /** Limpeza que vem do verde (por minuto): árvores nativas e plantadas + obras da categoria natureza. */
+    getGreenReduction() {
+        const gm = this.gameManager;
+        let green = Math.max(0, gm?.treeSystem?.appliedReduction || 0);
+        for (const b of gm?.buildingSystem?.getAllBuildings?.() || []) {
+            if (!b.effectsApplied || b.underConstruction) continue;
+            if (b.treeApplied) green += Math.max(0, b.treeApplied.pollutionReduction || 0);
+            else if (b.config?.category === 'nature') green += Math.max(0, (b.config.pollutionReduction || 0) * (b.efficiency ?? 1));
+        }
+        return green;
     }
 
     /** Efeitos da reputação dos grupos (QuestSystem.getReputationModifiers); neutros sem o sistema de missões. */
@@ -874,7 +951,11 @@ class ResourceManager {
             groups.push({ key: 'other', icon: '📄', name: 'Outras despesas', count: 1, people: 0, total: other });
             groups.sort((a, b) => b.total - a.total);
         }
-        return { groups, total };
+        // Funcionários da prefeitura: a folha entra como despesa; a economia do economista, como desconto
+        const staff = this.getStaffBalance();
+        if (staff.payroll > 0) groups.push({ key: 'payroll', icon: '👥', name: 'Funcionários da prefeitura', count: this.gameManager?.cityStaff?.staff?.length || 0, people: 0, total: staff.payroll });
+        if (staff.savings > 0) groups.push({ key: 'savings', icon: '📊', name: 'Economia na manutenção (economista)', count: 1, people: 0, total: -staff.savings });
+        return { groups, total: total + staff.payroll - staff.savings };
     }
 
     // ===== GESTÃO DE ARMAZENAMENTO DE ÁGUA =====

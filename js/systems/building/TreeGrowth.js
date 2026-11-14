@@ -86,7 +86,8 @@ mixin(BuildingSystem, {
     /** Ritmo de crescimento: a muda (etapa 0) só cresce com água na cidade; depois, sempre 1. */
     computeTreeGrowthRate(stage, { waterShortage = false } = {}) {
         if (stage === 0 && waterShortage) return 0;
-        return 1;
+        // engenheiro/a agrônomo/a: mudas crescem mais rápido (CityStaff, bonus 'green')
+        return 1 + (this.gameManager?.cityStaff?.bonus?.('green') || 0);
     },
 
     getTreeGrowthConditions() {

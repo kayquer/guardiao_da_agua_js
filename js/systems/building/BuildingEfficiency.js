@@ -89,6 +89,11 @@ mixin(BuildingSystem, {
         return isZone && typeof ZONE_GROWTH !== 'undefined' ? full * ZONE_GROWTH.effectScale[0] : full;
     },
 
+    /** Imposto do grupo do prédio (comércio/indústria, CityFinance.efficiencyBonus): de +6% (muito baixo) a −10% (muito alto). */
+    getTaxEfficiencyBonus(building) {
+        return this.gameManager?.cityFinance?.efficiencyBonus?.(building?.config) || 0;
+    },
+
     /** Soma dos bônus de pesquisa por perto (determinístico; limite EFFICIENCY_RULES.researchBonusCap). */
     getResearchEfficiencyBonus(building) {
         let bonus = 0;
@@ -256,7 +261,7 @@ mixin(BuildingSystem, {
         building.undrained = this.isZoneUndrained(building);
         const pollution = rm?.resources?.pollution?.current || 0;
         const efficiency = this.computeBuildingEfficiency(building, {
-            hasRoad, cityEnergy, researchBonus: this.getResearchEfficiencyBonus(building),
+            hasRoad, cityEnergy, researchBonus: this.getResearchEfficiencyBonus(building) + this.getTaxEfficiencyBonus(building),
             waterShortage: !!rm?.hasWaterShortage?.(),
             highPollution: pollution >= EFFICIENCY_RULES.zoneHighPollution,
             pollution,
@@ -290,7 +295,7 @@ mixin(BuildingSystem, {
         return this.computeBuildingEfficiency(building, {
             hasRoad: this.hasRoadLink(building),
             cityEnergy: this.getCityEnergyEfficiency(),
-            researchBonus: this.getResearchEfficiencyBonus(building),
+            researchBonus: this.getResearchEfficiencyBonus(building) + this.getTaxEfficiencyBonus(building),
             weather: building.config?.powerSource ? this.getWeatherContext() : null
         });
     },

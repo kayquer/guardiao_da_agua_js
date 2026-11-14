@@ -181,7 +181,7 @@ mixin(UIManager, {
         view.classList.add('av-instant');
         this.updateAquiferView({ force: true });
         requestAnimationFrame(() => requestAnimationFrame(() => view.classList.remove('av-instant')));
-        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_panel_open');
+        if (typeof AudioManager !== 'undefined') AudioManager.playSound('sfx_aquifer_view'); // descendo para debaixo da terra
         view.querySelector('#aquifer-view-close')?.focus();
     },
 

@@ -381,11 +381,11 @@ class AudioManager {
         const entry = this.manifest[k];
         if (!entry || this.activeLoops.has(k) || !this.canPlayEffects()) return;
         const ctx = this.audioContext;
-        const buffer = ctx && this.buffers.get(entry.files[0]);
-        if (!buffer) {
-            if (ctx) this.decodeFile(entry.files[0]);
-            return;
-        }
+        // loops com variações (máquinas da ETE, poço, filtros): sorteia entre as já decodificadas e decodifica o resto
+        const loaded = entry.files.filter(f => this.buffers.get(f));
+        if (ctx) entry.files.forEach(f => { if (!this.buffers.get(f)) this.decodeFile(f); });
+        const buffer = ctx && loaded.length ? this.buffers.get(loaded[Math.floor(Math.random() * loaded.length)]) : null;
+        if (!buffer) return;
         const handle = this.startBuffer(buffer, volume * (entry.volume ?? 1) * this.categoryVolume(entry.kind), { loop: true });
         this.activeLoops.set(k, handle);
     }

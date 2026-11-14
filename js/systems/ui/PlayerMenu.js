@@ -76,7 +76,7 @@ mixin(UIManager, {
         }
         if (action === 'save') {
             const ok = gm.saveGame();
-            AudioManager.playSound(ok ? 'sfx_success' : 'sfx_build_error');
+            AudioManager.playSound(ok ? 'sfx_game_saved' : 'sfx_build_error');
             this.showNotification(ok ? '💾 Jogo salvo!' : '⚠️ Não deu para salvar agora.', ok ? 'success' : 'warning', 2500);
             return;
         }

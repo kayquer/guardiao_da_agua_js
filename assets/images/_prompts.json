@@ -913,6 +913,1510 @@
       ],
       "prompt": "Illustration of a floating solar plant on a hydroelectric reservoir in Brazil: rows of solar panels on floating blue platforms anchored with cables, a dam and powerhouse in the background sharing the same transmission line, open water left free with fish and aquatic plants, shade under the panels keeping the water cool, sunny sky. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo.",
       "status": "pendente: hoje é um render do modelo 3D; gerar com o modelo de imagem do projeto"
+    },
+    "assets/characters/staff/obras-m-1/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Equipe de obras, masculino, variante 1, 32 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a member of the city public works construction crew: a pardo (mixed-race) Brazilian with warm medium-brown skin, a 32-year-old man with an average build, a short buzz cut and a neat short beard, wearing a plain yellow safety hard hat with no logo, a fluorescent orange high-visibility vest with silver reflective stripes over a gray work t-shirt, a pair of work gloves tucked into the vest pocket. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/obras-m-1/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/obras-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/obras-m-1/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/obras-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/obras-m-1/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/obras-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/obras-m-1/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/obras-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/obras-m-1/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/obras-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/obras-m-2/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Equipe de obras, masculino, variante 2, 43 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a member of the city public works construction crew: a white Brazilian with fair skin, a 43-year-old man with a plus-size build and a round face, balding with short hair on the sides, wearing a plain yellow safety hard hat with no logo, a fluorescent orange high-visibility vest with silver reflective stripes over a gray work t-shirt, a pair of work gloves tucked into the vest pocket. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/obras-m-2/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/obras-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/obras-m-2/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/obras-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/obras-m-2/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/obras-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/obras-m-2/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/obras-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/obras-m-2/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/obras-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/servicos-f-1/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Serviços gerais, feminino, variante 1, 38 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a general services and maintenance worker of the city hall: a pardo (mixed-race) Brazilian with warm medium-brown skin, a 38-year-old woman with a plus-size build and a round face, shoulder-length curly dark hair, wearing a navy-blue maintenance work uniform shirt with two chest pockets, a plain blank ID badge clipped to the pocket, a small screwdriver and a pencil peeking discreetly out of the chest pocket. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/servicos-f-1/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/servicos-f-1/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/servicos-f-1/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/servicos-f-1/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/servicos-f-1/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/servicos-f-3/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Serviços gerais, feminino, variante 3, 60 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a general services and maintenance worker of the city hall: a Black Brazilian with dark brown skin, a 60-year-old woman with a stocky build with broad shoulders, locs pulled into a bun, with some gray, wearing a teal maintenance work uniform shirt with two chest pockets, a plain blank ID badge clipped to the pocket, a small screwdriver and a pencil peeking discreetly out of the chest pocket. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/servicos-f-3/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/servicos-f-3/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/servicos-f-3/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/servicos-f-3/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/servicos-f-3/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/servicos-m-2/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Serviços gerais, masculino, variante 2, 56 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a general services and maintenance worker of the city hall: a white Brazilian with fair skin, a 56-year-old man with an average build, wavy blond hair, with some gray, thin-framed glasses, wearing a dark-gray maintenance work uniform shirt with two chest pockets, a plain blank ID badge clipped to the pocket, a small screwdriver and a pencil peeking discreetly out of the chest pocket. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/servicos-m-2/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/servicos-m-2/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/servicos-m-2/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/servicos-m-2/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/servicos-m-2/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/servicos-m-3/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Serviços gerais, masculino, variante 3, 31 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a general services and maintenance worker of the city hall: a Black Brazilian with dark brown skin, a 31-year-old man with a plus-size build and a round face, very short close-cropped black hair, wearing a teal maintenance work uniform shirt with two chest pockets, a plain blank ID badge clipped to the pocket, a small screwdriver and a pencil peeking discreetly out of the chest pocket. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/servicos-m-3/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/servicos-m-3/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/servicos-m-3/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/servicos-m-3/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/servicos-m-3/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/servicos-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_civil-f-1/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia civil, feminino, variante 1, 51 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a civil engineer of the city hall: a pardo (mixed-race) Brazilian with warm medium-brown skin, a 51-year-old woman with an average build, short curly dark hair, with some gray, wearing a plain white safety hard hat with no logo, a light-blue button-up shirt with rolled sleeves, a rolled-up blank blueprint tucked under one arm. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_civil-f-1/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-f-1/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-f-1/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-f-1/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_civil-f-1/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_civil-f-2/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia civil, feminino, variante 2, 26 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a civil engineer of the city hall: a white Brazilian with fair skin, a 26-year-old woman with a plus-size build and a round face, dark-brown hair in a messy bun, thin-framed glasses, wearing a plain white safety hard hat with no logo, a white button-up shirt with rolled sleeves, holding a clipboard against the chest. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_civil-f-2/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-f-2/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-f-2/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-f-2/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_civil-f-2/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_civil-m-1/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia civil, masculino, variante 1, 58 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a civil engineer of the city hall: a pardo (mixed-race) Brazilian with warm medium-brown skin, a 58-year-old man with a stocky build with broad shoulders, a receding hairline and a thin mustache, with some gray, wearing a plain white safety hard hat with no logo, a light-blue button-up shirt with rolled sleeves, a rolled-up blank blueprint tucked under one arm. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_civil-m-1/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-m-1/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-m-1/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-m-1/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_civil-m-1/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_civil-m-2/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia civil, masculino, variante 2, 33 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a civil engineer of the city hall: a white Brazilian with fair skin, a 33-year-old man with an athletic build, short light-brown hair, wearing a plain white safety hard hat with no logo, a white button-up shirt with rolled sleeves, holding a clipboard against the chest. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_civil-m-2/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-m-2/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-m-2/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-m-2/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_civil-m-2/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_civil-m-3/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia civil, masculino, variante 3, 44 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a civil engineer of the city hall: a Black Brazilian with dark brown skin, a 44-year-old man with an average build, short twists, wearing a plain white safety hard hat with no logo, a light-gray button-up shirt with rolled sleeves, a rolled-up blank blueprint tucked under one arm. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_civil-m-3/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-m-3/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-m-3/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_civil-m-3/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_civil-m-3/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_civil-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_ambiental-f-1/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia ambiental, feminino, variante 1, 28 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an environmental engineer of the city hall who works in the field: a pardo (mixed-race) Brazilian with warm medium-brown skin, a 28-year-old woman with an athletic build, long straight black hair in a side braid, wearing a leaf-green multi-pocket field vest over a white t-shirt, holding a small clear water-sample bottle with clean water. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_ambiental-f-1/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-f-1/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-f-1/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-f-1/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_ambiental-f-1/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_ambiental-f-2/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia ambiental, feminino, variante 2, 39 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an environmental engineer of the city hall who works in the field: a white Brazilian with fair skin, a 39-year-old woman with an average build, straight light-brown hair in a bob, wearing a leaf-green multi-pocket field vest over a light-gray t-shirt, holding a tablet with a blank screen. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_ambiental-f-2/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-f-2/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-f-2/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-f-2/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_ambiental-f-2/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_ambiental-f-3/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia ambiental, feminino, variante 3, 50 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an environmental engineer of the city hall who works in the field: a Black Brazilian with dark brown skin, a 50-year-old woman with a plus-size build and a round face, long box braids tied back, with some gray, wearing a leaf-green multi-pocket field vest over a turquoise t-shirt, holding a small clear water-sample bottle with clean water. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_ambiental-f-3/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-f-3/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-f-3/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-f-3/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_ambiental-f-3/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_ambiental-m-1/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia ambiental, masculino, variante 1, 35 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an environmental engineer of the city hall who works in the field: a pardo (mixed-race) Brazilian with warm medium-brown skin, a 35-year-old man with a slim build, short wavy black hair, thin-framed glasses, wearing a leaf-green multi-pocket field vest over a white t-shirt, holding a small clear water-sample bottle with clean water. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_ambiental-m-1/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-m-1/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-m-1/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-m-1/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_ambiental-m-1/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_ambiental-m-2/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia ambiental, masculino, variante 2, 46 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an environmental engineer of the city hall who works in the field: a white Brazilian with fair skin, a 46-year-old man with a stocky build with broad shoulders, short dark hair and a full beard, wearing a leaf-green multi-pocket field vest over a light-gray t-shirt, holding a tablet with a blank screen. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_ambiental-m-2/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-m-2/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-m-2/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-m-2/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_ambiental-m-2/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_ambiental-m-3/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia ambiental, masculino, variante 3, 57 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an environmental engineer of the city hall who works in the field: a Black Brazilian with dark brown skin, a 57-year-old man with an athletic build, a shaved head and a short beard, with some gray, thin-framed glasses, wearing a leaf-green multi-pocket field vest over a turquoise t-shirt, holding a small clear water-sample bottle with clean water. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_ambiental-m-3/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-m-3/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-m-3/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_ambiental-m-3/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_ambiental-m-3/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_ambiental-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_agronomo-f-1/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia agronômica, feminino, variante 1, 41 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an agronomist engineer of the city hall who helps local farmers: a pardo (mixed-race) Brazilian with warm medium-brown skin, a 41-year-old woman with a stocky build with broad shoulders, long wavy dark-brown hair tied in a low ponytail, thin-framed glasses, wearing a wide-brimmed straw field hat, a red-and-navy plaid button-up shirt, holding a small green seedling in a little biodegradable pot. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_agronomo-f-1/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-f-1/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-f-1/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-f-1/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_agronomo-f-1/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_agronomo-f-2/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia agronômica, feminino, variante 2, 52 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an agronomist engineer of the city hall who helps local farmers: a white Brazilian with fair skin, a 52-year-old woman with an athletic build, long straight blonde hair in a braid, with some gray, wearing a plain beige cap with no logo, a green-and-white plaid button-up shirt, holding a small green seedling in a little biodegradable pot. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_agronomo-f-2/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-f-2/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-f-2/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-f-2/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_agronomo-f-2/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_agronomo-f-3/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia agronômica, feminino, variante 3, 27 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an agronomist engineer of the city hall who helps local farmers: a Black Brazilian with dark brown skin, a 27-year-old woman with an average build, short natural coily hair, thin-framed glasses, wearing a wide-brimmed straw field hat, a blue-and-brown plaid button-up shirt, holding a small green seedling in a little biodegradable pot. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_agronomo-f-3/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-f-3/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-f-3/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-f-3/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_agronomo-f-3/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_agronomo-m-1/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia agronômica, masculino, variante 1, 48 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an agronomist engineer of the city hall who helps local farmers: a pardo (mixed-race) Brazilian with warm medium-brown skin, a 48-year-old man with a plus-size build and a round face, a short buzz cut and a neat short beard, wearing a wide-brimmed straw field hat, a red-and-navy plaid button-up shirt, holding a small green seedling in a little biodegradable pot. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_agronomo-m-1/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-m-1/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-m-1/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-m-1/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_agronomo-m-1/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_agronomo-m-2/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia agronômica, masculino, variante 2, 59 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an agronomist engineer of the city hall who helps local farmers: a white Brazilian with fair skin, a 59-year-old man with a slim build, balding with short hair on the sides, with some gray, wearing a plain beige cap with no logo, a green-and-white plaid button-up shirt, holding a small green seedling in a little biodegradable pot. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_agronomo-m-2/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-m-2/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-m-2/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-m-2/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_agronomo-m-2/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_agronomo-m-3/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Engenharia agronômica, masculino, variante 3, 34 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an agronomist engineer of the city hall who helps local farmers: a Black Brazilian with dark brown skin, a 34-year-old man with a stocky build with broad shoulders, a short afro and a goatee, wearing a wide-brimmed straw field hat, a blue-and-brown plaid button-up shirt, holding a small green seedling in a little biodegradable pot. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/eng_agronomo-m-3/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-m-3/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-m-3/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/eng_agronomo-m-3/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/eng_agronomo-m-3/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/eng_agronomo-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/veterinario-f-1/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Medicina veterinária, feminino, variante 1, 54 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a veterinarian of the city hall: a pardo (mixed-race) Brazilian with warm medium-brown skin, a 54-year-old woman with a slim build, shoulder-length curly dark hair, with some gray, wearing a white lab coat over a teal scrub top, a stethoscope around the neck. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/veterinario-f-1/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-f-1/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-f-1/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-f-1/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/veterinario-f-1/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/veterinario-f-2/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Medicina veterinária, feminino, variante 2, 29 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a veterinarian of the city hall: a white Brazilian with fair skin, a 29-year-old woman with a stocky build with broad shoulders, short wavy auburn hair, wearing a short-sleeved khaki field shirt, a stethoscope around the neck. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/veterinario-f-2/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-f-2/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-f-2/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-f-2/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/veterinario-f-2/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/veterinario-f-3/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Medicina veterinária, feminino, variante 3, 40 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a veterinarian of the city hall: a Black Brazilian with dark brown skin, a 40-year-old woman with an athletic build, locs pulled into a bun, wearing a white lab coat over a green scrub top, a stethoscope around the neck. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/veterinario-f-3/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-f-3/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-f-3/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-f-3/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/veterinario-f-3/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-f-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/veterinario-m-1/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Medicina veterinária, masculino, variante 1, 25 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a veterinarian of the city hall: a pardo (mixed-race) Brazilian with warm medium-brown skin, a 25-year-old man with an average build, short curly dark hair, wearing a white lab coat over a teal scrub top, a stethoscope around the neck. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/veterinario-m-1/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-m-1/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-m-1/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-m-1/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/veterinario-m-1/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/veterinario-m-2/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Medicina veterinária, masculino, variante 2, 36 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a veterinarian of the city hall: a white Brazilian with fair skin, a 36-year-old man with a plus-size build and a round face, wavy blond hair, thin-framed glasses, wearing a short-sleeved khaki field shirt, a stethoscope around the neck. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/veterinario-m-2/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-m-2/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-m-2/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-m-2/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/veterinario-m-2/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/veterinario-m-3/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Medicina veterinária, masculino, variante 3, 47 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, a veterinarian of the city hall: a Black Brazilian with dark brown skin, a 47-year-old man with a slim build, very short close-cropped black hair, wearing a white lab coat over a green scrub top, a stethoscope around the neck. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/veterinario-m-3/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-m-3/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-m-3/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/veterinario-m-3/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/veterinario-m-3/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/veterinario-m-3/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/economista-f-1/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Economia, feminino, variante 1, 31 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an economist of the city hall finance office: a pardo (mixed-race) Brazilian with warm medium-brown skin, a 31-year-old woman with a plus-size build and a round face, short curly dark hair, wearing a simple navy blazer over a plain light blouse. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/economista-f-1/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/economista-f-1/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/economista-f-1/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/economista-f-1/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/economista-f-1/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-f-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/economista-f-2/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Economia, feminino, variante 2, 42 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an economist of the city hall finance office: a white Brazilian with fair skin, a 42-year-old woman with a slim build, dark-brown hair in a messy bun, thin-framed glasses, wearing a simple gray blazer over a plain light blouse. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/economista-f-2/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/economista-f-2/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/economista-f-2/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/economista-f-2/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/economista-f-2/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-f-2/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/economista-m-1/portrait.webp": {
+      "usedIn": "Retrato animado de funcionário da prefeitura (Economia, masculino, variante 1, 38 anos): base",
+      "aspect": "1:1",
+      "size": [
+        640,
+        640
+      ],
+      "model": "meta/muse-image",
+      "date": "2026-11-14",
+      "prompt": "Character portrait, head and shoulders, three-quarter view facing slightly to the viewer's left, looking at the viewer with a warm friendly closed-mouth smile. A city hall employee of a small Brazilian town, an economist of the city hall finance office: a pardo (mixed-race) Brazilian with warm medium-brown skin, a 38-year-old man with an athletic build, a receding hairline and a thin mustache, wearing a simple navy blazer over a light button-up shirt, open collar, no tie. An ordinary everyday Brazilian person, not a model, natural and respectful features, no caricature. Plain flat soft cream background (#F6F1E1), no scenery, no text, character centered with space above the head. Consistent character design sheet quality. A high-quality graphic novel illustration in the Graphic MSP and modern comic book style. Clean ink line art, rich organic textures with digital watercolor shading. Focus on sustainability and nature preservation. Bright and natural color palette with turquoise and aqua-blue water tones, leaf greens and sunny yellow-orange accents, eco-friendly atmosphere, professional comic book panel look, teenager and juvenile audience focus. Brazilian setting. No text, no letters, no numbers, no labels, no signs with writing, no watermark, no logo. The background is one single flat cream color with nothing on it: no watercolor splashes, no paint spots, no leaves, no plants, no frame, no border, exactly like a plain character sheet.",
+      "note": "Gerado por scripts/portraits/staff.js (base em 1024 px). Para imagens novas desta pessoa, use a base como input_references."
+    },
+    "assets/characters/staff/economista-m-1/eyes.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, clothes, hair, background, smile) and change ONLY the eyes so that they are gently closed, like a natural blink. Do not change anything else."
+    },
+    "assets/characters/staff/economista-m-1/mouth-a.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth so it is open mid-speech saying \"ah\", showing a little of the teeth, friendly. Do not change anything else."
+    },
+    "assets/characters/staff/economista-m-1/mouth-o.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep everything identical (same pose, framing, lines, colors, eyes, clothes, hair, background) and change ONLY the mouth to a small rounded \"oh\" shape, as if talking. Do not change anything else."
+    },
+    "assets/characters/staff/economista-m-1/happy.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to joyful and celebrating: a big happy open smile showing teeth, eyes happily squinting, cheeks raised. Do not change anything else. No text, no letters, no watermark."
+    },
+    "assets/characters/staff/economista-m-1/worried.webp": {
+      "usedIn": "Retrato animado: camada recortada (caixa automática pela diferença de pixels, em js/data/staffPortraits.js)",
+      "aspect": "1:1",
+      "model": "meta/muse-image",
+      "inputReference": "assets/characters/staff/economista-m-1/portrait.webp (a base em 1024 px)",
+      "prompt": "Edit this exact illustration: keep the same character, pose, framing, clothes, hair, accessories, colors, line work and plain cream background identical, and change ONLY the facial expression to worried and concerned: eyebrows raised and drawn together, slight frown, mouth closed. Do not change anything else. No text, no letters, no watermark."
     }
   }
 }

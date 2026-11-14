@@ -59,7 +59,7 @@ class BuildingSystem {
 
         // Sistema de construção com timer - SUPORTE A MÚLTIPLAS CONSTRUÇÕES SIMULTÂNEAS
         this.constructionQueue = new Map(); // buildingId -> construction data
-        this.maxSimultaneousConstructions = 3; // Máximo de 3 construções simultâneas
+        this.baseSimultaneousConstructions = 3; // obras ao mesmo tempo sem equipe de obras (maxSimultaneousConstructions)
         this.constructionTimeout = 30000; // 30 segundos timeout para construções
         this.lastConstructionCheck = 0;
 
@@ -1139,7 +1139,19 @@ class BuildingSystem {
         // Tempo base: 2 segundos + 1 segundo por R$ 1000
         const baseTime = 2000; // 2 segundos
         const costFactor = Math.floor(cost / 1000) * 1000; // 1 segundo por R$ 1000
-        return Math.min(baseTime + costFactor, 15000); // Máximo 15 segundos
+        // equipe de obras (CityStaff, bonus 'buildTime'): obras mais rápidas
+        const faster = 1 - (this.gameManager?.cityStaff?.bonus?.('buildTime') || 0);
+        return Math.round(Math.min(baseTime + costFactor, 15000) * faster); // Máximo 15 segundos
+    }
+
+    /** Obras ao mesmo tempo: 3 + 1 por pessoa da equipe de obras contratada (CityStaff, bonus 'slots'). */
+    get maxSimultaneousConstructions() {
+        if (this.constructionLimitOverride !== undefined) return this.constructionLimitOverride; // testes/debug
+        return (this.baseSimultaneousConstructions || 3) + Math.round(this.gameManager?.cityStaff?.bonus?.('slots') || 0);
+    }
+
+    set maxSimultaneousConstructions(value) {
+        this.constructionLimitOverride = value;
     }
 
     startConstruction(buildingData) {

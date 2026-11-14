@@ -59,7 +59,8 @@ class AssetLoader {
     /** Ícones (cada tamanho que existe), retratos e figuras: lista só com arquivos que o jogo usa de verdade. */
     static criticalImages() {
         const icons = Object.keys(UI_ICON_FILES).flatMap(id => [uiIconSrc(id, 'sm'), uiIconSrc(id, 'lg')]);
-        const portraits = Object.entries(PORTRAIT_MANIFEST).flatMap(([id, entry]) =>
+        // lazy = funcionários da prefeitura (js/data/staffPortraits.js): são dezenas e só carregam quando aparecem
+        const portraits = Object.entries(PORTRAIT_MANIFEST).filter(([, entry]) => !entry.lazy).flatMap(([id, entry]) =>
             ['portrait', ...Object.keys(entry.layers)].map(name => `assets/characters/${id}/${name}.webp`));
         return [...new Set([...PRELOAD_IMAGES.critical, ...portraits, ...icons])];
     }

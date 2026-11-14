@@ -130,7 +130,13 @@ mixin(BuildingSystem, {
 
     /** Ritmo de crescimento desta zona agora (cidade + eficiência da zona). */
     getZoneGrowthRate(building, c = this.getZoneGrowthConditions()) {
-        return this.computeZoneGrowthRate({ ...c, efficiency: this.getZoneEfficiency(building, c) });
+        return this.withTaxGrowth(building, this.computeZoneGrowthRate({ ...c, efficiency: this.getZoneEfficiency(building, c) }));
+    },
+
+    /** Imposto do comércio/indústria muda a velocidade das fases (CityFinance.growth); a regressão não muda. */
+    withTaxGrowth(building, rate) {
+        if (!(rate > 0)) return rate;
+        return rate * (this.gameManager?.cityFinance?.growth?.(building?.config?.category) ?? 1);
     },
 
     /** Condições da cidade agora (ResourceManager) para computeZoneGrowthRate. */
@@ -203,9 +209,9 @@ mixin(BuildingSystem, {
     describeZoneGrowth(building) {
         const c = this.getZoneGrowthConditions();
         const efficiency = this.getZoneEfficiency(building, c);
-        const ms = this.getZoneTimeToNextStage(building, this.computeZoneGrowthRate({ ...c, efficiency }));
+        const rate = this.withTaxGrowth(building, this.computeZoneGrowthRate({ ...c, efficiency }));
+        const ms = this.getZoneTimeToNextStage(building, rate);
         if (ms === null) return null;
-        const rate = this.computeZoneGrowthRate({ ...c, efficiency });
         if (rate < 0) {
             const missing = this.zoneMissingResources(c);
             return { eta: 'Voltando de fase!', reason: `A zona caiu para ${Math.round(efficiency * 100)}% e está perdendo moradores${missing.length ? `: falta ${missing.join(', ')}` : ''}.` };
