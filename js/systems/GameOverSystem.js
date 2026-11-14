@@ -519,10 +519,13 @@ class GameOverSystem {
     victoryCaptions() {
         const s = this.getVictoryStats();
         const fmt = n => n.toLocaleString('pt-BR');
+        // a última legenda é do jogador (textContent: o nome digitado não precisa de escape aqui)
+        const name = typeof PlayerProfile !== 'undefined' ? PlayerProfile.displayName() : '';
         return [
             { at: 0.04, text: `Dia ${fmt(s.day)} · ${fmt(s.population)} moradores` },
-            { at: 0.36, text: `Rio em ${s.river}%${s.species ? ` · ${s.species} ${s.species === 1 ? 'espécie registrada' : 'espécies registradas'} no caderno` : ''}` },
-            { at: 0.68, text: `${fmt(s.missions)} ${s.missions === 1 ? 'missão cumprida' : 'missões cumpridas'} · Cidade Guardiã!` }
+            { at: 0.28, text: `Rio em ${s.river}%${s.species ? ` · ${s.species} ${s.species === 1 ? 'espécie registrada' : 'espécies registradas'} no caderno` : ''}` },
+            { at: 0.52, text: `${fmt(s.missions)} ${s.missions === 1 ? 'missão cumprida' : 'missões cumpridas'} · Cidade Guardiã!` },
+            { at: 0.76, text: name ? `E quem cuidou dela foi você, ${name}.` : 'E quem cuidou dela foi você.' }
         ];
     }
 

@@ -66,13 +66,14 @@
     <link rel="stylesheet" href="css/mission-bar.css?v=b538d06b">
     <link rel="stylesheet" href="css/saves.css?v=57419e51">
     <link rel="stylesheet" href="css/notebook.css?v=8ad27e1f">
-    <link rel="stylesheet" href="css/city-story.css?v=2ad27ff3">
+    <link rel="stylesheet" href="css/city-story.css?v=d9843394">
     <link rel="stylesheet" href="css/player-menu.css?v=543aadee">
     <link rel="stylesheet" href="css/speed-menu.css?v=da7c60dc">
     <link rel="stylesheet" href="css/build-menu.css?v=6a2bed6d">
     <link rel="stylesheet" href="css/terrain-health.css?v=02aad804">
+    <link rel="stylesheet" href="css/aquifer-view.css?v=89540114">
     <link rel="stylesheet" href="css/layout.css?v=c43a43fd">
-    <link rel="stylesheet" href="css/theme-skin.css?v=ee693f2a">
+    <link rel="stylesheet" href="css/theme-skin.css?v=7c2b15b4">
     <link rel="stylesheet" href="css/color-modes.css?v=5a19ac96">
 
     <!-- Babylon.js CDN -->
@@ -664,6 +665,12 @@
                     <span class="nh-count" id="diary-count"></span>
                 </div>
                 <p class="diary-intro">Os grandes momentos da sua cidade, dia a dia: as primeiras obras, as missões, as crises enfrentadas com o Paulo e os bichos que voltaram.</p>
+                <!-- Álbum "Como a cidade mudou": uma foto do mesmo ângulo no começo e a cada missão (js/systems/CityMoments.js) -->
+                <section id="diary-album" class="diary-album" aria-labelledby="diary-album-heading" hidden>
+                    <h3 id="diary-album-heading">Como a cidade mudou</h3>
+                    <div class="diary-album-compare" id="diary-album-compare"></div>
+                    <ol class="diary-album-strip" id="diary-album-strip"></ol>
+                </section>
                 <ol id="diary-list" class="diary-list"></ol>
                 <div class="overlay-buttons nh-buttons">
                     <button id="btn-diary-back" class="overlay-btn primary">⬅ Voltar</button>
@@ -800,7 +807,7 @@
     <script src="js/data/props.js?v=0fe7ecf0"></script>
     <script src="js/data/fieldNotebook.js?v=bf914731"></script>
     <script src="js/data/resourceStates.js?v=c0802704"></script>
-    <script src="js/data/missions.js?v=f0d2b5cf"></script>
+    <script src="js/data/missions.js?v=ef46a106"></script>
     <script src="js/data/achievementTracks.js?v=d055198b"></script>
     <script src="js/data/rescueGuides.js?v=148facf4"></script>
     <script src="js/data/brazil.js?v=c0fa1745"></script>
@@ -911,7 +918,7 @@
     <script src="js/systems/SimCityCameraControls.js?v=22daacaa"></script>
     <script src="js/systems/GamepadInput.js?v=0c8007c0"></script>
 
-    <script src="js/core/GameManager.js?v=2723491f"></script>
+    <script src="js/core/GameManager.js?v=da257ef3"></script>
     <script src="js/core/game/Diagnostics.js?v=8ec9d8c0"></script>
     <script src="js/core/game/SelectionVisuals.js?v=d8184bfe"></script>
     <script src="js/core/game/CameraGuard.js?v=2024c210"></script>
@@ -935,19 +942,20 @@
     <script src="js/systems/NotificationLog.js?v=8af2a634"></script>
     <script src="js/systems/ResourceTrends.js?v=16c746be"></script>
     <script src="js/systems/DeclineWatch.js?v=e0e70d98"></script>
-    <script src="js/systems/UIManager.js?v=672474a2"></script>
+    <script src="js/systems/UIManager.js?v=9c245896"></script>
     <script src="js/systems/ui/MobileTouch.js?v=d1317e2b"></script>
     <script src="js/systems/ui/StudyBookUI.js?v=6b38320e"></script>
     <script src="js/systems/ui/LoanUI.js?v=58e6338c"></script>
     <script src="js/systems/ui/ResourceHud.js?v=f31ddbce"></script>
     <script src="js/systems/ui/IdleHints.js?v=c75e6450"></script>
     <script src="js/systems/ui/AchievementsUI.js?v=ac1a3b8d"></script>
-    <script src="js/systems/ui/CityDiaryUI.js?v=728c7f85"></script>
+    <script src="js/systems/ui/CityDiaryUI.js?v=3dd449db"></script>
     <script src="js/systems/ui/SavesUI.js?v=1e957956"></script>
-    <script src="js/systems/ui/FieldNotebookUI.js?v=5523483c"></script>
+    <script src="js/systems/ui/FieldNotebookUI.js?v=79fe09fb"></script>
     <script src="js/systems/ui/PlayerMenu.js?v=a5f669ad"></script>
     <script src="js/systems/ui/MissionCardUI.js?v=d2a4bed0"></script>
-    <script src="js/systems/ui/ResourcePanels.js?v=381c04eb"></script>
+    <script src="js/systems/ui/ResourcePanels.js?v=49d2fb31"></script>
+    <script src="js/systems/ui/AquiferViewUI.js?v=a1aa3591"></script>
     <script src="js/systems/ui/EventUI.js?v=72f71fc0"></script>
     <script src="js/systems/ui/EventDecisionUI.js?v=69e9a6d5"></script>
     <script src="js/systems/ui/BuildPreview.js?v=e014184b"></script>
@@ -965,7 +973,7 @@
     <script src="js/systems/ui/TerrainHealthUI.js?v=63a2ce87"></script>
     <script src="js/systems/LoanManager.js?v=6a416acb"></script>
     <script src="js/systems/QuestSystem.js?v=b0bf0cd1"></script>
-    <script src="js/systems/ui/MissionUI.js?v=5515f677"></script>
+    <script src="js/systems/ui/MissionUI.js?v=71f7ded8"></script>
     <script src="js/systems/CityChallenges.js?v=33f98f4d"></script>
     <script src="js/systems/AchievementTracks.js?v=46e3cd19"></script>
     <script src="js/systems/MissionReminders.js?v=203dd893"></script>
@@ -975,7 +983,7 @@
     <script src="js/systems/TechTree.js?v=a9cad5b8"></script>
     <script src="js/systems/TutorialSystem.js?v=0fce9f6f"></script>
     <script src="js/systems/RescueGuides.js?v=2bcaabe3"></script>
-    <script src="js/systems/GameOverSystem.js?v=9a1af157"></script>
+    <script src="js/systems/GameOverSystem.js?v=258af9c8"></script>
     <script src="js/systems/PlayerProfile.js?v=1efbe8d5"></script>
     <script src="js/systems/WeatherEffects.js?v=f6c52bfd"></script>
     <script src="js/systems/PollutionVisuals.js?v=796e791f"></script>
@@ -984,8 +992,9 @@
     <script src="js/systems/PropSystem.js?v=bbabd8f3"></script>
     <script src="js/systems/FieldNotebook.js?v=3f2fd7c6"></script>
     <script src="js/systems/CityDiary.js?v=7cb08944"></script>
+    <script src="js/systems/CityMoments.js?v=f493eba5"></script>
     <script src="js/systems/SavePointTrend.js?v=5dd5bb30"></script>
-    <script src="js/systems/CityCinematic.js?v=03e0f1e7"></script>
+    <script src="js/systems/CityCinematic.js?v=4cb876d8"></script>
     <script src="js/systems/TerrainHealth.js?v=f0e79e43"></script>
     <script src="js/systems/WeatherService.js?v=52df4562"></script>
     <script src="js/systems/SimulatedWeather.js?v=d656940f"></script>

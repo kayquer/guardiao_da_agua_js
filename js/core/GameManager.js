@@ -157,6 +157,7 @@ class GameManager {
             this.propSystem = new PropSystem(this); // props de cenário (js/data/props.js)
             this.fieldNotebook = new FieldNotebook(); // caderno de campo: bichos que voltam/somem (js/data/fieldNotebook.js)
             this.cityDiary = new CityDiary(); // diário da cidade: marcos da partida com o dia (js/systems/CityDiary.js)
+            this.cityMoments = new CityMoments(); // nascente, cheia contida, chuva real, 1ºs carros, álbum (js/systems/CityMoments.js)
 
             // Aguardar carregamento do conteúdo educacional
             await this.studySystem.initialize();
@@ -806,6 +807,7 @@ class GameManager {
             this.questSystem.update(deltaTime * this.timeScale);
         }
         this.cityDiary?.tick(deltaTime * this.timeScale, this); // diário da cidade: olha os sistemas a cada 2 s de jogo
+        this.cityMoments?.tick(deltaTime * this.timeScale, this); // momentos da cidade (mesmo ritmo, só olha)
 
         // Tecnologias novas (árvore tecnológica): confere ~1 vez por segundo de jogo
         this.techCheckTimer = (this.techCheckTimer || 0) + deltaTime * this.timeScale;
@@ -991,6 +993,8 @@ class GameManager {
         this.clearSavePoints?.(); // pontos de volta são da partida (core/game/SavePoints.js)
         this.fieldNotebook?.loadData(null); // caderno de campo é da partida
         this.cityDiary?.reset(); // diário da cidade também
+        this.cityMoments?.reset(); // momentos da cidade: nascente, carros…
+        this.cityMoments?.clearAlbum(); // e o álbum "Como a cidade mudou" do perfil (a cidade é outra)
         this.techTree?.reset();
         if (this.gameOverSystem) { // as 3 declarações de emergência voltam; as ganhas em missão somem
             this.gameOverSystem.emergenciesUsed = 0;
@@ -1252,6 +1256,7 @@ class GameManager {
             this.uiManager?.notificationLog?.loadData(saveData.notifications); // save antigo: histórico vazio
             this.fieldNotebook?.loadData(saveData.notebook); // save antigo: caderno vazio (a 1ª olhada registra o que há)
             this.cityDiary?.loadData(saveData.diary); // save antigo: diário vazio (a 1ª olhada só marca o que já existe)
+            this.cityMoments?.loadData(saveData.moments, this); // depois das missões: as já cumpridas não ganham foto
             if (this.tutorialSystem && saveData.tutorial) {
                 this.tutorialSystem.lessonsDeferred = !!saveData.tutorial.lessonsDeferred;
             }
@@ -1306,6 +1311,9 @@ class GameManager {
     }
 
     pauseGame() {
+        // um plano de câmera tocando (vitória, espécie, momentos da cidade) termina antes: a aba escondida ou o menu
+        // do jogador pausam de verdade, e o plano do 1º carro não segue mexendo o trânsito por baixo da pausa
+        if (this.gameState === 'cinematic' && typeof CityCinematic !== 'undefined') CityCinematic.current?.skip();
         if (this.gameState === 'playing') {
             this.gameState = 'paused';
             this.uiManager.showPauseOverlay();
@@ -1650,6 +1658,7 @@ class GameManager {
             notifications: this.uiManager?.notificationLog?.getSaveData() ?? [],
             notebook: this.fieldNotebook?.getSaveData() ?? null,
             diary: this.cityDiary?.getSaveData() ?? null,
+            moments: this.cityMoments?.getSaveData() ?? null,
             basin: typeof Basin !== 'undefined' ? Basin.id() : 'vale', // bacia do terreno (js/data/basinMaps.js; antigo = vale)
             camera: this.getCameraSaveData()
         };

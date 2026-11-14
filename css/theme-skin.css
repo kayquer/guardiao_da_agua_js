@@ -1387,6 +1387,17 @@
     color: var(--gda-ink);
 }
 
+/* Fonte do "Você sabia?" (MissionUI.renderFactSources) */
+.mission-fact-source {
+    display: block;
+    margin-top: var(--gda-space-1);
+    color: var(--gda-ink-muted);
+    font-size: var(--gda-text-xs);
+}
+
+.mission-fact-source a { color: var(--gda-accent-strong); text-decoration: underline; }
+.mission-fact-source a:focus-visible { outline: var(--gda-focus-light); outline-offset: 2px; border-radius: var(--gda-r-xs); }
+
 .reputation-bar { background: var(--gda-surface-3); border: 0; border-radius: var(--gda-r-pill); }
 .reputation-hint,
 .reputation-effect { color: var(--gda-ink-muted); }

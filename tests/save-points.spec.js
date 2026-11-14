@@ -43,6 +43,9 @@ test('fim de jogo: o save fica marcado e "Voltar 3 minutos" devolve a cidade de 
 
     await page.evaluate(() => {
         const gm = window.gameManager;
+        // a derrota vem depois do último autosave: um ponto gravado no mesmo instante não é "antes" (o teste
+        // dependia de um quadro passar entre os dois evaluate)
+        gm.gameTime += 1000;
         gm.resourceManager.resources.water.current = 0;
         gm.gameOverSystem.triggerGameOver('water_depleted');
     });

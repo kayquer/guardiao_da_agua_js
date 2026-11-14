@@ -1,0 +1,204 @@
+/* "Ver debaixo da terra" (#aquifer-view, js/systems/ui/AquiferViewUI.js): corte do solo com o aquífero ao vivo.
+   Popup que pausa (UIManager.isInfoPopupOpen). Caixa com os tokens do tema; o desenho tem a paleta própria
+   (--av-*: terra, areia, rocha), e a água e os estados vêm dos tokens (--gda-accent*, --gda-bad*: os modos de
+   daltonismo trocam os estados em css/color-modes.css). */
+#aquifer-view[hidden] { display: none !important; }
+
+.aquifer-view {
+    --av-sky-top: #bfe6fb;
+    --av-sky-bottom: #eaf7fe;
+    --av-grass: #5aa845;
+    --av-soil: #8a5a36;
+    --av-sand: #e2c48f;
+    --av-grain: #b8925a;
+    --av-rock: #6f7680;
+    --av-crack: #575d66;
+    --av-trunk: #7a4e2a;
+    --av-crown: #3f9b4a;
+    --av-crown-dark: #2c7a38;
+    --av-pipe: #7d8c9b;
+    --av-head: #eef4f8;
+    --av-cloud: #ffffff;
+
+    position: fixed; inset: 0; z-index: 12000;
+    display: flex; align-items: center; justify-content: center;
+    padding: var(--gda-space-4);
+    background: var(--gda-scrim);
+    font-family: var(--gda-font);
+}
+
+.aquifer-view .av-box {
+    width: min(760px, 100%);
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    background: var(--gda-surface-gradient);
+    color: var(--gda-ink);
+    border: 1px solid var(--gda-border);
+    border-radius: var(--gda-r-xl);
+    box-shadow: var(--gda-shadow-lg);
+    padding: var(--gda-space-4) var(--gda-space-5) var(--gda-space-4);
+    animation: av-pop var(--gda-dur) var(--gda-ease);
+}
+
+@keyframes av-pop { from { transform: scale(0.94); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.av-head { display: flex; align-items: center; gap: var(--gda-space-3); margin-bottom: var(--gda-space-3); }
+.av-head-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 46px; height: 46px; flex: none;
+    border-radius: var(--gda-r-md); background: var(--gda-accent-soft);
+}
+.av-head-icon .ui-icon { width: 34px; height: 34px; }
+.av-head-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.av-head h2 {
+    margin: 0; font-family: var(--gda-font-display); font-weight: 400;
+    font-size: var(--gda-text-xl); color: var(--gda-ink); text-shadow: none; -webkit-text-stroke: 0;
+}
+.av-close {
+    flex: none; width: 40px; height: 40px; border-radius: var(--gda-r-pill);
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--gda-surface-2); border: 1px solid var(--gda-border); cursor: pointer;
+    transition: background var(--gda-dur-fast) ease;
+}
+.av-close:hover { background: var(--gda-surface-3); }
+.av-close .ui-icon { width: 18px; height: 18px; }
+.av-close:focus-visible, .aquifer-view .gda-btn:focus-visible, .aquifer-view-btn:focus-visible {
+    outline: var(--gda-focus-light); outline-offset: var(--gda-focus-offset);
+}
+
+.av-figure {
+    margin: 0;
+    background: var(--gda-surface-2);
+    border: 1px solid var(--gda-border);
+    border-radius: var(--gda-r-lg);
+    padding: var(--gda-space-2);
+}
+.av-svg { display: block; width: 100%; height: auto; border-radius: var(--gda-r-md); }
+
+/* ----- Desenho ----- */
+.av-sky-top { stop-color: var(--av-sky-top); }
+.av-sky-bottom { stop-color: var(--av-sky-bottom); }
+.av-water-top { stop-color: var(--gda-accent-light); stop-opacity: 0.9; }
+.av-water-bottom { stop-color: var(--gda-accent-deep); stop-opacity: 0.95; }
+.av-soil { fill: var(--av-soil); }
+.av-grass { fill: var(--av-grass); }
+.av-sand { fill: var(--av-sand); }
+.av-grain { fill: var(--av-grain); opacity: 0.55; }
+.av-rock { fill: var(--av-rock); }
+.av-crack { fill: none; stroke: var(--av-crack); stroke-width: 2; stroke-linecap: round; }
+.av-wave { fill: none; stroke: #ffffff; stroke-width: 2.5; opacity: 0.85; }
+
+.av-water, .av-water-label {
+    transition: transform 1.2s var(--gda-ease);
+}
+.aquifer-view.av-instant .av-water, .aquifer-view.av-instant .av-water-label { transition: none; }
+
+.av-tag { fill: var(--gda-surface); stroke: var(--gda-accent); stroke-width: 1.5; }
+.av-tag-text { fill: var(--gda-accent-strong); font-size: 13px; font-weight: 800; font-family: var(--gda-font); }
+
+.av-small { font-size: 12px; font-weight: 700; font-family: var(--gda-font); fill: var(--gda-ink); paint-order: stroke; stroke: rgba(255, 255, 255, 0.75); stroke-width: 3px; }
+.av-small.av-on-rock { fill: #ffffff; stroke: rgba(0, 0, 0, 0.35); }
+.av-low-line { stroke: var(--gda-ok-strong); stroke-width: 2; stroke-dasharray: 8 6; }
+.av-low-text { fill: var(--gda-ok); font-size: 11px; }
+
+/* Chuva, árvores, jardins: só aparecem quando estão devolvendo água */
+.av-cloud { fill: var(--av-cloud); stroke: var(--gda-border-strong); stroke-width: 1; }
+.av-drop { stroke: var(--gda-accent); stroke-width: 2.5; stroke-linecap: round; }
+.av-rain, .av-trees, .av-green, .av-arrow { opacity: 0; transition: opacity var(--gda-dur) ease; }
+.av-arrow.is-on,
+.aquifer-view.av-raining .av-rain, .aquifer-view.av-raining .av-arrow--rain,
+.aquifer-view.av-has-trees .av-trees, .aquifer-view.av-has-trees .av-arrow--trees,
+.aquifer-view.av-has-green .av-green, .aquifer-view.av-has-green .av-arrow--green { opacity: 1; }
+.av-trunk { fill: var(--av-trunk); }
+.av-crown { fill: var(--av-crown); }
+.av-crown--dark { fill: var(--av-crown-dark); }
+.av-garden { fill: var(--av-crown); }
+.av-flower { fill: var(--gda-accent-2); stroke: #ffffff; stroke-width: 1; }
+.av-arrow line { stroke: var(--gda-accent); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 5 5; }
+.av-arrow path { fill: none; stroke: var(--gda-accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.av-arrow--soil line, .av-arrow--soil path { opacity: 0.6; }
+
+/* Canudos (bombas e poços) */
+.av-pipe { stroke: var(--av-pipe); stroke-width: 7; stroke-linecap: round; }
+.av-flow { stroke: var(--gda-accent-light); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 4 8; opacity: 0; }
+.aquifer-view.av-pumping .av-flow { opacity: 1; animation: av-flow-up 0.9s linear infinite; }
+.av-tip-cap { fill: var(--av-pipe); }
+.av-head { fill: var(--av-head); stroke: var(--gda-accent-strong); stroke-width: 2; }
+.av-head-cap { fill: var(--gda-accent); }
+.av-dry-mark { display: none; }
+.av-dry-mark circle { fill: var(--gda-bad-strong); stroke: #ffffff; stroke-width: 2; }
+.av-dry-mark text { fill: #ffffff; font-size: 13px; font-weight: 800; font-family: var(--gda-font); }
+.aquifer-view.av-dry .av-pipe { stroke: var(--gda-bad-strong); stroke-dasharray: 3 5; }
+.aquifer-view.av-dry .av-tip-cap { fill: var(--gda-bad-strong); }
+.aquifer-view.av-dry .av-head { stroke: var(--gda-bad); }
+.aquifer-view.av-dry .av-dry-mark { display: inline; }
+.av-more circle { fill: var(--gda-accent-soft); stroke: var(--gda-accent); stroke-width: 2; }
+.av-more text { fill: var(--gda-accent-strong); font-size: 13px; font-weight: 800; font-family: var(--gda-font); }
+
+@keyframes av-flow-up { to { stroke-dashoffset: 12; } }
+@keyframes av-rain-fall { from { transform: translateY(-4px); opacity: 0.2; } to { transform: translateY(8px); opacity: 1; } }
+.aquifer-view.av-raining .av-drop { animation: av-rain-fall 0.7s linear infinite; }
+
+/* Legenda: o que cada desenho é (o que não está acontecendo fica apagado) */
+.av-legend {
+    list-style: none; margin: var(--gda-space-2) 0 0; padding: 0;
+    display: flex; flex-wrap: wrap; gap: var(--gda-space-1) var(--gda-space-3);
+    font-size: var(--gda-text-xs); font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--gda-ink-muted);
+}
+.av-leg { display: inline-flex; align-items: center; gap: 6px; opacity: 0.45; }
+.av-leg::before { content: ''; width: 10px; height: 10px; border-radius: 3px; background: currentColor; }
+.av-leg--rain::before { background: var(--gda-accent); }
+.av-leg--trees::before, .av-leg--green::before { background: var(--av-crown); }
+.av-leg--pump::before { background: var(--av-pipe); }
+.av-leg--pump,
+.aquifer-view.av-raining .av-leg--rain,
+.aquifer-view.av-has-trees .av-leg--trees,
+.aquifer-view.av-has-green .av-leg--green { opacity: 1; }
+
+/* ----- Textos ----- */
+.av-text { margin-top: var(--gda-space-3); font-size: var(--gda-text-md); line-height: 1.45; zoom: var(--text-scale, 1); }
+.av-text p { margin: 0 0 var(--gda-space-2); color: var(--gda-ink); }
+.av-pill {
+    display: inline-block; margin-right: 6px; padding: 1px 10px;
+    border-radius: var(--gda-r-pill); font-size: var(--gda-text-sm); font-weight: 800;
+}
+.av-level--good .av-pill { background: var(--gda-good-soft); color: var(--gda-good); }
+.av-level--ok .av-pill { background: var(--gda-ok-soft); color: var(--gda-ok); }
+.av-level--bad .av-pill { background: var(--gda-bad-soft); color: var(--gda-bad); }
+.av-tip {
+    background: var(--gda-surface-2); border: 1px solid var(--gda-border);
+    border-radius: var(--gda-r-sm); padding: var(--gda-space-2) var(--gda-space-3);
+}
+.av-tip.av-tip--bad { background: var(--gda-bad-soft); border-color: transparent; color: var(--gda-bad); font-weight: 700; }
+.av-buttons { display: flex; justify-content: flex-end; margin-top: var(--gda-space-3); }
+
+/* Botão no bloco do aquífero (painel 💧) */
+.aquifer-view-btn { margin-top: var(--gda-space-2); min-height: 38px; padding: 6px 16px; font-size: var(--gda-text-sm); width: 100%; }
+.aquifer-view-btn .ui-icon { width: 20px; height: 20px; }
+
+/* Mobile: tela cheia com rolagem */
+@media (max-width: 768px) {
+    .aquifer-view { padding: 0; align-items: stretch; }
+    .aquifer-view .av-box {
+        width: 100%; max-height: none; height: 100%;
+        border-radius: 0; border: 0;
+        padding: var(--gda-space-3) var(--gda-space-4) var(--gda-space-5);
+        -webkit-overflow-scrolling: touch;
+    }
+    .av-head h2 { font-size: var(--gda-text-lg); }
+    .av-figure { padding: var(--gda-space-1); }
+    .av-buttons .gda-btn { width: 100%; }
+    /* Os botões flutuantes do celular (construir, painéis, gaveta da missão) ficam por cima: some com eles */
+    body:has(#aquifer-view:not([hidden])) .mobile-toggle,
+    body:has(#aquifer-view:not([hidden])) .mobile-top-toggle,
+    body:has(#aquifer-view:not([hidden])) .hud-bottom-toggle,
+    body:has(#aquifer-view:not([hidden])) .selection-counter-badge,
+    body:has(#aquifer-view:not([hidden])) #btn-missions { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .aquifer-view .av-box { animation: none; }
+    .av-water, .av-water-label, .av-rain, .av-trees, .av-green, .av-arrow { transition: none; }
+    .aquifer-view.av-pumping .av-flow, .aquifer-view.av-raining .av-drop { animation: none; }
+}

@@ -944,7 +944,7 @@ mixin(QuestSystem, {
                 <h4 class="mission-section-title">Estrelas ${isCompleted ? this.renderStarCount(mission) : ''}</h4>
                 ${this.renderStarGoals(mission)}
 
-                ${fact ? `<div class="mission-fact"><b>${uiIcon('status-tip')} Você sabia?</b> ${fact}</div>` : ''}
+                ${fact ? `<div class="mission-fact"><b>${uiIcon('status-tip')} Você sabia?</b> ${fact}${this.renderFactSources(edu.factSources)}</div>` : ''}
                 ${tips.length ? `
                     <details class="mission-tips">
                         <summary>${uiIcon('ui-compass')} Dicas</summary>
@@ -952,5 +952,17 @@ mixin(QuestSystem, {
                     </details>` : ''}
             </div>
         `;
+    },
+
+    /**
+     * Linha discreta "Fonte: …" sob o "Você sabia?" (missions.js `educationalContent.factSources`, como os
+     * `sources` dos estudos). Só links https; nome e URL escapados.
+     */
+    renderFactSources(sources) {
+        const list = (sources || []).filter(s => s?.label && /^https:\/\//.test(s.url || ''));
+        if (!list.length) return '';
+        const esc = text => String(text).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+        const links = list.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.label)}</a>`).join(' · ');
+        return `<span class="mission-fact-source">${list.length > 1 ? 'Fontes' : 'Fonte'}: ${links}</span>`;
     },
 });

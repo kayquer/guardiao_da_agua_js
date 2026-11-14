@@ -74,12 +74,20 @@ mixin(UIManager, {
 
     /** Plano da espécie ameaçada: 1ª vez na partida, jogador à toa, sem movimento reduzido. */
     canPlaySpeciesCut({ id, cell }) {
-        const gm = this.gameManager;
         this.speciesCutsShown = this.speciesCutsShown || new Set();
         if (!cell || this.speciesCutsShown.has(id) || typeof CityCinematic === 'undefined') return false;
-        if (!FieldNotebook.isThreatened(id) || CityCinematic.reducedMotion() || CityCinematic.current) return false;
-        // à toa = jogo rodando, sem obra/prévia/seleção, sem popup, menu de construção ou painel da direita, sem
-        // arrastar a câmera e sem mensagem na fila (não usa isIdleForEscPause: o uiState dela guarda o último painel)
+        if (!FieldNotebook.isThreatened(id)) return false;
+        return this.isIdleForCityCut();
+    },
+
+    /**
+     * Pode tocar um plano de câmera agora (espécie ameaçada, momentos da cidade — js/systems/CityMoments.js)?
+     * À toa = jogo rodando, sem obra/prévia/seleção, sem popup, menu de construção ou painel da direita, sem
+     * arrastar a câmera e sem mensagem na fila (não usa isIdleForEscPause: o uiState dela guarda o último painel).
+     */
+    isIdleForCityCut() {
+        const gm = this.gameManager;
+        if (typeof CityCinematic === 'undefined' || CityCinematic.reducedMotion() || CityCinematic.current) return false;
         return !!gm.isSimulationRunning?.() && !gm.tutorialSystem?.isActive && !gm.buildMode &&
             !gm.buildingSystem?.previewMode && !gm.selectedBuilding && !gm.cameraControls?.isDragging &&
             !this.isInfoPopupOpen() && !this.isBuildModalOpen?.() && !this.isHudRightVisible?.() &&

@@ -681,6 +681,8 @@ mixin(UIManager, {
             </div>
             <p class="stat-note">Bombas e poços tiram ${this.formatNumber(drain, 1)}%/min; chuva, solo, áreas verdes e árvores devolvem ${this.formatNumber(recharge, 1)}%/min
                 (${trees >= 0.05 ? `${this.formatNumber(trees, 1)}%/min só das árvores; ` : ''}${net >= 0 ? 'subindo' : 'descendo'}).${factor < 1 ? ` <b class="negative">Aquífero baixo: bombas e poços rendem ${Math.round(factor * 100)}%.</b>` : ''}</p>
+            <button type="button" class="gda-btn gda-btn--secondary aquifer-view-btn" id="btn-aquifer-view"
+                onclick="window.gameManager.uiManager.openAquiferView()">${uiIcon('lesson-hidden-water')} Ver debaixo da terra</button>
         </div>`;
     },
 

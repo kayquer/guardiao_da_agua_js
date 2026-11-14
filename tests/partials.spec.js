@@ -132,6 +132,11 @@ test('arquivos parciais funcionam sem erros', async ({ page }, testInfo) => {
         ui.showPopulationDetailsPanel();
         ui.showPollutionDetailsPanel();
 
+        // ui/AquiferViewUI (o fluxo completo está em tests/aquifer-view.spec.js): corte do aquífero ao vivo
+        ui.openAquiferView();
+        ui.updateAquiferView();
+        ui.closeAquiferView();
+
         // ui/WeatherUI: popup do clima (a previsão vem do mock em tests/helpers.js)
         ui.showWeatherModal();
         ui.closeWeatherModal();

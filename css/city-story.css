@@ -39,7 +39,9 @@ body.city-cinematic .mobile-toggle {
 .city-cinematic.is-on .cc-bar { transform: none; }
 
 /* Plano curto da espécie: faixas mais finas */
-.city-cinematic[data-kind="species"] .cc-bar { height: 8vh; }
+.city-cinematic[data-kind="species"] .cc-bar,
+.city-cinematic[data-kind="spot"] .cc-bar,
+.city-cinematic[data-kind="follow"] .cc-bar { height: 8vh; }
 
 .city-cinematic .cc-caption {
     position: absolute;
@@ -68,13 +70,18 @@ body.city-cinematic .mobile-toggle {
     background: var(--gda-accent-light);
 }
 
-.city-cinematic[data-kind="species"] .cc-caption {
+.city-cinematic[data-kind="species"] .cc-caption,
+.city-cinematic[data-kind="spot"] .cc-caption,
+.city-cinematic[data-kind="follow"] .cc-caption {
     bottom: calc(8vh + 20px);
     font-size: clamp(1.1rem, 2.2vw, 1.7rem);
 }
 
 .city-cinematic .cc-caption.is-on { animation: ccCaption 4.2s ease forwards; }
 .city-cinematic[data-kind="species"] .cc-caption.is-on { animation: ccCaptionHold 3.2s ease forwards; }
+/* momentos da cidade (js/systems/CityMoments.js): nascente e cheia contida (4,2 s), primeiro carro (3,6 s) */
+.city-cinematic[data-kind="spot"] .cc-caption.is-on { animation: ccCaptionHold 4.2s ease forwards; }
+.city-cinematic[data-kind="follow"] .cc-caption.is-on { animation: ccCaptionHold 3.6s ease forwards; }
 
 @keyframes ccCaption {
     0% { opacity: 0; transform: translateY(14px); }
@@ -254,3 +261,53 @@ body.city-cinematic .mobile-toggle {
     .city-cinematic .cc-bar { transition: none; }
     .city-cinematic .cc-caption.is-on { animation: none; opacity: 1; }
 }
+
+/* Álbum "Como a cidade mudou" no Diário da cidade (js/systems/CityMoments.js, ui/CityDiaryUI.js renderDiaryAlbum):
+   antes × agora lado a lado e a fila de fotos do mesmo ângulo */
+.diary-album {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gda-space-2);
+    margin: 0 0 var(--gda-space-3);
+    padding: var(--gda-space-3);
+    background: var(--gda-surface-2);
+    border: 1px solid var(--gda-border);
+    border-radius: var(--gda-r-md);
+}
+.diary-album[hidden] { display: none !important; }
+.diary-album h3 {
+    margin: 0;
+    font-family: var(--gda-font-display);
+    font-weight: 400;
+    font-size: var(--gda-text-lg);
+    color: var(--gda-ink);
+}
+.diary-album-compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--gda-space-2);
+}
+.diary-album-strip {
+    display: flex;
+    gap: var(--gda-space-2);
+    margin: 0;
+    padding: 0 0 var(--gda-space-1);
+    list-style: none;
+    overflow-x: auto;
+}
+.diary-album-strip[hidden] { display: none !important; }
+.diary-album-strip li { flex: 0 0 150px; }
+.diary-photo { margin: 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.diary-photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--gda-r-sm);
+    border: 1px solid var(--gda-border);
+    background: var(--gda-surface-3);
+}
+.diary-photo figcaption { font-size: var(--gda-text-xs); color: var(--gda-ink-muted); line-height: 1.3; }
+.diary-photo figcaption b { color: var(--gda-ink); }
+.diary-photo--big figcaption { font-size: var(--gda-text-sm); }

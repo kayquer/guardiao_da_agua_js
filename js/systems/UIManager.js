@@ -615,6 +615,7 @@ class UIManager {
         if (this.terrainHealthTimer >= 1000) {
             this.terrainHealthTimer = 0;
             this.updateTerrainHealthPanel?.();
+            this.updateAquiferView?.(); // corte do aquífero aberto (ui/AquiferViewUI.js)
         }
     }
 
@@ -684,7 +685,7 @@ class UIManager {
             '.swal2-container', '.central-alert-overlay', '#study-book-overlay', '#controls-modal',
             '#weather-modal', '#lessons-hub', '#lesson-book', '.mission-interface', '.choice-dialog', '.loan-interface',
             '.resource-details-panel', '#notification-history', '#research-panel', '#achievements-panel', '#saves-panel', '#notebook-panel', '#settings-panel', '#tech-modal', '#event-decision', '#mission-card',
-            '#species-card', '#diary-panel', '#city-cinematic'
+            '#species-card', '#diary-panel', '#city-cinematic', '#aquifer-view'
         ];
         return popups.some(selector => shown(document.querySelector(selector)));
     }

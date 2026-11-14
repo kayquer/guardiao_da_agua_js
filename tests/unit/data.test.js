@@ -121,6 +121,18 @@ test('todo objetivo de missão é de um tipo que o motor mede', () => {
     }
 });
 
+test('todo "Você sabia?" de missão cita de 1 a 2 fontes com link https (factSources)', () => {
+    let withFacts = 0;
+    for (const [id, m] of Object.entries(MISSIONS)) {
+        const edu = m.educationalContent;
+        if (!edu?.facts?.length) continue;
+        withFacts++;
+        assert.ok(Array.isArray(edu.factSources) && edu.factSources.length >= 1 && edu.factSources.length <= 2, `${id}: factSources`);
+        for (const src of edu.factSources) assert.ok(src.label && /^https:\/\//.test(src.url), `${id}: fonte sem nome ou sem https`);
+    }
+    assert.ok(withFacts > 0, 'nenhuma missão com facts (mudou o formato?)');
+});
+
 test('todo estudo cita de 1 a 3 fontes com link https (mostradas na última página do livro)', () => {
     const studies = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/building-studies.json'), 'utf8'));
     for (const [id, s] of Object.entries(studies)) {

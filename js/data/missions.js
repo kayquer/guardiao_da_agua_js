@@ -37,8 +37,12 @@ const MISSIONS = {
             concepts: ['recursos hídricos', 'água subterrânea', 'aquíferos'],
             facts: [
                 'A bomba puxa a água guardada nos espaços entre a areia e as rochas, debaixo da terra.',
-                'É importante monitorar o nível dos aquíferos para evitar esgotamento.',
-                'Aquíferos são formações geológicas que armazenam água subterrânea.'
+                'Se a água sai do aquífero mais depressa do que a chuva repõe, o nível dele baixa.',
+                'Aquíferos são camadas de rocha e areia que guardam água debaixo da terra.'
+            ],
+            factSources: [
+                { label: 'IAT-PR — Águas subterrâneas', url: 'https://www.iat.pr.gov.br/Pagina/Aguas-Subterraneas-Origem-e-ocorrencia' },
+                { label: 'USGS — Aquíferos e água subterrânea', url: 'https://www.usgs.gov/special-topics/water-science-school/science/aquifers-and-groundwater' }
             ],
             tips: [
                 'Posicione bombas longe de fontes de poluição.',
@@ -72,6 +76,10 @@ const MISSIONS = {
         educationalContent: {
             concepts: ['energia elétrica', 'energia solar', 'geração distribuída'],
             facts: ['Bombas, estações de tratamento e casas usam energia elétrica: sem ela, a água não chega às torneiras.'],
+            factSources: [
+                { label: 'Governo de Goiás — Energia que bombeia a água', url: 'https://agencia.go.gov.br/especial/saneago-implanta-tecnologia-de-eficiencia-energetica-da-qual-e-pioneira-na-america-latina/' },
+                { label: 'ANEEL — Geração distribuída', url: 'https://www.gov.br/aneel/pt-br/assuntos/geracao-distribuida' }
+            ],
             tips: ['Gere sempre um pouco mais de energia do que a cidade usa: cada obra nova aumenta o consumo.']
         }
     },
@@ -111,8 +119,12 @@ const MISSIONS = {
         },
         educationalContent: {
             facts: [
-                'Estações de tratamento removem contaminantes químicos e biológicos da água.',
+                'Estações de tratamento tiram a sujeira e os micróbios da água antes de ela chegar às casas.',
                 'Tratar a água e o esgoto é uma das formas mais eficazes de evitar doenças como diarreia, hepatite A e cólera (OMS).'
+            ],
+            factSources: [
+                { label: 'SAAE Santa Maria da Vitória — Como funciona uma ETA', url: 'https://www.saaesmv.ba.gov.br/2023/08/08/como-funciona-uma-estacao-de-tratamento-de-agua/' },
+                { label: 'OMS — Água potável', url: 'https://www.who.int/news-room/fact-sheets/detail/drinking-water' }
             ],
             tips: [
                 'Trate a água na fonte sempre que possível.',
@@ -158,6 +170,10 @@ const MISSIONS = {
             facts: [
                 'Reservatórios permitem armazenar água para períodos de escassez.',
                 'A reserva dá tempo para a cidade reagir quando a produção cai, como numa seca ou num conserto.'
+            ],
+            factSources: [
+                { label: 'Semae São Leopoldo — Por que ter um reservatório', url: 'https://semae.rs.gov.br/sustentabilidade-beneficios-de-ter-um-reservatorio-de-agua/' },
+                { label: 'Prefeitura de Sorocaba — Reservação de água', url: 'https://agencia-local.sorocaba.sp.gov.br/capacidade-de-reservacao-de-agua-ultrapassa-100-milhoes/' }
             ],
             tips: [
                 'Posicione reservatórios em pontos altos para melhor distribuição.',
@@ -215,6 +231,10 @@ const MISSIONS = {
                 'Cidades sustentáveis equilibram crescimento econômico com proteção ambiental.',
                 'O acesso à água limpa é um direito humano fundamental.'
             ],
+            factSources: [
+                { label: 'ONU Brasil — ODS 11: cidades sustentáveis', url: 'https://brasil.un.org/pt-br/sdgs/11' },
+                { label: 'Ipea — ODS 6: água e saneamento', url: 'https://ipea.gov.br/ods/ods6.html' }
+            ],
             tips: [
                 'Invista em tecnologias limpas para reduzir a poluição.',
                 'Eduque a população sobre conservação da água.'
@@ -260,8 +280,12 @@ const MISSIONS = {
         },
         educationalContent: {
             facts: [
-                'Secas podem durar meses ou anos, exigindo planejamento a longo prazo.',
-                'Racionamento inteligente pode estender reservas por muito mais tempo.'
+                'Uma seca pode durar poucos meses ou muito mais tempo, por isso a cidade precisa se planejar antes.',
+                'Economizar água durante a seca ajuda a manter as represas com água por mais tempo.'
+            ],
+            factSources: [
+                { label: 'ANA — Monitor de Secas', url: 'https://www.gov.br/ana/pt-br/assuntos/monitoramento-e-eventos-criticos/eventos-criticos/monitor-de-secas' },
+                { label: 'Governo de SP — Estiagem e economia de água', url: 'https://semil.sp.gov.br/2025/12/calor-e-estiagem-pressionam-mananciais-e-governo-de-sp-alerta-populacao-para-reducao-imediata-do-consumo-de-agua/' }
             ],
             tips: [
                 'Implemente medidas de conservação antes da crise.',
@@ -377,7 +401,10 @@ const MISSIONS = {
             reputation: { environment: 2 }
         },
         educationalContent: {
-            facts: ['Vento e sol geram energia sem fumaça; usinas que queimam combustível sujam o ar e esquentam a água dos rios.'],
+            facts: ['Vento e sol geram energia sem queimar nada; usinas que queimam carvão, petróleo ou gás soltam gases que poluem o ar.'],
+            factSources: [
+                { label: 'EPE — Fontes de energia', url: 'https://www.epe.gov.br/pt/abcdenergia/fontes-de-energia' }
+            ],
             tips: ['Energia limpa no começo evita ter de limpar a poluição depois.']
         }
     },
@@ -403,6 +430,10 @@ const MISSIONS = {
         },
         educationalContent: {
             facts: ['Mata ciliar é a vegetação da beira de rios e lagos. Sem ela, a chuva leva terra para a água e o rio fica raso e turvo.'],
+            factSources: [
+                { label: 'Embrapa — Importância das matas ciliares', url: 'https://www.infoteca.cnptia.embrapa.br/infoteca/handle/doc/703807' },
+                { label: 'Embrapa Semiárido — Matas ciliares do São Francisco', url: 'https://www.embrapa.br/busca-de-publicacoes/-/publicacao/153157/a-importancia-das-matas-ciliares-do-rio-sao-francisco' }
+            ],
             tips: ['Plante as mudas coladas na água: lá cada árvore limpa bem mais.']
         }
     },
@@ -445,7 +476,10 @@ const MISSIONS = {
             budget: 4000
         },
         educationalContent: {
-            facts: ['Jardins de chuva são canteiros mais baixos que a rua: a enxurrada para neles e afunda devagar na terra.'],
+            facts: ['Jardins de chuva são canteiros que recebem a enxurrada: a água afunda devagar na terra e sobra menos para os bueiros.'],
+            factSources: [
+                { label: 'Prefeitura de SP — Jardins de chuva', url: 'https://prefeitura.sp.gov.br/web/sampa-news/w/cidade-passar%C3%A1-a-ter-530-jardins-de-chuva-com-implanta%C3%A7%C3%A3o-de-mais-103-na-regi%C3%A3o-da-s%C3%A9' }
+            ],
             tips: ['Quanto mais chão de terra e verde, mais chuva vira água guardada.']
         }
     },
@@ -471,6 +505,10 @@ const MISSIONS = {
         },
         educationalContent: {
             facts: ['Cidade com muito asfalto e pouco verde sofre enchentes maiores: a água não tem onde entrar.'],
+            factSources: [
+                { label: 'USGS — Escoamento da chuva', url: 'https://www.usgs.gov/special-topics/water-science-school/science/runoff-surface-and-overland-water-runoff' },
+                { label: 'Prefeitura de SP — Jardins de chuva', url: 'https://prefeitura.sp.gov.br/web/sampa-news/w/cidade-passar%C3%A1-a-ter-530-jardins-de-chuva-com-implanta%C3%A7%C3%A3o-de-mais-103-na-regi%C3%A3o-da-s%C3%A9' }
+            ],
             tips: ['Antes da próxima chuva forte, troque asfalto por cascalho onde der e plante perto do rio.']
         }
     },
@@ -494,7 +532,10 @@ const MISSIONS = {
             budget: 5000
         },
         educationalContent: {
-            facts: ['Depois da queimada o solo fica pelado: na primeira chuva, a terra vai parar no rio.'],
+            facts: ['Depois da queimada o solo fica pelado: a chuva bate direto na terra e a enxurrada leva o solo embora.'],
+            factSources: [
+                { label: 'Embrapa — Queimadas e o solo', url: 'https://www.embrapa.br/busca-de-noticias/-/noticia/92020089/queimadas-diminuem-qualidade-do-solo-e-aumentam-custos-da-producao' }
+            ],
             tips: ['Bombeiros e mata ciliar bem cuidada protegem a cidade e o rio do fogo.']
         }
     },
@@ -521,7 +562,11 @@ const MISSIONS = {
             reputation: { environment: 3, citizens: 2 }
         },
         educationalContent: {
-            facts: ['Esgoto sem tratamento tira o oxigênio da água: os peixes e os sapos são os primeiros a sumir.'],
+            facts: ['Esgoto sem tratamento gasta o oxigênio da água do rio, e sem oxigênio os peixes não sobrevivem.'],
+            factSources: [
+                { label: 'Prefeitura de SP — Esgoto e os peixes dos córregos', url: 'https://prefeitura.sp.gov.br/web/meio_ambiente/w/noticias/231548' },
+                { label: 'USGS — Oxigênio dissolvido', url: 'https://www.usgs.gov/special-topics/water-science-school/science/dissolved-oxygen-and-water' }
+            ],
             tips: ['Antes de abrir bairros novos, veja se o tratamento dá conta de mais gente.']
         }
     },
@@ -569,6 +614,9 @@ const MISSIONS = {
         },
         educationalContent: {
             facts: ['Parques lineares acompanham o rio: dão lazer para a cidade e espaço para a água quando ele enche.'],
+            factSources: [
+                { label: 'Prefeitura de SP — Parques lineares', url: 'https://prefeitura.sp.gov.br/w/prefeitura-inaugura-parque-linear-da-vila-princesa-isabel-na-zona-leste' }
+            ],
             tips: ['Quem segura a chuva ganha duas vezes: menos enchente e mais água guardada debaixo da terra.']
         }
     },
@@ -613,7 +661,11 @@ const MISSIONS = {
             achievement: 'long_drought'
         },
         educationalContent: {
-            facts: ['Secas longas são cada vez mais comuns. Cidades que guardam água e protegem o aquífero atravessam melhor.'],
+            facts: ['Com o clima mudando, as secas estão ficando mais frequentes. Cidades que guardam água e protegem o aquífero atravessam melhor.'],
+            factSources: [
+                { label: 'ANA — Mudança climática e água', url: 'https://www.gov.br/ana/pt-br/assuntos/gestao-das-aguas/panorama-das-aguas/mudancas-climaticas-recursos-hidricos' },
+                { label: 'ANA — Dez anos do Monitor de Secas', url: 'https://www.gov.br/ana/pt-br/assuntos/noticias-e-eventos/noticias/monitor-de-secas-completa-dez-anos-registrando-o-fenomeno-como-realidade-recorrente-em-todas-as-regioes-brasileiras' }
+            ],
             tips: ['Reservatórios cheios, aquífero alto e consumo baixo: é isso que segura uma seca longa.']
         }
     },
@@ -675,6 +727,9 @@ const MISSIONS = {
         educationalContent: {
             facts: [
                 'Uma cidade só cresce de verdade se a água que ela usa continua existindo para as próximas gerações.'
+            ],
+            factSources: [
+                { label: 'ONU Brasil — ODS 6: água e saneamento', url: 'https://brasil.un.org/pt-br/sdgs/6' }
             ],
             tips: [
                 'Use áreas verdes para segurar a chuva e recarregar o aquífero.',

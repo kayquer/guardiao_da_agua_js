@@ -11,11 +11,16 @@
  * controles travam. Pulável: Esc, Enter, Espaço, clique/toque ou "Pular". Com prefers-reduced-motion não toca
  * (play devolve false e quem chamou segue direto).
  *
- * Partes puras (testadas em tests/unit/diary.test.js): catmull, sample, planVictory, planSpecies.
+ * Partes puras (testadas em tests/unit/diary.test.js e moments.test.js): catmull, sample, planVictory, planSpecies,
+ * followWeight. Também os momentos da cidade (js/systems/CityMoments.js): playSpot (nascente, cheia contida) e
+ * playFollow (primeiro carro).
  */
 class CityCinematic {
     static VICTORY_MS = 12500;
     static SPECIES_MS = 3200;
+    static SPOT_MS = 4200;       // nascente, cheia contida (CityMoments)
+    static FOLLOW_MS = 3600;     // primeiro carro
+    static FOLLOW_REACH = 0.35;  // fração do plano até a câmera "pegar" o carro
     static ISO_BETA = Math.PI / 3.5;
     static current = null;
 
@@ -147,6 +152,43 @@ class CityCinematic {
         return new CityCinematic(gm).play({ keys, durationMs: CityCinematic.SPECIES_MS, captions: [{ at: 0.02, text: caption }], onDone, kind: 'species' });
     }
 
+    /**
+     * Corte curto até um ponto do mundo { x, z } (momentos da cidade: a nascente que voltou, a cheia contida na
+     * várzea — js/systems/CityMoments.js). Mesmo caminho do corte da espécie, um pouco mais longo para a legenda.
+     */
+    static playSpot(gm, point, caption, onDone, { durationMs = CityCinematic.SPOT_MS, radius } = {}) {
+        if (!gm?.camera || !point || CityCinematic.reducedMotion() || CityCinematic.current) return false;
+        const keys = CityCinematic.planSpecies(CityCinematic.poseOf(gm.camera), point);
+        if (Number.isFinite(radius)) keys[keys.length - 1].radius = radius;
+        return new CityCinematic(gm).play({ keys, durationMs, captions: [{ at: 0.02, text: caption }], onDone, kind: 'spot' });
+    }
+
+    /**
+     * Segue um ponto que anda (o primeiro carro da cidade): getPoint() → { x, z } a cada quadro. A câmera chega
+     * nele no primeiro terço e depois acompanha; o trânsito anda dentro do plano (o jogo fica em 'cinematic', que
+     * não roda o CityLifeSystem). Termina no ângulo de sempre, sobre o carro.
+     */
+    static playFollow(gm, getPoint, caption, onDone, { durationMs = CityCinematic.FOLLOW_MS } = {}) {
+        if (!gm?.camera || typeof getPoint !== 'function' || CityCinematic.reducedMotion() || CityCinematic.current) return false;
+        const first = getPoint();
+        if (!first || !Number.isFinite(first.x) || !Number.isFinite(first.z)) return false;
+        const start = CityCinematic.poseOf(gm.camera);
+        const keys = [
+            { x: start.x, z: start.z, alpha: start.alpha, beta: start.beta, radius: start.radius },
+            { x: first.x, z: first.z, alpha: start.alpha + 0.15, beta: 1.05, radius: 14 },
+            { x: first.x, z: first.z, alpha: start.alpha + 0.3, beta: CityCinematic.ISO_BETA, radius: 13 }
+        ];
+        const cut = new CityCinematic(gm);
+        cut.follow = { getPoint, start };
+        return cut.play({ keys, durationMs, captions: [{ at: 0.02, text: caption }], onDone, kind: 'follow' });
+    }
+
+    /** Peso do ponto que anda na pose (0 no começo → 1 a partir de FOLLOW_REACH do plano; suave). Puro. */
+    static followWeight(u) {
+        const t = Math.max(0, Math.min(1, u / CityCinematic.FOLLOW_REACH));
+        return t * t * (3 - 2 * t);
+    }
+
     constructor(gm) {
         this.gm = gm;
         this.done = false;
@@ -187,8 +229,23 @@ class CityCinematic {
 
     step() {
         if (this.done) return;
-        const u = Math.min(1, (performance.now() - this.startTime) / this.durationMs);
-        this.applyPose(CityCinematic.sample(this.keys, CityCinematic.ease(u)));
+        const now = performance.now();
+        const u = Math.min(1, (now - this.startTime) / this.durationMs);
+        const pose = CityCinematic.sample(this.keys, CityCinematic.ease(u));
+        if (this.follow) {
+            // o trânsito anda aqui dentro (tempo real, 1x) e a câmera puxa o alvo para o carro
+            const dt = Math.min(100, now - (this.lastFrame ?? now));
+            this.lastFrame = now;
+            this.gm.cityLifeSystem?.update?.(dt);
+            const p = this.follow.getPoint();
+            if (p && Number.isFinite(p.x) && Number.isFinite(p.z)) {
+                const w = CityCinematic.followWeight(u);
+                pose.x = this.follow.start.x + (p.x - this.follow.start.x) * w;
+                pose.z = this.follow.start.z + (p.z - this.follow.start.z) * w;
+                this.lastFollow = { x: p.x, z: p.z };
+            }
+        }
+        this.applyPose(pose);
         while (this.captionIndex + 1 < this.captions.length && this.captions[this.captionIndex + 1].at <= u) {
             this.captionIndex++;
             this.showCaption(this.captions[this.captionIndex].text);
@@ -220,7 +277,8 @@ class CityCinematic {
     skip() {
         if (this.done) return;
         // pulou: a câmera vai direto para a pose final (sem pulo quando os controles voltam)
-        this.applyPose(this.keys[this.keys.length - 1]);
+        const last = this.keys[this.keys.length - 1];
+        this.applyPose(this.follow && this.lastFollow ? { ...last, ...this.lastFollow } : last);
         this.finish();
     }
 

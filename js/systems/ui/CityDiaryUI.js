@@ -66,6 +66,7 @@ mixin(UIManager, {
         const count = document.getElementById('diary-count');
         const diary = this.gameManager.cityDiary;
         if (!list || !diary) return;
+        this.renderDiaryAlbum();
         const entries = diary.entries;
         if (count) count.textContent = `${entries.length} ${entries.length === 1 ? 'marco' : 'marcos'}`;
         if (!entries.length) {
@@ -80,6 +81,31 @@ mixin(UIManager, {
             return `${head}<li class="diary-entry diary-${e.kind}" data-kind="${e.kind}">${this.diaryEntryHtml(e)}</li>`;
         }).join('');
         list.lastElementChild?.scrollIntoView?.({ block: 'nearest' });
+    },
+
+    /**
+     * Álbum "Como a cidade mudou" (js/systems/CityMoments.js): a foto do começo e a mais nova lado a lado ("Antes" e
+     * "Agora") e a fila de todas, do mesmo ângulo. Fotos são data URLs do próprio jogo; textos escapados.
+     */
+    renderDiaryAlbum() {
+        const section = document.getElementById('diary-album');
+        const compare = document.getElementById('diary-album-compare');
+        const strip = document.getElementById('diary-album-strip');
+        if (!section || !compare || !strip) return;
+        const album = this.gameManager.cityMoments?.getAlbum?.() || [];
+        section.hidden = album.length === 0;
+        if (!album.length) return;
+        const esc = typeof escapeHtml === 'function' ? escapeHtml : s => String(s);
+        const safeImg = p => (/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p.img) ? p.img : '');
+        const caption = p => `${p.key === 'start' ? 'O começo' : esc(p.title || 'Missão cumprida')} · dia ${Number(p.day) || 1}`;
+        const figure = (p, label) => `<figure class="diary-photo${label ? ' diary-photo--big' : ''}">
+                <img src="${safeImg(p)}" alt="A cidade: ${caption(p)}" width="400" height="225" loading="lazy" draggable="false">
+                <figcaption>${label ? `<b>${label}</b> ` : ''}${caption(p)}</figcaption>
+            </figure>`;
+        const first = album[0], last = album[album.length - 1];
+        compare.innerHTML = album.length > 1 ? figure(first, 'Antes') + figure(last, 'Agora') : figure(first, 'Antes');
+        strip.innerHTML = album.length > 2 ? album.map(p => `<li>${figure(p)}</li>`).join('') : '';
+        strip.hidden = album.length <= 2;
     },
 
     /** Resumo do diário para a tela de vitória (no máximo 8 marcos). '' sem diário. */
