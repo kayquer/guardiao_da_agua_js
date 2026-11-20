@@ -20,6 +20,8 @@ function walk(dir, out = []) {
 }
 const rel = file => path.relative(ROOT, file).split(path.sep).join('/');
 const manifestFiles = Object.values(MANIFEST).flatMap(entry => entry.files);
+const RESTRICTED_DIR = 'Sounds/SFX/';
+const AUDIO_LICENSE = 'Sounds/SFX/LICENSE-AUDIO.md';
 
 test('todo arquivo do manifesto existe e é mp3', () => {
     for (const [key, entry] of Object.entries(MANIFEST)) {
@@ -35,13 +37,26 @@ test('todo arquivo do manifesto existe e é mp3', () => {
 
 test('sem áudio órfão em Sounds/ e todo áudio tem prompt em Sounds/_prompts.json', () => {
     const listed = new Set(manifestFiles);
-    const onDisk = walk(path.join(ROOT, 'Sounds')).map(rel).filter(f => f !== 'Sounds/_prompts.json');
+    const onDisk = walk(path.join(ROOT, 'Sounds')).map(rel)
+        .filter(f => f !== 'Sounds/_prompts.json' && f !== AUDIO_LICENSE);
     const orphans = onDisk.filter(f => !listed.has(f));
     assert.deepStrictEqual(orphans, [], `arquivos fora do manifesto: ${orphans.join(', ')}`);
     const prompts = JSON.parse(fs.readFileSync(path.join(ROOT, 'Sounds/_prompts.json'), 'utf8'));
     const registered = new Set([...Object.keys(prompts.music), ...Object.keys(prompts.sfx)]);
     const missing = manifestFiles.filter(f => !registered.has(f));
     assert.deepStrictEqual(missing, [], `sem registro em _prompts.json: ${missing.join(', ')}`);
+});
+
+// Licença dupla (LICENSE na raiz): tudo é CC0, exceto Sounds/SFX/ (ElevenLabs, direitos reservados).
+// A exceção vale por pasta, então a pasta só pode ter ElevenLabs e todo ElevenLabs tem de estar nela.
+test('Sounds/SFX/ tem só os áudios ElevenLabs, com a licença deles ao lado', () => {
+    assert.ok(fs.existsSync(path.join(ROOT, AUDIO_LICENSE)), `falta ${AUDIO_LICENSE}`);
+    const prompts = JSON.parse(fs.readFileSync(path.join(ROOT, 'Sounds/_prompts.json'), 'utf8'));
+    const registry = { ...prompts.music, ...prompts.sfx };
+    const isEleven = file => /elevenlabs/i.test(registry[file]?.generator || '');
+    const wrongPlace = manifestFiles.filter(f => isEleven(f) !== f.startsWith(RESTRICTED_DIR));
+    assert.deepStrictEqual(wrongPlace, [],
+        `ElevenLabs fora de ${RESTRICTED_DIR} ou outro gerador dentro dela: ${wrongPlace.join(', ')}`);
 });
 
 test('apelidos antigos apontam para chaves que existem', () => {

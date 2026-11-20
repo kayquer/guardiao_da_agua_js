@@ -27,7 +27,7 @@
   <img src="https://img.shields.io/badge/p%C3%BAblico-6%C2%BA%20ano-ffb703" alt="Público: 6º ano">
   <img src="https://img.shields.io/badge/Babylon.js-9.31-bb464b" alt="Babylon.js 9.31">
   <img src="https://img.shields.io/badge/instala%C3%A7%C3%A3o-nenhuma-2a9d8f" alt="Sem instalação">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/licen%C3%A7a-MIT-blue" alt="Licença MIT"></a>
+  <a href="#-licença"><img src="https://img.shields.io/badge/c%C3%B3digo-CC0%201.0-blue" alt="Código em CC0 1.0"></a>
 </p>
 
 <p align="center">
@@ -215,7 +215,7 @@ tests/              unitários (tests/unit) e E2E (Playwright)
 - **Pesquisa e conteúdo educativo**: Cláudia Dias Roxinol (Unesp).
 - **Desenvolvimento**: Kayque Rotondo.
 - **Modelos 3D**: [Kenney](https://kenney.nl/) (City Kits, licença CC0) e modelos próprios em Blender.
-- **Música**: trilha original gerada com Google Lyria 3; **efeitos sonoros**: ElevenLabs Sound Effects (prompts em `Sounds/_prompts.json`).
+- **Música**: trilha original gerada com Google Lyria 3; **efeitos sonoros**: ElevenLabs Sound Effects, com direitos reservados (prompts em `Sounds/_prompts.json`; ver [Licença](#-licença)).
 - **Ilustrações e retratos**: imagens próprias geradas por IA (prompts em `assets/images/_prompts.json`).
 - **Dados abertos**: Open-Meteo e IBGE.
 
@@ -255,6 +255,22 @@ Abre, mas nesta fase o jogo foi feito para computador com teclado e mouse, que �
 
 ## 📄 Licença
 
-Código sob licença **MIT** (ver [`LICENSE`](LICENSE)). Os modelos Kenney são CC0; cada kit traz o seu `License.txt` em `models/buildings/kenney/`.
+O repositório tem duas licenças, separadas por pasta:
+
+| O quê | Onde | Licença |
+|---|---|---|
+| Código (HTML, CSS, JavaScript, scripts, testes), dados, textos e documentação | todo o repositório, exceto `Sounds/SFX/` | **CC0 1.0 Universal** (domínio público) — [`LICENSE`](LICENSE) |
+| Músicas e vinhetas (Google Lyria 3) | `Sounds/BGM/` | CC0 1.0 |
+| Imagens, ícones, retratos e modelos 3D próprios | `assets/`, `models/buildings/blender/`, `models/props/` | CC0 1.0 |
+| Modelos Kenney | `models/buildings/kenney/` | CC0 1.0, do autor original (`License.txt` em cada kit) |
+| **Efeitos sonoros, ambiências e vozes (ElevenLabs)** | **`Sounds/SFX/`** | **Todos os Direitos Reservados** — [`Sounds/SFX/LICENSE-AUDIO.md`](Sounds/SFX/LICENSE-AUDIO.md) |
+
+Na prática: pode copiar, modificar e redistribuir o código e os demais assets para qualquer fim, sem pedir licença nem
+dar crédito. Os efeitos sonoros em `Sounds/SFX/` só podem ser usados dentro do jogo em execução: é proibido extraí-los,
+redistribuí-los separados do jogo, sublicenciá-los ou usá-los para treinar modelos de IA. Quem fizer um fork e quiser
+distribuir o jogo com outros sons deve trocar os arquivos dessa pasta (e as entradas de `js/data/audioManifest.js`).
+
+O jogo não tem etapa de build: o GitHub Pages publica os arquivos como estão e o navegador baixa cada `.mp3` quando
+precisa. Os sons ficam acessíveis pela rede como em qualquer jogo web, mas isso não muda a licença deles.
 
 <p align="center"><sub>Feito no Brasil 🇧🇷 para as escolas · <b>Educação Ambiental · Recursos Hídricos · Unesp</b></sub></p>
